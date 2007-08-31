@@ -24,24 +24,25 @@ import javax.swing.plaf.ActionMapUIResource;
 import java.awt.event.*;
 
 public class MultiStateCheckBox extends JCheckBox {
-    
+    public static enum State {
+        SELECTED, UNSELECTED, MIXED;
+    }
+
     protected final MultiStateModel model;
     private static final String PROP_PRESSED = "pressed"; //NOI18N
     private static final String PROP_RELEASED = "released"; //NOI18N
     
-    public MultiStateCheckBox(String text, Object initial) {
+    public MultiStateCheckBox(String text, State initial) {
         super(text);
         super.addMouseListener(new MouseAdapter() {
-            public void mousePressed(@SuppressWarnings("unused")
-			final MouseEvent e) {
+            public void mousePressed(final MouseEvent e) {
                 grabFocus();
                 model.nextState();
             }
         });
         ActionMap map = new ActionMapUIResource();
         map.put(PROP_PRESSED, new AbstractAction() {  //NOI18N
-            public void actionPerformed(@SuppressWarnings("unused")
-			final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 grabFocus();
                 model.nextState();
             }
@@ -62,15 +63,14 @@ public class MultiStateCheckBox extends JCheckBox {
         this(null);
     }
     
-    public void addMouseListener(@SuppressWarnings("unused")
-	final MouseListener l) {
+    public void addMouseListener(final MouseListener l) {
     }
     
-    final public void setState(final Object state) {
+    final public void setState(final State state) {
         model.setState(state);
     }
     
-    public Object getState() {
+    public State getState() {
         return model.getState();
     }
     
@@ -81,12 +81,12 @@ public class MultiStateCheckBox extends JCheckBox {
             this.other = other;
         }
         
-        protected void setState(final Object state) {
-            if (state == MethodCheckedTreeBeanView.MIXED) {
+        protected void setState(final State state) {
+            if (state == State.MIXED) {
                 other.setArmed(true);
                 setPressed(true);
                 setSelected(true);
-            } else if (state == MethodCheckedTreeBeanView.SELECTED) {
+            } else if (state == State.SELECTED) {
                 other.setArmed(false);
                 setPressed(false);
                 setSelected(true);
@@ -97,28 +97,21 @@ public class MultiStateCheckBox extends JCheckBox {
             }
         }
         
-        protected Object getState() {
+        protected State getState() {
             if (isSelected() && !isArmed()) {
-                return MethodCheckedTreeBeanView.SELECTED;
+                return State.SELECTED;
             } else if (isSelected() && isArmed()) {
-                return MethodCheckedTreeBeanView.MIXED;
+                return State.MIXED;
             } else {
-                return MethodCheckedTreeBeanView.UNSELECTED;
+                return State.UNSELECTED;
             }
         }
         
         protected void nextState() {
-            final Object current = getState();
-            if (current == MethodCheckedTreeBeanView.UNSELECTED) {
-                setState(MethodCheckedTreeBeanView.SELECTED);
-            } else {
-                setState(MethodCheckedTreeBeanView.UNSELECTED);
-                
-            }
+            setState(getState() == State.UNSELECTED ? State.SELECTED : State.UNSELECTED);
         }
         
-        public void setArmed(@SuppressWarnings("unused")
-		final boolean b) {
+        public void setArmed(final boolean b) {
         }
         
         public void setEnabled(final boolean b) {

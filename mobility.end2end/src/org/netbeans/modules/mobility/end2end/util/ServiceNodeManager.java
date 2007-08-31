@@ -26,13 +26,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
 import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 import org.netbeans.modules.mobility.e2e.classdata.MethodData;
+import org.netbeans.modules.mobility.end2end.classdata.TypeData;
+import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -47,8 +48,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import org.netbeans.modules.mobility.e2e.classdata.MethodParameter;
+import org.netbeans.modules.mobility.end2end.classdata.OperationData;
+import org.netbeans.modules.mobility.end2end.ui.treeview.MethodCheckedTreeBeanView;
+import org.netbeans.modules.mobility.end2end.ui.treeview.MultiStateCheckBox;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -68,9 +73,10 @@ public class ServiceNodeManager {
     static final String CLASS_ICON = "org/netbeans/spi/java/project/support/ui/packageBadge.gif"; //NOI18N
     static final String METHOD_ICON = "org/netbeans/spi/java/project/support/ui/packageBadge.gif"; //NIOI18N
     public final static String NODE_VALIDITY_ATTRIBUTE = "isValid"; //NOI18N
+    public final static String NODE_SELECTION_ATTRIBUTE = "isSelected"; //NOI18N
 
-    public static Node getRootNode( final Project project ) {
-        return new AbstractNode(new ProjectChildren(project));
+    public static Node getRootNode(Configuration cfg, MethodCheckedTreeBeanView tree) {
+        return new AbstractNode(new ProjectChildren(cfg, tree));
     }
 
     private static String getActiveProfile() {
@@ -80,14 +86,19 @@ public class ServiceNodeManager {
 
     private static class ProjectChildren extends Children.Keys<String> implements ChangeListener, PropertyChangeListener, FileChangeListener, Runnable {
 
+        private final Configuration cfg;
+        private final MethodCheckedTreeBeanView tree;
         private final Sources s;
         private ClassDataRegistry activeProfileRegistry, allRegistry;
         private ChangeListener ref1;
         private final HashMap<Object, Object> hookedListeners = new HashMap(); // FileObject or SourceGroup -> listener
         private final Task refreshTask = RequestProcessor.getDefault().create(this);
+        private final HashSet<String> selectionSource = new HashSet(); 
        
-        public ProjectChildren(Project p) {
-            s = ProjectUtils.getSources(p);
+        public ProjectChildren(Configuration cfg, MethodCheckedTreeBeanView tree) {
+            this.cfg = cfg;
+            this.tree = tree;
+            this.s = ProjectUtils.getSources(Util.getServerProject(cfg));
             run();
         }
 
@@ -176,10 +187,27 @@ public class ServiceNodeManager {
             // Get the registry for all available classes
             allRegistry = ClassDataRegistry.getRegistry( ClassDataRegistry.ALL_JAVA_PROFILE, classpaths );
             activeProfileRegistry = ClassDataRegistry.getRegistry( getActiveProfile(), classpaths);
+            synchronized (selectionSource) {
+                selectionSource.clear();
+                for (org.netbeans.modules.mobility.end2end.classdata.ClassData cd : cfg.getServices().get(0).getData()) {
+                    String fqn = cd.getPackageName();
+                    if (fqn.length() > 0) fqn = fqn + '.';
+                    fqn = fqn + cd.getClassName();
+                    for (OperationData od : cd.getOperations()) {
+                        StringBuffer sb = new StringBuffer(fqn);
+                        sb.append('.').append(od.getName());
+                        for(TypeData td : od.getParameterTypes()) {
+                            sb.append(',').append(td.getType());
+                        }
+                        selectionSource.add(sb.toString());
+                    }
+                }
+            }
             String packages[] = allRegistry.getBasePackages().toArray(new String[0]);
             Arrays.sort(packages);
             setKeys(packages);
             for (Node n : getNodes()) ((PackageChildren)n.getChildren()).notifyChange();
+            tree.updateTreeNodeStates(null);
         }
         
         private void addFCListener(FileObject fo, HashMap<Object, Object> newHooks) {
@@ -199,7 +227,7 @@ public class ServiceNodeManager {
             n.setName(packageName);
             n.setDisplayName(packageName.length() == 0 ? NbBundle.getMessage(ServiceNodeManager.class, "LBL_DefaultPackage") : packageName); //NOI18N
             n.setIconBaseWithExtension(PACKAGE_ICON);
-            n.setValue(NODE_VALIDITY_ATTRIBUTE, Boolean.valueOf(activeProfileRegistry.getBasePackages().contains(packageName)));
+            n.setValue(NODE_VALIDITY_ATTRIBUTE, activeProfileRegistry.getBasePackages().contains(packageName));
             return new Node[] {n};
         }
   
@@ -230,7 +258,7 @@ public class ServiceNodeManager {
                 createDisplayName(nodeText, classData);
                 n.setDisplayName(nodeText.toString());
                 n.setIconBaseWithExtension(CLASS_ICON);
-                n.setValue(NODE_VALIDITY_ATTRIBUTE, Boolean.valueOf(activeProfileRegistry.getClassData(classData.getFullyQualifiedName()) != null));
+                n.setValue(NODE_VALIDITY_ATTRIBUTE, activeProfileRegistry.getClassData(classData.getFullyQualifiedName()) != null);
                 return new Node[] {n};
             }
         }
@@ -281,7 +309,13 @@ public class ServiceNodeManager {
                 n.setDisplayName(nodeText.toString());
                 n.setIconBaseWithExtension(METHOD_ICON);
                 ClassData cd = activeProfileRegistry.getClassData(methodData.getParentClassName());
-                n.setValue(NODE_VALIDITY_ATTRIBUTE, Boolean.valueOf(cd != null && cd.getMethods().contains(methodData)));
+                n.setValue(NODE_VALIDITY_ATTRIBUTE, cd != null && cd.getMethods().contains(methodData));
+                StringBuffer sb = new StringBuffer(methodData.getParentClassName());
+                sb.append('.').append(methodData.getName());
+                for (MethodParameter mp : methodData.getParameters()) {
+                    sb.append(',').append(mp.getType().getFullyQualifiedName());
+                }
+                n.setValue(NODE_SELECTION_ATTRIBUTE, selectionSource.contains(sb.toString()) ? MultiStateCheckBox.State.SELECTED : MultiStateCheckBox.State.UNSELECTED);
                 return new Node[] {n};
             }
         }

@@ -271,8 +271,8 @@ public class ConfigurationReader {
             final List<TypeData> aParams = new ArrayList<TypeData>();
             for( int j = 0; j < params.getLength(); j++ ) {
                 final Element param = (Element)params.item( j );
-                final String paramTypeName = param.getAttribute( NAME ); // NOI18N
-                final String paramName = param.getAttribute( TYPE ); // NOI18N
+                final String paramTypeName = param.getAttribute( TYPE ); // NOI18N
+                final String paramName = param.getAttribute( NAME ); // NOI18N
                 // TODO: checks
                 final TypeData td = new TypeData( paramName, paramTypeName );
                 aParams.add( td );
@@ -305,8 +305,8 @@ public class ConfigurationReader {
             final List<TypeData> paramList = new ArrayList<TypeData>();
             for( int j = 0; j < params.getLength(); j++ ) {
                 final Element param = (Element)params.item( j );
-                final String paramTypeName = param.getAttribute( NAME ); // NOI18N
-                final String paramName = param.getAttribute( TYPE ); // NOI18N
+                final String paramTypeName = param.getAttribute( TYPE ); // NOI18N
+                final String paramName = param.getAttribute( NAME ); // NOI18N
                 // TODO: checks
                 final TypeData td = new TypeData( paramName, paramTypeName );
                 paramList.add( td );

@@ -8,9 +8,7 @@ package org.netbeans.modules.mobility.end2end.ui.treeview;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.event.ItemListener;
 import java.beans.BeanInfo;
 import java.io.CharConversionException;
@@ -34,18 +32,10 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
     private static final Color selectionForeground = UIManager.getColor("Tree.selectionForeground"); //NOI18N
     private static final Color selectionBackground = UIManager.getColor("Tree.selectionBackground"); //NOI18N
     private static final Color textForeground = UIManager.getColor("Tree.textForeground"); //NOI18N
-    private Object defaultRenderer = null;
-    private MethodCheckedTreeBeanView storage;
     private final CardLayout layout;
 
     /** Creates new form MethodCheckedNodeRenderer */
     public MethodCheckedNodeRenderer() {
-        this(null);
-    }
-
-    /** Creates new form MethodCheckedNodeRenderer */
-    public MethodCheckedNodeRenderer(Object defaultRenderer) {
-        this.defaultRenderer = defaultRenderer;
         Font fontValue = UIManager.getFont("Tree.font"); //NOI18N
         if (fontValue != null) {
             setFont(fontValue);
@@ -56,56 +46,29 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
         jPanel2.setPreferredSize(jCheckBox1.getSize());
         layout = (CardLayout) jPanel1.getLayout();
     }
-    
-    public void setContentStorage(final MethodCheckedTreeBeanView storage) {
-        this.storage = storage;
-    }
-
+ 
     public Component getTreeCellRendererComponent(final JTree tree, final Object value, final boolean selected, final boolean expanded, final boolean leaf, final int row, final boolean hasFocus) {
-        // System.out.println("in getTreeCellRendererComponent");
-        Component returnValue = null;
         final Node node = Visualizer.findNode(value);
-        /* sigal */
-
-        if (node != null && storage != null && !node.equals(storage.getWaitNode())) {
-            setText(node.getDisplayName());
-            // System.out.println("node = " + node.getDisplayName() );
-            setEnabled(tree.isEnabled());
-
-            if (selected) {
-                // System.out.println("SELECTED");
-                setForeground(selectionForeground, textForeground);
-                setBackground(selectionBackground, tree.getBackground());
-            } else {
-                // System.out.println("NOT  SELECTED");
-                setForeground(textForeground);
-                setBackground(tree.getBackground());
-            }
-            // setText(node.getDisplayName());
-            if (storage == null) {
-                // System.out.println("storage = null");
-                setState(MethodCheckedTreeBeanView.UNSELECTED);
-            } else {
-                final Object state = storage.getState(node);
-                //System.out.println("state = "+ state.toString());
-                setState(state == null ? MethodCheckedTreeBeanView.UNSELECTED : state);
-            }
-
-            // Strikeout the line
-            if (node.getValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE) != null && !((Boolean) node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) try {
-                setText("<html><s>" + XMLUtil.toAttributeValue(node.getDisplayName()) + "</s></html>");
-                setEnabled(false);
-            } catch (CharConversionException cce) {} else {
-                setEnabled(true);
-            }
-
-            setIcon(new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16)));
-            return this;
+        setText(node.getDisplayName());
+        setEnabled(tree.isEnabled());
+        if (selected) {
+            setForeground(selectionForeground, textForeground);
+            setBackground(selectionBackground, tree.getBackground());
+        } else {
+            setForeground(textForeground);
+            setBackground(tree.getBackground());
         }
-        if (defaultRenderer != null) {
-            returnValue = ((TreeCellRenderer) defaultRenderer).getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+        setState((MultiStateCheckBox.State)node.getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE));
+        Boolean val = (Boolean)node.getValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE);
+        if (val != null && !val) try {
+            setText("<html><s>" + XMLUtil.toAttributeValue(node.getDisplayName()) + "</s></html>");
+            setEnabled(false);
+        } catch (CharConversionException cce) {} else {
+            setEnabled(true);
         }
-        return returnValue;
+
+        setIcon(new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16)));
+        return this;
     }
 
     public void setForeground(final Color fg) {
@@ -116,6 +79,10 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
         setBackground(bg, bg);
     }
 
+    public int getCheckBoxWidth() {
+        return jCheckBox1.getWidth();
+    }
+    
     public void setForeground(final Color selection, final Color text) {
         if (jCheckBox1 == null || jLabel1 == null || jPanel1 == null) {
             return;
@@ -129,7 +96,6 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
         if (jCheckBox1 == null || jLabel1 == null || jPanel1 == null) {
             return;
         }
-        //System.err.println(jCheckBox1);
         jCheckBox1.setBackground(text);
         jPanel2.setBackground(text);
         jLabel1.setBackground(selection);
@@ -148,12 +114,15 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
         return jLabel1.getText();
     }
 
-    public void setState(final Object state) {
+    public MultiStateCheckBox.State getState() {
+        return jCheckBox1.getState();
+    }
+
+    public void setState(final MultiStateCheckBox.State state) {
         jCheckBox1.setState(state);
     }
 
     public void setIcon(final Icon icon) {
-        //System.err.println(icon);
         jLabel1.setIcon(icon);
     }
 
@@ -162,12 +131,10 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
     }
 
     public void addItemListener(final ItemListener itemListener) {
-        // System.out.println("in add item listener");
         jCheckBox1.addItemListener(itemListener);
     }
 
     public void removeItemListener(final ItemListener itemListener) {
-        // System.out.println("remove item listener");
         jCheckBox1.removeItemListener(itemListener);
     }
 

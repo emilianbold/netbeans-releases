@@ -57,6 +57,7 @@ import java.util.List;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 import org.netbeans.modules.mobility.e2e.classdata.MethodParameter;
+import org.netbeans.modules.mobility.end2end.ui.treeview.MultiStateCheckBox;
 
 
 /**
@@ -73,6 +74,11 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     private final RequestProcessor.Task repaintingTask = RequestProcessor.getDefault().create(new Runnable() {
         public void run() {
             updateTree();
+        }
+    });
+    private final RequestProcessor.Task changeTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            selectionChanged();
         }
     });
 
@@ -169,10 +175,10 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     }
     
     private void updateTree() {
-        final Project serverProject = Util.getServerProject( configuration );
         if( !wsdl ) {
-            rootNode = ServiceNodeManager.getRootNode( serverProject );
+            rootNode = ServiceNodeManager.getRootNode(configuration, checkedTreeView);
         } else {
+            final Project serverProject = Util.getServerProject( configuration );
             final List<AbstractService> services = configuration.getServices();
             final WSDLService service = (WSDLService)services.get( 0 );
 
@@ -218,7 +224,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                                 int i = pt.indexOf('<'); //cutting off any generics from the ID
                                 operationId.append(',').append(i > 0 ? pt.substring(0, i) : pt);
                             }
-                            operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, Boolean.valueOf(methodIDs.contains(operationId.toString())));
+                            operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, methodIDs.contains(operationId.toString()));
                         }
                     }
                 }                
@@ -236,7 +242,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                         checkedTreeView.setRootVisible(false);
                         checkedTreeView.setRoot(rootNode);
                         getExplorerManager().setRootContext(rootNode);
-                        setSelectedMethods();
+                        expandNodes(rootNode);
                     }
                     //add back after selection
                     getExplorerManager().addPropertyChangeListener( ServicesPanel.this );
@@ -247,60 +253,30 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         }
     }
     
-    private void setSelectedMethods() {
-        if( !wsdl ) {
-            final AbstractService classService = configuration.getServices().get(0);
-            final List<ClassData> classes = classService.getData();
-            if (classes == null) return;
-            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE, NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
-            for ( final ClassData classData : classes ) {
-                final String className = classData.getClassName();
-                final String pkgName = classData.getPackageName();
-                final List<OperationData> methods = classData.getOperations();
-                for ( final OperationData methodData : methods ) {
-                    final String methodName = methodData.getName();
-                    try {
-                        checkedTreeView.setState(NodeOp.findPath(rootNode, new String[]{pkgName, className, methodName}), true);
-                        checkedTreeView.expandNode(NodeOp.findPath(rootNode, new String[]{pkgName, className}));
-                    } catch ( NodeNotFoundException ex) {
-                        //System.err.println(" SETTING ERROR OUTPUT");
-                        final SectionView sectionView = getSectionView();
-                        if (sectionView != null){
-                            sectionView.getErrorPanel().setError( error );
-                        }
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                }
-            }
-        } else {            
-            final WSDLService wsdlService = (WSDLService)configuration.getServices().get(0); //TODO we are assuming only one service
-            final String serviceName = wsdlService.getName();
-            final List<ClassData> ports = wsdlService.getData();
-            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE,
-                                    NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
-            //search for selections
-            for( int i = 0; ports != null && i < ports.size(); i++ ) {
-                final PortData portData = (PortData)ports.get( i );
-                final String port = portData.getName();
-                final List<OperationData> operations = portData.getOperations();
-                for ( final OperationData operationData : operations ) {
-                    final String operation = operationData.getName();
-                    try {
-                        final Node pkgNode = NodeOp.findPath( rootNode, new String[] { wsdlService.getType(), port, operation } );
-                        checkedTreeView.setState( pkgNode, true );
-                    } catch (Exception e){
-                        final SectionView sectionView = getSectionView();
-                        if( sectionView != null ) {
-                            sectionView.getErrorPanel().setError( error );
-                        }
-                        ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-                    }
-                }
-            }
-            checkedTreeView.expandAll();
-        }
+    private void expandNodes(Node n) {
+        if (Boolean.FALSE != n.getValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE)) checkedTreeView.expandNode(n);
+        for (Node ch : n.getChildren().getNodes()) expandNodes(ch);
     }
     
+    private void selectionChanged() {
+            getSelectedMethods();
+//            System.err.println(" - selection changed");
+            final AbstractService service = configuration.getServices().get(0);
+            final SectionView sectionView = getSectionView();
+            if (sectionView != null){
+                if( service == null || ( service != null && service.getData().size() == 0 )) {
+                    sectionView.getErrorPanel().setError(
+                            new Error( Error.TYPE_FATAL, Error.MISSING_VALUE_MESSAGE,
+                            NbBundle.getMessage( ServicesPanel.class, "ERR_MissingServiceSelection" ), checkedTreeView ));
+                    generateButton.setEnabled( false );
+                } else {
+                    sectionView.getErrorPanel().clearError();
+                    generateButton.setEnabled( true );
+                }
+            }
+            fireChange();
+    }
+
     public void getSelectedMethods() {
 //        todo should distinguish between WS and classes
         if (!wsdl) {
@@ -313,18 +289,18 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                         final Node methodNodes[] = clNode.getChildren().getNodes();
                         final List<OperationData> methodData = new ArrayList<OperationData>();
                         for ( Node node : methodNodes ) {
-                            if( checkedTreeView.getState( node ).equals( MethodCheckedTreeBeanView.SELECTED )) {
+                            if (MultiStateCheckBox.State.SELECTED == node.getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE)) {
                                 final org.netbeans.modules.mobility.e2e.classdata.MethodData mthData = (
                                         org.netbeans.modules.mobility.e2e.classdata.MethodData) node.getLookup().lookup(org.netbeans.modules.mobility.e2e.classdata.MethodData.class);
                                 final List<org.netbeans.modules.mobility.e2e.classdata.MethodParameter> params = mthData.getParameters();
                                 final List<TypeData> newParams = new ArrayList<TypeData>(params.size());
                                 for ( final org.netbeans.modules.mobility.e2e.classdata.MethodParameter param : params ) {
                                     //have a list of parameters for each method
-                                    final TypeData td = new TypeData( param.getName(), param.getType().getName());
+                                    final TypeData td = new TypeData( param.getName(), param.getType().getFullyQualifiedName());
                                     newParams.add( td );
                                 }
                                 final OperationData od = new OperationData( mthData.getName());
-                                od.setReturnType( mthData.getReturnType().getName());
+                                od.setReturnType( mthData.getReturnType().getFullyQualifiedName());
                                 od.setParameterTypes( newParams );
                                 methodData.add( od );
                             }
@@ -361,7 +337,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                     for( int k = 0; k < operationNodes.length; k++ ) {
                         final String operationName = operationNodes[k].getName(); //name of the operation (selection)
                         
-                        if( checkedTreeView.getState( operationNodes[k] ).equals( MethodCheckedTreeBeanView.SELECTED )) {
+                        if(MultiStateCheckBox.State.SELECTED == operationNodes[k].getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE)) {
                             serviceClassInfo = computeMethodCall( operationNodes[ k ] );
                             if( serviceClassInfo == null ) {
                                 continue;
@@ -470,24 +446,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())){
-            getSelectedMethods();
-            System.err.println(" - selection changed");
-            final AbstractService service = configuration.getServices().get(0);
-            final SectionView sectionView = getSectionView();
-            if (sectionView != null){
-                if( service == null || ( service != null && service.getData().size() == 0 )) {
-                    sectionView.getErrorPanel().setError(
-                            new Error( Error.TYPE_FATAL, Error.MISSING_VALUE_MESSAGE,
-                            NbBundle.getMessage( ServicesPanel.class, "ERR_MissingServiceSelection" ), checkedTreeView ));
-//                    //dataObject.setSaveEnable( false );
-                    generateButton.setEnabled( false );
-                } else {
-                    sectionView.getErrorPanel().clearError();
-//                    //dataObject.setSaveEnable( true );
-                    generateButton.setEnabled( true );
-                }
-            }
-            fireChange();
+            changeTask.schedule(100);
         } else if (E2EDataObject.PROP_GENERATING.equals(evt.getPropertyName())){
             generateButton.setEnabled(!Boolean.TRUE.equals(evt.getNewValue()));
         }

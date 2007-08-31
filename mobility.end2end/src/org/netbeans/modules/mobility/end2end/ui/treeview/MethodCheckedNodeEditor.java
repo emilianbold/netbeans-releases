@@ -18,11 +18,11 @@
  */
 
 package org.netbeans.modules.mobility.end2end.ui.treeview;
+import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -36,21 +36,24 @@ import java.util.EventObject;
  * Date: Dec 20, 2003
  * Time: 12:48:08 PM
  */
-public class MethodCheckedNodeEditor extends AbstractCellEditor implements TreeCellEditor{
+public class MethodCheckedNodeEditor extends AbstractCellEditor implements TreeCellEditor, ItemListener {
     static final long serialVersionUID = -5087358518052291490L;
-    MethodCheckedNodeRenderer customRenderer = null;
-    final JTree jtree;
-    ItemListener itemListener;
-    protected MethodCheckedTreeBeanView storage;
+    
+    private final MethodCheckedNodeRenderer customRenderer;
+    private final JTree jtree;
+    private final int checkWidth;
+    private MethodCheckedTreeBeanView storage;
+    private Node node = null;
     
     public MethodCheckedNodeEditor(JTree jtree) {
         this.jtree = jtree;
         customRenderer = new MethodCheckedNodeRenderer();
+        checkWidth = customRenderer.getCheckBoxWidth();
+        customRenderer.addItemListener(this);
     }
     
     public void setContentStorage(final MethodCheckedTreeBeanView storage) {
         this.storage = storage;
-        customRenderer.setContentStorage(storage);
     }
     
     public Object getCellEditorValue() {
@@ -108,41 +111,23 @@ public class MethodCheckedNodeEditor extends AbstractCellEditor implements TreeC
         final int lastRow = jtree.getRowForLocation(x, y);
         if (lastRow != -1 && jtree != null) {
             final Rectangle bounds = jtree.getRowBounds(lastRow);
-            if (bounds != null && (x - bounds.x ) < 10 && (x - bounds.x) >= 0) {
+            if (bounds != null && (x - bounds.x ) < 12 && (x - bounds.x) >= 0) {
                 return true;
             }
         }
         return false;
     }
     
-    public Component getTreeCellEditorComponent(final JTree tree, final Object value,
-            final boolean isSelected, final boolean expanded,
-            final boolean leaf, final int row) {
-        //System.out.println("INNNNNNN getTreeCellEditorComponent") ;
-        final Component editor = customRenderer.getTreeCellRendererComponent(tree, value, isSelected, expanded, leaf, row, true);
-        //  System.out.println("editor1 = " + editor.getClass().getName());
-        itemListener = new ItemListener() {
-            public void itemStateChanged(@SuppressWarnings("unused") ItemEvent e) {
-                //System.out.println("itemStateChanged") ;
-                if (stopCellEditing()){
-                    if (editor instanceof MethodCheckedNodeRenderer){
-                        ((MethodCheckedNodeRenderer)editor).removeItemListener(itemListener);
-                    }
-                    final Node node = Visualizer.findNode(value);
-                    
-                    storage.setState(node, MethodCheckedTreeBeanView.UNSELECTED == storage.getState(node));
-                    final TreePath path = tree.getAnchorSelectionPath();
-                    ((DefaultTreeModel)tree.getModel()).reload();
-                    tree.setAnchorSelectionPath(path);
-                }
-            }
-        };
-        //  System.out.println("editor2 = " + editor.getClass().getName());
-        if (editor instanceof MethodCheckedNodeRenderer){
-            // System.out.println("add Item Listener");
-            ((MethodCheckedNodeRenderer)editor).addItemListener(itemListener);
+    public synchronized Component getTreeCellEditorComponent(final JTree tree, final Object value,final  boolean isSelected, final boolean expanded, final boolean leaf, final int row) {
+        node = Visualizer.findNode(value);
+        return customRenderer.getTreeCellRendererComponent(tree, value, isSelected, expanded, leaf, row, true);
+    }
+
+    public synchronized void itemStateChanged(ItemEvent e) {
+        if (stopCellEditing() && node != null){
+            node.setValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE, customRenderer.getState());
+            storage.updateTreeNodeStates(node);
         }
-        return editor;
     }
     
 }
