@@ -26,6 +26,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -2369,39 +2370,24 @@ public class CasaWrapperModel extends CasaModelImpl {
         return JbiProjectHelper.getJbiProjectName(jbiProject);
     }
     
-    private void createEmptyCompAppWSDLFile(File file) {
-        
-        String NEWLINE = System.getProperty("line.separator"); // NOI18N
-        
-        BufferedWriter out = null;
+    private void createEmptyCompAppWSDLFile(File file) {   
+        String tns = getCompAppWSDLTargetNamespace();
                 
-        try {
-            String tns = getCompAppWSDLTargetNamespace();
-            
-            FileWriter fileWriter = new FileWriter(file);
-            out = new BufferedWriter(fileWriter);
-            out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18M
-            out.write(NEWLINE);
-            out.write("<definitions xmlns=\"http://schemas.xmlsoap.org/wsdl/\""); // NOI18M
-            out.write(NEWLINE);
-            out.write("             xmlns:wsdl=\"http://schemas.xmlsoap.org/wsdl/\""); // NOI18M
-            out.write(NEWLINE);
-            out.write("             xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""); // NOI18M
-            out.write(NEWLINE);
-            out.write("             targetNamespace=\"" + tns + "\""); // NOI18M
-            out.write(NEWLINE);
-            out.write("             xmlns:myns=\"" + tns + "\">"); // NOI18M
-            out.write(NEWLINE);
-            out.write("</definitions>"); // NOI18M
+        PrintWriter out = null;                
+        try {            
+            out = new PrintWriter(file, "UTF-8");
+            out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18M
+            out.println("<definitions xmlns=\"http://schemas.xmlsoap.org/wsdl/\""); // NOI18M
+            out.println("             xmlns:wsdl=\"http://schemas.xmlsoap.org/wsdl/\""); // NOI18M
+            out.println("             xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""); // NOI18M
+            out.println("             targetNamespace=\"" + tns + "\""); // NOI18M
+            out.println("             xmlns:myns=\"" + tns + "\">"); // NOI18M
+            out.println("</definitions>"); // NOI18M
         } catch (IOException ex) {
             ex.printStackTrace();
         } finally {
             if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                out.close();
             }
         }
     }
