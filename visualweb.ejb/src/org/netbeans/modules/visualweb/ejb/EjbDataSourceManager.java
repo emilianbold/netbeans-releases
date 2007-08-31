@@ -13,6 +13,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.netbeans.api.project.Project;
@@ -36,8 +40,6 @@ public class EjbDataSourceManager {
 
     // Singlton
     private static EjbDataSourceManager mgr = new EjbDataSourceManager();
-
-    private OpenProjectListKeeper openProjectList;
 
     public static EjbDataSourceManager getInstance() {
         return mgr;
@@ -63,12 +65,25 @@ public class EjbDataSourceManager {
 
         // Since everything just loaded, reset the modified flag in the data model
         EjbDataModel.getInstance().resetModifiedFlag();
-
-        openProjectList = new OpenProjectListKeeper(OpenProjects.getDefault().getOpenProjects());
-
-        // Listen on the project open event so that we can check whehther any ejb related
+        
+        // Listen on the project open event so that we can check whether any ejb related
         // jar files needed to be updated
-        OpenProjects.getDefault().addPropertyChangeListener(new OpenProjectListener());
+        OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+                    List<Project> oldOpenProjectsList = Arrays
+                            .asList((Project[]) evt.getOldValue());
+                    List<Project> newOpenProjectsList = Arrays
+                            .asList((Project[]) evt.getNewValue());
+
+                    Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
+                    openedProjectsSet.removeAll(oldOpenProjectsList);
+                    Project[] openedProjectsArray = openedProjectsSet
+                            .toArray(new Project[openedProjectsSet.size()]);
+                    EjbLibReferenceHelper.syncArchiveRefs(openedProjectsArray);
+                }
+            }
+        });
     }
 
     /**
@@ -109,18 +124,6 @@ public class EjbDataSourceManager {
                     "Failed to save ejb datasource to file: " + ejbDataSrcFileName);
             ex.printStackTrace();
         }
-    }
-
-    private class OpenProjectListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-
-            if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
-                Project[] projects = openProjectList.getNewlyOpenedProjects(OpenProjects
-                        .getDefault().getOpenProjects());
-                EjbLibReferenceHelper.syncArchiveRefs(projects);
-            }
-        }
-
     }
 
     private static String getUserDirDataSrcFileName() throws IOException {
