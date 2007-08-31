@@ -128,9 +128,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         // Listening to OK button ----------------------------------------------
         
         public void actionPerformed( ActionEvent e ) {
-            // Store the properties into project 
-            assert !ProjectManager.getDefault().isModified(project) : 
-                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
+//#95952 some users experience this assertion on a fairly random set of changes in 
+// the customizer, that leads me to assume that a project can be already marked
+// as modified before the project customizer is shown. 
+//            assert !ProjectManager.getDefault().isModified(project) : 
+//                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
             
             // Close & dispose the the dialog
             Dialog dialog = (Dialog)project2Dialog.get( project );
