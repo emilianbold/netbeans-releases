@@ -33,15 +33,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.jsch</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4.12</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.j2me.cdc.platform</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -171,7 +162,7 @@
                 <package-root>antsrc</package-root>
                 <classpath>${ant.jar}:${module.classpath}:${tools.jar}</classpath>
                 <built-to>build/antclasses</built-to>
-                <built-to>${cluster}/modules/ext/${code.name.base.dashes}.jar</built-to>
+                <built-to>build/ant/modules/ext/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>
