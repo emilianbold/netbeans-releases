@@ -39,8 +39,8 @@
         <copy todir="build/antclasses">
             <fileset dir="antsrc" excludesfile="../../standard-jar-excludes.txt"/>
         </copy>
-        <mkdir dir="build/ant" />
-        <jar jarfile="build/ant/org-netbeans-modules-j2me-cdc-project-ricoh.jar" compress="false">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <jar jarfile="${cluster}/modules/ext/org-netbeans-modules-j2me-cdc-project-ricoh.jar" compress="false">
             <fileset dir="build/antclasses">
                 <excludesfile name="../../standard-jar-excludes.txt"/>
             </fileset>
