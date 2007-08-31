@@ -157,10 +157,8 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
                     } else if (usernameTextFieldPV.getKind() == PropertyValue.Kind.USERCODE) {
                         usernameTextField.setText(USER_CODE); 
                         usernameTextField.setEnabled(false);
-                    } else {
-                        usernameTextField.setText(NULL_TEXT); 
-                        usernameTextField.setEnabled(true);
-                    }
+                    } 
+                    
                     PropertyValue passwordTextFieldPV = component.readProperty(LoginScreenCD.PROP_PASSWORD);
                     if (passwordTextFieldPV.getKind() == PropertyValue.Kind.VALUE) {
                         passwordTextField.setEnabled(true);
@@ -168,10 +166,8 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
                     } else if (passwordTextFieldPV.getKind() == PropertyValue.Kind.USERCODE) {
                         passwordTextField.setText(USER_CODE); 
                         passwordTextField.setEnabled(false);
-                    } else {
-                        passwordTextField.setText(NULL_TEXT); 
-                        passwordTextField.setEnabled(true);
-                    }
+                    } 
+                    
                     Integer bckColor = (Integer) component.readProperty(LoginScreenCD.PROP_BGK_COLOR).getPrimitiveValue();
                     Integer frgColor = (Integer) component.readProperty(LoginScreenCD.PROP_FRG_COLOR).getPrimitiveValue();
                     if (bckColor != null) {

@@ -78,8 +78,8 @@ public final class SMSComposerCD extends ComponentDescriptor {
     public static final String PROP_PHONE_NUMEBR_LABEL = "phoneNumberLabel"; //NOI18N
     public static final String PROP_MESSAGE_LABEL = "messageLabel"; //NOI18N
     
-    public static final String PHONE_NUMBER_LABEL = NbBundle.getMessage(LoginScreenCD.class, "LBL_SMSComposer_phoneNumberLabel"); //NOI18N 
-    public static final String MESSAGE_LABEL = NbBundle.getMessage(LoginScreenCD.class, "LBL_SMSComposer_messageLabel"); //NOI18N 
+    public static final String PHONE_NUMBER_LABEL = NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumberLabel"); //NOI18N 
+    public static final String MESSAGE_LABEL = NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_MessageLabel"); //NOI18N 
     
     private static final String CATEGORIES_SMS = "SMS Properties"; //NOI18N
     

@@ -104,22 +104,22 @@ public final class LoginScreenCD extends ComponentDescriptor {
                .addPropertiesCategory(MidpNbPropertiesCategories.CATEGORY_LOGIN)
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_Username"), // NOI18N
                         PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class,
-                            "DISP_LoginScreen_Username")), PROP_USERNAME) // NOI18N
+                            "LBL_LoginScreen_Username")), PROP_USERNAME) // NOI18N
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_Password"), // NOI18N
                         PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class,
-                            "DISP_LoginScreen_Password")), PROP_PASSWORD) // NOI18N
+                            "LBL_LoginScreen_Password")), PROP_PASSWORD) // NOI18N
                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_UsernameLabel"), // NOI18N
                         PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class,
-                            "DISP_LoginScreen_Username")), PROP_USERNAME_LABEL) // NOI18N
+                            "LBL_LoginScreen_Username")), PROP_USERNAME_LABEL) // NOI18N
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_PasswordLabel"), // NOI18N
                         PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class,
-                            "DISP_LoginScreen_Password")), PROP_PASSWORD_LABEL) // NOI18N
+                            "LBL_LoginScreen_Password")), PROP_PASSWORD_LABEL) // NOI18N
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_UseLoginButton"), // NOI18N
                         PropertyEditorBooleanUC.createInstance(), PROP_USE_LOGIN_BUTTON)
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_LoginTitle"), // NOI18N
                         PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class,
-                            "DISP_LoginScreen_LoginTitle")), PROP_LOGIN_TITLE) // NOI18N
+                            "LBL_LoginScreen_LoginTitle")), PROP_LOGIN_TITLE) // NOI18N
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_BackgroundColor"), // NOI18N
                         new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_ForegroundColor"), // NOI18N

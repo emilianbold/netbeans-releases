@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenTextAreaPropertyEditor;
 import org.netbeans.modules.vmd.midpnb.components.displayables.SMSComposerCD;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -40,6 +41,8 @@ public class SMSComposerDisplayPresenter extends DisplayableDisplayPresenter {
 
     private JComponent view;
     private SMSView smsView;
+    private static final String USER_CODE = NbBundle.getMessage(LoginScreenDisplayPresenter.class, "LBL_UserCode"); //NOI18N
+    private static final String NULL_TEXT = NbBundle.getMessage(LoginScreenDisplayPresenter.class, "LBL_NULL"); //NOI18N
 
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
@@ -130,15 +133,48 @@ public class SMSComposerDisplayPresenter extends DisplayableDisplayPresenter {
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {
-                    //PropertyValue phoneNumberLabelTextPV = component.readProperty(SMSComposerCD.PROP_PHONE_NUMEBR_LABEL);
-                    //String phoneNumberLabelText
-                    //       phoneNumberLabelT = (String) phoneNumberLabelTextPV.getPrimitiveValue();
-                    //phoneNumberLabel.setText(phoneNumberLabelText);
-                    String phoneNumberText = (String) component.readProperty(SMSComposerCD.PROP_PHONE_NUMBER).getPrimitiveValue();
+                    PropertyValue phoneNumberLabelTextPV = component.readProperty(SMSComposerCD.PROP_PHONE_NUMEBR_LABEL);
+                    String phoneNumberLabelText;
+                    if (phoneNumberLabelTextPV.getKind() == PropertyValue.Kind.VALUE) {
+                        phoneNumberLabelText = (String) phoneNumberLabelTextPV.getPrimitiveValue();
+                    } else if (phoneNumberLabelTextPV.getKind() == PropertyValue.Kind.USERCODE) {
+                        phoneNumberLabelText = USER_CODE;
+                    } else {
+                        phoneNumberLabelText = NULL_TEXT;
+                    }
+                    phoneNumberLabel.setText(phoneNumberLabelText);
+
+                    PropertyValue phoneNumberTextFieldPV = component.readProperty(SMSComposerCD.PROP_PHONE_NUMBER);
+                    String phoneNumberText = null;
+                    if (phoneNumberTextFieldPV.getKind() == PropertyValue.Kind.VALUE) {
+                        phoneNumberTextField.setEditable(true);
+                        phoneNumberText = (String) phoneNumberTextFieldPV.getPrimitiveValue();
+                    } else if (phoneNumberTextFieldPV.getKind() == PropertyValue.Kind.USERCODE) {
+                        phoneNumberText = USER_CODE;
+                        phoneNumberTextField.setEnabled(false);
+                    } 
                     phoneNumberTextField.setText(phoneNumberText);
-                    String messageLabelString = (String) component.readProperty(SMSComposerCD.PROP_MESSAGE_LABEL).getPrimitiveValue();
+                    
+                    PropertyValue messageLabelStringPV = component.readProperty(SMSComposerCD.PROP_MESSAGE_LABEL);
+                    String messageLabelString = null;
+                    if (messageLabelStringPV.getKind() == PropertyValue.Kind.VALUE) {
+                        messageLabelString = (String) messageLabelStringPV.getPrimitiveValue();
+                    } else if (messageLabelStringPV.getKind() == PropertyValue.Kind.USERCODE) {
+                        messageLabelString = USER_CODE;
+                    } else {
+                        phoneNumberText = NULL_TEXT;
+                    }
                     messageLabel.setText(messageLabelString);
-                    String messageText = (String) component.readProperty(SMSComposerCD.PROP_MESSAGE).getPrimitiveValue();
+                    
+                    PropertyValue messageTextAreaPV = component.readProperty(SMSComposerCD.PROP_MESSAGE);
+                    String messageText = null;
+                    if (messageTextAreaPV.getKind() == PropertyValue.Kind.VALUE) {
+                        messageTextrArea.setEnabled(true);
+                        messageText = (String) messageTextAreaPV.getPrimitiveValue();
+                    } else if (messageTextAreaPV.getKind() == PropertyValue.Kind.USERCODE) {
+                        messageText = USER_CODE;
+                        messageTextrArea.setEnabled(false);
+                    } 
                     messageTextrArea.setText(messageText);
                     Integer bkgColor = (Integer) component.readProperty(SMSComposerCD.PROP_BGK_COLOR).getPrimitiveValue();
                     if (bkgColor != null) {
@@ -153,7 +189,6 @@ public class SMSComposerDisplayPresenter extends DisplayableDisplayPresenter {
                         phoneNumberTextField.setForeground(color);
                         messageTextrArea.setForeground(color);
                     }
-                    
                 }
             });
         }
