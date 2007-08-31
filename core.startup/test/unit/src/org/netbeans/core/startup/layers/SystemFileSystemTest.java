@@ -171,14 +171,16 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
         assertEquals("global", read(global));
     }
     
-    public void testPreferenceOfLayers() throws Exception {
+    public void testPreferenceOfLayersNowDynamicSystemsCanHideWhatComesFromLayers() throws Exception {
         ModuleManager mgr = Main.getModuleSystem ().getManager();
         mgr.mutexPrivileged().enterWriteAccess();
+        Module m1 = null;
+        FileObject global;
         try {
-            Module m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
+            m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             mgr.enable(m1);
-            FileObject global = fs.findResource("foo/file2.txt");
+            global = fs.findResource("foo/file2.txt");
             assertNotNull("File Object installed: " + global, global);
             assertEquals("base contents", read(global));
             
@@ -204,17 +206,38 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
             
             
             
-            assertEquals("base contents", read(global));
-            
-            
+            assertEquals("fileone", read(global));
+        } finally {
             mgr.disable(m1);
             mgr.delete(m1);
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+        assertTrue("Still valid", global.isValid());
+        assertEquals("fileone", read(global));
+    }
+    
+    public void testCanHideFilesFromModules() throws Exception {
+        ModuleManager mgr = Main.getModuleSystem ().getManager();
+        mgr.mutexPrivileged().enterWriteAccess();
+        Module m1 = null;
+        try {
+            m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
+            assertEquals(Collections.EMPTY_SET, m1.getProblems());
+            mgr.enable(m1);
+            FileObject global = fs.findResource("foo/file2.txt");
+            assertNotNull("File Object installed: " + global, global);
+            assertEquals("base contents", read(global));
             
-            assertTrue("Still valid", global.isValid());
-            assertEquals("fileone", read(global));
-            
-            
+            FileObject fo1 = FileUtil.createData(fs1.getRoot(), global.getPath() + "_hidden");
+
+            events.clear();
+            MainLookup.register(fs1, this);
+
+            assertNull("No longer findable", global.getFileSystem().findResource(global.getPath()));
+            assertFalse("Is not valid anymore", global.isValid());
         } finally {
+            mgr.disable(m1);
+            mgr.delete(m1);
             mgr.mutexPrivileged().exitWriteAccess();
         }
         

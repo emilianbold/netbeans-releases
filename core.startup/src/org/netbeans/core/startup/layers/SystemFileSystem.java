@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -53,7 +54,7 @@ import org.openide.util.NbBundle;
 * @author Jan Jancura, Ian Formanek, Petr Hamernik
 */
 public final class SystemFileSystem extends MultiFileSystem 
-implements FileSystem.Status, org.openide.util.LookupListener {
+implements FileSystem.Status {
     // Must be public for BeanInfo to work: #11186.
 
     /** generated Serialized Version UID */
@@ -70,11 +71,6 @@ implements FileSystem.Status, org.openide.util.LookupListener {
     /** name of file attribute with URL to 32x32 color icon */
     private static final String ATTR_ICON_32 = "SystemFileSystem.icon32"; // NOI18N
 
-    /** lookup result we listen on */
-    private static Lookup.Result<FileSystem> result = Lookup.getDefault().lookupResult(FileSystem.class);
-    /** the set of layers provided by the system */
-    private static FileSystem[] layers;
-
     /** user fs */
     private ModuleLayeredFileSystem user;
     /** home fs */
@@ -83,16 +79,13 @@ implements FileSystem.Status, org.openide.util.LookupListener {
     /** @param fss list of file systems to delegate to
     */
     @SuppressWarnings("deprecation")
-    private SystemFileSystem() throws PropertyVetoException {
-        super(computeLayers());
-        user = (ModuleLayeredFileSystem) layers[0];
-        home = layers.length > 2 ? (ModuleLayeredFileSystem) layers[1] : null;
+    private SystemFileSystem (FileSystem[] fss) throws PropertyVetoException {
+        super (fss);
+        user = (ModuleLayeredFileSystem) fss[0];
+        home = fss.length > 2 ? (ModuleLayeredFileSystem) fss[1] : null;
         
         setSystemName(SYSTEM_NAME);
         setHidden(true);
-        
-        result.addLookupListener(this);
-        resultChanged(null);
     }
 
 
@@ -126,9 +119,8 @@ implements FileSystem.Status, org.openide.util.LookupListener {
             else
                 s.add (arr[i]);
 
-        layers = arr.clone();
         // create own internal copy of passed filesystems
-        setDelegates(computeLayers());
+        setDelegates(arr.clone());
         firePropertyChange ("layers", null, null); // NOI18N
     }
     
@@ -142,19 +134,7 @@ implements FileSystem.Status, org.openide.util.LookupListener {
         return getDelegates().clone();
     }
     
-    private synchronized static FileSystem[] computeLayers () {
-        Collection<? extends FileSystem> fromLookup = result.allInstances();
-        if (fromLookup.isEmpty()) {
-            return layers;
-        } else {
-            ArrayList<FileSystem> arr = new ArrayList<FileSystem>(layers.length + fromLookup.size());
-            arr.addAll (Arrays.asList (layers));
-            arr.addAll(fromLookup);
-            return arr.toArray(new FileSystem[arr.size()]);
-        }
-    }
-
-    protected FileSystem createWritableOnForRename (String oldName, String newName) throws IOException {        
+    protected FileSystem createWritableOnForRename(String oldName, String newName) throws IOException {
         return createWritableOn (oldName);
     }
     
@@ -311,17 +291,16 @@ implements FileSystem.Status, org.openide.util.LookupListener {
         }
 
         FileSystem[] arr = new FileSystem[home == null ? 2 : 3];
-        arr[0] = new ModuleLayeredFileSystem(user, new FileSystem[0], null);
+        arr[0] = new ModuleLayeredFileSystem(user, true, new FileSystem[0], null);
         if (home != null) {
             File cachedir = new File(new File (userDir.getParentFile(), "var"), "cache"); // NOI18N
-            arr[1] = new ModuleLayeredFileSystem(home, extras, cachedir);
+            arr[1] = new ModuleLayeredFileSystem(home, false, extras, cachedir);
         }
         FixedFileSystem.deflt = new FixedFileSystem
             ("org.netbeans.core.projects.FixedFileSystem", "Automatic Manifest Installation"); // NOI18N
         arr[home == null ? 1 : 2] = FixedFileSystem.deflt;
 
-        layers = arr;
-        return new SystemFileSystem ();
+        return new SystemFileSystem (arr);
     }
 
     /** Notification that a file has migrated from one file system
@@ -341,11 +320,6 @@ implements FileSystem.Status, org.openide.util.LookupListener {
     private Object writeReplace() throws ObjectStreamException {
         new NotSerializableException("WARNING - SystemFileSystem is not designed to be serialized").printStackTrace(); // NOI18N
         return new SingletonSerializer();
-    }
-    
-    /** Refresh layers */
-    public synchronized void resultChanged(org.openide.util.LookupEvent ev) {
-        setDelegates(computeLayers());
     }
     
     private static final class SingletonSerializer extends Object implements Serializable {

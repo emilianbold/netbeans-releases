@@ -45,6 +45,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -53,13 +55,17 @@ import org.openide.util.Utilities;
  * of module layers.
  * @author Jesse Glick, Jaroslav Tulach
  */
-public class ModuleLayeredFileSystem extends MultiFileSystem {
+public class ModuleLayeredFileSystem extends MultiFileSystem 
+implements LookupListener {
     /** serial version UID */
     private static final long serialVersionUID = 782910986724201983L;
     
     private static final String LAYER_STAMP = "layer-stamp.txt";
     
     static final Logger err = Logger.getLogger("org.netbeans.core.projects"); // NOI18N
+
+    /** lookup result we listen on */
+    private static Lookup.Result<FileSystem> result = Lookup.getDefault().lookupResult(FileSystem.class);
     
     /** current list of URLs - r/o; or null if not yet set */
     private List<URL> urls;
@@ -71,26 +77,30 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
     private FileSystem cacheLayer;
     /** other layers */
     private final FileSystem[] otherLayers;
+    /** addLookup */
+    private final boolean addLookup;
 
     /** Create layered filesystem based on a supplied writable layer.
+     * @param userDir is this layer for modules from userdir or not?
      * @param writableLayer the writable layer to use, typically a LocalFileSystem
      * @param otherLayers some other layers to use, e.g. LocalFileSystem[]
      * @param cacheDir a directory in which to store a cache, or null for no caching
      */
-    ModuleLayeredFileSystem (FileSystem writableLayer, FileSystem[] otherLayers, File cacheDir) throws IOException {
-        this(writableLayer, otherLayers, manager(cacheDir));
+    ModuleLayeredFileSystem (FileSystem writableLayer, boolean userDir, FileSystem[] otherLayers, File cacheDir) throws IOException {
+        this(writableLayer, userDir, otherLayers, manager(cacheDir));
     }
     
-    private ModuleLayeredFileSystem(FileSystem writableLayer, FileSystem[] otherLayers, LayerCacheManager mgr) throws IOException {
-        this(writableLayer, otherLayers, mgr, loadCache(mgr));
+    private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerCacheManager mgr) throws IOException {
+        this(writableLayer, addLookup, otherLayers, mgr, loadCache(mgr));
     }
     
-    private ModuleLayeredFileSystem(FileSystem writableLayer, FileSystem[] otherLayers, LayerCacheManager mgr, FileSystem cacheLayer) throws IOException {
-        super(appendLayers(writableLayer, otherLayers, cacheLayer));
+    private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerCacheManager mgr, FileSystem cacheLayer) throws IOException {
+        super(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
         this.manager = mgr;
         this.writableLayer = writableLayer;
         this.otherLayers = otherLayers;
         this.cacheLayer = cacheLayer;
+        this.addLookup = addLookup;
         
         // Wish to permit e.g. a user-installed module to mask files from a
         // root-installed module, so propagate masks up this high.
@@ -99,6 +109,12 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
         setPropagateMasks (true);
         
         urls = null;
+
+        if (addLookup) {
+            result.addLookupListener(this);
+            result.allItems();
+        }
+        
     }
     
     private static LayerCacheManager manager(File cacheDir) throws IOException {
@@ -154,9 +170,13 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
         }
     }
     
-    private static FileSystem[] appendLayers(FileSystem fs1, FileSystem[] fs2s, FileSystem fs3) {
+    private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookup, FileSystem[] fs2s, FileSystem fs3) {
         List<FileSystem> l = new ArrayList<FileSystem>(fs2s.length + 2);
         l.add(fs1);
+        if (addLookup) {
+            Collection<? extends FileSystem> fromLookup = result.allInstances();
+            l.addAll(fromLookup);
+        }
         l.addAll(Arrays.asList(fs2s));
         l.add(fs3);
         return l.toArray(new FileSystem[l.size()]);
@@ -269,7 +289,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                                 manager.store(cacheLayer, urls);
                             } else {
                                 cacheLayer = manager.store(urls);
-                                setDelegates(appendLayers(writableLayer, otherLayers, cacheLayer));
+                                setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
                             }
                         } catch (IOException ioe) {
                             err.log(Level.WARNING, null, ioe);
@@ -285,7 +305,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                                 } else {
                                     cacheLayer = manager.store(urls);
                                 }
-                                setDelegates(appendLayers(writableLayer, otherLayers, cacheLayer));
+                                setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
                             } catch (IOException ioe2) {
                                 // More serious - should not happen.
                                 err.log(Level.WARNING, null, ioe2);
@@ -340,6 +360,11 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
         if (this.urls != null) arr.addAll(this.urls);
         arr.removeAll(urls);
         setURLs(arr);
+    }
+    
+    /** Refresh layers */
+    public void resultChanged(org.openide.util.LookupEvent ev) {
+        setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
     }
     
     /** Represents a hash of a bunch of jar: URLs and the associated JAR timestamps.
