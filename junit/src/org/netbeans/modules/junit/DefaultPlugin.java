@@ -884,9 +884,31 @@ public final class DefaultPlugin extends JUnitPlugin {
     protected boolean createTestActionCalled(FileObject[] selectedFiles) {
         assert EventQueue.isDispatchThread();
 
+        LOG_JUNIT_VER.finer("createTestActionCalled(...)");             //NOI18N
+
         Project project = FileOwnerQuery.getOwner(selectedFiles[0]);
         assert project != null;         //PENDING
-        readProjectSettingsJUnitVer(project);
+
+        boolean storeSettings;
+        try {
+            storeSettings = readProjectSettingsJUnitVer(project);
+            if (!storeSettings) {
+                LOG_JUNIT_VER.finest(
+                " - will not be able to store JUnit version settings"); //NOI18N
+            }
+        } catch (IllegalStateException ex) {
+            String projectName = ProjectUtils.getInformation(project)
+                                 .getDisplayName();
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                            NbBundle.getMessage(
+                                       getClass(),
+                                       "MSG_NoTestFolderFoundInProject",//NOI18N
+                                       projectName),
+                            NotifyDescriptor.WARNING_MESSAGE));
+            return false;
+        }
+
         if (junitVer != null) {
             switch (junitVer) {
                 case JUNIT3:
@@ -898,7 +920,9 @@ public final class DefaultPlugin extends JUnitPlugin {
                         return true;
                     } else if (askUserLastWasJUnit4NowSource14(sourceLevel)) {
                         junitVer = JUnitVersion.JUNIT3;
-                        storeProjectSettingsJUnitVer(project);
+                        if (storeSettings) {
+                            storeProjectSettingsJUnitVer(project);
+                        }
                         return true;
                     }
                     return false;
@@ -920,7 +944,9 @@ public final class DefaultPlugin extends JUnitPlugin {
                         return true;
                     } else if (informUserOnlyJUnit3Applicable(sourceLevel)) {
                         junitVer = JUnitVersion.JUNIT3;
-                        storeProjectSettingsJUnitVer(project);
+                        if (storeSettings) {
+                            storeProjectSettingsJUnitVer(project);
+                        }
                         return true;
                     }
                     return false;
@@ -935,7 +961,9 @@ public final class DefaultPlugin extends JUnitPlugin {
         boolean offerJUnit4 = (sourceLevel.compareTo("1.5") >= 0);      //NOI18N
         junitVer = askUserWhichJUnitToUse(offerJUnit4);
         if (junitVer != null) {
-            storeProjectSettingsJUnitVer(project);
+            if (storeSettings) {
+                storeProjectSettingsJUnitVer(project);
+            }
             return true;
         }
 
@@ -1101,9 +1129,14 @@ public final class DefaultPlugin extends JUnitPlugin {
      * {@code null} is stored.
      *
      * @param  project  project from which the information is to be obtained
+     * @return  {@code true} of the set of project's libraries could be
+     *          determined, {@code false} if it could not be determined
+     * @exception  java.lang.IllegalStateException
+     *             if the project does not contain any test folders
      * @see  #junitVer
      */
-    private void readProjectSettingsJUnitVer(Project project) {
+    private boolean readProjectSettingsJUnitVer(Project project)
+                                                throws IllegalStateException {
         assert project != null;
         if (LOG_JUNIT_VER.isLoggable(FINER)) {
             LOG_JUNIT_VER.finer("readProjectSettingsJUnitVer("          //NOI18N
@@ -1113,9 +1146,16 @@ public final class DefaultPlugin extends JUnitPlugin {
 
         junitVer = null;
 
-        final ClassPath classPath = getTestClassPath(project);
-        final boolean hasJUnit3 = (classPath.findResource(JUNIT3_SPECIFIC) != null);
-        final boolean hasJUnit4 = (classPath.findResource(JUNIT4_SPECIFIC) != null);
+        final boolean hasJUnit3;
+        final boolean hasJUnit4;
+        final ClassPath classPath = getTestClassPath(project); //may throw ISE
+        if (classPath != null) {
+            hasJUnit3 = (classPath.findResource(JUNIT3_SPECIFIC) != null);
+            hasJUnit4 = (classPath.findResource(JUNIT4_SPECIFIC) != null);
+        } else {
+            hasJUnit3 = false;
+            hasJUnit4 = false;
+        }
 
         if (hasJUnit3 != hasJUnit4) {
             junitVer = hasJUnit3 ? JUnitVersion.JUNIT3
@@ -1126,6 +1166,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         } else {
             LOG_JUNIT_VER.finest(" - no version detected");             //NOI18N
         }
+        return (classPath != null);
     }
 
     /**
@@ -1134,8 +1175,11 @@ public final class DefaultPlugin extends JUnitPlugin {
      * @param  project  project whose classpath should be found
      * @return  test classpath of the given project, or {@code null} if it could
      *          not be determined
+     * @exception  java.lang.IllegalStateException
+     *             if no test folders were found in the project
      */
-    private static ClassPath getTestClassPath(final Project project) {
+    private static ClassPath getTestClassPath(final Project project)
+                                                  throws IllegalStateException {
         assert project != null;
         if (LOG_JUNIT_VER.isLoggable(FINER)) {
             LOG_JUNIT_VER.finer("getTestClassPath("                     //NOI18N
@@ -1143,16 +1187,16 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 + ')');
         }
 
+        final Collection<FileObject> testFolders = Utils.getTestFolders(project);
+        if (testFolders.isEmpty()) {
+            LOG_JUNIT_VER.finest(" - no test folders found");           //NOI18N
+            throw new IllegalStateException();
+        }
+
         final ClassPathProvider cpProvider
                 = project.getLookup().lookup(ClassPathProvider.class);
         if (cpProvider == null) {
             LOG_JUNIT_VER.finest(" - ClassPathProvider not found");     //NOI18N
-            return null;
-        }
-
-        final Collection<FileObject> testFolders = Utils.getTestFolders(project);
-        if (testFolders.isEmpty()) {
-            LOG_JUNIT_VER.finest(" - no test folders found");           //NOI18N
             return null;
         }
 
@@ -1187,9 +1231,16 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 + ')');
         }
 
+        final boolean hasJUnit3;
+        final boolean hasJUnit4;
         final ClassPath classPath = getTestClassPath(project);
-        final boolean hasJUnit3 = (classPath.findResource(JUNIT3_SPECIFIC) != null);
-        final boolean hasJUnit4 = (classPath.findResource(JUNIT4_SPECIFIC) != null);
+        if (classPath != null) {
+            hasJUnit3 = (classPath.findResource(JUNIT3_SPECIFIC) != null);
+            hasJUnit4 = (classPath.findResource(JUNIT4_SPECIFIC) != null);
+        } else {
+            hasJUnit3 = false;
+            hasJUnit4 = false;
+        }
 
         final Pattern pattern = Pattern.compile(
                                 "^junit(?:_|\\W)+([34])(?:\\b|_).*");   //NOI18N
@@ -1379,7 +1430,9 @@ public final class DefaultPlugin extends JUnitPlugin {
                 result.add(testRoot);
             }
         }
-        return result;
+        return (result != null)
+               ? result
+               : Collections.<FileObject>emptyList();
     }
 
     /**
