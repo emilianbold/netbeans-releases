@@ -301,6 +301,8 @@ public class ExportDiffAction extends ContextAction {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExportDiffAction.class, "BK3004", new Integer(exportedFiles)));
                 if (exportedFiles == 0) {
                     destination.delete();
+                } else {
+                    Utils.openFile(destination);
                 }
             } else {
                 destination.delete();

@@ -51,6 +51,7 @@ import java.beans.VetoableChangeListener;
 import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.ErrorManager;
+import org.openide.cookies.OpenCookie;
 
 /**
  * Utilities class.
@@ -649,6 +650,26 @@ public final class Utils {
             }
         }
         return false;
+    }
+
+    /**
+     * Opens a file in the editor area.
+     * 
+     * @param file a File to open
+     */ 
+    public static void openFile(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                OpenCookie oc = dao.getCookie(OpenCookie.class);
+                if (oc != null) {
+                    oc.open();
+                }
+            } catch (DataObjectNotFoundException e) {
+                // nonexistent DO, do nothing
+            }
+        }
     }
     
     private static Map<File, Charset> fileToCharset;
