@@ -14,12 +14,7 @@
 		<type>javax.help.TOCView</type>
 		<data>toc.xml</data>
 	</view>
-	<view mergetype="javax.help.AppendMerge">
-		<name>Index</name>
-		<label>Index</label>
-		<type>javax.help.IndexView</type>
-		<data>index.xml</data>
-	</view>
+
 	<view mergetype="javax.help.AppendMerge">
 		<name>Search</name>
 		<label>Search</label>
