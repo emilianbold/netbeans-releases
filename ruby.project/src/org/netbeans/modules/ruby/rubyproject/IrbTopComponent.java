@@ -17,12 +17,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.internal.runtime.ValueAccessor;
-import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import java.io.Serializable;
 import javax.swing.UIManager;
 import javax.swing.text.Caret;
+import javax.swing.text.JTextComponent;
 import org.jruby.demo.TextAreaReadline;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.ErrorManager;
@@ -117,11 +116,11 @@ final class IrbTopComponent extends TopComponent {
         return getDefault();
     }
 
-    public int getPersistenceType() {
+    public @Override int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
-    public void componentOpened() {
+    public @Override void componentOpened() {
         if (finished) {
             // Start a new one
             finished = false;
@@ -130,7 +129,7 @@ final class IrbTopComponent extends TopComponent {
         }
     }
 
-    public void componentClosed() {
+    public @Override void componentClosed() {
         // Leave the terminal session running
     }
     
@@ -160,11 +159,11 @@ final class IrbTopComponent extends TopComponent {
     }
     
     /** replaces this in object stream */
-    public Object writeReplace() {
+    public @Override Object writeReplace() {
         return new ResolvableHelper();
     }
 
-    protected String preferredID() {
+    protected @Override String preferredID() {
         return PREFERRED_ID;
     }
 
@@ -176,8 +175,6 @@ final class IrbTopComponent extends TopComponent {
     }
 
     public void createTerminal() {
-        final PipedInputStream pipeIn = new PipedInputStream();
-
         text = new JTextPane();
 
         text.setMargin(new Insets(8,8,8,8));
@@ -241,34 +238,14 @@ final class IrbTopComponent extends TopComponent {
         add(pane);
         validate();
 
-        final TextAreaReadline tar = new TextAreaReadline(text, " " +  // NOI18N
-                NbBundle.getMessage(IrbTopComponent.class, "IrbWelcome") + " \n\n"); // NOI18N
-
-        // Ensure that ClassPath can find libraries etc.
-        RubyInstallation.getInstance().setJRubyLoadPaths();
-
-        final RubyInstanceConfig config = new RubyInstanceConfig() {{
-            setInput(pipeIn);
-            setOutput(new PrintStream(tar));
-            setError(new PrintStream(tar));
-            setObjectSpaceEnabled(false);
-            }};
-        final Ruby runtime = Ruby.newInstance(config);
-
-        runtime.defineGlobalConstant("ARGV", runtime.newArrayNoCopy(new IRubyObject[] { // NOI18N
-                runtime.newString("-f") })); // NOI18N
-        runtime.getLoadService().init(new ArrayList(0));
-        
-        tar.hookIntoRuntime(runtime);
-        
+        final Ruby runtime = getRuntime(text);
         RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
         //RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                runtime.evalScript("require 'irb'; require 'irb/completion'; IRB.start"); // NOI18N
+                startIRB(runtime);
             }
         });
         task.addTaskListener(new TaskListener() {
-
             public void taskFinished(Task task) {
                 finished = true;
                 //tar.writeMessage(" " + NbBundle.getMessage(IrbTopComponent.class, "IrbGoodbye") + " "); // NOI18N
@@ -322,6 +299,36 @@ final class IrbTopComponent extends TopComponent {
         });
     }
     
+    // package-private for unit-test only
+    static Ruby getRuntime(final JTextComponent text) {
+        final TextAreaReadline tar = new TextAreaReadline(text,
+                " " + NbBundle.getMessage(IrbTopComponent.class, "IrbWelcome") + " \n\n"); // NOI18N
+        // Ensure that ClassPath can find libraries etc.
+        RubyInstallation.getInstance().setJRubyLoadPaths();
+
+        final PipedInputStream pipeIn = new PipedInputStream();
+        final RubyInstanceConfig config = new RubyInstanceConfig() {
+            {
+                setInput(pipeIn);
+                setOutput(new PrintStream(tar));
+                setError(new PrintStream(tar));
+                setObjectSpaceEnabled(false);
+            }
+        };
+        final Ruby runtime = Ruby.newInstance(config);
+
+        runtime.defineGlobalConstant("ARGV",
+                runtime.newArrayNoCopy(new IRubyObject[]{runtime.newString("-f")})); // NOI18N
+        runtime.getLoadService().init(new ArrayList(0));
+
+        tar.hookIntoRuntime(runtime);
+        return runtime;
+    }
+    
+    private static void startIRB(final Ruby runtime) {
+        runtime.evalScript("require 'irb'; require 'irb/completion'; IRB.start"); // NOI18N
+    }
+
     @Override
     public void requestFocus() {
         if (text != null) {
