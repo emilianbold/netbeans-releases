@@ -1170,9 +1170,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             String serverTitle = getInstanceDisplayName();
             DialogDescriptor desc = new DialogDescriptor(
                     NbBundle.getMessage(SunDeploymentManager.class,
-                    "ERR_AUTH_DIALOG_MSG", new Object[] { ((serverTitle != null) ? serverTitle :           // NOI18N
+                    "ERR_AUTH_DIALOG_MSG",new Object[] { ((serverTitle != null) ? serverTitle :           // NOI18N
                         NbBundle.getMessage(SunDeploymentManager.class, "WORD_SERVER")),    // NOI18N
-                    stripSlashHtml(e.getLocalizedMessage()) } ),
+                    stripSlashHtmlAndNewlines(e.getLocalizedMessage()) } ),
                     NbBundle.getMessage(SunDeploymentManager.class,"ERR_AUTH_DIALOG_TITLE"));   //NOI18N
             desc.setModal(false);
             desc.setMessageType(DialogDescriptor.ERROR_MESSAGE);
@@ -1187,7 +1187,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
      *  makes it easier to embed the strings in a string with 
      * markup safely
      */
-    private String stripSlashHtml(String input) {
+    private String stripSlashHtmlAndNewlines(String input) {
         String retVal = null;
         int dex = input.toLowerCase().lastIndexOf("</html>");
         if (dex > -1) {
@@ -1195,7 +1195,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         } else {
             retVal = input;
         }
-        return retVal;        
+        return retVal.replaceAll("\n", " ");
     }
     
     private String getInstanceDisplayName() {
