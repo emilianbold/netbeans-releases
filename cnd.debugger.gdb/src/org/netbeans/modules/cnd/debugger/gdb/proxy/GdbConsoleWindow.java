@@ -70,6 +70,15 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
     /** Creates new GdbConsoleWindow */
     private GdbConsoleWindow(GdbDebugger debugger, GdbProxy gdbProxy) {
         initComponents();
+        try {
+            final TopComponent tc = this;
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    tc.setDisplayName(NbBundle.getMessage(GdbConsoleWindow.class, "TITLE_GdbConsoleWindow")); // NOI18N
+                }
+            });
+        } catch (Exception ex) {
+        }
         scrollBar = debuggerLogPane.getVerticalScrollBar();
 
         this.debugger = debugger;

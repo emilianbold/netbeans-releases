@@ -52,13 +52,13 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     /** Nest array elements when array length is bigger then this. */
     private static final int ARRAY_CHILDREN_NESTED_LENGTH = 100;
     
-    private GdbDebugger     debugger;
-    private Listener            listener;
-    private Vector              listeners = new Vector();
-    private Map                 cachedLocals = new WeakHashMap();
-    private Map                 cachedArrayChildren = new WeakHashMap();
-    private Set                 expandedNodes = new WeakSet();
-    private Set                 collapsedNodes = new WeakSet();
+    private GdbDebugger debugger;
+    private Listener listener;
+    private Vector listeners = new Vector();
+    private Map cachedLocals = new WeakHashMap();
+    private Map cachedArrayChildren = new WeakHashMap();
+    private Set expandedNodes = new WeakSet();
+    private Set collapsedNodes = new WeakSet();
         
     public LocalsTreeModel(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);

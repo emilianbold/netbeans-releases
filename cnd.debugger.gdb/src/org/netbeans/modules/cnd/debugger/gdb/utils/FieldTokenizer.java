@@ -104,6 +104,9 @@ public class FieldTokenizer {
             if (pos != -1) {
                 int pos2 = field.indexOf('*', pos);
                 if (pos2 != -1) {
+                    while (field.charAt(pos2 + 1) == '*') {
+                        pos2++;
+                    }
                     retval[0] = field.substring(0, pos2 + 1).trim();
                     retval[1] = field.substring(pos2 + 1).trim();
                 } else {

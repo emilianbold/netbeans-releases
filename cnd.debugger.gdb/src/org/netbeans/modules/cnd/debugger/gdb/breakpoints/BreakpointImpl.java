@@ -115,7 +115,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         
         if (condition == null || condition.equals("")) { // NOI18N
             GdbBreakpointEvent e = new GdbBreakpointEvent(getBreakpoint(), debugger,
-                            GdbBreakpointEvent.CONDITION_NONE, debugger.getVariable(null));
+                            GdbBreakpointEvent.CONDITION_NONE, null);
             getDebugger().fireBreakpointEvent(getBreakpoint(), e);
             //resume = getBreakpoint().getSuspend() == GdbBreakpoint.SUSPEND_NONE || e.getResume();
         } else {
@@ -130,70 +130,68 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         return resume; 
     }
 
-/*
-    private boolean evaluateCondition(String condition, Value value) {
-
-        try {
-            try {
-                boolean result;
-                GdbBreakpointEvent ev;
-                synchronized (debugger.LOCK) {
-                    StackFrame sf = thread.frame (0);
-                    result = evaluateConditionIn (condition, sf);
-                    ev = new GdbBreakpointEvent (
-                        getBreakpoint (),
-                        debugger,
-                        result ? 
-                            GdbBreakpointEvent.CONDITION_TRUE : 
-                            GdbBreakpointEvent.CONDITION_FALSE,
-                        debugger.getThread (thread), 
-                        referenceType, 
-                        debugger.getVariable (value)
-                    );
-                }
-                getDebugger().fireBreakpointEvent(getBreakpoint(), ev);
-                            
-                // condition true => stop here (do not resume)
-                // condition false => resume
-                if (verbose)
-                    System.out.println ("B perform breakpoint (condition = " + result + "): " + this + " resume: " + (!result || ev.getResume ()));
-                return !result || ev.getResume ();
-            } catch (ParseException ex) {
-                GdbBreakpointEvent ev = new GdbBreakpointEvent (
-                    getBreakpoint (),
-                    debugger,
-                    ex,
-                    debugger.getThread (thread), 
-                    referenceType, 
-                    debugger.getVariable (value)
-                );
-                getDebugger().fireBreakpointEvent(getBreakpoint(), ev);
-                return ev.getResume ();
-            } catch (InvalidExpressionException ex) {
-                GdbBreakpointEvent ev = new GdbBreakpointEvent (
-                    getBreakpoint (),
-                    debugger,
-                    ex,
-                    debugger.getThread (thread), 
-                    referenceType, 
-                    debugger.getVariable (value)
-                );
-                getDebugger ().fireBreakpointEvent (
-                    getBreakpoint (),
-                    ev
-                );
-                return ev.getResume ();
-            }
-        } catch (IncompatibleThreadStateException ex) {
-             should not occurre
-            ex.printStackTrace ();
-        }
-        // some error occured during evaluation of expression => do not resume
-            
-
-        return false; // do not resume
-    }
-*/
+//    private boolean evaluateCondition(String condition, Value value) {
+//
+//        try {
+//            try {
+//                boolean result;
+//                GdbBreakpointEvent ev;
+//                synchronized (debugger.LOCK) {
+//                    StackFrame sf = thread.frame (0);
+//                    result = evaluateConditionIn (condition, sf);
+//                    ev = new GdbBreakpointEvent (
+//                        getBreakpoint (),
+//                        debugger,
+//                        result ? 
+//                            GdbBreakpointEvent.CONDITION_TRUE : 
+//                            GdbBreakpointEvent.CONDITION_FALSE,
+//                        debugger.getThread (thread), 
+//                        referenceType, 
+//                        debugger.getVariable (value)
+//                    );
+//                }
+//                getDebugger().fireBreakpointEvent(getBreakpoint(), ev);
+//                            
+//                // condition true => stop here (do not resume)
+//                // condition false => resume
+//                if (verbose)
+//                    System.out.println ("B perform breakpoint (condition = " + result + "): " + this + " resume: " + (!result || ev.getResume ()));
+//                return !result || ev.getResume ();
+//            } catch (ParseException ex) {
+//                GdbBreakpointEvent ev = new GdbBreakpointEvent (
+//                    getBreakpoint (),
+//                    debugger,
+//                    ex,
+//                    debugger.getThread (thread), 
+//                    referenceType, 
+//                    debugger.getVariable (value)
+//                );
+//                getDebugger().fireBreakpointEvent(getBreakpoint(), ev);
+//                return ev.getResume ();
+//            } catch (InvalidExpressionException ex) {
+//                GdbBreakpointEvent ev = new GdbBreakpointEvent (
+//                    getBreakpoint (),
+//                    debugger,
+//                    ex,
+//                    debugger.getThread (thread), 
+//                    referenceType, 
+//                    debugger.getVariable (value)
+//                );
+//                getDebugger ().fireBreakpointEvent (
+//                    getBreakpoint (),
+//                    ev
+//                );
+//                return ev.getResume ();
+//            }
+//        } catch (IncompatibleThreadStateException ex) {
+//             should not occurre
+//            ex.printStackTrace ();
+//        }
+//        // some error occured during evaluation of expression => do not resume
+//            
+//
+//        return false; // do not resume
+//    }
     
     /**
      * Evaluates given condition. Returns value of condition evaluation. 

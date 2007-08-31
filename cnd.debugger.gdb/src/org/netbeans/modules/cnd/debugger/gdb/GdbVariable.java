@@ -44,7 +44,11 @@ public class GdbVariable {
     
     /** Creates a new instance of GdbVariable */
     public GdbVariable(String name, String type, String value) {
-        this.name = name;
+        if (name.startsWith("(anonymous namespace)::")) {  // NOI18N
+            this.name = name.substring(23);
+        } else {
+            this.name = name;
+        }
         this.type = type;
         this.value = value;
         realtype = null;

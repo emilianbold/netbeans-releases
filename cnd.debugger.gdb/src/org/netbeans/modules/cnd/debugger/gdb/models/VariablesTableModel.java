@@ -80,13 +80,13 @@ public class VariablesTableModel implements TableModel, Constants {
                 return true;
             }
             if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-                if (row instanceof LocalVariable || row instanceof Field) {
-                    return !debugger.canBeModified();
-                }
+                if (row instanceof AbstractVariable) {
+                    return ((AbstractVariable) row).getFieldsCount() != 0;
+                } else {
                 return true;
+                }
             }
-        }
-        if (row.toString().startsWith("No current thread")) { // NOI18N
+        } else if (row.toString().startsWith("No current thread")) { // NOI18N
             return true; // NOI18N
         }
         throw new UnknownTypeException(row);
@@ -94,18 +94,15 @@ public class VariablesTableModel implements TableModel, Constants {
     
     public void setValueAt(Object row, String columnID, Object value) throws UnknownTypeException {
         if (row instanceof LocalVariable) {
-            if (columnID.equals(LOCALS_VALUE_COLUMN_ID)) {
-                try {
+            if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
+                if (row instanceof GdbWatchVariable) {
+                    ((GdbWatchVariable) row).setValueAt((String) value);
+                } else {
                     ((LocalVariable) row).setValue((String) value);
-                } catch (InvalidExpressionException e) {
-                    NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(
-                            e.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(descriptor);
                 }
                 return;
             }
-        }
-        if (row instanceof Field) {
+        } else if (row instanceof Field) {
             if (columnID.equals (LOCALS_VALUE_COLUMN_ID) || columnID.equals (WATCH_VALUE_COLUMN_ID)) {
                 try {
                     ((Field) row).setValue((String) value);
@@ -117,25 +114,6 @@ public class VariablesTableModel implements TableModel, Constants {
                 return;
             }
         }
-        /*NM TEMPORARY COMMENTED OUT
-        if (row instanceof JPDAWatch) {
-            if ( columnID.equals (LOCALS_VALUE_COLUMN_ID) ||
-                 columnID.equals (WATCH_VALUE_COLUMN_ID)
-            ) {
-                try {
-                    ((JPDAWatch) row).setValue ((String) value);
-                } catch (InvalidExpressionException e) {
-                    NotifyDescriptor.Message descriptor =
-                        new NotifyDescriptor.Message (
-                            e.getLocalizedMessage (),
-                            NotifyDescriptor.WARNING_MESSAGE
-                        );
-                    DialogDisplayer.getDefault ().notify (descriptor);
-                }
-                return;
-            }
-        }
-        NM*/
         throw new UnknownTypeException(row);
     }
     
@@ -154,13 +132,4 @@ public class VariablesTableModel implements TableModel, Constants {
      */
     public void removeModelListener(ModelListener l) {
     }
-    
-    /*NM TEMPORARY COMMENTED OUT
-    private static String getMessage (InvalidExpressionException e) {
-        String m = e.getLocalizedMessage ();
-        if (m == null)
-            m = e.getMessage ();
-        return ">" + m + "<";
-    }
-     */
 }

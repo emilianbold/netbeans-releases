@@ -115,16 +115,6 @@ public final class GdbBreakpointEvent extends EventObject {
     }
     
     /**
-     * Returns context variable. It contains new value for field modification
-     * breakpoint and instance of exception for exception breakpoint.
-     *
-     * @return context variable
-     */
-    public Variable getVariable() {
-        return variable;
-    }
-    
-    /**
      * Call this method to resume debugger after all events have been notified.
      * You should not call GdbDebugger.resume() during breakpoint event 
      * evaluation!

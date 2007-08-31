@@ -182,51 +182,6 @@ public class BreakpointOutput extends LazyActionsManagerListener
             printText = fileNamePattern.matcher(printText).replaceAll("?"); // NOI18N
             printText = lineNumberPattern.matcher(printText).replaceAll("-1"); // NOI18N
 	}
-
-        /*
-        // 2) replace {lineNumber} by the current line number
-        int lineNumber = t.getLineNumber(language);
-        if (lineNumber < 0) {
-            printText = lineNumberPattern.matcher (printText).replaceAll ("?"); // NOI18N
-	} else {
-            printText = lineNumberPattern.matcher (printText).replaceAll( 
-		    String.valueOf (lineNumber));
-	}
-             
-        /*
-        // 3) resolve all expressions {=expression}
-        for (;;) {
-            Matcher m = expressionPattern.matcher (printText);
-            if (!m.find ()) break;
-            String expression = m.group (1);
-            String value = "";
-            try {
-                synchronized (lock) {
-                    if (debugger == null) {
-                        return value; // The debugger is gone
-                    }
-                    value = debugger.evaluate (expression).getValue ();
-                }
-                value = backslashEscapePattern.matcher (value).
-                    replaceAll ("\\\\\\\\");
-                value = dollarEscapePattern.matcher (value).
-                    replaceAll ("\\\\\\$");
-            } catch (InvalidExpressionException e) {
-                // expression is invalid or cannot be evaluated
-                String msg = e.getCause () != null ? 
-                    e.getCause ().getMessage () : e.getMessage ();
-                synchronized (lock) {
-                    if (ioManager != null) {
-                        ioManager.println (
-                            "Cannot evaluate expression '" + expression + "' : " + msg, 
-                            null
-                        );
-                    }
-                }
-            }
-            printText = m.replaceFirst (value);
-        }
-         */
         Throwable thr = event.getConditionException();
         if (thr != null) {
             printText = printText + "\n***\n"+ thr.getLocalizedMessage()+"\n***\n"; // NOI18N

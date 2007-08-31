@@ -38,7 +38,7 @@ public interface LocalVariable extends Variable {
      *
      * @return name of this local.
      */
-    public abstract String getName ();
+    public abstract String getName();
 
     /**
      * Sets value of this local represented as text.
@@ -46,6 +46,6 @@ public interface LocalVariable extends Variable {
      * @param value a new value of this local represented as text
      * @throws InvalidExpressionException if the expression is not correct
      */
-    public abstract void setValue (String value) throws InvalidExpressionException;
+    public abstract void setValue(String value);
 }
 

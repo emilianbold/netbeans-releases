@@ -68,7 +68,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
      * @param value a new value of this local represented as text
      * @throws InvalidExpressionException if the expression is not correct
      */
-    public void setValue(String expression) throws InvalidExpressionException {
+    public void setValue(String expression) {
         if (debugger == null) {
 	    // Don't set it unless its needed...
 	    DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();

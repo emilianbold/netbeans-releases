@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
@@ -43,8 +44,7 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
-import org.netbeans.modules.cnd.debugger.gdb.models.LocalsTreeModel;
-import org.netbeans.modules.cnd.debugger.gdb.models.WatchesModel;
+import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
@@ -55,9 +55,6 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
-import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -122,6 +119,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Map<Integer, StringBuilder> typeCompletionTable = new HashMap();
     private Set<String> typePendingTable = new HashSet();
     private Map<Integer, GdbVariable> valueCompletionTable = new HashMap();
+    private Map<Integer, GdbWatchVariable> watchTypeMap = new HashMap();
+    private Map<Integer, GdbWatchVariable> watchValueMap = new HashMap();
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
     private int ttToken = 0;
@@ -130,6 +129,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean cygwin = false;
     private boolean cplusplus = false;
     private Map<String, Object> stlMap = new HashMap();
+    private int tcwait = 0; // counter for type completion
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -296,8 +296,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
                 }
             } else if (evt.getNewValue() == STATE_STOPPED) {
+                tcwait = 0;
                 updateLocalVariables(0);
-                updateWatchesModel();
             } else if (evt.getNewValue() == STATE_SILENT_STOP) {
                 interrupt();
             } else if (evt.getNewValue() == STATE_RUNNING && evt.getOldValue() == STATE_SILENT_STOP) {
@@ -378,7 +378,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     /** Sends request to get arguments and local variables */
     private void updateLocalVariables(int frame) {
         synchronized (LOCK) {
-            localVariables.clear(); // clear old variables so we can store new ones here
+            synchronized (localVariables) {
+                localVariables.clear(); // clear old variables so we can store new ones here
+            }
             gdb.stack_select_frame(frame);
             gdb.stack_list_arguments(1, frame, frame);
             gdb.stack_list_locals(ALL_VALUES);
@@ -388,6 +390,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     /** Handle geb responses starting with '^' */
     public void resultRecord(int token, String msg) {
         GdbVariable var;
+        GdbWatchVariable watch;
         Integer itok = Integer.valueOf(token);
         
         currentToken = token + 1;
@@ -419,14 +422,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if ((var = valueCompletionTable.remove(itok)) != null) {
                 if (GdbUtils.isPointer(var.getType())) {
                     if (var.getType().replace(" ", "").indexOf("**") != -1) { // NOI18N
-                        String val = msg.substring(13, msg.length() - 1);
-                        List<GdbVariable> children = var.getChildren();
-                        if (!val.equals("0x0")) { // NOI18N
-                            int size = children.size();
-                            children.add(new GdbVariable(var.getName() + "[" + size + "]", // NOI18N
+                        int argc;
+                        if (var.getName().equals("argv") && (argc = findArgcFromLocals()) > 0) { // NOI18N
+                            List<GdbVariable> children = var.getChildren();
+                            int nchildren = var.getNumberChildren();
+                            if (nchildren == 0) {
+                                for (int i = 1; i < argc; i++) {
+                                    int tok = gdb.data_evaluate_expression(var.getName() + '[' + i + ']');
+                                    valueCompletionTable.put(Integer.valueOf(tok), var);
+                                }
+                            }
+                            String val = msg.substring(13, msg.length() - 1);
+                            children.add(new GdbVariable(var.getName() + '[' + nchildren + ']',
                                     GdbUtils.getBaseType(var.getType()) + " *", val)); // NOI18N
-                            int tok = gdb.data_evaluate_expression(var.getName() + '[' + ++size + ']');
-                            valueCompletionTable.put(Integer.valueOf(tok), var);
                         }
                     } else {
                         var.setDerefedValue(msg.substring(13, msg.length() - 1));
@@ -434,6 +442,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 } else {
                     var.setValue(msg.substring(13, msg.length() - 1));
                 }
+            } else if ((watch = watchValueMap.remove(itok)) != null) {
+                watch.setValue(msg.substring(13, msg.length() - 1));
             }
         } else if (msg.equals("^done") && getState() == STATE_SILENT_STOP) { // NOI18N
             setRunning();
@@ -451,8 +461,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     getCurrentCallStackFrame().addType(type, stripFields(tbuf.substring(pos + 1)));
                 } else if (tbuf.indexOf('{') == -1) { // NOI18N
                     getCurrentCallStackFrame().addType(type, tbuf.substring(pos + 1));
+                } else if (type.startsWith("enum ")) { // NOI18N
+                    List list = getEnumList(tbuf.substring(pos + 1));
+                    getCurrentCallStackFrame().addType(type, list);
                 } else {
-                    Map map = getFieldMap(tbuf.substring(pos + 1));
+                    Map map = getCSUFieldMap(tbuf.substring(pos + 1));
                     getCurrentCallStackFrame().addType(type, map);
                     if (map.size() > 0) { // NOI18N
                         checkForUnknownTypes(map);
@@ -465,6 +478,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     checkForSuperClass(tbuf.substring(pos + 1));
                 }
                 firePropertyChange(PROP_LOCALS_VIEW_UPDATE, 0, 1);
+            } else if ((watch = watchTypeMap.remove(itok)) != null) {
+                watch.setType(watch.getTypeBuf());
             }
         } else if (msg.startsWith("^running")) { // NOI18N
             setRunning();
@@ -472,17 +487,20 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             msg = msg.substring(11);
             
             if (typeCompletionTable.get(itok) != null) {
-                typeCompletionTable.remove(itok);
-                typePendingTable.remove(itok);
+                String s = typeCompletionTable.remove(itok).toString();
+                typePendingTable.remove(s.substring(0, s.indexOf('=')));
             } else if (valueCompletionTable.get(itok) != null) {
                 valueCompletionTable.remove(itok);
+            } else if (watchValueMap.get(itok) != null) {
+                watch = watchValueMap.remove(itok);
+                watch.setError(msg.substring(1, msg.length() - 1));
             }
             if (token == ttToken) { // invalid tooltip request
-                ttAnnotation.postToolTip(" >" + msg.substring(1, msg.length() - 1) + "<"); // NOI18N
+                ttAnnotation.postToolTip('>' + msg.substring(1, msg.length() - 1) + '<');
                 ttToken = 0;
             } else if (msg.startsWith("\"No symbol ") && msg.endsWith(" in current context.\"")) { // NOI18N
                 String type = msg.substring(13, msg.length() - 23);
-                if (type.equals("string") || type.equals("std::string")) {
+                if (type.equals("string") || type.equals("std::string")) { // NOI18N
                     // work-around for gdb bug (in *all* versions)
                     addTypeCompletion("std::basic_string<char,std::char_traits<char>,std::allocator<char> >"); // NOI18N
                     getCurrentCallStackFrame().addType("string", "std::basic_string<char,std::char_traits<char>,std::allocator<char> >"); // NOI18N
@@ -507,6 +525,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.contains("Cannot access memory at address")) { // NOI18N
                 // ignore - probably dereferencing an uninitialized pointer
+            } else if (msg.contains("mi_cmd_break_insert: Garbage following <location>")) { // NOI18N
+                // ignore - probably a breakpoint from another project
             } else if (state != STATE_NONE) {
                 // ignore errors after we've terminated (they could have been in the input queue)
                 log.warning("Unexpected gdb error: " + msg);
@@ -547,6 +567,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void consoleStreamOutput(int token, String msg) {
         StringBuilder typebuf;
         GdbVariable var;
+        GdbWatchVariable watch;
         String type;
         
         if (msg.endsWith("\\n")) { // NOI18N
@@ -565,9 +586,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if ((typebuf = typeCompletionTable.get(Integer.valueOf(token))) != null) { // ptype
                 typebuf.append(msg.substring(7));
+            } else if ((watch = watchTypeMap.get(Integer.valueOf(token))) != null) {
+                watch.appendTypeBuf(msg.substring(7));
             }
         } else if ((typebuf = typeCompletionTable.get(Integer.valueOf(token))) != null) {
             typebuf.append(msg);
+        } else if ((watch = watchTypeMap.get(Integer.valueOf(token))) != null) {
+            watch.appendTypeBuf(msg);
         } else if (gdbVersion < 1.0 && msg.startsWith("GNU gdb ")) { // NOI18N
             // Cancel the startup timer - we've got our first response from gdb
             if (startupTimer != null) {
@@ -612,7 +637,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     try {
                         programPID = Long.valueOf(msg.substring(11, pos));
                     } catch (NumberFormatException ex) {
-                        ex.printStackTrace();
                     }
                 }
             } else if (msg.startsWith("[Switching to process ")) { // NOI18N
@@ -621,7 +645,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     try {
                         programPID = Long.valueOf(msg.substring(22, pos));
                     } catch (NumberFormatException ex) {
-                        ex.printStackTrace();
                     }
                 }
             }
@@ -647,7 +670,27 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    private Map getFieldMap(String info) {
+    /**
+     * Since argc and argv go together so often, this method looks for argc while evaluating
+     * argv. The purpose is to determine how many subvalues of argv to request from gdb.
+     */
+    private int findArgcFromLocals() {
+        synchronized (localVariables) {
+            for (GdbVariable var : localVariables) {
+                if (var.getName().equals("argc") && var.getType().equals("int")) { // NOI18N
+                    String val = var.getValue();
+                    try {
+                        return Integer.parseInt(val);
+                    } catch (NumberFormatException ex) {
+                        return -1;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+    
+    private Map getCSUFieldMap(String info) {
         Map map = new HashMap();
         int pos1 = info.indexOf('{');
         int pos2 = GdbUtils.findMatchingCurly(info, pos1);
@@ -710,6 +753,21 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         }
         return map;
+    }
+    
+    private List getEnumList(String info) {
+        List<String> list = new ArrayList();
+        int pos1 = info.indexOf('{');
+        int pos2 = info.indexOf('}');
+        if (pos1 != -1 && pos2 != -1) {
+            StringTokenizer tok = new StringTokenizer(info.substring(pos1+ 1, pos2), ","); // NOI18N
+            while (tok.hasMoreTokens()) {
+                list.add(tok.nextToken().trim());
+            }
+            return list;
+        } else {
+            return null;
+        }
     }
     
     private String shortenType(String type) {
@@ -884,9 +942,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (Thread.currentThread().getName().equals("GdbReaderRP")) { // NOI18N
                 log.warning("Attempting to wait for type completion on GDB Reader thread"); // NOI18N
             } else {
-                int i = 0;
-                while (!isTypeCompletionComplete() && state == STATE_STOPPED && i++ < 40) {
-                    log.warning("Waiting for type completion"); // NOI18N
+                while (!isTypeCompletionComplete() && state == STATE_STOPPED && tcwait++ < 40) {
+                    if (tcwait > 5) {
+                        log.warning("Waiting for type completion - " + tcwait +
+                                " [TCT: " + typeCompletionTable.size() + ", TPT: " + typePendingTable.size() +
+                                ", VCT: " + valueCompletionTable.size() + "]"); // NOI18N
+                    }
                     try {
                         Thread.sleep(250);
                     } catch (InterruptedException ex) {
@@ -934,34 +995,43 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         int pos;
         if (info.startsWith("[frame={level=") && (pos = info.indexOf(",args=[")) > 0 && info.endsWith("]}]")) { // NOI18N
             info = info.substring(pos + 7, info.length() - 3);
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC &&
+                info.startsWith("{frame={level=") && (pos = info.indexOf(",args={")) > 0 && info.endsWith("}}}")) { // NOI18N
+            info = info.substring(pos + 7, info.length() - 3);
         }
         Collection v = GdbUtils.createArgumentList(info);
         if (!v.isEmpty()) {
-            localVariables.addAll(v);
+            synchronized (localVariables) {
+                localVariables.addAll(v);
+            }
         }
     }
     
     private void addLocalsToLocalVariables(String info) {
         Collection v = GdbUtils.createLocalsList(info.substring(1, info.length() - 1));
         if (!v.isEmpty()) {
-            localVariables.addAll(v);
+            synchronized (localVariables) {
+                localVariables.addAll(v);
+            }
         }
     }
     
     private void completeLocalVariables() {
-        if (!localVariables.isEmpty()) {
-            for (GdbVariable var : localVariables) {
-                int token = gdb.whatis(var.getName());
-                symbolCompletionTable.put(Integer.valueOf(token), var);
-                
-                String value = var.getValue();
-                if (value.charAt(0) == '(') {
-                    int pos = GdbUtils.findMatchingParen(value, 0);
-                    if (pos > 0) {
-                        String cast = value.substring(0, pos + 1);
-                        if (cast.indexOf("*)") > 0) { // NOI18N
-                            token = gdb.data_evaluate_expression('*' + var.getName());
-                            valueCompletionTable.put(Integer.valueOf(token), var);
+        synchronized (localVariables) {
+            if (!localVariables.isEmpty()) {
+                for (GdbVariable var : localVariables) {
+                    int token = gdb.whatis(var.getName());
+                    symbolCompletionTable.put(Integer.valueOf(token), var);
+
+                    String value = var.getValue();
+                    if (value.charAt(0) == '(') {
+                        int pos = GdbUtils.findMatchingParen(value, 0);
+                        if (pos > 0) {
+                            String cast = value.substring(0, pos + 1);
+                            if (cast.indexOf("*)") > 0) { // NOI18N
+                                token = gdb.data_evaluate_expression('*' + var.getName());
+                                valueCompletionTable.put(Integer.valueOf(token), var);
+                            }
                         }
                     }
                 }
@@ -1169,10 +1239,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return Boolean.FALSE;
     }
     
-    public Variable getVariable(Object value) {
-        return null;
-    }
-    
     /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
      *
@@ -1181,22 +1247,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public void fireBreakpointEvent(GdbBreakpoint breakpoint, GdbBreakpointEvent event) {
         breakpoint.fireGdbBreakpointChange(event);
-    }
-    
-    /**
-     * Evaluates given expression in the current context.
-     *
-     * @param expression a expression to be evaluated
-     *
-     * @return current value of given expression
-     */
-    public Variable evaluate(String expression) throws InvalidExpressionException {
-        String sName = expression;
-        // Unfortunately type is unknown
-        String sType = ""; // NOI18N
-        String sValue = gdb.data_evaluate(expression); // FIXME - No longer synchronous...
-        LocalVariableImpl lvi =  new LocalVariableImpl(sName, sType, sValue);
-        return lvi;
     }
     
     /**
@@ -1381,112 +1431,26 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @return list of local variables
      */
     public List<GdbVariable> getLocalVariables() {
-        return (List) localVariables.clone();
+        synchronized (localVariables) {
+            return (List) localVariables.clone();
+        }
     }
     
-    /*
-     * Locals View Model
-     */
-    private LocalsTreeModel localsTreeModel;
-    private LocalsTreeModel getLocalsTreeModel() {
-        if (localsTreeModel == null)
-            localsTreeModel = (LocalsTreeModel) lookupProvider.
-                    lookupFirst("LocalsView", TreeModel.class); // NOI18N
-        return localsTreeModel;
+    public void requestWatchValue(GdbWatchVariable var) {
+        int token = gdb.data_evaluate_expression(var.getName());
+        watchValueMap.put(new Integer(token), var);
     }
     
-    // ---------------------- Watches View support ---------------- //
-    /*
-     * Interface variables between "Watches View" and GdbDebugger
-     */
-    public ModelListener watchesViewListener = null;
-    private WatchesModel currentWatchesModel = null;
-    /**
-     * Registers WatchesModel in debugger.
-     *
-     * @parameter wm Current WatchesModel
-     */
-    public void registerWatchesModel(WatchesModel wm) {
-        currentWatchesModel = wm;
+    public void requestWatchType(GdbWatchVariable var) {
+        while (state == STATE_STARTING) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+            }
+        }
+        int token = gdb.symbol_type(var.getName());
+        watchTypeMap.put(new Integer(token), var);
     }
-    
-    /**
-     * Refreshes Watches View
-     *
-     */
-    public void updateWatchesModel() {
-        if (watchesViewListener == null) return;
-        watchesViewListener.modelChanged(new ModelEvent.TreeChanged(currentWatchesModel));
-    }
-    // ---------------------- End Of Watches ---------------------- //
-    
-    // ---------------------- Variables -------------------------- //
-    
-    private int varIndex = 0;
-    private final String varPrefix = "Variable_"; // NOI18N
-    /**
-     * Sets variable value
-     *
-     * @parameter name Variable name
-     * @parameter value Variable value
-     */
-    public void setVariableValue(String name, String value) {
-        // FIXME
-//        String gdbVarName = varPrefix + (varIndex++);
-//        String varName = name;
-//        if (varName.indexOf(' ') >= 0) varName = "\"" + name + "\""; // NOI18N
-//        synchronized (currentLocals) {
-//            gdb.var_delete(gdbVarName);
-//            gdb.var_create(gdbVarName, "*", varName); // NOI18N
-//            gdb.var_assign(gdbVarName, value);
-//        }
-    }
-
-    /**
-     * Returns variable type as String.
-     *
-     * @param expression A variable name or an expression
-     * @return variable type
-     */
-    public String getVariableType(String expression) {
-//        gdb.var_create(null, null, expression);
-        String sType = gdb.getVariableType(expression);
-        return sType;
-    }
-
-//    /**
-//     * Returns variable value as String.
-//     *
-//     * @param expression A variable name or an expression
-//     * @return variable value
-//     */
-//    public String getVariableValue(String expression) {
-//        String sValue = gdb.data_evaluate(expression); // FIXUP! Use gdb.var_evaluate(expression)
-//        return sValue;
-//    }
- 
-    /**
-     * Returns variable's number of children as String.
-     *
-     * @param expression A variable name or an expression
-     * @return number of children
-     */
-    public String getVariableNumChild(String expression) {
-//        gdb.var_create(null, null, expression);
-        return gdb.getVariableNumChild(expression);
-    }
-
-    /**
-     * Evaluates expression and returns its value as String.
-     *
-     * @param expression A variable name or an expression
-     * @return expression value
-     */
-    public String getExpressionValue(String expression) {
-        String sValue = gdb.data_evaluate(expression);
-        return sValue;
-    }   
-    // ---------------------- End Of Variables ------------------- //
         
     /**
      * Waits till the Virtual Machine is started and returns

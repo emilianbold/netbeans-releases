@@ -360,6 +360,52 @@ public class GdbUtils {
         return list;
     }
     
+    /**
+     * Value strings on the Mac have embedded newlines which break gdb-lite parsing.
+     * So before setting the value string we strip these extraneous newlines.
+     */
+    public static String mackHack(String info) {
+        if (info != null && info.indexOf("\\n") != -1) {
+            StringBuilder s = new StringBuilder();
+            int idx = 0;
+            char last = 0;
+            boolean inDoubleQuote = false;
+            boolean inSingleQuote = false;
+        
+            while (idx < info.length()) {
+                char ch = info.charAt(idx);
+                if (inDoubleQuote) {
+                    if (ch == '"' && last != '\\') {
+                        inDoubleQuote = false;
+                    }
+                } else if (inSingleQuote) {
+                    if (ch == '\'' && last != '\\') {
+                        inSingleQuote = false;
+                    }
+                } else if (ch == '\"' && last != '\\') {
+                    if (inDoubleQuote) {
+                        inDoubleQuote = false;
+                    } else {
+                        inDoubleQuote = true;
+                    }
+                } else if (ch == '\'') {
+                    inSingleQuote = true;
+                } else if (ch == 'n' && last == '\\') {
+                    s.deleteCharAt(s.length() - 1);
+                    ch = 0;
+                }
+                if (ch != 0) {
+                    s.append(ch);
+                }
+                last = ch;
+                idx++;
+            }
+            return s.toString();
+        } else {
+            return info;
+        }
+    }
+    
     /** Find the end of a string by looking for a non-escaped double quote */
     private static int findEndOfString(String s, int idx) {
         char last = '\0';

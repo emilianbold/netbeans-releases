@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -38,6 +39,7 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /*
  * An AbstractVariable is an array, pointer, struct, or union.
@@ -57,27 +59,41 @@ public class AbstractVariable implements LocalVariable, Customizer {
     
     private Set listeners = new HashSet();
     
-    /**
-     * Create the AV from a GV. If the GV has children then create similar children for the AV.
-     */
+    /** Create the AV from a GV. If the GV has children then create similar children for the AV */
     public AbstractVariable(GdbVariable var) {
-        assert var.getName().indexOf('{') == -1; // this means a mis-parsed gdb response...
-        name = var.getName();
-        type = var.getType();
-        value = var.getValue();
-        fields = new Field[0];
-        derefValue = var.getDerefedValue();
+        this(var.getName(), var.getType(), var.getValue(), var.getDerefedValue());
         
         GdbDebugger debugger = getDebugger();
         if (debugger != null) {
-            debugger.waitForTypeCompletionCompletion();
-            expandChildrenFromValue(this);
-
             if (fields.length == 0 && var.getNumberChildren() > 0) {
                 for (GdbVariable child : var.getChildren()) {
                     addField(new AbstractField(this, child.getName(), child.getType(), child.getValue()));
                 }
             }
+        }
+    }
+    
+    public AbstractVariable(String name) {
+        this(name, null, null, null);
+    }
+    
+    public AbstractVariable(String name, String type, String value, String derefValue) {
+        assert name.indexOf('{') == -1; // this means a mis-parsed gdb response...
+        this.name = name;
+        this.type = type;
+        this.value = value;
+        this.derefValue = derefValue;
+        fields = new Field[0];
+        
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            // Convert the Mac-specific value to standard gdb/mi format
+            value = GdbUtils.mackHack(value);
+        }
+        
+        GdbDebugger debugger = getDebugger();
+        if (debugger != null) {
+            debugger.waitForTypeCompletionCompletion();
+            expandChildrenFromValue(this);
         }
     }
     
@@ -98,9 +114,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
      *
      * @param value string representation of value of this variable.
      */
-    public void setValue(String value) throws InvalidExpressionException {
+    public void setValue(String value) {
         String msg = null;
-        int pos;
         
         if (getFieldsCount() == 0) {
             GdbDebugger debugger = getDebugger();
@@ -122,7 +137,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Number"); // NOI18N
                     }
                 } else if (debugger.isCplusPlus() && type.equals("bool")) { // NOI18N
-                    if (!value.equals("true") && !value.equals("false") && !isInteger(value)) { // NOI18N
+                    if (!value.equals("true") && !value.equals("false") && !isNumber(value)) { // NOI18N
                         msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_CplusPlus_Bool"); // NOI18N
                     }
                 } else if (type.startsWith("enum")) { // NOI18N
@@ -131,12 +146,30 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Enum"); // NOI18N
                     }
                 }
+                if (value != null) {
+                    if (value.endsWith("\\\"")) {
+                        int pos = value.indexOf('"');
+                        if (pos != -1) {
+                            value = value.substring(pos, value.length() - 1) + '"';
+                        }
+                    }
+                    if (value.charAt(0) == '(') {
+                        int pos = GdbUtils.findMatchingParen(value, 0);
+                        if (pos != -1) {
+                            value = value.substring(pos + 1).trim();
+                        }
+                    }
+                }
                 if (msg == null) {
                     String fullname;
-                    if (this instanceof AbstractField) {
-                        fullname = ((AbstractField) this).getFullName();
+                    if (this instanceof GdbWatchVariable) {
+                        fullname = ((GdbWatchVariable) this).getExpression();
                     } else {
-                        fullname = name;
+                        if (this instanceof AbstractField) {
+                            fullname = ((AbstractField) this).getFullName();
+                        } else {
+                            fullname = name;
+                        }
                     }
                     debugger.getGdbProxy().data_evaluate_expression(fullname + '=' + value);
                 }
@@ -180,7 +213,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int pos;
         
         if (value.startsWith("0x") && (pos = value.indexOf(" \\\"")) != -1 && value.endsWith("\\\"")) { // NOI18N
-            value = '"' + value.substring(pos + 3, value.length() - 3) + '"';
+            value = '"' + value.substring(pos + 3, value.length() - 2) + '"';
         } else if (value.startsWith("0x") && (pos = value.indexOf(" \"")) != -1 && value.endsWith("\"")) { // NOI18N
             value = value.substring(pos + 1);
         } else if (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
@@ -198,6 +231,15 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
     private String setValueEnum(String value) {
+        CallStackFrame csf = getCurrentCallStackFrame();
+        Object o;
+        if (csf != null && (o = csf.getType(type)) != null) {
+            List list = (List) o;
+            int idx = list.indexOf(value);
+            if (idx != -1) {
+                return value;
+            }
+        }
         return null;
     }
     
@@ -208,7 +250,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
     private String setValueNumber(String value) {
-        if (isInteger(value)) {
+        if (isNumber(value)) {
             ; // OK
         } else {
             value = null;
@@ -220,13 +262,37 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
 
    /**
-    * Returns string representation of type of this variable.
+    * See if this variable <i>will</i> have fields and should show a turner.
+    * We're not actually creating or counting fields here.
     *
-    * @return string representation of type of this variable.
+    * @return 0 if the variable shouldn't have a turner and 5 if it should
     */
     public int getFieldsCount() {
-        return fields.length ;
+        if (fields.length > 0) {
+            return fields.length;
+        } else if ((type != null &&
+                    ((type.indexOf('[') != -1) || (type.indexOf("**") != -1 && isValidPointerAddress(value)))) ||
+                (value != null && value.charAt(0) == '{')) {
+            return 5;
+        } else {
+            return 0;
+        }
     }
+    
+    private boolean isValidPointerAddress(String info) {
+        int pos1 = info.indexOf("*) 0x");
+        int i;
+        if (info.charAt(0) == '(' && pos1 != -1) {
+            try {
+                i = Integer.parseInt(info.substring(pos1 + 5), 16);
+            } catch (NumberFormatException ex) {
+                return false;
+            }
+            return i > 0;
+        }
+        return false;
+    }
+    
     /**
      * Returns field defined in this object.
      *
@@ -283,6 +349,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
         }
     }
     
+    public void setType(String type) {
+        this.type = type;
+    }
+    
     public boolean equals(Object o) {
         return (o instanceof AbstractVariable) && (name.equals(((AbstractVariable) o).name));
     }
@@ -321,13 +391,13 @@ public class AbstractVariable implements LocalVariable, Customizer {
     
     public boolean expandChildren() {
         int fcount = 0;
-        for (Field child : fields) {
-            fcount += expandChildrenFromValue((AbstractVariable) child);
+        if (fields.length != getFieldsCount()) {
+            fcount = expandChildrenFromValue(this);
         }
         return fcount != 0;
     }
     
-    private int expandChildrenFromValue(AbstractVariable var) {
+    protected int expandChildrenFromValue(AbstractVariable var) {
         String v;
         String t;
         int count = 0; // we really only care if its 0 or >0
@@ -422,8 +492,16 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 if (info.charAt(0) == '<') {
                     name = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
                     type = info.substring(1, pos - 2).trim();
+                    value = info.substring(pos + 1).trim();
+                    if (name.startsWith("_vptr")) { // NOI18N
+                        return null;
+                    }
                 } else {
                     name = info.substring(0, pos - 1).trim();
+                    value = info.substring(pos + 1).trim();
+                    if (name.startsWith("_vptr")) { // NOI18N
+                        return null;
+                    }
                     if (map == null) {
                         map = lookupMap(name, parent);
                     }
@@ -433,19 +511,20 @@ public class AbstractVariable implements LocalVariable, Customizer {
                             type = o.toString();
                         } else if (o instanceof Map) {
                             type = (String) ((Map) o).get("<typename>"); // NOI18N
+                        } else if (isNumber(value)) {
+                            type = "int"; // NOI18N - best guess (std::string drops an "int")
                         } else {
-                            log.warning("Connot determine field type"); // NOI18N
+                            log.warning("Cannot determine field type for " + name); // NOI18N
                             return null;
                         }
                     } else {
-                        log.warning("Connot determine field type (no typ Map found)"); // NOI18N
+                        if (!parent.getType().endsWith("{...}")) { // NOI18N
+                            log.warning("Connot determine field type for " + name + " (no type Map found)"); // NOI18N
+                        }
                         type = "";
                     }
                 }
-                value = info.substring(pos + 1).trim();
-                if (!name.startsWith("_vptr")) { // NOI18N
-                    return new AbstractField(parent, name, type, value);
-                }
+                return new AbstractField(parent, name, type, value);
             } else if (info.trim().equals("<No data fields>")) { // NOI18N
                 return new AbstractField(parent, "", "", info.trim());
             }
@@ -480,14 +559,24 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     private int parseArray(AbstractVariable var, String basename, String type, String value) {
-        int tpos = type.lastIndexOf('[');
+        int lbpos = type.indexOf('[');
+        assert lbpos != -1;
+        int rbpos = GdbUtils.findMatchingBrace(type, lbpos);
+        assert rbpos != -1;
         int vstart = 0;
         int vend;
         int size;
         int count = 0;
+        int nextbrace = type.indexOf('[', rbpos);
+        String extra;
+        if (nextbrace == -1) {
+            extra = "";
+        } else {
+            extra = type.substring(nextbrace);
+        }
         
         try {
-            size = Integer.valueOf(type.substring(tpos + 1, type.length() - 1));
+            size = Integer.valueOf(type.substring(lbpos + 1, rbpos));
         } catch (Exception ex) {
             size = 0;
         }
@@ -497,7 +586,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             } else {
                 vend = GdbUtils.findNextComma(value, vstart);
             }
-            var.addField(new AbstractField(var, basename + "[" + i + "]", type.substring(0, tpos).trim(), // NOI18N
+            var.addField(new AbstractField(var, basename + "[" + i + "]", type.substring(0, lbpos).trim() + extra, // NOI18N
                     vend == -1 ? value.substring(vstart) : value.substring(vstart, vend)));
             vstart = GdbUtils.firstNonWhite(value, vend + 1);
             count++;
@@ -536,9 +625,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return "AbstractVariable "; // NOI18N
     }
         
-    private boolean isInteger(String value) {
+    private boolean isNumber(String value) {
         try {
-            Integer.parseInt(value);
+            Long.parseLong(value);
             return true;
         } catch (NumberFormatException ex) {
             return false;
@@ -556,6 +645,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
             this.parent = parent;
             fields = new Field[0];
             derefValue = null;
+        
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                value = GdbUtils.mackHack(value);
+            }
             expandChildrenFromValue(this);
         }
         
