@@ -1546,19 +1546,10 @@ public class UnitTab extends javax.swing.JPanel {
             if (value instanceof Boolean) {
                 Unit u = model.getUnitAtRow (row);
                 Boolean state = (Boolean)value;
-                if (state.booleanValue ()) {
-                    if (deactivateAction.isEnabled (u)) {
-                        renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/active.png"))); // NOI18N
-                    } else {
-                        renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/active2.png"))); // NOI18N
-                    }
-                    
+                if (state.booleanValue()) {
+                    renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/active.png"))); // NOI18N
                 } else {
-                    if (activateAction.isEnabled (u)) {
-                        renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/inactive.png"))); // NOI18N
-                    } else {
-                        renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/inactive2.png"))); // NOI18N
-                    }
+                    renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/inactive.png"))); // NOI18N
                 }
                 renderComponent.setText ("");
                 renderComponent.setHorizontalAlignment (SwingConstants.CENTER);

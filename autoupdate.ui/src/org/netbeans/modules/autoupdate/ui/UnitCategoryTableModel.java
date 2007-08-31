@@ -104,34 +104,10 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     protected abstract Comparator<Unit> getComparator (final Object columnIdentifier, final boolean sortAscending);
     public abstract void setUnits (List<UpdateUnit> units);
     public String getToolTipText (int row, int col) {
-        String key0 = null;
-        String keyOthers = null;
-        switch(getType ()) {
-        case INSTALLED:
-            key0 = "UnitTab_TooltipCheckBox_INSTALLED";//NOI18N
-            keyOthers = "UnitTab_TooltipOthers_Text_INSTALLED";//NOI18N
-            break;
-        case UPDATE:
-            key0 = "UnitTab_TooltipCheckBox_UPDATE";//NOI18N
-            keyOthers = "UnitTab_TooltipOthers_Text_UPDATE";//NOI18N
-            break;
-        case AVAILABLE:
-            key0 = "UnitTab_TooltipCheckBox_AVAILABLE";//NOI18N
-            keyOthers = "UnitTab_TooltipOthers_Text_AVAILABLE";//NOI18N
-            break;
-        case LOCAL:
-            key0 = "UnitTab_TooltipCheckBox_LOCAL";//NOI18N
-            keyOthers = "UnitTab_TooltipOthers_Text_LOCAL";//NOI18N
-            break;
-        }
         String retval = null;
         if (col == 0) {
-            retval = NbBundle.getMessage (UnitCategoryTableModel.class, key0, (String)getValueAt (row, 1));
-        } else if (col > 0) {
-            //retval = NbBundle.getMessage(UnitCategoryTableModel.class, keyOthers, (String)getValueAt(row, 1));
-            //no tooltip for other columns
-            retval = null;
-        }
+            retval = getTooltipForCheckBox(row);
+        } 
         return retval;
     }
     public int getMinWidth (JTableHeader header, int col) {
@@ -154,6 +130,25 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             setUnitComparator (getComparator (columnIdentifier, sortAscending));
         }
         fireTableDataChanged ();
+    }
+
+    private String getTooltipForCheckBox(int row) {
+        String key0 = null;
+        switch (getType()) {
+            case INSTALLED:
+                key0 = "UnitTab_TooltipCheckBox_INSTALLED"; //NOI18N
+                break;
+            case UPDATE:
+                key0 = "UnitTab_TooltipCheckBox_UPDATE"; //NOI18N
+                break;
+            case AVAILABLE:
+                key0 = "UnitTab_TooltipCheckBox_AVAILABLE"; //NOI18N
+                break;
+            case LOCAL:
+                key0 = "UnitTab_TooltipCheckBox_LOCAL"; //NOI18N
+                break;
+        }
+        return (key0 != null) ? NbBundle.getMessage (UnitCategoryTableModel.class, key0, (String)getValueAt (row, 1)) : null;
     }
     
     private final void setData(List<UnitCategory> data,  Comparator<Unit> unitCmp) {

@@ -56,6 +56,22 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     }
 
     @Override
+    public String getToolTipText(int row, int col) {
+        if (col == 3) {
+            boolean isEnabled = (Boolean)getValueAt (row, 3);            
+            String key = null;
+            if (isEnabled) {
+                key = "InstallTab_Active_Tooltip";
+            } else {
+                key = "InstallTab_InActive_Tooltip";
+            }
+            return (key != null) ? getBundle(key) : null;
+        }
+        return super.getToolTipText(row, col);
+    }
+
+    
+    @Override
     public void setValueAt(Object anValue, int row, int col) {
         super.setValueAt(anValue, row, col);
         

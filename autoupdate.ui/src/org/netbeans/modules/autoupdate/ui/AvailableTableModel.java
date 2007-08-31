@@ -136,6 +136,27 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         return super.getColumnName( column );
     }
 
+    @Override
+    public String getToolTipText(int row, int col) {
+        if (col == 3) {
+            CATEGORY category = (CATEGORY)getValueAt (row, 3);
+            String key = null;
+            switch(category) {
+            case STANDARD:
+                key = "AvailableTab_SourceCategory_Tooltip_STANDARD";//NOI18N
+                break;                
+            case BETA:
+                key = "AvailableTab_SourceCategory_Tooltip_BETA";//NOI18N
+                break;
+            case COMMUNITY:
+                key = "AvailableTab_SourceCategory_Tooltip_COMMUNITY";//NOI18N                
+                break;                
+            }
+            return (key != null) ? getBundle(key) : null;
+        }
+        return super.getToolTipText(row, col);
+    }
+
     public int getPreferredWidth(JTableHeader header, int col) {
         switch (col) {
         case 1:
