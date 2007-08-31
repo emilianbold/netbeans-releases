@@ -141,6 +141,29 @@ public class RhtmlHelper {
                 truncated = true;
             }
             String content = doc.getText(begin, length);
+            int newline = content.indexOf('\n');
+            if (newline != -1) {
+                if (content.startsWith("<%\n") || content.startsWith("<%#\n")) {
+                    content = content.substring(newline+1);
+                    newline = content.indexOf('\n');
+                    if (newline != -1) {
+                        content = content.substring(0, newline);
+                    }
+                } else {
+                    boolean startsWithNewline = true;
+                    for (int i = 0; i < newline; i++) {
+                        if (!Character.isWhitespace((content.charAt(i)))) {
+                            startsWithNewline = false;
+                            break;
+                        }
+                    }
+                    if (startsWithNewline) {
+                        content = content.substring(newline+1);
+                    } else {
+                        content = content.substring(0, newline);
+                    }
+                }
+            }
             if (truncated) {
                 return content + "..."; // NOI18N
             } else {
