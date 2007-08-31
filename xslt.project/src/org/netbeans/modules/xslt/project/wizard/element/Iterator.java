@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.xslt.project.wizard.element;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
@@ -130,7 +132,7 @@ public final class Iterator implements TemplateWizard.Iterator {
             TransformationUseCasesFactory.getInstance();
     file = tUseCaseFactory.createUseCase(project, wizard);
     
-    return DataObject.find(file);
+    return file == null ? null : DataObject.find(file);
   }
 
   private static TransformationUseCase getUseCase(TemplateWizard wizard) {
@@ -159,16 +161,39 @@ private static class TransformationUseCasesFactory {
     {
         assert project != null && wizard != null;
 
+        List<FileObject> createdFos = new ArrayList<FileObject>();
         TransformationUseCase useCase = getUseCase(wizard);
         assert useCase != null;
 
-        configureTMapModel(useCase, project, wizard);
+        FileObject fo = createXslFiles(useCase, project, wizard, createdFos);
 
-        return createXslFiles(useCase, project, wizard);
+        if (fo != null) {
+            try {
+                configureTMapModel(useCase, project, wizard);
+            } catch (IOException ex) {
+                rollbackCreatedXslFiles(createdFos);
+                fo = null;
+                throw ex;
+            }
+        }
+
+        return fo;
     }
 
+    private void rollbackCreatedXslFiles(List<FileObject> createdFos) 
+            throws IOException
+    {
+        assert createdFos != null;
+        for (FileObject fo : createdFos) {
+            if (fo != null && fo.isValid()) {
+                fo.delete();
+            }
+        }
+    }
+    
     private FileObject createXslFiles(TransformationUseCase useCase, 
-            Project project, TemplateWizard wizard) throws IOException
+            Project project, TemplateWizard wizard, 
+            List<FileObject> createdFos) throws IOException
     {
         assert project != null && useCase != null && wizard !=null;
 
@@ -179,11 +204,11 @@ private static class TransformationUseCasesFactory {
         FileObject file = null;
         if (file1 != null) {
             file = createXslFile(
-                    project, file1);
+                    project, file1, createdFos);
         }
 
         if (file2 != null) {
-          file = createXslFile(project, file2);
+          file = createXslFile(project, file2, createdFos);
         }
 
         return file;
@@ -192,7 +217,7 @@ private static class TransformationUseCasesFactory {
 
     private FileObject createXslFile(
         Project project,
-        String file) throws IOException
+        String file, List<FileObject> createdFos) throws IOException
     {
         if (file == null || "".equals(file)) {
             return null;
@@ -208,11 +233,69 @@ private static class TransformationUseCasesFactory {
         if ("".equals(file)) {
             return null;
         }
+        
+        boolean isAllowSlash = false;
+        boolean isAllowBackslash = false;
+        if (File.separatorChar == '\\') {
+            isAllowBackslash = true;
+            file = file.replace('/', File.separatorChar);
+        } else {
+            isAllowSlash = true;
+        }
+        StringTokenizer dirTokens = new StringTokenizer(file, File.separator);
+        int numDirs = dirTokens.countTokens();
+        String[] dirs = new String[numDirs];
+        int i = 0;
+        while (dirTokens.hasMoreTokens()) {
+            dirs[i] = dirTokens.nextToken();
+            i++;
+        }
+        
+        FileObject dirFo = Util.getSrcFolder(project);
+        boolean isCreatedDir = false;
+        if ( numDirs > 1 ) {
+            file = dirs[numDirs-1];
+            for (int j = 0; j < numDirs-1; j++) {
+                FileObject tmpDirFo = 
+                        dirFo.getFileObject(dirs[j]);
+                if (tmpDirFo == null) {
+                    try {
+                        dirFo = dirFo.createFolder(dirs[j]);
+                    } catch (IOException ex) {
+                        rollbackCreatedXslFiles(createdFos);
+                        throw ex;
+                    }
+                    
+                    if (dirFo == null) {
+                        rollbackCreatedXslFiles(createdFos);
+                        break;
+                    }
+                    // add just parentFo 
+                    if (!isCreatedDir) {
+                        isCreatedDir = true;
+                        createdFos.add(dirFo);
+                    }
+                } else {
+                    dirFo = tmpDirFo;
+                }
+            }
 
-        return Util.copyFile(
-                Util.getSrcFolder(project), 
-                TEMPLATES_PATH, XSLT_SERVICE,
-                file, XSL);
+        }
+        
+        FileObject xslFo = null;
+        if (dirFo != null) {
+            xslFo = dirFo.getFileObject(file);
+            if (xslFo == null) {
+                xslFo = Util.copyFile(dirFo, 
+                    TEMPLATES_PATH, XSLT_SERVICE,
+                    file, XSL);
+                if (!isCreatedDir) {
+                    createdFos.add(xslFo);
+                }
+            }
+        }
+
+        return xslFo;
     }
 
   private void configureTMapModel(TransformationUseCase useCase, 
@@ -738,7 +821,7 @@ private static class TransformationUseCasesFactory {
       TRANSFORMATION_USE_CASE.put(Panel.CHOICE_FILTER_REQUEST_REPLY,
               TransformationUseCase.FILTER_REQUEST_REPLY);
   }
-          
+  
   private static String TEMPLATES_PATH = "Templates/SOA/"; // NOI18N
   private static String XSLT_SERVICE = "xslt.service"; // NOI18N
   private static String XSL = "xsl"; // NOI18N

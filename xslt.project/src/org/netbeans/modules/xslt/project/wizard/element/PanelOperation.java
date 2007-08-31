@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -69,9 +68,12 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.02.02
+ * @author Vitaly Bychkov
+ * @version 2007.08.31
  */
 final class PanelOperation<T> extends Panel<T> {
+    
+    WizardDescriptor myWizardDescriptor;
     
   PanelOperation(
     Project project,
@@ -95,12 +97,17 @@ final class PanelOperation<T> extends Panel<T> {
   {
     return getOperation();
   }
-
+  
   @Override
   protected String getError()
   {
     if (myFileName != null) {
-      String name = addExtension(myFile.getText().trim());
+      String fileName = myFile.getText().trim();
+      if (!Util.isValidFileName(fileName)) {
+          return i18n("ERR_WrongFileName", fileName); // NOI18N
+      }
+      
+      String name = addExtension(fileName);
       FileObject file = getFolder().getFileObject(name);
 
       if (file != null) {
@@ -132,12 +139,18 @@ final class PanelOperation<T> extends Panel<T> {
       parameter.getMessage().get() != null;
   }
 
+    @Override
+    public void readSettings(Object object) {
+        myWizardDescriptor = (WizardDescriptor) object;
+    }
+
+  @Override
   public void storeSettings(Object object) {
     WizardDescriptor descriptor = (WizardDescriptor) object;
 
     if (myFileName != null) {
       String file = addExtension(myFile.getText().trim());
-
+      
       if (myIsInput) {
         descriptor.putProperty(INPUT_FILE, file);
       }
@@ -174,12 +187,14 @@ final class PanelOperation<T> extends Panel<T> {
 
     // operation 
     c.gridy++;
+    c.gridwidth = 1;
     c.weightx = 0.0;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
     label = createLabel(i18n("LBL_Operation")); // NOI18N
     panel.add(label, c);
 
     c.weightx = 1.0;
+    c.gridwidth = GridBagConstraints.REMAINDER;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     myOperation = new JComboBox();
     myOperation.setRenderer(new Renderer());
@@ -223,25 +238,41 @@ final class PanelOperation<T> extends Panel<T> {
     mainPanel.add(panel, cc);
   }
 
-  private void createFilePanel(JPanel panel, GridBagConstraints c) {
+  private void createFilePanel(final JPanel panel, GridBagConstraints c) {
     JLabel label;
 
     // xsl file
     if (myFileName != null) {
       c.gridy++;
-      c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
-      label = createLabel(i18n("LBL_XSL_File")); // NOI18N
-      panel.add(label, c);
 
-      c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.weightx = 1.0;
+      GridBagConstraints c1 = new GridBagConstraints();
+      c1.gridy = c.gridy;
+//      c1.gridx = 0;
+      c1.anchor = GridBagConstraints.WEST;
+      c1.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+      label = createLabel(i18n("LBL_XSL_File")); // NOI18N
+      panel.add(label, c1);
+
+      c1 = new GridBagConstraints();
+      c1.gridy = c.gridy;
+      c1.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+      c1.fill = GridBagConstraints.HORIZONTAL;
+//      c1.gridx = 1;
+      c1.weightx = 1.0;
       myFile = new JTextField(myFileName);
       label.setLabelFor(myFile);
-      panel.add(myFile, c);
-    }
+      panel.add(myFile, c1);
+      
+      
+      myBrowseButton = createBrowseButton(myFile);
+      c1 = new GridBagConstraints();
+      c1.gridy = c.gridy;
+      c1.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+      panel.add(myBrowseButton, c1);
+    }                        
     // Partner/Role/Port
     c.gridy++;
+    c.gridwidth = 1;
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
@@ -251,6 +282,7 @@ final class PanelOperation<T> extends Panel<T> {
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
+    c.gridwidth = GridBagConstraints.REMAINDER;
     myPartnerRolePort = new JComboBox();
     myPartnerRolePort.setRenderer(new Renderer());
     myPartnerRolePort.addActionListener(
@@ -269,6 +301,7 @@ final class PanelOperation<T> extends Panel<T> {
 
     // input type 
     c.gridy++;
+    c.gridwidth = 1;
     c.weightx = 0.0;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
     label = createLabel(i18n("LBL_Input_Type")); // NOI18N
@@ -277,6 +310,7 @@ final class PanelOperation<T> extends Panel<T> {
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
+    c.gridwidth = GridBagConstraints.REMAINDER;
     myInput = new JTextField();
     myInput.setEditable(false);
     label.setLabelFor(myInput);
@@ -298,12 +332,14 @@ final class PanelOperation<T> extends Panel<T> {
 
     // output type 
     c.gridy++;
+    c.gridwidth = 1;
     c.weightx = 0.0;
     c.weighty = 1.0;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
     label = createLabel(i18n("LBL_Output_Type")); // NOI18N
     panel.add(label, c);
 
+    c.gridwidth = GridBagConstraints.REMAINDER;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     myOutput = new JTextField();
@@ -641,6 +677,7 @@ final class PanelOperation<T> extends Panel<T> {
   }
 
   private JTextField myFile;
+  private JButton myBrowseButton;
   private JComboBox myPartnerRolePort;
   private JComboBox myOperation;
   private JTextField myInput;

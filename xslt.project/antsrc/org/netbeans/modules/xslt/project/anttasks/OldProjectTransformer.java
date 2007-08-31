@@ -270,12 +270,12 @@ public class OldProjectTransformer {
                     sbOperation.append(" opName=\"").
                             append(service.getOperation()).
                                 append("\" ");
-                    sbOperation.append(" file=\"").
-                            append(service.getFile()).
-                                append("\" ");
-                    sbOperation.append(" transformJBI=\"").
-                            append(service.getTransformJBI()).
-                                append("\" ");
+//                    sbOperation.append(" file=\"").
+//                            append(service.getFile()).
+//                                append("\" ");
+//                    sbOperation.append(" transformJBI=\"").
+//                            append(service.getTransformJBI()).
+//                                append("\" ");
                     sbOperation.append(invokeSb);         
                     
                     serviceOperations.append(sbOperation);

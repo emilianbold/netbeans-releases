@@ -22,9 +22,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -35,6 +37,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.filesystems.FileUtil;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
@@ -68,12 +71,20 @@ final class PanelProxy<T> extends Panel<T> {
   protected String getError()
   {
     String name = addExtension(myReplyFile.getText().trim());
+    if (!Util.isValidFileName(name)) {
+        return i18n("ERR_WrongFileName", name); // NOI18N
+    }
     FileObject file = getFolder().getFileObject(name);
 
     if (file != null) {
       return i18n("ERR_File_Already_Exists", name); // NOI18N
     }
+
     name = addExtension(myRequestFile.getText().trim());
+    if (myReplyBox.isSelected() && !Util.isValidFileName(name)) {
+        return i18n("ERR_WrongFileName", name); // NOI18N
+    }
+    
     file = getFolder().getFileObject(name);
 
     if (file != null) {
@@ -143,8 +154,10 @@ final class PanelProxy<T> extends Panel<T> {
     myOperationCall.setEnabled(myReplyBox.isSelected());
 
     myRequestFile.setEnabled(myRequestBox.isSelected());
+    myRequestFileBrowseButton.setEnabled(myRequestBox.isSelected());
 
     myReplyFile.setEnabled(myReplyBox.isSelected());
+    myReplyFileBrowseButton.setEnabled(myReplyBox.isSelected());
 
     myOperationImplement.setRequirement(
       myRequestBox.isSelected(), myReplyBox.isSelected());
@@ -207,9 +220,10 @@ final class PanelProxy<T> extends Panel<T> {
 
     myRequestText = new JTextField();
     myRequestFile = new JTextField(fileName);
+    myRequestFileBrowseButton = createBrowseButton(myRequestFile);
 
     return createTransformPanel(
-      myRequestBox, myRequestText, myRequestFile);
+      myRequestBox, myRequestText, myRequestFile, myRequestFileBrowseButton);
   }
 
   private JPanel createTransformReplyPanel(String fileName) {
@@ -225,21 +239,22 @@ final class PanelProxy<T> extends Panel<T> {
 
     myReplyText = new JTextField();
     myReplyFile = new JTextField(fileName);
+    myReplyFileBrowseButton = createBrowseButton(myReplyFile, "LBL_Browse2");
 
     return createTransformPanel(
-      myReplyBox, myReplyText, myReplyFile);
+      myReplyBox, myReplyText, myReplyFile, myReplyFileBrowseButton);
   }
 
   private JPanel createTransformPanel(
     JCheckBox checkBox,
     JTextField text,
-    JTextField file)
+    JTextField file,
+    JButton browseButton)
   {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.WEST;
-    JButton button;
-
+    
     // check
     c.gridy++;
     c.gridwidth = 2;
@@ -247,6 +262,7 @@ final class PanelProxy<T> extends Panel<T> {
     panel.add(checkBox, c);
 
     // text
+    c.gridwidth = GridBagConstraints.REMAINDER;
     c.insets = new Insets(
       SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
@@ -256,6 +272,7 @@ final class PanelProxy<T> extends Panel<T> {
     
     // label
     c.gridy++;
+    c.gridwidth = 2;
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(
       SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET + TINY_INSET, TINY_INSET, SMALL_INSET);
@@ -264,6 +281,7 @@ final class PanelProxy<T> extends Panel<T> {
     panel.add(createLabel(i18n("LBL_XSL_File")), c); // NOI18N
 
     // file
+    c.gridwidth = 1;
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     c.anchor = GridBagConstraints.WEST;
@@ -271,6 +289,11 @@ final class PanelProxy<T> extends Panel<T> {
       SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
     panel.add(file, c);
 
+      c.weightx = 0.0;
+      c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+      panel.add(browseButton, c);
+    
+    
     return panel;
   }
 
@@ -280,6 +303,8 @@ final class PanelProxy<T> extends Panel<T> {
   private JCheckBox myReplyBox; 
   private JTextField myRequestText; 
   private JTextField myReplyText;
+  private JButton myReplyFileBrowseButton;
   private JTextField myRequestFile;
+  private JButton myRequestFileBrowseButton;
   private JTextField myReplyFile;
 }

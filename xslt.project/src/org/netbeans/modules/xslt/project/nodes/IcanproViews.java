@@ -254,6 +254,8 @@ public class IcanproViews {
         }
         
         public void fileChanged(org.openide.filesystems.FileEvent fe) {
+//            System.out.println("fileChanged: fe: "+fe+"; file: "+fe.getFile());
+//            new Exception("FILE CHANGED").printStackTrace();
 //            createNodes();
         }
         

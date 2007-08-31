@@ -24,6 +24,8 @@ package org.netbeans.modules.xslt.project;
  * @version 1.0
  */
 public interface XsltproConstants {
+    String XSLT_EXTENSION = "xsl"; // NOI18N
+    String XSLT_EXTENSION2 = "xslt"; // NOI18N 
     String EMPTY_STRING = ""; // NOI18N
     String WHITESPACE=" "; // NOI18N
     String XSLTMAP_XML = "xsltmap.xml";// NOI18N

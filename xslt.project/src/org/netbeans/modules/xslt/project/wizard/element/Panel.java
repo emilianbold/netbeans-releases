@@ -22,12 +22,18 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.Collection;
 
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 import javax.xml.namespace.QName;
 
 import org.openide.WizardDescriptor;
@@ -36,6 +42,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.api.project.Project;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
@@ -45,10 +52,14 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
+import org.netbeans.modules.xslt.project.XsltproConstants;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.12.25
+ * @author Vitaly Bychkov
+ * @version 2007.08.31
  */
 abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
     
@@ -56,6 +67,7 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
     myProject = project;
     myFolder = Util.getSrcFolder(project);
     myParent = parent;
+    myChangeSupport = new ChangeSupport(this);
   }
 
   protected final Project getProject() {
@@ -142,7 +154,7 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
       throw new WizardValidationException(myComponent, error, error);
     }
   }
-
+  
   protected final String i18n(String key) {
     return org.netbeans.modules.print.ui.PrintUI.i18n(Panel.class, key);
   }
@@ -166,8 +178,14 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
 
   public void storeSettings(Object object) {}
 
-  public void addChangeListener(ChangeListener listener) {}
-  public void removeChangeListener(ChangeListener listener) {}
+  public void addChangeListener(ChangeListener listener) {
+      myChangeSupport.addChangeListener(listener);
+  }
+  
+  public void removeChangeListener(ChangeListener listener) {
+      myChangeSupport.removeChangeListener(listener);
+  }
+  
   public void readSettings(Object object) {}
 
   protected final int getXslFileNumber(int start) {
@@ -232,6 +250,9 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   }
 
   protected final String addExtension(String file) {
+    file = File.separator.equals("\\") 
+              ? file.replace(File.separatorChar, '/') : file;
+      
     if (file.endsWith(Panel.DOT + Panel.EXT)) {
       return file;
     }
@@ -321,6 +342,80 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
     private PartnerLinkType myPartnerLinkType;
   }
 
+  //-----------------------------------
+  protected final JButton createBrowseButton(JTextField fileTextField) {
+      return createBrowseButton(fileTextField, BROWSE_LABEL);
+  }
+  
+  protected final JButton createBrowseButton(final JTextField fileTextField, 
+          String labelKey)
+  {
+      
+    final JPanel panel = myComponent;   
+    JButton browseButton =     // browse button
+      browseButton = createButton(
+        new ButtonAction(
+          i18n(labelKey), // NOI18N
+          i18n("TLT_Browse")) { // NOI18N
+          public void actionPerformed(ActionEvent event) {
+              
+            FileFilter xsltFileFilter = new   FileFilter() {
+
+                    public boolean accept(File f) {
+                        if (f.isDirectory()) {
+                            return true;
+                        }
+                        String extension = FileUtil.getExtension(f.getName());
+                        if (XsltproConstants.XSLT_EXTENSION.equals(extension) 
+                             || XsltproConstants.XSLT_EXTENSION2.equals(extension)) 
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    public String getDescription() {
+                        return i18n("LBL_Transformation_Filter_Descr"); // NOI18N
+                    }
+                };
+              
+            JFileChooser fileChooser = new JFileChooser(FileUtil.toFile(getFolder()),
+              new ProjectFileSystemView(getProject()));  
+            fileChooser.setFileFilter(xsltFileFilter);
+            
+            int result = fileChooser.showOpenDialog(panel);
+            
+//            System.out.println("result of file chooser view is : "+result);
+            File selectedFile = fileChooser.getSelectedFile();
+//            System.out.println("selected file is: "+selectedFile);
+            if (result == JFileChooser.APPROVE_OPTION && selectedFile != null) {
+                
+                String relPath = "";
+                selectedFile = FileUtil.normalizeFile(selectedFile);
+                if (!selectedFile.exists()) {
+                    relPath = FileUtil.getRelativePath(getFolder(), 
+                                FileUtil.toFileObject(selectedFile.getParentFile()));
+                    relPath = (relPath == null || "".equals(relPath) 
+                            ?  "" : relPath + "/") + selectedFile.getName();
+                } else {
+                    relPath = FileUtil.getRelativePath(getFolder(), 
+                                FileUtil.toFileObject(selectedFile));
+                }
+//                System.out.println("project relative path: "
+//                        +relPath);
+                
+                fileTextField.setText(relPath);
+            }
+          }
+        }
+      
+      );  
+      
+      return browseButton;
+  }
+  
+  
+  private ChangeSupport myChangeSupport;
   private Project myProject;
   private JPanel myComponent;
   private FileObject myFolder;
@@ -329,6 +424,9 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   private static final String DOT = "."; // NOI18N
   private static final String EXT = "xsl"; // NOI18N
   private static final String NAME = "newXSLFile"; // NOI18N
+  private static final String BROWSE_LABEL = "LBL_Browse"; // NOI18N
+  private static final String BROWSE_LABEL2 = "LBL_Browse2"; // NOI18N
+  
 
   protected static final String EMPTY = ""; // NOI18N
 
