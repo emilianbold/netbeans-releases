@@ -6,32 +6,29 @@
 -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>Working with MIDP Projects</title>
+<title>Working with Mobility Projects</title>
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>Working with CLDC/MIDP Projects</h2>
+<h2>Working with Mobility Projects</h2>
 
-The following table shows how to work with Java ME MIDP  in the NetBeans
-IDE and create mobile applications: 
+<p>The NetBeans IDE supports the coding, testing and deployment of applications 
+  for mobile devices that support the Java ME, CLDC/MIDP and CDC technologies. 
+  The following table illustrates the development life cycle for mobile applications. 
+</p>
 <table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
    process step. The right column contains detail information to accomplish that process.">
   <tr valign="top"> 
     <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
-      <b>Create and configure project</b></td>
+      <b>Create your project and project configurations</b></td>
     <td> 
       <ol>
-        <li>Create a project using the <a href="proj_templates.html">best
-          template</a>          for your programming needs.</li>
-        <li><a href="../configuration/config_about.html">Configure the project.</a> You can add MIDlets, libraries,
-          and other resource files, define push registry entries and API permissions,
-          and
-          create settings for obfuscation and security.</li>
-        <li><a href="../configuration/config_working.html">Create additional
-            configurations</a> based on the devices you want to
-          deploy the application to. </li>
-        <li>Add code for specific configurations using <a href="../configuration/preprocess_about.html">preprocessor
-        blocks</a>.</li>
+        <li>Create a project using the <a href="proj_templates.html">best template</a> 
+          for your programming needs.</li>
+        <li><a href="../configuration/config_about.html">Configure the project.</a> 
+          Use the New Project wizard or the project properties to create multiple 
+          configurations that enable you to simultaneously build and deploy your 
+          application to a range of platforms and devices. </li>
       </ol>
     </td>
   </tr>
@@ -43,14 +40,19 @@ IDE and create mobile applications:
   <tr valign="top"> 
     <td align="center"> 
       <p><img src="../images/circle2.gif" alt="Number two"><br>
-        <b>Build project</b> </p>
+        <b>Design and code </b></p>
     </td>
-    <td> 
-      <ol>
-        <li>Choose Build &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_project.html"> 
-          Build Main Project</a> or right-click any project and choose Build Project.</li>
-      </ol>
-    </td>
+    <td> <ul>
+        <li>For CLDC/MIDP applications, use the drag-and-drop interface of the 
+          <a href="../mvd/mvd_about.html">Visual Mobile Designer</a> to design 
+          your application's work flow and design its GUI. </li>
+        <li>CLDC/MIDP wizards help you create applications that <a href="../wcw/wcw_creating.html">consume 
+          Web Services</a>.</li>
+        <li>Optionally, you can use <a href="../configuration/preprocess_about.html">preprocessor 
+          blocks</a> to add device-specific code to CLDC/MIDP applications.</li>
+        <li>For CDC applications, use the IDE's <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/gui/gui_about.html">GUI 
+          Builder</a> to design your application's interface. </li>
+      </ul></td>
   </tr>
   <tr> 
     <td colspan="2"> 
@@ -59,13 +61,22 @@ IDE and create mobile applications:
   </tr>
   <tr valign="top"> 
     <td align="center"> <img src="../images/circle3.gif" alt="Number three"><br>
-      <b>Run project</b> </td>
+      <b>Test and debug </b></td>
     <td><ol>
-        <li>Choose Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/run/run_app.html">Run 
-          Main Project</a> or right-click any project and choose Run Project.</li>
-        <li>Use the Project properties if you want to <a href="../deploy/about_deployment.html">deploy</a> the
-        project to another location on your system or to a remote server.</li>
-    </ol>
+        <li>To run a single project configuration on a device emulator, choose 
+          Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/run/run_app.html">Run 
+          Main Project</a> , or, to quickly test alternate device emulators, right-click 
+          on the project and choose Run With.</li>
+        <li>Set <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/breakpoint_setting.html">breakpoints</a> 
+          or <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_new_watch.html">watches</a> 
+          in your code.</li>
+        <li>Choose Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_local.html"> 
+          Debug Main Project </a>or right-click any project and choose Debug Project. 
+          You can also<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_remote.html"> 
+          attach a running process to the debugger</a>.</li>
+        <li><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_step.html">Step 
+          through the program execution</a>.</li>
+      </ol>
     </td>
   </tr>
   <tr> 
@@ -75,21 +86,31 @@ IDE and create mobile applications:
   </tr>
   <tr valign="top"> 
     <td align="center"> <img src="../images/circle4.gif" alt="Number four"><br>
-      <b>Debug project</b> </td>
-    <td> 
-      <ol>
-        <li>Set <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/breakpoint_setting.html">breakpoints</a> 
-        or <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_new_watch.html">watches</a> 
-        in your code.</li>
-        <li>Choose Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_local.html"> 
-          Debug Main Project </a>or right-click any project and choose Debug Project. 
-          You can also<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_remote.html"> 
-          attach a running process to the debugger</a>.</li>
-        <li><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_step.html">Step through the program execution</a>.</li>
-        <li>Choose Run &gt; Finish Debugging Session when you are finished debugging.</li>
+      <b>Build </b></td>
+    <td> <ol>
+        <li>Choose Build &gt; Build Main Project.</li>
+        <li>To create JAR files for multiple devices at once, right-click on the 
+          project and choose Batch Build. </li>
       </ol>
+      </td>
+  </tr>
+    <tr> 
+    <td height="21" colspan="2"> 
+      <hr align="center" width="80%">
     </td>
   </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="../images/circle5.gif" alt="Number four"><br>
+      <b>Deploy </b></td>
+    <td>
+      <ol>
+        <li>Use the Project properties set <a href="../deploy/about_deployment.html">deployment</a> 
+          options for each configuration. </li>
+        <li>To deploy multiple configurations of the same project, right-click 
+          on the project and choose Batch Deploy.. </li>
+      </ol></td>
+  </tr>
+
 </table>
 
 <hr>

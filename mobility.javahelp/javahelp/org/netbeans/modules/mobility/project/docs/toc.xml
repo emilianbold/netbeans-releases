@@ -3,28 +3,28 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-        <tocitem text="Web Services" expand="false">
-            <tocitem text="Using Mobile Applications" expand="false">
-                <tocitem text="Connecting MIDP Applications to Web Services" target="me.wcw_creating" />
-		<tocitem text="Creating a Java ME Web Services (JSR-172) Client" target="me.wcw_jsr172" />
-		<tocitem text="Updating Java ME Web Services Client Files" target="me.wcw_updatingjsr172" />
-            </tocitem>    
-        </tocitem>    
+	<tocitem text="Web Services" expand="false">
+		<tocitem text="Using Mobile Applications" expand="false">
+			<tocitem text="Connecting MIDP Applications to Web Services" target="me.wcw_creating" />
+			<tocitem text="Creating a Java ME Web Services (JSR-172) Client" target="me.wcw_jsr172" />
+			<tocitem text="Updating Java ME Web Services Client Files" target="me.wcw_updatingjsr172" />
+		</tocitem>
+	</tocitem>
 	<tocitem text="Mobility Applications" expand="false">
+		<tocitem text="Working with Mobility Projects" target="me.proj_working" />
 		<tocitem text="Importing Java ME Projects" target="me.importprojects" />
+		<tocitem text="Java ME Project and File Templates" target="me.proj_templates" />
 		<tocitem text="Installing Mobility Sample Applications" target="me.installingexamples" />
 		<tocitem text="Mobile Application Tutorials and Guides" target="me.guides" />
-		<tocitem text="Java ME MIDP Development" expand="false">
+		<tocitem text="Java ME CLDC/MIDP Development" expand="false">
 			<tocitem text="Getting Started">
 				<tocitem text="About Java ME CLDC/MIDP Applications" target="me.welcome" />
-				<tocitem text="How the IDE Supports Java ME MIDP Development" target="me.support" />
+				<tocitem text="How the IDE Supports Java ME CLDC/MIDP Development" target="me.support" />
 			</tocitem>
 			<tocitem text="Working with MIDP Projects">
-				<tocitem text="Working with Java ME MIDP Projects" target="me.proj_working" />
 				<tocitem text="About Java ME MIDP Projects" target="me.proj_about" />
 				<tocitem text="Java ME MIDP Application Tasks: Quick Reference" target="me.proj_quickref" />
 				<tocitem text="Creating a Java ME MIDP Project" target="me.proj_creating" />
-				<tocitem text="Java ME MIDP Project and File Templates" target="me.proj_templates" />
 				<tocitem text="Viewing the General Project Properties" target="me.prop_viewgeneral" />
 			</tocitem>
 			<tocitem text="Creating MIDP Applications">
@@ -149,7 +149,6 @@
 			</tocitem>
 			<tocitem text="Working with CDC Projects">
 				<tocitem text="About CDC Projects" target="cdc.proj_about" />
-				<tocitem text="Working with CDC Projects" target="cdc.project_working" />
 				<tocitem text="CDC Project Tasks: Quick Reference" target="cdc.project_quickref" />
 			</tocitem>
 			<tocitem text="Working with CDC Emulator Platforms">

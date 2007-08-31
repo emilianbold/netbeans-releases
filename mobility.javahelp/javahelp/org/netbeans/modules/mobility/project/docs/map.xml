@@ -6,7 +6,6 @@
 	<mapID target="me.welcome" url="getstarted/welcome.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.SourcesPanel" url="ui/wizard_importexisting_specifysource.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.WtkPanel" url="ui/wizard_importwtk_specifysource.html"/>
-	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.PlatformSelectionPanel" url="ui/wizard_importsuite_platformselection.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformInstallPanel" url="ui/wizard_newproject_installplatform.html"/>
 	<mapID target="org.netbeans.modules.java.platform.wizard.SelectorPanel" url="ui/wizard_addplatform_choosefolder.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel" url="ui/wizard_newproject_name.html"/>
@@ -207,7 +206,6 @@
 	<mapID target="cdc.platformInstallPanel" url="cdc/project/csh/proj_cdcnewproject_installplatform.html"/>
 	<mapID target="cdc.customizerGeneral" url="cdc/project/csh/proj_cdcstand_props_general.html"/>
 	<mapID target="cdc.project_quickref" url="cdc/project/project_quickref.html"/>
-	<mapID target="cdc.project_working" url="cdc/project/project_working.html"/>
 	<mapID target="cdc.proj_about" url="cdc/project/proj_about.html"/>
 	<mapID target="cdc.emulator_about" url="cdc/emulator/emulator_about.html"/>
 	<mapID target="cdc.emulator_adding" url="cdc/emulator/emulator_adding.html"/>
@@ -235,5 +233,6 @@
 	<mapID target="cldc.gloss_tiledlayers" url="glossary/gloss_tiledlayers.html"/>
 	<mapID target="cldc.gloss_sprites" url="glossary/gloss_sprites.html"/>
 	<mapID target="cldc.gloss_scenes" url="glossary/gloss_scenes.html"/>
-<mapID target="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
-<mapID target="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" /> </map>
+	<mapID target="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html"/>
+</map>

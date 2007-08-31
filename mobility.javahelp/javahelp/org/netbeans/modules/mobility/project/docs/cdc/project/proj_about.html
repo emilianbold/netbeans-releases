@@ -27,49 +27,18 @@ exactly the same as inside the IDE.</p>
   <li>Sets the emulator platform for the project. </li>
   <li>Sets the project run and compile-time classpaths.</li>
   <li>Creates a build script that contains actions for running, compiling, debugging, 
-    and building Javadoc.
-	</ul>
-    <h3>Project Templates</h3>
-    
-<p>With project templates, the IDE controls all aspects of how your application 
-  is built, run, and debugged. You set a project's source directory, classpath, 
-  emulator platform, and other project settings when creating the project and 
-  in the Project Properties dialog box.</p>
-<p>The NetBeans Mobility Pack for CDC comes with the following Java ME templates:</p>
-<ul>
-  <li><strong>CDC Application.</strong> Creates a new CDC application in a standard 
-    IDE project. You can also generate a main class in the project. Standard projects 
-    use an IDE-generated Ant build script to build, run, and debug your project.</li>
-  <li><strong>CDC Class Library.</strong> Creates a new CDC library in a standard 
-    IDE project. A CDC library does not contain a main class. </li>
-  <li><strong>CDC Project with Existing Sources.</strong> Imports an existing 
-    CDC application into a standard IDE project. The CDC application can have 
-    multiple source folders.</li>
-  <li><strong>CDC Project with existing Ant Script.</strong> Imports an existing 
-    Java CDC application into a <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_about.html">free-form 
-    IDE project</a>. A free-form project uses your existing Ant build script to 
-    run, compile, and debug your project.</li>
+    and building Javadoc. 
 </ul>
-<h3>File Templates</h3>
-<p>With file templates, you specify a project, file name and location. The IDE 
-  creates the basic structure of the file, and adds it to the Application Descriptor 
-  file. Besides standard file templates known from J2SE projects (for example, 
-  Java class, Java interface, XML file, and others), the Java ME CDC project offers 
-  the following templates: </p>
-<ul>
-  <li><strong>AGUI Xlet Form. </strong>Creates a new Xlet for applications using 
-    the AGUI profile. This template contains form code that allows you to design 
-    the Xlet visually in the Form Editor.</li>
-  <li><strong>Personal Profile Xlet Form.</strong> Creates a new Xlet for applications 
-    using the Personal Profile. This template contains form code that allows you 
-    to design the Xlet visually in the Form Editor. </li>
-  <li><strong>Xlet.</strong> Creates a new xlet .This template does not contain 
-    form code that allows you to design the Xlet visually in the Form Editor. 
-    For visual design, start with the AWT template under Java GUI Forms.</li>
-</ul>
+<p>CD applications are called <em>xlets</em>. The xlet application programming 
+  model is very similar to the applet application programming model. Xlets are 
+  loaded into an xlet manager and controlled through a life cycle interface. This 
+  is similar to how an applet is loaded and run inside a browser. The main difference 
+  is that the xlet application programming model does not have implicit API requirements 
+  like<code> java.applet</code>, which allows it to be used in a greater variety 
+  of product scenarios.</p>
 <dl>
   <dt> <a name="seealso">See Also</a></dt>
-  <dd><a href="project_working.html">Working with CDC Projects</a></td></dd>
+  <dd><a href="../../projects/proj_working.html">Working with Mobility Projects</a></td></dd>
   <dd><a href="project_quickref.html">CDC Project Tasks: Quick Reference</a></dd>
 </dl>
 <hr>

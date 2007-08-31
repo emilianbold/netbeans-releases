@@ -8,40 +8,29 @@
 
 <head>
 
-<title>J2ME MIDP Templates</title>
+<title>Java ME Templates</title>
 
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
 
-<h2>Java ME MIDP Templates</h2>
+<h2>Java ME Templates</h2>
 
-<p><small><a href="#seealso">See Also</a></small>
-
-<p>The IDE provides templates for different types of project and file types. </p>
+<p><small><a href="#seealso">See Also</a></small> 
 <p>You can also create <a href="../configuration/config_about.html">project configuration 
   templates</a>. </p>
 <h3>Project Templates</h3>
-<p>With project templates, the IDE controls all aspects of how your
-  application is built, run, and debugged. You set a project's source directory,
-  classpath, emulator platform, and other project settings when creating
-the project and in the Project Properties dialog box.</p>
-<p>When the project is created, the IDE: </p>
-<ul>
-  <li>Creates a source tree you can examine in the Projects or Files views.</li>
-  <li>Sets the emulator platform for the project. </li>
-  <li>Sets the project run and compile-time classpaths.</li>
-  <li>Creates a build script that contains actions for running, compiling, debugging,
-      and building Javadoc.</li>
-<li>Compiling actions include Java ME platform-specific tasks such as preprocessing, preverification, and obfuscation.</li>
-  </ul>
-<p>The NetBeans Mobility Pack comes with the following Java ME templates:</p>
+<p>With project templates, the IDE controls all aspects of how your application 
+  is built, run, and debugged. You set a project's source directory, classpath, 
+  emulator platform, and other project settings when creating the project and 
+  in the Project Properties dialog box.</p>
+<p>The NetBeans Mobility Pack comes with the following Java ME project templates:</p>
 <ul>
   <li><strong>MIDP Application.</strong> An empty Java ME MIDP project with a 
     main class. You can choose to create the project with a Hello MIDlet as well. 
-    Choosing the Hello MIDlet opens the <a href="../mvd/mvd_about.html">Mobility 
-    Visual Designer</a>.</li>
+    Choosing the Hello MIDlet opens the <a href="../mvd/mvd_about.html">Visual 
+    Mobile Designer</a>.</li>
   <li><strong>Mobile Class Library.</strong> An empty Java ME class library with 
     no main class.<br>
     Use this template to create a library within an existing project. </li>
@@ -50,13 +39,29 @@ the project and in the Project Properties dialog box.</p>
   <li><strong>Import Wireless Toolkit Project.</strong> A Java ME MIDP project 
     that imports a project created previously in the Sun Java Wireless Toolkit. 
   </li>
+  <li><strong>CDC Application.</strong> Creates a new CDC application in a standard 
+    IDE project. You can also generate a main class in the project. Standard projects 
+    use an IDE-generated Ant build script to build, run, and debug your project.</li>
+  <li><strong>CDC Class Library.</strong> Creates a new CDC library in a standard 
+    IDE project. A CDC library does not contain a main class. </li>
+  <li><strong>Import CDC Pack 5.5 Project.</strong> Imports an existing NetBeans 
+    Mobility Pack 5.5 for CDC project into a Netbeans 6.0 IDE project. Source 
+    files are referenced from the original project.</li>
+  <li><strong>Import CDC Toolkit Project.</strong> Imports an existing Sun Java 
+    Toolkit for CDC project into a Netbeans 6.0 IDE project. Source files are 
+    referenced from the original project.</li>
 </ul>
+<p>You can also create <a href="../configuration/config_about.html">project configuration 
+  templates</a>. </p>
 <h3>File Templates</h3>
-  <p>With file templates, you specify a project, file name and location. The
-    IDE creates the basic structure of the file, and adds it to the Application
-    Descriptor file. Besides standard file templates known from J2SE projects
-    (for example, Java class, Java interface, XML file, and others), the Java ME
-    MIDP project offers the following templates: </p>
+  
+<p>With file templates, you specify a project, file name and location. The IDE 
+  creates the basic structure of the file, and adds it to the Application Descriptor 
+  file. CLDC projects create MIDlets. CDC projects create Xlets. Besides standard 
+  file templates known from J2SE projects (for example, Java class, Java interface, 
+  XML file, and others), Mobility projects for CLDC/MIDP and CDC offer the following 
+  templates: </p>
+<p>MIDP/CLDC file templates: </p>
   
 <ul>
   <li><strong>MIDlet.</strong> A basic executable class for a mobile device.</li>
@@ -77,8 +82,8 @@ the project and in the Project Properties dialog box.</p>
     generates a servlet and a Java ME class that connects to an existing web application 
     through the servlet. Optionally, you can use the wizard to create a mobile 
     client that uses an existing web service through servlet middleware.</li>
-  <li><strong>Java ME Web Services Client.</strong> A wizard that creates the 
-    code to access Web services using the 
+  <li><strong>Java ME Web Service Client.</strong> A wizard that creates the code 
+    to access Web services using the 
     <object
 classid="java:com.sun.java.help.impl.JHSecondaryViewer">
       <param name="content"
@@ -96,10 +101,27 @@ value="javax.help.LinkLabel">
     </object>
     standard.</li>
 </ul>
-  
+<p>CDC file templates:</p>
+<ul>
+  <li><strong>AGUI Xlet Form. </strong>Creates a new Xlet for applications using 
+    the AGUI profile. This template contains form code that allows you to design 
+    the Xlet visually in the Form Editor.</li>
+  <li><strong>Personal Profile Xlet Form.</strong> Creates a new Xlet for applications 
+    using the Personal Profile. This template contains form code that allows you 
+    to design the Xlet visually in the Form Editor. </li>
+  <li><strong>Xlet.</strong> Creates a new xlet .This template does not contain 
+    form code that allows you to design the Xlet visually in the Form Editor. 
+    For visual design, start with the AWT template under Java GUI Forms.</li>
+  <li><strong>Ricoh Xlet.</strong> Creates a new Ricoh xlet.</li>
+  <li><strong>CrEme JFrame Form.</strong> Creates a new JFC (Swing) Frame for 
+    CDC devices. Frames are typically used as standalone top-level windows in 
+    the main user interface to the application. Most Swing applications are built 
+    starting from this form.</li>
+</ul>
 <dl>
   <dt> <a name="seealso">See Also</a></dt>
   <dd><a href="proj_creating.html">Creating a Java ME MIDP Project</a></dd>
+  <dd><a href="proj_creating.html">About CDC Projects</a></dd>
   <dd> <a href="../getstarted/importprojects.html">Importing Java ME MIDP Projects</a></dd>
   <dd> <a href="../midlets/midlet_working.html">Working with MIDlets</a></dd>
   <dd> <a href="../mvd/mvd_working.html">Working with the Visual Mobile Designer.</a></dd>
