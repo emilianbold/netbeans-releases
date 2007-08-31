@@ -28,5 +28,21 @@ script_dir=`dirname "$0"`
 
 cd "$2"
 
-ant -f setup.xml
+echo Configuring GlassFish in `pwd`
+
+ant_bin=./lib/ant/bin/ant
+
+if [ -f $ant_bin ]
+then
+  echo Ant found:
+  ls -l $ant_bin
+  if ! [ -x $ant_bin ]
+  then
+    echo Making ant executable: $ant_bin
+    chmod a+x $ant_bin
+  fi
+  $ant_bin -f setup.xml
+else
+  echo No ant found: $ant_bin
+fi
 
