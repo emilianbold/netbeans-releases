@@ -834,7 +834,7 @@ class JavaCodeGenerator extends CodeGenerator {
             boolean expandInitComponents = false;
             boolean foldGeneratedCode = formSettings.getFoldGeneratedCode();
             if (foldGeneratedCode) {
-                String foldDescription = " " + FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
+                String foldDescription = FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
                 javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
                 if (editorPane != null) {
                     FoldHierarchy foldHierarchy = FoldHierarchy.get(editorPane);
