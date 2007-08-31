@@ -243,6 +243,8 @@ public final class GenerationUtils extends SourceUtils {
             primitiveTypeKind = TypeKind.FLOAT;
         } else if ("double".equals(typeName)) {     // NOI18N
             primitiveTypeKind = TypeKind.DOUBLE;
+        } else if ("void".equals(typeName)) {     // NOI18N
+            primitiveTypeKind = TypeKind.VOID;
         }
         if (primitiveTypeKind != null) {
             return getTreeMaker().PrimitiveType(primitiveTypeKind);
