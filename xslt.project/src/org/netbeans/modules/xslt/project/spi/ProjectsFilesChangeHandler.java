@@ -149,6 +149,7 @@ public class ProjectsFilesChangeHandler {
             fo.removeFileChangeListener(myFileChangeListener);
         }
         clearCache();
+        myChangesSupport.removeAllPropertyChangeListener();
     }
 
     
@@ -189,7 +190,7 @@ public class ProjectsFilesChangeHandler {
 
         public void fileDeleted(FileEvent fe) {
             FileObject fo = fe.getFile();
-            System.out.println("file deleted: "+fo);
+//            System.out.println("file deleted: "+fo);
             if (isSupportedFo(fo)) {
                 fo.removeFileChangeListener(this);
                 myChangesSupport.fireFileDeleted(fo);

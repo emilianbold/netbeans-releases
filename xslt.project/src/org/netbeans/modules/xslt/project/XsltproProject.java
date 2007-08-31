@@ -64,7 +64,9 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -369,39 +371,46 @@ public class XsltproProject implements Project, AntProjectListener {
             }
             
             // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
-                public Object run() {
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
-                    
-                    File f = InstalledFileLocator.getDefault().locate(MODULE_INSTALL_NAME, MODULE_INSTALL_CBN, false);
-                    if (f != null) {
-                        ep.setProperty(MODULE_INSTALL_DIR, f.getParentFile().getPath());
-                    }
-                    
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                     
-                    // Add project encoding for old projects
-                    EditableProperties projectEP = helper.getProperties(
-                                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (projectEP.getProperty(IcanproProjectProperties.SOURCE_ENCODING) == null) {
-                        projectEP.setProperty(IcanproProjectProperties.SOURCE_ENCODING,
-                                // FIXME: maybe we should use Charset.defaultCharset() instead?
-                                // See comments in IcanproProjectEncodingQueryImpl.java
-                                FileEncodingQuery.getDefaultEncoding().name());
-                    }            
-                    helper.putProperties(
-                            AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
+            try {
+                getProjectDirectory().getFileSystem().runAtomicAction(
+                        new FileSystem.AtomicAction() {
 
-                    try {
-                        ProjectManager.getDefault().saveProject(XsltproProject.this);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+                    public void run() throws IOException {
+                        ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
+
+                            public Object run() {
+                                EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                                ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
+
+                                File f = InstalledFileLocator.getDefault().locate(MODULE_INSTALL_NAME, MODULE_INSTALL_CBN, false);
+                                if (f != null) {
+                                    ep.setProperty(MODULE_INSTALL_DIR, f.getParentFile().getPath());
+                                }
+
+                                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+
+                                // Add project encoding for old projects
+                                EditableProperties projectEP = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                if (projectEP.getProperty(IcanproProjectProperties.SOURCE_ENCODING) == null) {
+                                    projectEP.setProperty(IcanproProjectProperties.SOURCE_ENCODING, FileEncodingQuery.getDefaultEncoding().name());
+                                }
+                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
+
+                                try {
+                                    ProjectManager.getDefault().saveProject(XsltproProject.this);
+                                } catch (IOException e) {
+                                    ErrorManager.getDefault().notify(e);
+                                }
+
+                                return null;
+                            }
+                        });
                     }
-                    
-                    return null;
-                }
-            });
+                });
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+            
             if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }

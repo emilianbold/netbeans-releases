@@ -18,22 +18,11 @@
  */
 package org.netbeans.modules.xslt.project.wizard;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import javax.swing.JComponent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.compapp.projects.base.ui.wizards.NewIcanproProjectWizardIterator;
 import org.netbeans.modules.xslt.project.XsltproProjectGenerator;
-import org.openide.WizardDescriptor;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**

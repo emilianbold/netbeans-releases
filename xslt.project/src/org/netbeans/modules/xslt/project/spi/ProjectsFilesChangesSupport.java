@@ -56,6 +56,15 @@ public class ProjectsFilesChangesSupport {
             writeLock.unlock();
         }
     }
+
+    public void removeAllPropertyChangeListener() {
+        writeLock.lock();
+        try {
+            myListeners.clear();
+        } finally {
+            writeLock.unlock();
+        }
+    }
     
     public void fireFileAdded(FileObject fo) 
     {
