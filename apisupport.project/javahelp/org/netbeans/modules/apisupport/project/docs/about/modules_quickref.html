@@ -40,7 +40,7 @@
       <ol>
   <li>Choose File &gt; New Project 
   (Ctrl-Shift-N). </li>
-  <li>From the NetBeans Plug-in Modules category, select <a href="../csh/LibraryStartWizardPanel.html">Library Wrapper Module</a>.</li>
+  <li>From the NetBeans Modules category, select <a href="../csh/LibraryStartWizardPanel.html">Library Wrapper Module</a>.</li>
      
 <li>Follow the steps in the rest of the wizard.</li>
 </ol>
@@ -52,14 +52,14 @@
 
 	    <p>After making a Module Suite project, 
 	    you can create module projects in it, or add existing module projects to it.
-	    Then you can set up dependenies among projects in the suite by using the 
+	    Then you can set up dependencies among projects in the suite by using the 
 	    Libraries panel of each project's Project Properties dialog box. You create
 	     a module suite project as follows:
 	    
       <ol>
   <li>Choose File &gt; New Project 
   (Ctrl-Shift-N). </li>
-  <li>From the NetBeans Plug-in Modules category, select <a href="../csh/BasicInfoWizardPanel_suite.html">Module Suite</a>.</li>
+  <li>From the NetBeans Modules category, select <a href="../csh/BasicInfoWizardPanel_suite.html">Module Suite</a>.</li>
      
 <li>Follow the steps in the rest of the wizard.</li>
 </ol>
@@ -109,9 +109,13 @@
           create a new library using the Add Library button.</li>
         <li>Select the library in the left panel of the Library Manager.</li>
         <li>In the Classpath tab, click Add JAR/Folder and specify the location 
-          of the JAR file containing the compiled class files. A library can contain 
-          multiple JAR files.</li>
-        <li>In the Sources tab, add the 
+          of the JAR file containing the compiled class files. 
+          The JAR must be the copied version in the project's 
+          <tt>release/modules/ext/</tt> directory, not its original 
+          location that you picked it up from when creating the 
+          library wrapper project. A library can contain multiple 
+          JAR files.</li>
+          <li>In the Sources tab, add the 
           folder or archive file containing the source code. </li>
       </ol>
     </td>

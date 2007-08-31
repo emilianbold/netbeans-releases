@@ -21,17 +21,18 @@
     and functionality that extend the NetBeans APIs, which you kickstart 
     by using file templates. In addition, module projects include the 
     business logic that integrate the library wrapper module projects 
-    into the module. Code housed in module projects also provide, 
+    into the module. Code housed in module projects also provides, 
     for example, the user interface for receiving and processing user input.
     <p><b>To create a module project:</b>
     <ol>
         <li>Choose File &gt; New Project 
         (Ctrl-Shift-N). </li>
-        <li>From the NetBeans Plug-in Modules category, select Module. Click Next.
+        <li>From the NetBeans Modules category, select Module. Click Next.
         <li>In the Name and Location panel, specify the following:
         <ul>
-            <li><b>Project Name. </b>Specifies the display name of the project. This name 
-            is also used to create the project folder and the context path.</li>
+            <li><b>Project Name. </b>Specifies the folder in which the project
+            will be housed, prepended by the project location, which
+            is specified in the next field.</li>
             <li><b>Project Location. </b>Specifies the location where you want to store the 
             project metadata and source code.</li>
             <li><b>Project Folder. </b>Specifies the folder where you want 
@@ -41,7 +42,7 @@
             you must specify which platform the module will be compiled and deployed against. To add additional
             platforms to the list, click Manage and use the <a href="../../csh/NbPlatformCustomizer.html">NetBeans Platform Manager</a>.
             <li><b>Add to Module Suite.</b> Specifies that the module belongs to a module suite. If the module
-            suite is not currently available in the IDE, click Browse to locate the module suite in your
+            suite is not currently open in the IDE, click Browse to locate the module suite in your
             filesystem.
             <li><b>Set as Main Project.</b> Sets the newly created project as the main
             project.</li>

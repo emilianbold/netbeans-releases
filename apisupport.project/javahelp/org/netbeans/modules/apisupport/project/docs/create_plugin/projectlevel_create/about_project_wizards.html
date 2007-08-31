@@ -23,12 +23,13 @@
         <li><b><img src="../../../ui/resources/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module project.</b>
         Use a module project as the place where you code your module. Module projects implement the
         module's features and functionality that extend the NetBeans APIs, which you kickstart by using
-        file templates. In addition, module projects include the business logic that integrate the 
-        library wrapper module projects into the module. Code housed in module projects also provide the user interface for receiving and processing user input. </li>
+        file templates. In addition, module projects include the business logic that integrates the 
+        library wrapper module projects into the module. Code housed in module projects also provides the user interface for receiving and processing user input. </li>
         
         <li><b><img src="../../../ui/resources/module.gif" width="16" height="16" alt="Library Wrapper Module icon">&nbsp;Library Wrapper Module project.</b>
         Use library wrapper module projects to put one or more library JAR files on a module's classpath.      
-        You have to export some or all of the packages as public, or the library wrapper module 
+        You have to export some or all of the packages as public, and you need to have a regular module depend on it,
+        or the library wrapper module 
         becomes useless. 
         The wizard that you use to create the library wrapper module
         project automatically exports as public any packages it finds in the JARs.</li>
@@ -85,7 +86,7 @@
             <td> 
                 <p>The JAR manifest (<tt>MANIFEST.MF</tt>) with sections defining attributes
                 for the module. By default, the <tt>MANIFEST.MF</tt> file created for a module project
-                specifies its version, name, <tt>layer.xml</tt>, localizing bundle, and specification version.
+                specifies its name, <tt>layer.xml</tt>, localizing bundle, and specification version.
             </td>
             <td>Module Project</td>
         </tr>
