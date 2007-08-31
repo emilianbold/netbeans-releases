@@ -101,7 +101,7 @@ public final class PropertiesSupport {
             }
         }
         if (!propertyEditorExists) {
-            throw new IllegalArgumentException("PropertyEditor for " + propertyName +" not fond in the component " + component); //NOI18N
+            throw new IllegalArgumentException("PropertyEditor for " + propertyName + " not found in the component " + component); //NOI18N
         }
     }
     
