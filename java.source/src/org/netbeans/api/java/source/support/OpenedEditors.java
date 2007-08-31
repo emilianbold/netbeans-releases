@@ -37,6 +37,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -242,4 +243,11 @@ class OpenedEditors implements PropertyChangeListener {
         return result;
     }
     
+    static {
+        JavaSourceSupportAccessor.ACCESSOR = new JavaSourceSupportAccessor() {
+            public Collection<FileObject> getVisibleEditorsFiles() {
+                return OpenedEditors.getDefault().getVisibleEditorsFiles();
+            }
+        };
+    }
 }

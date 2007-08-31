@@ -26,6 +26,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -70,8 +71,18 @@ public final class ModificationResult {
             }
         } finally {
             RepositoryUpdater.getDefault().unlockRU();
+            Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
             if (this.js != null) {
                 this.js.revalidate();
+                alreadyRefreshed.addAll(js.getFileObjects());
+            }
+            for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
+                if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {
+                    JavaSource source = JavaSource.forFileObject(currentlyVisibleInEditor);                
+                    if (source != null) {
+                        source.revalidate();
+                    }
+                }
             }
         }
     }
