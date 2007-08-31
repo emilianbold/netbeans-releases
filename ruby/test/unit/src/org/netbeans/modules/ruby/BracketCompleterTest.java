@@ -542,6 +542,8 @@ public class BracketCompleterTest extends RubyTestBase {
     }
     
     // Broken!!
+    // I've gotta handle proper parenthesis nesting here... e.g.
+    // %q(())
 //    public void testSinglePercent3() throws Exception {
 //        insertChar("x = %q(^)", '(', "x = %q((^))");
 //    }
@@ -662,6 +664,18 @@ public class BracketCompleterTest extends RubyTestBase {
 
     public void testPercentBackspace3() throws Exception {
         deleteChar("x=\"a#{^}b\"", "x=\"a#^b\"");
+    }
+    
+    public void testPercentBackspace4() throws Exception {
+        deleteChar("x=/#{^}/", "x=/#^/");
+    }
+
+    public void testPercentBackspace5() throws Exception {
+        deleteChar("x=/#{a^}/", "x=/#{^}/");
+    }
+
+    public void testPercentBackspace6() throws Exception {
+        deleteChar("x=/a#{^}b/", "x=/a#^b/");
     }
     
     public void testContComment() throws Exception {
@@ -787,6 +801,31 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("x = ^", '#', "x = #^");
     }
     
+    public void testInsertPercentInRegexp() throws Exception {
+        insertChar("x = /foo ^/", '#', "x = /foo #{^}/");
+    }
+
+    public void testInsertPercentInRegexp2() throws Exception {
+        // Make sure type-through works
+        insertChar("x = /foo #{^}/", '}', "x = /foo #{}^/");
+    }
+
+    public void testInsertPercentInRegexp3() throws Exception {
+        insertChar("x = /foo #{^}/", '{', "x = /foo #{^}/");
+    }
+
+    public void testInsertPercentInRegexp4() throws Exception {
+        insertChar("x = /foo #{^a}/", '}', "x = /foo #{}^a}/");
+    }
+
+    public void testInsertPercentInRegexp5() throws Exception {
+        insertChar("x = /foo {^}/", '}', "x = /foo {}^}/");
+    }
+
+    public void testInsertPercentInRegexp6() throws Exception {
+        insertChar("x = /foo {^}/", '{', "x = /foo {{^}/");
+    }
+
     public void testReplaceSelection1() throws Exception {
         insertChar("x = foo^", 'y', "x = y^", "foo");
     }

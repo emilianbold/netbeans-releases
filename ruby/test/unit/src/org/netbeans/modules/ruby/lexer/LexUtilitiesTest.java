@@ -347,4 +347,36 @@ public class LexUtilitiesTest extends RubyTestBase {
             assertFalse(LexUtilities.isInsideQuotedString(doc, i));
         }
     }
+
+    public void testIsInsideRegexp() {
+        String s = "x = /foo/ ";
+        BaseDocument doc = getDocument(s);
+        for (int i = 0; i < 4; i++) {
+            assertFalse(LexUtilities.isInsideRegexp(doc, i));
+        }
+        for (int i = 5; i <= 8; i++) {
+            assertTrue(LexUtilities.isInsideRegexp(doc, i));
+        }
+        for (int i = 9; i < s.length(); i++) {
+            assertFalse(LexUtilities.isInsideRegexp(doc, i));
+        }
+    }
+    
+    public void testIsInsideEmptyRegexp() {
+        String s = "x = //";
+        BaseDocument doc = getDocument(s);
+        for (int i = 0; i < 4; i++) {
+            assertFalse(LexUtilities.isInsideRegexp(doc, i));
+        }
+        assertTrue(LexUtilities.isInsideRegexp(doc, 5));
+        assertFalse(LexUtilities.isInsideRegexp(doc, 6));
+    }
+
+    public void testIsInsideRegexpNegative() {
+        String s = "x = 'foo'";
+        BaseDocument doc = getDocument(s);
+        for (int i = 0; i < s.length(); i++) {
+            assertFalse(LexUtilities.isInsideRegexp(doc, i));
+        }
+    }
 }

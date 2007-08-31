@@ -920,4 +920,31 @@ public class LexUtilities {
         
         return false;
     }
+
+    public static boolean isInsideRegexp(BaseDocument doc, int offset) {
+        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+
+        if (ts == null) {
+            return false;
+        }
+
+        ts.move(offset);
+
+        if (ts.moveNext()) {
+            Token<?extends GsfTokenId> token = ts.token();
+            TokenId id = token.id();
+            if (id == RubyTokenId.REGEXP_LITERAL || id == RubyTokenId.REGEXP_END) {
+                return true;
+            }
+        }
+        if (ts.movePrevious()) {
+            Token<?extends GsfTokenId> token = ts.token();
+            TokenId id = token.id();
+            if (id == RubyTokenId.REGEXP_LITERAL || id == RubyTokenId.REGEXP_BEGIN) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }

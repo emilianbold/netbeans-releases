@@ -524,8 +524,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     return true;
                 }
             } else if (ch == '#' && 
-                    LexUtilities.isInsideQuotedString(doc, target.getSelectionStart()) &&
-                    LexUtilities.isInsideQuotedString(doc, target.getSelectionEnd())) {
+                    (LexUtilities.isInsideQuotedString(doc, target.getSelectionStart()) &&
+                    LexUtilities.isInsideQuotedString(doc, target.getSelectionEnd())) ||
+                    (LexUtilities.isInsideRegexp(doc, target.getSelectionStart()) &&
+                    LexUtilities.isInsideRegexp(doc, target.getSelectionEnd()))) {
                 String selection = target.getSelectedText();
                 if (selection != null && selection.length() > 0 && selection.charAt(0) != ch) {
                     int start = target.getSelectionStart();
@@ -744,11 +746,11 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         //dumpTokens(doc, dotPos);
         switch (ch) {
         case '#': {
-            // Automatically insert #{^} when typing "#" in a quoted string
+            // Automatically insert #{^} when typing "#" in a quoted string or regexp
             Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
             TokenId id = token.id();
 
-            if (id == RubyTokenId.QUOTED_STRING_LITERAL) {
+            if (id == RubyTokenId.QUOTED_STRING_LITERAL || id == RubyTokenId.REGEXP_LITERAL) {
                 document.insertString(dotPos+1, "{}", null);
                 // Skip the "{" to place the caret between { and }
                 caret.setDot(dotPos+2);
@@ -773,7 +775,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             if ((ch == '{') && (id == RubyTokenId.ERROR && dotPos > 0)) {
                 Token<? extends GsfTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
                 TokenId prevId = prevToken.id();
-                if (prevId == RubyTokenId.STRING_LITERAL) {
+                if (prevId == RubyTokenId.STRING_LITERAL || prevId == RubyTokenId.REGEXP_LITERAL) {
                     // Avoid case where typing "#{" ends up as #{{ if user
                     // isn't used to the #{^} auto-insertion
                     if (dotPos > 1) {
@@ -787,7 +789,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 }
             }
              
-            if (ch == '}' && (id == RubyTokenId.QUOTED_STRING_LITERAL)) {
+            if (ch == '}' && (id == RubyTokenId.QUOTED_STRING_LITERAL || id == RubyTokenId.REGEXP_LITERAL)) {
                 Token<? extends GsfTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
                 TokenId prevId = prevToken.id();
                 if (prevId == RubyTokenId.EMBEDDED_RUBY) {
@@ -1074,7 +1076,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         if (ch == '{') {
             // Attempt to fix #{} in chars
             Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos-1);
-            if (token != null && token.id() == RubyTokenId.QUOTED_STRING_LITERAL) {
+            if (token != null && (token.id() == RubyTokenId.QUOTED_STRING_LITERAL || token.id() == RubyTokenId.REGEXP_LITERAL)) {
                 String s = document.getText(dotPos-1, 2);
                 if ("#}".equals(s)) {
                     // We have just deleted a #{} segment
