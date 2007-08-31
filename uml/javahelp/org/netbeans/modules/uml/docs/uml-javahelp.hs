@@ -22,12 +22,6 @@
 		<data>uml-javahelp-TOC.xml</data>
 	</view>
 	<view>
-		<name>Index</name>
-		<label>Index</label>
-		<type>javax.help.IndexView</type>
-		<data>uml-javahelp-IX.xml</data>
-	</view>
-	<view>
 		<name>Search</name>
 		<label>Search</label>
 		<type>javax.help.SearchView</type>
