@@ -338,7 +338,8 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
 
     // do not update state of editor is shown
     boolean needsUpdate() {
-        return !isShowing();
+//        return !isShowing();
+        return true;
     }
 
     public void goToSource() {

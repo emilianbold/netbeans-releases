@@ -67,7 +67,7 @@ public final class PropertiesSupport {
             Debug.warning("Calling PropertiesSupport.showPropertyEditorForCurrentComponent form write transaction may generate problems"); //NOI18N
         DataEditorView view = ActiveViewSupport.getDefault().getActiveView();
         assert (view != null);
-        Sheet sheet = PropertiesNodesManager.getInstance(view).createSheet(component);
+        Sheet sheet = PropertiesNodesManager.getInstance(view).getSheet(component);
         for (PropertySet propertySet : sheet.toArray()) {
             for (Property property : propertySet.getProperties()) {
                 if(propertyName.equals(property.getName())) {
@@ -81,7 +81,7 @@ public final class PropertiesSupport {
                         HelpCtx helpCtx = new HelpCtx((String)helpID);
                         dd.setHelpCtx(helpCtx);
                     }
-                    
+                    property.getPropertyEditor().getCustomEditor(); // initialization of CustomEditor, issue #113195
                     Object res = DialogDisplayer.getDefault().notify(dd);
                     
                     if (res == DialogDescriptor.OK_OPTION) {

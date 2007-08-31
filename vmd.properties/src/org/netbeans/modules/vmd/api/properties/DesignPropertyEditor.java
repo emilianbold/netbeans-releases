@@ -46,7 +46,7 @@ import org.openide.nodes.PropertySupport;
  * @author Karol Harezlak
  */
 
-public abstract class DesignPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, Factory {
+ public abstract class DesignPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, Factory {
     
     private List<String> propertyNames;
     private WeakReference<DesignComponent> component;
@@ -108,7 +108,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     @Override
     public boolean supportsCustomEditor() {
         Collection components = ActiveDocumentSupport.getDefault().getActiveComponents();
-        if (components != null && components.size() == 1 && getCustomEditor() != null)
+        if (components != null && components.size() == 1)
             return true;
         
         return false;

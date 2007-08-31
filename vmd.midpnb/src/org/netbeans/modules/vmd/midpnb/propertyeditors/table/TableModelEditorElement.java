@@ -130,7 +130,8 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
 
     public synchronized void tableChanged(TableModelEvent e) {
         setTableCellRenderer();
-        if (isShowing() && !doNotFireEvent) {
+//        if (isShowing() && !doNotFireEvent) {
+        if (!doNotFireEvent) {
             Vector dataVector = tableModel.getDataVector();
             boolean useHeader = tableModel.hasHeader();
 

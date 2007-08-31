@@ -83,7 +83,8 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     
     @Override
     public Component getCustomEditor() {
-        if (component != null && component.get() != null && !customEditor.isShowing()) {
+//        if (component != null && component.get() != null && !customEditor.isShowing()) {
+        if (component != null && component.get() != null) {
             final DesignComponent _component = component.get();
             _component.getDocument().getTransactionManager().readAccess(new Runnable() {
 

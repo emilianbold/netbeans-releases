@@ -47,12 +47,11 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     private static final int BORDER_LINE_WIDTH = 1;
     private static final int CELL_INSETS = 2;
     private static final int DOUBLE_CELL_INSETS = CELL_INSETS * 2;
-
     private static final Stroke BORDER_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 0f, new float[]{3f, 3f}, 0f);
-
     private JPanel panel;
     private static JLabel label;
     private boolean hasModel;
+    private boolean drawBorders;
     private String[] columnNames;
     private String[][] values;
 
@@ -130,29 +129,31 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             }
 
             // draw borders
-            g2D.setStroke(BORDER_STROKE);
-            g.drawRect(0, 0, width - 1, height - 1);
-            g.drawLine(0, cummulativeY, width, cummulativeY);
-            int borderY = 0;
-            if (columnNames != null) {
-                borderY += ScreenSupport.getFontHeight(g, headersFont) + DOUBLE_CELL_INSETS;
-                g.drawLine(0, borderY, width, borderY);
-                borderY++;
-            }
-            if (values != null && values.length > 0) {
-                // horizontal lines
-                for (int i = 0; (i < values.length) && (borderY < height); i++) {
-                    borderY += ScreenSupport.getFontHeight(g, valuesFont) + DOUBLE_CELL_INSETS;
+            if (drawBorders) {
+                g2D.setStroke(BORDER_STROKE);
+                g.drawRect(0, 0, width - 1, height - 1);
+                g.drawLine(0, cummulativeY, width, cummulativeY);
+                int borderY = 0;
+                if (columnNames != null) {
+                    borderY += ScreenSupport.getFontHeight(g, headersFont) + DOUBLE_CELL_INSETS;
                     g.drawLine(0, borderY, width, borderY);
                     borderY++;
                 }
+                if (values != null && values.length > 0) {
+                    // horizontal lines
+                    for (int i = 0; (i < values.length) && (borderY < height); i++) {
+                        borderY += ScreenSupport.getFontHeight(g, valuesFont) + DOUBLE_CELL_INSETS;
+                        g.drawLine(0, borderY, width, borderY);
+                        borderY++;
+                    }
 
-                // vertical lines
-                int borderX = 0;
-                int rows = values[0].length;
-                for (int i = 0; (i < rows) && (borderX < width); i++) {
-                    g.drawLine(borderX, headersY, borderX, height - 1);
-                    borderX += colWidths[i];
+                    // vertical lines
+                    int borderX = 0;
+                    int rows = values[0].length;
+                    for (int i = 0; (i < rows) && (borderX < width); i++) {
+                        g.drawLine(borderX, headersY, borderX, height - 1);
+                        borderX += colWidths[i];
+                    }
                 }
             }
         }
@@ -165,6 +166,8 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         hasModel = tableModelComponent != null;
 
         if (hasModel) {
+            drawBorders = MidpTypes.getBoolean(getComponent().readProperty(TableItemCD.PROP_BORDERS));
+            
             PropertyValue columnsProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_COLUMN_NAMES);
             List<PropertyValue> list = columnsProperty.getArray();
             if (list != null) {

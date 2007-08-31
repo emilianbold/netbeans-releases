@@ -68,12 +68,12 @@ public class PropertyEditorTableModel extends DesignPropertyEditor implements Pr
         
     @Override
     public Component getCustomEditor() {
-        if (customEditorPanel.isShowing()) {
+        //if (customEditorPanel.isShowing()) {
             if (component != null && component.get() != null) {
                 customEditor.setDesignComponentWrapper(new DesignComponentWrapper(component.get()));
             }
             customEditor.setAllEnabled(true);
-        }
+        //}
         return customEditorPanel;
     }
 

@@ -76,13 +76,11 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
 
     @Override
     public Component getCustomEditor() {
-        if (!customEditor.isShowing()) {
-            PropertyValue value = (PropertyValue) super.getValue();
-            if (value != null) {
-                customEditor.setText(MidpTypes.getJavaCode(value));
-            }
-            customEditor.init();
+        PropertyValue value = (PropertyValue) super.getValue();
+        if (value != null) {
+            customEditor.setText(MidpTypes.getJavaCode(value));
         }
+        customEditor.init();
         return customEditor;
     }
 

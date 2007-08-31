@@ -424,7 +424,8 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
     }//GEN-LAST:event_chooserButtonActionPerformed
 
     private void pathTextComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pathTextComboBoxActionPerformed
-        if (isShowing() && !doNotFireEvent) {
+//        if (isShowing() && !doNotFireEvent) {
+        if (!doNotFireEvent) {
             String text = (String) pathTextComboBox.getSelectedItem();
             fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
             updatePreview();

@@ -124,7 +124,8 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
     }
 
     private synchronized void textChanged() {
-        if (isShowing() && !doNotFireEvent) {
+//        if (isShowing() && !doNotFireEvent) {
+        if (!doNotFireEvent) {
             fireElementChanged(componentID, TickerCD.PROP_STRING, MidpTypes.createStringValue(tickerTextField.getText()));
         }
     }

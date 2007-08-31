@@ -97,7 +97,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
      */
     @Override
     public final Component getCustomEditor() {
-        if (!customEditor.isShowing()) {
+//        if (!customEditor.isShowing()) {
             PropertyValue value = (PropertyValue) super.getValue();
             if (isCurrentValueAUserCodeType()) {
                 customEditor.setUserCodeText(value.getUserCode());
@@ -107,7 +107,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
                 customEditor.updateState(value);
             }
             customEditor.init();
-        }
+//        }
         return customEditor;
     }
 

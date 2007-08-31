@@ -132,14 +132,6 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
     }
 
     @Override
-    public Boolean canEditAsText() {
-        if (isCurrentValueAUserCodeType()) {
-            return super.canEditAsText();
-        }
-        return true;
-    }
-
-    @Override
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;

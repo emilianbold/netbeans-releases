@@ -328,6 +328,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             } else {
                 textComponent = editorPane = new JTextField();
             }
+            editorPane.getDocument().addDocumentListener(this);
 
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
