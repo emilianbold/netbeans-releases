@@ -19,7 +19,6 @@
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath;
 
 import java.text.MessageFormat;
-import javax.xml.XMLConstants;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.Form;
@@ -209,8 +208,8 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
             String nsUri = null;
             if (nsPrefix == null) {
                 //
-                // If the prefix isn't specified then the step component can
-                // be considered as an unqualified schema object.
+                // If the prefix isn't specified for the global object 
+                // then the checkNsPrefixes should show warning
                 // 
                 // If the prefix isn't specified then the step component can
                 // be considered as an unqualified schema object.
@@ -221,9 +220,7 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
                 // default namespace as for global elements in such case. 
                 // The child element has to be found among all children 
                 // by name only. 
-                if (parentComponent != null) {
-                    nsUri = null; 
-                }
+                nsUri = null; 
             } else {
                 WSDLComponent contentElement = myContext.getXpathContentElement();
                 assert contentElement instanceof AbstractDocumentComponent;
@@ -258,8 +255,13 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
                     return;
                 }
                 //
-                assert nsUri != null : "it can be null for local components only.";  // NOI18N
-                if (nsUri.equals(namespace) && nodeName.equals(name)) {
+                boolean isSuitableType = false;
+                if (nsUri == null) {
+                    isSuitableType = nodeName.equals(name);
+                } else {
+                    isSuitableType = (nsUri.equals(namespace) && nodeName.equals(name));
+                }
+                if (isSuitableType) {
                     foundComponent = rootComp;
                 } else {
                     // Error. The XPath has to be started from another global object
@@ -448,7 +450,7 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
             //
             // Check if the prefix is declared for the namespace URI
             String preferredPrefix = null;
-            if (nsPrefix == null) {
+            if (nsUri != null && nsPrefix == null) {
                 preferredPrefix = getPrefixByNsUri(nsUri);
                 //
                 if (preferredPrefix == null) {
