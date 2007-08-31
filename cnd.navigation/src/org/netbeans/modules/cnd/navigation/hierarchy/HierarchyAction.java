@@ -1,11 +1,9 @@
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
 import java.awt.event.ActionEvent;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
@@ -15,12 +13,16 @@ import org.openide.windows.TopComponent;
 public class HierarchyAction extends CallableSystemAction {
 
     public HierarchyAction() {
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(HierarchyTopComponent.ICON_PATH, true)));
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
         performAction();
+    }
+
+    @Override
+    protected String iconResource() {
+        return HierarchyTopComponent.ICON_PATH;
     }
 
     public void performAction() {
@@ -46,8 +48,4 @@ public class HierarchyAction extends CallableSystemAction {
     protected boolean asynchronous () {
         return false;
     }
-    
-
-    
-    
 }
