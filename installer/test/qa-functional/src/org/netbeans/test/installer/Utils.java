@@ -58,7 +58,7 @@ public class Utils {
     public static final int DELAY = 50;
 
     public static final String NEWLINE_REGEXP = "(?:\n\r|\r\n|\n|\r)";
-    public static final String NB_DOWNLOAD_PAGE = "http://bits.netbeans.org/netbeans/6.0/nightly/latest/";
+    public static final String NB_DOWNLOAD_PAGE = "http://bits.netbeans.org/netbeans/6.0/nightly/latest/js/download.js";
     private static final Pattern PATTERN = Pattern.compile("NetBeans IDE 6.0 Build (20[0-9]{10})");
 
     public static final String NB_DIR_NAME = "NetBeans";
