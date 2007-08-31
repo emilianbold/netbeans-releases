@@ -181,7 +181,7 @@ public class AbstractProject implements JavaEEProject{
         
     }
     
-    private String renameToSvcUnitExtension(String javaEEName){
+    protected String renameToSvcUnitExtension(String javaEEName){
         StringBuffer ret = new StringBuffer();
         int index = -1;
         if (javaEEName != null){

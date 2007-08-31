@@ -562,7 +562,7 @@ public class JbiProjectProperties {
     private List<VisualClassPathItem> bindingList = new Vector();
     private List<AntArtifact> sunresourceProjs;
     javax.swing.text.Document DIST_JAR_MODEL;
-    
+    private static final char ANT_FILE_SEPERATOR = '/';
     /**
      * Creates a new JbiProjectProperties object.
      *
@@ -983,7 +983,26 @@ public class JbiProjectProperties {
         
         return targetElement;
     }
+
+    private static String[] getFileNameParts(String antLoc){
+        // Ex: antLoc = "dist/ejb1.jar
+        String[] ret = new String[3];
         
+        int fileSepIndx = antLoc.lastIndexOf(ANT_FILE_SEPERATOR);
+        if (fileSepIndx != -1){
+            String fileName = antLoc.substring(fileSepIndx + 1);
+            int dotIndx = fileName.indexOf("."); //NOI18N
+            if (dotIndx != -1){
+                String projName = fileName.substring(0, dotIndx);
+                String ext = fileName.substring(dotIndx + 1);
+                ret[0] = fileName;
+                ret[1] = projName;
+                ret[2] = ext;
+            }
+        }
+        return ret;
+    }
+    
     private static Element generateServiceUnitElement(JbiProject jbiProject,
             Document document, VisualClassPathItem vi, String target, 
             boolean isEngine) {
@@ -1005,9 +1024,17 @@ public class JbiProjectProperties {
         String suJarName;
         
         if (isEngine) {
-            String suProjName = vi.getProjectName();
-            suName = jbiProjName + "-" + suProjName; // NOI18N
-            suJarName = suProjName + ".jar"; // e.x., SynchronousSample.jar // NOI18N
+            if (VisualClassPathItem.isJavaEEProjectAntArtifact(aa)){
+                // Get the Java EE archive name with extension.
+                String[] fileParts = getFileNameParts(
+                        aa.getArtifactLocations()[0].toString());
+                suJarName =  fileParts[0] ;                
+                suName = jbiProjName + "-" + fileParts[1]; //NOI18N
+            } else {
+                String suProjName = vi.getProjectName(); 
+                suName = jbiProjName + "-" + suProjName; //NOI18N
+                suJarName = suProjName + ".jar"; // e.x., SynchronousSample.jar // NOI18N                
+            }
         } else {
             suName = jbiProjName + "-" + target; // NOI18N
             suJarName = target + ".jar"; // e.x., sun-http-binding.jar // NOI18N

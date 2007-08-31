@@ -589,17 +589,10 @@ public class BuildServiceAssembly extends Task {
     private String getLocalJavaEEJarPath(String dir, String subProjectJar){
         File sJar = null;
         String ret = null;
-        int index = 0;
         if (subProjectJar != null){
             sJar = new File(subProjectJar);
-            ret = sJar.getName();
-            index = ret.lastIndexOf(".");
-            if (index > -1){
-                ret = dir + "/" + ret.substring(0, index + 1);
-                ret = ret + "jar" ; // No I18N
-            }
+            ret = dir + "/" + sJar.getName(); //NOI18N
         }
-        
         return ret;
     }
     

@@ -41,12 +41,12 @@ import org.netbeans.modules.compapp.javaee.annotation.handler.JarClassFileLoader
 /**
  * Scans the WEB-INF folder for any Class files.
  * Scans for JAX-WS annotations.
- * @TODO Scaning any other jars embedded inside WEB-INF\lib.
  * @author gpatil
  */
 public class WebappProject extends AbstractProject{
     private static Logger logger = Logger.getLogger(WebappProject.class.getName());
-    private static String CLASSES_DIR = "WEB-INF/classes/" ;
+    private static String CLASSES_DIR = "WEB-INF/classes/" ; //NOI18N
+    private static String SU_FILE_EXT = "war" ; //NOI18N
     /**
      * Creates a new instance of WebappProject
      */
@@ -62,7 +62,7 @@ public class WebappProject extends AbstractProject{
             Enumeration<JarEntry> jes = jf.entries();
             while(jes.hasMoreElements()){
                 JarEntry je = jes.nextElement();
-                if (je.getName().startsWith(CLASSES_DIR) && je.getName().endsWith(".class")){
+                if (je.getName().startsWith(CLASSES_DIR) && je.getName().endsWith(".class")){ //NOI18N
                     logger.finest("Checking Annotation in:" + je.getName());
                     // Load the class only if annotations are present.
                     if (ClassInfo.containsAnnotation(Channels.newChannel(jf.getInputStream(je)), je.getSize(), annotations)) {
@@ -82,6 +82,20 @@ public class WebappProject extends AbstractProject{
         }
     }
 
+    protected String renameToSvcUnitExtension(String javaEEName){
+        StringBuffer ret = new StringBuffer();
+        int index = -1;
+        if (javaEEName != null){
+            index = javaEEName.lastIndexOf("."); //NOI18N
+            if (index >= 0){
+                ret.append(javaEEName.substring(0, index + 1));
+                ret.append(SU_FILE_EXT);
+            }
+        }
+        
+        return ret.toString();
+    }
+    
     protected URL getClassPathURL(){
         URL ret = null;
         try {

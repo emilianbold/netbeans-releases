@@ -122,11 +122,12 @@ public class JbiProjectConstants {
     // End Test Framework
 
     // J2EE add-on...
-    public static final String JAVA_EE_SE_COMPONENT_NAME = "sun-javaee-engine" ; // No I18N
+    public static final String JAVA_EE_SE_COMPONENT_NAME = "sun-javaee-engine" ; // NOI18N
+    public static final String JAVA_EE_EAR_COMPONENT_ARCHIVE = "j2ee_ear_archive"; // NOI18N
     public static final List<String> JAVA_EE_AA_TYPES = new ArrayList<String>();
     static {
         // For both EJB and Web Projects use the same target
-        JbiProjectConstants.JAVA_EE_AA_TYPES.add("j2ee_ear_archive"); //NOI18N
+        JbiProjectConstants.JAVA_EE_AA_TYPES.add(JAVA_EE_EAR_COMPONENT_ARCHIVE); //NOI18N
     } ;
 
     private JbiProjectConstants() {

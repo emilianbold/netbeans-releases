@@ -637,7 +637,8 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         Element target = (Element) jbiSU.getElementsByTagName(JBI_TARGET_ELEM_NAME).item(0);
         Element artifactsZip = (Element) target.getElementsByTagName(JBI_ARTIFACTS_ZIP_ELEM_NAME).item(0);
         String zipFileName = artifactsZip.getFirstChild().getNodeValue();
-        assert zipFileName.endsWith(".jar");
+        // Java EE application can have extension '.war' and 'ear'
+        //assert zipFileName.endsWith(".jar");
         return zipFileName.substring(0, zipFileName.length() - 4);
     }
        

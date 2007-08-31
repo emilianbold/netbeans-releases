@@ -30,6 +30,7 @@ import org.openide.nodes.Node;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.jeese.ui.JavaEEModuleNode;
 
 /**
@@ -40,7 +41,6 @@ import org.netbeans.modules.compapp.projects.jbi.jeese.ui.JavaEEModuleNode;
  */
 public class JbiModuleViewChildren extends Children.Keys implements PropertyChangeListener {
     private final JbiProject project;
-    private List<String> jeeTypes = new ArrayList<String>();
     
     /**
      * Creates a new JbiModuleViewChildren object.
@@ -49,9 +49,6 @@ public class JbiModuleViewChildren extends Children.Keys implements PropertyChan
      */
     public JbiModuleViewChildren(JbiProject project) {
         this.project = project;
-        this.jeeTypes.add("jar"); // No I18N
-        this.jeeTypes.add("war"); // No I18N
-        this.jeeTypes.add("ear"); // No I18N
     }
     
     /**
@@ -131,7 +128,7 @@ public class JbiModuleViewChildren extends Children.Keys implements PropertyChan
         Node[]  ret = null;
         if (obj instanceof AntArtifact) {
             aa = (AntArtifact) obj;
-            if (this.jeeTypes.contains(aa.getType())){
+            if (aa.getType().startsWith(JbiProjectConstants.JAVA_EE_EAR_COMPONENT_ARCHIVE)){
                 ret = new Node[] {new JavaEEModuleNode(vcpi, this.project )};
             } else {
                 ret = new Node[] {new JbiModuleNode(vcpi)};
