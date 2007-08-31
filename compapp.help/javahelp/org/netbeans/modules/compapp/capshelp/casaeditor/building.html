@@ -19,24 +19,15 @@
 <body>
 <h2>Building a Composite Application</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>When you build a composite application, you create a service assembly. The service assembly contains service units representing each of the service engines or binding components that make up the composite application. After you create the service assembly, you can deploy the service assembly to the application server.</p>
-<p>You can build a composite application from either the composite application project in the NetBeans Project window, or from within the CASA Editor. You typically build the composite application from within the CASA Editor for the following reasons:</p>
-<ul>
-	<li>
-	You have a new composite application that you have not previously built.
-	<br>The CASA Editor cannot display the relative layout of the components unless you build the composite application.
-	</li>
-	<li>
-	You have modified the configuration of a composite application.
-	<br>You can then deploy the composite application with the modifications you have made.
-	</li>
-</ul>
+<p>When you build a composite application, you create a Service Assembly. The Service Assembly contains Service Units that represent the processing logic for the run-time Service Engines or Binding Components. After building the composite application, you can deploy the application to the application server.</p>
+<p>You can build a composite application from within the CASA Editor or by using the JBI Manager in the NetBeans Project window.</p>
 
 <p><b>To build a composite application in the CASA Editor:</b></p>
 <ol>
 <li>From the Editor Toolbar, select the Build Project button.
 <br>
 If this is the first time the composite application has been built, the CASA Editor arranges the components and their connections in the Design Area of the editor.
+<br><br><b>Note: </b>The build process from the CASA Editor is identical to building the composite application using the JBI Manager in the Projects window.
 </li>
 </ol>
 

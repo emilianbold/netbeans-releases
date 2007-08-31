@@ -20,32 +20,30 @@
 <body>
 <h2>Connecting to External Services</h2>
 <p>
-Use the CASA Editor to connect to deployed services available from another composite application. You can connect to external services by dragging a deployed service unit to the External Modules section of the CASA Editor.
+Use the CASA Editor to connect to external Services Units (Service Units available from another composite application). There are two ways to add a reference to an external Service Unit.
 </p>
-<p>
-You can also drag an external Service Unit from the Palette to the External Modules section. After you drag the external Service Unit, you must configure it before it can be connected to components in the composite application.
-</p>
-<p>
-The following procedures assume you have deployed an additional composite application that contains services to which you want to connect.
-</p>
+<ul>
+	<li>Use the JBI Manager to add a deployed Service Unit to a composite application.</li>
+	<li>Use the CASA Editor Palette to add an external Service Unit.</li>
+</ul>
 
-<p><b>To connect to deployed services from another composite application:</b></p>
+<p><b>To use the JBI Manager to add a deployed Service Unit:</b></p>
 <ol>
 	<li>If the CASA Editor is not open, in the Project window right-click your composite application and select Edit Application Configuration.</li>
 	<li>
 	Open the Services window and expand the following nodes:
-	<br><tt>Servers&nbsp;>&nbsp;GlassFish V2&nbsp;>&nbsp;JBI&nbsp;>&nbsp;Service &nbsp;Assemblies</tt>
+	<br><tt>Servers&nbsp;&gt;&nbsp;GlassFish V2&nbsp;&gt;&nbsp;JBI&nbsp;&gt;&nbsp;Service Assemblies</tt>
 	</li>
 	<li>Expand the node of the Service Assembly to which you want to connect.</li>
 	<li>
 	Select the desired Service Unit and drag it to the External Modules area of the CASA Editor.
-	<br><b>Note: </b>You can only drop Service Units representing services, not Binding Components.
+	<br><b>Note: </b>You can only drop Service Units accessing Service Engines, not Binding Components.
 	</li>
 	<li>
 	Add any Consume or Provide endpoints you might need to the Service Unit by dragging the endpoints from the Palette.
 	</li>
 	<li>
-	Connect the Service Unit to a JBI module or a WSDL Binding.
+	Connect the Service Unit to a JBI module or a WSDL port.
 	<br>You might have to first define the interface to a WSDL Binding before you connect to the binding. For more information, refer to <a href="connections.html">Connecting Composite Application Components</a>.
 	</li>
 	<li>
@@ -55,7 +53,7 @@ The following procedures assume you have deployed an additional composite applic
 </ol>
 
 
-<p><b>To add and configure an external Service Unit:</b></p>
+<p><b>To use the CASA Editor Palette to add an external Service Unit:</b></p>
 <ol>
 	<li>From the Palette, select the icon for an external Service Unit.
 	</li>
@@ -67,7 +65,7 @@ The following procedures assume you have deployed an additional composite applic
 	Add any Consume or Provide endpoints you might need to the Service Unit by dragging the endpoints from the Palette.
 	</li>
 	<li>
-	Connect the Service Unit to a JBI module or a WSDL Binding.
+	Connect the Service Unit to a JBI module or a WSDL port.
 	<br>You might have to first define the interface to a WSDL Binding before you connect to the binding. For more information, refer to <a href="connections.html">Connecting Composite Application Components</a>.
 	</li>
 	<li>
