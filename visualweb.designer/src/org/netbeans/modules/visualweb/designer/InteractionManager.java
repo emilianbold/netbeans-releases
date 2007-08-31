@@ -702,10 +702,14 @@ public class InteractionManager {
 //        Position pos = Position.NONE;
         DomPosition pos = DomPosition.NONE;
 
-        if (!box.isGrid() /* && (insertBox != null)*/
+        // XXX #94219 We need to try to get the position for grid also!
+//        if (!box.isGrid() /* && (insertBox != null)*/
+//        // XXX #97697 Do not process external document boxes, like fragments.
+//        // TODO Revise how to properly handle the fragments.
+//        && !(box instanceof ExternalDocumentBox)) {
         // XXX #97697 Do not process external document boxes, like fragments.
         // TODO Revise how to properly handle the fragments.
-        && !(box instanceof ExternalDocumentBox)) {
+        if (!(box instanceof ExternalDocumentBox)) {
             finishInlineEditing(true);
             assert getInlineEditor() == null;
 //            pos = pane.viewToModel(p);
