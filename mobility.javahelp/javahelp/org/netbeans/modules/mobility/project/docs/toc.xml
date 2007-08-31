@@ -3,6 +3,12 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+    <tocitem text="IDE Basics">
+        <tocitem text="Getting Started">
+            <tocitem text="Mobile Applications" target="me.proj_working_top"/>
+            </tocitem>
+        </tocitem>
+        
 	<tocitem text="Web Services" expand="false">
 		<tocitem text="Using Mobile Applications" expand="false">
 			<tocitem text="Connecting MIDP Applications to Web Services" target="me.wcw_creating" />

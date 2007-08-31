@@ -58,7 +58,8 @@
 	<mapID target="me.config_add" url="configuration/config_add.html"/>
 	<mapID target="me.config_about" url="configuration/config_about.html"/>
 	<mapID target="me.proj_working" url="projects/proj_working.html"/>
-	<mapID target="me.proj_templates" url="projects/proj_templates.html"/>
+	<mapID target="me.proj_working_top" url="projects/proj_working.html#top"/>
+        <mapID target="me.proj_templates" url="projects/proj_templates.html"/>
 	<mapID target="me.proj_creating" url="projects/proj_creating.html"/>
 	<mapID target="me.preprocess_about" url="configuration/preprocess_about.html"/>
 	<mapID target="me.config_setdefault" url="configuration/config_setdefault.html"/>
