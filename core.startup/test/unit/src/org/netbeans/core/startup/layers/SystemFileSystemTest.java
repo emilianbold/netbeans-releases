@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
-import junit.framework.TestCase;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.Main;
@@ -84,8 +83,6 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
         MainLookup.unregister(fs1, this);
         MainLookup.unregister(fs2, this);
     }
-
-    
 
     public void testUserHasPreferenceOverFSs() throws Exception {
         FileObject global = FileUtil.createData(fs.getRoot(), "dir/file.txt");
@@ -174,16 +171,14 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
     public void testPreferenceOfLayersNowDynamicSystemsCanHideWhatComesFromLayers() throws Exception {
         ModuleManager mgr = Main.getModuleSystem ().getManager();
         mgr.mutexPrivileged().enterWriteAccess();
-        Module m1 = null;
+        Module m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
         FileObject global;
         try {
-            m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             mgr.enable(m1);
             global = fs.findResource("foo/file2.txt");
             assertNotNull("File Object installed: " + global, global);
             assertEquals("base contents", read(global));
-            
             
             FileObject fo1 = FileUtil.createData(fs1.getRoot(), global.getPath());
             fo1.setAttribute("one", 1);
@@ -204,8 +199,6 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
             assertTrue("At least two ", it.hasNext());
             assertEquals("first is fs2", fs2, it.next());
             
-            
-            
             assertEquals("fileone", read(global));
         } finally {
             mgr.disable(m1);
@@ -219,9 +212,8 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
     public void testCanHideFilesFromModules() throws Exception {
         ModuleManager mgr = Main.getModuleSystem ().getManager();
         mgr.mutexPrivileged().enterWriteAccess();
-        Module m1 = null;
+        Module m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
         try {
-            m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             mgr.enable(m1);
             FileObject global = fs.findResource("foo/file2.txt");
@@ -240,7 +232,6 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
             mgr.delete(m1);
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        
     }
     
     private static void write(FileObject fo, String txt) throws IOException {
