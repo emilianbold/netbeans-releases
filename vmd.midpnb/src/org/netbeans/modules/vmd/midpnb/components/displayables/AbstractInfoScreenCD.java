@@ -56,8 +56,8 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
     public static final String PROP_TEXT = "text"; // NOI18N
     public static final String PROP_TEXT_FONT = "textFont"; // NOI18N
     
-    public static final String[] MIDP_NB_LIBRARY_PDA = {"netbeans_midp_components_pda"}; // NOI18N
-    public static final String[] MIDP_NB_LIBRARY_WMA = {"netbeans_midp_components_wma"}; // NOI18N
+    public static final String[] MIDP_NB_LIBRARY_PDA = {"NetBeans MIDP Components PDA"}; // NOI18N
+    public static final String[] MIDP_NB_LIBRARY_WMA = {"NetBeans MIDP Components WMA"}; // NOI18N
     public static final String[] MIDP_NB_LIBRARY_BASIC = {"NetBeans MIDP Components"}; // NOI18N
 
     public AbstractInfoScreenCD () {
