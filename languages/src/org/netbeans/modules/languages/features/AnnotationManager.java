@@ -19,6 +19,18 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.text.Position;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.languages.EditorParser;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
@@ -34,17 +46,6 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.text.Annotation;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.languages.EditorParser;
 
 
 /**
@@ -108,8 +109,9 @@ public class AnnotationManager extends ASTEvaluator {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 try {
-                    removeAnnotations ();
-                    annotations = new ArrayList<LanguagesAnnotation> ();
+                    List<LanguagesAnnotation> newAnnotations = new ArrayList<LanguagesAnnotation> ();
+                    Iterator<LanguagesAnnotation> it = annotations.iterator ();
+                    LanguagesAnnotation oldAnnotation = it.hasNext () ? it.next () : null;
                     Iterator<ASTItem> it2 = items.iterator ();
                     Iterator<Feature> it3 = marks.iterator ();
                     while (it2.hasNext ()) {
@@ -121,8 +123,26 @@ public class AnnotationManager extends ASTEvaluator {
                             message = language.localize(message);
                         } catch (LanguageDefinitionNotFoundException e) {
                         }
+                        String type = (String) mark.getValue ("type");
+                        while (
+                            oldAnnotation != null &&
+                            oldAnnotation.getPosition ().getOffset () < item.getOffset ()
+                        ) {
+                            doc.removeAnnotation (oldAnnotation);
+                            oldAnnotation = it.hasNext () ? it.next () : null;
+                        }
+                        if (
+                            oldAnnotation != null &&
+                            oldAnnotation.getPosition ().getOffset () == item.getOffset () &&
+                            oldAnnotation.getAnnotationType ().equals (type) &&
+                            oldAnnotation.getShortDescription ().equals (message)
+                        ) {
+                            newAnnotations.add (oldAnnotation);
+                            oldAnnotation = it.hasNext () ? it.next () : null;
+                            continue;
+                        }
                         LanguagesAnnotation la = new LanguagesAnnotation (
-                            (String) mark.getValue ("type"),
+                            type,
                             message
                         );
    
@@ -134,15 +154,24 @@ public class AnnotationManager extends ASTEvaluator {
                             //test if next token contains the ASTItem's language embedding
                             if(!(ts.moveNext() && testCreateAnnotation(hi, ts, item, la)))
                                 //if not, do the same with previous token
-                              if(!(ts.movePrevious() && testCreateAnnotation(hi, ts, item, la))) {
-                                  //give up - use default annotation location
-                                  doc.addAnnotation(doc.createPosition(item.getOffset()), item.getLength(), la);
-                              }
+                                if(!(ts.movePrevious() && testCreateAnnotation(hi, ts, item, la))) {
+                                    //give up - use default annotation location
+                                    Position position = doc.createPosition(item.getOffset ());
+                                    la.setPosition (position);
+                                    doc.addAnnotation(doc.createPosition(item.getOffset()), item.getLength(), la);
+                                }
                         } else {
+                            Position position = doc.createPosition(item.getOffset ());
+                            la.setPosition (position);
                             doc.addAnnotation(doc.createPosition(item.getOffset()), item.getLength(), la);
                         }
-                        annotations.add (la);
-                    }
+                        newAnnotations.add (la);
+                    } // while
+                    if (oldAnnotation != null)
+                        doc.removeAnnotation (oldAnnotation);
+                    while (it.hasNext ())
+                        doc.removeAnnotation (it.next ());
+                    annotations = newAnnotations;
                 } catch (BadLocationException ex) {
                     //ErrorManager.getDefault ().notify (ex);
                     System.out.println ("AnnotationManager " + ex);
@@ -154,7 +183,9 @@ public class AnnotationManager extends ASTEvaluator {
     private boolean testCreateAnnotation(TokenHierarchy hi, TokenSequence ts, ASTItem item, LanguagesAnnotation la) throws BadLocationException {
         if (ts.language().mimeType().equals(item.getMimeType())) {
                 Token t = ts.token();
-                doc.addAnnotation(doc.createPosition(t.offset(hi)), t.length(), la);
+                Position position = doc.createPosition(t.offset(hi));
+                la.setPosition (position);
+                doc.addAnnotation(position, t.length(), la);
                 return true;
             } else {
                 ts = ts.embedded();
@@ -198,6 +229,16 @@ public class AnnotationManager extends ASTEvaluator {
          */
         public String getShortDescription () {
             return description;
+        }
+        
+        private Position position;
+        
+        void setPosition (Position position) {
+            this.position = position;
+        }
+        
+        Position getPosition () {
+            return position;
         }
     }
 }
