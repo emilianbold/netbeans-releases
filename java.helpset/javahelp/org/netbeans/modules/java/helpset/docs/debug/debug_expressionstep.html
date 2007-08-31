@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Stepping Through an Expression</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Stepping Through an Expression</h2>
+<p>
+<small><a href="#seealso">See Also</a></small></p>
+<p> When you are in a debugging session, you can use the Step Over Expression command to step through an 
+    expression and view the values returned by each method call in the expression.</p>
+    
+    <p>You can use the Step Over Expression command to achieve a more fine-grained stepping than other debugging steps. 
+    Step Over Expression enables you to proceed through each method call in an expression and view the input parameters 
+    and resulting output values of each method call.
+    You can invoke the Step Over Expression command just as you would any other step commands.
+    If there are no further method calls, Step Over Expression behaves like the Step Over command.</p>
+    
+    <p>Each method call in an expression has some input (parameters) and output values.
+    Each time you use the Step Over Expression command in an expression, the debugger resumes 
+    VM execution and then stops before executing the next method call.
+    You can inspect the output values for the previous method and the input parameters for the next method in the Local Variables window.
+    Invoking Step Over Expression again resumes the VM execution until the next method call in the expression.</p>
+    
+    <ol>
+        <li>Place a breakpoint in the line containing the expression you want to debug and start the debugging session.
+        <p>When you start the debugger, the VM stops before executing any of the method calls in the expression.</p></li>
+        <li>Choose Run &gt; Step Over Expression (Shift-F8) from the main menu.
+            <p>When you invoke Step Over Expression, the debugger steps to the first method call
+            in the expression but does not execute the method. 
+            The Local Variables window displays the input parameters of the method.</p></li>
+        <li>Invoke Step Over Expression again to execute the first method and step to the next method call in the expression.
+            <p>In the Local Variables window, you can view the output values of the executed method and
+            any input parameters for the next method in the expression.</p>
+            <p>In the Source Editor, the executed method call is underlined and the next method call in the expression is highlighted. 
+            You can mouse over the executed method to display a tooltip and view the output values.</li>
+        <li>Invoke Step Over Expression again to step to the next method call in the expression.
+            <p>In the Local Variables window, you can view the output values under the Return Values node.</p>
+    </ol>
+
+
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="debug_step.html">Stepping Through Your Program</a></dd>
+    <dd><a href="debug_expression.html">Evaluating an Expression</a></dd>
+    <dd><a href="debug_about.html">About Debugging Applications</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

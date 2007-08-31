@@ -16,17 +16,24 @@
 <p>Once execution of your program is halted, you can step through your lines of 
   code using the following commands on the Debug menu or toolbar: </p>
 <ul>
-  <li><b>Step Over (F8)</b>. Executes one source line. If the source line contains 
+  <li><b>Step Over (F8).</b> Executes one source line. If the source line contains 
     a call, executes the entire routine without stepping through the individual instructions. </li>
     <li><b>Step Over Expression.</b><!-- TODO -- need description here--></li>
-  <li><b>Step Into (F7)</b>. Executes one source line. If the source line contains
+  <li><b>Step Into (F7).</b> Executes one source line. If the source line contains
   	a call, the IDE stops just before executing the first statement of the routine.
   	You can also start a debugging session with the Step Into command. Program
   	execution stops on the first line after the <tt>main</tt> routine before
   	any changes have been made to the state of the program. </li>
-  <li><b>Step Out (Ctrl-F7)</b>. Executes one source line. If the source 
-    line is part of a routine, executes the remaining lines of the routine and 
-    returns control to the caller of the routine. </li>
+  <li><b>Step Out (Ctrl-F7).</b> Executes one source line. If the source 
+        line is part of a routine, executes the remaining lines of the routine and 
+        returns control to the caller of the routine. 
+        The completed method call is highlighted in the Source Editor.</li>
+    <li><b>Step Over Expression (Shift-F8).</b> Executes one method call in an expression.
+        If an expression has multiple method calls, you can use Step Over Expression to step 
+        through an expression and view the value of each method call in the expression in 
+        the Local Variables window. Each time you use the Step Over Expression command, the debugger
+        advances to the next method call in the expression and the completed method call is underlined. 
+        Step Over Expression behaves like Step Over when there are no additional method calls.</li>
 </ul>
 <!--<p><b>Notes:</b></p>
 <ul>
@@ -38,8 +45,10 @@
     
 </ul>-->
 
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="debug_expressionstep.html">Stepping Through an Expression</a></dd>
     <dd><a href="breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
     <dd><a href="debug_local.html">Starting a Local Debugging Session</a></dd>
     <dd><a href="debug_remote.html">Starting a Remote Debugging Session</a></dd>

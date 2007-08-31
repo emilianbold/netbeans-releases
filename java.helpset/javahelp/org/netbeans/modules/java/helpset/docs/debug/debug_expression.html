@@ -16,8 +16,11 @@
 <small><a href="#seealso">See Also</a></small></p>
 <p> When you are in a debugging session, you can evaluate any expression to 
     view the values of local variables for the current method, class 
-variables, and method calls.</p>
-<p><b>To evaluate an expression:</b>
+    variables, and method calls.</p>
+    <p>You can view the values returned by each method call in the expression 
+    by <a href="debug_expressionstep.html">stepping through an expression</a>.</p>
+    
+    <p><b>To evaluate an expression:</b>
     <ol>
         <li>Start a debugging session.</li>
         <li>Choose Run &gt; Evaluate Expression (Ctrl-F9) from the main menu.</li>
@@ -26,7 +29,8 @@ variables, and method calls.</p>
             <p>You can set a watch for the expression by clicking the Watch button.
             The watch is added to the Watches window.</li>
     </ol>
-    <p><b>Notes:</b></p>
+    
+<p><b>Notes:</b></p>
 <ul>
     <li>If you evaluate a method that changes a global variable, the global variable's 
         value is changed in the debugging session as well.</li> 
@@ -36,8 +40,11 @@ variables, and method calls.</p>
     <li>If you try to access a global variable before the file that contains the variable is
         instantiated, the IDE says <tt>Cannot access instance variable "<i>variable</i>" from static context</tt>.</li>
 </ul>
+    
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="debug_expressionstep.html">Stepping Through an Expression</a></dd>
     <dd><a href="debug_new_watch.html">Creating a Watch</a></dd>
     <dd><a href="debug_fix_watch.html">Creating a Fixed Watch</a></dd>
     <dd><a href="debug_callstack.html">Using the Call Stack</a></dd>
