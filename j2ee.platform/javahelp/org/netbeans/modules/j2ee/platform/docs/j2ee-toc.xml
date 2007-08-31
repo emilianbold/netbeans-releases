@@ -149,7 +149,7 @@
         </tocitem>
     </tocitem> 
 
-    <tocitem text="Web Applications">
+    <tocitem text="Web Applications" expand="false">
         <tocitem text="About Web Applications">
             <tocitem text="About Web Applications in Enterprise Applications" target="about_entwebapps" />
         </tocitem>
