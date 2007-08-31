@@ -4,5 +4,5 @@ OpenIDE-Module-Layer: org/netbeans/modules/cnd/debugger/gdb/resources/mf-layer.x
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/debugger/gdb/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1.1
 OpenIDE-Module-Install: org/netbeans/modules/cnd/debugger/gdb/GdbDebuggerModule.class
-AutoUpdate-Show-In-Client: true
+AutoUpdate-Show-In-Client: false
 
