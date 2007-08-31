@@ -147,7 +147,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                     XMLDataObject.ERR.fine("Lookup is " + l + " for id: " + id);
                 }
                 if (l == null) {
-                    l = updateLookup(null, id);
+                    l = updateLookup(getXml(), null, id);
                     if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
                         XMLDataObject.ERR.fine("Updating lookup: " + l);
                     }
@@ -194,10 +194,15 @@ implements FileChangeListener, LexicalHandler, LookupListener {
             return NULL;
         }
         XMLReader parser = sharedParserImpl;
-        FileObject myFileObject = getXml().getPrimaryFile();
+        XMLDataObject realXML = getXml();
+        if (realXML == null) {
+            return NULL;
+        }
+        
+        FileObject myFileObject = realXML.getPrimaryFile();
         String newID = null;
         if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-            XMLDataObject.ERR.fine("Going to read parsedId for " + getXml());
+            XMLDataObject.ERR.fine("Going to read parsedId for " + realXML);
         }
         String previousID;
         synchronized (this) {
@@ -205,7 +210,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
         }
         if (previousID != null) {
             if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                XMLDataObject.ERR.fine("Has already been parsed: " + parsedId + " for " + getXml());
+                XMLDataObject.ERR.fine("Has already been parsed: " + parsedId + " for " + realXML);
             }
             return previousID;
         }
@@ -227,7 +232,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                 }
                 parsedId = NULL;
                 if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                    XMLDataObject.ERR.fine("parsedId set to NULL for " + getXml());
+                    XMLDataObject.ERR.fine("parsedId set to NULL for " + realXML);
                 }
                 try {
                     in = myFileObject.getInputStream();
@@ -245,15 +250,15 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                         parser.parse(input);
                     }
                     if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                        XMLDataObject.ERR.fine("Parse finished for " + getXml());
+                        XMLDataObject.ERR.fine("Parse finished for " + realXML);
                     }
                 } catch (StopSaxException stopped) {
                     newID = parsedId;
-                    XMLDataObject.ERR.fine("Parsing successfully stopped: " + parsedId + " for " + getXml());
+                    XMLDataObject.ERR.fine("Parsing successfully stopped: " + parsedId + " for " + realXML);
                 } catch (SAXException checkStop) {
                     if (STOP.getMessage().equals(checkStop.getMessage())) {
                         newID = parsedId;
-                        XMLDataObject.ERR.fine("Parsing stopped with STOP message: " + parsedId + " for " + getXml());
+                        XMLDataObject.ERR.fine("Parsing stopped with STOP message: " + parsedId + " for " + realXML);
                     } else {
                         String msg = "Thread:" + Thread.currentThread().getName();
                         XMLDataObject.ERR.warning("DocListener should not throw SAXException but STOP one.\n" + msg);
@@ -294,23 +299,27 @@ implements FileChangeListener, LexicalHandler, LookupListener {
         }
         if (ignorePreviousId != null && newID.equals(ignorePreviousId)) {
             if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                XMLDataObject.ERR.fine("No update to ID: " + ignorePreviousId + " for " + getXml());
+                XMLDataObject.ERR.fine("No update to ID: " + ignorePreviousId + " for " + realXML);
             }
             return newID;
         }
         if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-            XMLDataObject.ERR.fine("New id: " + newID + " for " + getXml());
+            XMLDataObject.ERR.fine("New id: " + newID + " for " + realXML);
         }
         if (newID != null) {
-            updateLookup(previousID, newID);
+            updateLookup(realXML, previousID, newID);
         }
         return newID;
     }
 
-    private Lookup updateLookup(String previousID, String id) {
+    private Lookup updateLookup(XMLDataObject realXML, String previousID, String id) {
+        if (realXML == null) {
+            return lookup;
+        }
+        
         synchronized (this) {
             if (previousID != null && previousID.equals(id) && lookup != null) {
-                XMLDataObject.ERR.fine("No need to update lookup: " + id + " for " + getXml());
+                XMLDataObject.ERR.fine("No need to update lookup: " + id + " for " + realXML);
                 return lookup;
             }
         }
@@ -318,14 +327,14 @@ implements FileChangeListener, LexicalHandler, LookupListener {
         @SuppressWarnings("deprecation")
         XMLDataObject.Info info = XMLDataObject.getRegisteredInfo(id);
         if (info != null) {
-            newLookup = XMLDataObject.createInfoLookup(getXml(),info);
+            newLookup = XMLDataObject.createInfoLookup(realXML,info);
             if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                XMLDataObject.ERR.fine("Lookup from info: " + newLookup + " for " + getXml());
+                XMLDataObject.ERR.fine("Lookup from info: " + newLookup + " for " + realXML);
             }
         } else {
-            newLookup = Environment.findForOne(getXml());
+            newLookup = Environment.findForOne(realXML);
             if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                XMLDataObject.ERR.fine("Lookup from env: " + newLookup + " for " + getXml());
+                XMLDataObject.ERR.fine("Lookup from env: " + newLookup + " for " + realXML);
             }
             if (newLookup == null) {
                 newLookup = Lookup.EMPTY;
@@ -335,18 +344,18 @@ implements FileChangeListener, LexicalHandler, LookupListener {
             Lookup.Result prevRes = result;
             lookup = newLookup;
             if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                XMLDataObject.ERR.fine("Shared lookup updated: " + lookup + " for " + getXml());
+                XMLDataObject.ERR.fine("Shared lookup updated: " + lookup + " for " + realXML);
             }
             result = lookup.lookupResult(Node.Cookie.class);
             result.addLookupListener(this);
             if (prevRes != null) {
                 prevRes.removeLookupListener(this);
                 if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                    XMLDataObject.ERR.fine("Firing property change for " + getXml());
+                    XMLDataObject.ERR.fine("Firing property change for " + realXML);
                 }
-                getXml().firePropertyChange(DataObject.PROP_COOKIE, null, null);
+                realXML.firePropertyChange(DataObject.PROP_COOKIE, null, null);
                 if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                    XMLDataObject.ERR.fine("Firing done for " + getXml());
+                    XMLDataObject.ERR.fine("Firing done for " + realXML);
                 }
             }
             return newLookup;
@@ -432,8 +441,13 @@ implements FileChangeListener, LexicalHandler, LookupListener {
     }
 
     public void fileChanged(FileEvent fe) {
-        if (getXml().getPrimaryFile().equals(fe.getFile())) {
-            getXml().clearDocument();
+        XMLDataObject realXML = getXml();
+        if (realXML == null) {
+            return;
+        }
+        
+        if (realXML.getPrimaryFile().equals(fe.getFile())) {
+            realXML.clearDocument();
             String prevId = parsedId;
             parsedId = null;
             XMLDataObject.ERR.fine("cleared parsedId");
@@ -451,8 +465,12 @@ implements FileChangeListener, LexicalHandler, LookupListener {
     }
 
     public void resultChanged(LookupEvent lookupEvent) {
-        getXml().firePropertyChange(DataObject.PROP_COOKIE, null, null);
-        Node n = getXml().getNodeDelegateOrNull();
+        XMLDataObject realXML = getXml();
+        if (realXML == null) {
+            return;
+        }
+        realXML.firePropertyChange(DataObject.PROP_COOKIE, null, null);
+        Node n = realXML.getNodeDelegateOrNull();
         if (n instanceof XMLDataObject.XMLNode) {
             ((XMLDataObject.XMLNode) n).update();
         }
