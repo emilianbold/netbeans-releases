@@ -156,22 +156,27 @@ class ResourceUtils {
         // - the code to replace
         // - the type of variable to declare for the code
         // - suggested variable name
-        String appCode = AppFrameworkSupport.getApplicationCode(srcFile);
-        if (appCode != null) { // generate ResourceMap getter code for given class using Application
-            // org.jdesktop.application.Application.getInstance(pkg.MyApp.class).getContext().getResourceMap(MyGUIClass.class)
-            return CODE_MARK_VARIABLE_SUBST
-                       + appCode + ".getContext().getResourceMap(" + srcFile.getName() + ".class)" // NOI18N
-                   + CODE_MARK_VARIABLE_SUBST + org.jdesktop.application.ResourceMap.class.getName()
-                   + CODE_MARK_VARIABLE_SUBST + "resourceMap"; // NOI18N
-        } else { // no application - return code creating the ResourceMap directly
-            // new org.jdesktop.application.ResourceMap(null, getClass().getClassLoader(), "pkg.resources.MyGUIClass")
-            return CODE_MARK_LINE_COMMENT + "NOI18N" // NOI18N
-                   + CODE_MARK_VARIABLE_SUBST
-                       + "new org.jdesktop.application.ResourceMap(null, getClass().getClassLoader(), \"" // NOI18N
-                       + getBundleName(AppFrameworkSupport.getClassNameForFile(srcFile)) +"\")" // NOI18N
-                   + CODE_MARK_VARIABLE_SUBST + org.jdesktop.application.ResourceMap.class.getName()
-                   + CODE_MARK_VARIABLE_SUBST + "resourceMap"; // NOI18N
-        }
+        return CODE_MARK_VARIABLE_SUBST
+                   + AppFrameworkSupport.getApplicationCode(srcFile)
+                   + ".getContext().getResourceMap(" + srcFile.getName() + ".class)" // NOI18N
+               + CODE_MARK_VARIABLE_SUBST + org.jdesktop.application.ResourceMap.class.getName()
+               + CODE_MARK_VARIABLE_SUBST + "resourceMap"; // NOI18N
+//        String appCode = AppFrameworkSupport.getApplicationCode(srcFile);
+//        if (appCode != null) { // generate ResourceMap getter code for given class using Application
+//            // org.jdesktop.application.Application.getInstance(pkg.MyApp.class).getContext().getResourceMap(MyGUIClass.class)
+//            return CODE_MARK_VARIABLE_SUBST
+//                       + appCode + ".getContext().getResourceMap(" + srcFile.getName() + ".class)" // NOI18N
+//                   + CODE_MARK_VARIABLE_SUBST + org.jdesktop.application.ResourceMap.class.getName()
+//                   + CODE_MARK_VARIABLE_SUBST + "resourceMap"; // NOI18N
+//        } else { // no application - return code creating the ResourceMap directly
+//            // new org.jdesktop.application.ResourceMap(null, getClass().getClassLoader(), "pkg.resources.MyGUIClass")
+//            return CODE_MARK_LINE_COMMENT + "NOI18N" // NOI18N
+//                   + CODE_MARK_VARIABLE_SUBST
+//                       + "new org.jdesktop.application.ResourceMap(null, getClass().getClassLoader(), \"" // NOI18N
+//                       + getBundleName(AppFrameworkSupport.getClassNameForFile(srcFile)) +"\")" // NOI18N
+//                   + CODE_MARK_VARIABLE_SUBST + org.jdesktop.application.ResourceMap.class.getName()
+//                   + CODE_MARK_VARIABLE_SUBST + "resourceMap"; // NOI18N
+//        }
     }
 
     // special code marks recognized by form editor:

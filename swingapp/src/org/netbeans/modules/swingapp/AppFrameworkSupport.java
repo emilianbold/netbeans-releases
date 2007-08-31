@@ -133,7 +133,7 @@ class AppFrameworkSupport {
         String appClsName = getApplicationClassName(srcFile);
         return appClsName != null
             ? org.jdesktop.application.Application.class.getName() + ".getInstance(" + appClsName + ".class)" // NOI18N
-            : null;
+            : org.jdesktop.application.Application.class.getName() + ".getInstance()"; // NOI18N
     }
 
     static String getActionMapCode(FileObject srcFile) {
