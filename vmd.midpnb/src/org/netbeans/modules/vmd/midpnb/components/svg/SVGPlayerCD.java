@@ -40,7 +40,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditor
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.SVGImageEditorElement;
-import org.netbeans.modules.vmd.midpnb.screen.display.SVGAnimatorWrapperDisplayPresenter;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGPlayerDisplayPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
@@ -145,7 +145,7 @@ public class SVGPlayerCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE),
                 // screen
-                new SVGAnimatorWrapperDisplayPresenter ()
+                new SVGPlayerDisplayPresenter ()
                 );
     }
 
