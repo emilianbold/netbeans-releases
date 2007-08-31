@@ -51,6 +51,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     private JPanel panel;
     private static JLabel label;
     private boolean hasModel;
+    private boolean modelIsUserCode;
     private boolean drawBorders;
     private String[] columnNames;
     private String[][] values;
@@ -75,7 +76,10 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         Font valuesFont = label.getFont();
         int cummulativeY = 0;
 
-        if (!hasModel) {
+        if (modelIsUserCode) {
+            cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
+            g.drawString(NbBundle.getMessage(TableItemDisplayPresenter.class, "DISP_table_is_user_code"), CELL_INSETS, cummulativeY); // NOI18N
+        } else if (!hasModel) {
             cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
             g.drawString(NbBundle.getMessage(TableItemDisplayPresenter.class, "DISP_no_table_model_specified"), CELL_INSETS, cummulativeY); // NOI18N
         } else if (values == null || values.length < 1) {
@@ -162,34 +166,41 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        DesignComponent tableModelComponent = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
-        hasModel = tableModelComponent != null;
 
-        if (hasModel) {
-            drawBorders = MidpTypes.getBoolean(getComponent().readProperty(TableItemCD.PROP_BORDERS));
-            
-            PropertyValue columnsProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_COLUMN_NAMES);
-            List<PropertyValue> list = columnsProperty.getArray();
-            if (list != null) {
-                columnNames = new java.lang.String[list.size()];
-                for (int i = 0; i < list.size(); i++) {
-                    columnNames[i] = MidpTypes.getString(list.get(i));
-                }
-            } else {
-                columnNames = null;
-            }
+        PropertyValue value = getComponent().readProperty(TableItemCD.PROP_MODEL);
+        modelIsUserCode = PropertyValue.Kind.USERCODE.equals(value.getKind());
+        if (!modelIsUserCode) {
+            DesignComponent tableModelComponent = value.getComponent();
+            hasModel = tableModelComponent != null;
 
-            PropertyValue valuesProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_VALUES);
-            list = valuesProperty.getArray();
-            if (list != null) {
-                values = new String[list.size()][];
-                for (int i = 0; i < list.size(); i++) {
-                    List<String> row = gatherStringValues(list.get(i).getArray());
-                    values[i] = row.toArray(new String[row.size()]);
+            if (hasModel) {
+                drawBorders = MidpTypes.getBoolean(getComponent().readProperty(TableItemCD.PROP_BORDERS));
+
+                PropertyValue columnsProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_COLUMN_NAMES);
+                List<PropertyValue> list = columnsProperty.getArray();
+                if (list != null) {
+                    columnNames = new java.lang.String[list.size()];
+                    for (int i = 0; i < list.size(); i++) {
+                        columnNames[i] = MidpTypes.getString(list.get(i));
+                    }
+                } else {
+                    columnNames = null;
                 }
-            } else {
-                values = null;
+
+                PropertyValue valuesProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_VALUES);
+                list = valuesProperty.getArray();
+                if (list != null) {
+                    values = new String[list.size()][];
+                    for (int i = 0; i < list.size(); i++) {
+                        List<String> row = gatherStringValues(list.get(i).getArray());
+                        values[i] = row.toArray(new String[row.size()]);
+                    }
+                } else {
+                    values = null;
+                }
             }
+        } else {
+            hasModel = false;
         }
 
         panel.setPreferredSize(calculatePrefferedSize());
