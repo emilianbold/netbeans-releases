@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -457,35 +458,24 @@ public class ComplibServiceProvider implements ComplibService {
         initProjectComplibs(initialProjects);
         initSharedComplibs(initialProjects);
 
-        // Listen for project open events and ensure complib library defs and
-        // refs are initialized
+        // Listen for project open events and ensure complib library defs and refs are initialized
         OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-            private HashSet<Project> previousProjects = initialProjects;
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+                    List<Project> oldOpenProjectsList = Arrays
+                            .asList((Project[]) evt.getOldValue());
+                    List<Project> newOpenProjectsList = Arrays
+                            .asList((Project[]) evt.getNewValue());
 
-            public void propertyChange(PropertyChangeEvent event) {
-                if (!OpenProjects.PROPERTY_OPEN_PROJECTS.equals(event.getPropertyName())) {
-                    // Not a project open event
-                    return;
+                    Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
+                    openedProjectsSet.removeAll(oldOpenProjectsList);
+                    initProjectComplibs(openedProjectsSet);
+                    initSharedComplibs(openedProjectsSet);
+
+                    Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
+                    closedProjectsSet.removeAll(newOpenProjectsList);
+                    cleanUpProjects(closedProjectsSet);
                 }
-
-                Project[] projectsArray = OpenProjects.getDefault().getOpenProjects();
-                HashSet<Project> allProjects = new HashSet<Project>(Arrays.asList(projectsArray));
-
-                if (allProjects.size() > previousProjects.size()) {
-                    // New project was opened since last time
-                    HashSet<Project> newProjects = new HashSet<Project>(allProjects);
-                    newProjects.removeAll(previousProjects);
-                    initProjectComplibs(newProjects);
-                    initSharedComplibs(newProjects);
-                } else {
-                    // Project was closed since last time
-                    HashSet<Project> closedProjects = new HashSet<Project>(previousProjects);
-                    closedProjects.removeAll(allProjects);
-                    cleanUpProjects(closedProjects);
-                }
-
-                // Save list of current open projects for next time
-                previousProjects = allProjects;
             }
         });
     }
@@ -511,7 +501,7 @@ public class ComplibServiceProvider implements ComplibService {
         userScope = Scope.createScope(userInstallDir);
     }
 
-    private void initSharedComplibs(HashSet<Project> projects) {
+    private void initSharedComplibs(Set<Project> projects) {
         for (Project project : projects) {
             // Load in shared complib info used by this project
             SharedComplibState.getInstance().getSharedComplibs(project);
@@ -565,7 +555,7 @@ public class ComplibServiceProvider implements ComplibService {
         }
     }
 
-    private void cleanUpProjects(HashSet<Project> projects) {
+    private void cleanUpProjects(Set<Project> projects) {
         for (Project project : projects) {
             if (JsfProjectUtils.isJsfProject(project)) {
                 try {
