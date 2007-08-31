@@ -29,11 +29,15 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -59,9 +63,6 @@ import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
  * @author Tomas Zezula
  */
 public final class SourceRoots {
-    // Show directories next to the logical path descriptions?
-    private static boolean SHOW_RAILS_DIRECTORIES = Boolean.getBoolean("rails.showdirs"); // NOI18N
-    
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
 
@@ -77,6 +78,7 @@ public final class SourceRoots {
     private List<String> sourceRootProperties;
     private List<String> sourceRootNames;
     private List<FileObject> sourceRoots;
+    private List<FileObject> plainFiles;
     private List<URL> sourceRootURLs;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
@@ -109,9 +111,247 @@ public final class SourceRoots {
     }
     
     private String getNodeDescription(String key) {
-        return NbBundle.getMessage(SourceRoots.class, SHOW_RAILS_DIRECTORIES ? "dir_" + key :  key); // NOI18N
+        return NbBundle.getMessage(SourceRoots.class, key); // NOI18N
     }
+    
+    private void initializeRoots() {
+        synchronized (SourceRoots.this) {
+            if (sourceRootNames == null) {
+                if (FoldersListSettings.getDefault().getLogicalView()) {
+                    initializeRootsLogical();
+                } else {
+                    initializeRootsFiles();
+                }
+            }
+        }
+    }
+    
+    /** Create a logical view of the project: flatten app/ and test/
+     * and substitute logical names instead of the directory names
+     */
+    private void initializeRootsLogical() {
+        plainFiles = new ArrayList<FileObject>(20);
 
+        FileObject fo = helper.getRakeProjectHelper().getProjectDirectory();
+        
+        FileObject rakefile = fo.getFileObject("Rakefile");
+        if (rakefile != null) {
+            plainFiles.add(rakefile);
+        }
+        FileObject readme = fo.getFileObject("README");
+        if (readme != null) {
+            plainFiles.add(readme);
+        }
+        
+        assert sourceRootNames == null;
+        assert sourceRootProperties == null;
+        sourceRootNames = new ArrayList<String>(20);
+        sourceRootProperties = new ArrayList<String>(20);
+        // Note Keep list in sync with root properties list below
+        sourceRootNames.add(getNodeDescription("app_controllers")); // NOI18N
+        sourceRootNames.add(getNodeDescription("app_helpers")); // NOI18N
+        sourceRootNames.add(getNodeDescription("app_models")); // NOI18N
+        sourceRootNames.add(getNodeDescription("app_views")); // NOI18N
+        sourceRootProperties.add("app/controllers"); // NOI18N
+        sourceRootProperties.add("app/helpers"); // NOI18N
+        sourceRootProperties.add("app/models"); // NOI18N
+        sourceRootProperties.add("app/views"); // NOI18N
+
+        // Add in other dirs we don't know about
+        FileObject app = fo.getFileObject("app");
+        if (app != null) {
+            Set<String> knownAppDirs = new HashSet<String>();
+            knownAppDirs.add("controllers");
+            knownAppDirs.add("helpers");
+            knownAppDirs.add("models");
+            knownAppDirs.add("views");
+            List<String> missing = findUnknownFolders(app, knownAppDirs);
+            if (missing != null) {
+                for (String name : missing) {
+                    String combinedName = "app/" + name; // NOI18N
+                    sourceRootNames.add(combinedName);
+                    sourceRootProperties.add(combinedName);
+                }
+            }
+        }
+
+        sourceRootNames.add(getNodeDescription("components")); // NOI18N
+        sourceRootProperties.add("components"); // NOI18N
+        sourceRootNames.add(getNodeDescription("config")); // NOI18N
+        sourceRootProperties.add("config"); // NOI18N
+        sourceRootNames.add(getNodeDescription("db")); // NOI18N
+        sourceRootProperties.add("db"); // NOI18N
+        sourceRootNames.add(getNodeDescription("lib")); // NOI18N
+        sourceRootProperties.add("lib"); // NOI18N
+        sourceRootNames.add(getNodeDescription("log")); // NOI18N
+        sourceRootProperties.add("log"); // NOI18N
+        sourceRootNames.add(getNodeDescription("public")); // NOI18N
+        sourceRootProperties.add("public"); // NOI18N
+        if (showRSpec) {
+            sourceRootNames.add(getNodeDescription("rspec")); // NOI18N
+            sourceRootProperties.add("spec"); // NOI18N
+        }
+        sourceRootNames.add(getNodeDescription("test_unit")); // NOI18N
+        sourceRootNames.add(getNodeDescription("test_functional")); // NOI18N
+        sourceRootNames.add(getNodeDescription("test_fixtures")); // NOI18N
+        sourceRootNames.add(getNodeDescription("test_mocks")); // NOI18N
+        sourceRootNames.add(getNodeDescription("test_integration")); // NOI18N
+        sourceRootProperties.add("test/unit"); // NOI18N
+        sourceRootProperties.add("test/functional"); // NOI18N
+        sourceRootProperties.add("test/fixtures"); // NOI18N
+        sourceRootProperties.add("test/mocks"); // NOI18N
+        sourceRootProperties.add("test/integration"); // NOI18N
+
+        sourceRootNames.add(getNodeDescription("script")); // NOI18N
+        sourceRootProperties.add("script"); // NOI18N
+        sourceRootNames.add(getNodeDescription("doc")); // NOI18N
+        sourceRootProperties.add("doc"); // NOI18N
+        
+        // Add in other test dirs we don't know about
+        FileObject test = fo.getFileObject("test");
+        if (test != null) {
+            Set<String> knownTestDirs = new HashSet<String>();
+            knownTestDirs.add("unit");
+            knownTestDirs.add("functional");
+            knownTestDirs.add("fixtures");
+            knownTestDirs.add("mocks");
+            knownTestDirs.add("integration");
+            List<String> missing = findUnknownFolders(test, knownTestDirs);
+            if (missing != null) {
+                for (String name : missing) {
+                    String combinedName = "test/" + name; // NOI18N
+                    sourceRootNames.add(combinedName);
+                    sourceRootProperties.add(combinedName);
+                }
+            }
+        }
+
+        sourceRootNames.add(getNodeDescription("vendor")); // NOI18N
+        sourceRootProperties.add("vendor"); // NOI18N
+
+        // Add in other top-level dirs we don't know about
+        if (fo != null) {
+            Set<String> knownTopDirs = new HashSet<String>();
+            // Deliberately hidden
+            knownTopDirs.add("nbproject");
+            knownTopDirs.add("tmp");
+
+            knownTopDirs.add("app");
+            knownTopDirs.add("components");
+            knownTopDirs.add("config");
+            knownTopDirs.add("db");
+            knownTopDirs.add("lib");
+            knownTopDirs.add("log");
+            knownTopDirs.add("public");
+            knownTopDirs.add("spec");
+            knownTopDirs.add("lib");
+            knownTopDirs.add("test");
+            knownTopDirs.add("doc");
+            knownTopDirs.add("script");
+            knownTopDirs.add("vendor");
+
+            List<String> missing = findUnknownFolders(fo, knownTopDirs);
+            if (missing != null) {
+                for (String name : missing) {
+                    sourceRootNames.add(name);
+                    sourceRootProperties.add(name);
+                }
+            }
+        }
+        
+        //Local caching
+        assert sourceRoots == null;
+        List<FileObject> result = new ArrayList<FileObject>();
+        for (String p : sourceRootProperties) {
+            FileObject f = helper.getRakeProjectHelper().resolveFileObject(p);
+            if (f == null) {
+                continue;
+            }
+            if (FileUtil.isArchiveFile(f)) {
+                f = FileUtil.getArchiveRoot(f);
+            }
+            result.add(f);
+        }
+        sourceRoots = Collections.unmodifiableList(result);
+        
+        assert sourceRootNames.size() == sourceRootProperties.size() && 
+                sourceRootNames.size() == sourceRoots.size();
+    }
+    
+    /** Look in the given directory and identify any folders we don't "know" about yet */
+    private List<String> findUnknownFolders(FileObject folder, Set<String> known) {
+        List<String> result = null;
+        for (FileObject child : folder.getChildren()) {
+            if (child.isFolder()) {
+                String name = child.getNameExt();
+                if (!known.contains(name)) {
+                    if (result == null) {
+                        result = new ArrayList<String>();
+                    }
+                    
+                    result.add(name);
+                }
+            }
+        }
+        
+        if (result != null) {
+            Collections.sort(result);
+        }
+        
+        return result;
+    }
+    
+    /** Initialize source roots to just match the Rails view.
+     * Note that my load path will be way wrong for unit test execution and such - and
+     * possibly for require-indexing (for require completion)
+     */
+    private void initializeRootsFiles() {
+        FileObject fo = helper.getRakeProjectHelper().getProjectDirectory();
+        if (fo == null) {
+            initializeRootsLogical();
+            return;
+        }
+
+        assert sourceRoots == null;
+        List<FileObject> result = new ArrayList<FileObject>(20);
+        assert sourceRootNames == null;
+        sourceRootNames = new ArrayList<String>(20);
+        assert sourceRootProperties == null;
+        sourceRootProperties = new ArrayList<String>(20);
+        plainFiles = new ArrayList<FileObject>(20);
+
+        FileObject[] children = fo.getChildren();
+        for (FileObject f : children) {
+            if (FileUtil.isArchiveFile(f)) {
+                f = FileUtil.getArchiveRoot(f);
+            }
+            if (f.isFolder()) {
+                String name = f.getName();
+                // Deliberately skipped
+                if (name.equals("nbproject") || name.equals("tmp")) { // NOI18N
+                    continue;
+                }
+                result.add(f);
+            } else {
+                plainFiles.add(f);
+            }
+        }
+
+        // Sort files alphabetically
+        Collections.sort(result, new Comparator<FileObject>() {
+            public int compare(FileObject f1, FileObject f2) {
+                return f1.getNameExt().compareTo(f2.getNameExt());
+            }
+        });
+
+        for (FileObject f : result) {
+                String name = f.getNameExt();
+                sourceRootNames.add(name);
+                sourceRootProperties.add(name);
+        }
+        sourceRoots = Collections.unmodifiableList(result);
+    }
+    
     /**
      * Returns the display names of soruce roots
      * The returned array has the same length as an array returned by the getRootProperties.
@@ -121,32 +361,10 @@ public final class SourceRoots {
     public String[] getRootNames () {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
             public String[] run() {
-                // For rails, project roots are hardcoded
                 synchronized (SourceRoots.this) {
-                    if (sourceRootNames == null) {
-                        sourceRootNames = new ArrayList<String>(12);
-                        // Note Keep list in sync with root properties list below (#getRootProperties)
-                        sourceRootNames.add(getNodeDescription("app_controllers")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("app_helpers")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("app_models")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("app_views")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("components")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("config")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("db")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("lib")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("log")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("public")); // NOI18N
-                        if (showRSpec) {
-                            sourceRootNames.add(getNodeDescription("rspec")); // NOI18N
-                        }
-                        sourceRootNames.add(getNodeDescription("test_unit")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("test_functional")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("test_fixtures")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("test_mocks")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("test_integration")); // NOI18N
-                        sourceRootNames.add(getNodeDescription("vendor")); // NOI18N
-                    }
+                    initializeRoots();
                 }
+                assert sourceRootNames != null;
                 return sourceRootNames.toArray (new String[sourceRootNames.size()]);
             }
         });
@@ -161,30 +379,9 @@ public final class SourceRoots {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
             public String[] run() {
                 synchronized (SourceRoots.this) {
-                    if (sourceRootProperties == null) {
-                        // Note Keep list in sync with property names list above!
-                        sourceRootProperties = new ArrayList<String>(12);
-                        sourceRootProperties.add("app/controllers"); // NOI18N
-                        sourceRootProperties.add("app/helpers"); // NOI18N
-                        sourceRootProperties.add("app/models"); // NOI18N
-                        sourceRootProperties.add("app/views"); // NOI18N
-                        sourceRootProperties.add("components"); // NOI18N
-                        sourceRootProperties.add("config"); // NOI18N
-                        sourceRootProperties.add("db"); // NOI18N
-                        sourceRootProperties.add("lib"); // NOI18N
-                        sourceRootProperties.add("log"); // NOI18N
-                        sourceRootProperties.add("public"); // NOI18N
-                        if (showRSpec) {
-                            sourceRootProperties.add("spec"); // NOI18N
-                        }
-                        sourceRootProperties.add("test/unit"); // NOI18N
-                        sourceRootProperties.add("test/functional"); // NOI18N
-                        sourceRootProperties.add("test/fixtures"); // NOI18N
-                        sourceRootProperties.add("test/mocks"); // NOI18N
-                        sourceRootProperties.add("test/integration"); // NOI18N
-                        sourceRootProperties.add("vendor"); // NOI18N
-                    }
+                    initializeRoots();
                 }
+                assert sourceRootProperties != null;
                 return sourceRootProperties.toArray (new String[sourceRootProperties.size()]);
             }
         });
@@ -197,25 +394,27 @@ public final class SourceRoots {
     public FileObject[] getRoots () {
         return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
                 public FileObject[] run () {
-                    synchronized (this) {
-                        //Local caching
-                        if (sourceRoots == null) {
-                            String[] srcProps = getRootProperties();
-                            List<FileObject> result = new ArrayList<FileObject>();
-                            for (String p : srcProps) {
-                                FileObject f = helper.getRakeProjectHelper().resolveFileObject(p);
-                                if (f == null) {
-                                    continue;
-                                }
-                                if (FileUtil.isArchiveFile(f)) {
-                                    f = FileUtil.getArchiveRoot(f);
-                                }
-                                result.add(f);
-                            }
-                            sourceRoots = Collections.unmodifiableList(result);
-                        }
+                    synchronized (SourceRoots.this) {
+                        initializeRoots();
                     }
+                    assert sourceRoots != null;
                     return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
+                }
+        });                
+    }
+
+    /**
+     * Returns the extra files in the root dir (not corresponding to source folders)
+     * @return an array of FileObject
+     */
+    public FileObject[] getExtraFiles () {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
+                public FileObject[] run () {
+                    synchronized (SourceRoots.this) {
+                        initializeRoots();
+                    }
+                    assert plainFiles != null;
+                    return plainFiles.toArray(new FileObject[plainFiles.size()]);
                 }
         });                
     }
@@ -434,27 +633,27 @@ public final class SourceRoots {
         }
     }
 
-    private void readProjectMetadata () {
-        Element cfgEl = helper.getPrimaryConfigurationData(true);
-        NodeList nl = cfgEl.getElementsByTagNameNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
-        assert nl.getLength() == 0 || nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
-        List<String> rootProps = new ArrayList<String>();
-        List<String> rootNames = new ArrayList<String>();
-        // It can be 0 in the case when the project is created by RailsProjectGenerator and not yet customized
-        if (nl.getLength()==1) {
-            NodeList roots = ((Element)nl.item(0)).getElementsByTagNameNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
-            for (int i=0; i<roots.getLength(); i++) {
-                Element root = (Element) roots.item(i);
-                String value = root.getAttribute("id");  //NOI18N
-                assert value.length() > 0 : "Illegal project.xml";
-                rootProps.add(value);
-                value = root.getAttribute("name");  //NOI18N
-                rootNames.add (value);
-            }
-        }
-        this.sourceRootProperties = Collections.unmodifiableList(rootProps);
-        this.sourceRootNames = Collections.unmodifiableList(rootNames);
-    }
+//    private void readProjectMetadata () {
+//        Element cfgEl = helper.getPrimaryConfigurationData(true);
+//        NodeList nl = cfgEl.getElementsByTagNameNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
+//        assert nl.getLength() == 0 || nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
+//        List<String> rootProps = new ArrayList<String>();
+//        List<String> rootNames = new ArrayList<String>();
+//        // It can be 0 in the case when the project is created by RailsProjectGenerator and not yet customized
+//        if (nl.getLength()==1) {
+//            NodeList roots = ((Element)nl.item(0)).getElementsByTagNameNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
+//            for (int i=0; i<roots.getLength(); i++) {
+//                Element root = (Element) roots.item(i);
+//                String value = root.getAttribute("id");  //NOI18N
+//                assert value.length() > 0 : "Illegal project.xml";
+//                rootProps.add(value);
+//                value = root.getAttribute("name");  //NOI18N
+//                rootNames.add (value);
+//            }
+//        }
+//        this.sourceRootProperties = Collections.unmodifiableList(rootProps);
+//        this.sourceRootNames = Collections.unmodifiableList(rootNames);
+//    }
 
     private class ProjectMetadataListener implements PropertyChangeListener,RakeProjectListener {
 

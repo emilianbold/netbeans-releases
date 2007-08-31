@@ -149,6 +149,12 @@ Microsystems, Inc. All Rights Reserved.
         </file>           
     </folder>   
     
+    <folder name="RubyOptionsDialog">
+        <file name="org-netbeans-modules-ruby-railsprojects-RailsProjectOption.instance">
+            <attr name="position" intvalue="300"/>
+        </file>
+    </folder>
+
     <!--
     <folder name="Loaders">
         <folder name="application">

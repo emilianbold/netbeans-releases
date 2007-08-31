@@ -59,6 +59,8 @@ import org.openide.NotifyDescriptor;
  * all begin to work.
  * 
  * @todo When launching under JRuby, also pass in -Djruby.thread.pooling=true to the VM
+ * @todo Rewrite the webrick error message which says to press Ctrl-C to cancel the process;
+ *   tell the user to use the Stop button in the margin instead (somebody on nbusers asked about this)
  * 
  * @author Tor Norbye, Pavel Buzek
  */

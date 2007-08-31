@@ -35,13 +35,17 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.SourceRoots;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -71,7 +75,7 @@ public final class SourceNodeFactory implements NodeFactory {
         
         public List<SourceGroupKey> keys() {
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
 //            Sources sources = getSources();
 //            SourceGroup[] groups = sources.getSourceGroups(RailsProject.SOURCES_TYPE_RUBY);
@@ -84,9 +88,19 @@ public final class SourceNodeFactory implements NodeFactory {
             Sources sources = getSources();
             SourceGroup[] groups = sources.getSourceGroups(RailsProject.SOURCES_TYPE_RUBY);
             // Here we're adding sources, tests
-            List result =  new ArrayList(groups.length);
+            List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>(groups.length);
             for( int i = 0; i < groups.length; i++ ) {
                 result.add(new SourceGroupKey(groups[i], getGenerator(groups[i].getName())));
+            }
+
+            SourceRoots roots = project.getSourceRoots();
+            if (roots != null) {
+                FileObject[] extra = roots.getExtraFiles();
+                if (extra != null && extra.length > 0) {
+                    for (FileObject f : extra) {
+                        result.add(new SourceGroupKey(f));
+                    }
+                }
             }
 
             return result;
@@ -129,6 +143,15 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
         public Node node(SourceGroupKey key) {
+            if (key.group == null) {
+                try {
+                    DataObject dobj = DataObject.find(key.fileObject);
+                    return dobj.getNodeDelegate();
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                
+            }
             return new PackageViewFilterNode(key.group, key.generator, project);
         }
         
@@ -168,15 +191,32 @@ public final class SourceNodeFactory implements NodeFactory {
             this.generator = generator;
         }
         
+        SourceGroupKey(FileObject fileObject) {
+            this.group = null;
+            this.fileObject = fileObject;
+            this.generator = Generator.NONE;
+        }
+        
+        @Override
         public int hashCode() {
             return fileObject.hashCode();
         }
         
+        @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof SourceGroupKey)) {
                 return false;
             } else {
                 SourceGroupKey otherKey = (SourceGroupKey) obj;
+                if (group == null || otherKey.group == null) {
+                    if (group == null) {
+                        return otherKey.group == null;
+                    } else if (otherKey.group == null) {
+                        return false;
+                    } else {
+                        return fileObject.equals(otherKey.fileObject);
+                    }
+                }
                 String thisDisplayName = this.group.getDisplayName();
                 String otherDisplayName = otherKey.group.getDisplayName();
                 // XXX what is the operator binding order supposed to be here??

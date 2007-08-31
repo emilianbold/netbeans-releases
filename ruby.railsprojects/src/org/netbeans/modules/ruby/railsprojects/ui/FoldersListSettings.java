@@ -23,7 +23,6 @@ import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
 import org.openide.util.NbPreferences;
 
 /**
@@ -32,6 +31,7 @@ import org.openide.util.NbPreferences;
 public class FoldersListSettings {
     private static final FoldersListSettings INSTANCE = new FoldersListSettings();
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
+    private static final String LOGICAL_VIEW = "logicalView"; //NOI18N
 
     private static final String NEW_APP_COUNT = "newApplicationCount";  //NOI18N
 
@@ -50,6 +50,14 @@ public class FoldersListSettings {
         return NbBundle.getMessage(FoldersListSettings.class, "TXT_RailsProjectFolderList");
     }
 
+    public boolean getLogicalView() {
+        return getPreferences().getBoolean(LOGICAL_VIEW, true);
+    }
+
+    public void setLogicalView(boolean logical) {
+        getPreferences().putBoolean(LOGICAL_VIEW, logical);
+    }
+    
     public int getNewProjectCount () {
         return getPreferences().getInt(NEW_PROJECT_COUNT, 0);
     }
