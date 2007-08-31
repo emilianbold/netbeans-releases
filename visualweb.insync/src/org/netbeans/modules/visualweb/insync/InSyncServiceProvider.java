@@ -25,6 +25,8 @@ import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignEvent;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupMouseRegion;
+
+import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.faces.Entities;
 import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
@@ -791,7 +793,11 @@ public class InSyncServiceProvider extends InSyncService {
     	if (designContext == null) {
     		return null;
     	}
-    	return ((LiveUnit) designContext).getBeansUnit().getClassLoader();
+    	BeansUnit beansUnit = ((LiveUnit) designContext).getBeansUnit();
+    	if (beansUnit == null) {
+    	    return null;
+    	}
+        return beansUnit.getClassLoader();
     }
     
     public ClassLoader getContextClassLoader(DesignBean designBean) {
