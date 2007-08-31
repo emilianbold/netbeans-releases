@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Root folders -->
     <property name="nball.dir" location="../../../../nb_all"/>
     <property name="nbextra.dir" location="../../../../nbextra"/>
+    <property name="tomcat_version" value="5.5.17"/>
     <property environment="env"/>
 
     <!-- Imports default qa-functional-compiler and runidetes executor.
@@ -74,10 +75,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Setting command line -->
     <target name="ide_command_line_suffix">
         <!--  Repeat performance test more than once -->
+        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version} -J-Dorg.netbeans.modules.tomcat.autoregister.token=1"/>
+<!--
         <property name="perf.cfg" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
-<!--        <property name="reg.home" value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}" />
-        <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1" />           -->
-        <property name="xtest.ide.commandline.suffix" value="${perf.cfg}"/>
+        <property name="reg.home" value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}" />
+        <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1" />           
+        <property name="xtest.ide.commandline.suffix" value="${perf.cfg}"/>-->
     </target>
     
     <!-- ========= -->
@@ -103,8 +106,8 @@ Microsystems, Inc. All Rights Reserved.
         <unzip src="qa-functional/data/PerformanceTestFolderWebApp.zip" dest="${xtest.tmpdir}/"/>
     </target>
 
- <!--   <property name="tomcat.ext.dir" location="${nball.dir}/tomcatint/tomcat5/bundled/external"/>
-    <import file="${tomcat.ext.dir}/../build.xml"/>
+    <property name="tomcat.ext.dir" location="${nball.dir}/tomcatint/tomcat5/bundled/external"/>
+ <!--   <import file="${tomcat.ext.dir}/../build.xml"/>-->
     
     <property name="tomcat.home" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
     
@@ -113,12 +116,12 @@ Microsystems, Inc. All Rights Reserved.
         <unzip src="${tomcat.ext.dir}/apache-tomcat-${tomcat_version}.zip" dest="${xtest.tmpdir}/"/>
         <chmod dir="${tomcat.home}/bin" perm="ugo+rx" includes="**/*.sh"/>
     </target>
--->    
+    
     <!--Executor for IDE test -->
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="init,init-cp,ide_command_line_suffix,unzip-test-project">
+    <target name="runidesetup" depends="init,init-cp,install-tomcat,ide_command_line_suffix,unzip-test-project">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
@@ -134,7 +137,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <!-- Executor for performance tests -->
-    <target name="runide_performance" depends="init,init-cp,ide_command_line_suffix">
+    <target name="runide_performance" depends="init,init-cp,install-tomcat,ide_command_line_suffix">
         <delete dir="${xtest.workdir}/sys/ide"/>
         <copy todir="${xtest.workdir}/sys/ide">
             <fileset dir="${xtest.workdir}/sys/ide_backup"/>
