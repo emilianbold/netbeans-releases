@@ -122,7 +122,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         connectAction = ActionFactory.createConnectAction (flowConnectDecoratorProvider, interractionLayer, flowConnectDecoratorProvider);
         FlowReconnectDecoratorProvider flowReconnectDecoratorProvider = new FlowReconnectDecoratorProvider ();
         reconnectAction = ActionFactory.createReconnectAction (flowReconnectDecoratorProvider, flowReconnectDecoratorProvider);
-        moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
+        moveControlPointAction = ActionFactory.createMoveControlPointAction (ActionFactory.createOrthogonalMoveControlPointProvider (), ConnectionWidget.RoutingPolicy.DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED);
         renameAction = ActionFactory.createInplaceEditorAction (new FlowRenameEditor ());
         editAction = ActionFactory.createEditAction (new FlowEditProvider ());
         popupMenuAction = ActionFactory.createPopupMenuAction (new FlowPopupMenuProvider ());

@@ -19,35 +19,40 @@
 package org.netbeans.modules.vmd.flow;
 
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
+import org.netbeans.modules.vmd.api.flow.visual.FlowEdgeDescriptor;
 import org.netbeans.modules.vmd.api.flow.FlowSupport;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DataSerializer;
 import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.w3c.dom.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author David Kaspar
  */
-// TODO - polish serialized data
+// TODO - polish serialized data - save dpi value for proper deserialization
 public class FlowDataSerializer implements DataSerializer {
 
     private static final String FLOW_DOCUMENT_NODE = "FlowScene"; // NOI18N
     private static final String VERSION_ATTR = "version"; // NOI18N
     private static final String NODE_NODE = "Node"; // NOI18N
+    private static final String EDGE_NODE = "Edge"; // NOI18N
     private static final String COMPONENTID_ATTR = "componentID"; // NOI18N
     private static final String DESCRIPTORID_ATTR = "descriptorID"; // NOI18N
-    private static final String X_NODE = "x"; // NOI18N
-    private static final String Y_NODE = "y"; // NOI18N
+    private static final String X_NODE_ATTR = "x"; // NOI18N
+    private static final String Y_NODE_ATTR = "y"; // NOI18N
+    private static final String X_EDGE_ATTR = "x"; // NOI18N
+    private static final String Y_EDGE_ATTR = "y"; // NOI18N
 
     private static final String VERSION_VALUE_1 = "1"; // NOI18N
 
@@ -72,8 +77,26 @@ public class FlowDataSerializer implements DataSerializer {
                         Node data = file.createElement (NODE_NODE);
                         setAttribute (file, data, COMPONENTID_ATTR, Long.toString (descriptor.getRepresentedComponent ().getComponentID ()));
                         setAttribute (file, data, DESCRIPTORID_ATTR, descriptor.getDescriptorID ());
-                        setAttribute (file, data, X_NODE, Integer.toString (location.x));
-                        setAttribute (file, data, Y_NODE, Integer.toString (location.y));
+                        setAttribute (file, data, X_NODE_ATTR, Integer.toString (location.x));
+                        setAttribute (file, data, Y_NODE_ATTR, Integer.toString (location.y));
+                        node.appendChild (data);
+                    }
+                }
+            } else if (scene.isEdge (o)) {
+                FlowDescriptor descriptor = (FlowDescriptor) o;
+                Widget widget = scene.findWidget (descriptor);
+                if (widget instanceof ConnectionWidget) {
+                    ConnectionWidget conn = (ConnectionWidget) widget;
+                    java.util.List<Point> controlPoints = conn.getControlPoints ();
+                    if (conn.getRoutingPolicy () == ConnectionWidget.RoutingPolicy.DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED  &&  ! controlPoints.isEmpty ()) {
+                        Node data = file.createElement (EDGE_NODE);
+                        setAttribute (file, data, COMPONENTID_ATTR, Long.toString (descriptor.getRepresentedComponent ().getComponentID ()));
+                        setAttribute (file, data, DESCRIPTORID_ATTR, descriptor.getDescriptorID ());
+                        for (int i = 0; i < controlPoints.size (); i ++) {
+                            Point point = controlPoints.get (i);
+                            setAttribute (file, data, X_EDGE_ATTR + i, Integer.toString (point.x));
+                            setAttribute (file, data, Y_EDGE_ATTR + i, Integer.toString (point.y));
+                        }
                         node.appendChild (data);
                     }
                 }
@@ -117,8 +140,13 @@ public class FlowDataSerializer implements DataSerializer {
             if (NODE_NODE.equals (node.getNodeName ())) {
                 long componentID = Long.parseLong (getAttributeValue (node, COMPONENTID_ATTR));
                 String descriptorid = getAttributeValue (node, DESCRIPTORID_ATTR);
-                int x = Integer.parseInt (getAttributeValue (node, X_NODE));
-                int y = Integer.parseInt (getAttributeValue (node, Y_NODE));
+                int x, y;
+                try {
+                    x = Integer.parseInt (getAttributeValue (node, X_NODE_ATTR));
+                    y = Integer.parseInt (getAttributeValue (node, Y_NODE_ATTR));
+                } catch (NumberFormatException e) {
+                    continue;
+                }
                 DesignComponent representedComponent = document.getComponentByUID (componentID);
                 if (representedComponent == null || descriptorid == null)
                     continue;
@@ -127,6 +155,33 @@ public class FlowDataSerializer implements DataSerializer {
                 if (widget != null) {
                     widget.setPreferredLocation (new Point (x, y));
                     isAnythingLoaded = true;
+                }
+            } else if (EDGE_NODE.equals (node.getNodeName ())) {
+                long componentID = Long.parseLong (getAttributeValue (node, COMPONENTID_ATTR));
+                String descriptorid = getAttributeValue (node, DESCRIPTORID_ATTR);
+                DesignComponent representedComponent = document.getComponentByUID (componentID);
+                if (representedComponent == null || descriptorid == null)
+                    continue;
+                FlowEdgeDescriptor descriptor = new FlowEdgeDescriptor (representedComponent, descriptorid, null, false, null, false);
+                Widget widget = scene.findWidget (descriptor);
+                if (widget instanceof ConnectionWidget) {
+                    ConnectionWidget conn = (ConnectionWidget) widget;
+                    conn.setRoutingPolicy (ConnectionWidget.RoutingPolicy.DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED);
+                    ArrayList<Point> controlPoints = new ArrayList<Point> ();
+                    for (int i = 0; ; i ++) {
+                        int x, y;
+                        try {
+                            x = Integer.parseInt (getAttributeValue (node, X_EDGE_ATTR + i));
+                            y = Integer.parseInt (getAttributeValue (node, X_EDGE_ATTR + i));
+                        } catch (NumberFormatException e) {
+                            break;
+                        }
+                        controlPoints.add (new Point (x, y));
+                    }
+                    if (! controlPoints.isEmpty ()) {
+                        conn.setRoutingPolicy (ConnectionWidget.RoutingPolicy.DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED);
+                        conn.setControlPoints (controlPoints, false);
+                    }
                 }
             }
         }
