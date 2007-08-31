@@ -119,11 +119,9 @@ final class GenerateJavadocFix implements Fix {
                         String iJavadoc = JavadocGenerator.indentJavadoc(javadocForDocument[0], tab);
                         docs[0].insertString(position.getOffset(), iJavadoc, null);
                         // move the caret to proper position
-                        //                            System.out.println("javadoc:'" + iJavadoc + '\'');
-                        int offset = iJavadoc.indexOf("\n");
-                        //                            System.out.println("offset1: " + offset);
+                        int offset = iJavadoc.indexOf("/**"); // NOI18N
                         offset = iJavadoc.indexOf("\n", offset + 1);
-                        //                            System.out.println("offset2: " + offset);
+                        offset = iJavadoc.indexOf("\n", offset + 1);
                         offset = position.getOffset() + offset - iJavadoc.length();
                         if (open) {
                             JavadocUtilities.open(file, offset);

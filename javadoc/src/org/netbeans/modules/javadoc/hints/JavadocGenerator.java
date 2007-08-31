@@ -155,13 +155,40 @@ public final class JavadocGenerator {
     }
     
     public static String indentJavadoc(String jdoc, String tab) {
-        return jdoc.replace("\n *", "\n" + tab + " *") + tab; // NOI18N
+        int lastNL = tab.lastIndexOf('\n');
+        String prefix;
+        String tab2;
+        if (lastNL >= 0) {
+            prefix = tab;
+            tab2 = lastNL + 1 >= tab.length()? "": tab.substring(lastNL + 1); // NOI18N
+        } else {
+            prefix = ""; // NOI18N
+            tab2 = tab;
+        }
+        return prefix + jdoc.replace("\n *", "\n" + tab2 + " *") + tab2; // NOI18N
     }
     
     public static String guessIndentation(Document doc, Position pos) throws BadLocationException {
         String content = doc.getText(0, doc.getLength());
         int offset;
-        for (offset = pos.getOffset(); offset >= 0 && content.charAt(offset) != '\n'; offset--);
+        boolean dirty = false;
+        for (offset = pos.getOffset() - 1; offset >= 0; offset--) {
+            char c = content.charAt(offset);
+            if (Character.isWhitespace(c)) {
+                if (c == '\n') {
+                    break;
+                }
+            } else {
+                // dirty guess
+                dirty = true;
+            }
+        }
+        
+        if (dirty) {
+            int offset2 = offset + 1;
+            for (;Character.isWhitespace(content.charAt(offset2)); offset2++);
+            return '\n' + content.substring(offset + 1, offset2);
+        }
         return content.substring(offset + 1, pos.getOffset());
     }
     
