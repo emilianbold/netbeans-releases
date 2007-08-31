@@ -35,7 +35,6 @@ import com.sun.rave.designtime.DesignInfo;
 import com.sun.rave.designtime.Result;
 
 
-
 // XXX Originally RowSetPaletteItem, but extracted the uneeded palette stuff.
 /**
  * Pallette iteam representation for Table (or View)  - used for dragging from
@@ -56,10 +55,10 @@ public class RowSetBeanCreateInfoSet implements BeanCreateInfoSet {
     String bareTableName;
     String rowSetInstanceName;
 
-    protected static String rowSetNameSuffix = SingleTableNode.rowSetNameSuffix ;
-    public static Class rowSetClass = SingleTableNode.rowSetClass ;
-    protected static String dataProviderProperty = SingleTableNode.dataProviderProperty ;
-    protected static String dataProviderClassName = SingleTableNode.dataProviderClassName ;
+    protected static String rowSetNameSuffix = DataconnectivitySettings.getRsSuffix() ;
+    public static Class rowSetClass = com.sun.sql.rowset.CachedRowSetXImpl.class;
+    protected static String dataProviderProperty = "cachedRowSet" ; // NOI18N ,
+    protected static String dataProviderClassName = "com.sun.data.provider.impl.CachedRowSetDataProvider" ; // NOI18N
 
     public RowSetBeanCreateInfoSet(DataSourceInfo dsi, String tableName ) {
         this(tableName);
