@@ -52,7 +52,7 @@ Each web service client has the following properties.</p>
 <ul>
     <li><b>Service Reference Name.</b> The name of the Service reference.</li>
     <li><b>WSDL override.</b> The URL to a WSDL document. This URL overrides the
-    WSDL document reference in the web-app.xml file.</li>
+    WSDL document reference in the <tt>web-app.xml</tt> file.</li>
     <li><b>Port Information.</b> Define and configure the port information and properties of a Service reference.
         Add a new port for a Service reference by clicking Add Port Information, or expand an existing port node to
     edit the properties of that port or to remove it. </li>
@@ -64,6 +64,39 @@ Each web service client has the following properties.</p>
             <li>WSDL Port Localpart. This is the local portion of the WSDL namespace.</li>
             <li>Message Security. When selected you can edit the message security binding settings.
         (See <a href="#msgsec">Message Security</a> below under Web Service Endpoints.)</li>
+        <!--<li>Stub Properties. A table of JAX-RPC stub properties and
+                        values for the selected port. (See javax.xml.rpc.Stub class.) Click New to add stub properties and 
+                        values in the property editor. To edit or delete a property, select the property and click Edit or Delete.
+                        The following stub values and properties can be set in the property editor:
+                        <ul>
+                            <li>USERNAME_PROPERTY. Set the value to the user name.</li>
+                            <li>PASSWORD_PROPERTY. Set the value to the user's password.</li>
+                            <li>SESSION_MAINTAIN_PROPERTY. Set the value to True or False.</li>
+                            <li>ENDPOINT_ADDRESS_PROPERTY. Set the value to the address of the service port
+                            endpoint.</li>
+                        </ul>
+                    </li>-->
+            <!--<li>Call Properties. A table of JAX-RPC Call properties and values
+                        for the selected port. (See javax.xml.rpc.Call class.) Click New to add call properties and 
+                        values in the property editor. To edit or delete a property, select the property and click Edit or Delete.
+                        The following call values and properties can be set in the property editor:
+                        <ul>
+                            <li>USERNAME_PROPERTY. Set the value to the user name.</li>
+                            <li>PASSWORD_PROPERTY. Set the value to the user's password.</li>
+                            <li>ENCODINGSTYLE_URI_PROPERTY. Set the value to the http reference to the SOAP
+                            encoding style.</li>
+                            <li>OPERATION_STYLE_PROPERTY. Select the value to document if calls to the
+                            service use XML documents to pass information, or to rpc if calls to the
+                            service pass information as Java objects.</li>
+                            <li>SESSION_MAINTAIN_PROPERTY. Set the value to true to maintain session
+                            information.</li>
+                            <li>SOAP_ACTION_USE_PROPERTY. Select the box if using SOAP actions. Selecting the box 
+                            sets the value to True. If unselected, the value is set to false. If set to true, 
+                            then the SOAPACTION_URI_PROPERTY needs to be set.</li>
+                            <li>SOAPACTION_URI_PROPERTY. Set the value to the URI of any SOAP actions for the
+                            service.</li>
+                        </ul>
+                    </li>-->
         </ul>
     </li>
 </ul>
@@ -136,8 +169,11 @@ You generally should not need to edit this field if the endpoint endpoint is alr
       <dd><a href="../ejbconfigeditors/sunconfig.html"><tt>sun-ejb-jar.xml</tt> Visual Editor</a></dd>
       <dd><tt>sun-web.xml</tt> Visual Editor:</dd>
       <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppGeneral.html">General</a></dd>
-      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppMessages.html">Messages</a></dd>
-
+      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="Servlet.html">Servlets</a></dd>
+      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="SecurityWebRoleMapping.html">Security</a></dd>
+      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppMessages.html">Messaging</a></dd>
+      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../appclientconfigeditors/sun-applicationclient_env.html">Environment</a></dd>
+      
 </dl>
 
 

@@ -5,23 +5,22 @@
         * Copyright 2007 Sun Microsystems, Inc.
         * All rights reserved. Use is subject to license terms.
         -->
-        <title>sun-application-client.xml Visual Editor: Environment</title>
+        <title>Deployment Descriptor Visual Editor: Environment</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2><tt>sun-application-client.xml</tt> Visual Editor: Environment</h2>
+        <h2>Deployment Descriptor Visual Editor: Environment</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>The <tt>sun-application-client.xml</tt> visual editor lets you edit an enterprise
-            application client's 
+        <p>The deployment descriptor visual editor lets you edit the
             platform-specific deployment descriptor for the Sun Java System Application 
-            Server/GlassFish. You open the visual editor by expanding your project's Configuration 
-            Files node in the Projects window and double-clicking the <tt>sun-application-client.xml</tt> file. </p>
+            Server/GlassFish. </p>
             
-            <p>You get to this tab by double-clicking the <tt>sun-application-client.xml</tt> file under the application client project's
+            <p>You get to this tab by double-clicking the <tt>sun-web.xml</tt> or <tt>sun-application-client.xml</tt> file under the application client project's
             Configuration Files node in the Projects window and clicking the Environment tab in the visual editor.</p>
-            <p>If any configuration information for an application client is not specified 
-            in the <tt>sun-application-client.xml</tt> file, it defaults to a corresponding setting in <tt>application-client.xml</tt> if an equivalency exists.</p>
-
+            <p>If any configuration information for the project is not specified 
+            in this server-specific descriptor file, it defaults to a corresponding setting in the general descriptor file for 
+            the application, if an equivalency exists.</p>
+            
             <p>The Environment tab contains the following sections for editing deployment descriptor properties of reference elements. 
             If no reference element exists, you can create new references elements to the descriptor file by selecting the section title 
             and then clicking the button to add a new reference element.
@@ -32,8 +31,6 @@
                 <li><a href="#ejbref">EJB References</a></li>
                 <li><a href="#resref">Resource References</a></li>
                 <li><a href="#resenvref">Resource Environment References</a></li>
-                <li><a href="#mesdes">Message Destination References</a></li>
-                <li><a href="#webserend">Web Service Endpoints</a></li>
             </ul>
 
             <h3><a name="ejbref"></a>EJB References</h3>
@@ -57,11 +54,7 @@
                 <li><b>JNDI Name.</b> Enter the JNDI name for the Resource Environment reference. This field should not be empty.</li>
             </ul>
 
-            <h3><a name="mesdes"></a>Message Destination References</h3>
-            <ul>
-                <li><b>Resource Environment Reference Name.</b> This displays the Resource environment reference name.</li>
-                <li><b>JNDI Name.</b> Enter the JNDI name for the Resource Environment reference. This field should not be empty.</li>
-            </ul>
+            
 
             <p>For more on server-specific deployment descriptors for
             the Sun Java System Application Server, see the following document:
