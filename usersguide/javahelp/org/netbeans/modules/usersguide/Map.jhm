@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -325,9 +325,8 @@
 <!--CSH ID for Options | Misc | Profiler :-->
   <mapID target="ProfilerOptions.Help" url="configure/options_profiler.html"/>
 
-
-
-
+<!--CSH ID for generic nodes -->
+  <mapID target="org.openide.nodes.BeanNode" url="pending.html"/>
 
 
 
