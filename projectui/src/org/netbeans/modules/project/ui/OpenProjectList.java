@@ -1158,11 +1158,13 @@ public final class OpenProjectList {
         ModuleInfo info = findModuleForProject(prj);
         if (info != null) {
             // is null in tests..
-            if (!openProjectsModuleInfos.containsKey(info)) {
-                openProjectsModuleInfos.put(info, new ArrayList<Project>());
-                info.addPropertyChangeListener(infoListener);
+            synchronized (openProjectsModuleInfos) {
+                if (!openProjectsModuleInfos.containsKey(info)) {
+                    openProjectsModuleInfos.put(info, new ArrayList<Project>());
+                    info.addPropertyChangeListener(infoListener);
+                }
+                openProjectsModuleInfos.get(info).add(prj);
             }
-            openProjectsModuleInfos.get(info).add(prj);
         }
     }
     
@@ -1174,10 +1176,15 @@ public final class OpenProjectList {
     private void removeModuleInfo(Project prj, ModuleInfo info) {
         // info can be null in case we are closing a project from disabled module
         if (info != null) {
-            openProjectsModuleInfos.get(info).remove(prj);
-            if (openProjectsModuleInfos.get(info).size() == 0) {
-                info.removePropertyChangeListener(infoListener);
-                openProjectsModuleInfos.remove(info);
+            synchronized (openProjectsModuleInfos) {
+                List<Project> prjlist = openProjectsModuleInfos.get(info);
+                if (prjlist != null) {
+                    prjlist.remove(prj);
+                    if (prjlist.size() == 0) {
+                        info.removePropertyChangeListener(infoListener);
+                        openProjectsModuleInfos.remove(info);
+                    }
+                }
             }
         }
     }
