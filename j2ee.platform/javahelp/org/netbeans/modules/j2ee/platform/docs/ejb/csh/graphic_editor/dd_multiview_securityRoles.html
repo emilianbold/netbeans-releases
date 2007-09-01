@@ -28,23 +28,7 @@ for an EJB module.
 You open the editor by expanding the project's <tt>Configuration Files</tt> node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>.
 You edit the security roles in the Security Roles section of the General tab of the visual editor.</p>
 <p>A security role is an abstract logical grouping of users that is defined by the application assembler. 
-When an application is deployed, the roles are mapped to security identities, such as&nbsp;
-<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-<param name="content" value="../../glossary/principal.html">
-<param name="viewerActivator" value="javax.help.LinkLabel">
-<param name="viewerStyle" value="javax.help.Popup">
-<param name="viewerSize" value="400,220">
-<param name="text" value="principals">
-<param name="textFontSize" value="medium">
-</object>&nbsp;or&nbsp; 
-<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-<param name="content" value="../../glossary/group.html">
-<param name="viewerActivator" value="javax.help.LinkLabel">
-<param name="viewerStyle" value="javax.help.Popup">
-<param name="viewerSize" value="400,220">
-<param name="text" value="groups">
-<param name="textFontSize" value="medium">
-</object>, in the operational environment. 
+When an application is deployed, the roles are mapped to security identities, such as principals or groups, in the operational environment. 
 In the J2EE server authentication service, a role is an abstract name for permission to access a particular set of resources. 
 A role can be compared to a key that can open a lock. Many people might have a copy of the key; the lock does not care who you are, only that you have the right key.</p>
 
@@ -70,20 +54,13 @@ The row for the role you selected becomes editable.</li>
     <dt><a name="seealso">See Also</a></dt>
 <dd><a href="../../configuring/config_ejb_about.html">About Configuring EJB Modules</a> </dd>
 <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an Enterprise Application</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/sjs_configure_security.html">Configuring Security Roles for the Sun Java System Application Server</a></dd>
 <dd><tt>ejb-jar.xml</tt> Visual Editor:</dd>
 <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module Details</a></dd>
-<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity Bean</a></dd>
-<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session Bean</a></dd>
-<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_MDB.html">Message-Driven Bean</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Enterprise Beans: Entity Bean</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Enterprise Beans: Session Bean</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_MDB.html">Enterprise Beans: Message-Driven Bean</a></dd>
 <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP Relationships</a></dd>
-<dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://java.sun.com/javaee/reference/glossary/index.jsp#89082">
-<param name="text" value="<html><u>Glossary definition: Principal</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object></dd>
-<!-- TODO -- Add link to more info about security roles -->
-
 </dl>
 <hr>
 <small><a href="../../../credits.html">Legal Notices</a></small>
