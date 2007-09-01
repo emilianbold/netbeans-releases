@@ -1077,7 +1077,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 				
 				DesignComponent dcImgRes = designIdMap.get(imgRes);
 				assert (dcImgRes != null);
-				dcImgRes.addComponent(dcAnimTile);
+				dcImgRes.removeComponent(dcAnimTile);
 				
 				//update the image resource holding the animated tile
 				GameController.this.writeAnimatedTilesToImageResourceDC(dcImgRes, imgRes);
@@ -1149,7 +1149,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			document.getTransactionManager().writeAccess(new Runnable() {
 				public void run() {
 					String newName = (String) e.getNewValue();
-					dcAnimatedTile.writeProperty(Editable.PROPERTY_NAME, MidpTypes.createStringValue(newName));
+					dcAnimatedTile.writeProperty(AnimatedTileCD.PROPERTY_NAME, MidpTypes.createStringValue(newName));
 				}
 			});
 		}

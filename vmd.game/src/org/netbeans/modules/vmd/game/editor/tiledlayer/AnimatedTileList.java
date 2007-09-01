@@ -29,15 +29,23 @@ import java.awt.dnd.DragSource;
 import java.awt.dnd.DragSourceAdapter;
 import java.awt.dnd.DragSourceDropEvent;
 import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
+import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.ImageResourceListener;
 import org.netbeans.modules.vmd.game.model.Sequence;
@@ -76,13 +84,23 @@ public class AnimatedTileList extends JList {
 			}
 		});
 		this.addFocusListener(new FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent e) {
+            public void focusGained(FocusEvent e) {
                AnimatedTileList.this.updatePaintTile();
             }
 		});
 		this.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (e.getClickCount() >= 2) {
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					handlePopup(e);
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					handlePopup(e);
+				}
+			}
+            public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() >= 2 && SwingUtilities.isLeftMouseButton(e)) {
 					AnimatedTile tile = (AnimatedTile) AnimatedTileList.this.getSelectedValue();
 					tile.getImageResource().getGameDesign().getMainView().requestEditing(tile);
 				}
@@ -92,6 +110,17 @@ public class AnimatedTileList extends JList {
 		DragSource dragSource = new DragSource();
 		DragGestureRecognizer dragGestureRecognizer = dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, new DGL());
 
+	}
+	
+	private void handlePopup(MouseEvent e) {
+		JPopupMenu menu = new JPopupMenu();
+        int row = AnimatedTileList.this.locationToIndex(e.getPoint());
+        AnimatedTile at = (AnimatedTile) AnimatedTileList.this.getModel().getElementAt(row);
+		List<Action> actions = at.getActions();
+		for (Action action : actions) {
+            menu.add(action);
+		}
+		menu.show(this, e.getX(), e.getY());
 	}
 	
 	private void updatePaintTile() {
@@ -110,7 +139,9 @@ public class AnimatedTileList extends JList {
 			this.model.addElement(tile);
 		}
 	}
-
+	
+	
+	
 	public Dimension getMaximumSize() {
 		return this.getPreferredSize();
 	}
@@ -137,8 +168,22 @@ public class AnimatedTileList extends JList {
 		}	
 	}
 
-	private class AnimatedTileListDataModel extends DefaultListModel implements ImageResourceListener, SequenceContainerListener {
-				
+	private class AnimatedTileListDataModel extends DefaultListModel implements ImageResourceListener, SequenceContainerListener, PropertyChangeListener {
+
+		@Override
+		public void addElement(Object obj) {
+			AnimatedTile tile = (AnimatedTile) obj;
+			super.addElement(tile);
+			tile.addPropertyChangeListener(this);
+		}
+		
+        public void propertyChange(PropertyChangeEvent evt) {
+			int index = this.indexOf(evt.getSource());
+            if (evt.getPropertyName().equals(Editable.PROPERTY_NAME)) {
+                AnimatedTileListDataModel.this.fireContentsChanged(this, index, index);
+            }
+        }
+		
 		//ImageResourceListener
 		public void animatedTileAdded(ImageResource source, AnimatedTile tile) {
 			if (tile.getWidth() == AnimatedTileList.this.editorComponent.getTiledLayer().getTileWidth()

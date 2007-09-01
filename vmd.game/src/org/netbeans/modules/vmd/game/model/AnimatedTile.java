@@ -24,6 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -35,6 +36,7 @@ import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerNavigator;
 import org.netbeans.modules.vmd.game.preview.SequenceContainerPreview;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public class AnimatedTile extends Tile implements SequenceContainer, Editable {
@@ -87,6 +89,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		}
 		String oldName = this.name;
 		this.name = name;
+		//System.out.println("old name: " + oldName + ", new name: " + name);
 		this.propertyChangeSupport.firePropertyChange(PROPERTY_NAME, oldName, name);
 	}
 	
@@ -164,10 +167,11 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		List<Action> actions = new ArrayList<Action>();
 		actions.add(new RenameAction());
 		actions.add(new AddSequenceAction());
-		return actions;
+		actions.add(new DeleteAction());
+		return Collections.unmodifiableList(actions);
 	}
 	
-	private class AddSequenceAction extends AbstractAction {
+	public class AddSequenceAction extends AbstractAction {
 		{
 			this.putValue(NAME, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.AddSequenceAction.name")); // NOI18N
 		}
@@ -182,7 +186,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		}
 	}
 
-	private class RenameAction extends AbstractAction {
+	public class RenameAction extends AbstractAction {
 		{
 			this.putValue(NAME, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.RenameAction.name")); // NOI18N
 		}
@@ -194,6 +198,25 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 			dialog.setDialogDescriptor(dd);
 			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
 			d.setVisible(true);
+		}
+	}
+
+	public class DeleteAction extends AbstractAction {
+		{
+			this.putValue(NAME, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.DeleteAction.name")); // NOI18N
+		}
+		public void actionPerformed(ActionEvent e) {
+            Object response = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                    NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.DeleteDialog.text", getName()),
+                    NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.DeleteAnimatedTile.text"),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE,
+                    new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+                    NotifyDescriptor.YES_OPTION));
+            if (response == NotifyDescriptor.YES_OPTION) {
+                System.out.println("said YES to delete AnimatedTile"); // NOI18N
+                getImageResource().removeAnimatedTile(getIndex());
+            }
 		}
 	}
 

@@ -205,7 +205,7 @@ public class ImageResource {
 	}
 	
 	public void removeAnimatedTile(int index) {
-		AnimatedTile removedTile = (AnimatedTile) this.animatedTiles.remove(new Integer(index));
+		AnimatedTile removedTile = this.animatedTiles.remove(new Integer(index));
 		this.fireAnimatedTileRemoved(removedTile);
 	}
 	
@@ -229,7 +229,7 @@ public class ImageResource {
 		return null;
 	}
 
-	private StaticTile getEmptyTile(int cellWidth, int cellHeight) {
+	public StaticTile getEmptyTile(int cellWidth, int cellHeight) {
 		StaticTile emptyTile = this.emptyTiles.get(getGridKey(cellWidth, cellHeight, false));
 		if (emptyTile == null) {
 			emptyTile = new StaticTile(this, Tile.EMPTY_TILE_INDEX, cellWidth, cellHeight, false);

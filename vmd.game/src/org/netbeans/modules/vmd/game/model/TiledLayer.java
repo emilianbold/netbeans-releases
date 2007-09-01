@@ -39,7 +39,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
-public class TiledLayer extends Layer {
+public class TiledLayer extends Layer implements ImageResourceListener {
 
     private TiledLayerPreviewPanel preview;
     private TiledLayerNavigator navigator;
@@ -53,16 +53,19 @@ public class TiledLayer extends Layer {
 	
 	TiledLayer(GlobalRepository gameDesign, String name, ImageResource imageResource, int rows, int columns, int tileWidth, int tileHeight) {
 		super(gameDesign, name, imageResource, tileWidth, tileHeight);
+		getImageResource().addImageResourceListener(this);
 		this.grid = new int[rows][columns];
 	}
 	
 	TiledLayer(GlobalRepository gameDesign, String name, ImageResource imageResource, int[][] grid, int tileWidth, int tileHeight) {
 		super(gameDesign, name, imageResource, tileWidth, tileHeight);
+		getImageResource().addImageResourceListener(this);
 		this.grid = grid;
 	}
 	
 	TiledLayer(GlobalRepository gameDesign, String name, TiledLayer tiledLayer) {
 		super(gameDesign, name, tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
+		getImageResource().addImageResourceListener(this);
 		this.grid = new int[tiledLayer.grid.length][];
 		for (int i = 0; i < this.grid.length; i++) {
 			int[] copyRow = new int[tiledLayer.grid[i].length];
@@ -449,5 +452,29 @@ public class TiledLayer extends Layer {
 				this.getImageResource().paint(this.grid[r][c], g, c*tileWidth, r*tileHeight,tileWidth, tileHeight, false);
 			}
 		}
+	}
+
+	public void animatedTileAdded(ImageResource source, AnimatedTile tile) {
+	}
+
+	public void animatedTileRemoved(ImageResource source, AnimatedTile tile) {
+		Set<Position> changes = new HashSet<Position>();
+		for (int i = 0; i < this.grid.length; i++ ) {
+			for (int j = 0; j < this.grid[i].length; j++) {
+				if (tile.getIndex() == this.grid[i][j]) {
+					this.grid[i][j] = Tile.EMPTY_TILE_INDEX;
+					changes.add(new Position(i, j));
+				}
+			}
+		}
+		if (!changes.isEmpty()) {
+			this.fireTilesChanged(changes);
+		}
+	}
+
+	public void sequenceAdded(ImageResource source, Sequence sequence) {
+	}
+
+	public void sequenceRemoved(ImageResource source, Sequence sequence) {
 	}
 }

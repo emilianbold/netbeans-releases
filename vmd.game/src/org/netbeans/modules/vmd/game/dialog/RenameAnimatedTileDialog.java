@@ -48,7 +48,7 @@ public class RenameAnimatedTileDialog extends AbstractNameValidationDialog {
 			return this.getInitialStateDescriptionText();
 		}
 		
-		if (this.tile.getImageResource().getAnimatedTileByName(name) != null) {
+		if (!this.tile.getGameDesign().isComponentNameAvailable(name)) {
 			errMsg = NbBundle.getMessage(RenameAnimatedTileDialog.class, "RenameAnimatedTileDialog.animatedTileExistsDescription.text");
 		}
 		return errMsg;
