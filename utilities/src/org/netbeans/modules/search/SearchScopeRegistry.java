@@ -251,7 +251,7 @@ public final class SearchScopeRegistry {
     private boolean checkNewState(final SearchScope searchScope,
                                   final Boolean addition) {
         /* thread: <any> */
-        assert Thread.currentThread().holdsLock(getLock());
+        assert Thread.holdsLock(getLock());
         if (LOG.isLoggable(FINER)) {
             log("checkNewState(" + searchScope + ')');
         }
@@ -438,7 +438,7 @@ public final class SearchScopeRegistry {
      *          instances accessible
      */
     private Collection<SearchScopeRegistry> cloneLookupInstances() {
-        assert Thread.currentThread().holdsLock(getLock());
+        assert Thread.holdsLock(getLock());
 
         Collection<SearchScopeRegistry> extras;
         if ((extraInstances != null) && !extraInstances.isEmpty()) {
@@ -474,7 +474,7 @@ public final class SearchScopeRegistry {
     /**
      */
     private Collection<SearchScope> cloneSearchScopes(SearchScopeRegistry fromInstance) {
-        assert Thread.currentThread().holdsLock(getLock());
+        assert Thread.holdsLock(getLock());
 
         return new ArrayList<SearchScope>(fromInstance.searchScopes.keySet());
     }
@@ -482,7 +482,7 @@ public final class SearchScopeRegistry {
     /**
      */
     private Collection<ChangeListener> cloneChangeListeners() {
-        assert Thread.currentThread().holdsLock(getLock());
+        assert Thread.holdsLock(getLock());
 
         return (changeListeners != null)
                ? new ArrayList<ChangeListener>(changeListeners)
