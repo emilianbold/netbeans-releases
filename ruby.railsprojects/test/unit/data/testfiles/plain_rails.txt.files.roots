@@ -1,0 +1,42 @@
+rootnames:
+  app
+  components
+  config
+  db
+  doc
+  lib
+  log
+  public
+  script
+  spec
+  test
+  vendor
+rootProperties:
+  app
+  components
+  config
+  db
+  doc
+  lib
+  log
+  public
+  script
+  spec
+  test
+  vendor
+rootFiles:
+  app
+  components
+  config
+  db
+  doc
+  lib
+  log
+  public
+  script
+  spec
+  test
+  vendor
+extraFiles:
+  Rakefile
+  README

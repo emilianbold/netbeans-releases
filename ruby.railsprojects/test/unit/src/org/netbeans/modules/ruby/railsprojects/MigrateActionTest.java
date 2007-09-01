@@ -103,10 +103,10 @@ public class MigrateActionTest extends RailsProjectTestBase {
         assertDescriptionMatches(relFilePath, annotatedSource, true, ".menu");
     }
 
-    private RailsProject constructRailsProject(String... files) throws Exception {
-        return createTestProject("RubyProject_" + getName(), files);
-    }
-    
+//    private RailsProject constructRailsProject(String... files) throws Exception {
+//        return createTestProject("RubyProject_" + getName(), files);
+//    }
+//    
     public void testMigrations109892() throws Exception {
         RailsProject p = constructRailsProject("testfiles/migrations1.txt");
         assertNotNull(p);

@@ -1,0 +1,46 @@
+rootnames:
+  app
+  components
+  config
+  db
+  doc
+  lib
+  log
+  public
+  script
+  selenium
+  spec
+  test
+  vendor
+rootProperties:
+  app
+  components
+  config
+  db
+  doc
+  lib
+  log
+  public
+  script
+  selenium
+  spec
+  test
+  vendor
+rootFiles:
+  app
+  components
+  config
+  db
+  doc
+  lib
+  log
+  public
+  script
+  selenium
+  spec
+  test
+  vendor
+extraFiles:
+  Rakefile
+  README
+  loosefile.txt
