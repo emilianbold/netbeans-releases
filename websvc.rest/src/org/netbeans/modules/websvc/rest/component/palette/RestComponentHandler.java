@@ -66,7 +66,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
         final Project project = FileOwnerQuery.getOwner(targetFO);
         Lookup pItem = RestPaletteFactory.getCurrentPaletteItem();
         final Node n = pItem.lookup(Node.class);
-        final RestComponentData data = RestPaletteFactory.getRestComponentData(n); 
+        data = RestPaletteFactory.getRestComponentData(n); 
         final String type = data.getService().getMethods().get(0).getType();
        
         final ProgressDialog dialog = new ProgressDialog(

@@ -431,8 +431,11 @@ function getParamRep(req, mName) {
                     //alert(params.length);
                     for(j=0;j<params.length;j++) {
                         var pname = params[j].attributes.getNamedItem('name').nodeValue;
+                        var defaultVal = '';
+                        if(params[j].attributes.getNamedItem('default') != null)
+                            defaultVal = params[j].attributes.getNamedItem('default').nodeValue;
                         var num = j+1;
-                        str += "<span class=bld>"+pname+":</span>"+"<input id='params' name='"+pname+"' type='text' value='"+pname+"'>"+"<br><br>";
+                        str += "<span class=bld>"+pname+":</span>"+"<input id='params' name='"+pname+"' type='text' value='"+defaultVal+"'>"+"<br><br>";
                     }
                 }
             }
