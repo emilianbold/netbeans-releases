@@ -26,12 +26,10 @@
 <mapID target="files.ignore-files" url="files/files_ignore-files.html" />
 <mapID target="files.search" url="files/files_search.html" />
 <mapID target="files.template" url="files/files_template.html" />
-<mapID target="files.templatemacros" url="files/files_template_macros.html" />
 <mapID target="files.unknown" url="files/files_unknown.html" />
 <mapID target="files.runtime" url="files/files_runtime.html" />
 <mapID target="files.encoding" url="files/encoding.html" />
-
-
+<mapID target="find_regexp" url="files/find_regexp.html" />
 
 
 
@@ -215,11 +213,6 @@
 
 
 
-<!--csh pages for Find and Find in Projects windows-->
-<mapID target="org.netbeans.modules.search.types.FullTextType" url="files/findinfiles-csh.html" />
-<mapID target="org.netbeans.modules.search.types.ObjectNameType" url="files/findinfiles-csh.html" />
-<mapID target="org.netbeans.modules.search.types.ModificationDateType" url="files/findinfiles-csh.html" />
-
 
 
 <!--Add New Class dialog box-->
@@ -257,6 +250,8 @@
 <!--ID for Waiting For Tasks to Finish dialog box:-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
 
+    <!--ID for Find dialog-->
+<mapID target="org.netbeans.modules.search.SearchPanel" url="files/files_search.html" />    
     
 <!--remove ID issue 54601:-->
     <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />

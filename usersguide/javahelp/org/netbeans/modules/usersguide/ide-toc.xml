@@ -25,7 +25,6 @@
     <tocitem text="Comparing Two Files in the IDE" target="files.diff" />
     <tocitem text="Accessing Files Outside of a Project" target="files_favorite" />
     <tocitem text="Creating a Template" target="files.template" />
-    <tocitem text="Using Macros in Templates" target="files.templatemacros" />
     <tocitem text="Working with Unknown File Extensions" target="files.unknown" />
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
     <tocitem text="Setting Character Encoding" target="files.encoding" />
