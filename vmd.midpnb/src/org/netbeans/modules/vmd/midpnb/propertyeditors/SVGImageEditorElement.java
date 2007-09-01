@@ -182,7 +182,9 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
     }
 
     private void updateModel() {
+        doNotFireEvent = true;
         comboBoxModel.removeAllElements();
+        doNotFireEvent = false;
         FileObject sourceFolder = getSourceFolder();
         searchImagesInDirectory(sourceFolder);
         for (Entry e : ClassPath.getClassPath(sourceFolder, ClassPath.COMPILE).entries()) {
