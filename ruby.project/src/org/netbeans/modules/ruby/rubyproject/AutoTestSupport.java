@@ -75,7 +75,7 @@ public class AutoTestSupport {
         desc.fileLocator(fileLocator);
         desc.classPath(classPath); // Applies only to JRuby
         desc.showProgress(false);
-        desc.addOutputRecognizer(new TestNotifier());
+        desc.addOutputRecognizer(new TestNotifier(false, false));
         desc.addStandardRecognizers();
         new RubyExecution(desc, charsetName).run();
     }

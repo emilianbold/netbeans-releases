@@ -237,7 +237,7 @@ public class RailsActionProvider implements ActionProvider {
             }
             
             runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, 
-                    isDebug, new OutputRecognizer[] { new TestNotifier() });
+                    isDebug, new OutputRecognizer[] { new TestNotifier(true, true) });
             
             return;
 
@@ -364,7 +364,7 @@ public class RailsActionProvider implements ActionProvider {
             } else if (fileName.endsWith("_test")) { // NOI18N
                 // Run test normally - don't pop up browser
                 runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
-                        new OutputRecognizer[] { new TestNotifier() });
+                        new OutputRecognizer[] { new TestNotifier(true, true) });
                 return;
             }
             

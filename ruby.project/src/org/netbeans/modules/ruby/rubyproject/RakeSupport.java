@@ -152,7 +152,7 @@ public class RakeSupport {
         desc.addStandardRecognizers();
 
         if (test) {
-            desc.addOutputRecognizer(new TestNotifier());
+            desc.addOutputRecognizer(new TestNotifier(true, true));
         }
         
         desc.addOutputRecognizer(new RakeErrorRecognizer(desc, charsetName));

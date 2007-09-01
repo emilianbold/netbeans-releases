@@ -589,7 +589,7 @@ public class RubyActionProvider implements ActionProvider {
             }
             
             runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                    file.getNameExt(), context, isDebug, new OutputRecognizer[] { new TestNotifier() });
+                    file.getNameExt(), context, isDebug, new OutputRecognizer[] { new TestNotifier(true, true) });
         }
 
         if (COMMAND_TEST.equals(command)) {

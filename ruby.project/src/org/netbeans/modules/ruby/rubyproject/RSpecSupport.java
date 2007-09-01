@@ -179,7 +179,7 @@ public class RSpecSupport {
         desc.classPath(classPath); // Applies only to JRuby
         desc.fileLocator(fileLocator);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new TestNotifier());
+        desc.addOutputRecognizer(new TestNotifier(true, true));
         new RubyExecution(desc, charsetName).run();
     }
 }

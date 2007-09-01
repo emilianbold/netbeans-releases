@@ -20,20 +20,20 @@ public class TestNotifierTest extends TestCase {
     }
 
     public void testUnit() {
-        TestNotifier notifier = new TestNotifier();
+        TestNotifier notifier = new TestNotifier(false, false);
         
         assertTrue(notifier.recognizeLine("35 tests, 81 assertions, 0 failures, 1 errors"));
     }
 
     public void testRSpec() {
-        TestNotifier notifier = new TestNotifier();
+        TestNotifier notifier = new TestNotifier(false, false);
         
         assertTrue(notifier.recognizeLine("5 examples, 3 failures, 5 not implemented"));
         assertTrue(notifier.recognizeLine("1 example, 1 failure"));
     }
     
     public void testWindows() {        
-        TestNotifier notifier = new TestNotifier();
+        TestNotifier notifier = new TestNotifier(false, false);
 
         assertTrue(notifier.recognizeLine("35 tests, 81 assertions, 0 failures, 1 errors\r"));
         assertTrue(notifier.recognizeLine("5 examples, 3 failures, 5 not implemented\r"));
@@ -41,7 +41,7 @@ public class TestNotifierTest extends TestCase {
     }
     
     public void testNoFalseNegatives() {
-        TestNotifier notifier = new TestNotifier();
+        TestNotifier notifier = new TestNotifier(false, false);
         
         assertFalse(notifier.recognizeLine("1 for example, 1 failure"));
         assertFalse(notifier.recognizeLine("hello world"));
@@ -49,5 +49,55 @@ public class TestNotifierTest extends TestCase {
         assertFalse(notifier.recognizeLine("NoMethodError: You have a nil object when you didn't expect it!"));
         assertFalse(notifier.recognizeLine(".......E..........................."));
         assertFalse(notifier.recognizeLine("   C:/InstantRails/rails_apps/rfs/test/unit/rest_phone/phone_action/phone_action_subtypes_test.rb:182:in `test_event_response'"));
+    }
+    
+    public void testAccumulate1() {
+        TestNotifier notifier = new TestNotifier(true, false);
+        notifier.processLine("35 tests, 81 assertions, 0 failures, 0 errors");
+        notifier.processLine("10 tests, 1 assertions, 0 failures, 0 errors\r");
+        notifier.processLine("1 tests, 0 assertions, 0 failures, 0 errors");
+        assertEquals("46 tests, 82 assertions, 0 failures, 0 errors", notifier.getSummary());
+    }
+
+    public void testAccumulate2() {
+        TestNotifier notifier = new TestNotifier(true, false);
+        notifier.processLine("35 tests, 81 assertions, 0 failures, 1 errors");
+        notifier.processLine("10 tests, 1 assertions, 5 failures, 1 errors\r");
+        notifier.processLine("1 tests, 0 assertions, 0 failures, 0 errors");
+        assertEquals("46 tests, 82 assertions, 5 failures, 2 errors", notifier.getSummary());
+    }
+
+    public void testRSpec1() {  
+        TestNotifier notifier = new TestNotifier(true, false);
+
+        notifier.processLine("5 examples, 3 failures, 5 not implemented");
+        notifier.processLine("1 example, 1 failure\r");
+        assertEquals("6 examples, 4 failures, 5 not implemented", notifier.getSummary());
+    }
+
+    public void testRSpec2() {
+        TestNotifier notifier = new TestNotifier(true, false);
+
+        notifier.processLine("0 examples, 0 failures, 5 not implemented");
+        notifier.processLine("1 example, 1 failure\r");
+        assertEquals("1 example, 1 failure, 5 not implemented", notifier.getSummary());
+    }
+
+    public void testRSpec3() {
+        TestNotifier notifier = new TestNotifier(true, false);
+
+        notifier.processLine("0 examples, 0 failures");
+        notifier.processLine("0 examples, 0 failures");
+        assertEquals("0 examples, 0 failures", notifier.getSummary());
+    }
+
+    public void testCombined() {
+        TestNotifier notifier = new TestNotifier(true, false);
+
+        notifier.processLine("0 examples, 0 failures, 5 not implemented");
+        notifier.processLine("1 example, 1 failure\r");
+        assertEquals("1 example, 1 failure, 5 not implemented", notifier.getSummary());
+        notifier.processLine("1 tests, 1 assertions, 1 failures, 1 errors");
+        assertEquals("1 test, 1 assertion, 1 example, 2 failures, 1 error, 5 not implemented", notifier.getSummary());
     }
 }

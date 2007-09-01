@@ -38,20 +38,53 @@ import org.openide.windows.TopComponent;
  * @author Tor Norbye
  */
 public class TestNotifier extends OutputRecognizer implements Runnable {
+    /** Should we accumulate scores? */
+    private boolean accumulate;
+    /** Should we only post errors in the editor footer if there are failures? */
+    private boolean showSuccesses;
+    
+    /** Counts for the various types of errors we see in the output */
+    private int examples;
+    private int failures;
+    private int notImplemented;
+    private int tests;
+    private int assertions;
+    private int errors;
+    private boolean seenTestUnit;
+    private boolean seenRSpec;
+    
+    /** 
+     * Create a new TestNotifier.
+     * <p>
+     * @param accumulate If true, accumulate the amounts reported and report a final
+     * summary of all. Otherwise, it will simply warn if there are errors and
+     * forward the message to the editor.
+     * @param showSuccesses If true, post results to the editor window even if
+     * there are no failures
+     */
+    public TestNotifier(boolean accumulate, boolean showSuccesses) {
+        this.accumulate = accumulate;
+        this.showSuccesses = showSuccesses;
+    }
+    
     /** Turn off notification? */
     private static final boolean QUIET = Boolean.getBoolean("ruby.quiet.tests"); // NOI18N
-    
-    private final Pattern[] PATTERNS = new Pattern[] {
+
+    // Test::Unit:   test/unit/testresult.rb#
+    private final static Pattern TEST_UNIT_PATTERN = 
         // The final \\s? in the patterns is to allow \r on Windows
-        
-        // Test::Unit:   test/unit/testresult.rb#
-        Pattern.compile("\\d+ tests, \\d+ assertions, \\d+ failures, \\d+ errors\\s?"), // NOI18N
-                
-        // RSpec: see {rspec}/lib/spec/runner/formatter/base_text_formatter.rb#dump_summary
-        Pattern.compile("\\d+ examples?, \\d+ failures?(, \\d+ not implemented)?\\s?") // NOI18N
-    };
+        Pattern.compile("(\\d+) tests, (\\d+) assertions, (\\d+) failures, (\\d+) errors\\s?"); // NOI18N
+
+    // RSpec: see {rspec}/lib/spec/runner/formatter/base_text_formatter.rb#dump_summary
+    private final static Pattern RSPEC_PATTERN = 
+        Pattern.compile("(\\d+) examples?, (\\d)+ failures?(, (\\d+) not implemented)?\\s?"); // NOI18N
     
+    private final Pattern[] PATTERNS = new Pattern[] { TEST_UNIT_PATTERN, RSPEC_PATTERN };
+    
+    /** Schedlued message to be displayed in the editor */
     private String message;
+    /** Schedule message type - if true, show as warning */
+    private boolean warning;
 
     @Override
     public FileLocation processLine(String line) {
@@ -62,17 +95,30 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         for (Pattern pattern : PATTERNS) {
             Matcher match = pattern.matcher(line);
             if (match.matches()) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestNotifier.class, "TestsCompleted", line));
+                String summary;
+                if (accumulate) {
+                    addTotals(pattern, match, line);
+                    summary = getSummary();
+                } else {
+                    summary = line;
+                }
+                
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestNotifier.class, "TestsCompleted", summary));
                 // TODO - fail on "not implemented" too?
                 if ((line.indexOf(" 0 failures") == -1) || (line.indexOf(" 0 errors") == -1)) { // NOI18N
-                    message = NbBundle.getMessage(AutoTestSupport.class, "TestsFailed", line);
+                    warning = true;
+                    message = NbBundle.getMessage(AutoTestSupport.class, "TestsFailed", summary);
+                    run();
+                } else if (showSuccesses) {
+                    warning = false;
+                    message = NbBundle.getMessage(AutoTestSupport.class, "TestsCompleted", summary);
                     run();
                 }
             }
         }
         return null;
     }
-
+    
     public void run() {
         if (message == null) {
             return;
@@ -96,7 +142,11 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
             }
             for (JEditorPane pane : panes) {
                 if (pane.isShowing()) {
-                    org.netbeans.editor.Utilities.setStatusBoldText(pane, message);
+                    if (warning) {
+                        org.netbeans.editor.Utilities.setStatusBoldText(pane, message);
+                    } else {
+                        org.netbeans.editor.Utilities.setStatusText(pane, message);
+                    }
                     return;
                 }
             }
@@ -117,4 +167,58 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         return false;
     }
 
+    private void addTotals(Pattern pattern, Matcher matcher, String line) {
+        assert PATTERNS.length == 2; // If you add more patterns, make sure you update the below logic
+        if (pattern == TEST_UNIT_PATTERN) {
+            seenTestUnit = true;
+            tests += Integer.parseInt(matcher.group(1));
+            assertions += Integer.parseInt(matcher.group(2));
+            failures += Integer.parseInt(matcher.group(3));
+            errors += Integer.parseInt(matcher.group(4));
+        } else {
+            assert pattern == RSPEC_PATTERN;
+            seenRSpec = true;
+            examples += Integer.parseInt(matcher.group(1));
+            failures += Integer.parseInt(matcher.group(2));
+            if (matcher.group(4) != null) {
+                notImplemented += Integer.parseInt(matcher.group(4));
+            }
+        }
+        assert matcher.matches();
+    }
+
+    private void appendSummary(StringBuilder sb, String s) {
+        if (sb.length() > 0) {
+            sb.append(", ");
+        }
+        sb.append(s);
+    }
+    
+    private String getCountDescription(String oneKey, String manyKey, int count) {
+        String countString = Integer.toString(count);
+        
+        return NbBundle.getMessage(TestNotifier.class, count == 1 ? oneKey : manyKey, countString);
+    }
+    
+    String getSummary() {
+        StringBuilder sb = new StringBuilder(80);
+        if (seenTestUnit || tests > 0) {
+            appendSummary(sb, getCountDescription("OneTest", "ManyTests", tests));
+        }
+        if (seenTestUnit || assertions > 0) {
+            appendSummary(sb, getCountDescription("OneAssert", "ManyAssert", assertions));
+        }
+        if (seenRSpec || examples > 0) {
+            appendSummary(sb, getCountDescription("OneExample", "ManyExamples", examples));
+        }
+        appendSummary(sb, getCountDescription("OneFailure", "ManyFailures", failures));
+        if (seenTestUnit || errors > 0) {
+            appendSummary(sb, getCountDescription("OneError", "ManyErrors", errors));
+        }
+        if (notImplemented > 0) {
+            appendSummary(sb, getCountDescription("OneNotImpl", "ManyNotImpl", notImplemented));
+        }
+        
+        return sb.toString();
+    }
 }
