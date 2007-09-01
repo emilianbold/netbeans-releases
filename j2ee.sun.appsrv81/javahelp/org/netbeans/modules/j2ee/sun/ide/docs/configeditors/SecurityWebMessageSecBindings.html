@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ * Copyright 2007 Sun Microsystems, Inc.
+ * All rights reserved. Use is subject to license terms.
+-->
+  <title>Visual Editor: Message Security Bindings Dialog Box</title>
+  <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Visual Editor: Message Security Bindings Dialog Box</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>This dialog box enables you to specify the message security bindings for a web service endpoint or port.
+You open this dialog box by selecting the Message Security option for a web service endpoint in the Servlet 
+tab of <tt>sun-web.xml</tt>, <tt>sun-ejb-jar.xml</tt> or <tt>sun-application.xml</tt> and clicking Edit Bindings.</p>
+<p>You also use this dialog box when configuring message security policy for a port for web service clients.</p>
+<p>You use this dialog box to associate a specific provider or message protection 
+policy with a web services endpoint or service reference.</p>
+
+<p>This dialog box enables you to edit the following properties:</p>
+<ul>
+    <li><b>Authorization Layer.</b> Specifies the message layer at which authentication is performed. The value must be SOAP.</li>
+    <li><b>Provider ID. (optional)</b> Specifies the authentication provider used to satisfy application-specific message security requirements. 
+    If not specified, a default provider is used, if it is defined for the message layer. 
+    If no default provider is defined, authentication requirements defined in the <tt>message-security-binding</tt> are not enforced.</li>
+    <li><b>Message Security Entries.</b> 
+    <p>Use the buttons below the textfield to edit, remove and create new message security entries.</p></li>
+</ul>
+  <dl>
+      <dt><a name="seealso">See Also</a></dt>
+      <dd><a href="SecurityWebRoleMapping.html">Visual Editor: Security: Security Role Mapping</a></dd>
+      <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/csh/graphic_editor/dd_multiview_security_securityrolesNode.html"><tt>web.xml</tt> Visual Editor: Security Roles</a></dd>
+      <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/configure/configure_webapp_dd.html">Configuring Web Application Deployment Descriptors</a></dd>
+      <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
+  </dl>
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

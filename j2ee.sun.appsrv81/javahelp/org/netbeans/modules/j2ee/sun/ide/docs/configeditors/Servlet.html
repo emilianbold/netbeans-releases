@@ -15,10 +15,10 @@
 <p>Configure properties for a servlet.<br>
 </p>
 <ul>
-  <li>Servlet Name: Read-only field displaying the servlet name for
+  <li><b>Servlet Name.</b> Read-only field displaying the servlet name for
 identification purposes only.<br>
   </li>
-  <li>Run As Role: If a run-as role name was designated in the <tt>web.xml</tt>
+  <li><b>Run As Role.</b> If a run-as role name was designated in the <tt>web.xml</tt>
 file, then this field displays the run-as role value (read only). If no
 run-as role name was specified in the <tt>web.xml</tt> file, then this field is
 blank and disabled.<br>
@@ -28,8 +28,9 @@ disabled. If the run-as role field displays a value, then the user can
 set a role name that becomes the principal role under which the servlet
 is run.<br>
   </li>-->
-  <li><b>Principal Name.</b></li>
-  <li><b>Class Name.</b></li>
+  <li><b>Principal Name.</b> The name of the principal assigned to a security role. 
+  The name of the principal must match a name specified on the Sun Java System Application Server/GlassFish.</li>
+  <li><b>Class Name.</b> This field specifies the implementation class.</li>
 </ul>
 <p>For servlet-based web service endpoint configuration, see <a href="WebserviceDescriptor.html">Web Service Descriptor</a></p>
 

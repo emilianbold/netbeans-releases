@@ -45,6 +45,9 @@
     <mapID target="AS_CFG_SecurityRoleNewGroup"                 url="configeditors/SecurityWebAddGroup.html"  />
     <mapID target="AS_CFG_SecurityRoleEditGroup"                url="configeditors/SecurityWebEditGroup.html"  />
     
+    <mapID target="AS_CFG_WebServiceEndpointSecurity"           url="configeditors/SecurityWebMessageSecBindings.html"  />
+    <mapID target="AS_CFG_WebServiceEndpointMessageSecurity"    url="configeditors/SecurityWebMessageSecurity.html"  />
+    
     <!-- DD CSH from within editor -->
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" 		url="configeditors/WebAppMessages.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationNode" 	url="configeditors/WebAppMessages.html"  />
@@ -52,7 +55,8 @@
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode"		url="configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"         url="configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView"                   url="configeditors/Servlet.html"  />
-   
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode"                   url="configeditors/Servlet.html"  />   
+
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceView" 	url="configeditors/WebserviceDescriptor.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceNode" 	url="configeditors/WebserviceDescriptor.html"  />
  
@@ -80,7 +84,7 @@
 
     <!-- older targets we can probably remove -->
     <mapID target="AS_CFG_ServiceRefPortInfoStubProperty"               url="configeditors/Servlet.html"  />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode"               url="configeditors/ServiceRefPortInfoStubProperty.html"  />
+
     <!--<mapID target="AS_CFG_SessionConfigurationManager" 			url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationManagerProperty" 		url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationStoreProperty" 		url="configeditors/SessionConfigurationManager.html"  />

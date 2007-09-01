@@ -13,8 +13,7 @@
 <h2>Deployment Descriptor Visual Editor: Web Services</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>The <tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt> visual editor lets you edit the platform-specific 
-    deployment descriptors for Sun Java System Application Server/GlassFish. 
-The pane lists the web services in the project.</p>
+    deployment descriptors for web services in the project if you are deploying to the Sun Java System Application Server/GlassFish.</p>
   
 <p>A web or enterprise application will only contain the <tt>sun-web.xml</tt> or <tt>sun-ejb-jar.xml</tt> 
 deployment descriptors if the target server is the Sun Java System Application Server/GlassFish.</p>
@@ -58,12 +57,13 @@ Each web service client has the following properties.</p>
         Add a new port for a Service reference by clicking Add Port Information, or expand an existing port node to
     edit the properties of that port or to remove it. </li>
     <li><b>Selected Port Information.</b> Supply or edit the following properties for the 
-        port selected in the Port Information combo box, 
+        web service client port: 
         <ul>
             <li>Service Endpoint Interface</li>
             <li>WSDL Port Namespace URI</li>
             <li>WSDL Port Localpart. This is the local portion of the WSDL namespace.</li>
-            <li>Message Security. When selected you can edit the message security binding settings.</li>
+            <li>Message Security. When selected you can edit the message security binding settings.
+        (See <a href="#msgsec">Message Security</a> below under Web Service Endpoints.)</li>
         </ul>
     </li>
 </ul>
@@ -82,22 +82,7 @@ Each web service client has the following properties.</p>
 <li><b>Port Component Name.</b> The port component name for this endpoint.  
 Matches the corresponding port component name in <tt>webservices.xml</tt>.  
 You generally should not need to edit this field if the endpoint endpoint is already specified in <tt>webservices.xml</tt>.</li>
-<!--  <tr> 
-    <td valign="top">Authentication Method</td>
-    <td>Specifies the authentication configuration for the web service endpoint.  The following options are available:
-      <ul>
-        <li><b>NONE</b>. The application does not require any authentication. </li>
-        <li><b>BASIC</b>. The application uses basic authentication, that is, a user ID and password.  (EJB endpoints only.)</li>
-        <li><b>CLIENT-CERT</b>. The application authenticates with a client certificate.  (EJB endpoints only.)</li>
-        <li><b>MESSAGE_SECURITY</b>. The application requires that the data be transmitted in a fashion that
-          prevents other entities from observing the contents of the transmission.  This is displayed here when
-          the <tt>message-security-binding</tt> property of the endpoint has been set.  For now, you must edit details
-          of the binding in XML text editor. </li>
-      </ul>
-      <p>Note that for servlet endpoints, authentication is either configured in <tt>web.xml</tt> (see security-constraint) 
-        or with a <tt>message-security-binding</tt> (either way, it is not configured here.)<p>
-    </td>
-  </tr>-->
+
     <li><b>Endpoint Address URI.</b> Specifies the automatically generated endpoint address.  The Endpoint Address must
       be a fixed pattern. No <tt>*</tt> wildcards are allowed. The default value is the web service name for
       servlet-based endpoints or <tt>webservice/<i>ejb-name</i></tt> for an EJB-based endpoint.
@@ -118,21 +103,41 @@ You generally should not need to edit this field if the endpoint endpoint is alr
       <p>Choosing INTEGRAL or CONFIDENTIAL indicates that the use of SSL is required. </p>
     </li>
     <li><b>Debugging Enabled.</b></li>
-    <li><b>Message Security.</b></li>
-    </ul>
+    <li><b>Message Security.</b><a name="msgsec"></a> If deselected, the application does not require authentication.
+        If selected, the application requires that the data be transmitted in a fashion that
+        prevents other entities from observing the contents of the transmission.  
+        If you select this option, you must click Edit Bindings to set the <tt>message-security-binding</tt> properties.</li>
+
+    <li><b>Security Settings</b> If you are configuring an EJB web service endpoint, you can specify 
+    the following authentication options:
+          <ul>
+          <li><b>No Security</b>. If selected, the application does not require any authentication. </li>
+          <li><b>Message Security.</b> (see above)</li>
+          <li><b>Login Configuration Realm.</b> If selected, you must specify a realm that exists on
+              the Sun Java System Application Server/GlassFish and specify one of the following authentication options:
+              <ul>    
+              <li><b>Basic</b>. The application uses basic authentication, that is, a user ID and password.</li>
+              <li><b>Client Certification</b>. The application authenticates with a client certificate.</li>
+              </ul>
+          </li>
+          </ul>
+      </li>
+      </ul>
+        <p>Note that for servlet endpoints, authentication is either configured in <tt>web.xml</tt> (see security-constraint) 
+        or with a <tt>message-security-binding</tt>.<p>
     <br>
     <p>For more information, see <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/build/about_build_ws.html">About Building Web Services</a>.</p>
 
 <dl>
-        <dt><a name="seealso">See Also</a></dt>
+      <dt><a name="seealso">See Also</a></dt>
       <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
       <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/configure/configure_webapp_dd.html">Editing a Web Application's Deployment Descriptors</a></dd>
+      <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/config_ejb_dd.html">Editing an EJB Module's Deployment Descriptors</a></dd>
+      <dd><a href="../ejbconfigeditors/sunconfig.html"><tt>sun-ejb-jar.xml</tt> Visual Editor</a></dd>
       <dd><tt>sun-web.xml</tt> Visual Editor:</dd>
       <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppGeneral.html">General</a></dd>
       <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppMessages.html">Messages</a></dd>
-      <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/config_ejb_dd.html">Editing an EJB Module's Deployment Descriptors</a></dd>
-      <dd><a href="../ejbconfigeditors/sunconfig.html"><tt>sun-ejb-jar.xml</tt> Visual Editor</a></dd>
-      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../ejbconfigeditors/entitybean.html">Entity Bean</a></dd>
+
 </dl>
 
 
