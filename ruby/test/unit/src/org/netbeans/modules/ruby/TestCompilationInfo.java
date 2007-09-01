@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
-import org.jruby.ast.Node;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Error;
 import org.netbeans.api.gsf.Index;
@@ -33,7 +32,6 @@ import org.netbeans.api.retouche.source.ClasspathInfo;
 import org.netbeans.api.retouche.source.Source;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.gsf.DefaultParserFile;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -42,12 +40,15 @@ import org.openide.filesystems.FileObject;
  */
 class TestCompilationInfo extends CompilationInfo {
     private final String text;
-    private final Document doc;
+    private Document doc;
     private Source source;
     private ParserResult result;
+    private int caretOffset = -1;
+    private RubyTestBase test;
     
-    public TestCompilationInfo(FileObject fileObject, BaseDocument doc, String text) throws IOException {
+    public TestCompilationInfo(RubyTestBase test, FileObject fileObject, BaseDocument doc, String text) throws IOException {
         super(fileObject);
+        this.test = test;
         this.text = text;
         assert text != null;
         this.doc = doc;
@@ -55,6 +56,10 @@ class TestCompilationInfo extends CompilationInfo {
         if (fileObject != null) {
             source = Source.forFileObject(fileObject);
         }
+    }
+    
+    public void setCaretOffset(int caretOffset) {
+        this.caretOffset = caretOffset;
     }
 
     public String getText() {
@@ -117,13 +122,20 @@ class TestCompilationInfo extends CompilationInfo {
                         return text;
                     }
                     public int getCaretOffset(ParserFile fileObject) {
-                        return -1;
+                        return caretOffset;
                     }
                 };
             
-            getParser().parseFiles(sourceFiles, listener, reader);
-            
-            r = result = resultHolder[0];
+            //getParser().parseFiles(sourceFiles, listener, reader);
+            //r = result = resultHolder[0];
+            if (this.doc == null) {
+                this.doc = test.getDocument(text);
+            }
+            RubyParser.Context context = new RubyParser.Context(file, listener, text, caretOffset);
+            context.setDocument((BaseDocument)this.doc);
+            ParserResult pr = new RubyParser().parseBuffer(context, RubyParser.Sanitize.NONE);
+            r = result = pr;
+  //          assert r == resultHolder[0];
         }
         
         return r;

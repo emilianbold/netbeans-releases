@@ -291,7 +291,7 @@ public class BracketCompleterTest extends RubyTestBase {
         
         BaseDocument doc = getDocument(source);
         FileObject fileObject = null;
-        CompilationInfo info = new TestCompilationInfo(fileObject, doc, source);
+        CompilationInfo info = new TestCompilationInfo(this, fileObject, doc, source);
         
         BracketCompleter completer = new BracketCompleter();
         List<OffsetRange> ranges = completer.findLogicalRanges(info, caretPos);

@@ -16,28 +16,20 @@
  */
 package org.netbeans.modules.ruby.rhtml;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.ext.html.HTMLFormatter;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.IndentPrefs;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
-import org.netbeans.modules.html.editor.indent.HtmlIndentTask;
-import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
-import org.netbeans.spi.editor.indent.Context;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *

@@ -39,7 +39,6 @@ import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.Error;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParseEvent;
@@ -77,7 +76,6 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RubyParser implements Parser {
-    private int currentErrorOffset;
     private final PositionManager positions = new RubyPositionManager();
 
     /**
@@ -101,13 +99,15 @@ public class RubyParser implements Parser {
         for (ParserFile file : files) {
             ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
             listener.started(beginEvent);
-
+            
             ParserResult result = null;
 
             try {
                 CharSequence buffer = reader.read(file);
-                int offset = reader.getCaretOffset(file);
-                result = parseBuffer(file, offset, -1, buffer, listener, Sanitize.NONE);
+                String source = asString(buffer);
+                int caretOffset = reader.getCaretOffset(file);
+                Context context = new Context(file, listener, source, caretOffset);
+                result = parseBuffer(context, Sanitize.NONE);
             } catch (IOException ioe) {
                 listener.exception(ioe);
             }
@@ -127,54 +127,73 @@ public class RubyParser implements Parser {
      * this method has to be less conservative in ripping out code since it
      * will only be used when the regular source is failing.
      */
-    private String getSanitizedSource(ParserFile file, int caretOffset, int errorOffset,
-        String buffer, OffsetRange[] sanitizedRange, Sanitize sanitizing) {
+    private boolean sanitizeSource(Context context, Sanitize sanitizing) {
+
+        if (context.noDocument) {
+            return false;
+        }
+        
+        if (sanitizing == Sanitize.MISSING_END) {
+            context.sanitizedSource = context.source + ";end";
+            int start = context.source.length();
+            context.sanitizedRange = new OffsetRange(start, start+4);
+            return true;
+        }
+
+        int offset = context.caretOffset;
+
         // Let caretOffset represent the offset of the portion of the buffer we'll be operating on
         if ((sanitizing == Sanitize.ERROR_DOT) || (sanitizing == Sanitize.ERROR_LINE)) {
-            caretOffset = errorOffset;
+            offset = context.errorOffset;
         }
 
         // Don't attempt cleaning up the source if we don't have the buffer position we need
-        if (caretOffset == -1) {
-            return buffer;
+        if (offset == -1) {
+            return false;
         }
 
         // The user might be editing around the given caretOffset.
         // See if it looks modified
         // Insert an end statement? Insert a } marker?
-        FileObject fileObject = file.getFileObject();
+        if (context.doc == null) {
+            ParserFile file = context.file;
+            FileObject fileObject = file.getFileObject();
 
-        if (fileObject == null) {
-            return buffer;
+            if (fileObject == null) {
+                context.noDocument = true;
+                return false;
+            }
+
+           context.doc = AstUtilities.getBaseDocument(fileObject, false);
+            if (context.doc == null) {
+                context.noDocument = true;
+                return false;
+            }
         }
-
-        BaseDocument doc = AstUtilities.getBaseDocument(fileObject, false);
-
-        if (doc == null) {
-            return buffer;
-        }
-
-        if (caretOffset > doc.getLength()) {
-            return buffer;
+        
+        BaseDocument doc = context.doc;
+        
+        if (offset > doc.getLength()) {
+            return false;
         }
 
         try {
             // Sometimes the offset shows up on the next line
-            if (Utilities.isRowEmpty(doc, caretOffset) || Utilities.isRowWhite(doc, caretOffset)) {
-                caretOffset = Utilities.getRowStart(doc, caretOffset)-1;
-                if (caretOffset < 0) {
-                    caretOffset = 0;
+            if (Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset)) {
+                offset = Utilities.getRowStart(doc, offset)-1;
+                if (offset < 0) {
+                    offset = 0;
                 }
             }
 
-            if (!(Utilities.isRowEmpty(doc, caretOffset) || Utilities.isRowWhite(doc, caretOffset))) {
+            if (!(Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset))) {
                 if ((sanitizing == Sanitize.EDITED_LINE) || (sanitizing == Sanitize.ERROR_LINE)) {
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineEnd = Utilities.getRowLastNonWhite(doc, caretOffset);
+                    int lineEnd = Utilities.getRowLastNonWhite(doc, offset);
 
                     if (lineEnd != -1) {
                         StringBuilder sb = new StringBuilder(doc.getLength());
-                        int lineStart = Utilities.getRowStart(doc, caretOffset);
+                        int lineStart = Utilities.getRowStart(doc, offset);
                         int rest = lineStart + 1;
 
                         sb.append(doc.getText(0, lineStart));
@@ -185,20 +204,20 @@ public class RubyParser implements Parser {
                         }
                         assert sb.length() == doc.getLength();
 
-                        sanitizedRange[0] = new OffsetRange(lineStart, lineEnd);
-
-                        return sb.toString();
+                        context.sanitizedRange = new OffsetRange(lineStart, lineEnd);
+                        context.sanitizedSource = sb.toString();
+                        return true;
                     }
                 } else {
-                    assert sanitizing == Sanitize.ERROR_DOT;
+                    assert sanitizing == Sanitize.ERROR_DOT || sanitizing == Sanitize.EDITED_DOT;
 
                     // Try nuking dots/colons from this line
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineEnd = Utilities.getRowLastNonWhite(doc, caretOffset);
+                    int lineEnd = Utilities.getRowLastNonWhite(doc, offset);
 
                     if (lineEnd != -1) {
                         StringBuilder sb = new StringBuilder(doc.getLength());
-                        int lineStart = Utilities.getRowStart(doc, caretOffset);
+                        int lineStart = Utilities.getRowStart(doc, offset);
                         String line = doc.getText(lineStart, lineEnd - lineStart + 1);
                         int removeChars = 0;
                         int removeOffset = lineEnd;
@@ -220,6 +239,10 @@ public class RubyParser implements Parser {
                             removeChars = 1;
                             removeOffset = lineEnd - 2;
                         }
+                        
+                        if (removeChars == 0) {
+                            return false;
+                        }
 
                         int rest = removeOffset + removeChars;
 
@@ -234,10 +257,10 @@ public class RubyParser implements Parser {
                         }
                         assert sb.length() == doc.getLength();
 
-                        sanitizedRange[0] = new OffsetRange(removeOffset, removeOffset +
+                        context.sanitizedRange = new OffsetRange(removeOffset, removeOffset +
                                 removeChars);
-
-                        return sb.toString();
+                        context.sanitizedSource = sb.toString();
+                        return true;
                     }
                 }
             }
@@ -245,10 +268,68 @@ public class RubyParser implements Parser {
             Exceptions.printStackTrace(ble);
         }
 
-        return buffer;
+        return false;
     }
 
-    private void notifyError(ParseListener listener, ParserFile file, String key,
+    @SuppressWarnings("fallthrough")
+    private ParserResult sanitize(final Context context,
+        final Sanitize sanitizing) {
+
+        switch (sanitizing) {
+        case NEVER:
+            return new RubyParseResult(context.file);
+
+        case NONE:
+
+            // We've currently tried with no sanitization: try first level
+            // of sanitization - removing dots/colons at the edited offset.
+            // First try removing the dots or double colons around the failing position
+            if (context.caretOffset != -1) {
+                return parseBuffer(context, Sanitize.EDITED_DOT);
+            }
+
+        // Fall through to try the next trick
+        case EDITED_DOT:
+
+            // We've tried editing the caret location - now try editing the error location
+            if (context.errorOffset != -1) {
+                return parseBuffer(context, Sanitize.ERROR_DOT);
+            }
+
+        // Fall through to try the next trick
+        case ERROR_DOT:
+
+            // We've tried removing dots - now try removing the whole line at the error position
+            if (context.errorOffset != -1) {
+                return parseBuffer(context, Sanitize.ERROR_LINE);
+            }
+
+        // Fall through to try the next trick
+        case ERROR_LINE:
+
+            // Messing with the error line didn't work - we could try "around" the error line
+            // but I'm not attempting that now.
+            // Finally try removing the whole line around the user editing position
+            // (which could be far from where the error is showing up - but if you're typing
+            // say a new "def" statement in a class, this will show up as an error on a mismatched
+            // "end" statement rather than here
+            if (context.caretOffset != -1) {
+                return parseBuffer(context, Sanitize.EDITED_LINE);
+            }
+
+        // Fall through to try the next trick
+        case EDITED_LINE:
+            return parseBuffer(context, Sanitize.MISSING_END);
+            
+        // Fall through for default handling
+        case MISSING_END:
+        default:
+            // We're out of tricks - just return the failed parse result
+            return new RubyParseResult(context.file);
+        }
+    }
+
+    private void notifyError(Context context, String key,
         Severity severity, String description, String details, int offset, Sanitize sanitizing) {
         // Replace a common but unwieldy JRuby error message with a shorter one
         if (description.startsWith("syntax error, expecting	")) { // NOI18N
@@ -262,30 +343,28 @@ public class RubyParser implements Parser {
         }
         
         Error error =
-            new DefaultError(key, description, details, file.getFileObject(),
+            new DefaultError(key, description, details, context.file.getFileObject(),
                 new DefaultPosition(offset), new DefaultPosition(offset), severity);
-        listener.error(error);
+        context.listener.error(error);
 
         if (sanitizing == Sanitize.NONE) {
-            currentErrorOffset = offset;
+            context.errorOffset = offset;
         }
     }
 
-    @SuppressWarnings("fallthrough")
-    public ParserResult parseBuffer(final ParserFile file, int caretOffset, int errorOffset,
-        final CharSequence sequence, final ParseListener listener, final Sanitize sanitizing) {
-        String source = asString(sequence);
+    ParserResult parseBuffer(final Context context, final Sanitize sanitizing) {
         boolean sanitizedSource = false;
-        OffsetRange[] sanitizedRangeHolder = new OffsetRange[] { OffsetRange.NONE };
-
+        String source = context.source;
         if (!((sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER))) {
-            String s =
-                getSanitizedSource(file, caretOffset, errorOffset, source, sanitizedRangeHolder,
-                    sanitizing);
+            boolean ok = sanitizeSource(context, sanitizing);
 
-            if (s != source) {
+            if (ok) {
+                assert context.sanitizedSource != null;
                 sanitizedSource = true;
-                source = s;
+                source = context.sanitizedSource;
+            } else {
+                // Try next trick
+                return sanitize(context, sanitizing);
             }
         }
 
@@ -300,7 +379,7 @@ public class RubyParser implements Parser {
                 new IRubyWarnings() {
                     public void warn(ISourcePosition position, String message) {
                         if (!ignoreErrors) {
-                            notifyError(listener, file, null, Severity.WARNING, message, null,
+                            notifyError(context, null, Severity.WARNING, message, null,
                                 position.getStartOffset(), sanitizing);
                         }
                     }
@@ -311,21 +390,21 @@ public class RubyParser implements Parser {
 
                     public void warn(String message) {
                         if (!ignoreErrors) {
-                            notifyError(listener, file, null, Severity.WARNING, message, null, -1,
+                            notifyError(context, null, Severity.WARNING, message, null, -1,
                                 sanitizing);
                         }
                     }
 
                     public void warning(String message) {
                         if (!ignoreErrors) {
-                            notifyError(listener, file, null, Severity.WARNING, message, null, -1,
+                            notifyError(context, null, Severity.WARNING, message, null, -1,
                                 sanitizing);
                         }
                     }
 
                     public void warning(ISourcePosition position, String message) {
                         if (!ignoreErrors) {
-                            notifyError(listener, file, null, Severity.WARNING, message, null,
+                            notifyError(context, null, Severity.WARNING, message, null,
                                 position.getStartOffset(), sanitizing);
                         }
                     }
@@ -336,13 +415,13 @@ public class RubyParser implements Parser {
             parser.setWarnings(warnings);
 
             if (sanitizing == Sanitize.NONE) {
-                currentErrorOffset = -1;
+                context.errorOffset = -1;
             }
 
             String fileName = "";
 
-            if ((file != null) && (file.getFileObject() != null)) {
-                fileName = file.getFileObject().getNameExt();
+            if ((context.file != null) && (context.file.getFileObject() != null)) {
+                fileName = context.file.getFileObject().getNameExt();
             }
 
             LexerSource lexerSource = new LexerSource(fileName, content, 0, true);
@@ -361,7 +440,7 @@ public class RubyParser implements Parser {
             }
 
             if (!ignoreErrors) {
-                notifyError(listener, file, null, Severity.ERROR, e.getMessage(),
+                notifyError(context, null, Severity.ERROR, e.getMessage(),
                     e.getLocalizedMessage(), offset, sanitizing);
             }
         }
@@ -379,60 +458,18 @@ public class RubyParser implements Parser {
         }
 
         if (root != null) {
-            AstRootElement rootElement = new AstRootElement(file.getFileObject(), root, result);
+            context.sanitized = sanitizing;
+            AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
-            RubyParseResult r = new RubyParseResult(file, rootElement, ast, root, realRoot, result);
-            r.setSanitizedRange(sanitizedRangeHolder[0]);
+            RubyParseResult r = new RubyParseResult(context.file, rootElement, ast, root, realRoot, result);
+            r.setSanitizedRange(context.sanitizedRange);
             r.setSource(source);
-
             return r;
         } else {
-            switch (sanitizing) {
-            case NEVER:
-                return new RubyParseResult(file);
-
-            case NONE:
-
-                // We've currently tried with no sanitization: try first level
-                // of sanitization - removing dots/colons at the error offset
-                // First try removing the dots or double colons around the failing error position
-                if (currentErrorOffset != -1) {
-                    return parseBuffer(file, caretOffset, currentErrorOffset, source, listener,
-                        Sanitize.ERROR_DOT);
-                }
-
-            // Fall through to try the next trick
-            case ERROR_DOT:
-
-                // We've tried removing dots - now try removing the whole line at the error position
-                if (caretOffset != -1) {
-                    return parseBuffer(file, caretOffset, errorOffset, source, listener,
-                        Sanitize.ERROR_LINE);
-                }
-
-            // Fall through to try the next trick
-            case ERROR_LINE:
-
-                // Messing with the error line didn't work - we could try "around" the error line
-                // but I'm not attempting that now.
-                // Finally try removing the whole line around the user editing position
-                // (which could be far from where the error is showing up - but if you're typing
-                // say a new "def" statement in a class, this will show up as an error on a mismatched
-                // "end" statement rather than here
-                if (caretOffset != -1) {
-                    return parseBuffer(file, caretOffset, errorOffset, source, listener,
-                        Sanitize.EDITED_LINE);
-                }
-
-            // Fall through for default handling
-            case EDITED_LINE:default:
-
-                // We're out of tricks - just return the failed parse result
-                return new RubyParseResult(file);
-            }
+            return sanitize(context, sanitizing);
         }
     }
-
+    
     public PositionManager getPositionManager() {
         return positions;
     }
@@ -580,17 +617,69 @@ public class RubyParser implements Parser {
         }
 
     /** Attempts to sanitize the input buffer */
-    enum Sanitize {
+    public static enum Sanitize {
         /** Only parse the current file accurately, don't try heuristics */
         NEVER, 
         /** Perform no sanitization */
         NONE, 
+        /** Try to remove the trailing . or :: at the caret line */
+        EDITED_DOT, 
         /** Try to remove the trailing . or :: at the error position, or the prior
          * line, or the caret line */
         ERROR_DOT, 
         /** Try to cut out the error line */
         ERROR_LINE, 
         /** Try to cut out the current edited line, if known */
-        EDITED_LINE;
+        EDITED_LINE,
+        /** Attempt to add an "end" to the end of the buffer to make it compile */
+        MISSING_END,
+    }
+
+    /** Parsing context */
+    public static class Context {
+        private final ParserFile file;
+        private final ParseListener listener;
+        private int errorOffset;
+        /** True if we've looked for a document and this file doesn't have one */
+        private boolean noDocument;
+        private BaseDocument doc;
+        private String source;
+        private String sanitizedSource;
+        private OffsetRange sanitizedRange = OffsetRange.NONE;
+        private int caretOffset;
+        private Sanitize sanitized = Sanitize.NONE;
+        
+        Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset) {
+            this.file = parserFile;
+            this.listener = listener;
+            this.source = source;
+            this.caretOffset = caretOffset;
+
+        }
+        
+        void setDocument(BaseDocument doc) {
+            this.doc = doc;
+        }
+
+        @Override
+        public String toString() {
+            return "RubyParser.Context(" + file.toString() + ")"; // NOI18N
+        }
+        
+        public OffsetRange getSanitizedRange() {
+            return sanitizedRange;
+        }
+
+        public Sanitize getSanitized() {
+            return sanitized;
+        }
+        
+        public String getSanitizedSource() {
+            return sanitizedSource;
+        }
+        
+        public int getErrorOffset() {
+            return errorOffset;
+        }
     }
 }

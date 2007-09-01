@@ -76,16 +76,21 @@ public abstract class RubyTestBase extends NbTestCase {
         ParserFile file = new DefaultParserFile(fileObject, null, false);
         String sequence = "";
         ParseListener listener = new DefaultParseListener();
+        BaseDocument baseDoc = null;
         try {
-            DataObject dobj = DataObject.find(fileObject);
-            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
-            Document doc = cookie.openDocument();
-            sequence = doc.getText(0, doc.getLength());
+//            DataObject dobj = DataObject.find(fileObject);
+//            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+//            Document doc = cookie.openDocument();
+//            sequence = doc.getText(0, doc.getLength());
+            sequence = readFile(fileObject);
+            baseDoc = getDocument(sequence);
         }
         catch (Exception ex){
             fail(ex.toString());
         }
-        ParserResult result = parser.parseBuffer(file, caretOffset, -1, sequence, listener, RubyParser.Sanitize.NEVER);
+        RubyParser.Context context = new RubyParser.Context(file, listener, sequence, caretOffset);
+        context.setDocument(baseDoc);
+        ParserResult result = parser.parseBuffer(context, RubyParser.Sanitize.NEVER);
         return result;
     }
 
@@ -248,7 +253,7 @@ public abstract class RubyTestBase extends NbTestCase {
         }
         BaseDocument doc = getDocument(text);
 
-        CompilationInfo info = new TestCompilationInfo(fileObject, doc, text);
+        CompilationInfo info = new TestCompilationInfo(this, fileObject, doc, text);
 
         return info;
     }
