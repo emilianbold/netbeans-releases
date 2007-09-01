@@ -41,6 +41,6 @@ rootFiles:
   test
   vendor
 extraFiles:
-  Rakefile
   README
+  Rakefile
   loosefile.txt

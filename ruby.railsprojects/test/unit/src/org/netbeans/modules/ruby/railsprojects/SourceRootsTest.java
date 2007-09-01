@@ -7,6 +7,8 @@
 
 package org.netbeans.modules.ruby.railsprojects;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import junit.framework.TestCase;
 import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
 import org.openide.filesystems.FileObject;
@@ -58,6 +60,11 @@ public class SourceRootsTest extends RailsProjectTestBase {
             sb.append("rootFiles:\n");
             FileObject[] rootFiles = roots.getRoots();
             if (rootFiles != null) {
+                Arrays.sort(rootFiles, new Comparator<FileObject>() {
+                    public int compare(FileObject f1, FileObject f2) {
+                        return f1.getNameExt().compareTo(f2.getNameExt());
+                    }
+                });
                 for (FileObject f : rootFiles) {
                     sb.append("  ");
                     String s = f.getNameExt();
@@ -68,6 +75,11 @@ public class SourceRootsTest extends RailsProjectTestBase {
             sb.append("extraFiles:\n");
             FileObject[] extraFiles = roots.getExtraFiles();
             if (extraFiles != null) {
+                Arrays.sort(extraFiles, new Comparator<FileObject>() {
+                    public int compare(FileObject f1, FileObject f2) {
+                        return f1.getNameExt().compareTo(f2.getNameExt());
+                    }
+                });
                 for (FileObject f : extraFiles) {
                     sb.append("  ");
                     String s = f.getNameExt();

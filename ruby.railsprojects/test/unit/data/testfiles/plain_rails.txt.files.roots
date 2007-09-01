@@ -38,5 +38,5 @@ rootFiles:
   test
   vendor
 extraFiles:
-  Rakefile
   README
+  Rakefile

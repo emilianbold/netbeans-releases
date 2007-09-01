@@ -45,28 +45,28 @@ rootProperties:
   vendor
   selenium
 rootFiles:
-  controllers
-  helpers
-  models
-  views
   apis
   components
   config
+  controllers
   db
+  doc
+  fixtures
+  functional
+  helpers
+  integration
   lib
   log
+  mocks
+  models
+  othertests
   public
+  script
+  selenium
   spec
   unit
-  functional
-  fixtures
-  mocks
-  integration
-  script
-  doc
-  othertests
   vendor
-  selenium
+  views
 extraFiles:
-  Rakefile
   README
+  Rakefile
