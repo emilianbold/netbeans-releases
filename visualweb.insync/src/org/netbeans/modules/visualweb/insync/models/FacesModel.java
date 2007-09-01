@@ -954,6 +954,11 @@ public class FacesModel extends Model {
      */
     public UndoEvent writeLock(String description) {
         UndoEvent event = null;
+        
+        if(!isWriteLocked()) {
+            //make sure the source is not dirty before modifying the model
+            sync();
+        }
 
         if (liveUnitWrapper != null) {
             event = liveUnitWrapper.isWriteLocked()
