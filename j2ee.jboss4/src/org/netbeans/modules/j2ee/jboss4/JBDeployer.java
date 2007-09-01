@@ -145,8 +145,7 @@ public class JBDeployer implements ProgressObject, Runnable {
 
 
         try {
-            URL deploymentUrl = toDeploy.toURI().toURL();
-            Long previousDeployTime = getDeploymentTime(deploymentUrl);
+            Long previousDeployTime = getDeploymentTime(toDeploy);
 
             FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
             TargetModuleID moduleID = mainModuleID;
@@ -170,7 +169,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
 
                 //wait until the url becomes active
-                boolean ready = waitForUrlReady(moduleID, deploymentUrl, previousDeployTime, TIMEOUT);
+                boolean ready = waitForUrlReady(moduleID, toDeploy, previousDeployTime, TIMEOUT);
                 if (!ready) {
                     LOGGER.log(Level.INFO, "URL wait timeouted after " + TIMEOUT); // NOI18N
                 }
@@ -198,7 +197,7 @@ public class JBDeployer implements ProgressObject, Runnable {
      * started. As a fallback it asks the jboss for the MBean of the
      * warfile (name of the war is expected to be <code>moduleID.getModuleID()</code>).
      */
-    private boolean waitForUrlReady(TargetModuleID moduleID, URL deploymentUrl,
+    private boolean waitForUrlReady(TargetModuleID moduleID, File deployedFile,
             Long previousDeploymentTime, long timeout) throws InterruptedException {
 
         if (Thread.currentThread().isInterrupted()) {
@@ -206,20 +205,25 @@ public class JBDeployer implements ProgressObject, Runnable {
         }
 
         for (int i = 0, limit = (int) timeout / POLLING_INTERVAL;
-                i < limit && !isApplicationReady(deploymentUrl, moduleID.getModuleID(), previousDeploymentTime, i == 0); i++) {
+                i < limit && !isApplicationReady(deployedFile, moduleID.getModuleID(), previousDeploymentTime, i == 0); i++) {
 
             Thread.sleep(POLLING_INTERVAL);
         }
 
-        return isApplicationReady(deploymentUrl, moduleID.getModuleID(), previousDeploymentTime, false);
+        return isApplicationReady(deployedFile, moduleID.getModuleID(), previousDeploymentTime, false);
     }
 
-    private Long getDeploymentTime(URL deploymentUrl) {
-        assert deploymentUrl != null;
+    private Long getDeploymentTime(File fileToDeploy) {
+        assert fileToDeploy != null;
 
         try {
+            // jboss does not escape url special characters
             Object info = dm.invokeMBeanOperation(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
-                            "getDeployment", new Object[] {deploymentUrl}, new String[] {"java.net.URL"}); // NOI18N
+                    "getDeployment", new Object[] {fileToDeploy.getCanonicalFile().toURL()}, new String[] {"java.net.URL"}); // NOI18N
+            if (info == null) {
+                info = dm.invokeMBeanOperation(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
+                    "getDeployment", new Object[] {fileToDeploy.toURL()}, new String[] {"java.net.URL"}); // NOI18N
+            }
             if (info == null) {
                 return Long.MIN_VALUE;
             }
@@ -233,10 +237,10 @@ public class JBDeployer implements ProgressObject, Runnable {
         return null;
     }
 
-    private boolean isApplicationReady(URL deploymentUrl, String warName, Long previouslyDeployed,
+    private boolean isApplicationReady(File deployedFile, String warName, Long previouslyDeployed,
             boolean initial) throws InterruptedException {
 
-        assert deploymentUrl != null;
+        assert deployedFile != null;
         assert warName != null;
 
         if (initial && previouslyDeployed == null) {
@@ -246,8 +250,13 @@ public class JBDeployer implements ProgressObject, Runnable {
 
         // Try JMX deployer first.
         try {
+            // jboss does not escape url special characters
             Object info = dm.invokeMBeanOperation(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
-                            "getDeployment", new Object[] {deploymentUrl} , new String[] {"java.net.URL"}); //NOI18N
+                    "getDeployment", new Object[] {deployedFile.getCanonicalFile().toURL()} , new String[] {"java.net.URL"}); //NOI18N
+            if (info == null) {
+                info = dm.invokeMBeanOperation(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
+                    "getDeployment", new Object[] {deployedFile.toURL()}, new String[] {"java.net.URL"}); // NOI18N
+            }
             if (info != null) {
                 Class infoClass = info.getClass();
                 long lastDeployed = infoClass.getDeclaredField("lastDeployed").getLong(info); // NOI18N
@@ -258,10 +267,10 @@ public class JBDeployer implements ProgressObject, Runnable {
             }
         } catch (Exception ex) {
             // pass through, try the old way
-            LOGGER.log(Level.FINE, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
         }
 
-        // We will try the old way.
+        // We will try the old way (in fact this does not work for EAR).
         try {
             ObjectName searchPattern = new ObjectName("jboss.web.deployment:war=" + warName + ",*"); // NOI18N
             MBeanServerConnection server = Util.getRMIServer(dm);

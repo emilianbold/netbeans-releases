@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.net.URLClassLoader;
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -58,6 +60,8 @@ import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
  */
 public class JBDeploymentManager implements DeploymentManager {
 
+    private static final Logger LOGGER = Logger.getLogger(JBDeploymentManager.class.getName());
+    
     private DeploymentManager dm;
     private String realUri;
     private MBeanServerConnection rmiServer;
@@ -157,8 +161,9 @@ public class JBDeploymentManager implements DeploymentManager {
                 // Lookup RMI Adaptor
                 rmiServer = (MBeanServerConnection)ctx.lookup("/jmx/invoker/RMIAdaptor");
             } catch (NameNotFoundException ex) {
+                LOGGER.log(Level.FINE, null, ex);
             } catch (NamingException ex) {
-                // Nothing to do
+                LOGGER.log(Level.FINE, null, ex);
             } finally {
                 if (oldLoader != null)
                     Thread.currentThread().setContextClassLoader(oldLoader);
