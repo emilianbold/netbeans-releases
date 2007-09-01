@@ -429,10 +429,20 @@ public abstract class RubyTestBase extends NbTestCase {
             if (line == null || line.trim().length() == 0) {
                 break;
             }
+            
+            if (line.endsWith("\r")) {
+                line = line.substring(0, line.length()-1);
+            }
 
             String path = line;
-            FileObject f = FileUtil.createData(folder, path);
-            assertNotNull(f);
+            if (path.endsWith("/")) {
+                path = path.substring(0, path.length()-1);
+                FileObject f = FileUtil.createFolder(folder, path);
+                assertNotNull(f);
+            } else {
+                FileObject f = FileUtil.createData(folder, path);
+                assertNotNull(f);
+            }
         }
     }
 
