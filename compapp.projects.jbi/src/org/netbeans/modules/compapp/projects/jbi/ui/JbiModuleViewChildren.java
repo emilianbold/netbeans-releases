@@ -137,6 +137,13 @@ public class JbiModuleViewChildren extends Children.Keys implements PropertyChan
         
         return ret;
     }
+//    
+//    public void update() {
+//        Node[] nodes = getNodes();
+//        updateKeys();
+//        setKeys(nodes);
+//        
+//    }
     
     /**
      * DOCUMENT ME!

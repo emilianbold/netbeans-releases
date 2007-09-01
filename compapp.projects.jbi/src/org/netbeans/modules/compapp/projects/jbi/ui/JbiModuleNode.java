@@ -57,7 +57,7 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
         super(Children.LEAF);
         model = key;
         setName("preferablyUniqueNameForThisNodeAmongSiblings"); // NOI18N or, super.setName if needed
-        setDisplayName(key.getShortName()); // getCompletePathInArchive()); // toString());
+        setDisplayName(key.getShortName()); 
 
         //setShortDescription(NbBundle.getMessage(JbiModuleNode.class, "HINT_ModuleNode"));
     }
@@ -65,13 +65,8 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
     // Create the popup menu:
     public Action[] getActions(boolean context) {
         if (null == actions) {
-            actions = new Action[] {                    
-                    //SystemAction.get(RemoveAction.class),
-                    //null,
-                    //SystemAction.get(DeleteModuleAction.class), 
+            actions = new Action[] {   
                     SystemAction.get(DeleteAction.class), 
-                    //null,
-                    //SystemAction.get(PropertiesAction.class),
                 };
             getCookieSet().add(this);
         }
@@ -138,38 +133,5 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
      */
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-    }
-
-    /**
-     * DOCUMENT ME!
-     */
-    void removeFromEar() {
-        //goners.add(model);
-    }
-
-    /**
-     * DOCUMENT ME!
-     */
-    void forceSave() {
-        /*
-           List newList = new java.util.ArrayList();
-           Object t = epp.get(JbiProjectProperties.JAVAC_CLASSPATH);
-           if (!(t instanceof List)) {
-               assert false : "jar content isn't a List???";
-               return;
-           }
-           List vcpis = (List) t;
-           newList.addAll(vcpis);
-           newList.remove(model);
-           epp.put(JbiProjectProperties.JAVAC_CLASSPATH, newList);
-           epp.store();
-                   try {
-                       org.netbeans.api.project.ProjectManager.getDefault().saveProject(epp.getProject());
-                   }
-                   catch ( java.io.IOException ex ) {
-                       org.openide.ErrorManager.getDefault().notify( ex );
-                   }
-           //epp.configurationXmlChanged(null);
-         */
     }
 }

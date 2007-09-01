@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
@@ -41,6 +42,9 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -60,11 +64,13 @@ import java.beans.PropertyChangeListener;
 
 import java.util.*;
 import java.util.List;
-import java.io.File;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 import org.openide.actions.FindAction;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 
 /**
  * Support for creating logical views.
@@ -150,6 +156,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         
         return jRoot;
     }
+    
     
     /**
      * DOCUMENT ME!
@@ -253,6 +260,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
     private final class JbiLogicalViewRootNode extends AbstractNode {
         private Action brokenLinksAction;
         private boolean broken;
+        private SubprojectListener subprojectListener;
         
         /**
          * Creates a new JbiLogicalViewRootNode object.
@@ -265,7 +273,34 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             
             if (hasBrokenLinks(helper, resolver)) {
                 broken = true;
-                brokenLinksAction = new BrokenLinksAction();
+            }
+            brokenLinksAction = new BrokenLinksAction();
+            subprojectListener = new SubprojectListener();
+            
+            final SubprojectProvider subprojectProvider = 
+                    project.getLookup().lookup(SubprojectProvider.class);
+            subprojectProvider.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    Project subproject = (Project) e.getSource();
+                    FileObject subprojectFO = subproject.getProjectDirectory();
+                    if (subprojectProvider.getSubprojects().contains(subproject)) {
+                        subprojectFO.addFileChangeListener(subprojectListener);
+                    } else {
+                        subprojectFO.removeFileChangeListener(subprojectListener);
+                    }
+                }                
+            });
+            
+            updateSubprojectListeners();
+        }
+        
+        private void updateSubprojectListeners() {
+            SubprojectProvider subprojectProvider = 
+                    project.getLookup().lookup(SubprojectProvider.class);
+            for (Project subproject : subprojectProvider.getSubprojects()) {
+                FileObject subprojectFO = subproject.getProjectDirectory();
+                subprojectFO.removeFileChangeListener(subprojectListener);
+                subprojectFO.addFileChangeListener(subprojectListener);
             }
         }
         
@@ -300,7 +335,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
          * @return DOCUMENT ME!
          */
         public Image getIcon(int type) {
-            return isEmpty || broken ? mEmptyIcon : mIcon;
+            return broken || isEmpty ? mEmptyIcon : mIcon;
         }
         
         public String getHtmlDisplayName() {
@@ -430,7 +465,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             // honor 57874 contact
             addFromLayers(actions, "Projects/Actions"); // NOI18N
                         
-            if (brokenLinksAction != null) {
+            if (broken) {
                 actions.add(brokenLinksAction);
             }
             
@@ -490,6 +525,22 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                     // broken reference.
                     project.getProjectProperties().saveAssemblyInfo();
                 }
+                
+                updateSubprojectListeners();
+                
+                // How to easily update JbiModuleNode?
+//                Children children = jRoot.getChildren();
+//                Node[] childrenNodes = children.getNodes();
+//                for (int i = 0; i < childrenNodes.length; i++) {
+//                    if (childrenNodes[i] instanceof JbiModuleViewNode) {
+//                        JbiModuleViewNode moduleViewNode = (JbiModuleViewNode) childrenNodes[i];
+//                        JbiModuleViewChildren moduleViewChildren = 
+//                                (JbiModuleViewChildren) moduleViewNode.getChildren();
+//                        moduleViewChildren.removeNotify();
+//                        moduleViewChildren.addNotify();
+//                        break;
+//                    }
+//                }
             }
             
             /**
@@ -499,8 +550,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
              */
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!broken) {
-                    disable();
-                    
+                    disable();                    
                     return;
                 }
                 
@@ -518,6 +568,29 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                 fireIconChange();
                 fireOpenedIconChange();
                 fireDisplayNameChange(null, null);
+            }
+        }       
+        
+        /**
+         * A file change listener on subproject changes.
+         */
+        private class SubprojectListener extends FileChangeAdapter {
+
+            public void fileDeleted(FileEvent fe) {
+                checkBrokenLinks();
+            }
+
+            public void fileRenamed(FileRenameEvent fe) {
+                checkBrokenLinks();
+            }
+            
+            private void checkBrokenLinks() {
+                boolean newBroken = hasBrokenLinks(helper, resolver);
+                if (newBroken != broken) {
+                    broken = newBroken;
+                    brokenLinksAction.setEnabled(broken);
+                    refreshNode();
+                }
             }
         }
     }

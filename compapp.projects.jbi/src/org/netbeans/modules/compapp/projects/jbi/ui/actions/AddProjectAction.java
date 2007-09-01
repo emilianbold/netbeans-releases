@@ -45,6 +45,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.compapp.projects.jbi.ComponentHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
+import org.netbeans.modules.compapp.projects.jbi.JbiSubprojectProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -124,6 +125,7 @@ public class AddProjectAction implements ProjectActionPerformer {
                 NotifyDescriptor d =
                         new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
+                
                 return;
             }
         }
@@ -204,6 +206,9 @@ public class AddProjectAction implements ProjectActionPerformer {
         
         // add server resources metadata
         SunResourcesUtil.addJavaEEResourceMetaData(jbiProject, artifact);
+        
+        Project subproject = artifact.getProject();        
+        jbiProject.getLookup().lookup(JbiSubprojectProvider.class).subprojectAdded(subproject);
         
         return true;
     }

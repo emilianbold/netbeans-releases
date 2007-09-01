@@ -37,6 +37,9 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.OutputWriter;
 
 import java.util.List;
+import org.netbeans.modules.compapp.projects.jbi.JbiSubprojectProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.actions.SystemAction;
 
 
@@ -77,14 +80,19 @@ public class DeleteModuleAction extends SystemAction {
             String mName = node.getDisplayName();
             //log("Delete Node: " + activatedNodes.length + ", " + mName);
             
-            JbiProjectCookie jpc = ((JbiProjectCookie) node.getParentNode().getCookie(
-                    JbiProjectCookie.class
-                    ));
+            JbiProjectCookie jpc = (node.getParentNode().getCookie(JbiProjectCookie.class));
             
             if (jpc != null) {
                 JbiProject jbiProject = jpc.getProject();
                 CasaHelper.saveCasa(jbiProject);
-                removeProject(jbiProject, mName);
+                boolean success = removeProject(jbiProject, mName); 
+                if (!success) {
+                    String msg = NbBundle.getMessage(DeleteModuleAction.class, 
+                            "MSG_CantDeleteModule", mName); // NOI18N
+                    NotifyDescriptor d =
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                }
             }
         }
     }
@@ -120,13 +128,16 @@ public class DeleteModuleAction extends SystemAction {
         String subProjName = null;        
         int itemRemovedIndex = -1;
         
+        Project subproject = null;      
+        
         for (int i = 0; i < oldCompProjList.size(); i++) {
-            VisualClassPathItem cp = (VisualClassPathItem) oldCompProjList.get(i);
+            VisualClassPathItem cp = oldCompProjList.get(i);
             
             if (artifactName.equalsIgnoreCase(cp.getShortName())) {
                 itemRemovedIndex = i;
                 deleteModuleProperties(jbiProject, cp, artifactName);
-                subProjName = cp.getProjectName();                
+                subProjName = cp.getProjectName();  
+                subproject = cp.getAntArtifact().getProject();  
             } else {
                 newCompProjList.add(oldCompProjList.get(i));
             }
@@ -146,10 +157,14 @@ public class DeleteModuleAction extends SystemAction {
             projProperties.put(JbiProjectProperties.JBI_CONTENT_ADDITIONAL, newCompProjList);
             
             updateModuleProperties(jbiProject, projProperties, newCompProjList, subProjName);
-            projProperties.store();            
+            projProperties.store();   
+            
+            jbiProject.getLookup().lookup(JbiSubprojectProvider.class).subprojectRemoved(subproject);
+            
+            return true;
+        } else {
+            return false;
         }
-        
-        return itemRemovedIndex != -1;
     }
         
     /**

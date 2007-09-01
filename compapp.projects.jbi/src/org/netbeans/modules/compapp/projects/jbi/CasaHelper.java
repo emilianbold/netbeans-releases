@@ -36,7 +36,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.w3c.dom.Document;
@@ -138,6 +137,9 @@ public class CasaHelper {
         return srcDirFO == null ? null : srcDirFO.getFileObject(projName + ".wsdl"); // NOI18N
     }
     
+    /**
+     * Checks whether the CASA file contains a user-created port.
+     */
     public static boolean containsWSDLPort(JbiProject project) {
         FileObject casaFO = getCasaFileObject(project, false);
         if (casaFO != null) {
@@ -150,12 +152,19 @@ public class CasaHelper {
                 Document doc = builder.parse(is);
                 NodeList portNodeList = doc.getElementsByTagName("port"); // NOI18N
                 for (int i = 0; i < portNodeList.getLength(); i++) {
-                    Node portNode = portNodeList.item(i);
+                    Element portNode = (Element) portNodeList.item(i);
                     NamedNodeMap attrMap = portNode.getAttributes();
                     Node stateNode = attrMap.getNamedItem("state"); // NOI18N
                     if (stateNode == null || 
                             ! ("deleted".equals(stateNode.getNodeValue()))) { // NOI18N
-                        return true;
+                        NodeList linkNodes = portNode.getElementsByTagName("link"); // NOI18N
+                        for (int j = 0; j < linkNodes.getLength(); j++) {
+                            Element linkNode = (Element) linkNodes.item(j);
+                            String href = linkNode.getAttribute("href"); // NOI18N
+                            if (href.startsWith("../jbiasa/")) { // NOI18N
+                                return true;
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -309,9 +318,6 @@ public class CasaHelper {
             
             casaFO = FileUtil.toFileObject(casaFile);
             casaFO.refresh();
-            
-            
-            System.out.println(FileUtil.getMIMEType(casaFO));
         } catch (Exception e) {
             e.printStackTrace();
         }

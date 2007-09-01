@@ -215,7 +215,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     }
     
     private Lookup createLookup(AuxiliaryConfiguration aux) {
-        SubprojectProvider spp = refHelper.createSubprojectProvider();
+        SubprojectProvider spp = new JbiSubprojectProvider(refHelper.createSubprojectProvider());
         FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(
                 helper.getStandardPropertyEvaluator(), new String[] {"${src.dir}/*.java"}, // NOI18N
                 new String[] {"${build.classes.dir}/*.class"} // NOI18N
