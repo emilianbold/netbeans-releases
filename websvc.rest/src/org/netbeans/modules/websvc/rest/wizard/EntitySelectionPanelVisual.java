@@ -22,21 +22,17 @@ package org.netbeans.modules.websvc.rest.wizard;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -63,28 +59,27 @@ import org.openide.util.NbBundle;
  * @author  Nam Nguyen
  */
 public class EntitySelectionPanelVisual extends javax.swing.JPanel implements AbstractPanel.Settings {
-    
+
     //private ChangeSupport changeSupport = new ChangeSupport(this);
     private Project project;
     private List<ChangeListener> listeners;
-    
     //boolean waitingForScan;
     //boolean waitingForEntities;
-    private String  persistenceUnit;
+    private String persistenceUnit;
     MetadataModelReadHelper<EntityMappingsMetadata, EntityMappings> entitiesHelper;
     private EntityMappings mappings;
     private EntityResourceModelBuilder builder;
     private EntityResourceBeanModel resourceModel;
-    
     //private List<EntityMappings> waitForMappings = new ArrayList<EntityMappings>();
     //private PersistenceUnit persistenceUnit;
-    
+
     /** Creates new form CrudSetupPanel */
     public EntitySelectionPanelVisual(String name) {
         setName(name);
         listeners = new ArrayList<ChangeListener>();
         initComponents();
         ListSelectionListener selectionListener = new ListSelectionListener() {
+
             public void valueChanged(ListSelectionEvent e) {
                 updateButtons();
             }
@@ -92,7 +87,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
         listAvailable.getSelectionModel().addListSelectionListener(selectionListener);
         listSelected.getSelectionModel().addListSelectionListener(selectionListener);
     }
-    
+
     /**
      * @return PersistenceUnit that was created by invoking the PU wizard from
      * this wizard or <code>null</code> if there was already a persistence unit, i.e.
@@ -100,7 +95,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
      */
     /*
     public PersistenceUnit getPersistenceUnit() {
-        return persistenceUnit;
+    return persistenceUnit;
     }
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
@@ -257,15 +252,15 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
     }// </editor-fold>//GEN-END:initComponents
 
 private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed
-        EntityListModel sourceModel = (EntityListModel) listSelected.getModel();
-        EntityListModel destModel = (EntityListModel) listAvailable.getModel();
-        for (Object entity : listSelected.getSelectedValues()) {
-            sourceModel.removeElement((Entity)entity);
-            destModel.addElement((Entity) entity);
-        }
-        refreshModel();
-        updateButtons();
-        fireChange();
+    EntityListModel sourceModel = (EntityListModel) listSelected.getModel();
+    EntityListModel destModel = (EntityListModel) listAvailable.getModel();
+    for (Object entity : listSelected.getSelectedValues()) {
+        sourceModel.removeElement((Entity) entity);
+        destModel.addElement((Entity) entity);
+    }
+    refreshModel();
+    updateButtons();
+    fireChange();
 }//GEN-LAST:event_removeActionPerformed
 
     private void addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addActionPerformed
@@ -284,9 +279,8 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         refreshModel();
         updateButtons();
         fireChange();
-        
 }//GEN-LAST:event_addActionPerformed
-    
+
 private void listSelectedPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_listSelectedPropertyChange
     fireChange();
 }//GEN-LAST:event_listSelectedPropertyChange
@@ -297,8 +291,8 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
     private void buttonRemoveAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveAllActionPerformed
         EntityListModel model = (EntityListModel) listAvailable.getModel();
-        EntityListModel selectedModel = (EntityListModel)listSelected.getModel();
-        for (int i=0; i<selectedModel.getSize(); i++) {
+        EntityListModel selectedModel = (EntityListModel) listSelected.getModel();
+        for (int i = 0; i < selectedModel.getSize(); i++) {
             model.addElement(selectedModel.elementAt(i));
         }
         selectedModel.clear();
@@ -306,11 +300,11 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         updateButtons();
         fireChange();
     }//GEN-LAST:event_buttonRemoveAllActionPerformed
-    
+
     private void buttonAddAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddAllActionPerformed
         EntityListModel model = (EntityListModel) listSelected.getModel();
-        EntityListModel availableModel = (EntityListModel)listAvailable.getModel();
-        for (int i=0; i<availableModel.getSize(); i++) {
+        EntityListModel availableModel = (EntityListModel) listAvailable.getModel();
+        for (int i = 0; i < availableModel.getSize(); i++) {
             model.addElement(availableModel.elementAt(i));
         }
         availableModel.clear();
@@ -318,8 +312,6 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         updateButtons();
         fireChange();
     }//GEN-LAST:event_buttonAddAllActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAdd;
     private javax.swing.JButton buttonAddAll;
@@ -333,33 +325,34 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
     private javax.swing.JList listSelected;
     private javax.swing.JPanel panelButtons;
     // End of variables declaration//GEN-END:variables
-    
+
     public void addChangeListener(ChangeListener listener) {
         listeners.add(listener);
     }
-    
+
     public void fireChange() {
         ChangeEvent event = new ChangeEvent(this);
-        
+
         for (ChangeListener listener : listeners) {
             listener.stateChanged(event);
         }
     }
-    
+
     public void read(WizardDescriptor settings) {
         project = Templates.getProject(settings);
         PersistenceScope ps = PersistenceScope.getPersistenceScope(project.getProjectDirectory());
         if (ps == null) {
             return;
         }
-        
+
         if (persistenceUnit == null) {
             persistenceUnit = EntitySelectionPanel.getPersistenceUnitName(settings, project);
         }
-        
+
         if (mappings == null) {
             MetadataModel<EntityMappingsMetadata> entityModel = ps.getEntityMappingsModel(persistenceUnit);
             entitiesHelper = MetadataModelReadHelper.create(entityModel, new MetadataModelAction<EntityMappingsMetadata, EntityMappings>() {
+
                 public EntityMappings run(EntityMappingsMetadata metadata) throws Exception {
                     EntityMappings mappings = metadata.getRoot();
                     mappings.getEntity();
@@ -373,116 +366,124 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
             entitiesHelper.addChangeListener(availableModel);
             entitiesHelper.start();
-        
+
             EntityListModel selectedModel = new EntityListModel(false);
             listSelected.setModel(selectedModel);
             this.addChangeListener(selectedModel);
         }
     }
-    
+
     public void store(WizardDescriptor settings) {
         settings.putProperty(WizardProperties.ENTITY_RESOURCE_MODEL, getResourceModel());
     }
-    
+
     private void updateButtons() {
         buttonAdd.setEnabled(listAvailable.getSelectedValues().length > 0);
         buttonAddAll.setEnabled(listAvailable.getModel().getSize() > 0);
         buttonRemove.setEnabled(listSelected.getSelectedValues().length > 0);
         buttonRemoveAll.setEnabled(listSelected.getModel().getSize() > 0);
     }
-    
+
     public void updatePersistenceUnitButton() {
         /*
         boolean visible = getPersistenceUnit() == null;
         if (ProviderUtil.isValidServerInstanceOrNone(project) && visible) {
-            PersistenceScope scopes[] = PersistenceUtils.getPersistenceScopes(project);
-            for (int i = 0; i < scopes.length; i++) {
-                FileObject persistenceXml = scopes[i].getPersistenceXml();
-                if (persistenceXml != null) {
-                    try {
-                        Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceXml);
-                        // TODO: should ask the user which pu should be used
-                        if (persistence.getPersistenceUnit().length > 0) {
-                            visible = false;
-                            break;
-                        }
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
-                }
-            }
+        PersistenceScope scopes[] = PersistenceUtils.getPersistenceScopes(project);
+        for (int i = 0; i < scopes.length; i++) {
+        FileObject persistenceXml = scopes[i].getPersistenceXml();
+        if (persistenceXml != null) {
+        try {
+        Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceXml);
+        // TODO: should ask the user which pu should be used
+        if (persistence.getPersistenceUnit().length > 0) {
+        visible = false;
+        break;
+        }
+        } catch (IOException ex) {
+        ErrorManager.getDefault().notify(ex);
+        }
+        }
+        }
         }
         createPUButton.setVisible(visible);
          */
     }
-    
     /*
     private static final class EntityComparator implements Comparator<Entity> {
-        public int compare(Entity o1, Entity o2) {
-            return o1.getName().compareTo(o2.getName());
-        }
+    public int compare(Entity o1, Entity o2) {
+    return o1.getName().compareTo(o2.getName());
+    }
     }
      */
     //private static final EntityComparator ENTITY_COMPARATOR = new EntityComparator();
     private final ListCellRenderer ENTITY_LIST_RENDERER = new EntityListCellRenderer();
     private static final String MSG_RETRIEVING = NbBundle.getMessage(EntitySelectionPanel.class, "MSG_Retrieving");
-    
+
     private class EntityListModel extends DefaultListModel implements ChangeListener {
+
         private boolean available;
-        
+
         EntityListModel(boolean available) {
             this.available = available;
             if (available) {
                 addElement(MSG_RETRIEVING);
             }
         }
-        
+
         public void stateChanged(ChangeEvent e) {
             if (available && e.getSource() instanceof MetadataModelReadHelper) {
-                switch (((MetadataModelReadHelper)e.getSource()).getState()) {
-                   case FINISHED:
-                       // when we got here the model action has been executed
-                       if (mappings == null && entitiesHelper.isReady()) {
-                           removeElement(MSG_RETRIEVING);
-                           try {
-                               mappings =  entitiesHelper.getResult();
-                               List<Entity> entities = getAllEntities();
-                               builder = new EntityResourceModelBuilder(project, entities);
-                               for (Entity entity : entities) {
-                                   addElement(entity);
-                               }
-                           } catch(ExecutionException ex) {
+                switch (((MetadataModelReadHelper) e.getSource()).getState()) {
+                    case FINISHED:
+                        // when we got here the model action has been executed
+                        if (mappings == null && entitiesHelper.isReady()) {
+                            try {
+                                mappings = entitiesHelper.getResult();
+                            } catch (ExecutionException ex) {
                                 Logger.getLogger(getClass().getName()).log(Level.ALL, "stateChanged", ex); //NOI18N
                                 throw new IllegalStateException(ex);
-                           }
-                       }
-                       updateButtons();
-                       break;
+                            }
+
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    removeElement(MSG_RETRIEVING);
+                                    List<Entity> entities = getAllEntities();
+                                    builder = new EntityResourceModelBuilder(project, entities);
+                                    
+                                    for (Entity entity : entities) {
+                                        addElement(entity);
+                                    }
+
+                                    updateButtons();
+                                }
+                            });
+                        }
+                        break;
                     default:
-                       //Already displaying in available list.
-               }
+                //Already displaying in available list.
+                }
             }
         }
     }
-    
+
     private final class EntityListCellRenderer extends JLabel implements ListCellRenderer {
+
         public EntityListCellRenderer() {
             setOpaque(true);
         }
-        
+
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String text = null;
-            
+
             if (value instanceof Entity) {
                 Entity entity = (Entity) value;
                 String simpleName = entity.getName();
-                text = simpleName + " (" +  entity.getClass2() + ")";
+                text = simpleName + " (" + entity.getClass2() + ")";
             }
-            
+
             if (text == null) {
                 text = value.toString();
             }
-            
+
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
@@ -490,31 +491,31 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
-            
+
             setFont(list.getFont());
             setText(text);
             return this;
         }
     }
-    
+
     public boolean valid(WizardDescriptor wizard) {
         if (persistenceUnit == null || entitiesHelper == null) {
             AbstractPanel.setErrorMessage(wizard, "ERR_NoPersistenceUnit");
             return false;
         }
-        
+
         if (entitiesHelper.isReady() && mappings != null && mappings.getEntity().length == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EntitySelectionPanel_NoEntities");
             return false;
         }
-        
+
         if (listSelected.getModel().getSize() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EntitySelectionPanel_NoneSelected");
             return false;
-        } 
+        }
 
         EntityResourceBeanModel model = getResourceModel();
-        if (model != null && ! model.isValid()) {
+        if (model != null && !model.isValid()) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EntitySelectionPanel_InvalidEntityClasses");
             return false;
         }
@@ -533,14 +534,14 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         }
         return resourceModel;
     }
-    
+
     private void refreshModel() {
         if (builder != null) {
             List<Entity> entities = new ArrayList<Entity>();
-            for (int i=0 ; i < listSelected.getModel().getSize(); i++) {
+            for (int i = 0; i < listSelected.getModel().getSize(); i++) {
                 Object o = listSelected.getModel().getElementAt(i);
                 if (o instanceof Entity) {
-                    entities.add((Entity)o);
+                    entities.add((Entity) o);
                 }
             }
             resourceModel = builder.build(entities);
