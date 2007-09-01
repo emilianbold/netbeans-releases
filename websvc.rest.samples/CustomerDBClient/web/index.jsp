@@ -11,7 +11,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta http-equiv="Refresh" content="0;URL=/__APP_NAME__/reststubs/reststub.html" />
+        <meta http-equiv="Refresh" content="0;URL=/CustomerDBClient/reststubs/reststub.html" />
         <title>JSP Page</title>
     </head>
     <body>

@@ -58,6 +58,15 @@ public class HelloWorldSampleWizardIterator extends SampleWizardIterator {
         setProjectConfigNamespace(null);
         Set resultSet = super.instantiate();
         
+        //replace tokens
+        String[][] tokens = { {"HelloWorld", (String) wiz.getProperty(NAME)} };
+        String[] files = 
+            {   "web/WEB-INF/sun-web.xml", 
+                "nbproject/project.properties", "nbproject/project.xml", 
+                "build.xml"
+            };        
+        replaceTokens(getProject().getProjectDirectory(), files, tokens);
+        
         FileObject dirParent = null;
         
         if( getProject()!= null && getProject().getProjectDirectory()!=null)

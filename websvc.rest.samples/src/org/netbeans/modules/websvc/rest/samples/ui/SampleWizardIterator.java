@@ -21,8 +21,11 @@ package org.netbeans.modules.websvc.rest.samples.ui;
 
 
 import java.awt.Component;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
@@ -40,6 +43,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -197,5 +201,33 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     public void addChangeListener(ChangeListener l) {}
     public void removeChangeListener(ChangeListener l) {}
     
-        
+    protected void replaceTokens(FileObject dir, String[] files, String[][] tokens) throws IOException {
+        for(String file: files) {
+            replaceToken(dir.getFileObject(file), tokens); //NoI18n
+        }     
+    }
+    protected void replaceToken(FileObject fo, String[][] tokens) throws IOException {
+        if(fo == null)
+            return;
+        FileLock lock = fo.lock();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+            String line;
+            StringBuffer sb = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                for(int i=0;i<tokens.length;i++)
+                    line = line.replaceAll(tokens[i][0], tokens[i][1]);
+                sb.append(line);
+                sb.append("\n");
+            }
+            OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
+            try {
+                writer.write(sb.toString());
+            } finally {
+                writer.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }        
+    }
 }

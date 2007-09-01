@@ -63,11 +63,14 @@ public class CustomerDBClientSampleWizardIterator extends SampleWizardIterator {
         setAddJerseyLibrary(false);
         Set resultSet = super.instantiate();
         
-        FileObject projDir = getProject().getProjectDirectory();
-        String name = (String) wiz.getProperty(NAME);
-        String[][] tokens = { {"__APP_NAME__", name} };
-        replaceToken(projDir.getFileObject("web/index.jsp"), tokens); //NoI18n
-        replaceToken(projDir.getFileObject("web/WEB-INF/sun-web.xml"), tokens); //NoI18n
+        //replace tokens
+        String[][] tokens = { {"CustomerDBClient", (String) wiz.getProperty(NAME)} };
+        String[] files = 
+            {   "web/index.jsp", "web/WEB-INF/sun-web.xml",
+                "nbproject/project.properties","nbproject/project.xml", 
+                "build.xml"
+            };        
+        replaceTokens(getProject().getProjectDirectory(), files, tokens);        
         
         FileObject dirParent = null;
         
@@ -83,31 +86,6 @@ public class CustomerDBClientSampleWizardIterator extends SampleWizardIterator {
         
         ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
         return resultSet;
-    }
-
-    private void replaceToken(FileObject fo, String[][] tokens) throws IOException {
-        if(fo == null)
-            return;
-        FileLock lock = fo.lock();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
-            String line;
-            StringBuffer sb = new StringBuffer();
-            while ((line = reader.readLine()) != null) {
-                for(int i=0;i<tokens.length;i++)
-                    line = line.replaceAll(tokens[i][0], tokens[i][1]);
-                sb.append(line);
-                sb.append("\n");
-            }
-            OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
-            try {
-                writer.write(sb.toString());
-            } finally {
-                writer.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }        
     }
     
 }
