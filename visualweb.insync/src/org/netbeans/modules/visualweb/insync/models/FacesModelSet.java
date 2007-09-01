@@ -74,7 +74,9 @@ import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.SourceUnit;
 import org.netbeans.modules.visualweb.insync.faces.ElAttrUpdater;
+import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
+import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
 
 import org.netbeans.api.project.SourceGroup;
@@ -767,6 +769,27 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             }
         }
         
+        // Bug Fix# 107080
+        // Handle folder rename case
+        if (removeFile) {
+            FileObject javaFile = null;
+            FileObject markupFile = null;
+            for (int i=0; i < units.length; i++) {
+                SourceUnit unit = units[i];
+                if(unit instanceof JavaUnit) {
+                    javaFile = unit.getFileObject();
+                } else if(unit instanceof MarkupUnit) {
+                    markupFile = unit.getFileObject();
+                } 
+            }
+            if (javaFile != null && markupFile != null) {
+                // Delete files only if the jsp and java file correspond to each other
+                if (!javaFile.equals(JsfProjectUtils.getJavaForJsp(markupFile))) {
+                    removeFile = false;
+                }
+            }
+        }
+        
         for (int i=0; i < units.length; i++) {
             SourceUnit unit = units[i];
             if (unit != null) {
@@ -795,7 +818,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
      */
     public boolean removeDesignContext(DesignContext context) {
         // !EAT TODO: need to look into issues of deleting the file actually being worked on ?
-        // Should delete be done aync, but then how to handle return result
+        // Should delete be done async, but then how to handle return result
         // remove a managed bean from the project (and managed-beans.xml)
         if(context == null)
             return false;
