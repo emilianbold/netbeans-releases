@@ -215,12 +215,11 @@ public final class SearchScopeRegistry {
             if (lastListener) {
                 changeListeners = null;
                 applicableSearchScopesCount = 0;
+                for (SearchScope scope : searchScopes.keySet()) {
+                    scope.removeChangeListener(scopeChangeHandler);
+                }
+                scopeChangeHandler = null;
             }
-
-            for (SearchScope scope : searchScopes.keySet()) {
-                scope.removeChangeListener(scopeChangeHandler);
-            }
-            scopeChangeHandler = null;
         }
     }
 
