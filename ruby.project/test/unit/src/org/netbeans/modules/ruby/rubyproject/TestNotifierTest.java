@@ -100,4 +100,11 @@ public class TestNotifierTest extends TestCase {
         notifier.processLine("1 tests, 1 assertions, 1 failures, 1 errors");
         assertEquals("1 test, 1 assertion, 1 example, 2 failures, 1 error, 5 not implemented", notifier.getSummary());
     }
+    
+    public void testNoAccumulate() {
+        TestNotifier notifier = new TestNotifier(false, false);
+        notifier.processLine("35 tests, 81 assertions, 0 failures, 0 errors");
+        notifier.processLine("10 tests, 1 assertions, 0 failures, 0 errors\r");
+        assertEquals("0 failures", notifier.getSummary());
+    }
 }
