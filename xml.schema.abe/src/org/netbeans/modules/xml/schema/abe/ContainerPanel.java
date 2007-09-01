@@ -327,6 +327,7 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         childrenPanelLayout.removeLayoutComponent(belowTweener);
         childrenPanel.remove(component);
         childrenPanel.remove(belowTweener);
+        fireComponentRemoved();
         
         if(belowComponent != null){
             childrenPanelLayout.putConstraint(SpringLayout.NORTH, belowComponent,

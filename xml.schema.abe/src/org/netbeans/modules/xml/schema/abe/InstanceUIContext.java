@@ -47,6 +47,7 @@ public class InstanceUIContext {
     private DataObject schemaDataObject;
     private ComponentSelectionManager componentSelectionManager;
     private MultiComponentActionManager mcaManager;
+    private boolean shutdown = false;
     
     protected InstanceUIContext(){
         componentSelectionManager = new ComponentSelectionManager(this);
@@ -148,12 +149,17 @@ public class InstanceUIContext {
     }
     
     public void shutdown() {
+        this.shutdown = true;
         pcs.firePropertyChange(InstanceDesignConstants.PROP_SHUTDOWN, null, true);
         this.componentSelectionManager = null;
         this.mcaManager = null;
         this.pcs = null;
         this.userActedComponent = null;
         this.focusTraversalManager = null;
+    }
+    
+    public boolean isShutdown() {
+        return shutdown;
     }
 
     void initialize(TopComponent tc, DataObject schemaDataObject,

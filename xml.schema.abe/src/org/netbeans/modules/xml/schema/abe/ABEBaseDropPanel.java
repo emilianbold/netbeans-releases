@@ -60,7 +60,8 @@ public abstract class ABEBaseDropPanel extends JPanel {
         this.context.addPropertyChangeListener(new PropertyChangeListener(){
             public void propertyChange(PropertyChangeEvent evt) {
                 if(evt.getPropertyName().equals(InstanceDesignConstants.
-                        PROP_SHUTDOWN)){
+                        PROP_SHUTDOWN)) {
+                    fireComponentRemoved();
                     ABEBaseDropPanel.this.context.removePropertyChangeListener(this);
                 }
             }
@@ -68,7 +69,11 @@ public abstract class ABEBaseDropPanel extends JPanel {
         initialize();
         initKeyList();
     }
-      
+    
+    protected void fireComponentRemoved() {
+        firePropertyChange(PROP_COMPONENT_REMOVED, " ", this);
+    }
+
     private void initKeyList(){
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
@@ -83,8 +88,7 @@ public abstract class ABEBaseDropPanel extends JPanel {
             }
             
         });
-    }
-    
+    }    
     
     public boolean isWritable(){
         return XAMUtils.isWritable(context.getAXIModel());
@@ -133,12 +137,8 @@ public abstract class ABEBaseDropPanel extends JPanel {
                 ABEBaseDropPanel.this.dropActionChanged(event);
             }
         })
-        );
-        
-    }
-    
-    
-    
+        );        
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // Drag methods
@@ -150,8 +150,7 @@ public abstract class ABEBaseDropPanel extends JPanel {
      */
     public boolean isActive() {
         return active;
-    }
-    
+    }    
     
     /**
      *
@@ -165,8 +164,7 @@ public abstract class ABEBaseDropPanel extends JPanel {
             handleActive(value);
             firePropertyChange(PROP_ACTIVE,oldValue,active);
         }
-    }
-    
+    }    
     
     /**
      *
@@ -174,8 +172,7 @@ public abstract class ABEBaseDropPanel extends JPanel {
      */
     protected void handleActive(boolean value) {
         // Do nothing
-    }
-    
+    }    
     
     /**
      *
@@ -184,8 +181,7 @@ public abstract class ABEBaseDropPanel extends JPanel {
     public void dragEnter(DropTargetDragEvent event) {
         event.rejectDrag();
         // Do nothing
-    }
-    
+    }    
     
     /**
      *
@@ -193,8 +189,7 @@ public abstract class ABEBaseDropPanel extends JPanel {
      */
     public void dragExit(DropTargetEvent event) {
         // Do nothing
-    }
-    
+    }    
     
     /**
      *
@@ -203,8 +198,7 @@ public abstract class ABEBaseDropPanel extends JPanel {
     public void dragOver(DropTargetDragEvent event) {
         event.rejectDrag();
         // Do nothing
-    }
-    
+    }    
     
     /**
      *
@@ -213,8 +207,7 @@ public abstract class ABEBaseDropPanel extends JPanel {
     public void drop(DropTargetDropEvent event) {
         event.rejectDrop();
         // Do nothing
-    }
-    
+    }    
     
     /**
      *
@@ -231,11 +224,9 @@ public abstract class ABEBaseDropPanel extends JPanel {
     
     public AXIComponent getAXIComponent(){
         return null;
-    }
+    }    
     
-    
-    public abstract void accept(UIVisitor visitor);
-    
+    public abstract void accept(UIVisitor visitor);    
     
     boolean selected;
     public void setSelected(boolean selected){
@@ -244,24 +235,17 @@ public abstract class ABEBaseDropPanel extends JPanel {
         firePropertyChange(PROP_SELECTED, this.selected, selected);
         this.selected = selected;
     }
-
-    public void removeNotify() {
-        super.removeNotify();
-        firePropertyChange(PROP_COMPONENT_REMOVED, " ", this);
-    }
-    
+   
     public ABEBaseDropPanel getUIComponentFor(AXIComponent axiComponent){
         if(getAXIComponent() == axiComponent)
             return this;
         return null;
-    }
-    
+    }    
     
     public ABEBaseDropPanel getChildUIComponentFor(AXIComponent axiComponent){
         return null;
     }
-    
-    
+        
     public InstanceUIContext getContext(){
         return this.context;
     }
@@ -273,10 +257,7 @@ public abstract class ABEBaseDropPanel extends JPanel {
     public static final String PROP_ACTIVE="active";
     public static final String PROP_SELECTED="SELECTED";
     public static final String PROP_COMPONENT_REMOVED="COMPONENT_REMOVED";
-    
-    
-    
-    
+        
     ////////////////////////////////////////////////////////////////////////////
     // Instance members
     ////////////////////////////////////////////////////////////////////////////
