@@ -79,7 +79,7 @@
 
 
 
-<mapID target="webbrowser.swing" url="webbrowser/swingbrowser.html" />
+
 <mapID target="webbrowser" url="webbrowser/webbrowser.html" />
 <mapID target="webbrowser.homepage" url="webbrowser/home_page.html" />
 <mapID target="webbrowser.config" url="webbrowser/config_browser.html" />
@@ -234,7 +234,7 @@
 
 <mapID target="org.netbeans.core.services.Browsers" url="webbrowser/options.html" />
 <mapID target="org.netbeans.modules.extbrowser.ExtWebBrowser" url="webbrowser/options.html" />
-<mapID target="org.openide.awt.SwingBrowser" url="webbrowser/swingbrowser.html" />
+
 
 
 
@@ -244,8 +244,8 @@
   help was found for that component and provides tips on using the help: -->
   <mapID target="org.openide.util.HelpCtx.DEFAULT_HELP" url="pending.html" />
 
- 
-  <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="webbrowser/swingbrowser.html" />
+ <!--once mapped to swing browser topic; not clear if this component still exists-->
+  <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="pending.html" />
   
 <!--ID for Waiting For Tasks to Finish dialog box:-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
