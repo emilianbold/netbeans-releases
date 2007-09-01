@@ -33,6 +33,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
@@ -62,53 +63,95 @@ public class XsltproProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name) throws IOException {
-        dir.mkdirs();
-        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject fo = FileUtil.toFileObject (rootF);
-        assert fo != null : "At least disk roots must be mounted! " + rootF;
-        fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject (dir);
+    public static AntProjectHelper createProject(File dir, final String name) throws IOException {
+        final FileObject fo = createProjectDir(dir);
+//        dir.mkdirs();
+//        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
+//        File rootF = dir;
+//        while (rootF.getParentFile() != null) {
+//            rootF = rootF.getParentFile();
+//        }
+//        final FileObject fo = FileUtil.toFileObject (rootF);
+//        assert fo != null : "At least disk roots must be mounted! " + rootF;
+//        fo.getFileSystem().refresh(false);
+//        final FileObject fo = FileUtil.toFileObject (dir);
 
         // vlv # 113228
         if (fo == null) {
           throw new IOException("Can't create " + dir.getName());
         }
-        assert fo.isFolder() : "Not really a dir: " + dir;
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
-        AntProjectHelper h = setupProject (fo, name);
-        FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-// Bing bpelasa        FileObject bpelasaRoot = srcRoot.createFolder(DEFAULT_BPELASA_FOLDER); //NOI18N
-        
-// TODO m
-        FileObject bpelasaRoot = srcRoot;
-        FileObject transformmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/transformmap.xml"), bpelasaRoot, "transformmap"); //NOI18N
 
-// TODO r
-//        FileObject nbProjectRoot = FileUtil.toFileObject(new File(dir, DEFAULT_NBPROJECT_DIR)); // NOI18N
-//        FileObject genPortmap = Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl");
-//        System.out.println("genPortmap: "+genPortmap);
-//        if (genPortmap != null) {
-//            FileObject genPortmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl"), nbProjectRoot, "genPortmap"); //NOI18N
-//        }
-        
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.put (IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
-        ep.setProperty(IcanproProjectProperties.META_INF, "${"+IcanproProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
-// Bing bpelasa       ep.setProperty(SRC_DIR, "${"+SOURCE_ROOT+"}/"+DEFAULT_BPELASA_FOLDER); //NOI18N
-        ep.setProperty(IcanproProjectProperties.SRC_DIR, "${"+IcanproProjectProperties.SOURCE_ROOT+"}"); //NOI18N
-        ep.setProperty(IcanproProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        
-        Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory ());
-        ProjectManager.getDefault().saveProject(p);
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        final IOException[] ioe = new IOException[1];
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                try {
+                    h[0] = setupProject(fo, name);
+                    FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
+            // Bing bpelasa        FileObject bpelasaRoot = srcRoot.createFolder(DEFAULT_BPELASA_FOLDER); //NOI18N
 
-        return h;
+            // TODO m
+                    FileObject bpelasaRoot = srcRoot;
+                    FileObject transformmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/transformmap.xml"), bpelasaRoot, "transformmap"); //NOI18N
+            // TODO r
+            //        FileObject nbProjectRoot = FileUtil.toFileObject(new File(dir, DEFAULT_NBPROJECT_DIR)); // NOI18N
+            //        FileObject genPortmap = Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl");
+            //        System.out.println("genPortmap: "+genPortmap);
+            //        if (genPortmap != null) {
+            //            FileObject genPortmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl"), nbProjectRoot, "genPortmap"); //NOI18N
+            //        }
+
+                    EditableProperties ep = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    ep.put (IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
+                    ep.setProperty(IcanproProjectProperties.META_INF, "${"+IcanproProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
+            // Bing bpelasa       ep.setProperty(SRC_DIR, "${"+SOURCE_ROOT+"}/"+DEFAULT_BPELASA_FOLDER); //NOI18N
+                    ep.setProperty(IcanproProjectProperties.SRC_DIR, "${"+IcanproProjectProperties.SOURCE_ROOT+"}"); //NOI18N
+                    ep.setProperty(IcanproProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
+                    h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+
+                    Project p = ProjectManager.getDefault().findProject(h[0].getProjectDirectory ());
+                    ProjectManager.getDefault().saveProject(p);
+                } catch(IOException ex) {
+                    ioe[0] = ex;
+                    return;
+                }
+            }
+        });
+
+        if (ioe[0] != null) {
+            throw ioe[0];
+        }
+
+        return h[0];
     }
+    
+    
+    private static FileObject createProjectDir(File dir) throws IOException {
+        FileObject dirFO;
+        if(!dir.exists()) {
+            //Refresh before mkdir not to depend on window focus
+            refreshFileSystem (dir);
+            dir.mkdirs();
+            refreshFileSystem (dir);
+        }
+        dirFO = FileUtil.toFileObject(dir);
+        assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
+        return dirFO;                        
+    }
+
+
+    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
+        File rootF = dir;
+        while (rootF.getParentFile() != null) {
+            rootF = rootF.getParentFile();
+        }
+        FileObject dirFO = FileUtil.toFileObject(rootF);
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+        dirFO.getFileSystem().refresh(false);
+    }
+    
     
     public static AntProjectHelper importProject (File dir, String name, FileObject wmFO, FileObject javaRoot, FileObject configFilesBase, String j2eeLevel, String buildfile) throws IOException {
         dir.mkdirs();
