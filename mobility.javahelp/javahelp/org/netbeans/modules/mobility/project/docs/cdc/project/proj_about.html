@@ -29,13 +29,58 @@ exactly the same as inside the IDE.</p>
   <li>Creates a build script that contains actions for running, compiling, debugging, 
     and building Javadoc. 
 </ul>
-<p>CD applications are called <em>xlets</em>. The xlet application programming 
+<p>CDC applications are called <em>xlets</em>. The xlet application programming 
   model is very similar to the applet application programming model. Xlets are 
   loaded into an xlet manager and controlled through a life cycle interface. This 
   is similar to how an applet is loaded and run inside a browser. The main difference 
   is that the xlet application programming model does not have implicit API requirements 
   like<code> java.applet</code>, which allows it to be used in a greater variety 
   of product scenarios.</p>
+<p>The MIDP project structure is similar to that of standard NetBeans <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_about.html">projects</a>. 
+  There are differences, however, in the <code>build</code> and <code>dist</code> 
+  folders to accommodate the MIDP build process. </p>
+<p><strong>Logical View</strong></p>
+<p>The logical view of the project, shown in the Projects window, shows the source 
+  package, resources, and <a href="../configuration/config_about.html">project 
+  configurations</a> that you have created. </p>
+<p>By right-clicking on the project node, you can choose the following Mobility-specific 
+  menu items: </p>
+<ul>
+  <li><strong>Batch Build.</strong> Opens a dialog that lets you select multiple 
+    configurations. The IDE then builds a distribution JAR for each configuration 
+    you select. </li>
+  <li><strong>Batch Clean &amp; Build.</strong> Opens a dialog that lets you select 
+    multiple configurations. The IDE then cleans and builds a distribution JAR 
+    file for each configuration you select. </li>
+  <li><strong>Batch Clean.</strong> Opens a dialog that lets you select multiple 
+    configurations. The IDE then cleans the build files for each configuration 
+    you select. </li>
+  <li><strong>Batch Deploy.</strong> Opens a dialog that lets you select multiple 
+    configurations. The IDE then <a href="../deploy/about_deployment.html">deploys</a> 
+    your application according to the deployment properties set in each configuration 
+    you select.</li>
+  <li><strong>Run With.</strong> Opens the Quick Project Run dialog. In this dialog, 
+    you can select a device &quot;on the fly&quot; on which to test your application. 
+    The IDE runs your application on the selected platform, but does not build 
+    the project or create a distribution JAR for that platform. </li>
+</ul>
+<p>Right-clicking on the Source Package node and choosing New lets you add new 
+  <a href="proj_templates.html">file templates</a> to your application. </p>
+<p>Right-clicking the Resources node enables you to add Project, JARs, folders, 
+  and libraries as resources for your application. </p>
+<p><strong>Files View</strong></p>
+<p>When a project is created, the following folders are created under <code>build</code> 
+  (shown in the Files window): </p>
+<ul>
+  <li><code>compiled.</code> Contains all compiled classes.</li>
+  <li><code>preprocessed.</code> Holds the source files after they are preprocessed. 
+    The files will differ from the original source files if you are using project 
+    configurations. </li>
+  <li><code>obfuscated.</code> Holds the obfuscated versions of the class files.</li>
+  <li><code>preverified</code>. Holds the preverified versions of the class files. 
+    These files are packaged into the distribution JAR of your project. </li>
+  <li><code>preverifysrc.</code>Versions of the source files before they are preverified.</li>
+</ul>
 <dl>
   <dt> <a name="seealso">See Also</a></dt>
   <dd><a href="../../projects/proj_working.html">Working with Mobility Projects</a></td></dd>

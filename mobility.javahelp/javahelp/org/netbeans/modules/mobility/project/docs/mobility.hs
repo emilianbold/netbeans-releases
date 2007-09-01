@@ -14,7 +14,6 @@
 		<type>javax.help.TOCView</type>
 		<data>toc.xml</data>
 	</view>
-
 	<view mergetype="javax.help.AppendMerge">
 		<name>Search</name>
 		<label>Search</label>
