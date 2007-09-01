@@ -71,15 +71,14 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 if(transferData != null){
                     if(transferData.getClass().isAssignableFrom(DatabaseMetaDataTransfer.Table.class)){
                         DatabaseMetaDataTransfer.Table tableInfo = (DatabaseMetaDataTransfer.Table) transferData;
-                        String schemaName = tableInfo.getDatabaseConnection().getSchema();
+                        DatabaseConnection dbConnection = tableInfo.getDatabaseConnection();
+                        String schemaName = dbConnection.getSchema();
                         String tableName =
                                 ((schemaName == null) || (schemaName.equals(""))) ?
                                     tableInfo.getTableName() :
                                     schemaName + "." + tableInfo.getTableName();
                         // String tableName = tableInfo.getTableName();
-                        DatabaseConnection dbConnection = (DatabaseConnection)tableInfo.getDatabaseConnection();
-                        JDBCDriver jdbcDriver = (JDBCDriver) tableInfo.getJDBCDriver();
-                        
+                        JDBCDriver jdbcDriver = tableInfo.getJDBCDriver();     
                         // Create the Bean Create Infoset and return
                         return new DatasourceBeanCreateInfoSet(dbConnection, jdbcDriver, tableName);
                     }
@@ -89,13 +88,13 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 if(transferData != null){
                     if(transferData.getClass().isAssignableFrom(DatabaseMetaDataTransfer.View.class)){
                         DatabaseMetaDataTransfer.View viewInfo = (DatabaseMetaDataTransfer.View) transferData;
-                        String schemaName = viewInfo.getDatabaseConnection().getSchema();
+                        DatabaseConnection dbConnection = viewInfo.getDatabaseConnection();
+                        String schemaName = dbConnection.getSchema();
                         String viewName =
                                 ((schemaName == null) || (schemaName.equals(""))) ?
                                     viewInfo.getViewName() :
                                     schemaName + "." + viewInfo.getViewName();
-                        DatabaseConnection dbConnection = (DatabaseConnection)viewInfo.getDatabaseConnection();
-                        JDBCDriver jdbcDriver = (JDBCDriver) viewInfo.getJDBCDriver();
+                        JDBCDriver jdbcDriver = viewInfo.getJDBCDriver();
                         
                         // Create the Bean Create Infoset and return
                         return new DatasourceBeanCreateInfoSet(dbConnection, jdbcDriver, viewName);
