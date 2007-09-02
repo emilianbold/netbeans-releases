@@ -34,7 +34,8 @@ Microsystems, Inc. All Rights Reserved.
         <h2>Executing SQL Statements and Scripts</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>You can use the SQL Editor to write and execute SQL statements and SQL scripts within the IDE.
-        The SQL statement or script is executed on the database that is selected in the Connection drop-down menu in the toolbar.
+        
+            The SQL statement or script is executed on the database that is selected in the Connection drop-down menu in the toolbar.
         If the database connection is closed, the IDE opens the connection to the database.</p>
 	<p>You can use the SQL Editor to create, edit and execute any SQL files in your project. 
 	To open an SQL file, right-click the SQL file (&nbsp; <img src="images/sqlfile_icon.png" alt="SQL File">&nbsp;) in the Projects or Files window and choose Open.
@@ -49,15 +50,22 @@ Microsystems, Inc. All Rights Reserved.
 	    To see the status of the listed connections, click the Select Connection in Explorer button (&nbsp; <img src="images/showinexplorer.gif" alt="Select Connection in Explorer">&nbsp;) in the toolbar.
             When you click Select Connection in Explorer, the selected connection is highlighted in the Services window. </li>
             <li>Enter a (DDL or DML) statement in the SQL Editor window.</li>
-            <li>Click Run SQL (&nbsp; <img src="images/runsql.png" alt="Run SQL">&nbsp;) to run the statement.</li> 
+            <li>Click Run SQL (&nbsp; <img src="images/runsql.png" alt="Run SQL">&nbsp;) in the toolbar or right-click in the
+            SQL Editor and choose Run Statement from the pop-up menu.</li> 
         </ol>
-        <p>When you execute an SQL statement or script, the status of the SQL execution is displayed in the Output window.
-        Any errors when executing the SQL statement or script are displayed in the Output window.</p>
-        <p>When you execute an SQL statement, the output of the statement appears in the results pane in the lower half of the SQL Editor.
-            If the statement has no output, the number of affected rows is displayed in the Output window of the IDE.</p>
-        <p>You can access the Execute Command pop-up menu item from any subnode of a connected database (&nbsp;<img src="images/connection.gif" alt="Database Connection node">&nbsp;) in the Services window.</p>
-        
+        <p>When you execute an SQL statement or script, you see the following:</p>
+        <ul>        
+            <li>The status of the SQL execution is displayed in the Output window.
+            Any errors when executing the SQL statement or script are displayed in the Output window.</li>
+            <li>The output of the statement appears in the results pane in the lower half of the SQL Editor.
+            If the statement has no output, the number of affected rows is displayed in the Output window of the IDE.</li>
+        </ul>
+
+        <p><b>Notes:</b></p>
         <ul class="note">
+            <li>You can run selected text in the SQL Editor by right-clicking the selected
+            text and choosing Run Selection from the pop-up menu. </li>
+            <li>You can access the Execute Command pop-up menu item from any subnode of a connected database (&nbsp;<img src="images/connection.gif" alt="Database Connection node">&nbsp;) in the Services window.</li>
             <li>To view the data in a table, right-click a table in the Services window and choose View Data from the pop-up menu.
             For more, see <a href="viewdata.html">Viewing Data</a>.</li> 
         </ul>
