@@ -39,6 +39,7 @@
 <mapID target="debug.context" url="debug/debug_context.html" />
 <mapID target="debug.fix.watch" url="debug/debug_fix_watch.html" />
 <mapID target="debug.new.watch" url="debug/debug_new_watch.html" />
+<mapID target="debug.customize.watch" url="debug/debug_new_watch.html" />
 <mapID target="debug.pop" url="debug/debug_pop.html" />
 <mapID target="debug.callstack" url="debug/debug_callstack.html" />
 <mapID target="debug.variables" url="debug/debug_variables.html" />
@@ -346,7 +347,6 @@
 <mapID target="NetbeansDebuggerMethodNode" url="debug/CSH/classes_view.html"/>
 <mapID target="NetbeansDebuggerPackageNode" url="debug/CSH/classes_view.html"/>
 
-<mapID target="NetbeansDebuggerSessionsPropertiesSheet" url="debug/CSH/session_properties.html"/>
 <mapID target="NetbeansDebuggerOutputWindow" url="debug/CSH/debug_output.html"/>
 
 <!-- New breakpoint and breakpoint customizer dialog  are mapped to same topics -->

@@ -7,17 +7,20 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-        <title>Sessions Window</title>
+        <title>Debugging: Sessions Window</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
 
-        <h2>Sessions Window </h2>
+        <h2>Debugging: Sessions Window </h2>
         <p><small><a href="#seealso">See Also</a></small></p>
 
         <p>The Sessions window lists the debugging sessions currently running in the IDE. You can open the Sessions window by choosing  Window &gt; Debugging &gt; Sessions. If you open the Sessions window when a debugging session is running, it closes automatically when you end the debugging session. If you open the window when no debugging session is running, it stays open until you close it.</p>
-        <p>The information given for each session includes the session name and state. In most cases, the state corresponds to the state of the process associated with the session. One session is always considered the current session, unless no sessions are running. By default, the current session is the session that you most recently started.</p>
-
+        <p>The information given for each session includes the session name and state. 
+        In most cases, the state corresponds to the state of the process associated with the session. 
+        One session is always considered the current session, unless no sessions are running. 
+        By default, the current session is the session that you most recently started.</p>
+        
         <h3><a name="sessionstates">Session States</a></h3>
         <p>The following table describes the session states.</p>
         <table border="1" cellpadding="5" cellspacing="0">
@@ -91,11 +94,20 @@
         </table>
 
         <h3>Properties </h3>
-        <p>You can see all the <a href="session_properties.html">properties</a> 
-        for a session by right-clicking the node for the session 
-        and choosing Properties.</p>
-        <p>By default, all properties are also displayed directly in the Sessions window, except for the Host Name property.</p>
-
+        
+        <p>By default, all properties are also displayed directly in the Sessions window, except for the Host Name property.
+        To display the Host Name property in the Sessions window, 
+        click the <img src="../images/ChangeColumn.gif" alt="Change Column">&nbsp;icon in the upper right corner of the window, 
+        or right-click in the window and choose List Options &gt; Change Visible Columns and then select the Host Name checkbox in the dialog box.</p>
+        <p>You can view the following properties in the Sessions window.</p>
+        <ul>
+            <li><b>Name.</b> The name used to identify the session. The session name is usually the same as the program name. </li>
+            <li><b>Host Name.</b> The name of the host on which the process is running. </li>
+            <li><b>Language.</b> The programming language of the program being debugged. </li>
+            <li><b>State.</b> The state of the process associated with the session.</li>
+        </ul>
+        
+        
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../debug_context.html">Current Context in the Debugger</a></dd>

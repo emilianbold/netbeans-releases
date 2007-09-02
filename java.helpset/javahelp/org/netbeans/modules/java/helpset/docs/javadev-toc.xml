@@ -120,7 +120,7 @@
     <tocitem text="Finishing a Session" target="debug.finish" />
     </tocitem>
     <tocitem text="Viewing Program Information">
-        <tocitem text="Variables and Expressions in the IDE" target="debug.variables" />
+        <tocitem text="Viewing Variables and Expressions" target="debug.variables" />
         <tocitem text="Creating a Watch" target="debug.new.watch"/>
         <tocitem text="Creating a Fixed Watch" target="debug.fix.watch"/>
         <tocitem text="Debugging Threads in the IDE" target="debug.threads"/>
