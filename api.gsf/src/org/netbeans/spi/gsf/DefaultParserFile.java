@@ -57,7 +57,7 @@ public class DefaultParserFile implements ParserFile {
     }
     
     public String getNameExt() {
-        return getFileObject().getName();
+        return getFileObject().getNameExt();
     }
     
     public String getExtension() {
