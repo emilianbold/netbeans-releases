@@ -207,6 +207,10 @@
 
 
 
+<!--Library Manager-->
+	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="project/csh/csh_library_manager.html"/>
+
+
 <!--CSH - Keymaps Options window page:-->
 <mapID target="netbeans.optionsDialog.keymaps" url="configure/options-shortcuts.html" />
 

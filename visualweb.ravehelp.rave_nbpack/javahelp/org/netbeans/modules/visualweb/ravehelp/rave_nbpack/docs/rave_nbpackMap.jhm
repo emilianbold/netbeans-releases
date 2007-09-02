@@ -79,7 +79,6 @@
 	<mapID target="listener_create" url="web/create/listener/listener_create.html"/>
 	<mapID target="listener_run" url="web/create/listener/listener_run.html"/>
 	<mapID target="org.netbeans.modules.editor.html.HTMLKit" url="web/create/jsp/about_jsp_edit.html"/>
-	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/csh_library_manager.html"/>
 	<mapID target="org.netbeans.modules.web.core.syntax.JSPKit" url="web/create/jsp/about_jsp_edit.html"/>
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathPanel" url="web/csh/dbox_projprops_freeform/WebClasspathPanel.html"/>
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathWizardPanel" url="web/csh/projwiz_freeform/WebClasspathWizardPanel.html"/>
