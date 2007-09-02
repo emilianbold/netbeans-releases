@@ -3,6 +3,7 @@ Version: 2.2
 License: Apache-1.1
 Source: http://archive.apache.org/dist/tomcat/tomcat-3/src/jakarta-servletapi-src.zip
 Comment: Servlet API 2.2 is a JCP standard, however we are including it under the Apache 1.1 license, as it comes with Tomcat 3.2, which includes it under the Apache 1.1 license.
+OSR: 87170
 
 The Apache Software License, Version 1.1
 

@@ -1,5 +1,6 @@
 Name: Java Server Faces
 Version: 1.2
+License: CDDL
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0 
 
