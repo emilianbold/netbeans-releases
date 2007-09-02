@@ -61,6 +61,11 @@ public class XDMAccessProvider implements DocumentModelAccessProvider {
     }
 
     public Object getModelSourceKey(ModelSource source) {
-        return source.getLookup().lookup(DataObject.class);
+        Object key = source.getLookup().lookup(DataObject.class);
+        //Fix for IZ 112329: For referenced schemas in runtime catalog, there will be no DO,
+        //hence we must return the Document as the key as an alternative.
+        if(key != null)
+            return key;
+        return source.getLookup().lookup(Document.class);
     }
 }
