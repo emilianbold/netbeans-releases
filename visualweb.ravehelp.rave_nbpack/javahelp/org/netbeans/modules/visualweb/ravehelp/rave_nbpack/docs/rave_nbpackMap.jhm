@@ -226,7 +226,6 @@
 	<mapID target="projrave_ui_elements_dialogs_config_virtual_forms_db" url="ui_elements/dialogs/config_virtual_forms_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_currencycodepopup" url="ui_elements/dialogs/currencycodepopup.html"/>
 	<mapID target="projrave_ui_elements_dialogs_data_table_layout_db" url="ui_elements/dialogs/data_table_layout_db.html"/>
-	<mapID target="projrave_ui_elements_dialogs_findinfiles" url="ui_elements/dialogs/findinfiles.html"/>
 	<mapID target="projrave_ui_elements_dialogs_import_components_db" url="ui_elements/dialogs/import_components_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_new_database_connection_db" url="ui_elements/dialogs/new_database_connection_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_new_jdbc_driver_db" url="ui_elements/dialogs/new_jdbc_driver_db.html"/>
