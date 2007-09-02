@@ -142,6 +142,7 @@ public class RubyIndexerTest extends RubyTestBase {
         File rubyFile = new File(getDataDir(), relFilePath);
         Index index = new TestIndex(rubyFile.toURI().toURL().toExternalForm());
         RubyIndexer indexer = new RubyIndexer();
+        RubyIndex.setClusterUrl("bogus"); // No translation
         indexer.updateIndex(index, rpr);
         
         String annotatedSource = index.toString();
@@ -187,5 +188,17 @@ public class RubyIndexerTest extends RubyTestBase {
     
     public void testRails5() throws Exception {
         checkIndexer("testfiles/active_record.rb");
+    }
+
+    public void testTopLevel() throws Exception {
+        checkIndexer("testfiles/top_level.rb");
+    }
+    
+    public void testTopLevel2() throws Exception {
+        checkIndexer("testfiles/option_parser_spec.rb");
+    }
+
+    public void testTopLevel3() throws Exception {
+        checkIndexer("testfiles/method_definer_test.rb");
     }
 }

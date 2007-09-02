@@ -85,4 +85,11 @@ public class AstMethodElement extends AstElement implements MethodElement {
             return ElementKind.METHOD;
         }
     }
+
+    /**
+     * @todo Compute answer
+     */
+    public boolean isTopLevel() {
+        return false;
+    }
 }

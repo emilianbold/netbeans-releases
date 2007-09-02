@@ -139,6 +139,18 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         }
     }
     
+    public boolean isTopLevel() {
+        if (attributes != null) {
+            for (int i = 0, n = attributes.length(); i < n; i++) {
+                if (attributes.charAt(i) == 't') {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
     public boolean isSmart() {
         return smart;
     }

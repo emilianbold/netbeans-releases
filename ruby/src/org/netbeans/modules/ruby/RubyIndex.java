@@ -392,15 +392,8 @@ public final class RubyIndex {
         if (attributeIndex != -1) {
             modifiers = RubyIndexer.getModifiersFromString(signature, attributeIndex);
 
-            for (int i = attributeIndex + 1; i < signature.length(); i++) {
-                char c = signature.charAt(i);
-
-                if (c == 'd') {
-                    // I'm not storing lengths of comments for methods
-                    attributes = "d"; // NOI18N
-
-                    break;
-                }
+            if (signature.length() > attributeIndex+1) {
+                attributes = signature.substring(attributeIndex+1, signature.length());
             }
 
             signature = signature.substring(0, attributeIndex);
@@ -1076,6 +1069,11 @@ public final class RubyIndex {
         }
 
         return clusterUrl;
+    }
+    
+    // For testing only
+    static void setClusterUrl(String url) {
+        clusterUrl = url;
     }
 
     static String getPreindexUrl(String url) {

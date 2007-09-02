@@ -1,7 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/unused.rb
+Delete:  source : <TESTURL>/top_level.rb
 
 Indexed:
 
@@ -14,8 +14,9 @@ Indexed:
   class : Object
   class-ig : object
   fqn : Object
-  method : foo(unusedparam,unusedparam2,usedparam):t
-  source : <TESTURL>/unused.rb
+  method : bar(baz):t
+  method : foo:t
+  source : <TESTURL>/top_level.rb
 
 Not Indexed:
   attrs : c

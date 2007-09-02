@@ -11,7 +11,13 @@ Not Indexed:
 Document 1
 Delete:
 Indexed:
+  class : Base
+  class-ig : base
+  fqn : ActionView::Base
   source : <TESTURL>/action_view.rb
 
 Not Indexed:
+  attrs : c
+  in : ActionView
+  includes : ActionView::Partials
   requires : action_view/base,action_view/partials

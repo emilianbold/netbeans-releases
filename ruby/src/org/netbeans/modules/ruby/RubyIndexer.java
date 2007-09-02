@@ -19,6 +19,7 @@
 package org.netbeans.modules.ruby;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -81,7 +82,7 @@ public class RubyIndexer implements Indexer {
     static final String FIELD_INCLUDES = "includes"; //NOI18N
     static final String FIELD_EXTEND_WITH = "extendWith"; //NOI18N
 
-    /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
+    /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented, "t" -> top level (implicit Object) */
     static final String FIELD_METHOD_NAME = "method"; //NOI18N
 
     /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
@@ -216,10 +217,8 @@ public class RubyIndexer implements Indexer {
             try {
                 url = file.getFileObject().getURL().toExternalForm();
 
-                if (PREINDEXING) {
-                    // Make relative URLs for preindexed data structures
-                    url = RubyIndex.getPreindexUrl(url);
-                }
+                // Make relative URLs for urls in the libraries
+                url = RubyIndex.getPreindexUrl(url);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
@@ -353,12 +352,7 @@ public class RubyIndexer implements Indexer {
                 return;
             }
 
-            for (Element o : structure) {
-                // Todo: Iterate over the structure and index them
-                // fields, classes, etc.
-                AstElement jn = (AstElement)o;
-                analyze(jn);
-            }
+            analyze(structure);
         }
 
         /** There's some pretty complicated dynamic behavior in Rails in how
@@ -391,9 +385,9 @@ public class RubyIndexer implements Indexer {
 
             // TODO:
             //addIncluded(indexed);
-            String requires = getRequireString(requireSet);
-            if (requires != null) {
-                notIndexed.put(FIELD_REQUIRES, requires);
+            String r = getRequireString(requireSet);
+            if (r != null) {
+                notIndexed.put(FIELD_REQUIRES, r);
             }
 
             addRequire(indexed);
@@ -575,26 +569,64 @@ public class RubyIndexer implements Indexer {
             return found;
         }
 
-        private void analyze(AstElement element) {
-            switch (element.getKind()) {
-            case MODULE:
-            case CLASS:
-                analyzeClassOrModule(element);
+        private void analyze(List<?extends AstElement> structure) {
+            List<AstElement> topLevelMethods = null;
 
-                break;
+            for (Element o : structure) {
+                // Todo: Iterate over the structure and index them
+                // fields, classes, etc.
+                AstElement element = (AstElement)o;
+            
+                switch (element.getKind()) {
+                case MODULE:
+                case CLASS:
+                    analyzeClassOrModule(element);
 
-            case CONSTRUCTOR:
-            case METHOD:
-            case FIELD:
-            case ATTRIBUTE:
-            case CONSTANT:
+                    break;
 
-                // Methods, fields, attributes or constants outside of an explicit
-                // class or module: Added to Object/Kernel
+                case METHOD:
+                    // Method defined outside of an explicit class: added to Object.
+                    // I only track these in the user's own classes - and skip tests.
+                    if (shouldIndexTopLevel()) {
+                        if (topLevelMethods == null) {
+                            topLevelMethods = new ArrayList<AstElement>();
+                        }
+                        topLevelMethods.add(element);
+                    }
+                    break;
 
-                // TODO - index us!
-                break;
+                case CONSTRUCTOR:
+                case FIELD:
+                case ATTRIBUTE:
+                case CONSTANT:
+
+                    // Methods, fields, attributes or constants outside of an explicit
+                    // class or module: Added to Object/Kernel
+
+                    // TODO - index us!
+                    break;
+                }
             }
+            
+            if (topLevelMethods != null) {
+                analyzeTopLevelMethods(topLevelMethods);
+            }
+        }
+        
+        private boolean shouldIndexTopLevel() {
+            // Don't index top level methods in the libraries
+            if (!file.isPlatform() && !PREINDEXING) {
+                String name = file.getNameExt();
+                // Don't index spec methods or test methods
+                if (!name.endsWith("_spec.rb") && !name.endsWith("_test.rb")) {
+                    // Don't index stuff in the vendor directory
+                    if (url == null || url.indexOf("/vendor/") == -1) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void analyzeClassOrModule(AstElement element) {
@@ -730,7 +762,7 @@ public class RubyIndexer implements Indexer {
                             switch (grandChild.getKind()) {
                             case CONSTRUCTOR:
                             case METHOD: {
-                                indexMethod(grandChild, indexedList, notIndexedList);
+                                indexMethod(grandChild, indexedList, notIndexedList, false);
 
                                 break;
                             }
@@ -770,7 +802,7 @@ public class RubyIndexer implements Indexer {
 
                 case CONSTRUCTOR:
                 case METHOD: {
-                    indexMethod(child, indexedList, notIndexedList);
+                    indexMethod(child, indexedList, notIndexedList, false);
 
                     break;
                 }
@@ -803,8 +835,53 @@ public class RubyIndexer implements Indexer {
             }
         }
 
+        private void analyzeTopLevelMethods(List<? extends AstElement> children) {
+            // Add a document
+            Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
+            Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
+
+            // Add indexed info
+            Map<String, String> indexed = new HashMap<String, String>();
+            indexedList.add(indexed);
+
+            Map<String, String> notIndexed = new HashMap<String, String>();
+            notIndexedList.add(notIndexed);
+
+            String name = "Object";
+            String in = null;
+            String fqn = "Object";
+
+            notIndexed.put(FIELD_CLASS_ATTRS, "c");
+            indexed.put(FIELD_FQN_NAME, fqn);
+            indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase());
+            indexed.put(FIELD_CLASS_NAME, name);
+            addRequire(indexed);
+            if (requires != null) {
+                notIndexed.put(FIELD_REQUIRES, requires);
+            }
+
+            // Indexed so we can locate these documents when deleting/updating
+            indexed.put(FIELD_FILENAME, url);
+
+            // TODO - find a way to combine all these methods (from this file) into a single item
+            
+            // Add the fields, etc.. Recursively add the children classes or modules if any
+            for (AstElement child : children) {
+                assert child.getKind() == ElementKind.CONSTRUCTOR || child.getKind() == ElementKind.METHOD;
+                indexMethod(child, indexedList, notIndexedList, true);
+                // XXX what about fields, constants, attributes?
+            }
+
+            try {
+                Map<String, String> toDelete = Collections.emptyMap();
+                index.gsfStore(indexedList, notIndexedList, toDelete);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        
         private void indexMethod(AstElement child, Set<Map<String, String>> indexedList,
-            Set<Map<String, String>> notIndexedList) {
+            Set<Map<String, String>> notIndexedList, boolean topLevel) {
             Map<String, String> ru;
             ru = new HashMap<String, String>();
             indexedList.add(ru);
@@ -816,6 +893,14 @@ public class RubyIndexer implements Indexer {
 
             boolean methodIsDocumented = isDocumented(childNode);
 
+            if (topLevel) {
+                if (modifierString == null) {
+                    modifierString = "t";
+                } else {
+                    modifierString = modifierString + "t";
+                }
+            }
+
             if (methodIsDocumented) {
                 if (modifierString == null) {
                     modifierString = "d";
@@ -823,7 +908,7 @@ public class RubyIndexer implements Indexer {
                     modifierString = modifierString + "d";
                 }
             }
-
+            
             if (modifierString != null) {
                 signature = signature + ":" + modifierString;
             }

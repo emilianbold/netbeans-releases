@@ -6,3 +6,32 @@ Delete:  source : <TESTURL>/active_record.rb
 Indexed:
 
 Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  class : Base
+  class-ig : base
+  fqn : ActiveRecord::Base
+  source : <TESTURL>/active_record.rb
+
+Not Indexed:
+  attrs : c
+  in : ActiveRecord
+  includes : ActiveRecord::Acts::List,ActiveRecord::Acts::NestedSet,ActiveRecord::Acts::Tree,ActiveRecord::Aggregations,ActiveRecord::Associations,ActiveRecord::AttributeMethods,ActiveRecord::Calculations,ActiveRecord::Callbacks,ActiveRecord::Locking::Optimistic,ActiveRecord::Locking::Pessimistic,ActiveRecord::Observing,ActiveRecord::Reflection,ActiveRecord::Timestamp,ActiveRecord::Transactions,ActiveRecord::Validations,ActiveRecord::XmlSerialization
+  requires : active_record/acts/list,active_record/acts/nested_set,active_record/acts/tree,active_record/aggregations,active_record/associations,active_record/attribute_methods,active_record/base,active_record/calculations,active_record/callbacks,active_record/locking/optimistic,active_record/locking/pessimistic,active_record/migration,active_record/observer,active_record/query_cache,active_record/reflection,active_record/schema,active_record/schema_dumper,active_record/timestamp,active_record/transactions,active_record/validations,active_record/xml_serialization,active_support,rubygems
+
+
+Document 2
+Delete:
+Indexed:
+  class : Migration
+  class-ig : migration
+  fqn : ActiveRecord::Migration
+  source : <TESTURL>/active_record.rb
+
+Not Indexed:
+  attrs : c
+  in : ActiveRecord
+  includes : ActiveRecord::ConnectionAdapters::SchemaStatements

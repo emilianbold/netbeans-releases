@@ -11,7 +11,13 @@ Not Indexed:
 Document 1
 Delete:
 Indexed:
+  class : Base
+  class-ig : base
+  fqn : ActionController::Base
   source : <TESTURL>/action_controller.rb
 
 Not Indexed:
+  attrs : c
+  in : ActionController
+  includes : ActionController::Benchmarking,ActionController::Caching,ActionController::Components,ActionController::Cookies,ActionController::Dependencies,ActionController::Filters,ActionController::Flash,ActionController::Helpers,ActionController::Layout,ActionController::Macros::AutoComplete,ActionController::Macros::InPlaceEditing,ActionController::MimeResponds,ActionController::Pagination,ActionController::Rescue,ActionController::Scaffolding,ActionController::SessionManagement,ActionController::Streaming,ActionController::Verification
   requires : action_controller/base,action_controller/benchmarking,action_controller/caching,action_controller/cgi_process,action_controller/components,action_controller/cookies,action_controller/deprecated_dependencies,action_controller/deprecated_redirects,action_controller/deprecated_request_methods,action_controller/filters,action_controller/flash,action_controller/helpers,action_controller/layout,action_controller/macros/auto_complete,action_controller/macros/in_place_editing,action_controller/mime_responds,action_controller/pagination,action_controller/request,action_controller/rescue,action_controller/scaffolding,action_controller/session_management,action_controller/streaming,action_controller/verification,action_view,active_support,rubygems

@@ -769,12 +769,26 @@ public class AstUtilities {
     /** For the given signature, locating the corresponding Node within the tree that
      * it corresponds to */
     public static Node findBySignature(Node root, String signature) {
+        String originalSig = signature;
+
         //String name = signature.split("(::)")
         // Find next name we're looking for
         String name = getNextSigComponent(signature);
         signature = signature.substring(name.length());
 
-        return findBySignature(root, signature, name);
+        Node node = findBySignature(root, signature, name);
+        
+        // Handle top level methods
+        if (node == null && originalSig.startsWith("Object#")) {
+            // Just look for top level method definitions instead
+            originalSig = originalSig.substring(originalSig.indexOf('#')+1);
+            name = getNextSigComponent(signature);
+            signature = originalSig.substring(name.length());
+            
+            node = findBySignature(root, signature, name);
+        }
+        
+        return node;
     }
 
     // For a signature of the form Foo::Bar#baz(arg1,arg2,...)

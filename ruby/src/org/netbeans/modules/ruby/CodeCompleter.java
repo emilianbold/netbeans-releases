@@ -66,7 +66,6 @@ import static org.netbeans.api.gsf.Index.*;
 import org.netbeans.api.gsf.Modifier;
 import org.netbeans.api.gsf.NameKind;
 import org.netbeans.api.gsf.ParameterInfo;
-import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -773,6 +772,8 @@ public class CodeCompleter implements Completable {
 
                 // If we're not in the identifier we need to be in the whitespace after "def"
                 if (id != RubyTokenId.WHITESPACE) {
+                    // Do something about http://www.netbeans.org/issues/show_bug.cgi?id=100452 here
+                    // In addition to checking for whitespace I should look for "Foo." here
                     return false;
                 }
 
@@ -2635,6 +2636,7 @@ public class CodeCompleter implements Completable {
             return element.getModifiers();
         }
 
+        @Override
         public String toString() {
             String cls = getClass().getName();
             cls = cls.substring(cls.lastIndexOf('.') + 1);
@@ -2664,6 +2666,7 @@ public class CodeCompleter implements Completable {
             super(element, anchorOffset, request);
         }
 
+        @Override
         public String getLhsHtml() {
             ElementKind kind = getKind();
             HtmlFormatter formatter = request.formatter;
@@ -2699,7 +2702,19 @@ public class CodeCompleter implements Completable {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
 
-            String in = ((MethodElement)element).getIn();
+            // Top level methods (defined on Object) : print
+            // the defining file instead
+            MethodElement me = (MethodElement)element;
+            if (me.isTopLevel() && me instanceof IndexedMethod) {
+                IndexedMethod im = (IndexedMethod)element;
+                if (im.isTopLevel() && im.getRequire() != null) {
+                    formatter.appendText(im.getRequire());
+
+                    return formatter.getText();
+                }
+            }
+
+            String in = me.getIn();
 
             if (in != null) {
                 formatter.appendText(in);
@@ -2841,10 +2856,12 @@ public class CodeCompleter implements Completable {
             this.description = description;
         }
 
+        @Override
         public String getName() {
             return keyword;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
@@ -2861,6 +2878,7 @@ public class CodeCompleter implements Completable {
             }
         }
 
+        @Override
         public ImageIcon getIcon() {
             if (keywordIcon == null) {
                 keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
@@ -2869,6 +2887,7 @@ public class CodeCompleter implements Completable {
             return keywordIcon;
         }
 
+        @Override
         public Element getElement() {
             // For completion documentation
             return new KeywordElement(keyword);

@@ -33,6 +33,6 @@ public interface MethodElement extends Element {
     boolean isDeprecated();
 
     List<String> getParameters();
-
+    boolean isTopLevel();
     String getIn();
 }
