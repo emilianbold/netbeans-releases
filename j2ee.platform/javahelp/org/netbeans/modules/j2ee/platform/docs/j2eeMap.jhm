@@ -19,7 +19,7 @@
 <!-- Start of "Developing Web Services" help -->
 
         <!-- Start of "About" section -->
-	<mapID target="about_ws" url="webservice/about/about_ws.html" 
+	<mapID target="about_ws" url="webservice/about/about_ws.html" />
         <mapID target="about_rest" url="webservice/about/about_rest.html" />
 	<mapID target="ws_process" url="webservice/about/ws_process.html" />
 	<mapID target="ws_quickref" url="webservice/about/ws_quickref.html" />
@@ -82,28 +82,18 @@
 
    <!-- Start of CSH -->
     <!-- Client: -->
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.BindingContainerClientNode" url="webservice/nodes/wsitconf-BindingContainerClientNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode" url="webservice/nodes/wsitconf-UserAuthenticationNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.KeystoreClientNode" url="webservice/nodes/wsitconf-CertificatesNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.STSClientNode" url="webservice/nodes/wsitconf-SecureTokenServiceNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode" url="webservice/nodes/wsitconf-TransportClientNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" url="webservice/nodes/wsitconf-AdvancedConfigurationNode.html"/>
    
    <!-- Service: -->
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingContainerServiceNode" url="webservice/nodes/wsitconf-BindingContainerServiceNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode" url="webservice/nodes/wsitconf-BindingInputNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode" url="webservice/nodes/wsitconf-BindingOutputNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode" url="webservice/nodes/wsitconf-OperationContainerServiceNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode" url="webservice/nodes/wsitconf-OperationNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode" url="webservice/nodes/wsitconf-ServiceNode.html"/>
    
-   <!-- Old and unused: -->
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.security.nodes.KeystoreClientNode" url="webservice/nodes/wsitconf-KeystoreNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.security.nodes.SecurityBindingTokensNode" url="webservice/nodes/wsitconf-SecurityBindingTokensNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.security.nodes.WssNode" url="webservice/nodes/wsitconf-WssNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.security.nodes.TrustNode" url="webservice/nodes/wsitconf-TrustNode.html"/>
-   <!-- End of CSH -->
-    <!-- End of "WSIT" section -->
+   <!-- End of "WSIT" section -->
 
 <!--Start of web service CSH -->
 	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/AddWebServiceDlg.html" />
