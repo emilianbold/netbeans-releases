@@ -32,7 +32,6 @@ import javax.swing.text.BadLocationException;
 import org.jruby.ast.CallNode;
 
 import org.jruby.ast.ClassNode;
-import org.jruby.ast.ClassVarDeclNode;
 import org.jruby.ast.Colon2Node;
 import org.jruby.ast.CommentNode;
 import org.jruby.ast.ConstDeclNode;
@@ -45,10 +44,10 @@ import org.jruby.ast.ListNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
-import org.jruby.ast.VCallNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.parser.RubyParserResult;
@@ -88,6 +87,7 @@ import org.openide.util.Exceptions;
  *   for local variables. Similarly, the declaration finder should use it
  *   to locate local classes, method definitions and such. And obviously,
  *   the semantic analyzer should use it to find private methods.
+ * @todo Scan rspec files and itemize it's and contexts
  *
  * @author Tor Norbye
  */
@@ -110,13 +110,13 @@ public class StructureAnalyzer implements StructureScanner {
 
         AnalysisResult ar = result.getStructure();
         List<?extends AstElement> elements = ar.getElements();
-        List<StructureItem> structure = new ArrayList<StructureItem>(elements.size());
+        List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
         for (AstElement e : elements) {
-            structure.add(new RubyStructureItem(e, info));
+            itemList.add(new RubyStructureItem(e, info));
         }
 
-        return structure;
+        return itemList;
     }
     
     public static class AnalysisResult {
@@ -330,7 +330,8 @@ public class StructureAnalyzer implements StructureScanner {
 
     private void scan(Node node, AstPath path, String in, Set<String> includes, AstElement parent) {
         // Recursively search for methods or method calls that match the name and arity
-        if (node instanceof ClassNode) {
+        switch (node.nodeId) {
+        case NodeTypes.CLASSNODE: {
             AstClassElement co = new AstClassElement(node);
             co.setIn(in);
 
@@ -348,7 +349,9 @@ public class StructureAnalyzer implements StructureScanner {
             }
 
             parent = co;
-        } else if (node instanceof ModuleNode) {
+            break;
+        }
+        case NodeTypes.MODULENODE: {
             AstModuleElement co = new AstModuleElement(node);
             co.setIn(in);
             co.setFqn(AstUtilities.getFqnName(path));
@@ -363,7 +366,10 @@ public class StructureAnalyzer implements StructureScanner {
             parent = co;
 
             // XXX Can I have includes on modules?
-        } else if (node instanceof SClassNode) {
+            
+            break;
+        }
+        case NodeTypes.SCLASSNODE: {
             // Singleton class, e.g.   class << self, or class << File, etc.
             AstClassElement co = new AstClassElement(node);
             co.setIn(in);
@@ -388,7 +394,11 @@ public class StructureAnalyzer implements StructureScanner {
             }
 
             parent = co;
-        } else if (node instanceof MethodDefNode) {
+            
+            break;
+        }
+        case NodeTypes.DEFNNODE:
+        case NodeTypes.DEFSNODE: {
             AstMethodElement co = new AstMethodElement(node);
             methods.add(co);
             co.setIn(in);
@@ -424,7 +434,10 @@ public class StructureAnalyzer implements StructureScanner {
             } else {
                 structure.add(co);
             }
-        } else if (node instanceof ConstDeclNode) {
+            
+            break;
+        }
+        case NodeTypes.CONSTDECLNODE: {
             AstConstantElement co = new AstConstantElement((ConstDeclNode)node);
             co.setIn(in);
 
@@ -433,7 +446,10 @@ public class StructureAnalyzer implements StructureScanner {
             } else {
                 structure.add(co);
             }
-        } else if (node instanceof ClassVarDeclNode) {
+            
+            break;
+        }
+        case NodeTypes.CLASSVARDECLNODE: {
             AstFieldElement co = new AstFieldElement(node);
             co.setIn(in);
 
@@ -442,25 +458,37 @@ public class StructureAnalyzer implements StructureScanner {
             } else {
                 structure.add(co);
             }
-        } else if (node instanceof InstAsgnNode && parent instanceof AstClassElement) {
-            // We don't have unique declarations, only assignments (possibly many)
-            // so stash these in a map and extract unique fields when we're done
-            Set<InstAsgnNode> assignments = fields.get(parent);
+            
+            break;
+        }
+        case NodeTypes.INSTASGNNODE: {
+            if (parent instanceof AstClassElement) {
+                // We don't have unique declarations, only assignments (possibly many)
+                // so stash these in a map and extract unique fields when we're done
+                Set<InstAsgnNode> assignments = fields.get(parent);
 
-            if (assignments == null) {
-                assignments = new HashSet<InstAsgnNode>();
-                fields.put((AstClassElement)parent, assignments);
+                if (assignments == null) {
+                    assignments = new HashSet<InstAsgnNode>();
+                    fields.put((AstClassElement)parent, assignments);
+                }
+
+                assignments.add((InstAsgnNode)node);
+                
             }
 
-            assignments.add((InstAsgnNode)node);
-        } else if (node instanceof VCallNode) {
+            break;
+        }
+        case NodeTypes.VCALLNODE: {
             String name = ((INameNode)node).getName();
 
             if (("private".equals(name) || "protected".equals(name)) &&
                     parent instanceof AstClassElement) { // NOI18N
                 haveAccessModifiers.add((AstClassElement)parent);
             }
-        } else if (node instanceof FCallNode) {
+            
+            break;
+        }
+        case NodeTypes.FCALLNODE: {
             String name = ((INameNode)node).getName();
 
             if (name.equals("require")) { // XXX Load too?
@@ -590,6 +618,9 @@ public class StructureAnalyzer implements StructureScanner {
                     }
                 }
             }
+            
+            break;
+        }
         }
 
         @SuppressWarnings("unchecked")
@@ -736,10 +767,10 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         for (Node child : list) {
-            Node result = findClosest(child, start, end);
+            Node closest = findClosest(child, start, end);
 
-            if (result != null) {
-                return result;
+            if (closest != null) {
+                return closest;
             }
         }
 
