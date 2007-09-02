@@ -91,29 +91,51 @@
         
         <h4>The Diff Viewer provides the following UI components:</h4>
             
-        <ul>
-            <li>Differences between compared files are highlighted using the following colors:
-            
-                <ul>
-                    <li><span style="color:#b8cfe5;font-weight:bold">Blue</span>. Indicates 
-                        lines that have been changed since the earlier revision.</li>
-                    <li><span style="color:#b4ffb4;font-weight:bold">Green</span>. Indicates 
-                        lines that have been added since the earlier revision.</li>
-                    <li><span style="color:#ffa0b4;font-weight:bold">Red</span>. Indicates 
-                        lines that have been removed since the earlier revision.</li>
-                </ul></li>
-                
-            <li>The following icons allow you to make changes directly to your local working copy:
+        <table border="1" cellpadding="5">
+            <tr>
+                <td align="right"><strong>Blue</strong> 
+                    ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                <td>Indicates lines that have been changed since the earlier revision.</td>
+            </tr>
+            <tr>
+                <td align="right"><strong>Green</strong> 
+                    ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                <td>Indicates lines that have been added since the earlier revision.</td>
+            </tr>
+            <tr>
+                <td align="right"><strong>Red</strong> 
+                    ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                <td>Indicates lines that have been removed since the earlier revision.</td>                
+            </tr>
+        </table>
         
-                <ul>
-                    <li><img src="../images/insert.png" alt="insert icon">: Inserts the highlighted 
-                        text from the previous revision into the current revision.</li>
-                    <li><img src="../images/remove.png" alt="remove icon">: Removes the highlighted 
-                        text from the current version so that it mirrors the previous version.</li>
-                    <li><img src="../images/arrow.png" alt="move all icon">: Reverts the file's 
-                        current version to the state of the selected previous version.</li>
-                </ul></li>
-        </ul> 
+        <ul class="note">
+            <li>The above color settings are set by default within the IDE. You can modify 
+                these settings by choosing Tools &gt; Options from the main menu, then clicking
+                Advanced Options. Expand IDE Configuration &gt; Server and External Tool Settings
+                &gt; Diff and Merge Types &gt; Diff Visualizers &gt; Graphical Diff Viewer.
+                From the right panel, you can select the colors of your choice.</li>
+        </ul>
+                
+        <h4>The following icons allow you to make changes directly to your local working copy:</h4>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <td><strong>Replace</strong> 
+                    ( <img src="../images/insert.png" alt="replace icon"> )</td>
+                <td>Inserts the highlighted text from the previous revision into the current revision.</td>
+            </tr>
+            <tr>
+                <td><strong>Move All</strong> 
+                    ( <img src="../images/arrow.png" alt="move all icon"> )</td>
+                <td>Reverts the file's current version to the state of the selected previous version.</td>
+            </tr>
+            <tr>
+                <td><strong>Remove</strong>&nbsp;
+                    ( <img src="../images/remove.png" alt="remove icon"> )</td>
+                <td>Removes the highlighted text from the current version so that it mirrors the previous version.</td>                
+            </tr>
+        </table>
  
 	<dl>
 	    <dt><a name="seealso">See Also</a></dt>
