@@ -44,6 +44,7 @@ import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
+import org.netbeans.modules.visualweb.dataconnectivity.ui.DataSourceNamePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -123,7 +124,7 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             // Get the Database Connection information and add it to design time
             // Naming Context
             // Make sure duplicate datasources are not added
-            
+            boolean cancel = false;
             String databaseProductName = null;
             try {
                 databaseProductName = dbConnection.getJDBCConnection().getMetaData().getDatabaseProductName().replaceAll("\\s{1}", "");
@@ -155,12 +156,12 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             }
             
             if (DataconnectivitySettings.promptForName()) {
-                JndiNamePanel jndiPanel = new JndiNamePanel(dsName);
+                DataSourceNamePanel dataSourceNamePanel = new DataSourceNamePanel(dsName);
                 final DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                        jndiPanel,
-                        NbBundle.getMessage(JndiNamePanel.class, "LBL_SpecifyJndiName"), //NOI18N
+                        dataSourceNamePanel,
+                        NbBundle.getMessage(DataSourceNamePanel.class, "LBL_SpecifyDataSourceName"), //NOI18N
                         true,
-                        DialogDescriptor.OK_CANCEL_OPTION,
+                        DialogDescriptor.DEFAULT_OPTION,
                         DialogDescriptor.OK_OPTION,
                         DialogDescriptor.DEFAULT_ALIGN,
                         HelpCtx.DEFAULT_HELP,
@@ -171,21 +172,28 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 // show and eventually save
                 Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
                 if (option == NotifyDescriptor.OK_OPTION) {
-                    dsName = jndiPanel.getJndiName();
+                    dsName = dataSourceNamePanel.getDataSourceName();
+                } else if (option == NotifyDescriptor.CANCEL_OPTION) {
+                    cancel = true;
                 }
             }
             
-            DataSourceInfo dataSourceInfo = new DataSourceInfo(dsName, driverClassName, url, validationQuery, username, password);
+            // if user has enabled Prompt for Data Source name and clicks cancel then don't create and bind the data source
+            if (!cancel) {
+                DataSourceInfo dataSourceInfo = new DataSourceInfo(dsName, driverClassName, url, validationQuery, username, password);
+
+                // Logic to reuse the datasource exist in the project. No necessary to create new data source
+                ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean);
+
+                // Add the data sources to the project
+                projectDataSourceManager.addDataSource(dataSourceInfo);
+
+                // create the rowset
+                setDataSourceInfo(dataSourceInfo);
+                return super.beansCreatedSetup(designBeans);
+            }
             
-            // Logic to reuse the datasource exist in the project. No necessary to create new data source
-            ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean);
-            
-            // Add the data sources to the project
-            projectDataSourceManager.addDataSource(dataSourceInfo);
-            
-            // create the rowset
-            setDataSourceInfo(dataSourceInfo);
-            return super.beansCreatedSetup(designBeans);
+            return null;
         }
         
          private int getIndex(String name) {
