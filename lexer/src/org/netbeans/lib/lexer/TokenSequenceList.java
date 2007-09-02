@@ -176,7 +176,9 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
             checkFetchNext();
             if (next == null)
                 throw new NoSuchElementException();
-            return next;
+            TokenSequence<?> ret = next;
+            next = null;
+            return ret;
         }
         
         private void checkFetchNext() {

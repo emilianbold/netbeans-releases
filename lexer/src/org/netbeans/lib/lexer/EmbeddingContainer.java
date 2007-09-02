@@ -410,8 +410,10 @@ public final class EmbeddingContainer<T extends TokenId> {
             } else if (tl.getClass() == EmbeddedTokenList.class) {
                 EmbeddedTokenList<?> etl = (EmbeddedTokenList<?>)tl;
                 rootToken = etl.embeddingContainer().updateStatusImpl();
-                tokenStartOffset = etl.childTokenOffsetNoUpdate(token.rawOffset());
-                offsetShiftFromRootToken = tokenStartOffset - rootToken.offset(null);
+                if (rootToken != null) {
+                    tokenStartOffset = etl.childTokenOffsetNoUpdate(token.rawOffset());
+                    offsetShiftFromRootToken = tokenStartOffset - rootToken.offset(null);
+                }
             } else { // parent is in IncTokenList: rootToken == token
                 tokenStartOffset = token.offset(null);
                 offsetShiftFromRootToken = 0;
