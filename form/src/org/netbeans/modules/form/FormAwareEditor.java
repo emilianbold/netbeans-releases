@@ -29,4 +29,12 @@ package org.netbeans.modules.form;
 public interface FormAwareEditor {
 
     void setContext(FormModel formModel, FormProperty property);
+
+    /**
+     * Called when a value is written to a property which has this property
+     * editor associated with. At this moment the property editor has a chance
+     * to indicate which format version (NB release) the value requires to be
+     * stored in the form file. Use FormModel.raiseVersionLevel method.
+     */
+    void updateFormVersionLevel();
 }

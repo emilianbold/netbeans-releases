@@ -88,6 +88,10 @@ public final class BorderEditor extends PropertyEditorSupport
         propertyContext = new FormPropertyContext.SubProperty(property);
     }
 
+    // FormAwareEditor implementation
+    public void updateFormVersionLevel() {
+    }
+
     // ------------------
     // main methods
 

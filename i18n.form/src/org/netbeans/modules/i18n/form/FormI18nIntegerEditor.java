@@ -217,6 +217,10 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
         sourceDataObject = FormEditorSupport.getFormDataObject(model);
     }
 
+    // FormAwareEditor impl
+    public void updateFormVersionLevel() {
+    }
+
     /**
      * Implements <code>NamePropertyEditor</code> interface method.
      * @return Display name of the property editor 

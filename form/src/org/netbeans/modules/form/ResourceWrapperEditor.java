@@ -49,6 +49,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
         PropertyChangeListener, ChangeListener, VetoableChangeListener {
 
     protected PropertyEditor delegateEditor;
+    protected FormModel formModel;
     protected FormProperty property;
     private boolean ignoreChange;
     private PropertyChangeSupport changeSupport;
@@ -78,9 +79,18 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
 
     // FormAwareEditor implementation
     public void setContext(FormModel formModel, FormProperty prop) {
-        property = prop;
-        if (delegateEditor instanceof FormAwareEditor)
+        this.formModel = formModel;
+        this.property = prop;
+        if (delegateEditor instanceof FormAwareEditor) {
             ((FormAwareEditor)delegateEditor).setContext(formModel, prop);
+        }
+    }
+
+    // FormAwareEditor implementation
+    public void updateFormVersionLevel() {
+        if (getValue() instanceof ResourceValue) {
+            formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+        }
     }
 
     // ExPropertyEditor implementation

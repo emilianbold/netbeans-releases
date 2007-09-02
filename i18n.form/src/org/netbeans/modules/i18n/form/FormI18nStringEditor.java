@@ -250,6 +250,10 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         }
     }
 
+    // FormAwareEditor impl
+    public void updateFormVersionLevel() {
+    }
+
     /**
      * Implements <code>NamePropertyEditor</code> interface method.
      * @return Display name of the property editor 

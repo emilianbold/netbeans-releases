@@ -67,11 +67,12 @@ import org.w3c.dom.NamedNodeMap;
  */
 
 public class GandalfPersistenceManager extends PersistenceManager {
-    static final String NB32_VERSION = "1.0"; // NOI18N
-    static final String NB33_VERSION = "1.1"; // NOI18N
-    static final String NB34_VERSION = "1.2"; // NOI18N
-    static final String NB42_VERSION = "1.3"; // NOI18N
-    static final String NB60_VERSION = "1.4"; // NOI18N
+    private static final String NB32_VERSION = "1.0"; // NOI18N
+    private static final String NB33_VERSION = "1.1"; // NOI18N
+    private static final String NB34_VERSION = "1.2"; // NOI18N
+    private static final String NB50_VERSION = "1.3"; // NOI18N
+    private static final String NB60_PRE_VERSION = "1.4"; // NOI18N
+    private static final String NB60_VERSION = "1.5"; // NOI18N
 
     // XML elements names
     static final String XML_FORM = "Form"; // NOI18N
@@ -116,6 +117,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     
     // XML attributes names
     static final String ATTR_FORM_VERSION = "version"; // NOI18N
+    static final String ATTR_MAX_FORM_VERSION = "maxVersion"; // NOI18N
     static final String ATTR_FORM_TYPE = "type"; // NOI18N
     static final String ATTR_COMPONENT_NAME = "name"; // NOI18N
     static final String ATTR_COMPONENT_CLASS = "class"; // NOI18N
@@ -300,7 +302,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // check the form version
-        if (!isSupportedFormatVersion(mainElement.getAttribute(ATTR_FORM_VERSION))) {
+        String versionString = mainElement.getAttribute(ATTR_FORM_VERSION);
+        if (!isSupportedFormatVersion(versionString)) {
             PersistenceException ex = new PersistenceException(
                                      "Unsupported form version"); // NOI18N
             ErrorManager.getDefault().annotate(
@@ -309,11 +312,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 null,
                 FormUtils.getFormattedBundleString(
                     "FMT_ERR_UnsupportedVersion", // NOI18N
-                    new Object[] { mainElement.getAttribute(ATTR_FORM_VERSION) }),
+                    new Object[] { versionString }),
                 null,
                 null);
             throw ex;
         }
+        formModel.setCurrentVersionLevel(FormModel.FormVersion.BASIC);
+        FormModel.FormVersion formatVersion = formVersionForVersionString(versionString);
+        if (formatVersion != null) {
+            formModel.raiseVersionLevel(formatVersion, formatVersion);
+        }
+        String maxVersionString = mainElement.getAttribute(ATTR_MAX_FORM_VERSION);
+        FormModel.FormVersion maxFormatVersion = formVersionForVersionString(maxVersionString);
+        if (maxFormatVersion == null
+                && maxVersionString != null && maxVersionString.length() > 0) {
+            // specified in form file, but unknown max version
+            maxFormatVersion = FormModel.LATEST_VERSION;
+        }
+        formModel.setMaxVersionLevel(maxFormatVersion);
 
         // --------
         // get the form base class and set it to FormModel
@@ -503,6 +519,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         if (!Boolean.FALSE.equals(newLayout)) {
             formModel.setFreeDesignDefaultLayout(true);
+        }
+
+        // make sure form max version is properly set after loading
+        formatVersion = formModel.getCurrentVersionLevel();
+        maxFormatVersion = formModel.getMaxVersionLevel();
+        if (maxFormatVersion == null
+                || formatVersion.ordinal() > maxFormatVersion.ordinal()) {
+            // max version needs to be at least as high as the actual version
+            formModel.setMaxVersionLevel(formatVersion);
         }
 
         // final cleanup
@@ -2143,6 +2168,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 	// set the value to the property
 	try {
+            if (prEd != null) {
+                property.setCurrentEditor(prEd);
+            }            
             if(value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {         
                 boolean accepted = setConnectedProperty(property, 
                                                        (RADConnectionPropertyEditor.RADConnectionDesignValue) value,
@@ -2173,9 +2201,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }     
                 property.setValue(value);    	                     
             }                        
-            if (prEd != null) {
-                property.setCurrentEditor(prEd);
-            }            
         } catch (Exception ex) {
 	    createLoadingErrorMessage(ex, propNode);
 	    return;
@@ -3049,8 +3074,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             throw ex;
         }
 
-        StringBuffer buf1 = new StringBuffer();
-        StringBuffer buf2 = new StringBuffer();
+        StringBuffer buf = new StringBuffer();
 
         // initial cleanup
         lastExpId = 0; // CodeExpression ID counter
@@ -3075,9 +3099,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // store XML file header
         final String encoding = "UTF-8"; // NOI18N
-        buf1.append("<?xml version=\"1.0\" encoding=\""); // NOI18N
-        buf1.append(encoding);
-        buf1.append("\" ?>\n\n"); // NOI18N
+        buf.append("<?xml version=\"1.0\" encoding=\""); // NOI18N
+        buf.append(encoding);
+        buf.append("\" ?>\n\n"); // NOI18N
+
+        // add form specification element
+        String formatVersion = versionStringForFormVersion(formModel.getCurrentVersionLevel());
+        String maxVersion = versionStringForFormVersion(formModel.getMaxVersionLevel());
+        String compatFormInfo = getFormInfoForKnownClass(formModel.getFormBaseClass());
+        if (compatFormInfo == null) {
+            addElementOpenAttr(buf, XML_FORM,
+                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION },
+                new String[] { formatVersion, maxVersion });
+        }
+        else { // FormInfo type stored for backward compatibility
+            addElementOpenAttr(buf, XML_FORM,
+                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION, ATTR_FORM_TYPE },
+                new String[] { formatVersion, maxVersion, compatFormInfo });
+        }
 
         // store "Other Components"
         Collection<RADComponent> otherComps = formModel.getOtherComponents();
@@ -3086,59 +3125,37 @@ public class GandalfPersistenceManager extends PersistenceManager {
         RADComponent formMenuComp = formCont != null ? formCont.getContainerMenu() : null;
 
         if (otherComps.size() > 0 || formMenuComp != null) {
-            buf2.append(ONE_INDENT);
-            addElementOpen(buf2, XML_NON_VISUAL_COMPONENTS);
+            buf.append(ONE_INDENT);
+            addElementOpen(buf, XML_NON_VISUAL_COMPONENTS);
             for (RADComponent metacomp : otherComps) {
                 saveAnyComponent(metacomp,
-                                 buf2, ONE_INDENT + ONE_INDENT,
+                                 buf, ONE_INDENT + ONE_INDENT,
                                  true);
             }
             if (formMenuComp != null) {
                 saveAnyComponent(formMenuComp,
-                                 buf2, ONE_INDENT + ONE_INDENT,
+                                 buf, ONE_INDENT + ONE_INDENT,
                                  true);
             }
-            buf2.append(ONE_INDENT);
-            addElementClose(buf2, XML_NON_VISUAL_COMPONENTS);
+            buf.append(ONE_INDENT);
+            addElementClose(buf, XML_NON_VISUAL_COMPONENTS);
         }
 
         // store form main hierarchy
         if (topComp != null) {
-            saveAnyComponent(topComp, buf2, ONE_INDENT, false);
-
-            if (!(topComp instanceof RADVisualContainer))
-                raiseFormatVersion(NB33_VERSION);
+            saveAnyComponent(topComp, buf, ONE_INDENT, false);
+//            if (!(topComp instanceof RADVisualContainer))
+//                raiseFormatVersion(NB33_VERSION);
         } else {
             // Form settings of bean form
             Map auxValues = new TreeMap();
             addFormSettings(auxValues);
-            buf2.append(ONE_INDENT); addElementOpen(buf2, XML_AUX_VALUES);
-            saveAuxValues(auxValues, buf2, ONE_INDENT + ONE_INDENT);
-            buf2.append(ONE_INDENT); addElementClose(buf2, XML_AUX_VALUES);
+            buf.append(ONE_INDENT); addElementOpen(buf, XML_AUX_VALUES);
+            saveAuxValues(auxValues, buf, ONE_INDENT + ONE_INDENT);
+            buf.append(ONE_INDENT); addElementClose(buf, XML_AUX_VALUES);
         }
 
-        // determine FormInfo type (for backward compatibility)
-        String compatFormInfo = getFormInfoForKnownClass(
-                                    formModel.getFormBaseClass());
-        // [if some non-standard FormInfo was used, it is lost]
-
-        // add form specification element at the beginning of the form file
-        // (this is done in the end because the required form version is
-        // not determined until all data is saved)
-        if (compatFormInfo == null) {
-            raiseFormatVersion(NB33_VERSION);
-
-            addElementOpenAttr(buf1, XML_FORM,
-                new String[] { ATTR_FORM_VERSION },
-                new String[] { formatVersion });
-        }
-        else {
-            addElementOpenAttr(buf1, XML_FORM,
-                new String[] { ATTR_FORM_VERSION, ATTR_FORM_TYPE },
-                new String[] { formatVersion, compatFormInfo });
-        }
-        buf1.append(buf2);
-        addElementClose(buf1, XML_FORM);
+        addElementClose(buf, XML_FORM);
 
         // final cleanup
         if (expressions != null)
@@ -3164,7 +3181,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         java.io.OutputStream os = null;
         try {
             os = formFile.getOutputStream(lock);
-            os.write(buf1.toString().getBytes(encoding));
+            os.write(buf.toString().getBytes(encoding));
         }
         catch (Exception ex) {
             PersistenceException pe = new PersistenceException(
@@ -3274,9 +3291,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             buf.append(indent);
             addElementOpen(buf, XML_SUB_COMPONENTS);
             for (int i = 0; i < children.length; i++) {
-                if (children[i] instanceof RADMenuItemComponent)
-                    raiseFormatVersion(NB33_VERSION);
-
+//                if (children[i] instanceof RADMenuItemComponent)
+//                    raiseFormatVersion(NB33_VERSION);
                 saveAnyComponent(children[i], buf, indent+ONE_INDENT, true);
             }
             buf.append(indent);
@@ -3293,7 +3309,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         LayoutSupportManager layoutSupport = container.getLayoutSupport();
 
         if (layoutSupport == null) {
-            raiseFormatVersion(NB42_VERSION);
+//            raiseFormatVersion(NB42_VERSION);
             RADVisualComponent[] subComponents = container.getSubComponents();
             Map idToNameMap = new HashMap();
             for (int i=0; i<subComponents.length; i++) {
@@ -3405,8 +3421,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void saveLayoutCode(LayoutSupportManager layoutSupport,
                                 StringBuffer buf, String indent)
     {
-        raiseFormatVersion(NB33_VERSION);
-
+//        raiseFormatVersion(NB33_VERSION);
         StringBuffer buf2 = new StringBuffer();
         String subIndent = indent + ONE_INDENT;
 //        codeFlow = true;
@@ -3691,9 +3706,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 // try to save accessibility properties
                 FormProperty[] accProps = ((RADVisualComponent)component)
                                             .getAccessibilityProperties();
-                if (saveProperties(accProps,
-                                   XML_A11Y_PROPERTIES, buf, indent))
-                    raiseFormatVersion(NB34_VERSION);
+                saveProperties(accProps, XML_A11Y_PROPERTIES, buf, indent);
+//                if (saveProperties(accProps,
+//                                   XML_A11Y_PROPERTIES, buf, indent))
+//                    raiseFormatVersion(NB34_VERSION);
             }
         }
 
@@ -3804,23 +3820,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         PropertyEditor prEd = property.getCurrentEditor();	
         
-        if (prEd instanceof FontEditor) { // Issue 82465: new prEd in NB 6.0
-            raiseFormatVersion(NB60_VERSION);
-        }
+//        if (prEd instanceof FontEditor) { // Issue 82465: new prEd in NB 6.0
+//            raiseFormatVersion(NB60_VERSION);
+//        }
 
         if (value instanceof ResourceValue) {
             resourceKey = ((ResourceValue)value).getKey();
         }
-        if (resourceKey != null) { // just save the key, not the value
-            raiseFormatVersion(NB60_VERSION);
-        }
-        else {
+//        if (resourceKey != null) { // just save the key, not the value
+//            raiseFormatVersion(NB60_VERSION);
+//        }
+        if (resourceKey == null) {
             if (prEd instanceof ResourceWrapperEditor) {
                 prEd = ((ResourceWrapperEditor)prEd).getDelegatedPropertyEditor();
                 if (ResourceSupport.isResourceableProperty(property)
                         && ResourceSupport.isExcludedProperty(property)) {
                     noResource = "true"; // NOI18N
-                    raiseFormatVersion(NB60_VERSION);
+//                    raiseFormatVersion(NB60_VERSION);
                 }
             }
 
@@ -5969,21 +5985,52 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     // --------------
 
-    private void raiseFormatVersion(String ver) {
-        if (ver != formatVersion
-            && (formatVersion == NB32_VERSION
-                || (formatVersion == NB33_VERSION && ver == NB34_VERSION)
-                || ((formatVersion == NB33_VERSION || formatVersion == NB34_VERSION) && ver == NB42_VERSION)
-                || ver == NB60_VERSION))
-            formatVersion = ver;
-    }
+//    private void raiseFormatVersion(String ver) {
+//        if (ver != formatVersion
+//            && (formatVersion == NB32_VERSION
+//                || (formatVersion == NB33_VERSION && ver == NB34_VERSION)
+//                || ((formatVersion == NB33_VERSION || formatVersion == NB34_VERSION) && ver == NB42_VERSION)
+//                || ver == NB60_VERSION))
+//            formatVersion = ver;
+//    }
 
-    private boolean isSupportedFormatVersion(String ver) {
+    private static boolean isSupportedFormatVersion(String ver) {
         return NB32_VERSION.equals(ver)
                || NB33_VERSION.equals(ver)
                || NB34_VERSION.equals(ver)
-               || NB42_VERSION.equals(ver)
+               || NB50_VERSION.equals(ver)
+               || NB60_PRE_VERSION.equals(ver)
                || NB60_VERSION.equals(ver);
+    }
+
+    private static FormModel.FormVersion formVersionForVersionString(String version) {
+        if (version != null) {
+            if (NB32_VERSION.equals(version) || NB33_VERSION.equals(version) || NB34_VERSION.equals(version)) {
+                return FormModel.FormVersion.BASIC;
+            }
+            if (NB50_VERSION.equals(version)) {
+                return FormModel.FormVersion.NB50;
+            }
+            if (NB60_PRE_VERSION.equals(version)) {
+                return FormModel.FormVersion.NB60_PRE;
+            }
+            if (NB60_VERSION.equals(version)) {
+                return FormModel.FormVersion.NB60;
+            }
+        }
+        return null;
+    }
+
+    private static String versionStringForFormVersion(FormModel.FormVersion version) {
+        if (version != null) {
+            switch (version) {
+            case BASIC: return NB34_VERSION;
+            case NB50: return NB50_VERSION;
+            case NB60_PRE: return NB60_PRE_VERSION;
+            case NB60: return NB60_VERSION;
+            }
+        }
+        return null;
     }
 
     // --------------

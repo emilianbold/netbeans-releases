@@ -68,6 +68,15 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
             return this;
     }
 
+    @Override
+    public void updateFormVersionLevel() {
+        if (getValue() instanceof NbFont) {
+            formModel.raiseVersionLevel(FormModel.FormVersion.NB60_PRE, FormModel.FormVersion.NB60);
+        } else {
+            super.updateFormVersionLevel();
+        }
+    }
+
     public Object getUnwrappedValue() {
         // NbFont can't be stored in the delegate FontEditor, so we can't use
         // delegateEditor.getValue() to get the unwrapped value

@@ -192,6 +192,10 @@ public class ComponentChooserEditor implements PropertyEditor,
         formModel = model;
     }
 
+    // FormAwareEditor implementation
+    public void updateFormVersionLevel() {
+    }
+
     public FormModel getFormModel() {
         return formModel;
     }

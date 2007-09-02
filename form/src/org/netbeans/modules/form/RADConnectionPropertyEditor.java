@@ -77,6 +77,10 @@ public class RADConnectionPropertyEditor
         property = prop;
     }
 
+    // FormAwareEditor implementation
+    public void updateFormVersionLevel() {
+    }
+
     // -----------------------------------------------------------------------------
     // PropertyEditor implementation
 

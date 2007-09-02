@@ -20,6 +20,7 @@
 package org.netbeans.modules.form;
 
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.beans.*;
 import java.io.IOException;
 import java.util.*;
@@ -100,7 +101,14 @@ public class FormEditor {
     
     // listeners
     private FormModelListener formListener;
-    
+
+    /** Indicates that a task has been posted to ask the user about format
+     * upgrade - not to show the confirmation dialog multiple times.
+     */
+    private boolean upgradeCheckPosted;
+
+    // -----
+
     FormEditor(FormDataObject formDataObject) {
         this.formDataObject = formDataObject;
     }
@@ -747,8 +755,8 @@ public class FormEditor {
                 }
 
                 if (modifying)  { // mark the form document modified explicitly
-                    FormDataObject formDO = getFormDataObject();
-                    formDO.getFormEditorSupport().markFormModified();
+                    getFormDataObject().getFormEditorSupport().markFormModified();
+                    checkFormVersionUpgrade();
                 }
             }
         };
@@ -762,7 +770,7 @@ public class FormEditor {
             formListener = null;
         }
     }
-    
+
     /** Updates (sub)nodes of a container (in Component Inspector) after
      * a change has been made (like component added or removed). */
     void updateNodeChildren(ComponentContainer metacont) {
@@ -776,6 +784,73 @@ public class FormEditor {
 
         if (node != null) {
             node.updateChildren();
+        }
+    }
+
+    /**
+     * After a round of changes check whether they did not require to upgrade
+     * the form version. If the required version is higher than the version of
+     * the IDE in which the form was created, ask the user for confirmation - to
+     * let them know the form will not open in the older IDE anymore. If the
+     * user refuses the upgrade, undo is performed (for that all the fired
+     * changes must be already processed).
+     */
+    private void checkFormVersionUpgrade() {
+        FormModel.FormVersion currentVersion = formModel.getCurrentVersionLevel();
+        FormModel.FormVersion maxVersion = formModel.getMaxVersionLevel();
+        if (currentVersion.ordinal() > maxVersion.ordinal()) {
+            if (EventQueue.isDispatchThread()) {
+                processVersionUpgrade(true);
+            } else { // not a result of a user action, or some forgotten upgrade...
+                confirmVersionUpgrade();
+            }
+        }
+    }
+
+    private void processVersionUpgrade(boolean processingEvents) {
+        if (!processingEvents && formModel.hasPendingEvents()) {
+            processingEvents = true;
+        }
+        if (processingEvents) { // post a task for later, if not already posted
+            if (!upgradeCheckPosted) {
+                upgradeCheckPosted = true;
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        upgradeCheckPosted = false;
+                        if (formModel != null) {
+                            processVersionUpgrade(false);
+                        }
+                    }
+                });
+            }
+        } else { // all events processed
+            String upgradeOption = FormUtils.getBundleString("CTL_UpgradeOption"); // NOI18N
+            String undoOption = FormUtils.getBundleString("CTL_CancelOption"); // NOI18N
+            NotifyDescriptor d = new NotifyDescriptor(
+                    FormUtils.getBundleString("MSG_UpgradeQuestion"), // NOI18N
+                    FormUtils.getBundleString("TITLE_FormatUpgrade"), // NOI18N
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE,
+                    new String[] { upgradeOption, undoOption},
+                    upgradeOption);
+            if (DialogDisplayer.getDefault().notify(d) == upgradeOption) {
+                confirmVersionUpgrade();
+            } else { // upgrade refused
+                revertVersionUpgrade();
+            }
+        }
+    }
+
+    private void confirmVersionUpgrade() {
+        if (formModel != null) {
+            formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
+        }
+    }
+
+    private void revertVersionUpgrade() {
+        if (formModel != null) {
+            formModel.getUndoRedoManager().undo();
+            formModel.revertVersionLevel();
         }
     }
 

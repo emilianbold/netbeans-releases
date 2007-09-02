@@ -756,6 +756,18 @@ public abstract class FormProperty extends Node.Property {
         if (fireChanges) {
             try {
                 firePropertyChange(PROP_VALUE, old, current);
+
+                // evaluate the required form version level for this value
+                Object value;
+                PropertyEditor editor;
+                if (current instanceof ValueWithEditor) {
+                    editor = ((ValueWithEditor)current).getPropertyEditor();
+                    value = ((ValueWithEditor)current).getValue();
+                } else {
+                    value = current;
+                    editor = currentEditor;
+                }
+                FormUtils.checkVersionLevelForProperty(this, value, editor);
             }
             catch (PropertyVetoException ex) {
                 boolean fire = fireChanges;

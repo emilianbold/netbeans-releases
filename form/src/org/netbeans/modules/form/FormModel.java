@@ -44,6 +44,18 @@ public class FormModel
 
     private boolean readOnly = false;
 
+    public enum FormVersion {
+        BASIC, // form file version up to 1.2
+        NB50, // form file verson 1.3
+        NB60_PRE, // until NB 6.0 beta 1 (incl. 5.5 with 6.0 update), form file version 1.4
+        NB60 // since NB 6.0 beta1, form file version 1.5
+    }
+    final static FormVersion LATEST_VERSION = FormVersion.NB60;
+
+    private FormVersion currentVersionLevel;
+    private FormVersion lastVersionLevel;
+    private FormVersion maxVersionLevel; // max version to upgrade to without user confirmation
+
     // the class on which the form is based (which is extended in the java file)
     private Class<?> formBaseClass;
 
@@ -71,7 +83,7 @@ public class FormModel
 
     // list of listeners registered on FormModel
     private ArrayList<FormModelListener> listeners;
-    private EventBroker eventBroker;
+    private List<FormModelEvent> eventList;
     private boolean firing;
 
     private MetaComponentCreator metaCreator;
@@ -137,6 +149,44 @@ public class FormModel
 
     void setName(String name) {
         formName = name;
+    }
+
+    /**
+     * Requires the form version to be at least 'minVersion'. If the actual
+     * version is lower, it is upgraded to 'upgradeTo'. If the upgrad exceeds
+     * the maximum version level set for this form (roughly corresponding
+     * to the NB version in which the form was created) a confirmation message
+     * is shown to the user later (see FormEditor.checkFormVersionUpgrade).
+     * @param minVersion the minimum version level required
+     * @param upgradeTo version level to upgrade to if the minimum version is not met
+     */
+    public void raiseVersionLevel(FormVersion minVersion, FormVersion upgradeTo) {
+        if (minVersion.ordinal() > currentVersionLevel.ordinal()
+                && (undoRedoRecording || !formLoaded)) {
+            assert upgradeTo.ordinal() >= minVersion.ordinal();
+            setCurrentVersionLevel(upgradeTo);
+        }
+    }
+
+    void setCurrentVersionLevel(FormVersion version) {
+        lastVersionLevel = currentVersionLevel;
+        currentVersionLevel = version;
+    }
+
+    FormVersion getCurrentVersionLevel() {
+        return currentVersionLevel;
+    }
+
+    void revertVersionLevel() {
+        currentVersionLevel = lastVersionLevel;
+    }
+
+    void setMaxVersionLevel(FormVersion version) {
+        maxVersionLevel = version;
+    }
+
+    FormVersion getMaxVersionLevel() {
+        return maxVersionLevel;
     }
 
     void setReadOnly(boolean readOnly) {
@@ -279,6 +329,10 @@ public class FormModel
         }
     }
 
+    public FormSettings getSettings() {
+        return settings;
+    }
+
     // -----------
     // adding/deleting components, setting layout, etc
 
@@ -312,7 +366,7 @@ public class FormModel
             otherComponents.add(metacomp);
         }
 
-        FormModelEvent ev = fireComponentAdded(metacomp, newlyAdded);
+        fireComponentAdded(metacomp, newlyAdded);
     }
 
     /** Adds a new visual component to given container managed by the old
@@ -350,7 +404,7 @@ public class FormModel
 
             layoutSupport.addComponents(compArray, constrArray, index);
 
-            FormModelEvent ev = fireComponentAdded(metacomp, newlyAdded);
+            fireComponentAdded(metacomp, newlyAdded);
         }
         else {
             addComponent(metacomp, parentContainer, newlyAdded);
@@ -664,7 +718,6 @@ public class FormModel
         t("firing form loaded"); // NOI18N
 
         formLoaded = true;
-        eventBroker = new EventBroker();
 //        if (undoRedoManager != null)
 //            undoRedoManager.discardAllEdits();
         if (!readOnly && !Boolean.getBoolean("netbeans.form.no_undo")) { // NOI18N
@@ -974,22 +1027,83 @@ public class FormModel
         return ev;
     }
 
-    /**
-     * Fires events collected from all changes done during the last round of AWT
-     * event queue. After firing, if there was no error, all the changes are
-     * placed as one UndoableEdit into undo/redo queue. When the fired events are
-     * processed, some more changes may happen, but these should be fired
-     * immeditalely (not later) to be included in the same UndoableEdit. This may
-     * cause this method is re-entered while previous firing is not finished yet.
-     * For robustness, if some error happens which would leave things in
-     * incosistent state, all the changes done so far are undone:
+    // ---------
+    // firing methods for batch event processing
+
+    private void sendEvent(FormModelEvent ev) {
+        if (formLoaded) {
+            if (eventList != null || ev.isModifying()) {
+                sendEventLater(ev);
+            } else {
+                sendEventImmediately(ev);
+            }
+        } else {
+            fireEvents(ev);
+        }
+    }
+
+    private synchronized void sendEventLater(FormModelEvent ev) {
+        // works properly only if called from AWT event dispatch thread
+        if (!java.awt.EventQueue.isDispatchThread()) {
+            sendEventImmediately(ev);
+            return;
+        }
+
+        if (eventList == null) {
+            eventList = new ArrayList<FormModelEvent>();
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    firePendingEvents();
+                }
+            });
+        }
+        eventList.add(ev);
+    }
+
+    private synchronized void sendEventImmediately(FormModelEvent ev) {
+        if (eventList == null) {
+            eventList = new ArrayList<FormModelEvent>();
+        }
+        eventList.add(ev);
+        firePendingEvents();
+    }
+
+    private void firePendingEvents() {
+        List<FormModelEvent> list = pickUpEvents();
+        if (list != null && !list.isEmpty()) {
+            FormModelEvent[] events = new FormModelEvent[list.size()];
+            list.toArray(events);
+            fireEventBatch(events);
+        }
+    }
+
+    private synchronized List<FormModelEvent> pickUpEvents() {
+        List<FormModelEvent> list = eventList;
+        eventList = null;
+        return list;
+    }
+
+    boolean hasPendingEvents() {
+        return eventList != null;
+    }
+
+     /**
+     * This method fires events collected from all changes done during the last
+     * round of AWT event queue. After all fired successfully (no error occurred),
+     * all the changes are placed as one UndoableEdit into undo/redo queue. When
+     * the fired events are being processed, some more changes may happen (they
+     * are included in the same UndoableEdit). These changes are typically fired
+     * immediately causing this method is re-entered while previous firing is not
+     * finished yet.
+     * Additionally - for robustness, if some unhandled error happens before or
+     * during firing the events, all the changes done so far are undone:
      * If an operation failed before firing, the undoCompoundEdit field is set
      * and then no events are fired at all (the changes were defective), and the
      * changes done before the failure are undone. All the changes are undone
      * also if the failure happens during processing the events (e.g. the layout
      * can't be built).
      */
-    private void fireEventBatch(FormModelEvent[] events) {
+    private void fireEventBatch(FormModelEvent ... events) {
         if (!firing) {
             boolean firingFailed = false;
             try {
@@ -1013,7 +1127,7 @@ public class FormModel
         }
     }
 
-    void fireEvents(FormModelEvent[] events) {
+    void fireEvents(FormModelEvent ... events) {
         java.util.List targets;
         synchronized(this) {
             if (listeners == null || listeners.size() == 0) {
@@ -1024,109 +1138,6 @@ public class FormModel
         for (int i=0; i < targets.size(); i++) {
             FormModelListener l = (FormModelListener) targets.get(i);
             l.formChanged(events);
-        }
-    }
-
-    // ---------
-    // firing methods for batch event processing
-
-    void sendEvent(FormModelEvent ev) {
-        EventBroker broker = getEventBroker();
-        if (broker != null)
-            broker.sendEvent(ev); // let the broker decide when to fire
-        else {
-            t("no event broker, firing event directly: "+ev.getChangeType()); // NOI18N
-            fireEvents(new FormModelEvent[] { ev });
-        }
-    }
-
-    void sendEventLater(FormModelEvent ev) {
-        EventBroker broker = getEventBroker();
-        if (broker != null)
-            broker.sendEventLater(ev);
-        else {
-            t("no event broker, firing event directly: "+ev.getChangeType()); // NOI18N
-            fireEvents(new FormModelEvent[] { ev });
-        }
-    }
-
-    void sendEventImmediately(FormModelEvent ev) {
-        EventBroker broker = getEventBroker();
-        if (broker != null)
-            broker.sendEventImmediately(ev);
-        else {
-            t("no event broker, firing event directly: "+ev.getChangeType()); // NOI18N
-            fireEvents(new FormModelEvent[] { ev });
-        }
-    }
-
-    EventBroker getEventBroker() {
-        // event broker is created when the form is loaded
-//        if (eventBroker == null && isFormLoaded())
-//            eventBroker = new EventBroker();
-        return eventBroker;
-    }
-    
-    public FormSettings getSettings() {
-        return settings;
-    }
-
-    /** Class that collects events and fires them on FormModel in one batch
-     * later. Collecting the events works only if the events are passed
-     * to the broker from AWT event dispatch thread.
-     */
-    private class EventBroker implements Runnable {
-        private List<FormModelEvent> eventList;
-
-        public void sendEvent(FormModelEvent ev) {
-            if (shouldSendLater(ev))
-                sendEventLater(ev);
-            else
-                sendEventImmediately(ev);
-        }
-
-        public void sendEventImmediately(FormModelEvent ev) {
-            t("firing event directly from event broker: "+ev.getChangeType()); // NOI18N
-            if (eventList == null)
-                eventList = new ArrayList<FormModelEvent>();
-            eventList.add(ev);
-            run();
-        }
-
-        public void sendEventLater(FormModelEvent ev) {
-            // works properly only if called from AWT event dispatch thread
-            if (!java.awt.EventQueue.isDispatchThread()) {
-                sendEventImmediately(ev);
-                return;
-            }
-
-            if (eventList == null) {
-                eventList = new ArrayList<FormModelEvent>();
-                java.awt.EventQueue.invokeLater(this);
-            }
-
-            eventList.add(ev);
-            t("event "+ev.getChangeType()+" added to queue in event broker"); // NOI18N
-        }
-
-        private boolean shouldSendLater(FormModelEvent ev) {
-            return eventList != null || ev.isModifying();
-        }
-
-        private List<FormModelEvent> pickUpEvents() {
-            List<FormModelEvent> list = eventList;
-            eventList = null;
-            return list;
-        }
-
-        public void run() {
-            List<FormModelEvent> list = pickUpEvents();
-            if (list != null && !list.isEmpty()) {
-                FormModelEvent[] events = new FormModelEvent[list.size()];
-                list.toArray(events);
-                t("firing event batch of "+list.size()+" events from event broker"); // NOI18N
-                FormModel.this.fireEventBatch(events);
-            }
         }
     }
 

@@ -206,6 +206,10 @@ public class IconEditor extends PropertyEditorSupport
             setCurrentPackage(getDefaultResourcePackage());
     }
 
+    // FormAwareEditor implementation
+    public void updateFormVersionLevel() {
+    }
+
     // -----
 
     FileObject getSourceFile() {

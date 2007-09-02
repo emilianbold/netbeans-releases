@@ -298,6 +298,14 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
     }
 
     /**
+     * Raise form version to 6.0 - this editor is available since NB 6.0.
+     */
+    public void updateFormVersionLevel() {
+        property.getPropertyContext().getFormModel()
+                .raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+    }
+
+    /**
      * Form wrapper around formatter.
      */
     static class FormFormatter extends FormDesignValueAdapter {

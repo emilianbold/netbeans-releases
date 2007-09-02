@@ -117,7 +117,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     private static final String CODE_MARK_LINE_COMMENT = "*/\n\\1"; // NOI18N
     private static final String CODE_MARK_VARIABLE_SUBST = "*/\n\\2"; // NOI18N
 
-    // property editor impl
+    // FormAwareEditor impl
     public void setContext(FormModel formModel, FormProperty property) {
         this.formModel = formModel;
         ActionManager.registerFormModel(formModel,getSourceFile());
@@ -125,7 +125,12 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         this.radComponent = formProperty.getRADComponent();
         this.componentClass = formProperty.getRADComponent().getBeanInstance().getClass();
     }
-    
+
+    // FormAwareEditor impl
+    public void updateFormVersionLevel() {
+        formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+    }
+
     private String getComponentName() {
         if(radComponent == null) {
             return null;

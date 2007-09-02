@@ -213,6 +213,10 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
         sourceDataObject = FormEditorSupport.getFormDataObject(model);
     }
 
+    // FormAwareEditor impl
+    public void updateFormVersionLevel() {
+    }
+
     /**
      * Implements <code>NamePropertyEditor</code> interface method.
      * @return Display name of the property editor 

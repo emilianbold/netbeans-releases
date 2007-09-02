@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -162,8 +163,11 @@ public class ResourceSupport {
                 try {
                     Object val = prop.getValue();
                     Object resValue = support.makeResource0(val, prop);
-                    if (resValue != val)
+                    if (resValue != val) {
                         prop.setValue(resValue);
+                    }
+                    // raise form version here - FormProperty won't do since firing is off
+                    support.formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
                 }
                 catch (Exception ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -299,6 +303,8 @@ public class ResourceSupport {
             try {
                 Object resValue = makeResource0(prop.getValue(), prop);
                 prop.setValue(resValue);
+                // raise form version here - FormProperty won't do since firing is off
+                formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
                 if (update) {
                     resValue = prop.getValue(); // makeResource might return ValueWithEditor...
                     if (resValue instanceof I18nValue)
@@ -1231,12 +1237,13 @@ public class ResourceSupport {
         } while (property != null);
 
         StringBuilder buf = new StringBuilder();
-        for (Object obj : parents) {
+        for (ListIterator it = parents.listIterator(parents.size()); it.hasPrevious(); ) {
+            Object parent = it.previous();
             String append;
-            if (obj instanceof RADComponent) {
-                append = compName != null ? compName : getComponentName((RADComponent)obj);
+            if (parent instanceof RADComponent) {
+                append = compName != null ? compName : getComponentName((RADComponent)parent);
             } else {
-                append = ((FormProperty)obj).getName();
+                append = ((FormProperty)parent).getName();
             }
             if (append != null) {
                 if (buf.length() > 0) {
@@ -1441,37 +1448,33 @@ public class ResourceSupport {
             {
                 public void setValue(Object value) {
                     int oldMode = getAutoMode();
-                    Integer oldValue = new Integer(oldMode);
-                    if (!oldValue.equals(value)) {
-                        int newMode = ((Integer)value).intValue();
-                        FormSettings settings = formModel.getSettings();
-                        // set the setting itself so it is "on" during processing the
-                        // resource values (to correctly determine names of components
-                        // for default keys)
-                        if (newMode == AUTO_OFF) {
-                            switchFormToPlainValues(null);
-                            settings.setResourceAutoMode(newMode);
-                        } else {
-                            if (oldMode == AUTO_I18N || newMode == AUTO_I18N) {
-                                switchFormToPlainValues(null);
-                                settings.setResourceAutoMode(newMode);
-                                switchFormToResources();
-                            } else { // only chaning between resources and resources with injection
-                                settings.setResourceAutoMode(newMode);
-                            }
-                            if (newMode == AUTO_INJECTION && !isAutoName()) {
-                                formModel.getSettings().setAutoSetComponentName(true);
-                                setupNameProperty(true);
-                                FormEditor.getFormEditor(formModel).getFormRootNode()
-                                    .firePropertyChangeHelper(PROP_AUTO_SET_COMPONENT_NAME, oldValue, value);
-                            }
-                        }
-
-                        formModel.fireSyntheticPropertyChanged(
-                                null, PROP_AUTO_RESOURCING, oldValue, value);
-                        FormEditor.getFormEditor(formModel).getFormRootNode()
-                            .firePropertyChangeHelper(PROP_AUTO_RESOURCING, oldValue, value);
+                    if (value == null || value.equals(oldMode)) {
+                        return;
                     }
+                    int newMode = ((Integer)value).intValue();
+                    FormSettings settings = formModel.getSettings();
+                    boolean i18nResChange // changing between i18n and resourcing?
+                        = (oldMode == AUTO_I18N && (newMode == AUTO_RESOURCING || newMode == AUTO_INJECTION))
+                       || (newMode == AUTO_I18N && (oldMode == AUTO_RESOURCING || oldMode == AUTO_INJECTION));
+                    // don't change components if only swapping AUTO_RESOURCING with AUTO_INJECTION
+                    if (newMode == AUTO_OFF || i18nResChange) {
+                        switchFormToPlainValues(null);
+                    }
+                    settings.setResourceAutoMode(newMode);
+                    if (oldMode == AUTO_OFF || i18nResChange) {
+                        switchFormToResources();
+                    }
+                    if (newMode == AUTO_INJECTION && !isAutoName()) {
+                        formModel.getSettings().setAutoSetComponentName(true);
+                        setupNameProperty(true);
+                        FormEditor.getFormEditor(formModel).getFormRootNode()
+                            .firePropertyChangeHelper(PROP_AUTO_SET_COMPONENT_NAME, oldMode, newMode);
+                    }
+
+                    formModel.fireSyntheticPropertyChanged(
+                            null, PROP_AUTO_RESOURCING, oldMode, newMode);
+                    FormEditor.getFormEditor(formModel).getFormRootNode()
+                        .firePropertyChangeHelper(PROP_AUTO_RESOURCING, oldMode, newMode);
                 }
 
                 public Object getValue() {

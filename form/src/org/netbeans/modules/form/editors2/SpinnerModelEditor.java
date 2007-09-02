@@ -1838,6 +1838,14 @@ public class SpinnerModelEditor extends PropertyEditorSupport
     }
 
     /**
+     * Raise form version to 6.0 - this editor is available since NB 6.0.
+     */
+    public void updateFormVersionLevel() {
+        property.getPropertyContext().getFormModel()
+                .raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+    }
+
+    /**
      * Form wrapper for <code>SpinnerModel</code>. It allows us to keep
      * some meta-information about the <code>SpinnerModel</code>.
      */

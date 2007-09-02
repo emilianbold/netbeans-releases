@@ -1287,6 +1287,10 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         updateModelCustomizers();
     }
 
+    // FormAwareEditor
+    public void updateFormVersionLevel() {
+    }
+
     /**
      * Called when bound model is selected to enable/disable
      * the columns tab. 

@@ -1270,6 +1270,19 @@ public class FormUtils
         return list.toArray();
     }
 
+    public static void checkVersionLevelForProperty(FormProperty property,
+            Object value, PropertyEditor editor) {
+        FormModel formModel = property.getPropertyContext().getFormModel();
+        if (formModel != null) {
+            if (editor instanceof FormAwareEditor) {
+                ((FormAwareEditor)editor).updateFormVersionLevel();
+            } else if (value instanceof ResourceValue) {
+                formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+            }
+        }
+        // this method is not called for binding properties - see BindingProperty.setValue
+    }
+
     // ---------
 
     /** Loads a class of a component to be used (instantiated) in the form

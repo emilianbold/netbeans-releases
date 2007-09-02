@@ -78,7 +78,10 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
 
     public void setValue(MetaBinding val) {
         MetaBinding old = binding;
-        if ((old == null) && (val != null)) FormEditor.updateProjectForBeansBinding(bindingComponent.getFormModel());
+        if ((old == null) && (val != null)) {
+            FormEditor.updateProjectForBeansBinding(bindingComponent.getFormModel());
+            getFormModel().raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+        }
         binding = val;
         FormEditor.getBindingSupport(getFormModel()).changeBindingInModel(old, binding);
 

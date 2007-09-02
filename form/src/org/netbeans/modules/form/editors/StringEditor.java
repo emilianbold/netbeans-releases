@@ -147,6 +147,10 @@ public class StringEditor extends PropertyEditorSupport
         htmlText = FormUtils.isHTMLTextProperty(property);
     }
 
+    // FormAwareEditor
+    public void updateFormVersionLevel() {
+    }
+
     // ExPropertyEditor
     public void attachEnv(PropertyEnv env) {        
         FeatureDescriptor desc = env.getFeatureDescriptor();
