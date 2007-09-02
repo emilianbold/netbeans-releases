@@ -62,6 +62,15 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.commons_logging</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0.4</specification-version>
+                    </run-dependency>
+               </dependency>
             </module-dependencies>
             <public-packages/>
             <javadoc/>

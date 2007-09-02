@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/commons-httpclient.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/commons-logging.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/commons-logging-1.0.4.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jdom-1.0.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jakarta-slide-webdavlib-2.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jakarta-slide-ant-webdav-2.1.jar!/</resource>
