@@ -15,12 +15,6 @@
 		<data>identity-javahelp-toc.xml</data>
 	</view>
 	<view>
-		<name>Index</name>
-		<label>Index</label>
-		<type>javax.help.IndexView</type>
-		<data>identity-javahelp-index.xml</data>
-	</view>
-	<view>
 		<name>Search</name>
 		<label>Search</label>
 		<type>javax.help.SearchView</type>
