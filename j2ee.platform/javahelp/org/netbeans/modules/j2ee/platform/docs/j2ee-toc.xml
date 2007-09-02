@@ -124,7 +124,7 @@
             </tocitem>
             <tocitem text="Debugging and Testing EJB Modules" >
                 <tocitem text="Debugging an EJB Module" target="debug_ejb" />
-                <tocitem text="Profiling an EJB Module" target="profile_ejb" />
+                <tocitem text="Profiling an EJB Module or Enterprise Application" target="profile_ejb" />
                 <tocitem text="Testing an EJB Module" target="test_ejb" />
             </tocitem>
             <tocitem text="Developing EJB 2.1 Entity Beans" >
