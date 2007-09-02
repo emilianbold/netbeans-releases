@@ -12,8 +12,8 @@
 <h2>Visual Editor: Message Security Bindings Dialog Box</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>This dialog box enables you to specify the message security bindings for a web service endpoint or port.
-You open this dialog box by selecting the Message Security option for a web service endpoint in the Servlet 
-tab of <tt>sun-web.xml</tt>, <tt>sun-ejb-jar.xml</tt> or <tt>sun-application.xml</tt> and clicking Edit Bindings.</p>
+You open this dialog box by selecting the Message Security option for a web service endpoint 
+in the deployment descriptor visual editor and clicking Edit Bindings.</p>
 <p>You also use this dialog box when configuring message security policy for a port for web service clients.</p>
 <p>You use this dialog box to associate a specific provider or message protection 
 policy with a web services endpoint or service reference.</p>
@@ -21,13 +21,22 @@ policy with a web services endpoint or service reference.</p>
 <p>This dialog box enables you to edit the following properties:</p>
 <ul>
     <li><b>Authorization Layer.</b> Specifies the message layer at which authentication is performed. The value must be SOAP.</li>
-    <li><b>Provider ID. (optional)</b> Specifies the authentication provider used to satisfy application-specific message security requirements. 
+    <li><b>Provider ID.</b> Specifies the authentication provider used to satisfy application-specific message security requirements. 
     If not specified, a default provider is used, if it is defined for the message layer. 
     If no default provider is defined, authentication requirements defined in the <tt>message-security-binding</tt> are not enforced.</li>
     <li><b>Message Security Entries.</b> 
     <p>Use the buttons below the textfield to edit, remove and create new message security entries.</p></li>
 </ul>
-  <dl>
+
+<p>For more information on configuring message security, see "Using Message Security with Java WSDP" in
+    the Java Web Services Tutorial. </p>
+    <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://java.sun.com/webservices/docs/2.0/tutorial/doc/Security-WebSvcs7.html#wp560590">
+        <param name="text" value="<html><u>http://java.sun.com/webservices/docs/2.0/tutorial/doc/Security-WebSvcs7.html#wp560590</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object></p>
+<dl>
       <dt><a name="seealso">See Also</a></dt>
       <dd><a href="SecurityWebRoleMapping.html">Visual Editor: Security: Security Role Mapping</a></dd>
       <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/csh/graphic_editor/dd_multiview_security_securityrolesNode.html"><tt>web.xml</tt> Visual Editor: Security Roles</a></dd>

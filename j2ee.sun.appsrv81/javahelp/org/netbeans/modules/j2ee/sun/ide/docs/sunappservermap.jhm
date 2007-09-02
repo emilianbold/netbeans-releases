@@ -52,6 +52,7 @@
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" 		url="configeditors/WebAppMessages.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationNode" 	url="configeditors/WebAppMessages.html"  />
 
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebView"		url="configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode"		url="configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"         url="configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView"                   url="configeditors/Servlet.html"  />
@@ -67,8 +68,10 @@
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EnvironmentView"            url="appclientconfigeditors/sun-applicationclient_env.html"  />
 
     <!-- sun-ejb-jar.xml DD editor CSH: -->
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarView"                 url="ejbconfigeditors/sunconfig.html" />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"          url="ejbconfigeditors/sunconfig.html" />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbView"                       url="ejbconfigeditors/entitybean.html" />    
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbView"                       url="ejbconfigeditors/entitybean.html" />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbJarView"                       url="ejbconfigeditors/entitybean.html" />    
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"                       url="ejbconfigeditors/entitybean.html" />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.ReferencesNode"                url="ejbconfigeditors/entitybean.html" />  
     <mapID target="AS_CFG_CmpEntityEjb"                                                                 url="ejbconfigeditors/entitybean.html" />
