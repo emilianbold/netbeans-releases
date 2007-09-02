@@ -346,16 +346,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         try {
             if ((isJava (fo) || fo.isFolder()) && VisibilityQuery.getDefault().isVisible(fo)) {
                 final URL root = getOwningSourceRoot(fo);
-                if (root != null) {                
-                    String originalName = fe.getName();
-                    final String originalExt = fe.getExt();
-                    if (originalExt.length()>0) {
-                        originalName = originalName+'.'+originalExt;  //NOI18N
-                    }
+                if (root != null) {                    
                     final File parentFile = FileUtil.toFile(fo.getParent());
-                    if (parentFile != null) {
-                        final URL original = new File (parentFile,originalName).toURI().toURL();
-                        submit(Work.delete(original,root,fo.isFolder()));
+                    if (parentFile != null) {                        
+                        final String originalExt = fe.getExt();
+                        if (isJava (originalExt)) {
+                            String originalName = fe.getName();
+                            originalName = originalName+'.'+originalExt;  //NOI18N
+                            final URL original = new File (parentFile,originalName).toURI().toURL();
+                            submit(Work.delete(original,root,fo.isFolder()));
+                        }
                         delay.post(Work.compile (fo,root));
                     }
                 }
@@ -828,6 +828,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         else {
             return JavaDataLoader.JAVA_MIME_TYPE.equals(fo.getMIMEType());
         }
+    }
+    
+    private static boolean isJava (final String ext) {
+        return ext != null && JavaDataLoader.JAVA_EXTENSION.equals(ext.toLowerCase());
     }
     
     private static boolean isBinary (final FileObject fo) {
