@@ -34,7 +34,6 @@
     <mapID target="apisupport_create_j2se_library_descriptor" url="create_plugin/filelevel_create/create_j2se_library_descriptor.html"/>
     <mapID target="apisupport_about_actions" url="create_plugin/filelevel_create/about_actions.html"/>
     <mapID target="apisupport_create_action" url="create_plugin/filelevel_create/create_action.html"/>
-    <mapID target="apisupport_about_javahelp" url="create_plugin/filelevel_create/about_javahelp.html"/>
     <mapID target="apisupport_create_javahelp" url="create_plugin/filelevel_create/create_javahelp.html"/>
     <mapID target="apisupport_about_file_types" url="create_plugin/filelevel_create/about_file_types.html"/>
     <mapID target="apisupport_create_file_type" url="create_plugin/filelevel_create/create_file_type.html"/>
