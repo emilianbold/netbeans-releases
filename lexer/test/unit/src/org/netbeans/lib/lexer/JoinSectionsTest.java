@@ -119,8 +119,12 @@ public class JoinSectionsTest extends NbTestCase {
         // Do modifications
         // Remove second closing brace '}'
         doc.remove(8, 1);
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //            "a{b<cd>e}f<gh>i{j<kl>m}n";
+        // becomes:   "a{b<cd>ef<gh>i{j<kl>m}n";
         tsList = th.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
-        assertEquals(2, tsList.size()); // 2 sections
+        assertEquals(4, tsList.size()); // 2 sections
 
         // 1.section
         ts = tsList.get(0);

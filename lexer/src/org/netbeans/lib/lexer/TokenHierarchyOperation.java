@@ -375,7 +375,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 //                }
 //            }
             
-            int diffLengthOrZero = Math.max(0, eventInfo.insertedLength() - eventInfo.removedLength());
+            int addedLengthOrZero = Math.max(0, eventInfo.insertedLength() - eventInfo.removedLength());
             TokenChangeInfo<?> change = tlChange.tokenChangeInfo();
             eventInfo.setTokenChangeInfo(change);
             Map<LanguagePath,UpdateInfo> path2updateInfo =
@@ -384,8 +384,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             // Affected boundaries only modification bounds => nested changes will possibly extend them
             if (change.isBoundsChange()) {
                 eventInfo.setAffectedStartOffset(eventInfo.modificationOffset());
-                eventInfo.setAffectedEndOffset(eventInfo.modificationOffset() + diffLengthOrZero);
-                processBoundsChangesNested(eventInfo, tlChange, path2updateInfo, diffLengthOrZero, 0);
+                eventInfo.setAffectedEndOffset(eventInfo.modificationOffset() + addedLengthOrZero);
+                processBoundsChangesNested(eventInfo, tlChange, path2updateInfo, addedLengthOrZero, 0);
                         
             } else {
                 // Mark changed area based on start of first mod.token and end of last mod.token
@@ -444,7 +444,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     private <TX extends TokenId> void processBoundsChangesNested(
         TokenHierarchyEventInfo eventInfo, TokenListChange<TX> tlChange,
         Map<LanguagePath,UpdateInfo> path2updateInfo,
-        int diffLengthOrZero, int updateLevel
+        int addedLengthOrZero, int updateLevel
     ) {
         Object tokenOrEC = tlChange.tokenChangeInfo().removedTokenList().tokenOrEmbeddingContainer(0);
         if (tokenOrEC.getClass() == EmbeddingContainer.class) {
@@ -457,7 +457,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 int tokenOffset = tlChange.offset();
                 // Check the text length beyond modification => end skip length must not be affected
                 int modRelOffset = eventInfo.modificationOffset() - tlChange.offset();
-                int beyondModLength = tlChange.addedEndOffset() - (eventInfo.modificationOffset() + diffLengthOrZero);
+                int beyondModLength = tlChange.addedEndOffset() - (eventInfo.modificationOffset() + addedLengthOrZero);
                 EmbeddedTokenList<?> prevEtl = null;
 
                 do {
@@ -484,7 +484,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                         tlChange.tokenChangeInfo().addEmbeddedChange(nestedTLChange.tokenChangeInfo());
                         if (nestedTLChange.isBoundsChange()) { // Attempt to find more nested
                             processBoundsChangesNested(eventInfo, nestedTLChange, path2updateInfo,
-                                    diffLengthOrZero, updateLevel + 1);
+                                    addedLengthOrZero, updateLevel + 1);
                         } else { // Not a bounds change
                             processTokenChange(path2updateInfo, nestedTLChange.tokenChangeInfo());
                             eventInfo.setMinAffectedStartOffset(nestedTLChange.offset());
@@ -529,7 +529,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         boolean topLevelChange = (languagePath.size() == 1);
         UpdateInfo updateInfo;
         if ((topLevelChange && maxTokenListListPathSize > 0)
-            || (!topLevelChange && (updateInfo = findUpdateInfo(path2updateInfo, languagePath)) != null)
+            || (!topLevelChange && (updateInfo = findUpdateInfo(path2updateInfo, languagePath)) != NO_UPDATE_INFO)
         ) {
             int addedTokenCount = change.addedTokenCount();
             for (int i = change.index(); i < addedTokenCount; i++) {
@@ -891,6 +891,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             if (doMarking(removedTokenList)) {
                 if (index == -1) {
                     index = tokenListList.findIndex(removedTokenList.startOffset());
+                    assert (index >= 0);
                 }
                 assert (tokenListList.getExistingOrNull(index + removeCount) == removedTokenList);
                 removeCount++;
@@ -906,6 +907,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             if (added.size() == 0) {
                 if (index == -1) {
                     index = tokenListList.findIndex(addedTokenList.startOffset());
+                    assert (index >= 0);
                 }
                 added = new ArrayList<TokenList<?>>(4);
             }
@@ -913,6 +915,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         }
         
         public void update(TokenHierarchyEventInfo eventInfo) {
+            if (index == -1) // Nothing added or removed (possible for bounds only change processing)
+                return;
             TokenList<?>[] removed = tokenListList.replace(index, removeCount, added);
             if (tokenListList.isJoinSections()) {
                 // Must update the token list by incremental algorithm
