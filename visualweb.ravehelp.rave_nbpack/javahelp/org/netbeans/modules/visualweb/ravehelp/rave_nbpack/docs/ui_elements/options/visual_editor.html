@@ -34,6 +34,7 @@ You can also change the way data providers and RowSets appear in the IDE by chan
 <ul>
   <li><b>Create RowSets in Session.</b> This option is selected by default. If selected, when you drag and drop a database table on a page or a request bean, the IDE creates a rowset in the project's <code>SessionBean</code>, making the table available for an entire user session, which is usually the desired behavior. If this setting is not selected, the IDE creates the rowset where you drop the table, such as the page bean for the page on which you drop the table.</li>
   <li><b>Check for Duplicate RowSets</b>. This option is selected by default. If selected, when you drag and drop a database table onto a Visual Web JSF page or a request bean, the IDE checks for other rowsets that are based on the same table. If a matching rowset exists, the IDE displays a message asking if the new cached rowset data provider should reuse the existing rowset or create a new rowset. If this setting is not selected, the IDE automatically creates a new rowset.</li>
+<li><b>Prompt for Data Source Name.</b> This option is unchecked by default. Check this option if you want to be able to name a data source when you drag and drop the data source onto a Visual Web JSF page. This is useful if your project has more than one data source. </li>
 </ul>
 <dl>
   <dt><a name="seealso">See Also</a></dt>
