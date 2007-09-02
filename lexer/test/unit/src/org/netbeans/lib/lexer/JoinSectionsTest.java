@@ -147,7 +147,7 @@ public class JoinSectionsTest extends NbTestCase {
         // 3.section
         ts = tsList.get(2);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "i{j", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "i{j", -1);
         token = ts.token();
         assertEquals(PartType.MIDDLE, token.partType());
         assertFalse(ts.moveNext());

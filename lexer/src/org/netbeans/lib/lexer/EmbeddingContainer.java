@@ -89,7 +89,8 @@ public final class EmbeddingContainer<T extends TokenId> {
 
         // Now either ec == null for no embedding yet or linked list of embedded token lists of ec
         // need to be processed to find the embedded token list for requested language.
-        synchronized (tokenList.root()) {
+        TokenList<?> root = tokenList.root();
+        synchronized (root) {
             EmbeddedTokenList<? extends TokenId> prevEtl;
             if (ec != null) {
                 ec.updateStatus();
@@ -125,7 +126,7 @@ public final class EmbeddingContainer<T extends TokenId> {
             }
             if (embedding != null) {
                 if (ec == null) {
-                    ec = new EmbeddingContainer<T>(token);
+                    ec = new EmbeddingContainer<T>(token, root);
                     tokenList.wrapToken(index, ec);
                 }
                 LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath,
@@ -210,7 +211,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 if (token.isFlyweight()) { // embedding cannot exist for this flyweight token
                     return false;
                 }
-                ec = new EmbeddingContainer<T>(token);
+                ec = new EmbeddingContainer<T>(token, root);
                 tokenList.wrapToken(index, ec);
             }
         }
@@ -324,9 +325,9 @@ public final class EmbeddingContainer<T extends TokenId> {
      */
     private EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList; // 40 bytes
     
-    public EmbeddingContainer(AbstractToken<T> token) {
+    public EmbeddingContainer(AbstractToken<T> token, TokenList<?> rootTokenList) {
         setToken(token);
-        this.rootTokenList = rootToken.tokenList(); // Should not change in future
+        this.rootTokenList = rootTokenList;
         // cachedModCount must differ from root's one to sync offsets
         // Root mod count can be >= 0 or -1 for non-incremental token lists
         // It also cannot be -2 which means that this container is no longer
@@ -334,7 +335,7 @@ public final class EmbeddingContainer<T extends TokenId> {
         this.cachedModCount = -3;
         // Update the tokenStartOffset etc. - this assumes that the token
         // is already parented till the root token list.
-        updateStatus();
+        updateStatusImpl();
     }
 
     public AbstractToken<T> token() {
@@ -347,9 +348,9 @@ public final class EmbeddingContainer<T extends TokenId> {
      */
     public void setToken(AbstractToken<T> token) {
         this.token = token;
-        TokenList<T> embeddedTokenList = token.tokenList();
-        this.rootToken = (embeddedTokenList.getClass() == EmbeddedTokenList.class)
-                ? ((EmbeddedTokenList<? extends TokenId>)embeddedTokenList).rootToken()
+        TokenList<T> tokenList = token.tokenList();
+        this.rootToken = (tokenList.getClass() == EmbeddedTokenList.class)
+                ? ((EmbeddedTokenList<? extends TokenId>)tokenList).rootToken()
                 : token;
     }
     

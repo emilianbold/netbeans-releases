@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -469,8 +468,24 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                         @SuppressWarnings("unchecked")
                         EmbeddedTokenList<TokenId> etlT = (EmbeddedTokenList<TokenId>)etl;
                         TokenListChange<TokenId> nestedTLChange = new TokenListChange<TokenId>(etlT);
+                        // If there are joined sections then check that the update
+                        // did not span till end of a section and if so that the ending state
+                        // is the same as before. Otherwise next sections may need to be relexed.
+                        UpdateInfo updateInfo = findUpdateInfo(path2updateInfo, etl.languagePath());
+                        boolean joinSections = (updateInfo != NO_UPDATE_INFO && updateInfo.tokenListList().isJoinSections());
+                        Object lastState = joinSections ? etl.state(etlT.tokenCountCurrent() - 1) : null;
+
                         TokenListUpdater.update(etlT, eventInfo.modificationOffset(),
                                 eventInfo.insertedLength(), eventInfo.removedLength(), nestedTLChange);
+
+                        // Check whether the change affects next sections
+                        if (joinSections && !LexerUtilsConstants.statesEqual(lastState, etl.state(etl.tokenCountCurrent() - 1))) {
+                            updateInfo.markEndChange(etl);
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("End join section change: " + nestedTLChange.toString(updateLevel << 2));
+                            }
+                        }
+
                         if (LOG.isLoggable(Level.FINE)) {
                             StringBuilder sb = new StringBuilder();
                             ArrayUtilities.appendSpaces(sb, updateLevel << 2);
@@ -780,7 +795,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             if (tokenOrEmbeddingContainer == null) {
                 return dumpContext("Null token", tokenList, i, parentIndexes); // NOI18N
             }
-            Token<?> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+            AbstractToken<?> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
             int offset = (token.isFlyweight()) ? lastOffset : token.offset(null);
             if (offset < 0) {
                 return dumpContext("Token offset=" + offset + " < 0", tokenList, i, parentIndexes); // NOI18N
@@ -791,6 +806,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             }
             if (offset > lastOffset && continuous) {
                 return dumpContext("Gap between tokens; offset=" + offset + ", lastOffset=" + lastOffset,
+                        tokenList, i, parentIndexes);
+            }
+            if (token.tokenList() != tokenList) {
+                return dumpContext("Invalid token.tokenList()=" + token.tokenList(),
                         tokenList, i, parentIndexes);
             }
             lastOffset = offset + token.length();
@@ -822,6 +841,38 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return sb.toString();
     }
     
+    public String findTokenContext(AbstractToken<?> token) {
+        return findTokenContext(token, checkedTokenList(), ArrayUtilities.emptyIntArray());
+    }
+
+    private String findTokenContext(AbstractToken<?> token, TokenList<?> tokenList, int[] parentIndexes) {
+        int tokenCountCurrent = tokenList.tokenCountCurrent();
+        int[] indexes = ArrayUtilities.intArray(parentIndexes, parentIndexes.length + 1);
+        for (int i = 0; i < tokenCountCurrent; i++) {
+            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(i);
+            if (tokenOrEmbeddingContainer == null) {
+                continue;
+            }
+            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
+                EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEmbeddingContainer;
+                if (ec.token() == token) {
+                    return dumpContext("Token found.", tokenList, i, indexes);
+                }
+                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
+                while (etl != null) {
+                    String context = findTokenContext(token, etl, indexes);
+                    if (context != null)
+                        return context;
+                    etl = etl.nextEmbeddedTokenList();
+                }
+
+            } else if (tokenOrEmbeddingContainer == token) {
+                return dumpContext("Token found.", tokenList, i, indexes);
+            }
+        }
+        return null;
+    }
+
     private String tracePath(int[] indexes, LanguagePath languagePath) {
         StringBuilder sb  = new StringBuilder();
         TokenList<?> tokenList = checkedTokenList();
@@ -866,9 +917,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 
         List<TokenList<?>> added;
         
-        int firstModifiedStartTokenIndex;
-
-        int lastModifiedEndTokenIndex;
+        boolean prevJoinSectionRelexedTillEnd;
         
         Boolean lexedBeyondModPoint;
         
@@ -904,19 +953,37 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
          * and then the token lists marked for addition will be added.
          */
         public void markAdded(TokenList<?> addedTokenList) {
-            if (added.size() == 0) {
-                if (index == -1) {
-                    index = tokenListList.findIndex(addedTokenList.startOffset());
-                    assert (index >= 0);
+            if (doMarking(addedTokenList)) {
+                if (added.size() == 0) {
+                    if (index == -1) {
+                        index = tokenListList.findIndex(addedTokenList.startOffset());
+                        assert (index >= 0);
+                    }
+                    added = new ArrayList<TokenList<?>>(4);
                 }
-                added = new ArrayList<TokenList<?>>(4);
+                added.add(addedTokenList);
             }
-            added.add(addedTokenList);
+        }
+        
+        public void markEndChange(TokenList<?> tokenList) {
+            // Checking of marking not necessary since doing for isJoinSections() only
+            if (index == -1) {
+                // Take index + 1 since relexing the next section
+                index = tokenListList.findIndex(tokenList.startOffset()) + 1;
+            }
+            prevJoinSectionRelexedTillEnd = true;
         }
         
         public void update(TokenHierarchyEventInfo eventInfo) {
             if (index == -1) // Nothing added or removed (possible for bounds only change processing)
                 return;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("TokenListList " + tokenListList.languagePath() +
+                        " replace: index=" + index +
+                        ", removeCount=" + removeCount +
+                        ", added.size()=" + added.size()
+                );
+            }
             TokenList<?>[] removed = tokenListList.replace(index, removeCount, added);
             if (tokenListList.isJoinSections()) {
                 // Must update the token list by incremental algorithm
@@ -949,7 +1016,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                         state = tokenList.state(tokenList.tokenCount() - 1);
                     }
                 }
-                if (state != matchState) {
+                if (!LexerUtilsConstants.statesEqual(state, matchState) || prevJoinSectionRelexedTillEnd) {
                     index += added.size();
                     // Must continue relexing existing section(s) (from a different start state)
                     // until the relexing will stop before the last token of the given section.
@@ -963,10 +1030,11 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                             matchState = tokenList.state(tokenList.tokenCount() - 1);
                             TokenListChange<TokenId> tlChange = new TokenListChange<TokenId>(tokenList);
                             TokenListUpdater.update(tokenList, tokenList.startOffset(), 0, 0, tlChange);
+                            eventInfo.setMaxAffectedEndOffset(tlChange.addedEndOffset());
                             if (tlChange.addedEndOffset() == tokenList.endOffset()) { // Modified till the end
                                 // Since the section is non-empty (checked above) there should be >0 tokens
                                 // If the states don't match after the last token then continue with next section
-                                if (tokenList.state(tokenList.tokenCount() - 1) == matchState)
+                                if (LexerUtilsConstants.statesEqual(tokenList.state(tokenList.tokenCount() - 1), matchState))
                                     break;
                             } else {
                                 break;
