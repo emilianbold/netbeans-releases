@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  *   "end" much earlier. Go back and look for a method inside a method, and the outer
  *   method is probably missing an end (can use indentation to look for this as well).
  *   Create a quickfix to insert it.
- *
+ * 
  * @author Tor Norbye
  */
 public class RubyParser implements Parser {
@@ -462,7 +462,7 @@ public class RubyParser implements Parser {
             AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
             RubyParseResult r = new RubyParseResult(context.file, rootElement, ast, root, realRoot, result);
-            r.setSanitizedRange(context.sanitizedRange);
+            r.setSanitized(context.sanitized, context.sanitizedRange);
             r.setSource(source);
             return r;
         } else {
