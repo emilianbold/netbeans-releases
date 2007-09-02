@@ -9,11 +9,14 @@
 
 package org.netbeans.modules.ruby;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.openide.filesystems.FileObject;
@@ -113,12 +116,37 @@ public class FormatterTest extends RubyTestBase {
             doc.atomicUnlock();
         }
     }
+
+    // Used to test arbitrary source trees
+    //public void testReformatSourceTree() {
+    //    List<FileObject> files = new ArrayList<FileObject>();
+    //
+    //    // Used to test random source trees
+    //    File f = new File("/Users/tor/Desktop/facets-1.8.54"); // NOI18N
+    //    FileObject root = FileUtil.toFileObject(f);
+    //    addAllRubyFiles(root, files);
+    //    reformatAll(files);
+    //}
+    
+    private void addAllRubyFiles(FileObject file, List<FileObject> files) {
+        if (file.isFolder()) {
+            for (FileObject c : file.getChildren()) {
+                addAllRubyFiles(c, files);
+            }
+        } else if (file.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
+            files.add(file);
+        }
+    }
     
     public void testReformatAll() {
         // Find ruby files
         List<FileObject> files = findJRubyRubyFiles();
         assertTrue(files.size() > 0);
-
+        
+        reformatAll(files);
+    }
+    
+    private void reformatAll(List<FileObject> files) {
         FormattingPreferences preferences = new IndentPrefs(2,2);
         Formatter formatter = getFormatter(preferences);
         
@@ -387,6 +415,11 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
                 "def foo\n     if true\n       xxx\n     end\nend\n", null);
     }    
 
+    public void testDocumentRange3() throws Exception {
+        format("class Foo\n  def bar\n  end\n\n\n%<%def test\nhello\nend%>%\nend\n",
+               "class Foo\n  def bar\n  end\n\n\n  def test\n    hello\n  end\nend\n", null);
+    }    
+    
     public void testPercentWIndent110983a() throws Exception {
         insertNewline(
             "class Apple\n  def foo\n    snark %w[a b c]^\n    blah",

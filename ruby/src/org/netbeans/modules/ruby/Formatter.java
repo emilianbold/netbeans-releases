@@ -57,6 +57,14 @@ import org.openide.util.Exceptions;
  * @todo If line ends with \ I definitely have a line continuation!
  * @todo Use the Context.modifyIndent() method to change line indents instead of
  *   the current document/formatter method
+ * @todo This line screws up formatting:
+ *        alias __class__ class #:nodoc:
+ * @todo Why doesn't this format correctly?
+ * <pre>
+class Module
+  alias_method :class?, :===
+end
+ * </pre>
  *
  * @author Tor Norbye
  */
@@ -419,7 +427,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             boolean includeEnd = endOffset == doc.getLength();
             
             // TODO - remove initialbalance etc.
-            computeIndents(doc, initialIndent, initialOffset, endOffset, result, preferences, 
+            computeIndents(doc, initialIndent, initialOffset, endOffset, result, 
                     offsets, indents, indentEmptyLines, includeEnd);
             
             try {
@@ -451,8 +459,12 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                         int prevOffset = offsets.get(i-1);
                         int prevIndent = indents.get(i-1);
                         int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
-
-                        indent = actualPrevIndent + (indent-prevIndent);
+                        if (actualPrevIndent != prevIndent) {
+                            // For blank lines, indentation may be 0, so don't adjust in that case
+                            if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
+                                indent = actualPrevIndent + (indent-prevIndent);
+                            }
+                        }
                     }
 
                     // Adjust the indent at the given line (specified by offset) to the given indent
@@ -475,7 +487,6 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     }
 
     public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult result,
-        FormattingPreferences preferences,
             List<Integer> offsets,
             List<Integer> indents,
             boolean indentEmptyLines, boolean includeEnd
