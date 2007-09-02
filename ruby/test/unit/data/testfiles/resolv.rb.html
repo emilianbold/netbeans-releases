@@ -1,0 +1,169 @@
+<html><body>
+<hr>
+<br/>
+<h1> resolv library</h1>
+resolv.rb is a resolver library written in Ruby. Since it is written in Ruby, it is thread-aware. I.e. it can resolv many hostnames concurrently. It is possible to lookup various resources of DNS using DNS module directly. <h2> example</h2>
+<pre>
+  p Resolv.getaddress("www.ruby-lang.org")
+  p Resolv.getname("210.251.121.214")
+</pre>
+<pre>
+  Resolv::DNS.open {|dns|
+    p dns.getresources("www.ruby-lang.org", Resolv::DNS::Resource::IN::A).collect {|r| r.address}
+    p dns.getresources("ruby-lang.org", Resolv::DNS::Resource::IN::MX).collect {|r| [r.exchange.to_s, r.preference]}
+  }
+</pre>
+<h2> Resolv class</h2>
+<h3> class methods</h3>
+--- Resolv.getaddress(name) --- Resolv.getaddresses(name) --- Resolv.each_address(name) {|address| ...} <pre>
+    They lookups IP addresses of ((|name|)) which represents a hostname
+    as a string by default resolver.
+</pre>
+<pre>
+    getaddress returns first entry of lookupped addresses.
+    getaddresses returns lookupped addresses as an array.
+    each_address iterates over lookupped addresses.
+</pre>
+--- Resolv.getname(address) --- Resolv.getnames(address) --- Resolv.each_name(address) {|name| ...} <pre>
+    lookups hostnames of ((|address|)) which represents IP address as a string.
+</pre>
+<pre>
+    getname returns first entry of lookupped names.
+    getnames returns lookupped names as an array.
+    each_names iterates over lookupped names.
+</pre>
+<h2> Resolv::Hosts class</h2>
+hostname resolver using /etc/hosts format. <h3> class methods</h3>
+--- Resolv::Hosts.new(hosts='/etc/hosts') <h3> methods</h3>
+--- Resolv::Hosts#getaddress(name) --- Resolv::Hosts#getaddresses(name) --- Resolv::Hosts#each_address(name) {|address| ...} <pre>
+    address lookup methods.
+</pre>
+--- Resolv::Hosts#getname(address) --- Resolv::Hosts#getnames(address) --- Resolv::Hosts#each_name(address) {|name| ...} <pre>
+    hostnames lookup methods.
+</pre>
+<h2> Resolv::DNS class</h2>
+DNS stub resolver. <h3> class methods</h3>
+--- Resolv::DNS.new(config_info=nil) <pre>
+    ((|config_info|)) should be nil, a string or a hash.<br>    If nil is given, /etc/resolv.conf and platform specific information is used.<br>    If a string is given, it should be a filename which format is same as /etc/resolv.conf.<br>    If a hash is given, it may contains information for nameserver, search and ndots as follows.<br></pre>
+<pre>
+      Resolv::DNS.new({:nameserver=>["210.251.121.21"], :search=>["ruby-lang.org"], :ndots=>1})
+</pre>
+--- Resolv::DNS.open(config_info=nil) --- Resolv::DNS.open(config_info=nil) {|dns| ...} <h3> methods</h3>
+--- Resolv::<a href="DNS#close">DNS#close</a> --- Resolv::DNS#getaddress(name) --- Resolv::DNS#getaddresses(name) --- Resolv::DNS#each_address(name) {|address| ...} <pre>
+    address lookup methods.
+</pre>
+<pre>
+    ((|name|)) must be a instance of Resolv::DNS::Name or String.  Lookupped
+    address is represented as an instance of Resolv::IPv4 or Resolv::IPv6.
+</pre>
+--- Resolv::DNS#getname(address) --- Resolv::DNS#getnames(address) --- Resolv::DNS#each_name(address) {|name| ...} <pre>
+    hostnames lookup methods.
+</pre>
+<pre>
+    ((|address|)) must be a instance of Resolv::IPv4, Resolv::IPv6 or String.
+    Lookupped name is represented as an instance of Resolv::DNS::Name.
+</pre>
+--- Resolv::DNS#getresource(name, typeclass) --- Resolv::DNS#getresources(name, typeclass) --- Resolv::DNS#each_resource(name, typeclass) {|resource| ...} <pre>
+    They lookup DNS resources of ((|name|)).
+    ((|name|)) must be a instance of Resolv::Name or String.
+</pre>
+<pre>
+    ((|typeclass|)) should be one of follows:
+    * Resolv::DNS::Resource::IN::ANY
+    * Resolv::DNS::Resource::IN::NS
+    * Resolv::DNS::Resource::IN::CNAME
+    * Resolv::DNS::Resource::IN::SOA
+    * Resolv::DNS::Resource::IN::HINFO
+    * Resolv::DNS::Resource::IN::MINFO
+    * Resolv::DNS::Resource::IN::MX
+    * Resolv::DNS::Resource::IN::TXT
+    * Resolv::DNS::Resource::IN::ANY
+    * Resolv::DNS::Resource::IN::A
+    * Resolv::DNS::Resource::IN::WKS
+    * Resolv::DNS::Resource::IN::PTR
+    * Resolv::DNS::Resource::IN::AAAA
+</pre>
+<pre>
+    Lookupped resource is represented as an instance of (a subclass of)
+    Resolv::DNS::Resource. 
+    (Resolv::DNS::Resource::IN::A, etc.)
+</pre>
+<h2> Resolv::DNS::Resource::IN::NS class</h2>
+--- name <h2> Resolv::DNS::Resource::IN::CNAME class</h2>
+--- name <h2> Resolv::DNS::Resource::IN::SOA class</h2>
+--- mname --- rname --- serial --- refresh --- retry --- expire --- minimum <h2> Resolv::DNS::Resource::IN::HINFO class</h2>
+--- cpu --- os <h2> Resolv::DNS::Resource::IN::MINFO class</h2>
+--- rmailbx --- emailbx <h2> Resolv::DNS::Resource::IN::MX class</h2>
+--- preference --- exchange <h2> Resolv::DNS::Resource::IN::TXT class</h2>
+--- data <h2> Resolv::DNS::Resource::IN::A class</h2>
+--- address <h2> Resolv::DNS::Resource::IN::WKS class</h2>
+--- address --- protocol --- bitmap <h2> Resolv::DNS::Resource::IN::PTR class</h2>
+--- name <h2> Resolv::DNS::Resource::IN::AAAA class</h2>
+--- address <h2> Resolv::DNS::Name class</h2>
+<h3> class methods</h3>
+--- Resolv::DNS::Name.create(name) <h3> methods</h3>
+--- Resolv::DNS::<a href="Name#to_s">Name#to_s</a> <h2> Resolv::DNS::Resource class</h2>
+<h2> Resolv::IPv4 class</h2>
+<h3> class methods</h3>
+--- Resolv::IPv4.create(address) <h3> methods</h3>
+--- Resolv::<a href="IPv4#to_s">IPv4#to_s</a> --- Resolv::<a href="IPv4#to_name">IPv4#to_name</a> <h3> constants</h3>
+--- Resolv::IPv4::Regex <pre>
+    regular expression for IPv4 address.
+</pre>
+<h2> Resolv::IPv6 class</h2>
+<h3> class methods</h3>
+--- Resolv::IPv6.create(address) <h3> methods</h3>
+--- Resolv::<a href="IPv6#to_s">IPv6#to_s</a> --- Resolv::<a href="IPv6#to_name">IPv6#to_name</a> <h3> constants</h3>
+--- Resolv::IPv6::Regex <pre>
+    regular expression for IPv6 address.
+</pre>
+<h2> Bugs</h2>
+<ul>
+<li>NIS is not supported. <li>/etc/nsswitch.conf is not supported. <li>IPv6 is not supported. </ul>
+<hr>
+<br/>
+STD0013 (RFC 1035, etc.) <a href="ftp://ftp.isi.edu/in-notes/iana/assignments/dns-parameters">ftp://ftp.isi.edu/in-notes/iana/assignments/dns-parameters</a> <hr>
+<pre>              end</pre><br/>
+<a href="#STDERR">STDERR</a>.print("non-handled DNS message: #{msg.inspect} from #{from.inspect}\n") <hr>
+<pre>              end</pre><br/>
+<a href="#STDERR">STDERR</a>.print("non-handled DNS message: #{msg.inspect}") <hr>
+<pre>              end</pre><br/>
+<a href="#STDERR">STDERR</a>.print("non-handled DNS message: #{msg.inspect}") <hr>
+<pre>      def subdomain_of?(other)</pre><br/>
+tests subdomain-of relation. <pre>
+  domain = Resolv::DNS::Name.create("y.z")
+  p Resolv::DNS::Name.create("w.x.y.z").subdomain_of?(domain) #=> true
+  p Resolv::DNS::Name.create("x.y.z").subdomain_of?(domain) #=> true
+  p Resolv::DNS::Name.create("y.z").subdomain_of?(domain) #=> false
+  p Resolv::DNS::Name.create("z").subdomain_of?(domain) #=> false
+  p Resolv::DNS::Name.create("x.y.z.").subdomain_of?(domain) #=> false
+  p Resolv::DNS::Name.create("w.z").subdomain_of?(domain) #=> false
+</pre>
+<hr>
+<pre>      def to_s</pre><br/>
+returns the domain name as a string. The domain name doesn't have a trailing dot even if the name object is absolute. <pre>
+  p Resolv::DNS::Name.create("x.y.z.").to_s #=> "x.y.z"
+  p Resolv::DNS::Name.create("x.y.z").to_s #=> "x.y.z"
+</pre>
+<hr>
+<pre>      ClassValue = nil</pre><br/>
+Standard (class generic) RRs <hr>
+<pre>      module IN</pre><br/>
+ARPA Internet specific RRs <hr>
+<pre>        class SRV < Resource</pre><br/>
+SRV resource record defined in RFC 2782 These records identify the hostname and port that a service is available at. The format is: <pre>
+  _Service._Proto.Name TTL Class SRV Priority Weight Port Target
+</pre>
+The fields specific to SRV are defined in RFC 2782 as meaning: <ul>
+<li><tt>priority</tt> The priority of this target host.  A client MUST attempt   to contact the target host with the lowest-numbered priority it can   reach; target hosts with the same priority SHOULD be tried in an   order defined by the weight field.  The range is 0-65535.  Note that   it is not widely implemented and should be set to zero. </ul>
+<ul>
+<li><tt>weight</tt> A server selection mechanism.  The weight field specifies   a relative weight for entries with the same priority. Larger weights   SHOULD be given a proportionately higher probability of being   selected. The range of this number is 0-65535.  Domain administrators   SHOULD use Weight 0 when there isn't any server selection to do, to   make the RR easier to read for humans (less noisy). Note that it is   not widely implemented and should be set to zero. </ul>
+<ul>
+<li><tt>port</tt>  The port on this target host of this service.  The range is 0-   65535. </ul>
+<ul>
+<li><tt>target</tt> The domain name of the target host. A target of "." means   that the service is decidedly not available at this domain. </ul>
+<hr>
+<pre>          def initialize(priority, weight, port, target)</pre><br/>
+Create a SRV resource record. <hr>
+<pre>      return DNS::Name.new(</pre><br/>
+ip6.arpa should be searched too. [RFC3152] </body></html>

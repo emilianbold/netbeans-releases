@@ -23,6 +23,8 @@ import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
@@ -152,17 +154,25 @@ class RDocFormatter {
             appendTokenized(text.substring(text.indexOf(' ') + 1));
 
             return;
-        } else if (text.matches("^[0-9]+\\. .*")) {
+        } else if (text.matches("^[0-9]+\\.( .*)?")) {
             if (!inNumberedList) {
                 sb.append("<ol>\n"); // NOI18N
                 inNumberedList = true;
             }
 
-            sb.append("<li>"); // NOI18N
-            appendTokenized(text.substring(text.indexOf(' ') + 1));
+            sb.append("<li value=\"");
+            Matcher m = Pattern.compile("^([0-9]+)\\.( .*)?").matcher(text);
+            if (m.matches()) {
+                sb.append(m.group(1));
+            }
+            sb.append("\">"); // NOI18N
+            int index = text.indexOf(' ');
+            if (index != -1) {
+                appendTokenized(text.substring(index + 1));
+            }
 
             return;
-        } else if (text.matches("^\\[[\\S]+\\] .+")) { // NOI18N
+        } else if (text.matches("^\\[[\\S]+\\]( .+)?")) { // NOI18N
             // Labelled list:  [+foo+] whatever
             if (!inLabelledList) {
                 sb.append("<table>\n"); // NOI18N
@@ -173,13 +183,13 @@ class RDocFormatter {
 
             sb.append("<tr><td valign=\"top\">"); // NOI18N
 
-            int index = text.indexOf("] ");
+            int index = text.indexOf("]");
             appendTokenized(text.substring(1, index)); // label between []'s
             sb.append("</td><td>");
-            appendTokenized(text.substring(index + 2));
+            appendTokenized(text.substring(index + 1));
 
             return;
-        } else if (text.matches("^[\\S]+:: .*")) { // NOI18N
+        } else if (text.matches("^[\\S]+::( .*)?")) { // NOI18N
             // Labelled list:  foo::
             if (!inLabelledList) {
                 sb.append("<table>\n"); // NOI18N
@@ -190,10 +200,10 @@ class RDocFormatter {
 
             sb.append("<tr><td valign=\"top\">"); // NOI18N
 
-            int index = text.indexOf(":: "); // NOI18N
+            int index = text.indexOf("::"); // NOI18N
             appendTokenized(text.substring(0, index)); // label
             sb.append("</td><td>");
-            appendTokenized(text.substring(index + 3));
+            appendTokenized(text.substring(index + 2));
 
             return;
         } else if (!inBulletedList && !inNumberedList && !inLabelledList &&
