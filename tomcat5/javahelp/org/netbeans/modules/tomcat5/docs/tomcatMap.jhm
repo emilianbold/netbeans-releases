@@ -40,7 +40,7 @@ help\
 	<mapID target="tomcat_plugin" url="tomcat/tomcat_plugintro.html" />
 	<mapID target="tomcat_top_node" url="tomcat/tomcat_top_node.html" />
 	<mapID target="tomcat_setup_unsupported" url="tomcat/tomcat_setup_unsupported.html" />
-	<mapID target="tomcat_setup_registered" url="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/deploy/deploy_webapp.html" />
+	<mapID target="tomcat_setup_registered" url="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/deploy/deploy_webapp.html" />
  
 
 	<!-- CSH topics -->
