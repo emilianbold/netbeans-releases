@@ -25,15 +25,15 @@
 
     <!-- testbag with all MyModule tests running in jvm mode (i.e. in standard JVM)
          use ant runtests -Dxtest.attribs=all,jvm to run this testbag  -->
-    <testbag testattribs="all or java" executor="installer-executor" name="installer java bandle test">
+    <testbag testattribs="alltests or javase" executor="installer-executor" name="installer java bandle test">
         <testset dir=".">
             <patternset>
-	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJava.class"/>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaSE.class"/>
            </patternset>
         </testset>
     </testbag>
 
-    <testbag testattribs="all or javaee" executor="installer-executor" name="installer javaee bundle test">
+    <testbag testattribs="alltests or javaee" executor="installer-executor" name="installer javaee bundle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaEE.class"/>
@@ -41,29 +41,38 @@
         </testset>
     </testbag>
 
-    <testbag testattribs="all or javame" executor="installer-executor" name="installer javeme bandle test">
+    <testbag testattribs="alltests or mobility" executor="installer-executor" name="installer javeme bandle test">
         <testset dir=".">
            <patternset>
-	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaME.class"/>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaMobility.class"/>
            </patternset>
         </testset>
     </testbag>
     
-    <testbag testattribs="all or ruby" executor="installer-executor" name="installer ruby bandle test">
+    <testbag testattribs="alltests or ruby" executor="installer-executor" name="installer ruby bandle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerRuby.class"/>
            </patternset>
         </testset>
     </testbag>
-    
-    <testbag testattribs="all or full" executor="installer-executor" name="installer full bundle test">
+
+    <testbag testattribs="alltests or cpp" executor="installer-executor" name="installer cpp bandle test">
         <testset dir=".">
             <patternset>
-	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerFull.class"/>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerCPP.class"/>
            </patternset>
         </testset>
     </testbag>
+    
+    <testbag testattribs="alltests or all" executor="installer-executor" name="installer full bundle test">
+        <testset dir=".">
+            <patternset>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerAll.class"/>
+           </patternset>
+        </testset>
+    </testbag>
+
 
     <executor name="installer-executor" antfile="build-qa-functional.xml" target="run-installer-test"/>
     
