@@ -1214,6 +1214,9 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Emacs">
                 <folder name="Defaults">
                     <file name="org-netbeans-modules-defaults-keybindings.xml" url="Emacs-keybindings.xml"/>
+		    <file name="org-netbeans-modules-editor-keybindings-mac.xml" url="Emacs-keybindings-mac.xml">
+			<attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+		    </file>
                 </folder>
             </folder>
             <folder name="NetBeans55">
