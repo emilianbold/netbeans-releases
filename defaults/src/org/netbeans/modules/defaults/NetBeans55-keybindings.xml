@@ -153,8 +153,8 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="macro-debug-var" key="D-J$D"/>
     <bind actionName="uncomment" key="DS-D"/>
     <bind actionName="make-setter" key="O-U$S"/>
-    <bind actionName="select-element-next" key="OS-UP"/>
-    <bind actionName="select-element-previous" key="OS-DOWN"/>
+    <bind actionName="select-element-next" key="OS-S"/>
+    <bind actionName="select-element-previous" key="OS-A"/>
 
     <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="generate-code" key="O-INSERT"/>
