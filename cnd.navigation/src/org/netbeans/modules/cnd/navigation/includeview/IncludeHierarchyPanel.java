@@ -276,9 +276,15 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     }//GEN-LAST:event_whoIsIncludedButtonActionPerformed
         public void setFile(CsmFile file){
         object = file.getUID();
-        recursive = true;
-        plain = false;
-        whoIncludes = true;
+        if (file.isHeaderFile()) {
+            recursive = false;
+            plain = true;
+            whoIncludes = true;
+        } else {
+            recursive = true;
+            plain = true;
+            whoIncludes = false;
+        }
         updateButtons();
         update(file);
     }

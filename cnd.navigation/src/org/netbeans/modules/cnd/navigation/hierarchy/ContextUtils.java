@@ -24,6 +24,7 @@ import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -48,6 +49,23 @@ public class ContextUtils {
         return result;
     }
     
+    public static CsmFile findFile(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            if (ContextUtils.USE_REFERENCE_RESOLVER) {
+                CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
+                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) {
+                    CsmInclude incl = (CsmInclude) ref.getOwner();
+                    CsmFile file = incl.getIncludeFile();
+                    if (file != null) {
+                        return file;
+                    }
+                }
+            }
+            return ContextUtils.findFile(activatedNodes[0]);
+        }
+        return null;
+    }
+
     public static CsmFile findFile(Node activatedNode) {
         EditorCookie c = activatedNode.getCookie(EditorCookie.class);
         if (c != null) {

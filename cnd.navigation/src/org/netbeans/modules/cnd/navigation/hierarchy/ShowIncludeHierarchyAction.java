@@ -30,7 +30,7 @@ import org.openide.util.actions.CookieAction;
 public final class ShowIncludeHierarchyAction extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {
-        CsmFile file = ContextUtils.findFile(activatedNodes[0]);
+        CsmFile file = ContextUtils.findFile(activatedNodes);
         if (file != null){
             HierarchyTopComponent view = HierarchyTopComponent.findInstance();
             view.setFile(file);
@@ -41,10 +41,7 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length > 0){
-            return ContextUtils.findFile(activatedNodes[0]) != null;
-        }
-        return false;
+        return ContextUtils.findFile(activatedNodes) != null;
     }
     
     protected int mode() {
