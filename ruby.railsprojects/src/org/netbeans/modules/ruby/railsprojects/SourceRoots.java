@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,16 +25,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URI;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
@@ -44,18 +38,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Document;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectEvent;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectListener;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 
 /**
@@ -323,6 +311,9 @@ public final class SourceRoots {
 
         FileObject[] children = fo.getChildren();
         for (FileObject f : children) {
+            if (!VisibilityQuery.getDefault().isVisible(f)) {
+                continue;
+            }
             if (FileUtil.isArchiveFile(f)) {
                 f = FileUtil.getArchiveRoot(f);
             }
