@@ -84,6 +84,7 @@ table.components_table th {
     color:              #ff5e08;
     font-family:        Arial, sans-serif;
     font-size:          1.2em;
+    font-weight:        normal;
     cursor:             default;
 }
 
