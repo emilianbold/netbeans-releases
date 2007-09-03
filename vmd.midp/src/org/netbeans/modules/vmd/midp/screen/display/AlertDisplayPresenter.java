@@ -166,13 +166,13 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         ArrayList<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
         ResourcePropertyEditor imagePropertyEditor = new ResourcePropertyEditor(AlertCD.PROP_IMAGE, getComponent());
-//        ResourcePropertyEditor gaugePropertyEditor = new ResourcePropertyEditor(GaugeCD.PROP_VALUE, getComponent());
         descriptors.add(new ScreenPropertyDescriptor(getComponent(), imageLabel, imagePropertyEditor));
         descriptors.add(new ScreenPropertyDescriptor(getComponent(), stringLabel, new ScreenStringPropertyEditor(AlertCD.PROP_STRING)));
         DesignComponent indicator = getComponent().readProperty(AlertCD.PROP_INDICATOR).getComponent();
-//        if (indicator != null) {
-//            descriptors.add(new ScreenPropertyDescriptor(getComponent(), panel, gaugePropertyEditor));
-//        }
+        ResourcePropertyEditor gaugePropertyEditor = new ResourcePropertyEditor(GaugeCD.PROP_VALUE, indicator);
+        if (indicator != null) {
+            descriptors.add(new ScreenPropertyDescriptor(indicator, panel, gaugePropertyEditor));
+        }
         return descriptors;
     }
 
