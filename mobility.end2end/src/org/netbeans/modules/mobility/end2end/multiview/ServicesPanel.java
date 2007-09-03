@@ -196,7 +196,8 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
             } else {
                 final List<ClassData> ports = service.getData();
                 HashSet<String> selectedIDs = new HashSet();
-                for (org.netbeans.modules.mobility.end2end.classdata.ClassData cd : configuration.getServices().get(0).getData()) {
+                List<org.netbeans.modules.mobility.end2end.classdata.ClassData> data = configuration.getServices().get(0).getData();
+                if (data != null) for (org.netbeans.modules.mobility.end2end.classdata.ClassData cd : data) {
                     for (OperationData od : cd.getOperations()) {
                         StringBuffer sb = new StringBuffer(cd.getType());
                         sb.append('.').append(od.getMethodName());

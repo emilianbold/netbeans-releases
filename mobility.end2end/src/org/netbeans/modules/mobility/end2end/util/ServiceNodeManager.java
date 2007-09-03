@@ -189,7 +189,8 @@ public class ServiceNodeManager {
             activeProfileRegistry = ClassDataRegistry.getRegistry( getActiveProfile(), classpaths);
             synchronized (selectionSource) {
                 selectionSource.clear();
-                for (org.netbeans.modules.mobility.end2end.classdata.ClassData cd : cfg.getServices().get(0).getData()) {
+                List<org.netbeans.modules.mobility.end2end.classdata.ClassData> data = cfg.getServices().get(0).getData();
+                if (data != null) for (org.netbeans.modules.mobility.end2end.classdata.ClassData cd : data) {
                     String fqn = cd.getPackageName();
                     if (fqn.length() > 0) fqn = fqn + '.';
                     fqn = fqn + cd.getClassName();
