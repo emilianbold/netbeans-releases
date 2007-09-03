@@ -65,4 +65,11 @@ public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable, CsmIde
      * into parser queue
      */
     void scheduleParsing(boolean wait) throws InterruptedException;
+    
+    /** returns true if file is source file. */
+    boolean isSourceFile();
+
+    /** returns true if file is header file. */
+    public boolean isHeaderFile();
+    
 }

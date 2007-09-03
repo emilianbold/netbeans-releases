@@ -172,7 +172,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fileType == SOURCE_CPP_FILE;
     }
     
-    public void setSourceFile(){
+    /*package local*/ void setSourceFile(){
         if (!(fileType == SOURCE_C_FILE || fileType == SOURCE_CPP_FILE)) {
             fileType = SOURCE_FILE;
         }
@@ -182,7 +182,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fileType == HEADER_FILE;
     }
 
-    public void setHeaderFile(){
+    /*package local*/ void setHeaderFile(){
         if (fileType == UNDEFINED_FILE) {
             fileType = HEADER_FILE;
         }

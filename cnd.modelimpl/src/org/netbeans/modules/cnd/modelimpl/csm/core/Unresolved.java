@@ -202,6 +202,14 @@ public final class Unresolved implements Disposable {
         }
 	
         private CsmUID<CsmFile> uid = null;
+
+        public boolean isSourceFile() {
+            return false;
+        }
+
+        public boolean isHeaderFile() {
+            return true;
+        }
     };
     
     // only one of projectRef/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
