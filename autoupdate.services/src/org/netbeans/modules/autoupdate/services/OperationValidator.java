@@ -101,12 +101,18 @@ abstract class OperationValidator {
         default:
             assert false;
         }
+        if (LOGGER.isLoggable (Level.FINE)) {
+            LOGGER.log (Level.FINE, "== do getRequiredElements for " + type + " of " + updateElement + " ==");
+            for (UpdateElement el : retval) {
+                LOGGER.log (Level.FINE, "--> " + el);
+            }
+            LOGGER.log (Level.FINE, "== done. ==");
+        }
         return retval;
     }
     
     abstract boolean isValidOperationImpl(UpdateUnit updateUnit, UpdateElement uElement);
-    abstract  List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos);
-    
+    abstract List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos);
     
     private static class InstallValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {

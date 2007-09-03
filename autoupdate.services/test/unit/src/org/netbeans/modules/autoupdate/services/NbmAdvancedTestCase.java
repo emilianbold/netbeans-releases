@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.Arrays;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -75,21 +76,12 @@ public class NbmAdvancedTestCase extends NbTestCase {
             platformDir.toString () + File.pathSeparatorChar + nextDir.toString ());
     }
     
-    public static String generateModuleElement (String codeName, String version, String requires, boolean kit, boolean eager, String... deps) {
-        String res = "<module codenamebase=\"" + codeName + "\" " +
-                "homepage=\"http://au.netbeans.org/\" distribution=\"nbresloc:/org/netbeans/api/autoupdate/data/" + dot2dash (codeName) + ".nbm\" " +
-                "license=\"standard-nbm-license.txt\" downloadsize=\"98765\" " +
-                "needsrestart=\"false\" moduleauthor=\"\" " +
-                "eager=\"" + eager + "\" " + 
-                "releasedate=\"2006/02/23\">";
-        res +=  "<manifest OpenIDE-Module=\"" + codeName + "\" " +
-                (deps == null || deps.length == 0 ? "" : "OpenIDE-Module-Module-Dependencies=\"" + deps2ModuleModuleDependencies (deps) + "\" ") +
-                "OpenIDE-Module-Name=\"" + codeName + "\" " +
-                "AutoUpdate-Show-In-Client=\"" + kit + "\" " +
-                (requires == null || requires.length () == 0 ? "" : "OpenIDE-Module-Requires=\"" + requires + "\" ") +
-                "OpenIDE-Module-Specification-Version=\"" + version + "\"/>";
-        res += "</module>";
-        return res;
+    public static String generateModuleElementWithRequires (String codeName, String version, String requires, String... deps) {
+        return generateModuleElement (codeName, version, "OpenIDE-Module-Requires", requires, false, false, deps);
+    }
+    
+    public static String generateModuleElementWithProviders (String codeName, String version, String provides, String... deps) {
+        return generateModuleElement (codeName, version, "OpenIDE-Module-Provides", provides, false, false, deps);
     }
     
     public static String generateModuleElement (String codeName, String version, Boolean global, String targetCluster) {
@@ -102,6 +94,27 @@ public class NbmAdvancedTestCase extends NbTestCase {
                 "releasedate=\"2006/02/23\">";
         res +=  "<manifest OpenIDE-Module=\"" + codeName + "\" " +
                 "OpenIDE-Module-Name=\"" + codeName + "\" " +
+                "OpenIDE-Module-Specification-Version=\"" + version + "\"/>";
+        res += "</module>";
+        return res;
+    }
+    
+    public static String generateModuleElement (String codeName, String version,
+            String manifestAttribute, String value,
+            boolean kit, boolean eager, String... deps) {
+        String res = "<module codenamebase=\"" + codeName + "\" " +
+                "homepage=\"http://au.netbeans.org/\" distribution=\"nbresloc:/org/netbeans/api/autoupdate/data/org-yourorghere-independent.nbm\" " +
+                // makes problem when installing this element, missing file at nbresloc!
+                //"homepage=\"http://au.netbeans.org/\" distribution=\"nbresloc:/org/netbeans/api/autoupdate/data/" + dot2dash (codeName) + ".nbm\" " +
+                "license=\"standard-nbm-license.txt\" downloadsize=\"98765\" " +
+                "needsrestart=\"false\" moduleauthor=\"\" " +
+                "eager=\"" + eager + "\" " + 
+                "releasedate=\"2006/02/23\">";
+        res +=  "<manifest OpenIDE-Module=\"" + codeName + "\" " +
+                (deps == null || deps.length == 0 ? "" : "OpenIDE-Module-Module-Dependencies=\"" + deps2ModuleModuleDependencies (deps) + "\" ") +
+                "OpenIDE-Module-Name=\"" + codeName + "\" " +
+                "AutoUpdate-Show-In-Client=\"" + kit + "\" " +
+                (value == null || value.length () == 0 ? "" : "" + manifestAttribute + "=\"" + value + "\" ") +
                 "OpenIDE-Module-Specification-Version=\"" + version + "\"/>";
         res += "</module>";
         return res;
@@ -151,10 +164,15 @@ public class NbmAdvancedTestCase extends NbTestCase {
         return res.toURL ();
     }
     
+    @SuppressWarnings("unchecked")
     protected UpdateElement installUpdateUnit (UpdateUnit unit) {
         OperationContainer ic = OperationContainer.createForInstall ();
         assertNotNull (unit + " has available update.", unit.getAvailableUpdates ());
         ic.add (unit.getAvailableUpdates ().get (0));
+        OperationInfo requiresInfo = (OperationInfo) ic.listAll ().iterator ().next ();
+        assertNotNull (requiresInfo);
+        ic.add (requiresInfo.getRequiredElements ());
+        
         assertTrue ("Install operation on " + unit + " is valid.", ic.listInvalid ().isEmpty ());
         assertFalse ("Something will be installed for " + unit, ic.listAll ().isEmpty ());
         InstallSupport is = (InstallSupport) ic.getSupport ();

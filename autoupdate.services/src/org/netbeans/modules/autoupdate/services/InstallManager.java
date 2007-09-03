@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.layers.LocalFileSystemEx;
-import org.netbeans.modules.autoupdate.updateprovider.InstalledUpdateProvider;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileUtil;
@@ -87,7 +86,7 @@ public class InstallManager extends InstalledFileLocator{
                 if (res == null) {
                     
                     res = createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
-                    res = checkTargetCluster(update, targetCluster);
+                    res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME);
                     // no new cluster was created => use userdir
                     res = res == null? getUserDir () : res;
                     

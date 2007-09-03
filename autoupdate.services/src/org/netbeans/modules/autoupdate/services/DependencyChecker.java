@@ -28,9 +28,8 @@ import org.openide.modules.SpecificationVersion;
 
 class DependencyChecker extends Object {
 
-    private static final Logger err = Logger.getLogger("org.netbeans.modules.autoupdate.services"); // NOI18N
+    private static final Logger err = Logger.getLogger(DependencyChecker.class.getName ()); // NOI18N
     
-    @SuppressWarnings ("deprecation") //Dependency.TYPE_IDE must be handled for backward compatability
     public static Set<Dependency> findBrokenDependencies (Set<Dependency> deps, Collection<ModuleInfo> modules) {
         Set<Dependency> res = new HashSet<Dependency> ();
         for (Dependency dep : deps) {
@@ -44,16 +43,24 @@ class DependencyChecker extends Object {
                         res.add (dep);
                     }
                     break;
-                case (Dependency.TYPE_MODULE) :
-                    if (matchDependencyModule (dep, modules)) {
+                case (Dependency.TYPE_NEEDS) :
+                    if (findModuleMatchesDependencyRequires (dep, modules) != null) {
                         // ok
                     } else {
                         // bad, report missing module
                         res.add (dep);
                     }
                     break;
-                case (Dependency.TYPE_IDE) :
-                    if (matchDependencyIde (dep, modules)) {
+                case (Dependency.TYPE_RECOMMENDS) :
+                    if (findModuleMatchesDependencyRequires (dep, modules) != null) {
+                        // ok
+                    } else {
+                        // bad, report missing module
+                        res.add (dep);
+                    }
+                    break;
+                case (Dependency.TYPE_MODULE) :
+                    if (matchDependencyModule (dep, modules)) {
                         // ok
                     } else {
                         // bad, report missing module
@@ -165,31 +172,4 @@ class DependencyChecker extends Object {
         return ok;
     }
 
-    private static boolean matchDependencyIde (Dependency dep, Collection<ModuleInfo> modules) {
-        for (ModuleInfo module : modules) {
-            if (checkDependencyIde (dep, module)) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    private static boolean checkDependencyIde (Dependency dep, ModuleInfo ide) {
-
-        // Not equal names
-        if ( ! ide.getCodeName ().equals (dep.getName())) {
-            return false;
-        }
-        
-        if ( dep.getComparison() == Dependency.COMPARE_SPEC ) {
-            return new SpecificationVersion (dep.getVersion ()).compareTo (ide.getSpecificationVersion ()) <= 0;
-        } else if ( dep.getComparison () == Dependency.COMPARE_IMPL ) {
-            return dep.getVersion ().equals (ide.getImplementationVersion ());
-        } else {
-            // COMPARE_ANY
-            assert false : "Cannot have COMPARE_ANY on IDE dependency";
-            return false;
-        }
-    }
 }

@@ -20,7 +20,6 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -53,14 +52,14 @@ public class UpdateUnitWithOsFactoryTest extends NbmAdvancedTestCase {
         String os = org.openide.util.Utilities.isUnix () ? "Windows" : "Unix";
         Lookup.getDefault ().lookup (ModuleInfo.class);
         String catalog = generateCatalog (
-                generateModuleElement ("com.sun.collablet", "1.3", null, false, false,
+                generateModuleElementWithRequires ("com.sun.collablet", "1.3", null,
                     "org.openide.filesystems > 6.2",
                     "org.openide.util > 6.2",
                     "org.openide.modules > 6.2",
                     "org.openide.nodes > 6.2",
                     "org.openide.loaders",
                     "org.openide.io"),
-                generateModuleElement (testModuleName, testModuleVersion, "org.openide.modules.os." + os, false, false,
+                generateModuleElementWithRequires (testModuleName, testModuleVersion, "org.openide.modules.os." + os,
                     "org.netbeans.core.windows/2",
                     "org.netbeans.modules.editor/3",
                     "org.netbeans.modules.java.editor/1 > 1.3",
@@ -69,6 +68,7 @@ public class UpdateUnitWithOsFactoryTest extends NbmAdvancedTestCase {
                     "org.openide.modules > 6.2",
                     "org.openide.nodes > 6.2",
                     "org.openide.util > 6.2")
+                
                 );
         p = createUpdateProvider (catalog);
         p.refresh (true);
@@ -88,14 +88,14 @@ public class UpdateUnitWithOsFactoryTest extends NbmAdvancedTestCase {
     public void testUpdateItemsContainsMyModule () throws IOException {
         String os = ! org.openide.util.Utilities.isUnix () ? "Windows" : "Unix";
         String catalog = generateCatalog (
-                generateModuleElement ("com.sun.collablet", "1.3", null, false, false,
+                generateModuleElementWithRequires ("com.sun.collablet", "1.3", null,
                     "org.openide.filesystems > 6.2",
                     "org.openide.util > 6.2",
                     "org.openide.modules > 6.2",
                     "org.openide.nodes > 6.2",
                     "org.openide.loaders",
                     "org.openide.io"),
-                generateModuleElement (testModuleName, testModuleVersion, "org.openide.modules.os." + os, false, false,
+                generateModuleElementWithRequires (testModuleName, testModuleVersion, "org.openide.modules.os." + os,
                     "org.netbeans.core.windows/2",
                     "org.netbeans.modules.editor/3",
                     "org.netbeans.modules.java.editor/1 > 1.3",
@@ -104,9 +104,9 @@ public class UpdateUnitWithOsFactoryTest extends NbmAdvancedTestCase {
                     "org.openide.modules > 6.2",
                     "org.openide.nodes > 6.2",
                     "org.openide.util > 6.2")
+                
                 );
         p = createUpdateProvider (catalog);
-        p.refresh (true);
         p.refresh (true);
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
         Map<String, UpdateItem> updates = p.getUpdateItems ();

@@ -45,20 +45,21 @@ public class InstallEagerModuleTest extends NbmAdvancedTestCase {
         String eagerModule = "com.sun.testmodule.eager";
         String regularModule = "com.sun.testmodule.regular";
         String catalog = generateCatalog (
-                generateModuleElement (eagerModule, "1.3", null, false, true,
+                generateModuleElement (eagerModule, "1.3", null, null, false, true,
                     "org.openide.filesystems > 6.2",
                     "org.openide.util > 6.2",
                     "org.openide.modules > 6.2",
                     "org.openide.nodes > 6.2",
                     "org.openide.loaders",
                     "org.openide.io"),
-                generateModuleElement (regularModule, "1.3", null, false, false,
+                generateModuleElement (regularModule, "1.3", null, null, false, false,
                     "org.openide.filesystems > 6.2",
                     "org.openide.util > 6.2",
                     "org.openide.modules > 6.2",
                     "org.openide.nodes > 6.2",
                     "org.openide.loaders",
                     "org.openide.io")
+                
                 );
         AutoupdateCatalogProvider p = createUpdateProvider (catalog);
         p.refresh (true);
@@ -82,11 +83,12 @@ public class InstallEagerModuleTest extends NbmAdvancedTestCase {
         String regularModule1 = "org.yourorghere.independent";
         String regularModule2 = "org.yourorghere.engine";
         String catalog = generateCatalog (
-                generateModuleElement (eagerModule, "1.0", null, false, true,
+                generateModuleElement (eagerModule, "1.0", null, null, false, true,
                     regularModule1,
                     regularModule2),
-                generateModuleElement (regularModule1, "1.0", null, false, false),
-                generateModuleElement (regularModule2, "1.0", null, false, false, regularModule1)
+                generateModuleElement (regularModule1, "1.0", null, null, false, false),
+                generateModuleElement (regularModule2, "1.0", null, null, false, false, regularModule1)
+                
                 );
 
         UpdateUnitProviderFactory.getDefault ().create ("test-update-provider", "test-update-provider", generateFile (catalog));
@@ -107,11 +109,12 @@ public class InstallEagerModuleTest extends NbmAdvancedTestCase {
         String regularModule1 = "org.yourorghere.independent";
         String regularModule2 = "org.yourorghere.engine";
         String catalog = generateCatalog (
-                generateModuleElement (eagerModule, "1.0", null, false, true,
+                generateModuleElement (eagerModule, "1.0", null, null, false, true,
                     regularModule1,
                     regularModule2),
-                generateModuleElement (regularModule1, "1.0", null, true, false),
-                generateModuleElement (regularModule2, "1.0", null, true, false, regularModule1)
+                generateModuleElement (regularModule1, "1.0", null, null, true, false),
+                generateModuleElement (regularModule2, "1.0", null, null, true, false, regularModule1)
+                
                 );
 
         AutoupdateCatalogProvider p = createUpdateProvider (catalog);
