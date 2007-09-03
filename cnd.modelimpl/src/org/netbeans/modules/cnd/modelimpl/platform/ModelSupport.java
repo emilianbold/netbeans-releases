@@ -608,7 +608,7 @@ public class ModelSupport implements PropertyChangeListener {
 	    if (!curObj.isValid()) {//IZ#114182
                 return;
             }
-	    NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+	    NativeFileItemSet set = curObj.getLookup().lookup(NativeFileItemSet.class);
 	    
 	    if( set != null && ! set.isEmpty() ) {
 		
