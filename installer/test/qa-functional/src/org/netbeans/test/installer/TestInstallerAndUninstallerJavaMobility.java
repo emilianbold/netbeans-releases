@@ -49,7 +49,7 @@ public class TestInstallerAndUninstallerJavaMobility extends NbTestCase {
         if (!System.getProperty("os.name").contentEquals("SunOS")) {
             TestData data = new TestData(Logger.getLogger("global"));
 
-            Utils.phaseOne(this, data, "javame");
+            Utils.phaseOne(this, data, "mobility");
 
             Utils.phaseTwo(data);
 
