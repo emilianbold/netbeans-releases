@@ -57,6 +57,7 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
     // persistent
     private String name;
     private String ejbClass;
+    private String mappedName;
     
     private ResourceRef[] resourceRefs = null;
     private ResourceEnvRef[] resourceEnvRefs = null;
@@ -79,8 +80,10 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
         
         AnnotationParser parser = AnnotationParser.create(getHelper());
         parser.expectString("name", parser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
+        parser.expectString("mappedName", null); // NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
         name = parseResult.get("name", String.class); // NOI18N
+        mappedName = parseResult.get("mappedName", String.class); // NOI18N
         ejbClass = typeElement.getQualifiedName().toString();
         return true;
     }
@@ -209,6 +212,10 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
         return getEjbName();
     }
 
+    public String getMappedName() throws VersionNotSupportedException {
+        return mappedName;
+    }
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Not implemented methods">
@@ -286,10 +293,6 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
     }
 
     public void setMappedName(String value) throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getMappedName() throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
