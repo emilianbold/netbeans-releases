@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
@@ -62,7 +61,6 @@ import org.openide.util.NbBundle;
 public class ImageEditorElement extends PropertyEditorResourceElement {
 
     private static final String[] EXTENSIONS = {"png", "gif", "jpg", "jpeg"}; // NOI18N
-    
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
@@ -116,6 +114,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
 
             this.componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
                     PropertyValue propertyValue = component.readProperty(ImageCD.PROP_RESOURCE_PATH);
                     if (!isPropertyValueAUserCodeType(propertyValue)) {
@@ -159,7 +158,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         updatePreview();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(value = "unchecked")
     private void sortComboBoxContent() {
         int size = pathTextComboBox.getItemCount();
         List list = new ArrayList(size);
@@ -238,8 +237,6 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         if (bufferedImage != null) {
             int width = bufferedImage.getWidth();
             int height = bufferedImage.getHeight();
-            int previewWidth = imagePreview.getWidth() - 10;
-            int previewHeight = imagePreview.getHeight() - 10;
             widthTextField.setText(String.valueOf(width));
             heightTextField.setText(String.valueOf(height));
 
@@ -249,24 +246,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             str.append(NbBundle.getMessage(ImageEditorElement.class, "LBL_Size_Bytes")); // NOI18N
             sizeTextField.setText(str.toString());
 
-            if (width > previewWidth || height > previewHeight) {
-                if (width > height) {
-                    width = previewWidth;
-                    height = -1;
-                } else {
-                    width = -1;
-                    height = previewHeight;
-                }
-                if (width == 0) {
-                    width = -1;
-                }
-                if (height == 0) {
-                    height = -1;
-                }
-                image = bufferedImage.getScaledInstance(width, height, Image.SCALE_SMOOTH | Image.SCALE_AREA_AVERAGING);
-            } else {
-                image = bufferedImage;
-            }
+            image = bufferedImage;
         } else {
             image = null;
             widthTextField.setText(null);
@@ -350,9 +330,24 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     private class ImagePreview extends JComponent {
 
         private static final int BORDER_EDGE_LENGTH = 10;
+        private static final int IMAGE_GAP = 10;
 
         @Override
         public void paint(Graphics g) {
+            if (image != null) {
+                int width = image.getWidth(null);
+                int height = image.getHeight(null);
+                int previewWidth = imagePreview.getWidth() - IMAGE_GAP;
+                int previewHeight = imagePreview.getHeight() - IMAGE_GAP;
+                if (width > previewWidth || height > previewHeight) {
+                    g.drawImage(image, IMAGE_GAP, IMAGE_GAP, previewWidth, previewHeight, 0, 0, width, height, null);
+                } else {
+                    int xOffset = (previewWidth - width + IMAGE_GAP) / 2;
+                    int yOffset = (previewHeight - height + IMAGE_GAP) / 2;
+                    g.drawImage(image, xOffset, yOffset, null);
+                }
+            }
+
             // paint the border
             g.setColor(Color.BLACK);
             final int rightX = getWidth() - 1;
@@ -369,12 +364,6 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             // bottom right
             g.drawLine(rightX, bottomY, rightX, bottomY - BORDER_EDGE_LENGTH);
             g.drawLine(rightX, bottomY, rightX - BORDER_EDGE_LENGTH, bottomY);
-
-            if (image != null) {
-                int xOffset = (getWidth() - image.getWidth(this)) >> 1;
-                int yOffset = (getWidth() - image.getHeight(this)) >> 1;
-                g.drawImage(image, xOffset, yOffset, this);
-            }
         }
     }
 
@@ -532,8 +521,6 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     private void previewPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_previewPanelComponentResized
         updatePreview();
     }//GEN-LAST:event_previewPanelComponentResized
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooserButton;
     private javax.swing.JLabel heightLabel;
