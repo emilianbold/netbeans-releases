@@ -31,6 +31,7 @@ import java.beans.*;
 
 import org.jdesktop.layout.Baseline;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.project.ProjectUtils;
 
 import org.netbeans.core.spi.multiview.*;
 import org.netbeans.modules.form.menu.MenuEditLayer;
@@ -55,6 +56,7 @@ import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutdesign.LayoutConstants.PaddingType;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.palette.PaletteUtils;
+import org.netbeans.modules.form.project.ClassPathUtils;
 
 
 /**
@@ -671,13 +673,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         if (mode == MODE_ADD) {
             PaletteItem pitem = PaletteUtils.getSelectedItem();
-            if ((pitem != null) && PaletteItem.TYPE_CHOOSE_BEAN.equals(pitem.getExplicitComponentType())) {
+            if ((pitem != null) && PaletteItem.TYPE_CHOOSE_BEAN.equals(pitem.getExplicitComponentType())
+                    && ComponentInspector.getInstance().getFocusedForm() == formEditor) {
                 NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
                     FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
                     FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
                 DialogDisplayer.getDefault().notify(desc);
                 if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-                    pitem.setComponentClassSource(desc.getInputText(), null, null);
+                    pitem.setComponentClassSource(ClassPathUtils.getProjectClassSource(
+                            formEditor.getFormDataObject().getPrimaryFile(), desc.getInputText()));
                 } else {
                     toggleSelectionMode();
                     return;
@@ -1706,6 +1710,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 removeAll();
                 return;
             }
+            // hack: after IDE start, if some form is opened but not active in
+            // winsys, we need to select it in ComponentInspector
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    if (formEditor != null && formEditor.isFormLoaded()
+                            && ComponentInspector.exists()
+                            && ComponentInspector.getInstance().getFocusedForm() == null) {
+                        ComponentInspector.getInstance().focusForm(formEditor);
+                    }
+                }
+            });
         }
         if (!initialized) {
             initialize();

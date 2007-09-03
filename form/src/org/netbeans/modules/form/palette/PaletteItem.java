@@ -69,14 +69,18 @@ public final class PaletteItem implements Node.Cookie {
         this.componentClass = componentClass;
     }
 
-    public void setComponentClassSource(String className,
+    void setComponentClassSource(String className,
                                  String[] cpTypes,
                                  String[] cpNames)
     {
+        setComponentClassSource(new ClassSource(className, cpTypes, cpNames));
+    }
+
+    public void setComponentClassSource(ClassSource cs) {
         componentClass = null;
         lastError = null;
         componentType = -1;
-        componentClassSource = new ClassSource(className, cpTypes, cpNames);
+        componentClassSource = cs;
     }
 
     void setComponentExplicitType(String type) {
