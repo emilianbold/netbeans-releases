@@ -92,12 +92,12 @@ function write_table_header() {
     document.write('<br><br>');	
     document.write('<tr>');
     document.write('<th class="left no_border bottom_border wide bottom">NetBeans Packs<img src="img/bold_comment_badge_header.gif"/></th>');    
-    document.write('<td class="no_border left_border bottom_border" id="javaee_link"><a href="javascript: download(\'javaee\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Web&nbsp;&amp;&nbsp;Java&nbsp;EE</td>');
-    document.write('<td class="no_border left_border bottom_border" id="javame_link"><a href="javascript: download(\'mobility\')" id="javame_name"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Mobility</td>');
-    document.write('<td class="no_border left_border bottom_border" id="java_link"><a href="javascript: download(\'javase\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Java SE</td>');
-    document.write('<td class="no_border left_border bottom_border" id="ruby_link"><a href="javascript: download(\'ruby\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Ruby</td>');
-    document.write('<td class="no_border left_border bottom_border" id="cnd_link"><a href="javascript: download(\'cpp\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>C/C++</td>');
-    document.write('<td class="no_border left_border bottom_border" id="full_link"><a href="javascript: download(\'all\')"><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/><br/></a>All</td>');
+    document.write('<td class="no_border left_border bottom_border" id="javaee_link"><a href="javascript: download(\'javaee\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a><a class="bundle_display_name">Web&nbsp;&amp;&nbsp;Java&nbsp;EE</a></td>');
+    document.write('<td class="no_border left_border bottom_border" id="javame_link"><a href="javascript: download(\'mobility\')" id="javame_name"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a><a class="bundle_display_name">Mobility</a></td>');
+    document.write('<td class="no_border left_border bottom_border" id="java_link"><a href="javascript: download(\'javase\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a><a class="bundle_display_name">Java SE</a></td>');
+    document.write('<td class="no_border left_border bottom_border" id="ruby_link"><a href="javascript: download(\'ruby\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a><a class="bundle_display_name">Ruby</a></td>');
+    document.write('<td class="no_border left_border bottom_border" id="cnd_link"><a href="javascript: download(\'cpp\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a><a class="bundle_display_name">C/C++</a></td>');
+    document.write('<td class="no_border left_border bottom_border" id="full_link"><a href="javascript: download(\'all\')"><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/><br/></a><a class="bundle_display_name">All</a></td>');
     document.write('</tr>');
 }
 
@@ -289,9 +289,9 @@ function update() {
     
     // no Mobility for Solaris and MacOS
     if ((platform == "solaris-x86") || (platform == "solaris-sparc") || (platform == "macosx-ppc") || (platform == "macosx-x86")) {
-    	document.getElementById("javame_link").innerHTML = '<img src="img/download_d.gif" style="border: 0;"/><br>Mobility';
+    	document.getElementById("javame_link").innerHTML = '<img src="img/download_d.gif" style="border: 0;"/><br><a class="bundle_display_name_no">Mobility</a>';
     } else {
-    	document.getElementById("javame_link").innerHTML = '<a href="javascript: download(\'mobility\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Mobility';
+    	document.getElementById("javame_link").innerHTML = '<a href="javascript: download(\'mobility\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a><a class="bundle_display_name">Mobility</a>';
     }
 }
 

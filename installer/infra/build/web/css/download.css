@@ -157,6 +157,14 @@ table.components_table .product_display_name_no {
 }
 
 
+table.components_table .bundle_display_name {
+}
+
+table.components_table .bundle_display_name_no {
+    color:              grey;
+}
+
+
 table.components_table .title {
     font-size:			1.3em;
 	white-space:		nowrap;
