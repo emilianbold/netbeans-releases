@@ -27,7 +27,8 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
-import org.netbeans.modules.cnd.gotodeclaration.util.ComparatorFactory;
+import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
+import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
@@ -52,7 +53,7 @@ public abstract class BaseProvider implements ElementProvider {
 	return ! CsmModelAccessor.getModel().projects().isEmpty();
     }
     
-    protected abstract void processProject(CsmProject project, List<ElementDescriptor> result, ComparatorFactory.NameComparator comparator);
+    protected abstract void processProject(CsmProject project, List<ElementDescriptor> result, NameMatcher comparator);
     
     public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type) {
 
@@ -61,7 +62,7 @@ public abstract class BaseProvider implements ElementProvider {
 	@SuppressWarnings("unchecked")
 	List<ElementDescriptor> result = Collections.EMPTY_LIST;
 	
-	ComparatorFactory.NameComparator comparator = ComparatorFactory.createNameComparator(text, type);
+	NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
 	if( comparator == null ) {
 	    return result;
 	}

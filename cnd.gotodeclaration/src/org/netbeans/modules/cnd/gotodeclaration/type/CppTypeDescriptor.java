@@ -91,7 +91,7 @@ class CppTypeDescriptor extends TypeDescriptor {
     }
 
     public String getOuterName() {
-	return " $outerName$ ";
+	return contextName;
     }
 
     public String getTypeName() {

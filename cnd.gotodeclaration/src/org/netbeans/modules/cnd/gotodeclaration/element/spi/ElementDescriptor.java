@@ -24,19 +24,50 @@ import javax.swing.Icon;
  */
 public interface ElementDescriptor {
     
-    String getSortName();
-    
+    /**      
+     * Gets the name of the element as such
+     * @return element name 
+     */
     String getDisplayName();
         
+    /**
+     * Gets an additional context for the element name. 
+     * This would typically be the fully qualified name, minus the name part. 
+     * Return null if there is no applicable context. 
+     * 
+     * @return the name of the context of the type, 
+     * such as the fully qualified name minus the name part
+     */
     String getContextName();
 
+    /** 
+     * Gets an icon that should be shown for this element. 
+     * The icon should give a visual indication of the type of element
+     * (e.g. function or variable or macro)
+     * @return An Icon to be shown on the left hand side 
+     */
     Icon getIcon();
     
+    /**
+     * Gets the name of the project that contains the given element.
+     * @return the name of the project that contains the given element.
+     */
     String getProjectName();
     
+    /**
+     * Gets the icon that represents the project that contains the given element.
+     * @return project icon or null if there are no project associated with element
+     */
     Icon getProjectIcon();
     
+    /**
+     * Gets the absolute path to the file that contains the element.
+     * @return the absolute path to the file that contains the element.
+     */
     String getAbsoluteFileName();
     
+    /**
+     * Opens the element in editor
+     */
     void open();
 }

@@ -28,6 +28,11 @@ public class ContextUtil {
     private ContextUtil() {
     }
     
+    /**
+     * Return the name of the context of the scope element - 
+     * either namespace or (for file-level, such as C-style statics) file
+     * (If the element is a nested class, return containing class' namespace)
+     */
     public static String getContextName(CsmScopeElement element) {
 	CsmScope scope = element.getScope();
 	if( CsmKindUtilities.isClass(scope) ) {
@@ -44,6 +49,10 @@ public class ContextUtil {
 	return "";
     }
     
+    /**
+     * Returns the namespace the given class belongs
+     * (even if it's a nested class)
+     */
     public static CsmNamespace getClassNamespace(CsmClass cls) {
 	CsmScope scope = cls.getScope();
 	while( scope != null && CsmKindUtilities.isClass(scope) ) {
@@ -53,6 +62,12 @@ public class ContextUtil {
 	return CsmKindUtilities.isNamespace(scope) ? (CsmNamespace) scope : null;
     }    
     
+    /**
+     * Returns the full name of the class:
+     * for a top-level class it's just a class name,
+     * for a nested class, it contain outer class name
+     * (but in any case without a namespace)
+     */
     public static String getClassFullName(CsmClass cls) {
 	StringBuilder sb = new StringBuilder(cls.getName());
 	CsmScope scope = cls.getScope();

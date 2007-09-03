@@ -78,9 +78,4 @@ class MacroElementDescriptor extends BaseElementDescriptor implements ElementDes
 	return icon;
     }
 
-    public String getSortName() {
-        return getDisplayName();
-    }
-
-
 }

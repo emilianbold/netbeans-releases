@@ -20,7 +20,8 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.gotodeclaration.util.ComparatorFactory;
+import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
+import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
@@ -56,7 +57,7 @@ public class CppTypeProvider implements TypeProvider {
 	@SuppressWarnings("unchecked")
 	List<TypeDescriptor> result = Collections.EMPTY_LIST;
 	
-	ComparatorFactory.NameComparator comparator = ComparatorFactory.createNameComparator(text, type);
+	NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
 	if( comparator == null ) {
 	    return result;
 	}
@@ -94,7 +95,7 @@ public class CppTypeProvider implements TypeProvider {
 	return TRACE ? new TracingTypeDescriptor(descriptor) : descriptor;
     }
 
-    private void processProject(CsmProject project, List<TypeDescriptor> result, ComparatorFactory.NameComparator comparator) {
+    private void processProject(CsmProject project, List<TypeDescriptor> result, NameMatcher comparator) {
 	if( TRACE ) System.err.printf("processProject %s\n", project.getName());
         processNamespace(project.getGlobalNamespace(), result, comparator);
 	if( PROCESS_LIBRARIES ) {
@@ -109,7 +110,7 @@ public class CppTypeProvider implements TypeProvider {
 	}
     }
     
-    private void processNamespace(CsmNamespace nsp, List<TypeDescriptor> result, ComparatorFactory.NameComparator comparator) {
+    private void processNamespace(CsmNamespace nsp, List<TypeDescriptor> result, NameMatcher comparator) {
         if( TRACE ) System.err.printf("processNamespace %s\n", nsp.getQualifiedName());
 	for( CsmDeclaration declaration : nsp.getDeclarations() ) {
             if( isCancelled ) {
@@ -125,13 +126,13 @@ public class CppTypeProvider implements TypeProvider {
 	}
     }
 
-    private void processDeclaration(CsmDeclaration decl, List<TypeDescriptor> result, ComparatorFactory.NameComparator comparator) {
+    private void processDeclaration(CsmDeclaration decl, List<TypeDescriptor> result, NameMatcher comparator) {
         switch (decl.getKind()) {
             case CLASS:
             case UNION:
             case STRUCT:
                 CsmClass cls = (CsmClass) decl;
-		if( comparator.match(decl.getName()) ) {
+		if( comparator.matches(decl.getName()) ) {
                     result.add(createTypeDescriptor(cls));
 		}
                 if( ! isCancelled ) {
@@ -145,7 +146,7 @@ public class CppTypeProvider implements TypeProvider {
                 break;
             case ENUM:
             case TYPEDEF:
-		if( comparator.match(decl.getName()) ) {
+		if( comparator.matches(decl.getName()) ) {
                     result.add(createTypeDescriptor((CsmClassifier) decl));
 		}
                 break;

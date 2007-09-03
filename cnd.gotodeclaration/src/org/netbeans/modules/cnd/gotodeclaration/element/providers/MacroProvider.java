@@ -20,8 +20,7 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
-import org.netbeans.modules.cnd.gotodeclaration.util.ComparatorFactory;
-import org.netbeans.modules.cnd.gotodeclaration.util.ComparatorFactory.NameComparator;
+import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.openide.util.NbBundle;
 
 /**
@@ -39,12 +38,12 @@ public class MacroProvider extends BaseProvider implements ElementProvider {
 	return NbBundle.getMessage(MacroProvider.class, "MACRO_PROVIDER_DISPLAY_NAME"); // NOI18N
     }
 
-    protected void processProject(CsmProject project, List<ElementDescriptor> result, ComparatorFactory.NameComparator comparator) {
+    protected void processProject(CsmProject project, List<ElementDescriptor> result, NameMatcher comparator) {
 	if( TRACE ) System.err.printf("MacroProvider.processProject %s\n", project.getName());
         processFiles(project.getAllFiles(), result, comparator);
     }
     
-    private void processFiles(Collection<CsmFile> files, List<ElementDescriptor> result, NameComparator comparator) {
+    private void processFiles(Collection<CsmFile> files, List<ElementDescriptor> result, NameMatcher comparator) {
 	for( CsmFile file : files ) {
             if( isCancelled() ) {
                 return;
@@ -53,7 +52,7 @@ public class MacroProvider extends BaseProvider implements ElementProvider {
                 if( isCancelled() ) {
                     return;
                 }
-		if( comparator.match(macro.getName()) ) {
+		if( comparator.matches(macro.getName()) ) {
 		    result.add(new MacroElementDescriptor(macro));
 		}
 	    }

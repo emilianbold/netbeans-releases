@@ -363,7 +363,17 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
     private class TypeComparator implements Comparator<ElementDescriptor> {
 	
         public int compare(ElementDescriptor t1, ElementDescriptor t2) {
-           return compareStrings( t1.getSortName(), t2.getSortName() );
+           int result = compareStrings( t1.getDisplayName(), t2.getDisplayName() );
+	   if( result == 0 ) {
+	       result = compareStrings( t1.getContextName(), t2.getContextName() );
+               if( result == 0 ) {
+                   result = compareStrings( t1.getProjectName(), t2.getProjectName() );
+                   if( result == 0 ) {
+                       result = compareStrings( t1.getAbsoluteFileName(), t2.getAbsoluteFileName() );
+                   }
+               }
+	   }
+	   return result;
         }
         
     }

@@ -59,9 +59,4 @@ class VariableElementDescriptor extends BaseElementDescriptor implements Element
 	return CsmImageLoader.getIcon(CsmDeclaration.Kind.VARIABLE, 0);
     }
 
-    public String getSortName() {
-        return getDisplayName();
-    }
-
-
 }

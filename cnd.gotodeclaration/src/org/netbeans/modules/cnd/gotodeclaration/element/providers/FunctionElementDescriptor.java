@@ -63,9 +63,4 @@ class FunctionElementDescriptor extends BaseElementDescriptor implements Element
 	return CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION_DEFINITION, 0);
     }
 
-    public String getSortName() {
-        return getDisplayName();
-    }
-
-
 }
