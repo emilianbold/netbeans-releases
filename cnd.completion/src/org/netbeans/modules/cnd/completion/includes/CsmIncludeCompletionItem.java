@@ -41,7 +41,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     protected final static String QUOTE = "\""; // NOI18N
     protected final static String SYS_OPEN = "<"; // NOI18N
     protected final static String SYS_CLOSE = ">"; // NOI18N
-    
+    protected final static String SLASH = "/"; // NOI18N
+
     private final int substitutionOffset;
     private final int priority;
     private final String item;
@@ -67,7 +68,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     }
     
     public static CsmIncludeCompletionItem createItem(int substitutionOffset, 
-                                                    String relFileName, File parentDir,
+                                                    String relFileName, String dirPrefix,
                                                     boolean usrInclude,
                                                     boolean highPriority,
                                                     boolean isFolder) {
@@ -85,12 +86,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                 priority = FILE_PRIORITY + SYS_VS_USR;
             }
         }
-        String parentFolder = parentDir.getName();
-        if (parentFolder == null) {
-            parentFolder = "";
-        }
         String item = relFileName;
-        return new CsmIncludeCompletionItem(substitutionOffset, priority, parentFolder, item, usrInclude, isFolder);
+        return new CsmIncludeCompletionItem(substitutionOffset, priority, dirPrefix, item, usrInclude, isFolder);
     }
     
     public String getItemText() {
@@ -103,6 +100,9 @@ public class CsmIncludeCompletionItem implements CompletionItem {
             //Completion.get().hideCompletion();
             int caretOffset = component.getSelectionEnd();
             substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
+        }
+        if (this.isFolder) {
+            Completion.get().showCompletion();
         }
     }
 

@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
@@ -37,26 +38,65 @@ public class CsmIncludeCompletionQuery {
         this.file = file;
     }
     
-    public Collection<CsmIncludeCompletionItem> query( BaseDocument doc,int substitutionOffset, Boolean usrInclude, boolean showAll) {
+    public Collection<CsmIncludeCompletionItem> query( BaseDocument doc, String childSubDir, int substitutionOffset, Boolean usrInclude, boolean showAll) {
         results = new ArrayList<CsmIncludeCompletionItem>(100);
         CsmFile docFile = this.file;
         if (docFile == null) {
             docFile = CsmUtilities.getCsmFile(doc, false);
         }
+        String usrFilePath;
+        Collection<String> usrPaths = Collections.<String>emptyList();
+        Collection<String> sysPaths = Collections.<String>emptyList();
         if (docFile != null) {
-            File dir = new File (docFile.getAbsolutePath()).getParentFile();
-            if (dir != null && dir.exists()) {
-                File[] list = dir.listFiles(new MyFileFilter(HDataLoader.getInstance().getExtensions()));
-                String relFileName;
-                boolean quoted = usrInclude == null ? true : usrInclude;
-                for (File curFile : list) {
-                    relFileName = curFile.getName();
-                    CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(substitutionOffset, relFileName, dir, quoted, true, curFile.isDirectory());
-                    results.add(item);
+            usrFilePath = docFile.getAbsolutePath();
+        } else {
+            File baseFile = CsmUtilities.getFile(doc);
+            usrFilePath = baseFile.getAbsolutePath();
+        }
+        File usrDir = new File(usrFilePath).getParentFile();
+        if (usrInclude == null || usrInclude == Boolean.TRUE) {
+            addFolderItems(usrDir.getAbsolutePath(), childSubDir, true, true, substitutionOffset);
+            if (showAll) {
+                for (String usrPath : usrPaths) {
+                    addFolderItems(usrPath, childSubDir, true, false, substitutionOffset);
                 }
+                for (String sysPath : sysPaths) {
+                    addFolderItems(sysPath, childSubDir, false, false, substitutionOffset);
+                }
+            }
+            addParentFolder(substitutionOffset, childSubDir, true);
+        } else {
+            for (String sysPath : sysPaths) {
+                addFolderItems(sysPath, childSubDir, false, false, substitutionOffset);
+            }
+            if (showAll) {
+                for (String usrPath : usrPaths) {
+                    addFolderItems(usrPath, childSubDir, true, false, substitutionOffset);
+                }
+                addFolderItems(usrDir.getAbsolutePath(), childSubDir, true, true, substitutionOffset);
+                addParentFolder(substitutionOffset, childSubDir, false);
             }
         }
         return results;
+    }
+    
+    private void addFolderItems(String folder, String childSubDir, boolean quoted, boolean filtered, int substitutionOffset) {
+        File dir = new File (folder, childSubDir);
+        if (dir != null && dir.exists()) {
+            File[] list = filtered ?  dir.listFiles(new MyFileFilter(HDataLoader.getInstance().getExtensions())) :
+                                    dir.listFiles();
+            String relFileName;
+            for (File curFile : list) {
+                relFileName = curFile.getName();
+                CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(substitutionOffset, relFileName, childSubDir, quoted, true, curFile.isDirectory());
+                results.add(item);
+            }
+        }        
+    }
+
+    private void addParentFolder(int substitutionOffset, String childSubDir, boolean quoted) {
+        CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(substitutionOffset, "..", childSubDir, quoted, false, true);
+        results.add(item);
     }
     
     private static final class MyFileFilter implements FileFilter {

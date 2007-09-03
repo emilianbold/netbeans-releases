@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
+import org.openide.util.Exceptions;
 
 /**
 * Support methods for csm based syntax analyzes
@@ -583,7 +584,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return ret;
     }
 
-    private boolean checkOffsetInToken(TokenItem token, TokenID[] tokenIDs, int offset) {
+    private boolean isOffsetInToken(TokenItem token, TokenID[] tokenIDs, int offset) {
         boolean exists = false;
         for (int i = tokenIDs.length - 1; i >= 0; i--) {
             if (token.getTokenID() == tokenIDs[i]) {
@@ -593,9 +594,14 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
         if (exists) {
             // check offset
-            if ((token.getOffset() >= offset) ||    
-                    ((token.getOffset() + token.getImage().length()) < offset)) {
+            int st = token.getOffset();
+            int len = token.getImage().length();
+            if (st >= offset) {
                 exists = false;
+            } else if (len == 1) {
+                exists = ((st + len) == offset);
+            } else {
+                exists = ((st + len) > offset);
             }
         }
         return exists;
@@ -1168,8 +1174,25 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     
 
     public boolean isIncludeCompletionDisabled(int offset) {
-        TokenItem token;
         boolean completionDisabled = true;
+        TokenItem token = getTokenItem(offset);
+        token = shiftToNonWhiteBwd(token);
+        if (token != null) {
+            completionDisabled = !isOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
+            if (completionDisabled) {
+                // check whether right after #include or #include_next directive
+                switch(token.getTokenID().getNumericID()) {
+                case CCTokenContext.CPPINCLUDE_ID:
+                case CCTokenContext.CPPINCLUDE_NEXT_ID:
+                    return completionDisabled = false;
+                }
+            }
+        }        
+        return completionDisabled;
+    }
+    
+    public TokenItem getTokenItem(int offset) {
+        TokenItem token;
         try {
             int checkOffset = offset;
             if (offset == getDocument().getLength()) {
@@ -1179,37 +1202,61 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         } catch (BadLocationException e) {
             token = null;
         }
-        if (token != null) {
-            completionDisabled = !checkOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
-            if (completionDisabled) {
-                // check whether right after #include or #include_next directive
-                if ((token.getTokenID() == CCTokenContext.WHITESPACE) || 
-                        (token.getOffset() + token.getImage().length() <= offset)) {
-                    if (token.getTokenID() == CCTokenContext.CPPINCLUDE ||
-                            token.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT) {
-                        return false;
-                    }
-                    TokenItem prevToken = token.getPrevious();
-                    while (prevToken != null && 
-                            ((prevToken.getTokenID() == CCTokenContext.WHITESPACE) || 
-                            (prevToken.getTokenID() == CCTokenContext.BLOCK_COMMENT))) {
-                        if (prevToken.getImage().contains("\n")) {
-                            return true;
-                        }
-                        prevToken = prevToken.getPrevious();
-                    }
-                    if (prevToken != null) {
-                        if ((prevToken.getTokenID() == CCTokenContext.CPPINCLUDE) ||
-                            (prevToken.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT)) {
-                            completionDisabled = false;
-                        } else {
-                            completionDisabled = !checkOffsetInToken(prevToken, INCLUDE_COMPLETION_TOKENS, offset);
-                        }
+        return token;
+    }
+    
+    public TokenItem shiftToNonWhiteBwd(TokenItem token) {
+        if (token == null) {
+            return null;
+        }
+        boolean checkedFirst = false;
+        do {
+            switch (token.getTokenID().getNumericID()) {
+            case CCTokenContext.WHITESPACE_ID:
+                if (checkedFirst) {
+                    if (token.getImage().contains("\n")) {
+                        return null;
                     }
                 }
+                break;
+            case CCTokenContext.BLOCK_COMMENT_ID:
+                // skip
+                break;
+            default:
+                return token;
             }
-        }        
-        return completionDisabled;
+            token = token.getPrevious();
+            checkedFirst = true;
+        } while (token != null);
+        return null;
+    }
+    
+    private boolean isAfterInclude(int offset) {
+        try {
+            if (offset == getDocument().getLength()) {
+                offset--;
+            }            
+            int rowStart = Utilities.getRowStart(getDocument(), offset);
+            TokenItem item = getTokenChain(rowStart, rowStart+1);
+            if (item != null) {
+                switch(item.getTokenID().getNumericID()) {
+                case CCTokenContext.CPPINCLUDE_ID:
+                case CCTokenContext.CPPINCLUDE_NEXT_ID:
+                    while (item != null) {
+                        item = item.getNext();
+                        if (item != null && 
+                                (item.getOffset() < offset) &&
+                                (item.getTokenID() != CCTokenContext.WHITESPACE)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+        } catch (BadLocationException ex) {
+            // skip
+        }
+        return false;
     }
     
     public boolean isCompletionDisabled(int offset) {
