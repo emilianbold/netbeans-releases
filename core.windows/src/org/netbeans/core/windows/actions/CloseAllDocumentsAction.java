@@ -24,7 +24,10 @@ package org.netbeans.core.windows.actions;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -81,7 +84,11 @@ public class CloseAllDocumentsAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
-        return WindowManagerImpl.getInstance().getEditorTopComponents().length > 0;
+        TopComponent activeTC = TopComponent.getRegistry().getActivated();
+        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(activeTC);
+        
+        return mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR
+                && !mode.getOpenedTopComponents().isEmpty();
     }
     
 }

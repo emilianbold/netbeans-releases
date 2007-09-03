@@ -191,39 +191,36 @@ public abstract class ActionUtils {
     } // End of class CloneDocumentAction.
     
     // Utility methods >>
-    public static void closeAllDocuments() {
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        Set<TopComponent> tcs = new HashSet<TopComponent>();
-        for(Mode mode: wm.getModes()) {
-            ModeImpl modeImpl = (ModeImpl)mode;
-            if(modeImpl.getKind() == Constants.MODE_KIND_EDITOR) {
-                tcs.addAll(modeImpl.getOpenedTopComponents());
-            }
-        }
+    public static void closeAllDocuments () {
+        TopComponent activeTC = TopComponent.getRegistry().getActivated();
+        List<TopComponent> tcs = getOpened(activeTC);
         
         for(TopComponent tc: tcs) {
             tc.close();
         }
     }
 
-    public static void closeAllExcept (TopComponent c) {
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        Set<TopComponent> tcs = new HashSet<TopComponent>();
-        for(Mode mode: wm.getModes()) {
-            ModeImpl modeImpl = (ModeImpl)mode;
-            if(modeImpl.getKind() == Constants.MODE_KIND_EDITOR) {
-                tcs.addAll(modeImpl.getOpenedTopComponents());
-            }
-        }
+    public static void closeAllExcept (TopComponent tc) {
+        List<TopComponent> tcs = getOpened(tc);
 
-        for(TopComponent tc: tcs) {
-            if (tc != c) {
-                tc.close();
+        for(TopComponent curTC: tcs) {
+            if (curTC != tc) {
+                curTC.close();
             }
         }
     }
 
-
+    /** Returns List of opened top components in mode of given TopComponent.
+     */
+    private static List<TopComponent> getOpened (TopComponent tc) {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        ModeImpl mode = (ModeImpl) wm.findMode(tc);
+        List<TopComponent> tcs = new ArrayList<TopComponent>();
+        if (mode != null) {
+                tcs.addAll(mode.getOpenedTopComponents());
+        }
+        return tcs;
+    }
 
     static void closeWindow(TopComponent tc) {
         tc.close();

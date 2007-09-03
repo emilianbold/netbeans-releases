@@ -62,11 +62,7 @@ implements PropertyChangeListener, Runnable {
 
     /** Perform the action. Sets/unsets maximzed mode. */
     public void actionPerformed(java.awt.event.ActionEvent ev) {
-        TopComponent topC = tc;
-        if (topC == null) {
-            // for the updating sate action instance..
-            topC = TopComponent.getRegistry().getActivated();
-        }
+        TopComponent topC = obtainTC();
         if(topC != null) {
             ActionUtils.closeAllExcept(topC);
         }
@@ -80,6 +76,19 @@ implements PropertyChangeListener, Runnable {
     
     private void updateEnabled() {
         Mutex.EVENT.readAccess(this);
+    }
+    
+    public void run() {
+        TopComponent tc = obtainTC();
+        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
+        
+        setEnabled(tc instanceof TopComponent.Cloneable
+            && mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR
+            && (mode.getOpenedTopComponents().size() > 1));
+    }
+    
+    private TopComponent obtainTC () {
+        return tc == null ? TopComponent.getRegistry().getActivated() : tc;
     }
     
     /** Overriden to share accelerator with 
@@ -102,13 +111,6 @@ implements PropertyChangeListener, Runnable {
         } else {
             return super.getValue(key);
         }
-    }
-
-    public void run() {
-        TopComponent tc = TopComponent.getRegistry().getActivated();
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
-        setEnabled(tc instanceof TopComponent.Cloneable
-            && mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR);
     }
 
 }
