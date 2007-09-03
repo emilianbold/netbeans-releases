@@ -23,6 +23,8 @@ import org.netbeans.modules.css.visual.ui.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
 
 /**
  * Style Builder main panel
@@ -54,7 +56,9 @@ public final class StyleBuilderPanel extends JPanel {
         //styleEditorList.add(new ListStyleEditor());
         //styleEditorList.add(new OtherStyleEditor());
         for(StyleEditor styleEditor : styleEditorList) {
-            jTabbedPane1.addTab(styleEditor.getDisplayName(), styleEditor);
+            JScrollPane spane = new JScrollPane(styleEditor);
+            spane.setBorder(new EmptyBorder(1,1,1,1));
+            jTabbedPane1.addTab(styleEditor.getDisplayName(), spane);
         }
         jTabbedPane1.setSelectedIndex(0);
     }

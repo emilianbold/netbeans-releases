@@ -29,7 +29,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.css.model.CssRule;
-import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -94,15 +93,11 @@ public final class StyleBuilderTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-
         setLayout(new java.awt.BorderLayout());
-        add(jScrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
     
     
@@ -172,23 +167,26 @@ public final class StyleBuilderTopComponent extends TopComponent {
         switch(mode) {
         case MODEL_OK:
             styleBuilderPanel.setCursor(null);
-            jScrollPane1.setViewportView(styleBuilderPanel);
+            removeAll();
+            add(styleBuilderPanel, java.awt.BorderLayout.CENTER);
             break;
         case MODEL_ERROR:
+            removeAll();
             setName(DEFAULT_TC_NAME);//set default TC name
-            jScrollPane1.setViewportView(BROKEN_MODEL_PANEL);
+            add(BROKEN_MODEL_PANEL, java.awt.BorderLayout.CENTER);
             break;
         case MODEL_UPDATING:
             styleBuilderPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             break;
         case OUT_OF_RULE:
             setName(DEFAULT_TC_NAME);//set default TC name
-            jScrollPane1.setViewportView(NO_RULE_SELECTED_PANEL);
+            removeAll();
+            add(NO_RULE_SELECTED_PANEL, java.awt.BorderLayout.CENTER);
             break;
         default:
             throw new IllegalArgumentException("Invalid StyleBuilder mode = " + mode); //NOI18N
         }
-        
-        
+        validate();
+        repaint();
     }
 }
