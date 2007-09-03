@@ -110,6 +110,16 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         }
     }
     
+    @Override
+    public Problem preCheck() {
+        if (!searchHandle.getFileObject().isValid()) {
+            return new Problem(true, NbBundle.getMessage(RubyWhereUsedQueryPlugin.class, "DSC_ElNotAvail")); // NOI18N
+        }
+        
+        return null;
+    }
+    
+    @Override
     protected Problem preCheck(CompilationController info) {
 //        Problem p = isElementAvail(getSearchHandle(), refactoring.getContext().lookup(CompilationInfo.class));
 //        if (p != null)

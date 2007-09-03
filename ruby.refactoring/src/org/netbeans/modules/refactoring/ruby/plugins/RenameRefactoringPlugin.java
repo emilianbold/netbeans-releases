@@ -442,11 +442,20 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 //    
 //    private Set<ElementHandle<ExecutableElement>> allMethods;
     
+    @Override
+    public Problem preCheck() {
+        if (!treePathHandle.getFileObject().isValid()) {
+            return new Problem(true, NbBundle.getMessage(RenameRefactoringPlugin.class, "DSC_ElNotAvail")); // NOI18N
+        }
+        
+        return null;
+    }
+
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         final Set<FileObject> set = new HashSet<FileObject>();
         Source source = RetoucheUtils.createSource(cpInfo, treePathHandle.getFileObject());
-        
+
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
                 
