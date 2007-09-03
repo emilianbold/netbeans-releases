@@ -54,6 +54,7 @@ import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 
@@ -284,7 +285,7 @@ public final class SourceRoots {
         for (FileObject child : folder.getChildren()) {
             if (child.isFolder()) {
                 String name = child.getNameExt();
-                if (!known.contains(name)) {
+                if (!known.contains(name) && VisibilityQuery.getDefault().isVisible(child)) {
                     if (result == null) {
                         result = new ArrayList<String>();
                     }
