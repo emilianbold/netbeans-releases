@@ -21,6 +21,8 @@ package org.netbeans.modules.cnd.navigation.hierarchy;
 
 import org.netbeans.modules.cnd.navigation.includeview.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -41,7 +43,16 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        return ContextUtils.findFile(activatedNodes) != null;
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            if (ContextUtils.USE_REFERENCE_RESOLVER) {
+                CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
+                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) {
+                    return true;
+                }
+            }
+            return ContextUtils.findFile(activatedNodes[0]) != null;
+        }
+        return false;
     }
     
     protected int mode() {
