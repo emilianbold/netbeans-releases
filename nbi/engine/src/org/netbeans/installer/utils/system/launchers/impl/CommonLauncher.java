@@ -192,12 +192,12 @@ public abstract class CommonLauncher extends Launcher {
         // check main-class parameter
         // read main class from jar file if it is not specified
         if(mainClass==null) {
-            // get the first
-            File jarFile = null;
+            // get the first            
             for(LauncherResource file : jars) {
                 if(file.isBundled() && !file.isBasedOnResource()) {
-                    jarFile=new File(file.getPath());
-                    Manifest manifest = new JarFile(jarFile).getManifest();
+                    JarFile jarFile = new JarFile(new File(file.getPath()));
+                    Manifest manifest = jarFile.getManifest();
+                    jarFile.close();
                     if(manifest!=null) {
                         mainClass = manifest.getMainAttributes().
                                 getValue(Attributes.Name.MAIN_CLASS);
@@ -211,10 +211,13 @@ public abstract class CommonLauncher extends Launcher {
         } else{
             for(LauncherResource file : jars) {
                 if(file.isBundled() && !file.isBasedOnResource() ) {
-                    File jarFile=new File(file.getPath());
-                    if((new JarFile(jarFile).getJarEntry(mainClass.replace(".","/") + ".class"))!=null) {
+                    JarFile jarFile = new JarFile(new File(file.getPath()));
+                    boolean mainClassExists = jarFile.getJarEntry(
+                            mainClass.replace(".","/") + ".class") != null;
+                    jarFile.close();
+                    if(mainClassExists) {                        
                         return;
-                    }
+                    }                    
                 } else {
                     return;
                 }
