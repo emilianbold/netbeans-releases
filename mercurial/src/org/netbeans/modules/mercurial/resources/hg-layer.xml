@@ -29,10 +29,10 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Editors">
         <folder name="SideBar">
-            <file name="org-netbeans-modules-mercurial-ui-annotate-AnnotationBarManager.instance"/>
+            <file name="org-netbeans-modules-mercurial-ui-annotate-AnnotationBarManager.instance">
+                <attr name="position" intvalue="2500"/>
+            </file>
             <!-- place in between line numbers sidebar and folding sidebar #57544 -->
-            <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-mercurial-ui-annotate-AnnotationBarManager.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-mercurial-ui-annotate-AnnotationBarManager.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
         </folder>
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-mercurial-Annotation.xml" url="hg_annotation.xml"/>
@@ -54,7 +54,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>        
         <folder name="Modes">
             <folder name="output">
-                <file name="hgversioning.wstcref" url="hg_wstcref.xml"/>
+                <file name="hgversioning.wstcref" url="hg_wstcref.xml">
+                    <attr name="position" intvalue="650"/>
+                </file>
             </folder>
         </folder>
     </folder>
