@@ -62,6 +62,13 @@ public class UncaughtExceptionTest extends HintsTestBase {
     }
     
     /**
+     * Don't offer surround with t-c for fields 
+     */ 
+    public void testBug95535() throws Exception {
+	performTestDoNotPerform("Test", 34, 21);
+    }
+    
+    /**
      * Field access inside ctor
      */
     public void testBug113812() throws Exception {
@@ -79,5 +86,5 @@ public class UncaughtExceptionTest extends HintsTestBase {
     public void testThisParamInsideAnonymous() throws Exception {
 	performTestDoNotPerform("Test", 24, 30);
     }
-
+    
 }

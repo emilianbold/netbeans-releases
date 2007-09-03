@@ -1,7 +1,7 @@
 package org.netbeans.test.java.hints;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URL;
 
 public class Test {
     public Test() {
@@ -30,6 +30,8 @@ public class Test {
 	java.io.BufferedInputStream bi = null;
         bi.read(new byte[bi.read()]);
     }
+    
+    URL url = new URL("");
 }
 
 class aa {

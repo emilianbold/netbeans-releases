@@ -136,6 +136,10 @@ public final class UncaughtException implements ErrorRule<Void> {
                 case NEW_CLASS:
                     el = info.getTrees().getElement(path);
 		    
+		    //IZ 95535 -- dont't offer surround with T-C for fields
+		    if(!isInsideMethod(path))
+			disableSurroundWithTryCatch = true;
+		    
 		    if(isThisParameter(path)) {
 			disableSurroundWithTryCatch = el != null && (el.getKind() == ElementKind.CONSTRUCTOR || el.getKind() == ElementKind.METHOD);
 		    }
@@ -208,6 +212,17 @@ public final class UncaughtException implements ErrorRule<Void> {
 	    path = path.getParentPath();
 	}
 	return false;
+    }
+    
+    private static boolean isInsideMethod(TreePath tp) {
+        while (tp != null) {
+            if (tp.getLeaf().getKind() == Kind.METHOD)
+                return true;
+            
+            tp = tp.getParentPath();
+        }
+        
+        return false;
     }
     
     public void cancel() {
