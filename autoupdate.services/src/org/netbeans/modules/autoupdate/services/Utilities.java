@@ -311,9 +311,10 @@ public class Utilities {
         return takeModuleInfo (el).getDependencies();
     }
     
-    @SuppressWarnings ("deprecation") //Dependency.TYPE_IDE must be handled for backward compatability
     private static UpdateElement findRequiredModule (Dependency dep, Collection<ModuleInfo> installedModules) {
         switch (dep.getType ()) {
+            case (Dependency.TYPE_NEEDS) :
+            case (Dependency.TYPE_RECOMMENDS) :
             case (Dependency.TYPE_REQUIRES) :
                 // find if some module fit the dependency
                 ModuleInfo info = DependencyChecker.findModuleMatchesDependencyRequires (dep, installedModules);
@@ -379,9 +380,6 @@ public class Utilities {
                     }
                 }
 
-                break;
-            case (Dependency.TYPE_IDE) :
-                getLogger ().log (Level.FINE, "Check dependency on IDE. Dependency: " + dep);
                 break;
             case (Dependency.TYPE_JAVA) :
                 getLogger ().log (Level.FINE, "Check dependency on Java platform. Dependency: " + dep);
@@ -468,7 +466,7 @@ public class Utilities {
         }
         final Set<Dependency> deps = new HashSet<Dependency> ();
         for (ModuleInfo info : mInfos) {
-            deps.addAll (info.getDependencies ());
+            deps.addAll (filterTypeRecommends (info.getDependencies ()));
         }
         List<ModuleInfo> extendedModules = getInstalledModules();
         extendedModules.addAll(infos);
@@ -477,6 +475,16 @@ public class Utilities {
         extendedModules.addAll (getModuleInfos (reqs));
         retval = DependencyChecker.findBrokenDependencies(deps, extendedModules);
         return retval;
+    }
+    
+    private static Set<Dependency> filterTypeRecommends (Collection<Dependency> deps) {
+        Set<Dependency> res = new HashSet<Dependency> ();
+        for (Dependency dep : deps) {
+            if (Dependency.TYPE_RECOMMENDS != dep.getType ()) {
+                res.add (dep);
+            }
+        }
+        return res;
     }
     
     static Set<String> getBrokenDependencies (UpdateElement element, List<ModuleInfo> infos) {
