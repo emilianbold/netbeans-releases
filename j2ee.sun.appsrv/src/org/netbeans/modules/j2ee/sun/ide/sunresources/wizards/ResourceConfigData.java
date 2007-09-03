@@ -55,39 +55,10 @@ public class ResourceConfigData implements WizardConstants {
     public static Wizard mailWizard = null;
     public static Wizard pmWizard = null;
     
+    private FileObject projectDirectory;
+    
     public ResourceConfigData() {
     }
-    
-    /*public ResourceConfigData(org.netbeans.modules.j2ee.sun.share.dd.resources.JdbcConnectionPool pool) throws NullPointerException{
-        Wizard wiz = getCPWizard();
-        String[] attrNames = FieldHelper.getFieldNames(wiz);  
-            
-        for (int i = 0; i < attrNames.length; i++) {
-            try {
-                String value = pool.getAttributeValue(attrNames[i]);
-                if (value != null) {
-                    setString(attrNames[i], value);
-                }
-            } catch (Exception ex) {
-                System.out.println("error in Resource Config data ");
-            }
-        }
-        ExtraProperty[] props = pool.getExtraProperty();
-        Vector vec = new Vector();
-        for (int i = 0; i < props.length; i++) {
-            NameValuePair pair = new NameValuePair();
-            pair.setParamName(props[i].getAttributeValue("name"));  //NOI18N
-            pair.setParamValue(props[i].getAttributeValue("value"));  //NOI18N
-            pair.setParamDescription(props[i].getDescription());  //NOI18N
-            vec.add(pair);
-        }
-        set(__Properties, vec);
-        
-        //set name
-        String name = pool.getAttributeValue(__Name);
-        String dataSourceClassName = pool.getAttributeValue(__DatasourceClassname);
-        setString(__Name, name);
-    }*/
     
     public void removeAll() {
         prop_value_map = new Hashtable();
@@ -230,6 +201,15 @@ public class ResourceConfigData implements WizardConstants {
     public void setTargetFileObject(FileObject targetObject){
         this.targetFileObject = targetObject;
     }
+    
+    public FileObject getProjectDirectory(){
+        return this.projectDirectory;
+    }
+    
+    public void setProjectDirectory(FileObject projectDirectory){
+        this.projectDirectory = projectDirectory;
+    }
+    
  
     public ResourceConfigHelperHolder getHolder(){
         return this.holder;

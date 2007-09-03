@@ -125,6 +125,10 @@ public class CommonAttributePanel extends ResourceWizardPanel {
         return helper;
     }
     
+    public Wizard getWizard() {
+        return wizardInfo;
+    }
+    
     public String getJndiName() {
         if (component != null && component.jLabels != null && component.jFields != null) {
             int i;

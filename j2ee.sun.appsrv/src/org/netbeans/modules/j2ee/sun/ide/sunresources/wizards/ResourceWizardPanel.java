@@ -19,12 +19,15 @@
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.ErrorManager;
 
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
@@ -104,4 +107,14 @@ public abstract class ResourceWizardPanel extends javax.swing.JPanel implements 
     public void storeSettings(Object settings) {
     }
     
+    public Wizard getWizardInfo(String dataFile){
+        Wizard wizardInfo = null;
+        try{
+            InputStream in = Wizard.class.getClassLoader().getResourceAsStream(dataFile);
+            wizardInfo = Wizard.createGraph(in);
+        }catch(Exception ex){
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        return wizardInfo;
+    }
 }
