@@ -21,7 +21,7 @@ package gui.window;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -109,7 +109,7 @@ public class ProfilerWindows extends org.netbeans.performance.test.utilities.Per
     }
     
     public ComponentOperator open() {
-        new Action(menuPrefix+commandName,null).performMenu(); // NOI18N
+        new ActionNoBlock(menuPrefix+commandName,null).performMenu(); // NOI18N
         return new TopComponentOperator(windowName);
     }
     
