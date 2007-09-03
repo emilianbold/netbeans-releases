@@ -18,10 +18,16 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
+import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.SettingsDefaults;
+import org.netbeans.editor.StatusBar;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer.FileLocation;
 import org.openide.awt.StatusDisplayer;
@@ -145,7 +151,18 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                     if (warning) {
                         org.netbeans.editor.Utilities.setStatusBoldText(pane, message);
                     } else {
-                        org.netbeans.editor.Utilities.setStatusText(pane, message);
+                       // Attempt to show the text in green
+                       EditorUI eui = Utilities.getEditorUI(pane);
+                       if (eui != null) {
+                            StatusBar statusBar = eui.getStatusBar();
+                            if (statusBar != null) {
+                                Coloring coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.GREEN);
+                                statusBar.setText(StatusBar.CELL_MAIN, message, coloring);
+                                return;
+                            }
+                       }
+                        
+                       org.netbeans.editor.Utilities.setStatusText(pane, message);
                     }
                     return;
                 }
