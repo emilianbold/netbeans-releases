@@ -86,6 +86,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         progress.setIndeterminate(true);
         finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_StartMessage")); // NOI18N
         startButton.setEnabled(false);
+        descriptor.setOptions(new Object[0]);
     }
     
     public void switchToFinished () {
