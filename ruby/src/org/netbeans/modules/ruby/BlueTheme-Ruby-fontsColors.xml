@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="GSF_CHAR_LITERAL" default="char"/>
 
     <!--"semantic" highlighting:-->
-    <fontcolor name="mod-unused" waveUnderlined="999999"/>
+    <fontcolor name="mod-unused" waveUnderlined="ff8888"/>
     <fontcolor name="mod-abstract" />
     <fontcolor name="mod-field" foreColor="EDDD3D" >
         <font style="bold" />
