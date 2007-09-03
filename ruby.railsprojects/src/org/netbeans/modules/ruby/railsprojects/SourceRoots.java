@@ -123,11 +123,11 @@ public final class SourceRoots {
 
         FileObject fo = helper.getRakeProjectHelper().getProjectDirectory();
         
-        FileObject rakefile = fo.getFileObject("Rakefile");
+        FileObject rakefile = fo.getFileObject("Rakefile"); // NOI18N
         if (rakefile != null) {
             plainFiles.add(rakefile);
         }
-        FileObject readme = fo.getFileObject("README");
+        FileObject readme = fo.getFileObject("README"); // NOI18N
         if (readme != null) {
             plainFiles.add(readme);
         }
@@ -147,13 +147,13 @@ public final class SourceRoots {
         sourceRootProperties.add("app/views"); // NOI18N
 
         // Add in other dirs we don't know about
-        FileObject app = fo.getFileObject("app");
+        FileObject app = fo.getFileObject("app"); // NOI18N
         if (app != null) {
             Set<String> knownAppDirs = new HashSet<String>();
-            knownAppDirs.add("controllers");
-            knownAppDirs.add("helpers");
-            knownAppDirs.add("models");
-            knownAppDirs.add("views");
+            knownAppDirs.add("controllers"); // NOI18N
+            knownAppDirs.add("helpers"); // NOI18N
+            knownAppDirs.add("models"); // NOI18N
+            knownAppDirs.add("views"); // NOI18N
             List<String> missing = findUnknownFolders(app, knownAppDirs);
             if (missing != null) {
                 for (String name : missing) {
@@ -197,14 +197,14 @@ public final class SourceRoots {
         sourceRootProperties.add("doc"); // NOI18N
         
         // Add in other test dirs we don't know about
-        FileObject test = fo.getFileObject("test");
+        FileObject test = fo.getFileObject("test"); // NOI18N
         if (test != null) {
             Set<String> knownTestDirs = new HashSet<String>();
-            knownTestDirs.add("unit");
-            knownTestDirs.add("functional");
-            knownTestDirs.add("fixtures");
-            knownTestDirs.add("mocks");
-            knownTestDirs.add("integration");
+            knownTestDirs.add("unit"); // NOI18N
+            knownTestDirs.add("functional"); // NOI18N
+            knownTestDirs.add("fixtures"); // NOI18N
+            knownTestDirs.add("mocks"); // NOI18N
+            knownTestDirs.add("integration"); // NOI18N
             List<String> missing = findUnknownFolders(test, knownTestDirs);
             if (missing != null) {
                 for (String name : missing) {
@@ -222,22 +222,22 @@ public final class SourceRoots {
         if (fo != null) {
             Set<String> knownTopDirs = new HashSet<String>();
             // Deliberately hidden
-            knownTopDirs.add("nbproject");
-            knownTopDirs.add("tmp");
+            knownTopDirs.add("nbproject"); // NOI18N
+            knownTopDirs.add("tmp"); // NOI18N
 
-            knownTopDirs.add("app");
-            knownTopDirs.add("components");
-            knownTopDirs.add("config");
-            knownTopDirs.add("db");
-            knownTopDirs.add("lib");
-            knownTopDirs.add("log");
-            knownTopDirs.add("public");
-            knownTopDirs.add("spec");
-            knownTopDirs.add("lib");
-            knownTopDirs.add("test");
-            knownTopDirs.add("doc");
-            knownTopDirs.add("script");
-            knownTopDirs.add("vendor");
+            knownTopDirs.add("app"); // NOI18N
+            knownTopDirs.add("components"); // NOI18N
+            knownTopDirs.add("config"); // NOI18N
+            knownTopDirs.add("db"); // NOI18N
+            knownTopDirs.add("lib"); // NOI18N
+            knownTopDirs.add("log"); // NOI18N
+            knownTopDirs.add("public"); // NOI18N
+            knownTopDirs.add("spec"); // NOI18N
+            knownTopDirs.add("lib"); // NOI18N
+            knownTopDirs.add("test"); // NOI18N
+            knownTopDirs.add("doc"); // NOI18N
+            knownTopDirs.add("script"); // NOI18N
+            knownTopDirs.add("vendor"); // NOI18N
 
             List<String> missing = findUnknownFolders(fo, knownTopDirs);
             if (missing != null) {
