@@ -77,23 +77,29 @@ public final class BeanInstaller {
      * the user choose the palette category. */
     public static void installBeans(Node[] nodes) {       
         final List<ClassSource> beans = new LinkedList<ClassSource>();
-        final List<String> unableToInstall = new LinkedList<String>();                        
+        final List<String> unableToInstall = new LinkedList<String>();
+        final List<String> noBeans = new LinkedList<String>();
         for (int i=0; i < nodes.length; i++) {            
-            DataObject dobj = (DataObject) nodes[i].getCookie(DataObject.class);
+            DataObject dobj = nodes[i].getCookie(DataObject.class);
             if (dobj == null)
                 continue;
 
             final FileObject fo = dobj.getPrimaryFile();            
             JavaClassHandler handler = new JavaClassHandler() {
-                public void handle(String className) {
-                    ClassSource classSource = 
-                            ClassPathUtils.getProjectClassSource(fo, className);
-                    if (classSource == null) {
-                        // Issue 47947
-                        unableToInstall.add(className);
+                public void handle(String className, String problem) {
+                    if (problem == null) {
+                        ClassSource classSource = 
+                                ClassPathUtils.getProjectClassSource(fo, className);
+                        if (classSource == null) {
+                            // Issue 47947
+                            unableToInstall.add(className);
+                        } else {
+                            beans.add(classSource);
+                        }
                     } else {
-                        beans.add(classSource);
-                    }                
+                        noBeans.add(className);
+                        noBeans.add(problem);
+                    }
                 } 
             };            
             scanFileObject(fo.getParent(), fo, handler);
@@ -113,11 +119,29 @@ public final class BeanInstaller {
             if (beans.size() == 0) return;
         }
 
+        String message = null;
         if (beans.size() == 0) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(PaletteUtils.getBundleString("MSG_noBeansUnderNodes")); // NOI18N
-            DialogDisplayer.getDefault().notify(nd);
-            return;
+            message = PaletteUtils.getBundleString("MSG_noBeansUnderNodes"); // NOI18N
         }
+        if (noBeans.size() != 0) {
+            Iterator<String> iter = noBeans.iterator();
+            while (iter.hasNext()) {
+                String className = iter.next();
+                String format = iter.next();
+                String msg = MessageFormat.format(format, className);
+                if (message != null) {
+                    message += '\n';
+                } else {
+                    message = ""; // NOI18N
+                }
+                message += msg;
+            }
+        }
+        if (message != null) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+        if (beans.size() == 0) return;
 
         String category = CategorySelector.selectCategory();
         if (category == null)
@@ -150,7 +174,7 @@ public final class BeanInstaller {
      * specified in the JAR manifest only.
      * @return list of ItemInfo */
     static List findJavaBeansInJar(File[] jarFiles) {
-        Map beans = null;
+        Map<String,ItemInfo> beans = null;
 
         for (int i=0; i < jarFiles.length; i++) {
             Manifest manifest;
@@ -187,12 +211,12 @@ public final class BeanInstaller {
                 ii.source = jarPath;
 
                 if (beans == null)
-                    beans = new HashMap(100);
+                    beans = new HashMap<String,ItemInfo>(100);
                 beans.put(ii.classname, ii);
             }
         }
 
-        return beans != null ? new ArrayList(beans.values()) : null;
+        return beans != null ? new ArrayList<ItemInfo>(beans.values()) : null;
     }
 
     /** Collects all classes under given roots that could be used as JavaBeans.
@@ -200,7 +224,7 @@ public final class BeanInstaller {
      * built classes.
      * @return list of ItemInfo */
     static List findJavaBeans(File[] roots) {
-        Map beans = new HashMap(100);
+        Map<String,ItemInfo> beans = new HashMap<String,ItemInfo>(100);
 
         for (int i=0; i < roots.length; i++) {
             FileObject foRoot = FileUtil.toFileObject(roots[i]);
@@ -213,7 +237,7 @@ public final class BeanInstaller {
             }
         }
 
-        return new ArrayList(beans.values());
+        return new ArrayList<ItemInfo>(beans.values());
     }
 
     // --------
@@ -257,13 +281,15 @@ public final class BeanInstaller {
 
     /** Recursive method scanning folders for classes (class files) that could
      * be JavaBeans. */
-    private static void scanFolderForBeans(FileObject folder, final Map beans, final String root) {
+    private static void scanFolderForBeans(FileObject folder, final Map<String,ItemInfo> beans, final String root) {
         JavaClassHandler handler = new JavaClassHandler() {
-            public void handle(String className) {
-                ItemInfo ii = new ItemInfo();
-                ii.classname = className;
-                ii.source = root;
-                beans.put(ii.classname, ii);                            
+            public void handle(String className, String problem) {
+                if (problem == null) {
+                    ItemInfo ii = new ItemInfo();
+                    ii.classname = className;
+                    ii.source = root;
+                    beans.put(ii.classname, ii);
+                }
             }
         };
                     
@@ -300,8 +326,10 @@ public final class BeanInstaller {
     public static String findJavaBeanName(FileObject file) {
         final String[] fqn = new String[1];
         scanFileObject(null, file, new JavaClassHandler() {
-            public void handle(String className) {
-                fqn[0] = className;
+            public void handle(String className, String problem) {
+                if (problem == null) {
+                    fqn[0] = className;
+                }
             }
         });
         return fqn[0];
@@ -317,8 +345,8 @@ public final class BeanInstaller {
                 public void run(CompilationController ctrl) throws Exception {
                     ctrl.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement clazz = findClass(ctrl, javaFO.getName());
-                    if (clazz != null && isDeclaredAsJavaBean(clazz)) {
-                        handler.handle(clazz.getQualifiedName().toString());
+                    if (clazz != null) {
+                        handler.handle(clazz.getQualifiedName().toString(), isDeclaredAsJavaBean(clazz));
                     }
                 }
             }, true);
@@ -352,8 +380,8 @@ public final class BeanInstaller {
                     is.close();
                 }
             }
-            if (clazz != null && isDeclaredAsJavaBean(clazz)) {
-                handler.handle(clazz.getName().getExternalName());
+            if (clazz != null) {
+                handler.handle(clazz.getName().getExternalName(), isDeclaredAsJavaBean(clazz));
             }
         } catch (IOException ex) {
             Logger.getLogger(BeanInstaller.class.getClass().getName()).
@@ -362,12 +390,18 @@ public final class BeanInstaller {
         
     }
         
-    public static boolean isDeclaredAsJavaBean(TypeElement clazz) {
+    public static String isDeclaredAsJavaBean(TypeElement clazz) {
+        if (ElementKind.CLASS != clazz.getKind()) {
+            return PaletteUtils.getBundleString("MSG_notAClass"); // NOI18N
+        }
+
         Set<javax.lang.model.element.Modifier> mods = clazz.getModifiers();
-        if (ElementKind.CLASS != clazz.getKind() ||
-                !mods.contains(javax.lang.model.element.Modifier.PUBLIC) ||
-                mods.contains(javax.lang.model.element.Modifier.ABSTRACT)) {
-            return false;
+        if (mods.contains(javax.lang.model.element.Modifier.ABSTRACT)) {
+            return PaletteUtils.getBundleString("MSG_abstractClass"); // NOI18N
+        }
+
+        if (!mods.contains(javax.lang.model.element.Modifier.PUBLIC)) {
+            return PaletteUtils.getBundleString("MSG_notPublic"); // NOI18N
         }
         
         for (Element member : clazz.getEnclosedElements()) {
@@ -375,30 +409,37 @@ public final class BeanInstaller {
             if (ElementKind.CONSTRUCTOR == member.getKind() &&
                     mods.contains(javax.lang.model.element.Modifier.PUBLIC) &&
                     ((ExecutableElement) member).getParameters().isEmpty()) {
-                return true;
+                return null;
             }
         }
         
-        return false;
+        return PaletteUtils.getBundleString("MSG_noPublicConstructor"); // NOI18N
     }
     
-    public static boolean isDeclaredAsJavaBean(ClassFile clazz) {
+    public static String isDeclaredAsJavaBean(ClassFile clazz) {
         int access = clazz.getAccess();
         
-        if (!Modifier.isPublic(access) || Modifier.isAbstract(access) ||
-                Modifier.isInterface(access) || clazz.isAnnotation() ||
-                clazz.isEnum() || clazz.isSynthetic() ) {
-            return false;
+        if (Modifier.isInterface(access) || clazz.isAnnotation() ||
+                clazz.isEnum() || clazz.isSynthetic()) {
+            return PaletteUtils.getBundleString("MSG_notAClass"); // NOI18N
         }
         
+        if (Modifier.isAbstract(access)) {
+            return PaletteUtils.getBundleString("MSG_abstractClass"); // NOI18N
+        }
+        
+        if (!Modifier.isPublic(access)) {
+            return PaletteUtils.getBundleString("MSG_notPublic"); // NOI18N
+        }
+
         for (Object omethod : clazz.getMethods()) {
             Method method = (Method) omethod;
             if (method.isPublic() && method.getParameters().isEmpty() &&
                     "<init>".equals(method.getName())) { // NOI18N
-                return true;
+                return null;
             }
         }
-        return false;
+        return PaletteUtils.getBundleString("MSG_noPublicConstructor"); // NOI18N
     }
     
     private static AddToPaletteWizard getAddWizard() {
@@ -407,7 +448,7 @@ public final class BeanInstaller {
             wizard = (AddToPaletteWizard) wizardRef.get();
         if (wizard == null) {
             wizard = new AddToPaletteWizard();
-            wizardRef = new WeakReference(wizard);
+            wizardRef = new WeakReference<AddToPaletteWizard>(wizard);
         }
         return wizard;
     }
@@ -430,7 +471,7 @@ public final class BeanInstaller {
     }
     
     private interface JavaClassHandler {        
-        public void handle(String className);        
+        public void handle(String className, String problem);        
     }
     
 }
