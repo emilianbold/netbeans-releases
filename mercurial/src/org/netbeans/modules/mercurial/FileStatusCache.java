@@ -123,6 +123,11 @@ public class FileStatusCache {
     public File [] listFiles(VCSContext context, int includeStatus) {
         Set<File> set = new HashSet<File>();
         Map allFiles = cacheProvider.getAllModifiedValues();
+        if(allFiles == null){
+            Mercurial.LOG.log(Level.FINE, "FileStatusCache: listFiles(): allFiles == null"); // NOI18N
+            return new File[0];
+        }
+
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) allFiles.get(file);

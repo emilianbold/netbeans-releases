@@ -74,18 +74,24 @@ public class CreateAction extends AbstractAction {
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if(files == null || files.length == 0) return;
         
+        // TODO: Assumption of siongle root file is wrong may get many files from ctx we 
+        // need to check
         File root = files[0];
         if(!root.isDirectory()) root = root.getParentFile();
         if (hg.getTopmostManagedParent(root) != null) return;
+        
+        while (HgProjectUtils.getProjectName(root) == null) {
+            if( root == null) return;
+            root = root.getParentFile();
+        }
+
         HgUtils.outputMercurialTabInRed(
                 NbBundle.getMessage(CreateAction.class,
                 "MSG_CREATE_TITLE")); // NOI18N
         HgUtils.outputMercurialTabInRed(
                 NbBundle.getMessage(CreateAction.class,
                 "MSG_CREATE_TITLE_SEP")); // NOI18N
-        while (HgProjectUtils.getProjectName(root) == null) {
-            root = root.getParentFile();
-        }
+        
         final File rootToManage = root;
         final String prjName = HgProjectUtils.getProjectName(rootToManage);
 
