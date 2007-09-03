@@ -235,6 +235,16 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             map.put(JDMK_HOME_TOKEN, new File(directory, JMDK_HOME));
             map.put(LOCALE_TOKEN, LOCALE);
             map.put(DEF_DOMAINS_PATH_TOKEN, new File(directory, DOMAINS_SUBDIR));
+            map.put(HADB_HOME_TOKEN, HADB_HOME);
+            if(SystemUtils.isWindows()) {
+                map.put(MFWK_HOME_TOKEN, new File(directory, MFWK_HOME_WINDOWS));
+            } else if(SystemUtils.isMacOS()) {
+                map.put(MFWK_HOME_TOKEN, new File(MFWK_HOME_MACOSX));
+            } else if(SystemUtils.isLinux()) {
+                map.put(MFWK_HOME_TOKEN, new File(MFWK_HOME_LINUX));
+            } else if(SystemUtils.isSolaris()) {
+                map.put(MFWK_HOME_TOKEN, new File(MFWK_HOME_SOLARIS));
+            }
             map.put(ACC_CONFIG_TOKEN, new File(directory, ACC_CONFIG));
             map.put(DERBY_HOME_TOKEN, new File(directory, DERBY_SUBDIR));
             map.put("localhost", SystemUtils.getHostName());
@@ -770,6 +780,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "%DEF_DOMAINS_PATH%"; // NOI18N
     public static final String ACC_CONFIG_TOKEN =
             "%ACC_CONFIG%"; // NOI18N
+    public static final String HADB_HOME_TOKEN =
+            "%HADB_HOME%"; // NOI18N
+    public static final String MFWK_HOME_TOKEN =
+            "%MFWK_HOME%"; // NOI18N    
+    
     public static final String DERBY_HOME_TOKEN =
             "%DERBY_HOME%"; // NOI18N
     public static final String HTTP_PORT_TOKEN =
@@ -853,6 +868,17 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String DERBY_LOG =
             "derby.log"; // NOI18N
+    
+    public static final String HADB_HOME =
+            " "; // NOI18N
+    public static final String MFWK_HOME_WINDOWS = 
+            "lib\\SUNWmfwk"; //NOI18N
+    public static final String MFWK_HOME_SOLARIS = 
+            "/opt/SUNWmfwk"; //NOI18N
+    public static final String MFWK_HOME_LINUX = 
+            "/opt/sun/mfwk/share"; //NOI18N
+    public static final String MFWK_HOME_MACOSX = 
+            "/opt/SUNWmfwk"; //NOI18N
     
     public static final String USE_NATIVE_LAUNCHER=
             "false"; // NOI18N
