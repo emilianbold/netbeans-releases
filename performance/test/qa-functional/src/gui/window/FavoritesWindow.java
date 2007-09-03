@@ -44,7 +44,7 @@ public class FavoritesWindow extends org.netbeans.performance.test.utilities.Per
 
     @Override
     protected void initialize() {
-        gui.Utilities.workarroundMainMenuRolledUp();
+//        gui.Utilities.workarroundMainMenuRolledUp();
     }
     
     public void prepare() {
@@ -54,6 +54,7 @@ public class FavoritesWindow extends org.netbeans.performance.test.utilities.Per
     public ComponentOperator open() {
         // invoke Favorites from the main menu
         new FavoritesAction().performMenu();
+waitNoEvent(3000);
         return new FavoritesOperator();
     }
 
