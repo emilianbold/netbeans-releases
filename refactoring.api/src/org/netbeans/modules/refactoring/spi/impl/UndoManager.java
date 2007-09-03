@@ -359,7 +359,11 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
         for (CloneableEditorSupport s:listenerToCES==null||l==null?allCES:listenerToCES.get(l)) {
             try {
                 org.openide.awt.UndoRedo.Manager manager = (org.openide.awt.UndoRedo.Manager) undoRedo.get(s);
-                manager.discardAllEdits();
+                if (manager!=null) {
+                    //if manager not initialized - there is nothing to discard
+                    //#114485
+                    manager.discardAllEdits();
+                }
             } catch (SecurityException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IllegalArgumentException ex) {
