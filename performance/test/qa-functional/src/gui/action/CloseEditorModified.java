@@ -65,7 +65,7 @@ public class CloseEditorModified extends org.netbeans.performance.test.utilities
     
     public void initialize(){
         EditorOperator.closeDiscardAll();
-        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
+        new OpenAction().performPopup(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorOperator("Main.java");
     }
 

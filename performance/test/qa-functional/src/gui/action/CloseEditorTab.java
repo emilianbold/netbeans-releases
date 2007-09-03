@@ -70,7 +70,7 @@ public class CloseEditorTab extends org.netbeans.performance.test.utilities.Perf
     
     public void prepare(){
         for(int i=0; i<openFileNodes.length; i++) {
-            new OpenAction().performAPI(openFileNodes[i]); // fix for mdr+java, opening all files at once causes never ending loop
+            new OpenAction().performPopup(openFileNodes[i]); // fix for mdr+java, opening all files at once causes never ending loop
         }
     }
     
