@@ -641,7 +641,7 @@ public class MetaComponentCreator {
 
         // 4th - copy aux values
         Map auxValues = sourceComp.getAuxValues();
-        if (auxValues != null)
+        if (auxValues != null) {
             for (it = auxValues.entrySet().iterator(); it.hasNext(); ) {
                 Map.Entry entry = (Map.Entry)it.next();
                 String auxName = (String)entry.getKey();
@@ -651,7 +651,9 @@ public class MetaComponentCreator {
                                         FormUtils.cloneObject(auxValue, formModel));
                 }
                 catch (Exception e) {} // ignore problem with aux value
-            }	    
+            }
+            JavaCodeGenerator.setupComponentFromAuxValues(newComp);
+        }
 	
         // 5th - copy layout constraints
         if (sourceComp instanceof RADVisualComponent

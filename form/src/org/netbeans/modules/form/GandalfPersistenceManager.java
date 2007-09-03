@@ -2999,52 +2999,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
         }
 
-        // AUX_VARIABLE_MODIFIER and AUX_VARIABLE_LOCAL require changing
-        // type of component's variable 
-        Object val = comp.getAuxValue(JavaCodeGenerator.AUX_VARIABLE_MODIFIER);
-        int newType = val instanceof Integer ?
-                        ((Integer)val).intValue() : -1;
-
-        val = comp.getAuxValue(JavaCodeGenerator.AUX_VARIABLE_LOCAL);
-        if (val instanceof Boolean) {
-            if (newType == -1)
-                newType = 0;
-            newType |= Boolean.TRUE.equals(val) ?
-                       CodeVariable.LOCAL | CodeVariable.EXPLICIT_DECLARATION :
-                       CodeVariable.FIELD;
-        }
-        
-        val = comp.getAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS);
-        String typeParameters = null;
-        if (val instanceof String) {
-            typeParameters = (String)val;
-        }
-
-        if ((newType > -1) || (typeParameters != null)) { // set variable type
-            CodeExpression exp = comp.getCodeExpression();
-            int varType = exp.getVariable().getType();
-            
-            if (newType > -1) {
-                varType &= ~CodeVariable.ALL_MODIF_MASK;
-                varType |= newType & CodeVariable.ALL_MODIF_MASK;
-
-                if ((newType & CodeVariable.SCOPE_MASK) != 0) {
-                    varType &= ~CodeVariable.SCOPE_MASK;
-                    varType |= newType & CodeVariable.SCOPE_MASK;
-                }
-
-                if ((newType & CodeVariable.DECLARATION_MASK) != 0) {
-                    varType &= ~CodeVariable.DECLARATION_MASK;
-                    varType |= newType & CodeVariable.DECLARATION_MASK;
-                }
-            }
-
-            CodeStructure codeStructure = formModel.getCodeStructure();
-            String varName = comp.getName(); // get the original name
-            codeStructure.removeExpressionFromVariable(exp);
-            codeStructure.createVariableForExpression(exp, varType, typeParameters, varName);
-        }
-
+        JavaCodeGenerator.setupComponentFromAuxValues(comp);
     }
 
     // -----------
