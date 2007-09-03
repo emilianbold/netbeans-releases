@@ -294,7 +294,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 requests++;
                 used++;
                 if (jar == null) {
-                    jar = new JarFile(file);
+                    jar = new JarFile(file, false);
                     opened(this);
                 }
                 return jar;
