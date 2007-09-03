@@ -88,7 +88,7 @@ public class Components2 extends HttpServlet {
                 "sjsas");
         final List<String> hidden = Arrays.asList(
                 "nb-platform",
-                "nb-base",
+                //"nb-base",
                 "openesb",
                 "sjsam");
         final Map<String, String> notes = new HashMap<String, String>();
