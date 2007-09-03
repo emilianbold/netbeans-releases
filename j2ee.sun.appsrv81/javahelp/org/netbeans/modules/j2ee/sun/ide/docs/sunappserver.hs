@@ -7,7 +7,6 @@
     <maps>
       <homeID>aboutplugin</homeID>
       <mapref location="sunappservermap.jhm" />
-      <mapref location="../../../../../../../com/sun/jdo/modules/persistence/docs/tp.map" />
     </maps>
     <view>
         <name>TOC</name>
@@ -15,14 +14,7 @@
         <type>javax.help.TOCView</type>
         <data>toc.xml</data>
     </view>
-<!--
-    <view>
-        <name>Index</name>
-        <label>Index</label>
-        <type>javax.help.IndexView</type>
-        <data>index.xml</data>
-    </view>
--->
+
     <view>
         <name>Search</name>
         <label>Label</label>
