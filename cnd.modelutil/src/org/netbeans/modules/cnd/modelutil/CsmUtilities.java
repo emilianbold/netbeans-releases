@@ -244,6 +244,18 @@ public class CsmUtilities {
         return panes[0];
     }
     
+    public static File getFile(BaseDocument bDoc) {
+        DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
+        if (dobj != null && dobj.isValid()) {
+            FileObject fo = dobj.getPrimaryFile();
+            if (fo != null) {
+                File file = FileUtil.toFile(fo);
+                return file;
+            }
+        }
+        return null;
+    }
+    
     public static CsmFile getCsmFile(BaseDocument bDoc, boolean waitParsing) {
 	CsmFile csmFile = null;
 	try {
