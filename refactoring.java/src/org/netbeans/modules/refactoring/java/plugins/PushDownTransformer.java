@@ -69,7 +69,7 @@ public class PushDownTransformer extends RefactoringVisitor {
             for (Tree t: njuClass.getMembers()) {
                 for (int i=0; i<members.length; i++) {
                     Element current = workingCopy.getTrees().getElement(TreePath.getPath(workingCopy.getCompilationUnit(), t));
-                    if (members[i].getGroup()!=MemberInfo.Group.IMPLEMENTS && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
+                    if (members[i].getGroup()!=MemberInfo.Group.IMPLEMENTS && current!=null && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
                         if (members[i].isMakeAbstract()) {
                             if (current.getKind().isClass()) {
                                 if (!classIsAbstract) {
