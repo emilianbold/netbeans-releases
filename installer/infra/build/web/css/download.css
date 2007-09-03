@@ -149,6 +149,14 @@ table.components_table .product_note {
     font-size:          0.85em;
 }
 
+table.components_table .product_display_name {
+}
+
+table.components_table .product_display_name_no {
+    color:              grey;
+}
+
+
 table.components_table .title {
     font-size:			1.3em;
 	white-space:		nowrap;
