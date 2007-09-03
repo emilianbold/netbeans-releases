@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.groovy.editor
+OpenIDE-Module-Layer: org/netbeans/modules/groovy/editor/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/groovy/editor/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.3
