@@ -131,7 +131,11 @@ public final class CssModel {
         CssModelASTEvaluator evaluator = new CssModelASTEvaluator(new CssModelASTEvaluatorListener() {
             public void evaluated(ASTNode root, boolean error) {
                 //parser finished, AST evaluated
-                updateModel(root);
+                if(error) {
+                    support.firePropertyChange(MODEL_INVALID, null, null);
+                } else {
+                    updateModel(root);
+                }
             }
         });
         parser.addASTEvaluator(evaluator);
