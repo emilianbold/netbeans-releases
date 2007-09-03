@@ -566,6 +566,9 @@ public class FormEditor {
         if (formLoaded && formModel != null && !formModel.isReadOnly()
             && needPostCreationUpdate()) // just created via New wizard
         {   // detect settings, update the form, regenerate code, save
+            // make sure no upgrade warning is shown
+            formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
+            // switch to resources if needed
             getResourceSupport().prepareNewForm();
             // make sure layout code generation type is detected
             formModel.getSettings().getLayoutCodeTarget();
