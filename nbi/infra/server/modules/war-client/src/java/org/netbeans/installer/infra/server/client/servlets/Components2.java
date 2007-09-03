@@ -92,7 +92,7 @@ public class Components2 extends HttpServlet {
                 "openesb",
                 "sjsam");
         final Map<String, String> notes = new HashMap<String, String>();
-        notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");
+        //notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");
         
         try {
             response.setContentType("text/javascript; charset=UTF-8");

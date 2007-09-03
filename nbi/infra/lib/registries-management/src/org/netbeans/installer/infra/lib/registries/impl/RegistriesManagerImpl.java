@@ -672,7 +672,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "openesb",
                 "sjsam");
         final Map<String, String> notes = new HashMap<String, String>();
-        notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");
+        //notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");
         
         
         final ReentrantLock lock = getLock(root);
