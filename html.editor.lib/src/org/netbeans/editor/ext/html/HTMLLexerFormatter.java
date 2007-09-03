@@ -67,12 +67,14 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
                             || isClosingTag(tokenSequence, tokenOffset)){
                         int r = tokenSequence.offset();
                         tokenSequence.move(originalOffset);
+                        tokenSequence.moveNext();
                         return r;
                     }
                 }
 	    }
             
             tokenSequence.move(originalOffset);
+            tokenSequence.moveNext();
 	}
 	return -1;
     }
@@ -89,6 +91,7 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
         
         int r = tokenSequence.offset();
         tokenSequence.move(originalOffset);
+        tokenSequence.moveNext();
         return thereAreMoreTokens ? r : -1;
     }
     
@@ -128,10 +131,12 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
 	if (thereAreMoreTokens){
             int r = tokenSequence.offset();
             tokenSequence.move(originalOffset);
+            tokenSequence.moveNext();
 	    return r;
 	}
 	
         tokenSequence.move(originalOffset);
+        tokenSequence.moveNext();
 	return -1;
     }
     

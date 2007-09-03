@@ -61,10 +61,12 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
 
                 int r = tokenSequence.offset();
                 tokenSequence.move(originalOffset);
+                tokenSequence.moveNext();
                 return r;
             }
             
             tokenSequence.move(originalOffset);
+            tokenSequence.moveNext();
         }
         return -1;
     }
@@ -83,6 +85,7 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
 
         int r = tokenSequence.offset();
         tokenSequence.move(originalOffset);
+        tokenSequence.moveNext();
         return thereAreMoreTokens ? r : -1;
     }
 
@@ -129,10 +132,12 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
         if (thereAreMoreTokens) {
             int r = tokenSequence.offset();
             tokenSequence.move(originalOffset);
+            tokenSequence.moveNext();
             return r;
         }
 
         tokenSequence.move(originalOffset);
+        tokenSequence.moveNext();
         return -1;
     }
 

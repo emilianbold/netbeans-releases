@@ -22,6 +22,7 @@ package org.netbeans.modules.editor.structure.formatting;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -132,12 +133,31 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             int firstUnformattableLine = -1;
 
             boolean[] unformattableLines = new boolean[lastLine + 1];
+            Arrays.fill(unformattableLines, true);
             int[] indentsWithinTags = new int[lastLine + 1];
 
             //********************
             for (TokenSequence tokenSequence : tokenSequences) {
-                tokenSequence.moveStart();
-                boolean thereAreMoreTokens = tokenSequence.moveNext();
+                // Only reindent lines that start with tokens of current language
+                tokenSequence.moveEnd(); tokenSequence.movePrevious();
+                int languageBlockEnd = tokenSequence.offset();
+                tokenSequence.moveStart(); tokenSequence.moveNext();
+                int languageBlockStart = tokenSequence.offset();
+                
+                int firstLineOfTheLanguageBlock = Utilities.getLineOffset(doc, languageBlockStart);
+                
+                if (Utilities.getRowStartFromLineOffset(doc, firstLineOfTheLanguageBlock) < languageBlockStart){
+                    firstLineOfTheLanguageBlock ++;
+                }
+                
+                int lastLineOfTheLanguageBlock = Utilities.getLineOffset(doc, languageBlockEnd);
+                
+                for (int i = firstLineOfTheLanguageBlock; i <= lastLineOfTheLanguageBlock; i ++){
+                    unformattableLines[i] = false;
+                }
+                
+                boolean thereAreMoreTokens = true;
+                
 
 
                 if (tokenSequence != null) {
@@ -391,6 +411,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                 if (isOpeningTag(tokenSequence, currentTokenOffset)) {
                     if (balance == 0) {
                         tokenSequence.move(originalOffset);
+                        tokenSequence.moveNext();
                         return currentTokenOffset;
                     }
 
@@ -402,6 +423,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         }
 
         tokenSequence.move(originalOffset);
+        tokenSequence.moveNext();
         return -1;
     }
 
@@ -452,11 +474,13 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
             if (isClosingTag(tokenSequence, currentOffset)) {
                 tokenSequence.move(originalOffset);
+                tokenSequence.moveNext();
                 return currentOffset;
             }
         }
 
         tokenSequence.move(originalOffset);
+        tokenSequence.moveNext();
         return -1;
     }
 
@@ -477,6 +501,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             if (tokenSequence.moveNext()) {
                 Token r = tokenSequence.token();
                 tokenSequence.move(originalOffset);
+                tokenSequence.moveNext();
                 return r;
             }
         }
