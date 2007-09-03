@@ -90,7 +90,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     private transient Node rootNode;
         
     /** Creates new form ServicesPanel */
-    public ServicesPanel(SectionView sectionView, E2EDataObject dataObject) {
+    public ServicesPanel(SectionView sectionView, final E2EDataObject dataObject) {
         super(sectionView);
         this.dataObject = dataObject;
         initComponents();
@@ -130,16 +130,14 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_ServicesPanel" ));
         checkedTreeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
         
-        if( dataObject == null ){
-            generateButton.setVisible(false); //not visible for wizard
-        } else {
-            if( dataObject.isGenerating()) generateButton.setEnabled( false ); //for case we are generating
-            checkedTreeView.addChangeListener( new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                   ServicesPanel.this.dataObject.setModified(true);
-                   changeTask.schedule(100);
-                }
-            });
+        if(dataObject == null || dataObject.isGenerating()) generateButton.setEnabled( false ); //for case we are generating
+        checkedTreeView.addChangeListener( new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+               if (dataObject != null) ServicesPanel.this.dataObject.setModified(true);
+               changeTask.schedule(100);
+            }
+        });
+        if (dataObject != null) {
             setConfiguration(dataObject.getConfiguration());
             dataObject.addPropertyChangeListener(this);
         }

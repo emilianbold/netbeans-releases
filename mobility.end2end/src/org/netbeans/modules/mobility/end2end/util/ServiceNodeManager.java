@@ -282,14 +282,16 @@ public class ServiceNodeManager {
         private class ClassChildren extends Children.Keys<MethodData> {
 
             private ClassData classData;
+            private final String fqn;
             
             public ClassChildren(ClassData classData) {
                 this.classData = classData;
+                this.fqn = classData.getFullyQualifiedName();
                 notifyChange();
             }
             
             public void notifyChange() {
-                classData = allRegistry.getClassData(classData.getFullyQualifiedName());
+                classData = allRegistry.getClassData(fqn);
                 setKeys(classData == null ? Collections.EMPTY_LIST : classData.getMethods());
             }
             
