@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -230,7 +231,11 @@ public class TaskCache {
                 String line;
                 
                 while ((line = pw.readLine()) != null) {
-                    read.add(new URL(line));
+                    try {
+                        read.add(new URL(line));
+                    } catch (MalformedURLException malformedURL) {
+                        LOG.warning("Malformed URL: " + line +" in: " + dep.getAbsolutePath());
+                    }
                 }
             } finally {
                 pw.close();
