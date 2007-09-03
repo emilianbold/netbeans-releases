@@ -88,13 +88,13 @@ public class CallEjbGeneratorTest extends TestBase {
         final String generatedMethodBody =
         "{\n" +
         "    try {\n" +
-        "        javax.naming.Context c = new javax.naming.InitialContext();\n" +
-        "        statelesslr.StatelessLRLocalHome2 rv = (statelesslr.StatelessLRLocalHome2)c.lookup(\"java:comp/env/StatelessLRBean2\");\n" +
+        "        Context c = new InitialContext();\n" +
+        "        StatelessLRLocalHome2 rv = (StatelessLRLocalHome2)c.lookup(\"java:comp/env/StatelessLRBean2\");\n" +
         "        return rv.create();\n" +
-        "    } catch (javax.naming.NamingException ne) {\n" +
+        "    } catch (NamingException ne) {\n" +
         "        java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, \"exception caught\", ne);\n" +
         "        throw new RuntimeException(ne);\n" +
-        "    } catch (javax.ejb.CreateException ce) {\n" +
+        "    } catch (CreateException ce) {\n" +
         "        java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, \"exception caught\", ce);\n" +
         "        throw new RuntimeException(ce);\n" +
         "    }\n" +
@@ -150,7 +150,7 @@ public class CallEjbGeneratorTest extends TestBase {
                 "    try {\n" +
                 "        statelessLRBean2 = statelessLRLocalHome2.create();\n" +
                 "    } catch (Exception e) {\n" +
-                "        throw new javax.ejb.EJBException(e);\n" +
+                "        throw new EJBException(e);\n" +
                 "    }\n" +
                 "}";
         
