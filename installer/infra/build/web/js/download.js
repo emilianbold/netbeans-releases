@@ -59,7 +59,7 @@ function write_components() {
 			
 			document.write('    <td class="left">');
 			document.write('<div id="product_' + index + '_description" class="pop_up">' + product_display_names[index] + '<br><br>' + product_descriptions[index] + '</div>');
-			document.write('<span id="product_' + index + '_display_name" onmouseover="show_description(' + index + ');" onmouseout="hide_description(' + index + ');">' + product_display_names[index] + '</span>');
+			document.write('<span id="product_' + index + '_display_name" onmouseover="show_description(' + index + ');" onmouseout="hide_description(' + index + ');"><a class="product_display_name">' + product_display_names[index] + '</a></span>');
 			
 			if (product_notes[j] != '') {
 				document.write('<br><span class="product_note">' + product_notes[index] + '</span>');
@@ -171,7 +171,7 @@ function update() {
             document.getElementById("product_" + i + "_javaee").innerHTML = '';
         }        
 		
-		if (product_properties[i] & PROPERTY_JAVAME) {
+	if (product_properties[i] & PROPERTY_JAVAME) {
             if (product_messages[i] == null) {
                 document.getElementById("product_" + i + "_javame").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
             } else {
@@ -210,6 +210,12 @@ function update() {
         } else {
             document.getElementById("product_" + i + "_cnd").innerHTML = '';
         }
+
+	if (product_messages[i] == null) {
+		document.getElementById("product_" + i + "_display_name").innerHTML = '<a class="product_display_name">' + product_display_names[i] + "</a>";
+	} else {
+		document.getElementById("product_" + i + "_display_name").innerHTML = '<a class="product_display_name_no">' + product_display_names[i] + "</a>";
+	}
     }
     
     // update the error message
