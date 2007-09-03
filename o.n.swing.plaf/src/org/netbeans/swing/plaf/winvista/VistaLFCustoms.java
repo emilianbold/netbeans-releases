@@ -135,7 +135,8 @@ public final class VistaLFCustoms extends LFCustoms {
         convert ("TextField.inactiveBackground"); //NOI18N
         convert ("TextField.disabledBackground");  //NOI18N
 
-        return uiDefaults;
+        //#108517 - turn off ctrl+page_up and ctrl+page_down mapping
+        return UIUtils.addInputMapsWithoutCtrlPageUpAndCtrlPageDown( uiDefaults );
     }
     
     /**

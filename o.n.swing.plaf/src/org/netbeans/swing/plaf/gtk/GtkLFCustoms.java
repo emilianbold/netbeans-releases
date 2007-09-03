@@ -118,7 +118,9 @@ public class GtkLFCustoms extends LFCustoms {
             "winclassic_tab_sel_gradient", tabBg,
             SCROLLPANE_BORDER, new JScrollPane().getViewportBorder(),
         };
-        return result;
+
+        //#108517 - turn off ctrl+page_up and ctrl+page_down mapping
+        return UIUtils.addInputMapsWithoutCtrlPageUpAndCtrlPageDown( result );
     }
     
     public Object[] createLookAndFeelCustomizationKeysAndValues() {

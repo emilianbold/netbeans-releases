@@ -124,7 +124,8 @@ public final class WindowsLFCustoms extends LFCustoms {
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
         }; //NOI18N
 
-        return result;
+        //#108517 - turn off ctrl+page_up and ctrl+page_down mapping
+        return UIUtils.addInputMapsWithoutCtrlPageUpAndCtrlPageDown( result );
     }
     
     public Object[] createGuaranteedKeysAndValues() {
