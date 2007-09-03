@@ -52,6 +52,23 @@
   <li>In the Projects window, right-click the enterprise application project and choose Profile.</li>
   <li>Select a profiling task and click Run.</li>
 </ol>
+
+<ul class="note">
+    <li>If you are analyzing application performance, choose the Profile Projects &amp;
+    Subprojects Classes filter to ensure that the classes in your EJB module and
+    web module projects will be profiled. If you do not choose this filter, the classes in 
+    the EJB module and web module are not profiled.
+    <p>You can limit the classes in the enterprise application that are profiled by doing the following:</p>
+    <ol>
+        <li>In the Analyze Performance pane, choose the Profile Projects &amp;
+        Subprojects Classes filter and then click Show Filter Value.</li> 
+    <li>Click to Quickfilter in the dialog box.</li>
+    <li>In the Set Quick Filter dialog, select a filter type and edit the filter values
+        to limit the classes that are profiled and click OK.</li>
+    <li>Make sure that Quick Filter is selected in the Filter drop-down list when you run the profiling session.</li>
+    </ol></li>
+</ul>
+
 <p>When you profile an enterprise application, the IDE does the following:</p>
 <ul>
   <li>Compiles the EAR file if necessary.</li>
@@ -67,6 +84,7 @@
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/profile_quickref.html">Profiling Tasks: Quick Reference</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/custom_filtersets.html">Setting Profiling Filters</a></dd>
             <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/profile_remote.html">Profiling a Remote Application</a></dd>
             <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/profile_windows.html">Profiling Windows</a></dd>
             <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/profile_tasks_overview.html">Selecting a Profiling Task</a></dd>
