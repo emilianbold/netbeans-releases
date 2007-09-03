@@ -383,9 +383,38 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
     }
 
+    private static class MyPanel extends JPanel {
+	
+	private TypeDescriptor td;
+	
+	void setDescriptor(TypeDescriptor td) {
+	    this.td = td;
+	    // since the same component is reused for dirrerent list itens, 
+	    // null the tool tip
+	    putClientProperty(TOOL_TIP_TEXT_KEY, null);
+	}
+
+	@Override
+	public String getToolTipText() {
+	    // the tool tip is gotten from the descriptor 
+	    // and cached in the standard TOOL_TIP_TEXT_KEY property
+	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
+	    if( text == null ) {
+                if( td != null ) {
+                    FileObject fo = td.getFileObject();
+                    if (fo != null) {
+                        text = FileUtil.getFileDisplayName(fo);
+                    }
+                }
+                putClientProperty(TOOL_TIP_TEXT_KEY, text);
+	    }
+	    return text;
+	}
+    }
+    
     private static class Renderer extends DefaultListCellRenderer implements ChangeListener {
          
-        private JPanel rendererComponent;
+        private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
         private JLabel jlPkg = new JLabel();
         private JLabel jlPrj = new JLabel();
@@ -410,7 +439,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 stateChanged(new ChangeEvent(container));
             }
             
-            rendererComponent = new JPanel();
+            rendererComponent = new MyPanel();
             rendererComponent.setLayout(new BorderLayout());
             rendererComponent.add( jlName, BorderLayout.WEST );
             rendererComponent.add( jlPkg, BorderLayout.CENTER);
@@ -487,10 +516,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 jlPkg.setText(td.getContextName());
                 jlPrj.setText(td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
-                FileObject fo = td.getFileObject();
-                if (fo != null) {
-                    rendererComponent.setToolTipText( FileUtil.getFileDisplayName(fo));
-                }
+		rendererComponent.setDescriptor(td);
+//                FileObject fo = td.getFileObject();
+//                if (fo != null) {
+//                    rendererComponent.setToolTipText( FileUtil.getFileDisplayName(fo));
+//                }
                 LOGGER.fine("  Time in paint " + (System.currentTimeMillis() - time) + " ms.");
             }
             else {
