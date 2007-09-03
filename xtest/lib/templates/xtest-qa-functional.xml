@@ -23,14 +23,13 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Imports init-parse-project-xml target which also initializes all project properties. -->
     <import file="init.xml"/>
     
-    <property name="jellytools.home" location="${netbeans.user}/modules/ext/"/>
-    <property name="jemmy.home" location="${netbeans.user}/modules/ext/"/>
-    <path id="jemmy.and.jelly.path">
-        <pathelement location="${jemmy.home}/jemmy.jar"/>
-        <pathelement location="${jellytools.home}/jelly2-nb.jar"/>
-    </path>
-
     <target name="init" depends="init-nb-properties,init-system-properties">
+        <property name="jellytools.home" location="${netbeans.dest.dir}/testtools/modules/ext/"/>
+        <property name="jemmy.home" location="${netbeans.dest.dir}/testtools/modules/ext/"/>
+        <path id="jemmy.and.jelly.path">
+            <pathelement location="${jemmy.home}/jemmy.jar"/>
+            <pathelement location="${jellytools.home}/jelly2-nb.jar"/>
+        </path>
         <property name="build.compiler.debug" value="true"/>
         <property name="javac.source" value="1.5"/>
         <property name="build.compiler.source" value="${javac.source}"/> 

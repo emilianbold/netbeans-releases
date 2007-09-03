@@ -200,9 +200,6 @@ public class PaintAppProjectIterator implements TemplateWizard.Iterator {
                 if(e.getAttribute("name").equals("xtest.home")) { // NOI18N
                     e.setAttribute("location", xtestHome.getAbsolutePath());// NOI18N
                 }
-                if(e.getAttribute("name").equals("netbeans.user")) { // NOI18N
-                    e.setAttribute("location", System.getProperty("netbeans.user"));// NOI18N
-                }
             }
             saveXml(doc, prjLoc, filePath);                    
         } catch (Exception e) {
