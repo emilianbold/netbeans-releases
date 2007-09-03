@@ -59,9 +59,17 @@ ould operate on.
         FileObject file = look.lookup(FileObject.class);
         NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
         TreePathHandle handle = look.lookup(TreePathHandle.class);
-        if (file != null) {
+        FileObject prjFile = file;
+        //#114235
+        if (prjFile == null && folder != null) {
+            prjFile = folder.getFolder();
+        }
+        if (prjFile == null && handle != null) {
+            prjFile = handle.getFileObject();
+        }
+        if (prjFile != null) {
             //#107638
-            Project project = FileOwnerQuery.getOwner(file);
+            Project project = FileOwnerQuery.getOwner(prjFile);
             if (project == null || project.getLookup().lookup(NbModuleProvider.class) == null) {
                 // take just netbeans module development into account..
                 return null;
