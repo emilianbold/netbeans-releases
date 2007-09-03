@@ -147,49 +147,17 @@ final class DummyModuleInfo extends ModuleInfo {
         return deps;
     }
     
-    @SuppressWarnings ("deprecation") //Dependency.TYPE_IDE must be handled for backward compatability
     private final static Set<Dependency> parseDeps(Attributes attr, String cnb) throws IllegalArgumentException {
         Set<Dependency> s = new HashSet<Dependency> ();
         s.addAll(Dependency.create(Dependency.TYPE_MODULE, attr.getValue("OpenIDE-Module-Module-Dependencies"))); // NOI18N
         s.addAll(Dependency.create(Dependency.TYPE_PACKAGE, attr.getValue("OpenIDE-Module-Package-Dependencies"))); // NOI18N
-        s.addAll(Dependency.create(Dependency.TYPE_IDE, attr.getValue("OpenIDE-Module-IDE-Dependencies"))); // NOI18N
         s.addAll(Dependency.create(Dependency.TYPE_JAVA, attr.getValue("OpenIDE-Module-Java-Dependencies"))); // NOI18N
         s.addAll(Dependency.create(Dependency.TYPE_REQUIRES, attr.getValue("OpenIDE-Module-Requires"))); // NOI18N
-        // #24143: treat API dependencies as dependencies on pseudomodule org.openide
-        Iterator it = s.iterator();
+        s.addAll(Dependency.create(Dependency.TYPE_NEEDS, attr.getValue("OpenIDE-Module-Needs"))); // NOI18N
+        s.addAll(Dependency.create(Dependency.TYPE_RECOMMENDS, attr.getValue("OpenIDE-Module-Recommends"))); // NOI18N
         SpecificationVersion api = null;
         String impl = null;
         String major = null;
-        while (it.hasNext()) {
-            Dependency dep = (Dependency)it.next();
-            if (dep.getType() == Dependency.TYPE_IDE) {
-                if (dep.getComparison() == Dependency.COMPARE_SPEC) {
-                    if (api != null) {
-                        throw new IllegalArgumentException("Duplicate OpenIDE-Module-IDE-Dependencies found!"); // NOI18N
-                    }
-                    api = new SpecificationVersion(dep.getVersion());
-                } else {
-                    // Must be impl comparison.
-                    if (impl != null) {
-                        throw new IllegalArgumentException("Duplicate OpenIDE-Module-IDE-Dependencies found!"); // NOI18N
-                    }
-                    impl = dep.getVersion();
-                }
-                String name = dep.getName();
-                int index = name.lastIndexOf('/');
-                String newmajor;
-                if (index == -1) {
-                    newmajor = ""; // NOI18N
-                } else {
-                    newmajor = name.substring(index);
-                }
-                if (major != null && !major.equals(newmajor)) {
-                    throw new IllegalArgumentException("Clashing OpenIDE-Module-IDE-Dependencies found!"); // NOI18N
-                }
-                major = newmajor;
-                it.remove();
-            }
-        }
         if (api != null) {
             s.addAll(Dependency.create(Dependency.TYPE_MODULE, "org.openide" + major + " > " + api)); // NOI18N
         }
