@@ -22,6 +22,7 @@ package gui.action;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.QueueTool;
 
 
 /**
@@ -78,7 +79,9 @@ public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoClone
      */
     public void initialize(){
         super.initialize();
-        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|" + fileName_preopen));
+	SourcePackagesNode spn=new SourcePackagesNode("PerformanceTestData");
+	Node n=new Node(spn,"org.netbeans.test.performance|" + fileName_preopen);
+        new OpenAction().performPopup(n);
     }
     
 }
