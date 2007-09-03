@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <fontcolor name="GSF_CLASS" foreColor="EDDD3D">
+        <font style="bold+italic"/>
+    </fontcolor>
+    
+    <fontcolor name="GSF_INT_LITERAL" default="number"/>
+    <fontcolor name="GSF_FLOAT_LITERAL" default="number"/>
+    <fontcolor name="GSF_ANY_OPERATOR" default="8AA6C1"/>
+    <fontcolor name="GSF_INSTANCE" foreColor="EDDD3D">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="GSF_GLOBAL" foreColor="EDDD3D">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor name="GSF_STRING_LITERAL" default="string"/>
+    <fontcolor name="GSF_DOUBLE_LITERAL" default="number"/>
+    <fontcolor name="GSF_BLOCK_COMMENT" default="comment"/>
+    <fontcolor name="GSF_DOCUMENTATION" default="comment"/>
+    <fontcolor name="GSF_LONG_LITERAL" default="number"/>
+    <fontcolor name="GSF_REGEXP_LITERAL" foreColor="CA4344"/>
+    <fontcolor name="GSF_ERROR" default="error"/>
+    <fontcolor name="GSF_LINE_COMMENT" default="comment"/>
+    <fontcolor name="GSF_CONSTANT" foreColor="8AA6C1"/>
+    <fontcolor name="GSF_TYPESYMBOL" foreColor="B53B3C"/>
+    <fontcolor name="GSF_IDENTIFIER" default="identifier"/>
+    <fontcolor name="GSF_WHITESPACE" default="whitespace"/>
+    <fontcolor name="GSF_ANY_KEYWORD" default="keyword"/>
+    <fontcolor name="GSF_TODO" foreColor="ff99006b">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="QUOTED_STRING_LITERAL" default="string"/>
+    <fontcolor name="GSF_CHAR_LITERAL" default="char"/>
+
+    <!--"semantic" highlighting:-->
+    <fontcolor name="mod-unused" waveUnderlined="999999"/>
+    <fontcolor name="mod-abstract" />
+    <fontcolor name="mod-field" foreColor="EDDD3D" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mod-local-variable" />
+    <fontcolor name="mod-parameter" foreColor="8AA6C1"/>
+    <fontcolor name="mod-method">
+        <font style="italic" />
+    </fontcolor>
+    <fontcolor name="mod-constructor" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mod-class" />
+    <fontcolor name="mod-interface" />
+    <fontcolor name="mod-annotation-type" />
+    <fontcolor name="mod-enum" />
+    <fontcolor name="mod-deprecated" strikeThrough="404040" />
+    <fontcolor name="mod-static" >
+        <font style="italic" />
+    </fontcolor>
+    <fontcolor name="mod-package-private" />
+    <fontcolor name="mod-private" />
+    <fontcolor name="mod-protected" />
+    <fontcolor name="mod-public" />
+
+    <!--currently not used:-->
+<!--    <fontcolor name="mod-type-parameter-declaration" bgColor="lightGray"/>
+    <fontcolor name="mod-type-parameter-use" bgColor="green"/>
+    <fontcolor name="mod-undefined" foreColor="red"/>-->
+
+    <!--mark occurrences:-->
+    <fontcolor name="mark-occurrences" bgColor="38566F"/>
+
+    <!-- embedded strings and colors -->
+    <fontcolor name="STRING_INVALID" foreColor="ffff006b" strikeThrough="ffff006b" >
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="STRING_TEXT" default="string"/>
+    <fontcolor name="STRING_ESCAPE" foreColor="EDDD37">
+        <font style="bold"/>
+    </fontcolor>
+    
+    <fontcolor name="COMMENT_TODO" foreColor="ff99006b">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="COMMENT_TEXT" default="comment"/>
+    <fontcolor name="COMMENT_RDOC" foreColor="aaaaff" default="comment">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="COMMENT_HTMLTAG" default="comment">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="COMMENT_LINK" underline="blue" foreColor="blue" default="default"/>
+    <fontcolor name="COMMENT_ITALIC" default="default">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor name="COMMENT_BOLD" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    
+</fontscolors>

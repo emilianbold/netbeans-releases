@@ -21,6 +21,12 @@
                             </file>
                         </folder>
                     </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-ruby-token-colorings.xml" url="BlueTheme-Ruby-fontsColors.xml">
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
                 
                 <folder name="CodeTemplates">
