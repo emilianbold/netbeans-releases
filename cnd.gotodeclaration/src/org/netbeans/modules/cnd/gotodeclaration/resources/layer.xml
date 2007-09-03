@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Actions">
         <folder name="Edit">
-            <file name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
+            <file name="org-netbeans-modules-cnd-gotodeclaration-element-ui-GoToElementAction.instance"/>
         </folder>
         <folder name="Window"/>
     </folder>
@@ -31,8 +31,8 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-c">
                 <folder name="Popup">
                     <folder name="goto">
-                        <file name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
+                        <file name="org-netbeans-modules-cnd-gotodeclaration-element-ui-GoToElementAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-element-ui-GoToElementAction.instance"/>
                             <attr name="position" intvalue="300"/>
                         </file>
                     </folder>
@@ -41,8 +41,8 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-c++">
                 <folder name="Popup">
                     <folder name="goto">
-                        <file name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
+                        <file name="org-netbeans-modules-cnd-gotodeclaration-element-ui-GoToElementAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-element-ui-GoToElementAction.instance"/>
                             <attr name="position" intvalue="300"/>
                         </file>
                         </folder>
@@ -53,8 +53,8 @@ Microsystems, Inc. All Rights Reserved.
     -->
     <folder name="Menu">
         <folder name="GoTo">
-            <file name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
+            <file name="org-netbeans-modules-cnd-gotodeclaration-element-ui-GoToElementAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-element-ui-GoToElementAction.instance"/>
                 <attr name="position" intvalue="200"/>
             </file>
             <file name="org-netbeans-modules-cnd-gotodeclaration-actions-separatorAfter.instance">
@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Shortcuts">
         <file name="OS-C.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-element-ui-GoToElementAction.instance"/>
         </file>
     </folder>
             
