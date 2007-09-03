@@ -121,7 +121,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
                 netbeansOrgMouseClicked(evt);
             }
         });
-        netbeansOrg.setBounds(160, 60, 210, 40);
+        netbeansOrg.setBounds(46, 104, 210, 40);
         jLayeredPane1.add(netbeansOrg, javax.swing.JLayeredPane.POPUP_LAYER);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

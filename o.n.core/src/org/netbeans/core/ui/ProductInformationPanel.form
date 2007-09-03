@@ -141,7 +141,7 @@
           </Events>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JLayeredPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JLayeredPaneSupportLayout$JLayeredPaneConstraintsDescription">
-              <JLayeredPaneConstraints x="160" y="60" width="210" height="40" layer="300" position="-1"/>
+              <JLayeredPaneConstraints x="46" y="104" width="210" height="40" layer="300" position="-1"/>
             </Constraint>
           </Constraints>
         </Component>
