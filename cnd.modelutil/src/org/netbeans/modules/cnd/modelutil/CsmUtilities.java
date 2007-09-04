@@ -279,7 +279,7 @@ public class CsmUtilities {
     public static CsmFile[] getCsmFiles(DataObject dobj) {
 	if( dobj != null && dobj.isValid()) {
             try {
-                NativeFileItemSet set = dobj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+                NativeFileItemSet set = dobj.getLookup().lookup(NativeFileItemSet.class);
                 if (set == null) {
                     FileObject fo = dobj.getPrimaryFile();
                     if (fo != null) {
