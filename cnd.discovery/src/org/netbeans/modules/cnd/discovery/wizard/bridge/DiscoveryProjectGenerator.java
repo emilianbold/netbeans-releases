@@ -210,7 +210,7 @@ public class DiscoveryProjectGenerator {
     private void addNewExtension(Set<String> needAdd){
         Set<String> headerExtension = FileSystemFactory.getHeaderSuffixes();
         Set<String> sourceExtension = FileSystemFactory.getSourceSuffixes();
-        Set<String> usedExtension = new HashSet<String>();
+        Set<String> usedExtension = FileSystemFactory.createExtensionSet();
         for(String name : needAdd){
             name = name.replace('\\','/');
             int i = name.lastIndexOf('/');

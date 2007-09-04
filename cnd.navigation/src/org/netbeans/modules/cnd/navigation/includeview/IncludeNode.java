@@ -21,9 +21,6 @@ package org.netbeans.modules.cnd.navigation.includeview;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -35,7 +32,6 @@ import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.loaders.ExtensionList;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -78,10 +74,9 @@ public class IncludeNode extends AbstractCsmNode {
         int i = path.lastIndexOf('.');
         if (i > 0) {
             String iconPath = HDataIcon;
-            String suffix = path.substring(i+1);
-            if (getCppSourceSuffixes().contains(suffix)){
+            if (CCDataLoader.getInstance().getExtensions().isRegistered(path)){
                 iconPath = CppSrcIcon;
-            } else if (getCSourceSuffixes().contains(suffix)){
+            } else if (CDataLoader.getInstance().getExtensions().isRegistered(path)){
                 iconPath = CSrcIcon;
             }
             Image aIcon = Utilities.loadImage(iconPath);
@@ -135,30 +130,6 @@ public class IncludeNode extends AbstractCsmNode {
         return super.getPreferredAction();
     }
     
-    private static Set<String> cSuffixes;
-    private static Set<String> getCSourceSuffixes() {
-        if (cSuffixes == null){
-            cSuffixes = new HashSet<String>();
-            addSuffices(cSuffixes, CDataLoader.getInstance().getExtensions());
-        }
-        return cSuffixes;
-    }
-    
-    private static Set<String> cppSuffixes;
-    private static Set<String> getCppSourceSuffixes() {
-        if (cppSuffixes == null){
-            cppSuffixes = new HashSet<String>();
-            addSuffices(cppSuffixes, CCDataLoader.getInstance().getExtensions());
-        }
-        return cppSuffixes;
-    }
-    
-    private static void addSuffices(Set<String> suffixes, ExtensionList list) {
-        for (Enumeration e = list.extensions(); e != null &&  e.hasMoreElements();) {
-            String ex = (String) e.nextElement();
-            suffixes.add(ex);
-        }
-    }
     private String getString(String key) {
         return NbBundle.getMessage(IncludeNode.class, key);
     }

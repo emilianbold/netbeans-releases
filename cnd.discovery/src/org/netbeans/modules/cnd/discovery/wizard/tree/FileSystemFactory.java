@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
@@ -104,16 +105,24 @@ public class FileSystemFactory {
             }
         }
     }
+
+    public static Set<String> createExtensionSet(){
+        if (CASE_INSENSITIVE) {
+            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+        } else {
+            return new TreeSet<String>();
+        }
+    }
     
     public static Set<String> getSourceSuffixes() {
-        Set<String> suffixes = new HashSet<String>();
+        Set<String> suffixes = createExtensionSet(); 
         addSuffices(suffixes, CCDataLoader.getInstance().getExtensions());
         addSuffices(suffixes, CDataLoader.getInstance().getExtensions());
         return suffixes;
     }
     
     public static Set<String> getHeaderSuffixes() {
-        Set<String> suffixes = new HashSet<String>();
+        Set<String> suffixes = createExtensionSet(); 
         addSuffices(suffixes, HDataLoader.getInstance().getExtensions());
         return suffixes;
     }
@@ -124,4 +133,8 @@ public class FileSystemFactory {
             suffixes.add(ex);
         }
     }
+    
+    private static final boolean CASE_INSENSITIVE =
+        (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
+
 }
