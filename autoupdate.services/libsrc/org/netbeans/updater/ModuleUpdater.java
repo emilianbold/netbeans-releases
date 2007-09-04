@@ -101,7 +101,7 @@ public final class ModuleUpdater extends Thread {
             if (installOnly != null) {
                 // keep only those that we really wish to install
                 installFiles.retainAll (installOnly);
-            }
+                    }
 
             if (installFiles.isEmpty ()) {
                 endRun();
@@ -844,6 +844,11 @@ public final class ModuleUpdater extends Thread {
         }
         
         File idir = new File (cluster, ModuleUpdater.DOWNLOAD_DIR);
+        try {
+            idir = idir.getCanonicalFile ();
+        } catch (IOException ioe) {
+            System.out.println("ERROR: " + ioe);
+        }
         File[] arr = idir.listFiles (new NbmFilter ());
         
         if (arr == null) {

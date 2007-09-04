@@ -64,6 +64,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -546,7 +547,7 @@ public class InstallSupportImpl {
         // download
         try {
             String label = toUpdateImpl.getDisplayName ();
-            getDownloadedFiles ().add (dest);
+            getDownloadedFiles ().add (FileUtil.normalizeFile (dest));
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
         } catch (IOException x) {
             err.log (Level.INFO, x.getMessage (), x);
@@ -608,21 +609,6 @@ public class InstallSupportImpl {
         return wasVerified;
     }
     
-    private File getDestination (ModuleUpdateElementImpl impl) {
-        // find target dir
-        UpdateElement installed = impl.getUpdateElement ().getUpdateUnit ().getInstalled ();
-        File targetCluster = getTargetCluster (installed, impl, isGlobal);
-        
-        if (targetCluster == null) {
-            return null;
-        }
-
-        URL source = impl.getInstallInfo().getDistribution();
-        err.log (Level.FINE, "Source URL for " + impl.getCodeName () + " is " + source);
-
-        return getDestination (targetCluster, impl.getCodeName());
-    }
-
     static File getDestination (File targetCluster, String codeName, boolean isNbmFile) {
         err.log (Level.FINE, "Target cluster for " + codeName + " is " + targetCluster);
         File destDir = new File (targetCluster, DOWNLOAD_DIR);
