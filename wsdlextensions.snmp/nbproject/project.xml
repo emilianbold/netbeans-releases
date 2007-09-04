@@ -70,6 +70,12 @@
                 </dependency>
             </module-dependencies>
             <public-packages/>
+			<class-path-extension>
+                  <runtime-relative-path>ext/snmp/jdmkrt-5.1.jar</runtime-relative-path>
+                <binary-origin>external/jdmkrt-5.1.jar</binary-origin> 
+                <!--  <runtime-relative-path>ext/script/javaee/javaee.jar</runtime-relative-path>
+                <binary-origin>../external/javaee/javaee.jar</binary-origin> -->
+            </class-path-extension>
         </data>
     </configuration>
 </project>
