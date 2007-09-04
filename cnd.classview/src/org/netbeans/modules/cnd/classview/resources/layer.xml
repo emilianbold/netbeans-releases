@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="GoTo">
             <file name="org-netbeans-modules-cnd-classview-actions-SelectInClassesAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-cnd-classview-actions-SelectInClassesAction.instance"/>
-                <attr name="position" intvalue="3000"/>
+                <attr name="position" intvalue="2750"/>
             </file>
         </folder>
         
@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Window">
             <folder name="SelectDocumentNode">
                 <file name="org-netbeans-modules-cnd-classview-actions-SelectInClassesAction.instance">
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="250"/>
                 </file>
             </folder>
         </folder>
