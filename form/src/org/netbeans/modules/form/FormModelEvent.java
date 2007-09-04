@@ -76,7 +76,7 @@ public class FormModelEvent extends EventObject
     // -----------
 
     private FormModelEvent additionalEvent; 
-    private static List interestList; // events interested in additional events
+    private static List<FormModelEvent> interestList; // events interested in additional events
 
     // -----------
 
@@ -326,10 +326,11 @@ public class FormModelEvent extends EventObject
     // (used for undo/redo processing of event handlers)
 
     private static void addToInterestList(FormModelEvent ev) {
-        if (interestList == null)
-            interestList = new ArrayList();
-        else
+        if (interestList == null) {
+            interestList = new ArrayList<FormModelEvent>();
+        } else {
             interestList.remove(ev);
+        }
 
         interestList.add(ev);
     }
@@ -352,6 +353,7 @@ public class FormModelEvent extends EventObject
     // ----------
 
     private class FormUndoableEdit extends AbstractUndoableEdit {
+        @Override
         public void undo() throws CannotUndoException {
             super.undo();
 
@@ -418,6 +420,7 @@ public class FormModelEvent extends EventObject
                 getFormModel().setUndoRedoRecording(true);
         }
 
+        @Override
         public void redo() throws CannotRedoException {
             super.redo();
 
@@ -484,9 +487,11 @@ public class FormModelEvent extends EventObject
                 getFormModel().setUndoRedoRecording(true);
         }
 
+        @Override
         public String getUndoPresentationName() {
             return ""; // NOI18N
         }
+        @Override
         public String getRedoPresentationName() {
             return ""; // NOI18N
         }
