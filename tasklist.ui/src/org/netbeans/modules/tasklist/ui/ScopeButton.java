@@ -48,16 +48,20 @@ class ScopeButton extends JToggleButton implements PropertyChangeListener {
         setFocusable( false );
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         tm.addPropertyChangeListener( TaskManagerImpl.PROP_SCOPE, this );
+        setSelected( scope.equals( tm.getScope() ) );
     }
     
-    public void removdNotify() {
+    @Override
+    public void removeNotify() {
         super.removeNotify();
         tm.removePropertyChangeListener( TaskManagerImpl.PROP_SCOPE, this );
     }
     
+    @Override
     protected void fireActionPerformed( ActionEvent event ) {
 //        if( isSelected() ) {
 //            return;
