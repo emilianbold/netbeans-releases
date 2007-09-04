@@ -107,7 +107,10 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         }
         if (t.getKind() == Tree.Kind.MEMBER_SELECT) {
             //XXX: must be improved
-            start = (int)sp.getEndPosition(unit, ((MemberSelectTree) t).getExpression());
+            //workaround for 110490 and 108286
+            int newstart = (int)sp.getEndPosition(unit, ((MemberSelectTree) t).getExpression());
+            if (newstart>0)
+                start = newstart;
         }
                 
         assert start>0:"Cannot find start position in file " + unit.getSourceFile().getName() + "\n tree=" + tree.toString();
