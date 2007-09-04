@@ -57,6 +57,15 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         init();
     }
 
+    //#114290
+    public void doUpdateCaret() {
+        ((OCaret)textView.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+    }
+
+    public void dontUpdateCaret() {
+        ((OCaret)textView.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+    }
+
     @Override
     public void requestFocus() {
         textView.requestFocus();
@@ -435,13 +444,16 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         //Ensure it is consumed
         e.getLength();
         documentChanged();
+        if (e.getOffset() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
+            getCaret().setDot(e.getOffset() + e.getLength());
+        }
     }
 
     public final void insertUpdate(DocumentEvent e) {
         //Ensure it is consumed
         e.getLength();
         documentChanged();
-        if (e.getOffset() > getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
+        if (e.getOffset() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
             getCaret().setDot(e.getOffset() + e.getLength());
         }
     }

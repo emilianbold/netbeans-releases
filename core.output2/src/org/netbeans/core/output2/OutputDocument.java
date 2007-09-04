@@ -30,6 +30,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.openide.util.Exceptions;
 
 
@@ -46,6 +47,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
     
     private StringBuffer inBuffer;
     private boolean lastInput;
+    private AbstractOutputPane pane;
    
     /** Creates a new instance of OutputDocument */
     OutputDocument(OutWriter writer) {
@@ -55,6 +57,10 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         this.writer = writer;
         getLines().addChangeListener(this);
         inBuffer = new StringBuffer();
+    }
+    //#114290
+    public void setPane(AbstractOutputPane pane) {
+        this.pane = pane;
     }
 
     /**
@@ -484,12 +490,24 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
     
     private void fireDocumentEvent (DocumentEvent de) {
         for (DocumentListener dl: new ArrayList<DocumentListener>(dlisteners)) {
+            //#114290
+            if (!(de instanceof DO)) {
+                if (pane != null) {
+                    pane.doUpdateCaret();
+                }
+            }
             if (de.getType() == DocumentEvent.EventType.REMOVE) {
                 dl.removeUpdate(de);
             } else if (de.getType() == DocumentEvent.EventType.CHANGE) {
                 dl.changedUpdate(de);
             } else {
                 dl.insertUpdate(de);
+            }
+            //#114290
+            if (!(de instanceof DO)) {
+                if (pane != null) {
+                    pane.dontUpdateCaret();
+                }
             }
         }
     }

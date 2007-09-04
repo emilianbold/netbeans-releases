@@ -27,6 +27,7 @@ import org.netbeans.core.output2.Controller;
 import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.*;
+import org.netbeans.core.output2.OutputDocument;
 
 /**
  * A basic output pane.  This class implements the non-output window specific
@@ -54,6 +55,10 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
     
     public void setDocument (Document doc) {
         outputPane.setDocument(doc);
+        //#114290
+        if (doc instanceof OutputDocument) {
+            ((OutputDocument)doc).setPane(outputPane);
+        }
     }
     
     /* Read accessible context
