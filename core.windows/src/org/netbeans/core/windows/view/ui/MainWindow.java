@@ -563,7 +563,7 @@ public final class MainWindow extends JFrame {
         
         setUndecorated( isFullScreenMode );
 
-        String toolbarConfigName = ToolbarPool.getDefault().getConfiguration();
+        final String toolbarConfigName = ToolbarPool.getDefault().getConfiguration();
         if( null != toolbarConfigName ) {
             ToolbarConfiguration tc = ToolbarConfiguration.findConfiguration( toolbarConfigName );
             if( null != tc )
@@ -601,6 +601,7 @@ public final class MainWindow extends JFrame {
                         setPreferredSize( restoreBounds.getSize() );
                         setBounds( restoreBounds );
                     }
+                    ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                     isSwitchingFullScreenMode = false;
                 }
             });
@@ -611,6 +612,7 @@ public final class MainWindow extends JFrame {
                     invalidate();
                     validate();
                     repaint();
+                    ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                     isSwitchingFullScreenMode = false;
                 }
             });
