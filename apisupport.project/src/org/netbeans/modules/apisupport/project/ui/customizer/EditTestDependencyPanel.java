@@ -33,6 +33,8 @@ public class EditTestDependencyPanel extends javax.swing.JPanel {
     public EditTestDependencyPanel(final TestModuleDependency originalDep) {
         tmd = originalDep;
         initComponents();
+        // #114356: dependency can be set as runtime only in project.xml
+        compile.setVisible(false);
         fillOriginal();
     }
     
