@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
@@ -54,6 +55,10 @@ public class CustomizerPane extends JPanel
     private ProjectCustomizer.CategoryComponentProvider componentProvider;
     
     private HashMap<ProjectCustomizer.Category, JComponent> panelCache = new HashMap<ProjectCustomizer.Category, JComponent>();
+    
+    // maximum dimension of the customizer is 3/4 of screen size
+    private static final int MAX_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height * 3 / 4;
+    private static final int MAX_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width * 3 / 4;
     
     //private DialogDescriptor dialogDescriptor;
     
@@ -155,18 +160,23 @@ public class CustomizerPane extends JPanel
         if (isPreferredSizeSet()) {
             return super.getPreferredSize();
         }
+        
+        int height = Math.max(450, currentCustomizer.getPreferredSize().height + 50);
+        int width = Math.max(750, currentCustomizer.getPreferredSize().width + 240);
+        
         Dimension dim = super.getPreferredSize();
         if (dim == null) {
-            return new Dimension(750, 450);
+            return new Dimension(width, height);
         }
-        if (dim.getWidth() < 750 || dim.getHeight() < 450) {
-            return new Dimension(750, 450);
+        if (dim.getWidth() < width || dim.getHeight() < height) {
+            return new Dimension(width, height);
         }
-        if (dim.getWidth() > 850) {
-            dim.width = 850;
+        
+        if (dim.getWidth() > MAX_WIDTH) {
+            dim.width = MAX_WIDTH;
         }
-        if (dim.getHeight() > 550) {
-            dim.height = 550;
+        if (dim.getHeight() > MAX_HEIGHT) {
+            dim.height = MAX_HEIGHT;
         }
         return dim;
     }
