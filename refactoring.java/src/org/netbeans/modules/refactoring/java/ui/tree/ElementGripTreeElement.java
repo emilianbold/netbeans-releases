@@ -13,22 +13,16 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.refactoring.java.ui.tree;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.swing.Icon;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.refactoring.spi.ui.*;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -43,10 +37,10 @@ public class ElementGripTreeElement implements TreeElement {
     }
 
     public TreeElement getParent(boolean isLogical) {
-        ElementGrip enclosing = (ElementGrip) element.getParent();
+        ElementGrip enclosing = element.getParent();
         if (isLogical) {
             if (enclosing == null) {
-                return TreeElementFactory.getTreeElement(element.getFileObject().getParent());
+                return TreeElementFactory.getTreeElement(element.getFileObject());
             }
             return TreeElementFactory.getTreeElement(enclosing);
         } else {
