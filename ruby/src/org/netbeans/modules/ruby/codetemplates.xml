@@ -12,8 +12,7 @@ include_class '${0 default="package.class"}']]></code>
     <codetemplate abbreviation="doc" descriptionId="ct_doc" contexts="ruby">
 <code><![CDATA[do |${unusedlocal defaults="i,j,k"}|
   ${selection line}${cursor}
-end
-]]></code>
+end]]></code>
     </codetemplate>
     <codetemplate abbreviation="if" descriptionId="ct_if" contexts="ruby">
 <code><![CDATA[if ${condition}
