@@ -115,9 +115,9 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                         Collections.<String,Object>singletonMap("position", Integer.toString(3000 + new Random().nextInt(1000))))); // NOI18N
                 
                 //copying templates
-                for (String suffix : TEMPLATE_SUFFIXES) {
-                    URL template = NewJavaHelpIterator.class.getResource(suffix);
-                    String filePath = "javahelp/" + path + basename + suffix; // NOI18N
+                for (int i = 0; i < TEMPLATE_SUFFIXES.length; i++) {
+                    URL template = NewJavaHelpIterator.class.getResource(TEMPLATE_RESOURCES[i]);
+                    String filePath = "javahelp/" + path + basename + TEMPLATE_SUFFIXES[i]; // NOI18N
                     files.add(files.createFileWithSubstitutions(filePath, template, tokens));
                 }
                 
