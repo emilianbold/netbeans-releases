@@ -103,6 +103,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-F12.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
             </file>
+            <file name="C-G.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
+            </file>
             <file name="S-F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
             </file>
@@ -456,6 +459,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-F12.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
             </file>
+            <file name="C-G.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
+            </file>
             <file name="S-F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
             </file>
@@ -751,6 +757,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-COMMA.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
             </file>
+            <file name="C-G.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
+            </file>
             <file name="DS-COMMA.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
             </file>
@@ -974,6 +983,9 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="FIND.instance">
                 <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
+            </file>
+            <file name="C-L.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
             </file>
             <file name="DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
