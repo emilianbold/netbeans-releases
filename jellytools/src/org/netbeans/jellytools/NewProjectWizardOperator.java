@@ -198,10 +198,31 @@ public class NewProjectWizardOperator extends WizardOperator {
         return txtDescription().getText();
     }
 
-    
+    /** Pushes "Finish" button and waits until wizard dismisses. Then waits for
+     * Opening Projects dialog and waits until it dismisses too.
+     */
+    @Override
+    public void finish() {
+        btFinish().pushNoBlock();
+        getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        waitClosed();
+        // Opening Projects
+        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
+        NbDialogOperator openingOper;
+        try {
+            openingOper = new NbDialogOperator(openingProjectsTitle);
+        } catch (TimeoutExpiredException e) {
+            // ignore and return when progress dialog was closed before we started to wait for it
+            return;
+        }
+        // wait at most 120 second until progress dialog dismiss
+        openingOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        openingOper.waitClosed();
+    }
 
     /** Performs verification of NewProjectWizardOperator by accessing all its components.
      */
+    @Override
     public void verify() {
         lblCategories();
         lblProjects();
