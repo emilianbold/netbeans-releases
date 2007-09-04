@@ -20,21 +20,35 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.openide.filesystems.FileObject;
+import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -91,8 +105,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             });
 
             OptionListener listener = new OptionListener( project, uiProperties );
-            StoreListener storeListener = new StoreListener(uiProperties);
-            dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
+            dialog = ProjectCustomizer.createCustomizerDialog( CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, null );
             dialog.addWindowListener( listener );
             dialog.setTitle( MessageFormat.format(                 
                     NbBundle.getMessage( CustomizerProviderImpl.class, "LBL_Customizer_Title" ), // NOI18N 
@@ -103,20 +116,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         }
     }    
         
-    private class StoreListener implements ActionListener {
-    
-        private WebProjectProperties uiProperties;
-        
-        StoreListener(WebProjectProperties uiProperties ) {
-            this.uiProperties = uiProperties;
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            uiProperties.save();
-        }
-        
-    }
-    
     /** Listens to the actions on the Customizer's option buttons */
     private class OptionListener extends WindowAdapter implements ActionListener {
     
@@ -136,6 +135,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 // as modified before the project customizer is shown. 
 //            assert !ProjectManager.getDefault().isModified(project) : 
 //                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
+            uiProperties.save();
             
             // Close & dispose the the dialog
             Dialog dialog = (Dialog)project2Dialog.get( project );
