@@ -24,6 +24,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement;
 import java.util.Locale;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
@@ -94,6 +95,8 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
     
     IJavaChangeHandlerManager m_HandlerManager = new JavaChangeHandlerManager();
     IJavaChangeHandlerUtilities m_Utils = new JavaChangeHandlerUtilities();
+    private LinkedBlockingQueue<IChangeRequest> queue = new LinkedBlockingQueue();
+    private boolean processing = false;
     
     public JavaRequestProcessor()
     {
@@ -102,75 +105,108 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
         m_HandlerManager.setChangeHandlerUtilities(m_Utils);
     }
     
+//    public ETList<IChangeRequest> processRequests(ETList<IChangeRequest> reqs)
+//    {
+//        ETList<IChangeRequest> requests = null;
+//        // If we are blocked, we want to add the input requests onto the
+//        // final list of requests to be returned to the RTEventManager to be
+//        // forwarded to the listeners (integrations). But we don't want
+//        // to process them ourself. This is because WE are responsible the
+//        // the changes being generated.  This is and has been the classic
+//        // roundtrip/addin problem: Do we block all events in the tool? or
+//        // do we just ignore events ourself? Blocking events in wolverine
+//        // would be tantamount to neutering the tool, since it is so event
+//        // based. So, instead we ignore events at the local level.
+//        
+//        m_RPCount++;
+//        try
+//        {
+//            if (!m_PlugManager.isPluged())
+//            {
+//                if ( m_RPCount == 1 )
+//                {
+//                    // We own it. This is the outermost ProcessRequest call.
+//                    int count = reqs.size();
+//                    int idx = 0;
+//                    
+//                    ETList<IChangeRequest> finalInputRequests =
+//                            new ETArrayList<IChangeRequest>();
+//                    
+//                    while ( idx < count )
+//                    {
+//                        IChangeRequest pItem = reqs.get(idx++);
+//                        m_ChangeRequest = pItem;
+//                        
+//                        if ( pItem != null )
+//                        {
+//                            IRequestValidator pRequest = new RequestValidator(pItem);
+//                            if (!m_Utils.isTemplateClass(pRequest.getRequest()))
+//                            {
+//                                // Perform all the things that it could be.
+//                                if ( preValidationCheck(pRequest))
+//                                {
+//                                    m_HandlerManager.handleRequest(pRequest);
+//                                }
+//                                
+//                                pRequest.appendRequests(finalInputRequests);
+//                            }
+//                        }
+//                        m_ChangeRequest = null;
+//                    }
+//                    requests = createOutputRequests(finalInputRequests);
+//                }
+//                else
+//                {
+//                    // add the list of input requests onto the final list
+//                    // that will be passed back by the innermost call.
+//                    appendBlockedRequests(reqs);
+//                }
+//            }
+//        }
+//        catch(Exception e)
+//        {
+//            e.printStackTrace();;
+//        }
+//        
+//        m_RPCount--;
+//        
+//        return requests;
+//    }
+    
     public ETList<IChangeRequest> processRequests(ETList<IChangeRequest> reqs)
     {
-        ETList<IChangeRequest> requests = null;
-        // If we are blocked, we want to add the input requests onto the
-        // final list of requests to be returned to the RTEventManager to be
-        // forwarded to the listeners (integrations). But we don't want
-        // to process them ourself. This is because WE are responsible the
-        // the changes being generated.  This is and has been the classic
-        // roundtrip/addin problem: Do we block all events in the tool? or
-        // do we just ignore events ourself? Blocking events in wolverine
-        // would be tantamount to neutering the tool, since it is so event
-        // based. So, instead we ignore events at the local level.
-        
-        m_RPCount++;
-        try
+        if (!m_PlugManager.isPluged())
         {
-            if (!m_PlugManager.isPluged())
+            queue.addAll(reqs);
+            
+            if (processing)
+                return null;
+            
+            synchronized(this)
             {
-                if ( m_RPCount == 1 )
+                processing = true;
+                IChangeRequest request = queue.poll();
+                
+                while (request != null)
                 {
-                    // We own it. This is the outermost ProcessRequest call.
-                    int count = reqs.size();
-                    int idx = 0;
-                    
-                    ETList<IChangeRequest> finalInputRequests =
-                            new ETArrayList<IChangeRequest>();
-                    
-                    while ( idx < count )
+                    if (!m_Utils.isTemplateClass(request))
                     {
-                        IChangeRequest pItem = reqs.get(idx++);
-                        m_ChangeRequest = pItem;
-                        
-                        if ( pItem != null )
+                        IRequestValidator pRequest = new RequestValidator(request);
+                        if ( preValidationCheck(pRequest))
                         {
-                            IRequestValidator pRequest = new RequestValidator(pItem);
-                            if (!m_Utils.isTemplateClass(pRequest.getRequest()))
-                            {
-                                // Perform all the things that it could be.
-                                if ( preValidationCheck(pRequest))
-                                {
-                                    m_HandlerManager.handleRequest(pRequest);
-                                }
-                                
-                                pRequest.appendRequests(finalInputRequests);
-                            }
+                            m_HandlerManager.handleRequest(pRequest);
                         }
-                        m_ChangeRequest = null;
                     }
-                    requests = createOutputRequests(finalInputRequests);
+                    request = queue.poll();
                 }
-                else
-                {
-                    // add the list of input requests onto the final list
-                    // that will be passed back by the innermost call.
-                    appendBlockedRequests(reqs);
-                }
+                processing = false;
             }
         }
-        catch(Exception e)
-        {
-            e.printStackTrace();;
-        }
-        
-        m_RPCount--;
-        
-        return requests;
+
+        return null;
     }
-    
-    
+        
+        
     public void initialize(IRoundTripController controller)
     {
         try
@@ -1931,98 +1967,98 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
     }
     
     
-    protected void appendBlockedRequests(ETList<IChangeRequest> inputRequests)
-    {
-        if ( inputRequests != null)
-        {
-            int count = inputRequests.size();
-            int idx = 0;
-            
-            // Append (order might be important) the input requests to the
-            // list of final requests.
-            IChangeRequest pItem = null;
-            while (idx < count)
-            {
-                pItem = inputRequests.get(idx);
-                idx++;
-                if (pItem != null)
-                {
-                    m_FinalRequests.add(pItem);
-                }
-            }
-        }
-    }
+//    protected void appendBlockedRequests(ETList<IChangeRequest> inputRequests)
+//    {
+//        if ( inputRequests != null)
+//        {
+//            int count = inputRequests.size();
+//            int idx = 0;
+//            
+//            // Append (order might be important) the input requests to the
+//            // list of final requests.
+//            IChangeRequest pItem = null;
+//            while (idx < count)
+//            {
+//                pItem = inputRequests.get(idx);
+//                idx++;
+//                if (pItem != null)
+//                {
+//                    m_FinalRequests.add(pItem);
+//                }
+//            }
+//        }
+//    }
     
-    protected ETList<IChangeRequest> createOutputRequests(ETList<IChangeRequest> inputRequests)
-    {
-        ETList < IChangeRequest > theBigList = new ETArrayList < IChangeRequest >();
-        
-        if (inputRequests != null)
-        {
-            // We need to start the big list with the input list, because those
-            // are the "first" requests. The m_FinalRequests list are requests
-            // that came in during the processing of inputRequests, so come
-            // after, and right now we are concerned about order.
-            
-            // Note that we don't want to just assign. What if we did the following?
-            //   theBigList = inputRequests;
-            // When we append to theBigList later on, we are really manipulating
-            // the input list, which is not what we want.
-            
-            int count = inputRequests.size();
-            int idx = 0;
-            
-            // Append (order might be important) the inputrequests to the
-            // big list.
-            IChangeRequest pItem = null;
-            while ( idx < count )
-            {
-                pItem = inputRequests.get(idx);
-                idx++;
-                if ( pItem != null )
-                {
-                    if ( postValidationCheck( pItem ) )
-                    {
-                        theBigList.add(pItem);
-                    }
-                }
-            }
-        }
-        
-        if ( m_FinalRequests != null )
-        {
-            int count = m_FinalRequests.size();
-            int idx = 0;
-            
-            // Append (order might be important) the inputrequests to the
-            // big list.
-            IChangeRequest pItem = null;
-            while ( idx < count )
-            {
-                pItem = m_FinalRequests.get(idx);
-                idx++;
-                if ( pItem != null )
-                {
-                    if ( postValidationCheck( pItem ) )
-                    {
-                        theBigList.add(pItem);
-                    }
-                }
-            }
-        }
-        
-        // finally, if the big list is not empty, copy it
-        // to the output list, which is the list of requests that
-        // will be passed to the listeners. We should have been
-        // careful up to this point that we handled correctly
-        // an empty input list and or an empty final list without
-        // having dropped any requests from the big list.
-        
-        m_FinalRequests.clear();
-        
-        return theBigList;
-    }
-    
+//    protected ETList<IChangeRequest> createOutputRequests(ETList<IChangeRequest> inputRequests)
+//    {
+//        ETList < IChangeRequest > theBigList = new ETArrayList < IChangeRequest >();
+//        
+//        if (inputRequests != null)
+//        {
+//            // We need to start the big list with the input list, because those
+//            // are the "first" requests. The m_FinalRequests list are requests
+//            // that came in during the processing of inputRequests, so come
+//            // after, and right now we are concerned about order.
+//            
+//            // Note that we don't want to just assign. What if we did the following?
+//            //   theBigList = inputRequests;
+//            // When we append to theBigList later on, we are really manipulating
+//            // the input list, which is not what we want.
+//            
+//            int count = inputRequests.size();
+//            int idx = 0;
+//            
+//            // Append (order might be important) the inputrequests to the
+//            // big list.
+//            IChangeRequest pItem = null;
+//            while ( idx < count )
+//            {
+//                pItem = inputRequests.get(idx);
+//                idx++;
+//                if ( pItem != null )
+//                {
+//                    if ( postValidationCheck( pItem ) )
+//                    {
+//                        theBigList.add(pItem);
+//                    }
+//                }
+//            }
+//        }
+//        
+//        if ( m_FinalRequests != null )
+//        {
+//            int count = m_FinalRequests.size();
+//            int idx = 0;
+//            
+//            // Append (order might be important) the inputrequests to the
+//            // big list.
+//            IChangeRequest pItem = null;
+//            while ( idx < count )
+//            {
+//                pItem = m_FinalRequests.get(idx);
+//                idx++;
+//                if ( pItem != null )
+//                {
+//                    if ( postValidationCheck( pItem ) )
+//                    {
+//                        theBigList.add(pItem);
+//                    }
+//                }
+//            }
+//        }
+//        
+//        // finally, if the big list is not empty, copy it
+//        // to the output list, which is the list of requests that
+//        // will be passed to the listeners. We should have been
+//        // careful up to this point that we handled correctly
+//        // an empty input list and or an empty final list without
+//        // having dropped any requests from the big list.
+//        
+//        m_FinalRequests.clear();
+//        
+//        return theBigList;
+//    }
+//    
     protected boolean postValidationCheck(IChangeRequest pRequest)
     {
         // PostValidation is for requests that we want to process but not
