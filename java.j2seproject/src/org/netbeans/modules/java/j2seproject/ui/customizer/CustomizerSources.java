@@ -343,6 +343,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         sourceRootsPanel.add(jLabel2, gridBagConstraints);
 
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(450, 150));
+
         sourceRoots.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null},
@@ -379,7 +381,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weighty = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         sourceRootsPanel.add(jScrollPane1, gridBagConstraints);
 
@@ -453,6 +455,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         testRootsPanel.add(jLabel3, gridBagConstraints);
 
+        jScrollPane2.setPreferredSize(new java.awt.Dimension(450, 150));
+
         testRoots.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null},
@@ -489,7 +493,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weighty = 0.5;
         testRootsPanel.add(jScrollPane2, gridBagConstraints);
 
         addTestRoot.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_AddTestRoot").charAt(0));
