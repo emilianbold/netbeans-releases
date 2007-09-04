@@ -51,7 +51,7 @@ function getHttpRequest() {
     }
     return xmlHttpReq;
  }
- function open(method, url, mimeType, paramLen, async) {
+ function open2(method, url, mimeType, paramLen, async) {
     var xmlHttpReq = getHttpRequest();
     if(xmlHttpReq == null) {
     	//alert('Error: Cannot create XMLHttpRequest');
@@ -514,7 +514,7 @@ function testResource() {
     currentMethod = method;
     currentMimeType = mimetype;
     //alert('method: '+method+'mimetype: '+mimetype+' length: '+paramLength+'params: '+params);
-    var xmlHttpReq4 = open(method, req, mimetype, paramLength, true);
+    var xmlHttpReq4 = open2(method, req, mimetype, paramLength, true);
     xmlHttpReq4.onreadystatechange = function() { updateContent(xmlHttpReq4); };
     xmlHttpReq4.send(params);
 }
@@ -592,9 +592,7 @@ function monitor(xmlHttpReq, param) {
     if(param != null && param != undefined)
         rawContent = 'Sent:\n'+param + '\n\n' + rawContent;
     var prev = document.getElementById('monitorText');
-    var cURL = getURL(xmlHttpReq);
-    if(cURL == null || cURL == '')
-        cURL = currentValidUrl;
+    var cURL = currentValidUrl;
     var s = 'Request: ' + currentMethod + ' ' + cURL + 
             '\n\nStatus: ' + xmlHttpReq.status + ' (' + xmlHttpReq.statusText + ')';
     var prevs = '';
@@ -607,28 +605,6 @@ function monitor(xmlHttpReq, param) {
     } else {
         currMonitorText = s + '\n\n' + rawContent;
     }
-}
-
-function getURL(xmlHttpReq5) {
-    var url = '';
-    try {
-        doc2 = loadXml(xmlHttpReq5.responseText);
-    } catch(e) {alert('err: '+e.name+e.message);}
-    if(doc2 != null && doc2.documentElement.nodeName != 'parsererror') {
-        try {
-            var container=doc2.documentElement;
-            if(container == null || container.nodeName == 'html')
-                return url;
-            var playListId = container.getElementsByTagName('playlistId')[0];
-            var title = container.getElementsByTagName('title')[0];                  
-            var desc = container.getElementsByTagName('description')[0];
-            return container.attributes.getNamedItem('uri').nodeValue;
-        } catch(e) {
-            //alert('err: '+e.name+e.message);
-            return null;
-        }
-    } 
-    return url;   
 }
 
 function updateContent(xmlHttpReq) {
@@ -949,7 +925,7 @@ function getMethod(method) {
 function init() {
     var params = new Array();
     var method = getDefaultMethod();
-    var xmlHttpReq = open(method, wadlURL, null, 0, true);
+    var xmlHttpReq = open2(method, wadlURL, null, 0, true);
     if(xmlHttpReq != null) {
         xmlHttpReq.onreadystatechange = function() { updateMenu(xmlHttpReq); };
         xmlHttpReq.send(null);
@@ -1073,7 +1049,7 @@ function alertIt(){
 }
 
 function getChildren(uri) {
-    var xmlHttpReq5 = open('GET', baseURL+uri, getDefaultMime(), 0, true);
+    var xmlHttpReq5 = open2('GET', baseURL+uri, getDefaultMime(), 0, true);
     xmlHttpReq5.onreadystatechange = function() { getChildrenContent(xmlHttpReq5); };
     xmlHttpReq5.send(null);
 }
