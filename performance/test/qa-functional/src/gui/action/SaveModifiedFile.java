@@ -60,9 +60,10 @@ public class SaveModifiedFile extends org.netbeans.performance.test.utilities.Pe
     
     public void initialize(){
         EditorOperator.closeDiscardAll();
-        new OpenAction().performPopup(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
+	SourcePackagesNode spn=new SourcePackagesNode("PerformanceTestData");
+	Node n=new Node(spn, "org.netbeans.test.performance|Main.java");
+        new OpenAction().performAPI(n);
         editorOperator = new EditorOperator("Main.java");
-        waitNoEvent(2000);
     }
 
     public void shutdown(){

@@ -76,7 +76,8 @@ public class AddToFavorites extends org.netbeans.performance.test.utilities.Perf
     }
 
     public void close() {
-        new Node(favoritesWindow.tree(), fileName).performPopupAction(REMOVE_FROM_FAVORITES);
+	Node n=new Node(favoritesWindow.tree(), fileName);
+	n.performPopupAction(REMOVE_FROM_FAVORITES);
         favoritesWindow.close();
     }
     

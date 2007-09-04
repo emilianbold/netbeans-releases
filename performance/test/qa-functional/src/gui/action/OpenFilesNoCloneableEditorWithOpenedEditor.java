@@ -81,7 +81,7 @@ public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoClone
         super.initialize();
 	SourcePackagesNode spn=new SourcePackagesNode("PerformanceTestData");
 	Node n=new Node(spn,"org.netbeans.test.performance|" + fileName_preopen);
-        new OpenAction().performPopup(n);
+        new OpenAction().performAPI(n);
     }
     
 }
