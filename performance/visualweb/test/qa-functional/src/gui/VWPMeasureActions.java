@@ -38,6 +38,8 @@ public class VWPMeasureActions  {
         suite.addTest(new OpenProjectFirstPage("testOpenSmallProjectFirstPage","Open Small Project First Page"));
         suite.addTest(new OpenProjectFirstPage("testOpenLargeProjectFirstPage","Open Large Project First Page"));
         
+        suite.addTest(new CSSRuleAddTest("measureTime","Measure time to add and modify CSS rule"));
+        
         suite.addTest(new OpenBeanFiles("testApplicationBean","Open Application Bean"));
         suite.addTest(new OpenBeanFiles("testRequestBean","Open Request  Bean"));
         suite.addTest(new OpenBeanFiles("testSessionBean","Open Session Bean"));
@@ -54,7 +56,7 @@ public class VWPMeasureActions  {
 	suite.addTest(new ComponentAddTest("testAddButtonComponent","Adding Button Component"));
 	suite.addTest(new ComponentAddTest("testAddListboxComponent","Adding Listbox Component"));
         
-        suite.addTest(new CreateWebPackProjectSBS("testCreateWebPackProject","Create Visual Web Project SBS"));
+        //suite.addTest(new CreateWebPackProjectSBS("testCreateWebPackProject","Create Visual Web Project SBS"));
         
         suite.addTest(new WebProjectDeployment("testDeploySmallProject","Deployment Small Project"));     
         suite.addTest(new WebProjectDeployment("testDeployLargeProject","Deployment Huge Project"));
