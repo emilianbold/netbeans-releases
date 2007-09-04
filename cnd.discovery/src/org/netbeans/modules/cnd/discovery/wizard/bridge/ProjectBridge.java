@@ -304,7 +304,7 @@ public class ProjectBridge {
         if (excl.getValue() ^ exclude){
             excl.setValue(exclude);
         }
-        itemConfiguration.setTool(3);
+        //itemConfiguration.setTool(Tool.CustomTool);
     }
     
     public void setHeaderTool(Item item){

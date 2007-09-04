@@ -446,7 +446,24 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     private void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles) {
-        List<NativeFileItem> list = selectItems(items, cFiles, ccFiles);
+        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+        ArrayList<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
+        // Handle project and file level changes
+        for (int i = 0; i < items.length; i++) {
+            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+            if (itemConfiguration.getExcluded().getValue()){
+                deleted.add(items[i]);
+                continue;
+            }
+            if ((cFiles && itemConfiguration.getTool() == Tool.CCompiler) ||
+                (ccFiles && itemConfiguration.getTool() == Tool.CCCompiler) ||
+                items[i].isHeaderFile()) {
+                list.add(items[i]);
+            }
+        }
+        if (deleted.size() > 0){
+            fireFilesRemoved(deleted);
+        }
         firePropertiesChanged(list);
     }
     
@@ -458,25 +475,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         } else {
             ; // nothing
         }
-    }
-    
-    public List<NativeFileItem> selectItems(Item[] items, boolean cFiles, boolean ccFiles) {
-        ArrayList<NativeFileItem> list = new ArrayList();
-        
-        // Handle project and file level changes
-        for (int i = 0; i < items.length; i++) {
-            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-            if (itemConfiguration.getExcluded().getValue()){
-                continue;
-            }
-            if ((cFiles && itemConfiguration.getTool() == Tool.CCompiler) ||
-                (ccFiles && itemConfiguration.getTool() == Tool.CCCompiler) ||
-                items[i].isHeaderFile()) {
-                list.add(items[i]);
-            }
-        }
-        
-        return list;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
