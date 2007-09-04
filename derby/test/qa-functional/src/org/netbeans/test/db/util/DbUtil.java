@@ -42,6 +42,7 @@ public class DbUtil {
         File clientJar = new File(location, "lib/derbyclient.jar");
         Connection con = null;
         try {
+            System.out.println("> Creating Derby connection using: "+clientJar.toURL());
             URL[] driverURLs = new URL[]{clientJar.toURL()};
             DbURLClassLoader loader = new DbURLClassLoader(driverURLs);
             Driver driver = (Driver) Class.forName(DRIVER_CLASS_NAME, true, loader).newInstance();
