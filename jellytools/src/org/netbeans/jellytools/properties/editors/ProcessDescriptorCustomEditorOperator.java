@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,10 @@ package org.netbeans.jellytools.properties.editors;
 import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JTextAreaOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /** Class implementing all necessary methods for handling Process Descriptor Custom
  * Editor
@@ -65,15 +68,15 @@ public class ProcessDescriptorCustomEditorOperator extends NbDialogOperator {
         return _txtArgumentKey;
     }
 
-    /** Tries to find ... JButton in this dialog.
+    /** Tries to find Browse... JButton in this dialog.
      * @throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
     public JButtonOperator btSelectProcessExecutable() {
         if (_btSelectProcessExecutable==null) {
              _btSelectProcessExecutable = new JButtonOperator(this, 
-                        Bundle.getString("org.netbeans.core.execution.beaninfo.editors.Bundle",
-                                         "CTL_NbProcessDescriptorCustomEditor.jButton1.text"));
+                        Bundle.getStringTrimmed("org.netbeans.core.execution.beaninfo.editors.Bundle",
+                                                "CTL_NbProcessDescriptorCustomEditor.jButton1.text"));
         }
         return _btSelectProcessExecutable;
     }
