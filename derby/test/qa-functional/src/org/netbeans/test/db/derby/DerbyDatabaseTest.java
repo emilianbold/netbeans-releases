@@ -41,7 +41,7 @@ public class DerbyDatabaseTest extends DbJellyTestCase {
     public void testStartAction() {
        StartAction start=SystemAction.get(StartAction.class);
        start.performAction();
-       sleep(2000);
+       sleep(8000);
     }
     
     public void testStopAction() throws Exception {
