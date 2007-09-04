@@ -45,7 +45,7 @@ import org.openide.ErrorManager;
  * @author John Kline, John Baker
  */
 class DesignTimeContext implements Context {   
-    private static Project      currentProj;
+    private Project             currentProj;
     public static final String  ROOT_CTX_TAG = "rootContext"; // NOI18N
     public static final String  CTX_TAG      = "context"; // NOI18N
     public static final String  OBJ_TAG      = "object"; // NOI18N
@@ -85,7 +85,7 @@ class DesignTimeContext implements Context {
     }
     
     public static void setDesignTimeContext(Project prj, Hashtable environment) {
-        currentProj = prj;
+        thisInstance.currentProj = prj;
         env = environment;
     }
     
@@ -96,20 +96,21 @@ class DesignTimeContext implements Context {
     public static DesignTimeContext createDesignTimeContext(Project prj, Hashtable environment) {
         DesignTimeContext dtCtx = null;
         
-        if (currentProj != null && prj != null)
-            if (!currentProj.equals(prj))
-                dtCtx =  DesignTimeContextHolder.setDesignTimeContext(prj, environment);
-            else {
-                dtCtx = getDesignTimeContext();
-                if (dtCtx == null)
-                    dtCtx =  DesignTimeContextHolder.setDesignTimeContext(prj, environment);
-
+        if (thisInstance != null) {
+            if (thisInstance.currentProj != null && prj != null) {
+                if (!thisInstance.currentProj.equals(prj)) {
+                    dtCtx = DesignTimeContextHolder.setDesignTimeContext(prj, environment);
+                } else {
+                    dtCtx = getDesignTimeContext();
+                    if (dtCtx == null) {
+                        dtCtx = DesignTimeContextHolder.setDesignTimeContext(prj, environment);
+                    }
+                }
             }
-        if (currentProj == null && prj != null) {
-            dtCtx =  DesignTimeContextHolder.setDesignTimeContext(prj, environment);
+        } else if (prj != null) {
+            dtCtx = DesignTimeContextHolder.setDesignTimeContext(prj, environment);
         }
         
-        DesignTimeDataSourceHelper dsHelper = null;      
         return dtCtx;
     }             
 
