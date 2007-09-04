@@ -275,6 +275,8 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         CreateCopyPanel panel = getCreateCopyPanel();
         panel.copyFromLocalTextField.setEnabled(true);        
         panel.copyFromRemoteTextField.setEnabled(false);
+        panel.copyFromRevisionTextField.setEnabled(false);
+        panel.searchButton.setEnabled(false);
         panel.warningLabel.setVisible(localChanges);                                              
     }
 
@@ -282,6 +284,8 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         CreateCopyPanel panel = getCreateCopyPanel();
         panel.copyFromLocalTextField.setEnabled(false);        
         panel.copyFromRemoteTextField.setEnabled(true);
+        panel.copyFromRevisionTextField.setEnabled(true);
+        panel.searchButton.setEnabled(true);
         panel.warningLabel.setVisible(false);                                              
     }
 
