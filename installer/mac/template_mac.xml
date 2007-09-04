@@ -106,6 +106,7 @@ appdir
     <mkdir dir="${basedir}/build/pkg"/>
     <delete dir="${basedir}/build/pkg/${appname}.pkg"/>
     <ant target="pre-build-pkg"/>
+    <echo message="Building ${appname} into ${pkg.dest}/${appname}.pkg"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${pkg.dest}/${appname}.pkg -proj ${pmproj}"/>

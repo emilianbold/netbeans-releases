@@ -22,7 +22,9 @@ set -e
 #update netbeans.conf
 script_dir=`dirname "$0"`
 
-"$script_dir"/add_gf.sh "/Applications/Netbeans/NetBeans 6.0.app" "$2"
+. "$script_dir"/env.sh
+
+"$script_dir"/add_gf.sh "$2/../$NETBEANS_INSTALL_DIR" "$2"
 
 "$script_dir"/unpack200.sh "$2" "$2"
 

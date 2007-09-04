@@ -34,7 +34,8 @@ Microsystems, Inc. All Rights Reserved.
   </condition>
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
-  <property name="appname" value="NetBeans 6.0"/>
+  <property name="netbeans.appname" value="NetBeans 6.0"/>
+  <property name="appname" value="${netbeans.appname}"/>
   <property name="appversion" value="6.0 Development Version"/>
   <property name="version" value="6.0 Development Version"/>
   <property name="nbClusterDir" value="nb6.0"/>
@@ -93,6 +94,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="build-pkg" depends="build-app">
+    <echo message="NETBEANS_INSTALL_DIR=${appname}.app${line.separator}" file="pkg/scripts/env.sh"/>
     <mkdir dir="build/pkg"/>
     <delete dir="build/pkg/NetBeans.pkg"/>
     <exec executable="sh" failonerror="yes">
@@ -109,24 +111,33 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
   </target>
 
+  <property name="glassfish.appname" value="glassfish-v2b58c"/>
   <target name="build-glassfish-pkg" if="build_glassfish">
+    <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
     <ant dir="glassfish" target="build-pkg" inheritAll="false">
       <property name="gf_source" value="${glassfish_location}"/>
       <property name="pkg.dest" value="${basedir}/build/pkg"/>
+      <property name="appname" value="${glassfish.appname}"/>
     </ant>
   </target>
 
+  <property name="tomcat.appname" value="apache-tomcat-6.0.13"/>
   <target name="build-tomcat-pkg" if="build_tomcat">
+    <echo message="Building ${tomcat.appname} into ${basedir}/tomcat"/>
     <ant dir="tomcat" target="build-pkg" inheritAll="false">
       <property name="tc_source" value="${tomcat_location}"/>
       <property name="pkg.dest" value="${basedir}/build/pkg"/>
+      <property name="appname" value="${tomcat.appname}"/>
     </ant>
   </target>
 
+  <property name="openesb.appname" value="openesb"/>
   <target name="build-openesb-pkg" if="build_openesb">
+    <echo message="Building ${openesb.appname} into ${basedir}/openesb"/>
     <ant dir="openesb" target="build-pkg" inheritAll="false">
       <property name="os_source" value="${openesb_location}"/>
       <property name="pkg.dest" value="${basedir}/build/pkg"/>
+      <property name="appname" value="${openesb.appname}"/>
     </ant>
   </target>
 

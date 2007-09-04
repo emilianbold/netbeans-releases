@@ -21,14 +21,16 @@ set -e
 
 dirname=`dirname "$0"`
 
-"$dirname"/unpack200.sh "$2/NetBeans 6.0.app" "$2/NetBeans 6.0.app/Contents/Resources/NetBeans"
+. "$dirname"/env.sh
 
-"$dirname"/add_gf.sh "$2/NetBeans 6.0.app" "/Applications/NetBeans/glassfish-v2b58c"
+"$dirname"/unpack200.sh "$2/$NETBEANS_INSTALL_DIR" "$2/$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans"
 
-"$dirname"/add_tc.sh "$2/NetBeans 6.0.app" "/Applications/NetBeans/apache-tomcat-6.0.13"
+"$dirname"/add_gf.sh "$2/$NETBEANS_INSTALL_DIR" "/Applications/NetBeans/glassfish-v2b58c"
+
+"$dirname"/add_tc.sh "$2/$NETBEANS_INSTALL_DIR" "/Applications/NetBeans/apache-tomcat-6.0.13"
 
 jdk_home_1_5=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home
-cd "$2/NetBeans 6.0.app"
+cd "$2/$NETBEANS_INSTALL_DIR"
 cd Contents/Resources/NetBeans*/etc
 if [ -f netbeans.conf ]
 then
