@@ -122,7 +122,10 @@ public final class UILookupMergerSupport {
         public String[] getPrivilegedTemplates() {
             Set<String> templates = new LinkedHashSet<String>();
             for (PrivilegedTemplates pt : lkp.lookupAll(PrivilegedTemplates.class)) {
-                templates.addAll(Arrays.asList(pt.getPrivilegedTemplates()));
+                String[] temp = pt.getPrivilegedTemplates();
+                if (temp != null) {
+                    templates.addAll(Arrays.asList(temp));
+                }
             }
             return templates.toArray(new String[templates.size()]);
         }
@@ -139,7 +142,10 @@ public final class UILookupMergerSupport {
         public String[] getRecommendedTypes() {
             Set<String> templates = new LinkedHashSet<String>();
             for (RecommendedTemplates pt : lkp.lookupAll(RecommendedTemplates.class)) {
-                templates.addAll(Arrays.asList(pt.getRecommendedTypes()));
+                String[] temp = pt.getRecommendedTypes();
+                if (temp != null) {
+                    templates.addAll(Arrays.asList(temp));
+                }
             }
             return templates.toArray(new String[templates.size()]);
         }
