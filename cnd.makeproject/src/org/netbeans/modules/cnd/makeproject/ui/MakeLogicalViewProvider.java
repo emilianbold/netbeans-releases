@@ -111,6 +111,7 @@ import org.openidex.search.SearchInfo;
 public class MakeLogicalViewProvider implements LogicalViewProvider {
     
     private final Project project;
+    private FilterNode projectNode = null;
     private final SubprojectProvider spp;
     
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
@@ -1096,14 +1097,26 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return super.getValue(valstring);
         }
         
+        private FilterNode getProjectNode() {
+            if (projectNode == null) {
+                FileObject srcFileObject = project.getProjectDirectory();
+                DataObject srcDataObject;
+                try {
+                    srcDataObject = DataObject.find(srcFileObject);
+                } catch (DataObjectNotFoundException e) {
+                    throw new AssertionError(e);
+                }
+                projectNode = new FilterNode(srcDataObject.getNodeDelegate());
+            }
+            return projectNode;
+        }
+        
         public Image getIcon( int type ) {
-            //return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/externalFilesFolder.gif"); // NOI18N
-            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+            return getProjectNode().getIcon(type);
         }
         
         public Image getOpenedIcon( int type ) {
-            //return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/externalFilesFolderOpened.gif"); // NOI18N
-            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
+            return getProjectNode().getOpenedIcon(type);
         }
         
         public Action[] getActions( boolean context ) {
