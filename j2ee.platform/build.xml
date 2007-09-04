@@ -22,11 +22,6 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
     <property file="nbproject/project.properties" />
 
-    <property name="external" location="../external"/>
-    <target name="j2ee-api" depends="build-init">
-        <copy file="${external}/javaee5-doc-api.zip" todir="${cluster}/docs"/>
-    </target>
-    
     <target name="netbeans-extra" depends="j2ee-api"/>
 
 </project>
