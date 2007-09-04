@@ -64,7 +64,7 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
             modifiedClazz = createEntityManager(Initialization.INJECT);
         }
         
-        return getTreeMaker().addClassMember(modifiedClazz, newMethod);
+        return getTreeMaker().addClassMember(modifiedClazz, importFQNs(newMethod));
     }
     
 }

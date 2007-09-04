@@ -1,6 +1,8 @@
 package org.netbeans.test;
 
 import java.util.*;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -9,8 +11,18 @@ public class Test {
     private EntityManager myEm;
 
     public void create(Object object) {
+        /* Add this to the deployment descriptor of this module (e.g. web.xml, ejb-jar.xml):
+         * <persistence-context-ref>
+         * <persistence-context-ref-name>persistence/LogicalName</persistence-context-ref-name>
+         * <persistence-unit-name>MyPersistenceUnit</persistence-unit-name>
+         * </persistence-context-ref>
+         * <resource-ref>
+         * <res-ref-name>UserTransaction</res-ref-name>
+         * <res-type>javax.transaction.UserTransaction</res-type>
+         * <res-auth>Container</res-auth>
+         * </resource-ref> */
         try {
-            javax.naming.Context ctx = new javax.naming.InitialContext();
+            Context ctx = new InitialContext();
             javax.transaction.UserTransaction utx = (javax.transaction.UserTransaction) ctx.lookup("java:comp/env/UserTransaction");
             utx.begin();
             myEm.joinTransaction();

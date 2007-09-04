@@ -65,7 +65,7 @@ public final class ApplicationManagedResourceTransactionInjectableInEJB extends 
                 null
                 );
         
-        return getTreeMaker().addClassMember(modifiedClazz, newMethod);
+        return getTreeMaker().addClassMember(modifiedClazz, importFQNs(newMethod));
     }
     
     private String getMethodBody(FieldInfo em){

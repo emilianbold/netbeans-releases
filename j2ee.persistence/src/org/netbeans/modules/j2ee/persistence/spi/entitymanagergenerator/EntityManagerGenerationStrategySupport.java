@@ -39,6 +39,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
@@ -95,6 +96,14 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
             return getTreeMaker().PrimitiveType(TypeKind.VOID);
         }
         return getGenUtils().createType(getGenerationOptions().getReturnType());
+    }
+    
+    /**
+     * Just delegates to {@link GeneratorUtilities#importFQNs}. Note that
+     * each invocation creates a new instance of <code>GeneratorUtilities</code>.
+     */ 
+    protected Tree importFQNs(Tree tree){
+        return GeneratorUtilities.get(getWorkingCopy()).importFQNs(tree);
     }
     
     protected String computeMethodName(){

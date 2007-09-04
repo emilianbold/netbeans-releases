@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategySupport;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -72,7 +71,7 @@ public final class ContainerManagedJTAInjectableInWeb extends EntityManagerGener
                 null
                 );
         
-        return getTreeMaker().addClassMember(modifiedClazz, newMethod);
+        return getTreeMaker().addClassMember(modifiedClazz, importFQNs(newMethod));
     }
     
 

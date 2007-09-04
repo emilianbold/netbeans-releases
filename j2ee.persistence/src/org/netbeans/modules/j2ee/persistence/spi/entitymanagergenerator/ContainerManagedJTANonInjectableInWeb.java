@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategySupport;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -30,10 +29,11 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import org.netbeans.api.java.source.Comment;
 
 /**
- * Generates the code needed for invoking an <code>EntityManager</code> in J2EE 1.4 
- * web components with a container-managed persistence unit.
+ * Generates the code needed for invoking a container-managed <code>EntityManager</code> 
+ * in classes that don't support dependency injection.
  * 
  * @author Erno Mononen
  */
@@ -56,23 +56,29 @@ public final class ContainerManagedJTANonInjectableInWeb extends EntityManagerGe
                 getParameterList(),
                 Collections.<ExpressionTree>emptyList(),
                 "{ " +
-                // TODO: RETOUCHE
-                // TODO: add this automatically
-                //                "// add this to web.xml:\n" +
-//                "// <persistence-context-ref>\n" +
-//                "//    <persistence-context-ref-name>persistence/LogicalName</persistence-context-ref-name>\n" +
-//                "//    < persistence-unit-name>PUName</persistence-unit-name>\n" +
-//                "// </persistence-context-ref>\n" +
-//                "// <resource-ref>\n" +
-//                "//     <res-ref-name>UserTransaction</res-ref-name>\n" +
-//                "//     <res-type>javax.transaction.UserTransaction</res-type>\n" +
-//                "//     <res-auth>Container</res-auth>\n" +
-//                "// </resource-ref>\n" +
                 getMethodBody(em)
                 + "}",
                 null
                 );
-        return getTreeMaker().addClassMember(getClassTree(), newMethod);
+
+        //TODO: should be added automatically, but accessing web / ejb apis from this module
+        // would require API changes that might not be doable for 6.0
+        String addToWebXmlComment =
+                " Add this to the deployment descriptor of this module (e.g. web.xml, ejb-jar.xml):\n" +
+                "<persistence-context-ref>\n" +
+                "   <persistence-context-ref-name>persistence/LogicalName</persistence-context-ref-name>\n" +
+                "   <persistence-unit-name>"+ getPersistenceUnitName() + "</persistence-unit-name>\n" +
+                "</persistence-context-ref>\n" +
+                "<resource-ref>\n" +
+                "    <res-ref-name>UserTransaction</res-ref-name>\n" +
+                "     <res-type>javax.transaction.UserTransaction</res-type>\n" +
+                "     <res-auth>Container</res-auth>\n" +
+                "</resource-ref>\n";
+
+        
+        getTreeMaker().addComment(newMethod.getBody().getStatements().get(0), 
+                Comment.create(Comment.Style.BLOCK, 0, 0, 4, addToWebXmlComment), true);
+        return getTreeMaker().addClassMember(getClassTree(), importFQNs(newMethod));
     }
 
     private String getMethodBody(FieldInfo em){

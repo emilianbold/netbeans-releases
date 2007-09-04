@@ -19,7 +19,6 @@
 package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
 import java.text.MessageFormat;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategySupport;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -31,10 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions.*;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 
 /**
  * Generates the code needed for invoking an <code>EntityManager</code> in EJB 2.x
@@ -82,7 +78,7 @@ public final class ApplicationManagedResourceTransactionNonInjectableInEJB exten
                 );
         
         
-        modifiedClazz = getTreeMaker().addClassMember(modifiedClazz, newMethod);
+        modifiedClazz = getTreeMaker().addClassMember(modifiedClazz, importFQNs(newMethod));
         return modifiedClazz;
         
     }

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
-import com.sun.source.tree.VariableTree;
 import java.text.MessageFormat;
 import org.netbeans.modules.j2ee.persistence.action.*;
 import com.sun.source.tree.AnnotationTree;
@@ -68,8 +67,7 @@ public final class ApplicationManagedResourceTransactionInJ2SE extends EntityMan
                 "{ " + body + "}",
                 null
                 );
-        
-        return getTreeMaker().addClassMember(getClassTree(), newMethod);
+        return getTreeMaker().addClassMember(getClassTree(), importFQNs(newMethod));
     }
     
     private String getEmInitCode(FieldInfo emf){
