@@ -29,7 +29,6 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -92,8 +91,9 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
                     tickerText = NbBundle.getMessage(DisplayableDisplayPresenter.class, "DISP_ticker_string_user_code"); // NOI18N
                 else {
                     tickerText = MidpValueSupport.getHumanReadableString(value);
-                    if (tickerText == null || tickerText.length() == 0)
+                    if (tickerText == null || tickerText.length() == 0) {
                         tickerText = NbBundle.getMessage(DisplayableDisplayPresenter.class, "DISP_empty_ticker_string"); // NOI18N
+                    }
                 }
             }
         }

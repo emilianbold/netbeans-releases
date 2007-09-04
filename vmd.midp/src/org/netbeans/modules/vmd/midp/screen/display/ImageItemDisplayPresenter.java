@@ -26,11 +26,12 @@ import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 import org.openide.util.Utilities;
-
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.openide.filesystems.FileObject;
 
 
@@ -40,27 +41,37 @@ import org.openide.filesystems.FileObject;
  * @version 1.0
  */
 public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
-    
+
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
     private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
-    
     private JLabel label;
     private ScreenFileObjectListener imageFileListener;
     private FileObject imageFileObject;
-    
+
     public ImageItemDisplayPresenter() {
         label = new JLabel();
         setContentComponent(label);
     }
-    
+
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        DesignComponent imageComponent = getComponent().readProperty(ImageItemCD.PROP_IMAGE).getComponent();
+
+        PropertyValue value = getComponent().readProperty(ImageItemCD.PROP_IMAGE);
+        DesignComponent imageComponent = null;
         String path = null;
-        if (imageComponent != null)
-            path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
-        String alternText = (String) getComponent().readProperty(ImageItemCD.PROP_ALT_TEXT).getPrimitiveValue();
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            value.getComponent();
+            if (imageComponent != null) {
+                path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+            }
+        }
+
+        value = getComponent().readProperty(ImageItemCD.PROP_ALT_TEXT);
+        String alternText = null;
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            alternText = MidpTypes.getString(value);
+        }
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
         imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
         if (imageFileObject != null) {
@@ -73,20 +84,20 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
             label.setIcon(icon);
         } else if (icon == null && path != null) {
             label.setIcon(ICON_BROKEN);
-        }  else if (alternText != null) {
+        } else if (alternText != null) {
             label.setText(alternText);
             label.setIcon(null);
         }
     }
-    
+
     @Override
-     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
         ResourcePropertyEditor imagePropertyEditor = new ResourcePropertyEditor(ImageItemCD.PROP_IMAGE, getComponent());
         descriptors.add(new ScreenPropertyDescriptor(getComponent(), label, imagePropertyEditor));
         return descriptors;
     }
-     
+
     @Override
     protected void notifyDetached(DesignComponent component) {
         if (imageFileObject != null && imageFileListener != null) {

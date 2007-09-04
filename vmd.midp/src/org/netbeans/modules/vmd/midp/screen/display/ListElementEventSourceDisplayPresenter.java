@@ -37,7 +37,6 @@ import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanProper
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
@@ -53,64 +52,75 @@ import org.openide.filesystems.FileObject;
  * @author Anton Chechel
  */
 public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresenter {
-    
+
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
     private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
-    
     private JPanel view;
     private JLabel state;
     private JLabel image;
     private JLabel label;
     private ScreenFileObjectListener imageFileListener;
     private FileObject imageFileObject;
-    
+
     public ListElementEventSourceDisplayPresenter() {
         view = new JPanel();
         view.setLayout(new BoxLayout(view, BoxLayout.X_AXIS));
         view.setOpaque(false);
-        
+
         state = new JLabel();
         view.add(state);
         image = new JLabel();
         view.add(image);
         label = new JLabel();
         view.add(label);
-        
+
         view.add(Box.createHorizontalGlue());
     }
-    
+
     public boolean isTopLevelDisplay() {
         return false;
     }
-    
+
     public Collection<DesignComponent> getChildren() {
         return Collections.emptyList();
     }
-    
+
     public JComponent getView() {
         return view;
     }
-    
+
     public void reload(ScreenDeviceInfo deviceInfo) {
-        int type = (Integer) getComponent().getParentComponent().readProperty(ListCD.PROP_LIST_TYPE).getPrimitiveValue();
-        PropertyValue selectedValue = getComponent().readProperty(ListElementEventSourceCD.PROP_SELECTED);
-        boolean selected = selectedValue.getKind() == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean(selectedValue);
-        switch (type) {
-        case ChoiceSupport.VALUE_EXCLUSIVE:
-            state.setIcon(selected ? ChoiceElementDisplayPresenter.ICON_RADIOBUTTON : ChoiceElementDisplayPresenter.ICON_EMPTY_RADIOBUTTON);
-            break;
-        case ChoiceSupport.VALUE_MULTIPLE:
-            state.setIcon(selected ? ChoiceElementDisplayPresenter.ICON_CHECKBOX : ChoiceElementDisplayPresenter.ICON_EMPTY_CHECKBOX);
-            break;
-        default:
-            state.setIcon(null);
-            break;
+        PropertyValue value = getComponent().getParentComponent().readProperty(ListCD.PROP_LIST_TYPE);
+        int type;
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            type = MidpTypes.getInteger(value);
+        } else {
+            type = ChoiceSupport.VALUE_EXCLUSIVE;
         }
-        
-        DesignComponent imageComponent = getComponent().readProperty(ChoiceElementCD.PROP_IMAGE).getComponent();
+
+        PropertyValue selectedValue = getComponent().readProperty(ListElementEventSourceCD.PROP_SELECTED);
+        boolean selected = selectedValue.getKind() == PropertyValue.Kind.VALUE && MidpTypes.getBoolean(selectedValue);
+        switch (type) {
+            case ChoiceSupport.VALUE_EXCLUSIVE:
+                state.setIcon(selected ? ChoiceElementDisplayPresenter.ICON_RADIOBUTTON : ChoiceElementDisplayPresenter.ICON_EMPTY_RADIOBUTTON);
+                break;
+            case ChoiceSupport.VALUE_MULTIPLE:
+                state.setIcon(selected ? ChoiceElementDisplayPresenter.ICON_CHECKBOX : ChoiceElementDisplayPresenter.ICON_EMPTY_CHECKBOX);
+                break;
+            default:
+                state.setIcon(null);
+                break;
+        }
+
+        DesignComponent imageComponent = null;
         String path = null;
-        if (imageComponent != null)
+        value = getComponent().readProperty(ChoiceElementCD.PROP_IMAGE);
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            imageComponent = value.getComponent();
+        }
+        if (imageComponent != null) {
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+        }
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
         imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
         if (imageFileObject != null) {
@@ -118,29 +128,29 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
             imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
             imageFileObject.addFileChangeListener(imageFileListener);
         }
-        if (icon != null)
+        if (icon != null) {
             image.setIcon(icon);
-        else if (path != null)
+        } else if (path != null) {
             image.setIcon(ICON_BROKEN);
-        else
+        } else {
             image.setIcon(null);
-        
+        }
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING));
         label.setText(text);
-        
-        DesignComponent font = getComponent().readProperty(ListElementEventSourceCD.PROP_FONT).getComponent();
-        label.setFont(ScreenSupport.getFont(deviceInfo, font));
+
+        value = getComponent().readProperty(ListElementEventSourceCD.PROP_FONT);
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            DesignComponent font = value.getComponent();
+            label.setFont(ScreenSupport.getFont(deviceInfo, font));
+        }
     }
-    
+
     public Shape getSelectionShape() {
         return new Rectangle(view.getSize());
     }
-    
+
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
-        return Arrays.asList(
-                new ScreenPropertyDescriptor(getComponent(), state, new ScreenBooleanPropertyEditor(ChoiceElementCD.PROP_SELECTED)),
-                new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(ChoiceElementCD.PROP_STRING))
-                );
+        return Arrays.asList(new ScreenPropertyDescriptor(getComponent(), state, new ScreenBooleanPropertyEditor(ChoiceElementCD.PROP_SELECTED)), new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(ChoiceElementCD.PROP_STRING)));
     }
 
     @Override
@@ -150,14 +160,15 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
 
     @Override
     public AcceptSuggestion createSuggestion(Transferable transferable) {
-        if (!(transferable.isDataFlavorSupported(ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR)))
+        if (!(transferable.isDataFlavorSupported(ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR))) {
             return null;
-        if (!(transferable.isDataFlavorSupported(ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR)))
+        }
+        if (!(transferable.isDataFlavorSupported(ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR))) {
             return null;
-        
+        }
         ScreenDeviceInfo.Edge horizontalPosition = null;
         ScreenDeviceInfo.Edge verticalPosition = null;
-        
+
         try {
             horizontalPosition = (ScreenDeviceInfo.Edge) transferable.getTransferData(ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR);
             verticalPosition = (ScreenDeviceInfo.Edge) transferable.getTransferData(ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR);
@@ -168,5 +179,4 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
         }
         return new ScreenMoveArrayAcceptSuggestion(horizontalPosition, verticalPosition);
     }
-    
 }

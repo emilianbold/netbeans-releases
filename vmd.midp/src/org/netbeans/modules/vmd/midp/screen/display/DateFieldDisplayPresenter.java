@@ -72,8 +72,9 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
             }
         }
         
-        if (dateValue.getKind() == PropertyValue.Kind.VALUE)
+        if (dateValue.getKind() == PropertyValue.Kind.VALUE) {
             text = format.format(new Date(MidpTypes.getLong(dateValue)));
+        }
         label.setText(text);
     }
     

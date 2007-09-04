@@ -21,55 +21,45 @@ package org.netbeans.modules.vmd.midp.screen.display;
 
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenTextAreaPropertyEditor;
-import org.openide.util.NbBundle;
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 
 /**
  *
  * @author Anton Chechel
  */
 public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
-    
+
     private static final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.GRAY);
-    
     private JTextArea textBox;
-    
+
     public TextBoxDisplayPresenter() {
-        textBox = new JTextArea ();
+        textBox = new JTextArea();
         textBox.setBorder(LABEL_BORDER);
-        textBox.setEditable (false);
+        textBox.setEditable(false);
         JPanel contentPanel = getPanel().getContentPanel();
         contentPanel.setLayout(new BorderLayout());
         contentPanel.add(textBox, BorderLayout.CENTER);
     }
-    
+
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
-        String text = MidpTypes.getString(getComponent().readProperty(TextBoxCD.PROP_STRING));
-        if (text != null) {
-            this.textBox.setText(text);
-        } else {
-            this.textBox.setText(NbBundle.getMessage(TextBoxDisplayPresenter.class, "DISP_text_is_empty")); // NOI18N
-        }
+
+        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(TextBoxCD.PROP_STRING));
+        this.textBox.setText(text);
     }
-    
+
     @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
-        ArrayList<ScreenPropertyDescriptor> list = new ArrayList<ScreenPropertyDescriptor> (super.getPropertyDescriptors ());
-        list.add (
-            new ScreenPropertyDescriptor(getComponent(), textBox, new ScreenTextAreaPropertyEditor (TextBoxCD.PROP_STRING))
-        );
+        ArrayList<ScreenPropertyDescriptor> list = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
+        list.add(new ScreenPropertyDescriptor(getComponent(), textBox, new ScreenTextAreaPropertyEditor(TextBoxCD.PROP_STRING)));
         return list;
     }
-    
 }

@@ -83,8 +83,12 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
             DesignComponent imageComponent = value.getComponent();
             String path = null;
             if (imageComponent != null) {
-                path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+                value = imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH);
+                if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+                    path = MidpTypes.getString(value);
+                }
             }
+
             Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
             imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
             if (imageFileObject != null) {
@@ -115,8 +119,11 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
                 stringLabel.setText(NbBundle.getMessage(AbstractInfoDisplayPresenter.class, "DISP_text_is_empty")); // NOI18N
             } else {
                 stringLabel.setText(text);
-                DesignComponent font = getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT_FONT).getComponent();
-                stringLabel.setFont(ScreenSupport.getFont(deviceInfo, font));
+                value = getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT_FONT);
+                if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+                    DesignComponent font = value.getComponent();
+                    stringLabel.setFont(ScreenSupport.getFont(deviceInfo, font));
+                }
             }
         } else {
             stringLabel.setText(NbBundle.getMessage(AbstractInfoDisplayPresenter.class, "DISP_text_is_usercode")); // NOI18N

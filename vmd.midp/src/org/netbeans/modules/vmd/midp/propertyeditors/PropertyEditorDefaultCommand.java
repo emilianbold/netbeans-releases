@@ -146,20 +146,22 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
             if (NONE_ITEM.equals(text)) {
                 super.setValue(NULL_VALUE);
             } else {
-                final DesignComponent[] itemCommandSource = new DesignComponent[1];
-                itemCommandSource[0] = getItemCommandEvenSource(text);
-                if (itemCommandSource[0] == null) {
-                    final DesignComponent command = values.get(text);
-                    if (component != null && component.get() != null) {
-                        component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+                final DesignComponent command = values.get(text);
+                if (command != null) { // user code
+                    final DesignComponent[] itemCommandSource = new DesignComponent[1];
+                    itemCommandSource[0] = getItemCommandEvenSource(text);
+                    if (itemCommandSource[0] == null) {
+                        if (component != null && component.get() != null) {
+                            component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
 
-                            public void run() {
-                                itemCommandSource[0] = MidpDocumentSupport.attachCommandToItem(component.get(), command);
-                            }
-                        });
+                                public void run() {
+                                    itemCommandSource[0] = MidpDocumentSupport.attachCommandToItem(component.get(), command);
+                                }
+                            });
+                        }
                     }
+                    super.setValue(PropertyValue.createComponentReference(itemCommandSource[0]));
                 }
-                super.setValue(PropertyValue.createComponentReference(itemCommandSource[0]));
             }
         }
     }
@@ -282,7 +284,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
 
         return super.supportsCustomEditor();
     }
-    
+
     private boolean isWriteableByParentType() {
         if (component == null || component.get() == null) {
             return false;
@@ -297,7 +299,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
                     parent[0] = _component.getParentComponent();
                 }
             });
-            
+
             if (parent[0] != null && parentTypeID.equals(parent[0].getType())) {
                 return false;
             }

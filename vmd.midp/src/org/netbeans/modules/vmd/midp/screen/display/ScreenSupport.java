@@ -40,6 +40,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Map;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 
 /**
  *
@@ -60,7 +61,7 @@ public final class ScreenSupport {
 
     public static Font getFont(DesignDocument document, int kindCode, int faceCode, int styleCode, int sizeCode) {
         ScreenDeviceInfo deviceInfo = getDeviceInfo(document);
-        
+
         if (kindCode == FontCD.VALUE_KIND_DEFAULT) {
             return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);
         } else if (kindCode == FontCD.VALUE_KIND_STATIC) {
@@ -82,7 +83,7 @@ public final class ScreenSupport {
         }
         if ((styleCode & FontCD.VALUE_STYLE_ITALIC) != 0) {
             style.add(FontStyle.ITALIC);
-        } 
+        }
         if ((styleCode & FontCD.VALUE_STYLE_UNDERLINED) != 0) {
             style.add(FontStyle.UNDERLINED);
         }
@@ -109,7 +110,7 @@ public final class ScreenSupport {
                 DesignComponent rootComponent = document.getRootComponent();
                 ScreenDeviceInfoPresenter presenter = rootComponent.getPresenter(ScreenDeviceInfoPresenter.class);
                 if (presenter == null) {
-                    throw Debug.error ("No ScreenDevice attached to the root component"); //NOI18N
+                    throw Debug.error("No ScreenDevice attached to the root component"); //NOI18N
                 }
                 screenDevice[0] = presenter.getScreenDeviceInfo();
             }
@@ -128,11 +129,38 @@ public final class ScreenSupport {
         if (fontComponent == null) {
             return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);
         }
-        
-        int kindCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FONT_KIND));
-        int faceCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FACE));
-        int styleCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_STYLE));
-        int sizeCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_SIZE));
+
+        PropertyValue value = fontComponent.readProperty(FontCD.PROP_FONT_KIND);
+        int kindCode;
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            kindCode = MidpTypes.getInteger(value);
+        } else {
+            kindCode = FontCD.VALUE_KIND_DEFAULT;
+        }
+
+        value = fontComponent.readProperty(FontCD.PROP_FACE);
+        int faceCode;
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            faceCode = MidpTypes.getInteger(value);
+        } else {
+            faceCode = FontCD.VALUE_FACE_SYSTEM;
+        }
+
+        value = fontComponent.readProperty(FontCD.PROP_STYLE);
+        int styleCode;
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            styleCode = MidpTypes.getInteger(value);
+        } else {
+            styleCode = FontCD.VALUE_STYLE_PLAIN;
+        }
+
+        value = fontComponent.readProperty(FontCD.PROP_SIZE);
+        int sizeCode;
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            sizeCode = MidpTypes.getInteger(value);
+        } else {
+            sizeCode = FontCD.VALUE_SIZE_MEDIUM;
+        }
 
         return getFont(fontComponent.getDocument(), kindCode, faceCode, styleCode, sizeCode);
     }
@@ -147,7 +175,11 @@ public final class ScreenSupport {
         if (imageComponent == null) {
             return null;
         }
-        String imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
+        PropertyValue value = imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH);
+        String imagePath = null;
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
+        }
 
         if (imagePath == null) {
             return null;
@@ -170,7 +202,11 @@ public final class ScreenSupport {
         if (imageComponent == null) {
             return null;
         }
-        String imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
+        PropertyValue value = imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH);
+        String imagePath = null;
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
+        }
 
         if (imagePath == null) {
             return null;
@@ -178,7 +214,7 @@ public final class ScreenSupport {
         DesignDocument document = imageComponent.getDocument();
 
         Map<FileObject, FileObject> fileMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imagePath);
-        if (fileMap == null || ! fileMap.keySet().iterator().hasNext()) {
+        if (fileMap == null || !fileMap.keySet().iterator().hasNext()) {
             return null;
         }
         FileObject imageFileObject = fileMap.keySet().iterator().next();

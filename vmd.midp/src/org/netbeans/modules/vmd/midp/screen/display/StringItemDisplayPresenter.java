@@ -27,11 +27,11 @@ import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 
 /**
  *
@@ -52,15 +52,20 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
         super.reload(deviceInfo);
 
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
-        int appearanceMode = MidpTypes.getInteger(getComponent().readProperty(ItemCD.PROP_APPEARANCE_MODE));
-        label.setBorder(appearanceMode == ItemCD.VALUE_BUTTON ? BorderFactory.createRaisedBevelBorder() : null);
-        label.setForeground(appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults().getColor("Label.foreground")); // NOI18N
+        PropertyValue value = getComponent().readProperty(ItemCD.PROP_APPEARANCE_MODE);
+        int appearanceMode = MidpTypes.getInteger(value);
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            label.setBorder(appearanceMode == ItemCD.VALUE_BUTTON ? BorderFactory.createRaisedBevelBorder() : null);
+            label.setForeground(appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults().getColor("Label.foreground")); // NOI18N
+        }
         label.setText(text);
 
-        DesignComponent font = getComponent().readProperty(StringItemCD.PROP_FONT).getComponent();
-        label.setFont(ScreenSupport.getFont(deviceInfo, font));
+        value = getComponent().readProperty(StringItemCD.PROP_FONT);
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            DesignComponent font = value.getComponent();
+            label.setFont(ScreenSupport.getFont(deviceInfo, font));
+        }
     }
-
 
     @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {

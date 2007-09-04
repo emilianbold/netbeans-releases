@@ -26,7 +26,6 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.BevelBorder;
@@ -39,39 +38,45 @@ import java.util.Collection;
  * @version 1.0
  */
 public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
-    
+
     private static final Border POPUP_BORDER = BorderFactory.createBevelBorder(BevelBorder.RAISED);
     private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder();
-    
     private JPanel panel;
-    
+
     public ChoiceGroupDisplayPresenter() {
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
         setContentComponent(panel);
     }
-    
+
     @Override
     public Collection<DesignComponent> getChildren() {
         PropertyValue elementsValue = getComponent().readProperty(ChoiceGroupCD.PROP_ELEMENTS);
-        int type = (Integer) getComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE).getPrimitiveValue();
         ArrayList<DesignComponent> elements = new ArrayList<DesignComponent>();
-            Debug.collectAllComponentReferences(elementsValue, elements);
-        if (type == ChoiceSupport.VALUE_POPUP && elements.size() > 0) {
-            return elements.subList(0, 1);
+        Debug.collectAllComponentReferences(elementsValue, elements);
+
+        PropertyValue typeValue = getComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE);
+        if (!PropertyValue.Kind.USERCODE.equals(typeValue.getKind())) {
+            int type = MidpTypes.getInteger(typeValue);
+            if (type == ChoiceSupport.VALUE_POPUP && elements.size() > 0) {
+                return elements.subList(0, 1);
+            }
         }
         return elements;
     }
-    
+
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
+
         PropertyValue value = getComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE);
-        panel.setBorder(value.getKind() == PropertyValue.Kind.VALUE  &&  MidpTypes.getInteger(value) == ChoiceSupport.VALUE_POPUP
-                ? POPUP_BORDER : EMPTY_BORDER);
-        
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind()) && MidpTypes.getInteger(value) == ChoiceSupport.VALUE_POPUP) {
+            panel.setBorder(POPUP_BORDER);
+        } else {
+            panel.setBorder(EMPTY_BORDER);
+        }
+
         panel.removeAll();
         for (DesignComponent item : getChildren()) {
             ChoiceElementDisplayPresenter presenter = item.getPresenter(ChoiceElementDisplayPresenter.class);
@@ -83,5 +88,4 @@ public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
         }
         panel.add(Box.createVerticalGlue());
     }
-    
 }

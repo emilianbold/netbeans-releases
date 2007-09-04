@@ -52,7 +52,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     private static JLabel label;
     private boolean hasModel;
     private boolean modelIsUserCode;
-    private boolean drawBorders;
+    private boolean drawBorders = true;
     private String[] columnNames;
     private String[][] values;
 
@@ -174,7 +174,10 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             hasModel = tableModelComponent != null;
 
             if (hasModel) {
-                drawBorders = MidpTypes.getBoolean(getComponent().readProperty(TableItemCD.PROP_BORDERS));
+                value = getComponent().readProperty(TableItemCD.PROP_BORDERS);
+                if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+                    drawBorders = MidpTypes.getBoolean(value);
+                }
 
                 PropertyValue columnsProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_COLUMN_NAMES);
                 List<PropertyValue> list = columnsProperty.getArray();
@@ -251,7 +254,11 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
-        DesignComponent tableModel = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
+        PropertyValue value = getComponent().readProperty(TableItemCD.PROP_MODEL);
+        DesignComponent tableModel = null;
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            tableModel = value.getComponent();
+        }
         ScreenPropertyEditor tableModelDescriptor = null;
         if (tableModel == null) {
             tableModelDescriptor = new ResourcePropertyEditor(TableItemCD.PROP_MODEL, getComponent());

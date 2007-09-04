@@ -51,6 +51,7 @@ public class SVGImageComponent extends JComponent {
     }
 
 
+    @Override
     public void paint (Graphics g) {
         super.paint (g);
         if (image != null) {
