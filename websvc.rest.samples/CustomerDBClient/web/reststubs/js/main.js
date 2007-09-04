@@ -201,7 +201,7 @@ function createField(id, name, value, editable) {
     if(editable)
         str += '<td><input id="'+id+'" type="text" value="'+value+'" size="40"/></td></tr>';
     else
-        str += '<td>'+value+'</td></tr>';
+        str += '<td>'+value+'&nbsp;</td></tr>';
     return str;
 }
 
