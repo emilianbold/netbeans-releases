@@ -2238,7 +2238,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     updateDone = true;
                 }
                 else if (type == FormModelEvent.BINDING_PROPERTY_CHANGED) {
-                    replicator.updateBinding(ev.getNewBinding());
+                    if (ev.getSubPropertyName() == null) {
+                        replicator.updateBinding(ev.getNewBinding());
+                    }
                     // Note: BindingDesignSupport takes care of removing the old binding
                     updateDone = true;
                 }

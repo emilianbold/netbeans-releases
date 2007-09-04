@@ -1349,7 +1349,9 @@ public class BindingDesignSupport {
                 FormModelEvent ev = events[i];
                 switch (ev.getChangeType()) {
                     case FormModelEvent.BINDING_PROPERTY_CHANGED:
-                        changeBinding(ev.getOldBinding(), ev.getNewBinding());
+                        if (ev.getSubPropertyName() == null) {
+                            changeBinding(ev.getOldBinding(), ev.getNewBinding());
+                        }
                         break;
                     case FormModelEvent.COMPONENT_REMOVED:
                         releaseBindings(ev.getComponent(), true);

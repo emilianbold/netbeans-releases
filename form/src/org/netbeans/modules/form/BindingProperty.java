@@ -34,7 +34,11 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 
 public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
-
+    public static final String PROP_NAME = "name"; // NOI18N
+    public static final String PROP_NULL_VALUE = "nullValue"; // NOI18N
+    public static final String PROP_INCOMPLETE_VALUE = "incompleteValue"; // NOI18N
+    public static final String PROP_VALIDATOR = "validator"; // NOI18N
+    public static final String PROP_CONVERTER = "converter"; // NOI18N
     private RADComponent bindingComponent;
     private BindingDescriptor bindingDescriptor;
     private MetaBinding binding;
@@ -81,12 +85,30 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
         if ((old == null) && (val != null)) {
             FormEditor.updateProjectForBeansBinding(bindingComponent.getFormModel());
             getFormModel().raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+            // To make sure that undo restores value of the corresponding property correctly 
+            Node.Property prop = bindingComponent.getPropertyByName(bindingDescriptor.getPath());
+            if (prop instanceof FormProperty) {
+                FormProperty fprop = (FormProperty)prop;
+                if (fprop.isChanged()) {
+                    try {
+                        fprop.restoreDefaultValue();
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+                }
+            } else {
+                try {
+                    prop.restoreDefaultValue();
+                } catch (Exception ex) {
+                    // ignore
+                }
+            }
         }
         binding = val;
         FormEditor.getBindingSupport(getFormModel()).changeBindingInModel(old, binding);
 
         getFormModel().fireBindingChanged(
-                getBindingComponent(), getBindingPath(), old, binding);
+                getBindingComponent(), getBindingPath(), null, old, binding);
         RADComponentNode node = getBindingComponent().getNodeReference();
         if (node != null) {
             node.firePropertyChangeHelper(
@@ -169,6 +191,22 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
 
     FormProperty getNameProperty() {
         return nameProperty;
+    }
+
+    FormProperty getSubProperty(String propName) {
+        if (PROP_NAME.equals(propName)) {
+            return getNameProperty();
+        } else if (PROP_NULL_VALUE.equals(propName)) {
+            return getNullValueProperty();
+        } else if (PROP_INCOMPLETE_VALUE.equals(propName)) {
+            return getIncompleteValueProperty();
+        } else if (PROP_CONVERTER.equals(propName)) {
+            return getConverterProperty();
+        } else if (PROP_VALIDATOR.equals(propName)) {
+            return getValidatorProperty();
+        } else {
+            return null;
+        }
     }
 
     // -----

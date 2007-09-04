@@ -914,12 +914,14 @@ public class FormModel
 
     public FormModelEvent fireBindingChanged(RADComponent metacomp,
                                              String path,
-                                             MetaBinding oldValue,
-                                             MetaBinding newValue)
+                                             String subProperty,
+                                             Object oldValue,
+                                             Object newValue)
     {
         FormModelEvent ev = new FormModelEvent(this, FormModelEvent.BINDING_PROPERTY_CHANGED);
         ev.setComponentAndContainer(metacomp, null);
         ev.setProperty(path, oldValue, newValue);
+        ev.setSubProperty(subProperty);
         sendEvent(ev);
 
         if (undoRedoRecording && oldValue != newValue) {

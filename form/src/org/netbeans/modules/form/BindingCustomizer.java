@@ -555,6 +555,28 @@ public class BindingCustomizer extends JPanel {
                     }
                 }
             }
+            String path = bindingDescriptor.getPath();
+            FormModel model = bindingComponent.getFormModel();
+            FormProperty.ValueWithEditor newName = propertyValue(nameProperty);
+            if ((oldName == null) ? nameProperty.isChanged() : (newName.getValue() != oldName.getValue())) {
+                model.fireBindingChanged(bindingComponent, path, BindingProperty.PROP_NAME, oldName, newName);
+            }
+            FormProperty.ValueWithEditor newNullValue = propertyValue(nullValueProperty);
+            if ((oldNullValue == null) ? nullValueProperty.isChanged() : (newNullValue.getValue() != oldNullValue.getValue())) {
+                model.fireBindingChanged(bindingComponent, path, BindingProperty.PROP_NULL_VALUE, oldNullValue, newNullValue);
+            }
+            FormProperty.ValueWithEditor newIncompletePathValue = propertyValue(incompletePathValueProperty);
+            if ((oldIncompletePathValue == null) ? incompletePathValueProperty.isChanged() : (newIncompletePathValue.getValue() != oldIncompletePathValue.getValue())) {
+                model.fireBindingChanged(bindingComponent, path, BindingProperty.PROP_INCOMPLETE_VALUE, oldIncompletePathValue, newIncompletePathValue);
+            }
+            FormProperty.ValueWithEditor newConverter = propertyValue(converterProperty);
+            if ((oldConverter == null) ? converterProperty.isChanged() : (newConverter.getValue() != oldConverter.getValue())) {
+                model.fireBindingChanged(bindingComponent, path, BindingProperty.PROP_CONVERTER, oldConverter, newConverter);
+            }
+            FormProperty.ValueWithEditor newValidator = propertyValue(validatorProperty);
+            if ((oldValidator == null) ? validatorProperty.isChanged() : (newValidator.getValue() != oldValidator.getValue())) {
+                model.fireBindingChanged(bindingComponent, path, BindingProperty.PROP_VALIDATOR, oldValidator, newValidator);
+            }
         } else {
             binding = null;
         }
