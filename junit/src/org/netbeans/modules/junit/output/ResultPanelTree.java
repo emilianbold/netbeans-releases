@@ -41,6 +41,9 @@ final class ResultPanelTree extends JPanel
                             implements ExplorerManager.Provider,
                                        PropertyChangeListener {
 
+    private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
+            ResultPanelTree.class);
+    
     /** manages the tree of nodes representing found objects */
     private final ExplorerManager explorerManager;
     /** root node of the tree */
@@ -64,8 +67,10 @@ final class ResultPanelTree extends JPanel
 
     ResultPanelTree(ResultDisplayHandler displayHandler) {
         super(new java.awt.BorderLayout());
-        
-        add(treeView = new ResultTreeView(), java.awt.BorderLayout.CENTER);
+        treeView = new ResultTreeView();
+        treeView.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TestResults"));
+        treeView.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TestResults"));
+        add(treeView, java.awt.BorderLayout.CENTER);
         
         explorerManager = new ExplorerManager();
         explorerManager.setRootContext(rootNode = new RootNode(filtered));

@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -65,6 +66,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -112,6 +114,9 @@ public final class DefaultPlugin extends JUnitPlugin {
     /** */
     private JUnitVersion junitVer;
     
+    /** */
+    private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
+            DefaultPlugin.class);
     /**
      *
      */
@@ -1005,9 +1010,14 @@ public final class DefaultPlugin extends JUnitPlugin {
         JComponent msg
               = createMessageComponent("MSG_cannot_use_default_junit4", //NOI18N
                                        sourceLevel);
-        Object selectOption = NbBundle.getMessage(
-                                    getClass(),
-                                    "LBL_create_junit3_tests");         //NOI18N
+//        Object selectOption = NbBundle.getMessage(
+//                                    getClass(),
+//                                    "LBL_create_junit3_tests");         //NOI18N
+        JButton button = new JButton(); 
+        Mnemonics.setLocalizedText(button, bundle.getString("LBL_Select"));
+        button.getAccessibleContext().setAccessibleName("AN_create_junit3_tests");
+        button.getAccessibleContext().setAccessibleDescription("AD_create_junit3_tests");
+        
         Object answer = DialogDisplayer.getDefault().notify(
                 new DialogDescriptor(
                         wrapDialogContent(msg),
@@ -1015,27 +1025,38 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 getClass(),
                                 "LBL_title_cannot_use_junit4"),         //NOI18N
                         true,       //modal
-                        new Object[] {selectOption, CANCEL_OPTION},
-                        selectOption,
+                        new Object[] {button, CANCEL_OPTION},
+                        button,
                         DialogDescriptor.DEFAULT_ALIGN,
                         (HelpCtx) null,
                         (ActionListener) null));
 
-        return answer == selectOption;
+        return answer == button;
     }
 
+//    private String getText(String bundleKey) {
+//        return NbBundle.getMessage(getClass(), bundleKey);
+//    }
+    
     /**
      */
     private JUnitVersion askUserWhichJUnitToUse(boolean offerJUnit4) {
         assert EventQueue.isDispatchThread();
 
-        JRadioButton rbtnJUnit3 = new JRadioButton(
-               NbBundle.getMessage(getClass(), "LBL_JUnit3_generator"));//NOI18N
-        JRadioButton rbtnJUnit4 = new JRadioButton(
-               NbBundle.getMessage(getClass(),
-                                   offerJUnit4
-                                        ? "LBL_JUnit4_generator"
-                                        : "LBL_JUnit4_generator_reqs"));//NOI18N
+        //JRadioButton rbtnJUnit3 = new JRadioButton(
+        //       NbBundle.getMessage(getClass(), "LBL_JUnit3_generator"));//NOI18N
+        JRadioButton rbtnJUnit3 = new JRadioButton();
+        Mnemonics.setLocalizedText(rbtnJUnit3, bundle.getString("LBL_JUnit3_generator"));
+        rbtnJUnit3.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_JUnit3_generator"));
+        
+        //JRadioButton rbtnJUnit4 = new JRadioButton(
+        //       NbBundle.getMessage(getClass(),
+        //                           offerJUnit4
+        //                                ? "LBL_JUnit4_generator"
+        //                                : "LBL_JUnit4_generator_reqs"));//NOI18N
+        JRadioButton rbtnJUnit4 = new JRadioButton();
+        Mnemonics.setLocalizedText(rbtnJUnit4, offerJUnit4 ? bundle.getString("LBL_JUnit4_generator") : bundle.getString("LBL_JUnit4_generator"));
+        rbtnJUnit4.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_JUnit4_generator"));
 
         ButtonGroup group = new ButtonGroup();
         group.add(rbtnJUnit3);
@@ -1059,21 +1080,24 @@ public final class DefaultPlugin extends JUnitPlugin {
         panel.add(msg, BorderLayout.NORTH);
         panel.add(choicePanel, BorderLayout.CENTER);
 
-        Object selectOption = NbBundle.getMessage(getClass(),
-                                                  "LBL_Select");        //NOI18N
+        JButton button = new JButton(); 
+        Mnemonics.setLocalizedText(button, bundle.getString("LBL_Select"));
+        button.getAccessibleContext().setAccessibleName("AN_Select");
+        button.getAccessibleContext().setAccessibleDescription("AD_Select");
+        
+//        Object selectOption = bundle.getString("LBL_Select");        //NOI18N
         Object answer = DialogDisplayer.getDefault().notify(
                 new DialogDescriptor(
                         wrapDialogContent(panel),
-                        NbBundle.getMessage(getClass(),
-                                            "LBL_title_select_generator"),//NOI18N
+                        bundle.getString("LBL_title_select_generator"),//NOI18N
                         true,
-                        new Object[] {selectOption, CANCEL_OPTION},
-                        selectOption,
+                        new Object[] {button, CANCEL_OPTION},
+                        button,
                         DialogDescriptor.DEFAULT_ALIGN,
                         (HelpCtx) null,
                         (ActionListener) null));
 
-        if (answer == selectOption) {
+        if (answer == button) {
             JUnitVersion ver;
             if (rbtnJUnit3.isSelected()) {
                 ver = JUnitVersion.JUNIT3;
@@ -1118,7 +1142,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             result = comp;
         }
         result.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-        
+        result.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_title_select_generator"));
         return result;
     }
 

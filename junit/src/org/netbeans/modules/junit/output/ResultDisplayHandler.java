@@ -44,6 +44,10 @@ final class ResultDisplayHandler {
     private static final String ID_OUTPUT = "output";                   //NOI18N
     
     /** */
+    private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
+            ResultDisplayHandler.class);
+    
+    /** */
     private ResultPanelTree treePanel;
     /** */
     private ResultPanelOutput outputListener;
@@ -89,7 +93,8 @@ final class ResultDisplayHandler {
                 super.removeNotify();
             }
         };
-
+        splitPane.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResultPanelTree"));
+        splitPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResultPanelTree"));
         return splitPane;
     }
     

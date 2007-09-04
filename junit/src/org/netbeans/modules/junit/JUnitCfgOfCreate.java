@@ -282,6 +282,8 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         ChangeListener changeListener;
         final JButton btnOK = new JButton(
                 NbBundle.getMessage(JUnitCfgOfCreate.class, "LBL_OK")); //NOI18N
+        btnOK.getAccessibleContext().setAccessibleName(NbBundle.getMessage(JUnitCfgOfCreate.class, "AN_OK"));
+        btnOK.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JUnitCfgOfCreate.class, "AD_OK"));
         btnOK.setEnabled(isAcceptable());
         addChangeListener(changeListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -737,7 +739,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         chkExceptions       = chkBoxes[i++];            //may be null
         chkGenerateSuites   = chkBoxes[i++];            //may be null
         chkSetUp            = chkBoxes[i++];
-        chkTearDown         = chkBoxes[i++];
+        chkTearDown         = chkBoxes[i++];        
         chkContent          = chkBoxes[i++];
         chkJavaDoc          = chkBoxes[i++];
         chkComments         = chkBoxes[i++];
