@@ -18,23 +18,18 @@
  */
 package org.netbeans.modules.visualweb.jsfsupport.container;
 
-import java.util.Locale;
 import java.util.Map;
 
 import javax.faces.application.Application;
 import javax.faces.component.UIViewRoot;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.render.RenderKit;
 import javax.faces.render.RenderKitFactory;
 import javax.faces.FactoryFinder;
-import javax.portlet.PortletContext;
-import javax.servlet.ServletContext;
+//import javax.portlet.PortletContext;
 import javax.servlet.ServletContextEvent;
 import org.openide.ErrorManager;
 
-import org.w3c.dom.DocumentFragment;
 
 import com.sun.rave.designtime.DesignContext;
 import org.netbeans.modules.visualweb.jsfsupport.render.RaveRenderKit;
@@ -164,12 +159,15 @@ public class FacesContainer {
         
         configureListener.contextInitialized(e);
         
-        if (portletContainer) {
-            facesContext = new RaveFacesContext(new RaveExternalContext(new RavePortletContext()));
-        } else {
-            // Initialize the Rave FacesContext object
-            facesContext = new RaveFacesContext(new RaveExternalContext(context));
-        }
+        // We no longer support portlet
+//        if (portletContainer) {
+//             
+//            facesContext = new RaveFacesContext(new RaveExternalContext(new RavePortletContext()));
+//        } else {
+//            // Initialize the Rave FacesContext object
+//            facesContext = new RaveFacesContext(new RaveExternalContext(context));
+//        }
+        facesContext = new RaveFacesContext(new RaveExternalContext(context));    
         facesContext.unsetCurrentInstance();
         defViewRoot = newViewRoot();
         facesContext.setViewRoot(defViewRoot);  // stub viewRoot to satisfy some components

@@ -26,8 +26,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Set;
 
-import javax.portlet.PortletContext;
-import javax.portlet.PortletRequestDispatcher;
+//import javax.portlet.PortletContext;
+//import javax.portlet.PortletRequestDispatcher;
 
 import org.openide.modules.InstalledFileLocator;
 
@@ -42,7 +42,7 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author Tor Norbye
  */
-public class RavePortletContext implements PortletContext {
+public class RavePortletContext { //implements PortletContext {
     /**
      * Storage for attributes
      */
@@ -149,13 +149,13 @@ public class RavePortletContext implements PortletContext {
         return "RavePortletContext";
     }
 
-    public PortletRequestDispatcher getNamedDispatcher(String name) {
-        throw new UnsupportedOperationException();
-    }
-
-    public PortletRequestDispatcher getRequestDispatcher(String path) {
-        throw new UnsupportedOperationException();
-    }
+//    public PortletRequestDispatcher getNamedDispatcher(String name) {
+//        throw new UnsupportedOperationException();
+//    }
+//
+//    public PortletRequestDispatcher getRequestDispatcher(String path) {
+//        throw new UnsupportedOperationException();
+//    }
 
     public java.util.Set getResourcePaths(String path) {
         throw new UnsupportedOperationException();

@@ -29,11 +29,9 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import javax.faces.context.ExternalContext;
-import javax.portlet.PortletContext;
+//import javax.portlet.PortletContext;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.openide.util.Enumerations;
@@ -98,14 +96,15 @@ public class RaveExternalContext extends ExternalContext {
                 String name = (String) enumer.nextElement();
                 initParameterMap.put(name, servletContext.getInitParameter(name));
             }
-        } else if (context instanceof PortletContext) {
-            PortletContext portletContext = (PortletContext)context;
-            Enumeration enumer = portletContext.getInitParameterNames();
-            while (enumer.hasMoreElements()) {
-                String name = (String) enumer.nextElement();
-                initParameterMap.put(name, portletContext.getInitParameter(name));
-            }
-        }
+        } 
+//       else if (context instanceof PortletContext) {
+//            PortletContext portletContext = (PortletContext) context;
+//            Enumeration enumer = portletContext.getInitParameterNames();
+//            while (enumer.hasMoreElements()) {
+//                String name = (String) enumer.nextElement();
+//                initParameterMap.put(name, portletContext.getInitParameter(name));
+//            }
+//        }
     }
 
     /**
