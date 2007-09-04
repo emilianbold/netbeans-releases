@@ -28,8 +28,15 @@ Microsystems, Inc. All Rights Reserved.
 	        <attr name="position" intvalue="300"/>
             </file>
 	</folder>
+        
+        <folder name="GoTo">
+            <file name="org-netbeans-modules-cnd-classview-actions-SelectInClassesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-cnd-classview-actions-SelectInClassesAction.instance"/>
+                <attr name="position" intvalue="3000"/>
+            </file>
+        </folder>
+        
     </folder>
-
 
     <folder name="Actions">
 	<folder name="View">
@@ -37,9 +44,14 @@ Microsystems, Inc. All Rights Reserved.
 		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction"/>
 	    </file>
 	</folder>
+        <folder name="Window">
+            <folder name="SelectDocumentNode">
+                <file name="org-netbeans-modules-cnd-classview-actions-SelectInClassesAction.instance">
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
-
-
     <folder name="Windows2">
 	<folder name="Modes">
 	    <folder name="explorer">

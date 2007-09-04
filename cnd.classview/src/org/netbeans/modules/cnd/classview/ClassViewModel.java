@@ -19,9 +19,14 @@
 
 package org.netbeans.modules.cnd.classview;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.classview.model.ProjectNode;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -119,6 +124,59 @@ import  org.netbeans.modules.cnd.api.model.*;
         if (childrenUpdater != null) {
             childrenUpdater.update(e);
         }
+    }
+
+    Node findDeclaration(CsmOffsetableDeclaration decl) {
+        if (root == null) {
+            return null;
+        }
+        ProjectsKeyArray children = (ProjectsKeyArray)root.getChildren();
+        CsmFile file = decl.getContainingFile();
+        CsmProject project = file.getProject();
+        children.addNotify();
+        ProjectNode projectNode = (ProjectNode) children.findChild(project.getName());
+        if (projectNode == null) {
+            return null;
+        }
+        List<CsmObject> path = new ArrayList<CsmObject>();
+        if (CsmKindUtilities.isFunctionDefinition(decl)){
+            CsmFunction func = ((CsmFunctionDefinition)decl).getDeclaration();
+            if (func != null){
+                decl = func;
+            }
+        }
+        path.add(decl);
+        CsmObject scope = decl.getScope();
+        while(scope != null) {
+            if (CsmKindUtilities.isFile(scope)) {
+                path.add(project.getGlobalNamespace());
+                break;
+            }
+            path.add(scope);
+            if (CsmKindUtilities.isNamespace(scope)) {
+                CsmNamespace ns = (CsmNamespace)scope;
+                if (ns.isGlobal()){
+                    break;
+                }
+                scope = ns.getParent();
+            } else if (CsmKindUtilities.isClass(scope)) {
+                CsmClass cls = (CsmClass)scope;
+                scope = cls.getScope();
+            } else {
+                break;
+            }
+        }
+        Node res = null;
+        HostKeyArray child = (HostKeyArray) projectNode.getChildren();
+        for (int i = path.size() - 2; i >= 0; i--){
+            child.ensureInited();
+            scope = path.get(i);
+            res = child.findChild(scope);
+            if (res != null && (res.getChildren() instanceof HostKeyArray)) {
+                child = (HostKeyArray) res.getChildren();
+            }
+        }
+        return res;
     }
     
     private void dump(Project[] projects) {

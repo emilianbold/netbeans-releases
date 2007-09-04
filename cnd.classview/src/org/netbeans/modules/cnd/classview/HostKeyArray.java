@@ -31,10 +31,12 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
+import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -405,11 +407,42 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         }
         return new Node[0];
     }
-    
+
+    public Node findChild(CsmObject object) {
+        Node[] list = getNodes();
+        if (list.length == 0) {
+            return null;
+        }
+        if (object == null) {
+            return list[0];
+        }
+        for (int i = 0; i < list.length; i++) {
+            if (list[i] instanceof AbstractCsmNode){
+                if (object.equals(((AbstractCsmNode)list[i]).getCsmObject())){
+                    return list[i];
+                }
+            }
+        }
+        return null;
+    }
+
+    public void ensureInited(){
+        synchronized (childrenUpdater.getLock(getProject())) {
+            if (!isInited) {
+                addNotify(true);
+            }
+        }
+    }
+
     @Override
     protected void addNotify() {
+        addNotify(noLoadinNode);
+    }
+    
+    private void addNotify(boolean force) {
         synchronized (childrenUpdater.getLock(getProject())) {
-            if (isNamespace() && !noLoadinNode){ //isGlobalNamespace()) {
+            if (isInited) return;
+            if (isNamespace() && !force){ //isGlobalNamespace()) {
                 myKeys = new HashMap<PersistentKey,SortedName>();
                 myKeys.put(PersistentKey.createKey(getProject()), new SortedName(0,"",0)); // NOI18N
             } else {
@@ -420,7 +453,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
             resetKeys();
         }
         super.addNotify();
-        if (isNamespace() && !noLoadinNode){ //isGlobalNamespace()) {
+        if (isNamespace() && !force){ //isGlobalNamespace()) {
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run() {
                     synchronized (childrenUpdater.getLock(getProject())) {

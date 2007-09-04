@@ -31,6 +31,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction;
 import org.openide.ErrorManager;
 import org.openide.util.NbPreferences;
@@ -137,6 +138,12 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
     public void closeImplicit(){
         isAutoMode = true;
         close();
+    }
+    
+    public void selectInClasses(CsmOffsetableDeclaration decl){
+        if (view != null) {
+            view.selectInClasses(decl);
+        }
     }
     
     @Override

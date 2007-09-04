@@ -41,6 +41,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.*;
 //import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.classview.resources.I18n;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -76,6 +77,24 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
 //        associateLookup (ExplorerUtils.createLookup (manager, map));
         
         setupRootContext(createEmptyRoot());
+    }
+
+    void selectInClasses(final CsmOffsetableDeclaration decl) {
+      	CsmModelAccessor.getModel().enqueue(new Runnable() {
+	    public void run() {
+		if (model != null) {
+                    Node node = model.findDeclaration(decl);
+                    if (node != null) {
+                        try {
+                            getExplorerManager().setSelectedNodes(new Node[]{node});
+                        } catch (PropertyVetoException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+		}
+	    }
+	}, "Class View: select in classes"); // NOI18N
+
     }
     
     private void init(){
