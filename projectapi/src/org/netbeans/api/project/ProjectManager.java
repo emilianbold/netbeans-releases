@@ -149,7 +149,7 @@ public final class ProjectManager {
     /**
      * The thread which is currently loading a project, if any.
      */
-    private Thread loadingThread = null;
+    private ThreadLocal<Boolean> loadingThread = new ThreadLocal<Boolean>();
     
     /**
      * Clear internal state.
@@ -205,7 +205,7 @@ public final class ProjectManager {
                             o = dir2Proj.get(projectDirectory);
                             if (LoadStatus.LOADING_PROJECT.is(o)) {
                                 try {
-                                    if (Thread.currentThread() == loadingThread) {
+                                    if (Boolean.TRUE.equals(loadingThread.get())) {
                                         throw new IllegalStateException("Attempt to call ProjectManager.findProject within the body of ProjectFactory.loadProject (hint: try using ProjectManager.mutex().postWriteRequest(...) within the body of your Project's constructor to prevent this)"); // NOI18N
                                     }
                                     LOG.log(Level.FINE, "findProject({0}) in {1}: waiting for LOADING_PROJECT...", new Object[] {projectDirectory, Thread.currentThread().getName()});
@@ -230,7 +230,7 @@ public final class ProjectManager {
                         }
                         // not in cache
                         dir2Proj.put(projectDirectory, LoadStatus.LOADING_PROJECT.wrap());
-                        loadingThread = Thread.currentThread();
+                        loadingThread.set(Boolean.TRUE);
                         LOG.log(Level.FINE, "findProject({0}) in {1}: will load new project...", new Object[] {projectDirectory, Thread.currentThread().getName()});
                     }
                     boolean resetLP = false;
@@ -262,7 +262,7 @@ public final class ProjectManager {
                         // called again (without anything being GC'd)
                         throw e;
                     } finally {
-                        loadingThread = null;
+                        loadingThread.set(Boolean.FALSE);
                         if (!resetLP) {
                             // IOException or a runtime exception interrupted.
                             LOG.log(Level.FINE, "findProject({0}) in {1}: cleaning up after error", new Object[] {projectDirectory, Thread.currentThread().getName()});
