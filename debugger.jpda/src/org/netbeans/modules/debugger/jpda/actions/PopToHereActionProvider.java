@@ -86,32 +86,34 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
             return;
         }
         synchronized (getDebuggerImpl().LOCK) {
-            JPDAThread t;
             if (debuggerState == getDebuggerImpl ().STATE_STOPPED) {
-		t = getDebuggerImpl ().getCurrentThread ();
-            } else {
-                t = null;
-            }
-        }
-        if (t == null) {
-            setEnabled (
-                ActionsManager.ACTION_POP_TOPMOST_CALL,
-                false
-            );
-        } else {
-            synchronized (t) {
-                if (!t.isSuspended()) {
+                JPDAThread t = getDebuggerImpl ().getCurrentThread ();
+                if (t == null) {
                     setEnabled (
                         ActionsManager.ACTION_POP_TOPMOST_CALL,
                         false
                     );
-                } else {
-                    setEnabled (
-                        ActionsManager.ACTION_POP_TOPMOST_CALL,
-                        t.getStackDepth () > 1
-                    );
+                    return;
                 }
+                synchronized (t) {
+                    if (!t.isSuspended()) {
+                        setEnabled (
+                            ActionsManager.ACTION_POP_TOPMOST_CALL,
+                            false
+                        );
+                    } else {
+                        setEnabled (
+                            ActionsManager.ACTION_POP_TOPMOST_CALL,
+                            t.getStackDepth () > 1
+                        );
+                    }
+                }
+                return;
             }
+            setEnabled (
+                ActionsManager.ACTION_POP_TOPMOST_CALL,
+                false
+            );
         }
     }
 }
