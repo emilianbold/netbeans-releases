@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
 import org.netbeans.modules.visualweb.ejb.load.EjbLoadException;
+import org.netbeans.modules.visualweb.ejb.load.EjbLoaderHelper;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
 import org.netbeans.modules.visualweb.ejb.load.EjbLoader;
 import org.netbeans.modules.visualweb.ejb.nodes.EjbGroupNode;
@@ -33,7 +34,7 @@ public class RefreshEjbGroupAction extends NodeAction {
     }
 
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
-        return true;
+        return EjbLoaderHelper.isEnableAction();
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {

@@ -21,8 +21,6 @@ import java.util.logging.Level;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
@@ -115,24 +113,6 @@ public class EjbLibReferenceHelper {
     }
 
     private static final String EJB_REFS_XML = "ejb-refs.xml";
-
-    /**
-     * @return The library definition containing the EJB support jar files
-     */
-    public static Library getEjbSupportLibDef(boolean isJavaEE5) {
-        /*
-         * The name "EJB_SUPPORT_LIB" is defined in the
-         * org.netbeans.modules.visualweb.ejb.libraries.ejbsupport-designtime.xml
-         */
-        String libraryName = (isJavaEE5) ? "XXX" : "EJB_SUPPORT_LIB";
-        // TODO Add JavaEE 5 support!
-        libraryName = "EJB_SUPPORT_LIB";
-        Library libDef = LibraryManager.getDefault().getLibrary(libraryName);
-        if (libDef == null)
-            Util.getLogger().log(Level.SEVERE,
-                    "Can not find pre-defined EJB support library" + libraryName);
-        return libDef;
-    }
 
     /**
      * Return the Project that is currently active according to the Designer.
@@ -427,11 +407,6 @@ public class EjbLibReferenceHelper {
     public static void addEjbGroupToActiveProject(EjbGroup ejbGroup) throws IOException,
             ConfigurationException {
         Project project = getActiveProject();
-        boolean isJavaEE5 = JsfProjectUtils.isJavaEE5Project(project);
-
-        // Add the EJB support lib ref to the project
-        Library ejbLibDef = getEjbSupportLibDef(isJavaEE5);
-        JsfProjectUtils.addLibraryReferences(project, new Library[] { ejbLibDef });
 
         addEjbGroupJarsToProject(ejbGroup, project);
 

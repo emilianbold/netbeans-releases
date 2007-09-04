@@ -28,11 +28,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             </folder>
     </folder>
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="ejbsupport-designtime.xml" url="/org/netbeans/modules/visualweb/ejb/libraries/ejbsupport-designtime.xml"/>
-        </folder>
-    </folder>
     
     <folder name="CreatorJavaPalette">       
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>

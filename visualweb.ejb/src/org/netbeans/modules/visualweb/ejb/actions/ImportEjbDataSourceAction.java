@@ -6,6 +6,7 @@
 
 package org.netbeans.modules.visualweb.ejb.actions;
 
+import org.netbeans.modules.visualweb.ejb.load.EjbLoaderHelper;
 import org.netbeans.modules.visualweb.ejb.ui.ImportEjbDataSourcesDialog;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -23,7 +24,7 @@ public class ImportEjbDataSourceAction extends NodeAction {
     }
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
-        return true;
+    	return EjbLoaderHelper.isEnableAction();
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

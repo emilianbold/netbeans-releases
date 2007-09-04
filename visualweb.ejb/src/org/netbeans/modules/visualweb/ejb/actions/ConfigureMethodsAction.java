@@ -7,6 +7,7 @@
 package org.netbeans.modules.visualweb.ejb.actions;
 
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
+import org.netbeans.modules.visualweb.ejb.load.EjbLoaderHelper;
 import org.netbeans.modules.visualweb.ejb.nodes.EjbGroupNode;
 import org.netbeans.modules.visualweb.ejb.ui.ConfigureMethodsDialog;
 import org.openide.nodes.FilterNode;
@@ -26,7 +27,7 @@ public class ConfigureMethodsAction extends NodeAction {
     }
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
-        return true;
+        return EjbLoaderHelper.isEnableAction();
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

@@ -8,6 +8,7 @@ package org.netbeans.modules.visualweb.ejb.actions;
 
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
+import org.netbeans.modules.visualweb.ejb.load.EjbLoaderHelper;
 import org.netbeans.modules.visualweb.ejb.nodes.EjbGroupNode;
 import org.netbeans.modules.visualweb.ejb.ui.AddEjbGroupDialog;
 import org.netbeans.modules.visualweb.ejb.ui.ModifyEjbGroupDialog;
@@ -30,11 +31,8 @@ public class ModifyEjbGroupAction extends NodeAction {
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         // Only works for single node
-        
-        if( activatedNodes.length == 1 )
-            return true;
-        else
-            return false;
+        boolean isSingle = activatedNodes.length == 1;
+        return isSingle && EjbLoaderHelper.isEnableAction();
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

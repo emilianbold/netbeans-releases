@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,7 +42,6 @@ public class EjbLoader {
     public static final String CLIENT_WRAPPER_PACKAGE_NAME = "org.netbeans.modules.visualweb.ejb";
     
     // Two jar files needed for compiling the generated data provider and wrapper classes
-    public static final String ejb20Jar = InstalledFileLocator.getDefault().locate("modules/ext/ejb-2.0.jar", null, false ).getAbsolutePath(); // NOI18N
     public static final String dataproviderJar = InstalledFileLocator.getDefault().locate("modules/ext/dataprovider.jar", null, false ).getAbsolutePath(); // NOI18N
     public static final String designTimeJar = InstalledFileLocator.getDefault().locate( "modules/ext/designtime.jar", null, false).getAbsolutePath(); // NOI18N
     
@@ -504,7 +504,12 @@ public class EjbLoader {
         // Compile the wrapper bean and beanInfo classes
         ClientBeanWrapperCompiler compiler = new ClientBeanWrapperCompiler();
         ArrayList jarFiles =  new ArrayList( ejbGroup.getClientJarFiles() );
-        jarFiles.add( ejb20Jar );  // For EJB base classes
+//      jarFiles.add( ejb20Jar );  // For EJB base classes
+        List<File> javaEEJars = EjbLoaderHelper.getJavaEEClasspathEntries();
+        for (File file : javaEEJars) {
+        	String path = file.getAbsolutePath();
+			jarFiles.add(path);
+		}
         jarFiles.add( dataproviderJar );  // For the data provider classes
         jarFiles.add( designTimeJar ); // For the DesignInfo classes
         compiler.compile( srcDir, allClassDescriptors, jarFiles );
