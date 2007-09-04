@@ -29,7 +29,7 @@ import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer.FileLocation;
+import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer.ActionText;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
@@ -80,7 +80,7 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     private final static Pattern TEST_UNIT_PATTERN = 
         // The final \\s? in the patterns is to allow \r on Windows
         Pattern.compile("(\\d+) tests, (\\d+) assertions, (\\d+) failures, (\\d+) errors\\s?"); // NOI18N
-
+         
     // RSpec: see {rspec}/lib/spec/runner/formatter/base_text_formatter.rb#dump_summary
     private final static Pattern RSPEC_PATTERN = 
         Pattern.compile("(\\d+) examples?, (\\d)+ failures?(, (\\d+) not implemented)?\\s?"); // NOI18N
@@ -93,12 +93,17 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     private boolean warning;
 
     @Override
-    public FileLocation processLine(String line) {
+    public ActionText processLine(String outputLine) {
         if (QUIET) {
             return null;
         }
 
         for (Pattern pattern : PATTERNS) {
+            String line = outputLine;
+            if (pattern == RSPEC_PATTERN && containsAnsiColors(outputLine)) {
+                line = stripAnsiColors(outputLine);
+            }
+
             Matcher match = pattern.matcher(line);
             if (match.matches()) {
                 String summary;
@@ -119,6 +124,10 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                     warning = false;
                     message = NbBundle.getMessage(AutoTestSupport.class, "TestsCompleted", summary);
                     run();
+                }
+                
+                if (line != outputLine) {
+                    return new ActionText(new String[] { line }, null, null, null);
                 }
             }
         }
@@ -151,23 +160,49 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                     if (warning) {
                         org.netbeans.editor.Utilities.setStatusBoldText(pane, message);
                     } else {
-                       // Attempt to show the text in green
-                       EditorUI eui = Utilities.getEditorUI(pane);
-                       if (eui != null) {
+                        // Attempt to show the text in green
+                        EditorUI eui = Utilities.getEditorUI(pane);
+                        if (eui != null) {
                             StatusBar statusBar = eui.getStatusBar();
                             if (statusBar != null) {
                                 Coloring coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.GREEN);
                                 statusBar.setText(StatusBar.CELL_MAIN, message, coloring);
                                 return;
                             }
-                       }
+                        }
                         
-                       org.netbeans.editor.Utilities.setStatusText(pane, message);
+                        org.netbeans.editor.Utilities.setStatusText(pane, message);
                     }
                     return;
                 }
             }
         }
+    }
+    
+    static boolean containsAnsiColors(String line) {
+        // RSpec will color output with ANSI color sequence terminal escapes
+        return line.startsWith("\033["); // NOI18N
+    }
+    
+    static String stripAnsiColors(String line) {
+        if (line.startsWith("\033[")) { // NOI18N
+            int start = line.indexOf("m"); // NOI18N
+            if (start != -1) {
+                StringBuilder sb = new StringBuilder(line.length());
+                for (int i = start+1; i < line.length(); i++) {
+                    char c = line.charAt(i);
+                    if (c == '\033') {
+                        break;
+                    } else {
+                        sb.append(c);
+                    }
+                }
+
+                return sb.toString();
+            }
+        }
+ 
+        return line;
     }
 
     /** For unit tests only.

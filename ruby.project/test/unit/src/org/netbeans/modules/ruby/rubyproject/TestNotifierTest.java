@@ -31,6 +31,11 @@ public class TestNotifierTest extends TestCase {
         assertTrue(notifier.recognizeLine("5 examples, 3 failures, 5 not implemented"));
         assertTrue(notifier.recognizeLine("1 example, 1 failure"));
     }
+
+    public void testStripAnsiColors() {
+        assertEquals("3 examples, 0 failures", TestNotifier.stripAnsiColors("\033[32m3 examples, 0 failures\033[0m"));
+        assertEquals("3 examples, 0 failures", TestNotifier.stripAnsiColors("\033[1;35m3 examples, 0 failures\033[0m"));
+    }
     
     public void testWindows() {        
         TestNotifier notifier = new TestNotifier(false, false);
@@ -90,6 +95,15 @@ public class TestNotifierTest extends TestCase {
         notifier.processLine("0 examples, 0 failures");
         assertEquals("0 examples, 0 failures", notifier.getSummary());
     }
+
+    public void testRSpec4AnsiColors() {
+        TestNotifier notifier = new TestNotifier(true, false);
+
+        notifier.processLine("\033[1;35m2 examples, 0 failures, 5 not implemented\033[0m");
+        notifier.processLine("\033[32m1 example, 1 failure\033[0m\r");
+        assertEquals("3 examples, 1 failure, 5 not implemented", notifier.getSummary());
+    }
+
 
     public void testCombined() {
         TestNotifier notifier = new TestNotifier(true, false);
