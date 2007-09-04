@@ -262,7 +262,7 @@ public class NameResolver
                         
                         IPackage outerPack = project.createPackageStructure(packageStructure);
                         if (outerPack != null) {
-                            if (filterType != null && filterType.length() > 0) {
+//                            if (filterType != null && filterType.length() > 0) {
                                 //kris richards - removed access to expunged prefs.
                                 retEle = UMLXMLManip.createAndAddUnknownType(outerPack, typeName);
                                 
@@ -272,7 +272,7 @@ public class NameResolver
 //                                
 //                            } else {
 ////                                retEle = UMLXMLManip.createAndAddUnknownType(outerPack, typeName);
-                            }
+//                            }
                         }
                     }
                 }
