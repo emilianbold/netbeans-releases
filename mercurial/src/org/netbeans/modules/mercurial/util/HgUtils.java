@@ -40,9 +40,6 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.status.SyncFileNode;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.mercurial.ui.commit.CommitAction;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.filesystems.FileObject;
