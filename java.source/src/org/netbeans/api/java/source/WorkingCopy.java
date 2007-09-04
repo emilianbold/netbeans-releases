@@ -271,7 +271,7 @@ public class WorkingCopy extends CompilationController {
                 } else {
                     PositionConverter converter = getPositionConverter();
                     int off = converter != null ? converter.getOriginalPosition(offset) : offset;
-                    if (off > 0)
+                    if (off >= 0)
                         diffs.add(new Difference(Difference.Kind.INSERT, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off, Bias.Backward), null, s, userInfo.get(offset)));
                 }
             }
@@ -285,7 +285,7 @@ public class WorkingCopy extends CompilationController {
                 } else {
                     PositionConverter converter = getPositionConverter();
                     int off = converter != null ? converter.getOriginalPosition(offset) : offset;
-                    if (off > 0)
+                    if (off >= 0)
                         diffs.add(new Difference(Difference.Kind.REMOVE, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off + buf.length, Bias.Backward), new String(buf), null, userInfo.get(offset)));
                 }
                 offset += buf.length;
