@@ -143,13 +143,14 @@ public class ETNameCompartment extends ETEditableCompartment implements IADNameC
 		Font compartmentFont = getCompartmentFont(pDrawInfo.getFontScaleFactor());
 		graphics.setFont(compartmentFont);
 
-		if (this.isSelected()) {
-			graphics.setColor(TSEColor.darkBlue);
-			graphics.fillRect(pBoundingRect.getIntX(), pBoundingRect.getIntY() + 2, pBoundingRect.getIntWidth(), pBoundingRect.getIntHeight());
-			graphics.setColor(TSEColor.white);
-		} else {
+                // 114303, below logic seems unnecessary
+//		if (this.isSelected()) {
+//			graphics.setColor(TSEColor.darkBlue);
+//			graphics.fillRect(pBoundingRect.getIntX(), pBoundingRect.getIntY() + 2, pBoundingRect.getIntWidth(), pBoundingRect.getIntHeight());
+//			graphics.setColor(TSEColor.white);
+//		} else {
 			graphics.setColor(getCompartmentFontColor());
-		}
+//		}
 
 		if (this.drawInsertionPoint) {
 			graphics.drawRect(pBoundingRect.getIntX(), pBoundingRect.getIntY(), pBoundingRect.getIntWidth(), 1);
