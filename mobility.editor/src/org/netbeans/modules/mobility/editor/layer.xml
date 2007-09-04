@@ -86,7 +86,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-<!--
     <folder name="Actions">
         <folder name="Edit">
             <file name="org-netbeans-modules-mobility-editor-actions-RecommentAction.instance"/>
@@ -97,5 +96,4 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-mobility-editor-actions-RecommentAction.instance"/>
         </file>
     </folder>
--->    
 </filesystem>
