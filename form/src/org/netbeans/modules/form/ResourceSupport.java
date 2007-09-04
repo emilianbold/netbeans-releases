@@ -165,9 +165,14 @@ public class ResourceSupport {
                     Object resValue = support.makeResource0(val, prop);
                     if (resValue != val) {
                         prop.setValue(resValue);
+
+                        if (resValue instanceof ResourceValue) {
+                            // raise form version here - FormProperty doesn't do
+                            // that because firing is off
+                            support.formModel.raiseVersionLevel(
+                                    FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+                        }
                     }
-                    // raise form version here - FormProperty won't do since firing is off
-                    support.formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
                 }
                 catch (Exception ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
