@@ -328,24 +328,28 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String resourceName = r.getName();
                 String resourceRepName = root.getName();
                 for(String token: genericStubTokens) {
-                    if("__GENERIC_NAME__".equals(token))
+                    if("__GENERIC_NAME__".equals(token)) {
                         replacedLine = replacedLine.replaceAll("__GENERIC_NAME__", resourceName);
-                    else if("__GENERIC_PATH_NAME__".equals(token))
+                    } else if("__GENERIC_PATH_NAME__".equals(token)) {
                         replacedLine = replacedLine.replaceAll("__GENERIC_PATH_NAME__", resourceRepName);
-                    else if("__FIELDS_DEFINITION__".equals(token))
+                    } else if("__FIELDS_DEFINITION__".equals(token)) {
                         replacedLine = replacedLine.replaceAll("__FIELDS_DEFINITION__", createFieldsDefinition(root, true));
-                    else if("__GETTER_SETTER_METHODS__".equals(token))
+                    } else if("__GETTER_SETTER_METHODS__".equals(token)) {
                         replacedLine = replacedLine.replace("__GETTER_SETTER_METHODS__", createGetterSetterMethods(root, true));
-                    else if("__FIELDS_INIT__".equals(token))
+                    } else if("__FIELDS_INIT__".equals(token)) {
                         replacedLine = replacedLine.replace("__FIELDS_INIT__", createFieldsInitBody(root, true));
-                    else if("__SUB_RESOURCE_NAME__".equals(token))
+                    } else if("__SUB_RESOURCE_NAME__".equals(token)) {
                         replacedLine = replacedLine.replaceAll("__SUB_RESOURCE_NAME__", "");
-                    else if("__SUB_RESOURCE_PATH_NAME__".equals(token))
+                    } else if("__SUB_RESOURCE_PATH_NAME__".equals(token)) {
                         replacedLine = replacedLine.replaceAll("__SUB_RESOURCE_PATH_NAME__", "");
-                    else if("__FIELDS_TOSTRING__".equals(token))
-                        replacedLine = replacedLine.replace("__FIELDS_TOSTRING__", createFieldsToStringBody(root, true));
-                    else if("__STUB_METHODS__".equals(token))
+                    } else if("__FIELDS_TOSTRING__".equals(token)) {
+                        String fieldsToString = createFieldsToStringBody(root, true);
+                        if(fieldsToString.endsWith(",'+\n"))
+                            fieldsToString = fieldsToString.substring(0, fieldsToString.length()-4)+"'+\n";
+                        replacedLine = replacedLine.replace("__FIELDS_TOSTRING__", fieldsToString);
+                    } else if("__STUB_METHODS__".equals(token)) {
                         replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r));
+                    }
                 }
             } else {
                 String resourceName = r.getName();
@@ -579,7 +583,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         private String createDeleteMethod(Method m) {
             return "   " + RestUtils.escapeJSReserved(m.getName()) + " : function() {\n" +
-                    "      return delete_(this.uri);\n" +
+                    "      return delete__(this.uri);\n" +
                     "   }";
         }
         
