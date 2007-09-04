@@ -2,8 +2,8 @@ Name: JSP Standard Tag Library
 Version: 1.1.2
 License: Apache-2.0
 OSR: 2473
-Description: JavaServer Pages Standard Tag Library
-Origin: http://java.sun.com/products/jsp/jstl/
+Description: JavaServer Pages Standard Tag Library 
+Origin: http://java.sun.com/products/jsp/jstl/ 
 
                                  Apache License
                            Version 2.0, January 2004

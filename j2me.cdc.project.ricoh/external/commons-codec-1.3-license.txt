@@ -1,8 +1,8 @@
-Name: Commons Codec 
+Name: Commons Codec
 Description: Commons Codec provides implementations of common encoders and decoders such as Base64, Hex, Phonetic and URLs.
 OSR: 5462
 Origin: http://commons.apache.org/codec/
-License: Apache-2.0 
+License: Apache-2.0
 Version: 1.3
 
                                  Apache License
