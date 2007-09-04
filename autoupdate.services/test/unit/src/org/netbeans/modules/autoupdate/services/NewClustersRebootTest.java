@@ -48,13 +48,13 @@ public class NewClustersRebootTest extends NbTestCase {
     }
 
     public void testSelf() throws Exception {
-        if (org.openide.util.Utilities.isUnix() || org.openide.util.Utilities.isMac()) { 
-            StringBuffer sb = new StringBuffer();
-            assertFalse(getNewCluster().exists());
-            invokeNbExecAndCreateCluster(getWorkDir(), sb, new String[]{"--clusters", new File(getWorkDir(), "oldcluster").getAbsolutePath()});
-            assertTrue(getNewCluster().exists());
-            assertTrue(getTestModule().exists());
-        }
+        StringBuffer sb = new StringBuffer();
+        assertFalse(getNewCluster().exists());
+        invokeNbExecAndCreateCluster(getWorkDir(), sb, new String[]{"--clusters", new File(getWorkDir(), "oldcluster").getAbsolutePath()});
+        File f = getNewCluster();
+        assertTrue("File "+f.getPath()+" exists", getNewCluster().exists());
+        f = getTestModule();
+        assertTrue("File "+f.getPath()+" exists", f.exists());
     }
 
     private File getNewCluster() throws IOException {
@@ -62,7 +62,7 @@ public class NewClustersRebootTest extends NbTestCase {
     }
     
     private File getTestModule() throws IOException {
-        return new File(getNewCluster(),"/modules/com-sun-testmodule-cluster.jar");
+        return new File(getNewCluster(),"modules"+File.separatorChar+"com-sun-testmodule-cluster.jar");
     }
     
     private void invokeNbExecAndCreateCluster(File workDir, StringBuffer sb, String... args) throws Exception {
@@ -97,6 +97,7 @@ public class NewClustersRebootTest extends NbTestCase {
         Process p = Runtime.getRuntime().exec(allArgs.toArray(new String[0]), new String[0], workDir);
         int res = readOutput(sb, p);
         String output = sb.toString();
+//        System.out.println("nbexec output is: " + output);
         assertEquals("Execution is ok: " + output, 0, res);
     }
 

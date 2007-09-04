@@ -31,7 +31,9 @@ import java.io.OutputStream;
 public class NewClustersRebootCallback {
     public static final String NAME_OF_NEW_CLUSTER = "newcluster";//NOI18N
     public static void main(String[] args) throws IOException {
+//        System.out.println("NewClustersRebootCallback executed with params: "+Arrays.toString(args));
         String nbdirs = System.getProperty("netbeans.dirs");        
+//        System.out.println("NewClustersRebootCallback netbeans.dirs: "+nbdirs);
         File udir = new File(System.getProperty("netbeans.user"));
         File newCluster = new File(udir, NAME_OF_NEW_CLUSTER);
         if (!newCluster.exists()) {
@@ -57,7 +59,7 @@ public class NewClustersRebootCallback {
     }
     
     private static void createAtLeastOneNbm(File newCluster, File udir) throws FileNotFoundException, FileNotFoundException, IOException, IOException {
-        File nbm = new File(newCluster, "/update/download/whatever.nbm");
+        File nbm = new File(newCluster, "update"+File.separatorChar+"download"+File.separatorChar+"whatever.nbm");
         nbm.getParentFile().mkdirs();
         nbm.createNewFile();
         InputStream is2 = new FileInputStream(new File(udir, "nbmfortest"));
@@ -68,8 +70,8 @@ public class NewClustersRebootCallback {
 
     private static void createFileWithNewClustersForNbexec(File newCluster, String nbdirs, File udir) throws FileNotFoundException, IOException {
         newCluster.mkdirs();
-        nbdirs = nbdirs + ":" + newCluster.getAbsolutePath();
-        File fileWithClustersForShell = new File(udir, "update/download/netbeans.dirs");
+        nbdirs = nbdirs + File.pathSeparatorChar + newCluster.getAbsolutePath();
+        File fileWithClustersForShell = new File(udir, "update"+File.separatorChar+"download"+File.separatorChar+"netbeans.dirs");
         fileWithClustersForShell.getParentFile().mkdirs();
         fileWithClustersForShell.createNewFile();
         OutputStream os = new FileOutputStream(fileWithClustersForShell);
