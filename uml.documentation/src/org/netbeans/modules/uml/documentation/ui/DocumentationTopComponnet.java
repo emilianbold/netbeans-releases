@@ -25,6 +25,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.uml.core.requirementsframework.IRequirement;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -183,6 +184,7 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
     
     private void clear()
     {
+        pane.setDocumentText("");
         pane.setEnabled(false);
         setName(default_title);
         current = null;
@@ -219,15 +221,16 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
         
         if (current.getDiagram() != null)
         {
-            pane.setDocumentText(item.getDiagram().getDocumentation());
+            pane.setDocumentText(current.getDiagram().getDocumentation());
         }
         else if (current.getModelElement() != null)
         {
-            pane.setDocumentText(item.getModelElement().getDocumentation());
+            pane.setDocumentText(current.getModelElement().getDocumentation());
         }
-        else
+        else if (current.getData() instanceof IRequirement)
         {
-            clear();
+            pane.setDocumentText(((IRequirement)current.getData()).getDescription());
+            pane.setEnabled(false);
         }
     }
     

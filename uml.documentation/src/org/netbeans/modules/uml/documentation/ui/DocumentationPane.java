@@ -394,7 +394,7 @@ public class DocumentationPane extends JPanel
         {
             getTextPane().getDocument().removeDocumentListener(this);
             getTextPane().getDocument().removeUndoableEditListener(undoableEditListner);
-            getTextPane().setText("");
+//            getTextPane().setText("");
         }
         
         getTextPane().setEditable(enable);
