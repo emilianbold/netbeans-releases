@@ -20,12 +20,16 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.cnd.completion.cplusplus.NbCsmSyntaxSupport;
+import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -49,7 +53,6 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     private final String parentFolder;
     private final boolean isUserInclude;
     private final boolean isFolder;
-    private String insPrefix;
     
     private static final int FOLDER_PRIORITY = 30;
     private static final int FILE_PRIORITY = 10;
@@ -97,11 +100,11 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
-            //Completion.get().hideCompletion();
+            Completion.get().hideCompletion();
             int caretOffset = component.getSelectionEnd();
-            substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
+            substituteText(component, substitutionOffset, caretOffset - substitutionOffset, isFolder() ? SLASH : null);
         }
-        if (this.isFolder) {
+        if (this.isFolder()) {
             Completion.get().showCompletion();
         }
     }
@@ -115,8 +118,9 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                     break;
 //                case '<':
                 case '"':
+                case '/':
                     Completion.get().hideDocumentation();
-//                    Completion.get().hideCompletion();
+                    Completion.get().hideCompletion();
                     JTextComponent component = (JTextComponent)evt.getSource();
                     BaseDocument doc = (BaseDocument)component.getDocument();
                     int caretOffset = component.getSelectionEnd();
@@ -125,17 +129,18 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                         String toReplace = doc.getText(substitutionOffset, caretOffset - substitutionOffset);
                         if (toReplace.startsWith("\"")) {
                             Completion.get().hideCompletion();
+                            break;
                         }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     } finally {
                         doc.atomicUnlock();
                     }
-//                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-//                    if (evt.getKeyChar() == '"' || evt.getKeyChar() == '<') {
-//                        Completion.get().showCompletion();
-//                    }
-//                    evt.consume();
+                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
+                    if ('/' == evt.getKeyChar()) {
+                        Completion.get().showCompletion();
+                    }
+                    evt.consume();
                     break;
             }
         }
@@ -166,7 +171,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     public String toString() {
         StringBuilder out = new StringBuilder();
         out.append(this.isUserInclude ? "[U ": "[S ");
-        out.append(this.isFolder ? "D] ": "F] ");
+        out.append(this.isFolder() ? "D] ": "F] ");
         out.append(this.getLeftHtmlText()).append(" : ");
         out.append(this.getRightHtmlText());
         return out.toString();
@@ -181,15 +186,11 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     }
 
     public CharSequence getInsertPrefix() {
-        if (insPrefix == null) {
-            insPrefix = this.isUserInclude ? CsmIncludeCompletionItem.QUOTE : CsmIncludeCompletionItem.SYS_OPEN;
-            insPrefix += item;
-        }
-        return insPrefix;
+        return item;
     }        
     
     protected ImageIcon getIcon() {
-        return CsmImageLoader.getIncludeImageIcon(isUserInclude, isFolder);
+        return CsmImageLoader.getIncludeImageIcon(isUserInclude,isFolder());
     }
     
     protected String getLeftHtmlText() {
@@ -202,8 +203,13 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     
     protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
         BaseDocument doc = (BaseDocument)c.getDocument();
-        String text = getInsertPrefix().toString();
+        String text = getItemText();
         if (text != null) {
+            TokenItem token = null;
+            NbCsmSyntaxSupport sup = (NbCsmSyntaxSupport) Utilities.getSyntaxSupport(c).get(NbCsmSyntaxSupport.class);
+            if (sup != null) {
+                token = sup.getTokenItem(offset);
+            }
 //            int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
 //            if (semiPos > -2)
 //                toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -238,27 +244,64 @@ public class CsmIncludeCompletionItem implements CompletionItem {
 //                    }
 //                }
 //            }
-//            // Update the text
-//            doc.atomicLock();
-//            try {
-//                String textToReplace = doc.getText(offset, len);
+            if (toAdd != null) {
+                text += toAdd;
+            }
+            String pref = "";
+            String post = "";
+            if (token != null) {
+                switch (token.getTokenID().getNumericID()) {
+                case CCTokenContext.WHITESPACE_ID:
+                    pref = this.isUserInclude ? QUOTE : SYS_OPEN;
+                    post = this.isUserInclude ? QUOTE : SYS_CLOSE;
+                    break;
+                case CCTokenContext.USR_INCLUDE_ID:
+                case CCTokenContext.INCOMPLETE_USR_INCLUDE_ID:
+                    pref = QUOTE;
+                    post = QUOTE;
+                    len = (token.getOffset() + token.getImage().length()) - offset;
+                    break;
+                case CCTokenContext.INCOMPLETE_SYS_INCLUDE_ID:
+                case CCTokenContext.SYS_INCLUDE_ID:
+                    pref = SYS_OPEN;
+                    post = SYS_CLOSE;
+                    len = (token.getOffset() + token.getImage().length()) - offset;
+                    break;
+                }
+            }
+            // Update the text
+            doc.atomicLock();
+            try {
+                String textToReplace = doc.getText(offset, len);
+                if (textToReplace.startsWith(SYS_OPEN)) {
+                    pref = SYS_OPEN;
+//                    post = SYS_CLOSE;
+                } else if (textToReplace.startsWith(QUOTE)) {
+                    pref = QUOTE;
+//                    post = QUOTE;
+                }
+                text = pref + text + post;
 //                if (text.equals(textToReplace)) {
 //                    if (semiPos > -1)
 //                        doc.insertString(semiPos, ";", null); //NOI18N
 //                    return;
 //                }                
-//                Position position = doc.createPosition(offset);
+                Position position = doc.createPosition(offset);
 //                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-//                doc.remove(offset, len);
-//                doc.insertString(position.getOffset(), text, null);
+                doc.remove(offset, len);
+                doc.insertString(position.getOffset(), text, null);
 //                if (semiPosition != null)
 //                    doc.insertString(semiPosition.getOffset(), ";", null);
-//            } catch (BadLocationException e) {
-//                // Can't update
-//            } finally {
-//                doc.atomicUnlock();
-//            }
+            } catch (BadLocationException e) {
+                // Can't update
+            } finally {
+                doc.atomicUnlock();
+            }
         }
+    }
+
+    protected boolean isFolder() {
+        return isFolder;
     }
 
 }

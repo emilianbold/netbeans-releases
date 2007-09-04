@@ -24,7 +24,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -164,6 +163,17 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                     }
                 }
             }
+            if (filterPrefix != null) {
+                filterPrefix = trimIncludeSigns(filterPrefix);
+                int slash = filterPrefix.lastIndexOf(CsmIncludeCompletionItem.SLASH);
+                if (slash != -1) {
+                    dirPrefix = filterPrefix.substring(0, slash + 1);
+                    filterPrefix = filterPrefix.substring(slash + 1);
+                }
+            }
+            System.out.println("canFilter INCINFO: usrInclude=" + usrInclude + 
+                    " anchorOffset=" + queryAnchorOffset + 
+                    " dirPrefix="+dirPrefix + " filterPrefix=" + filterPrefix);
             return (filterPrefix != null);
         }        
         
@@ -212,13 +222,26 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                     }
                     if (queryAnchorOffset < 0) { // no inside "" or <>
                         tok = sup.shiftToNonWhiteBwd(tok);
-                        if (tok != null &&
-                                (tok.getTokenID() == CCTokenContext.CPPINCLUDE ||
-                                 tok.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT)) {
-                            // after #include or #include_next => init query offset
-                            usrInclude = null;
-                            queryAnchorOffset = caretOffset;
-                            filterPrefix = null;
+                        if (tok != null) {
+                            switch (tok.getTokenID().getNumericID()) {
+                            case CCTokenContext.CPPINCLUDE_ID:
+                            case CCTokenContext.CPPINCLUDE_NEXT_ID:
+                                // after #include or #include_next => init query offset
+                                usrInclude = null;
+                                queryAnchorOffset = caretOffset;
+                                filterPrefix = null;
+                                break;
+                            case CCTokenContext.INCOMPLETE_SYS_INCLUDE_ID:
+                                usrInclude = Boolean.FALSE;
+                                queryAnchorOffset = tok.getOffset();
+                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                break;
+                            case CCTokenContext.INCOMPLETE_USR_INCLUDE_ID:
+                                usrInclude = Boolean.TRUE;
+                                queryAnchorOffset = tok.getOffset();
+                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                break;
+                            }
                         }
                     }
                 }
