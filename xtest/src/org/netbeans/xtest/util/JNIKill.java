@@ -48,6 +48,7 @@ public class JNIKill  {
         {"Mac_OS_X,ppc","lib.jnikill.macosx.ppc.dylib"},
         {"SunOS,sparc","lib.jnikill.solaris.sparc.so"},
         {"SunOS,x86","lib.jnikill.solaris.x86.so"},
+        {"Windows_Vista,x86","lib.jnikill.win32.x86.dll"},
         {"Windows_NT,x86","lib.jnikill.win32.x86.dll"},
         {"Windows_2000,x86","lib.jnikill.win32.x86.dll"},
         {"Windows_XP,x86","lib.jnikill.win32.x86.dll"},
@@ -102,17 +103,6 @@ public class JNIKill  {
                     if(isLibraryLoaded()) {
                         return;
                     }
-                }
-            }
-            // fallback - try all available libraries if platform entry is missing
-            for (int i=0;i<SUPPORTED_PLATFORMS.length;i++) {
-                try {
-                    loadJNILibrary(SUPPORTED_PLATFORMS[i][1]);
-                } catch (UnsatisfiedLinkError ule) {
-                    // ignore
-                }
-                if(isLibraryLoaded()) {
-                    return;
                 }
             }
             // not possible to load library anyway
