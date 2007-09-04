@@ -32,10 +32,14 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -76,52 +80,42 @@ public class XsltproProjectGenerator {
 //        fo.getFileSystem().refresh(false);
 //        final FileObject fo = FileUtil.toFileObject (dir);
 
-        // vlv # 113228
-        if (fo == null) {
-          throw new IOException("Can't create " + dir.getName());
-        }
-        assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
-
         final AntProjectHelper[] h = new AntProjectHelper[1];
-        final IOException[] ioe = new IOException[1];
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            public void run() {
+
+        fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+
+            public void run() throws IOException {
+                h[0] = setupProject(fo, name);
+                final Project p = ProjectManager.getDefault().findProject(fo);
+                
+                FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
+                FileObject bpelasaRoot = srcRoot;
+                FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem()
+                        .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
+                        bpelasaRoot, "transformmap"); //NOI18N
+
                 try {
-                    h[0] = setupProject(fo, name);
-                    FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-            // Bing bpelasa        FileObject bpelasaRoot = srcRoot.createFolder(DEFAULT_BPELASA_FOLDER); //NOI18N
+                    ProjectManager.mutex().writeAccess(
+                            new Mutex.ExceptionAction<Void>() {
 
-            // TODO m
-                    FileObject bpelasaRoot = srcRoot;
-                    FileObject transformmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/transformmap.xml"), bpelasaRoot, "transformmap"); //NOI18N
-            // TODO r
-            //        FileObject nbProjectRoot = FileUtil.toFileObject(new File(dir, DEFAULT_NBPROJECT_DIR)); // NOI18N
-            //        FileObject genPortmap = Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl");
-            //        System.out.println("genPortmap: "+genPortmap);
-            //        if (genPortmap != null) {
-            //            FileObject genPortmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl"), nbProjectRoot, "genPortmap"); //NOI18N
-            //        }
+                        public Void run() throws Exception {
+                            EditableProperties ep = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            ep.put(IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
+                            ep.setProperty(IcanproProjectProperties.META_INF, "${" + IcanproProjectProperties.SOURCE_ROOT + "}/" + DEFAULT_DOC_BASE_FOLDER); //NOI18N
+                            // Bing bpelasa       ep.setProperty(SRC_DIR, "${"+SOURCE_ROOT+"}/"+DEFAULT_BPELASA_FOLDER); //NOI18N
+                            ep.setProperty(IcanproProjectProperties.SRC_DIR, "${" + IcanproProjectProperties.SOURCE_ROOT + "}"); //NOI18N
+                            ep.setProperty(IcanproProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
+                            h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
 
-                    EditableProperties ep = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    ep.put (IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
-                    ep.setProperty(IcanproProjectProperties.META_INF, "${"+IcanproProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
-            // Bing bpelasa       ep.setProperty(SRC_DIR, "${"+SOURCE_ROOT+"}/"+DEFAULT_BPELASA_FOLDER); //NOI18N
-                    ep.setProperty(IcanproProjectProperties.SRC_DIR, "${"+IcanproProjectProperties.SOURCE_ROOT+"}"); //NOI18N
-                    ep.setProperty(IcanproProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
-                    h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-
-                    Project p = ProjectManager.getDefault().findProject(h[0].getProjectDirectory ());
-                    ProjectManager.getDefault().saveProject(p);
-                } catch(IOException ex) {
-                    ioe[0] = ex;
-                    return;
+                            ProjectManager.getDefault().saveProject(p);
+                            return null;
+                        }
+                    });
+                } catch (MutexException me) {
+                    ErrorManager.getDefault().notify(me);
                 }
             }
         });
-
-        if (ioe[0] != null) {
-            throw ioe[0];
-        }
 
         return h[0];
     }
@@ -132,12 +126,19 @@ public class XsltproProjectGenerator {
         if(!dir.exists()) {
             //Refresh before mkdir not to depend on window focus
             refreshFileSystem (dir);
-            dir.mkdirs();
-            refreshFileSystem (dir);
+            dirFO = FileUtil.createFolder(dir);
+//            dir.mkdirs();
+//            refreshFileSystem (dir);
+        } else {
+            dirFO = FileUtil.toFileObject(dir);
         }
-        dirFO = FileUtil.toFileObject(dir);
-        assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+
+        // vlv # 113228
+        if (dirFO == null) {
+          throw new IOException("Can't create " + dir.getName());
+        }
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
+        assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir;
         return dirFO;                        
     }
 
