@@ -90,7 +90,7 @@ public abstract class FormProperty extends Node.Property {
 
     protected Object propertyValue; // cached value of the property
     protected boolean valueSet = false; // propertyValue validity
-    boolean valueChanged = false; // i.e. non-default
+    boolean valueChanged = false; // non-default value that came in through setValue
 
     private boolean externalChangeMonitoring = true;
     private Object lastRealValue; // for detecting external change of the property value
@@ -262,6 +262,7 @@ public abstract class FormProperty extends Node.Property {
 
         if (value == BeanSupport.NO_VALUE) {
             // special value to be set - reset the change flag
+            valueSet = false;
             setChanged(false);
             propertyValue = value;
             lastRealValue = null;

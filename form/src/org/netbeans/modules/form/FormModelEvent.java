@@ -498,9 +498,7 @@ public class FormModelEvent extends EventObject
                 LayoutSupportDelegate layoutDelegate = getOldLayoutSupport();
                 if (layoutDelegate != null) {
                     getFormModel().setContainerLayoutImpl(
-                            (RADVisualContainer)getContainer(),
-                            layoutDelegate,
-                            null);
+                            (RADVisualContainer)getContainer(), layoutDelegate);
                 }
                 else {
                     getFormModel().setNaturalContainerLayoutImpl(
@@ -517,9 +515,7 @@ public class FormModelEvent extends EventObject
                 LayoutSupportDelegate layoutDelegate = getNewLayoutSupport();
                 if (layoutDelegate != null) {
                     getFormModel().setContainerLayoutImpl(
-                            (RADVisualContainer)getContainer(),
-                            layoutDelegate,
-                            null);
+                            (RADVisualContainer)getContainer(), layoutDelegate);
                 }
                 else {
                     getFormModel().setNaturalContainerLayoutImpl(

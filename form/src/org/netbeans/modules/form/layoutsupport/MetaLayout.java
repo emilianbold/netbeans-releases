@@ -35,8 +35,7 @@ class MetaLayout extends RADComponent {
     private AbstractLayoutSupport abstLayoutDelegate;
 
     public MetaLayout(AbstractLayoutSupport layoutDelegate,
-                      LayoutManager lmInstance,
-                      boolean defaultInstance)
+                      LayoutManager lmInstance)
     {
         super();
 
@@ -45,10 +44,7 @@ class MetaLayout extends RADComponent {
         initialize(((LayoutSupportManager)abstLayoutDelegate.getLayoutContext())
                          .getMetaContainer().getFormModel());
 
-        if (defaultInstance)
-            setBeanInstance(lmInstance);
-        else
-            setInstance(lmInstance);
+        setBeanInstance(lmInstance);
     }
 
     protected void createCodeExpression() {

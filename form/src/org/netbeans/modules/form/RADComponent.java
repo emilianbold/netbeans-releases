@@ -160,16 +160,18 @@ public class RADComponent {
         getBeanInfo(); // force BeanInfo creation here - will be needed, may fail
         setBeanInstance(beanInstance);
 
-        getAllBeanProperties();
-        for (int i=0; i < knownBeanProperties.length; i++) {
-            try {
-                knownBeanProperties[i].reinstateProperty();
-            }
-            catch (Exception ex) {
-                ErrorManager.getDefault()
-                    .notify(ErrorManager.INFORMATIONAL, ex);
-            }
-        }
+// commented out: since we don't hold default instances separately, we can't
+// reinstate the bean properties against the global default property values
+//        getAllBeanProperties();
+//        for (int i=0; i < knownBeanProperties.length; i++) {
+//            try {
+//                knownBeanProperties[i].reinstateProperty();
+//            }
+//            catch (Exception ex) {
+//                ErrorManager.getDefault()
+//                    .notify(ErrorManager.INFORMATIONAL, ex);
+//            }
+//        }
     }
 
     /** Updates the bean instance - e.g. when setting a property requires

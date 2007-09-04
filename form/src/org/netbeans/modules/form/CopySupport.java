@@ -373,7 +373,9 @@ class CopySupport {
                         copiedComp = sourceComp;
                     }
 
-                    if (copiedComp instanceof RADVisualComponent && !((RADVisualComponent)copiedComp).isMenuComponent()) {
+                    if (copiedComp instanceof RADVisualComponent
+                            && !((RADVisualComponent)copiedComp).isMenuComponent()
+                            && sourceComp instanceof RADVisualComponent) { // might be even a LayoutManager componen...
                         // for visual components we must care about the layout model (new layout)
                         if (targetNewLayout) {
                             RADVisualContainer targetContainer = (RADVisualContainer) targetComponent;

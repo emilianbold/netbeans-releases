@@ -248,6 +248,7 @@ public class BorderDesignSupport implements FormDesignValue
 
     public class BorderProperty extends FormProperty {
         private PropertyDescriptor desc;
+        private Object defaultValue;
 
         public BorderProperty(FormPropertyContext propertyContext,
                               PropertyDescriptor desc)
@@ -260,10 +261,17 @@ public class BorderDesignSupport implements FormDesignValue
 
             this.desc = desc;
 
-            if (desc.getWriteMethod() == null)
+            if (desc.getWriteMethod() == null) {
                 setAccessType(DETACHED_WRITE);
-            else if (desc.getReadMethod() == null)
+            } else if (desc.getReadMethod() == null) {
                 setAccessType(DETACHED_READ);
+            }
+
+            if (canReadFromTarget()) {
+                try {
+                    defaultValue = getTargetValue();
+                } catch (Exception ex) {}
+            }
         }
 
         public Object getTargetValue()
@@ -299,17 +307,7 @@ public class BorderDesignSupport implements FormDesignValue
 
         @Override
         public Object getDefaultValue() {
-            Method readMethod = desc.getReadMethod();
-            Object value = null;
-            if (readMethod != null)
-                try {
-                    value = readMethod.invoke(
-                        BeanSupport.getDefaultInstance(theBorder.getClass()),
-                        new Object[0]);
-                }
-                catch (Exception ex) { // do nothing
-                }
-            return value;
+            return defaultValue;
         }
 
         @Override

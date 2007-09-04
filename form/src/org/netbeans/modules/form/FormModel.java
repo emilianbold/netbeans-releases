@@ -411,9 +411,8 @@ public class FormModel
         }
     }
 
-    public void setContainerLayoutImpl(RADVisualContainer metacont,
-                                   LayoutSupportDelegate layoutDelegate,
-                                   java.awt.LayoutManager initInstance)
+    void setContainerLayoutImpl(RADVisualContainer metacont,
+                                LayoutSupportDelegate layoutDelegate)
         throws Exception
     {
         LayoutSupportManager currentLS = metacont.getLayoutSupport();
@@ -423,17 +422,16 @@ public class FormModel
         if (currentLS == null) { // switching to old layout support
             metacont.setOldLayoutSupport(true);
         }
-        metacont.setLayoutSupportDelegate(layoutDelegate, initInstance);
+        metacont.setLayoutSupportDelegate(layoutDelegate);
 
         fireContainerLayoutExchanged(metacont, currentDel, layoutDelegate);
     }
 
     public void setContainerLayout(RADVisualContainer metacont,
-                                   LayoutSupportDelegate layoutDelegate,
-                                   java.awt.LayoutManager initInstance)
+                                   LayoutSupportDelegate layoutDelegate)
         throws Exception {
         LayoutSupportManager currentLS = metacont.getLayoutSupport();
-        setContainerLayoutImpl(metacont, layoutDelegate, initInstance);
+        setContainerLayoutImpl(metacont, layoutDelegate);
         if (currentLS == null) { // switching to old layout support
             Object layoutStartMark = layoutModel.getChangeMark();
             UndoableEdit ue = layoutModel.getUndoableEdit();

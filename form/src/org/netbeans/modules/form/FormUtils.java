@@ -421,7 +421,9 @@ public class FormUtils
         "javax.swing.JColorChooser", // NOI18N
         "javax.swing.JFileChooser", // NOI18N
     };
-    
+
+    private static Map<Class<?>, Map<String, DefaultValueDeviation>> defaultValueDeviations;
+
     // -----------------------------------------------------------------------------
     // Utility methods
 
@@ -1186,6 +1188,57 @@ public class FormUtils
     static boolean isMarkedChildrenDependentProperty(Node.Property prop) {
         return Boolean.TRUE.equals(prop.getValue(PROP_REQUIRES_CHILDREN));
     }
+
+    // -----
+
+    private static abstract class DefaultValueDeviation {
+        protected Object[] values;
+        DefaultValueDeviation(Object[] values) {
+            this.values = values;
+        }
+        abstract Object getValue(Object beanInstance);
+    }
+
+    private static Map<String, DefaultValueDeviation> getDefaultValueDeviations(Object bean) {
+        if (defaultValueDeviations == null) {
+            defaultValueDeviations = new HashMap<Class<?>, Map<String, DefaultValueDeviation>>();
+        }
+        Map<String, DefaultValueDeviation> deviationMap = defaultValueDeviations.get(bean.getClass());
+        if (deviationMap == null) {
+            if (bean instanceof javax.swing.JTextField) {
+                // text field has different default background when not editable
+                Object[] values = new Color[2];
+                javax.swing.JTextField jtf = new javax.swing.JTextField();
+                values[0] = jtf.getBackground();
+                jtf.setEditable(false);
+                values[1] = jtf.getBackground();
+                deviationMap = new HashMap<String, DefaultValueDeviation>();
+                deviationMap.put("background", // NOI18N
+                    new DefaultValueDeviation(values) {
+                        Object getValue(Object beanInstance) {
+                            return ((javax.swing.JTextField)beanInstance).isEditable() ?
+                                   this.values[0] : this.values[1];
+                        }
+                    }
+                );
+                defaultValueDeviations.put(bean.getClass(), deviationMap);
+            }
+        }
+        return deviationMap;
+    }
+
+    static Object getSpecialDefaultPropertyValue(Object bean, String propName) {
+        Map<String, DefaultValueDeviation> deviationMap = getDefaultValueDeviations(bean);
+        if (deviationMap != null) {
+            DefaultValueDeviation deviation = deviationMap.get(propName);
+            if (deviation != null) {
+                return deviation.getValue(bean);
+            }
+        }
+        return BeanSupport.NO_VALUE;
+    }
+
+    // -----
 
     /** @return a formatted name of specified method
      */

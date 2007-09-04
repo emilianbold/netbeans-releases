@@ -156,7 +156,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             return false;
 
         if (initialize) {
-            setLayoutDelegate(delegate, lmInstance, fromCode);
+            setLayoutDelegate(delegate, fromCode);
         }
         else {
             layoutDelegate = delegate;
@@ -180,7 +180,6 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     public void setLayoutDelegate(LayoutSupportDelegate newDelegate,
-                                  LayoutManager lmInstance,
                                   boolean fromCode)
         throws Exception
     {
@@ -199,7 +198,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         if (layoutDelegate != null) {
             try {
-                layoutDelegate.initialize(this, lmInstance, fromCode);
+                layoutDelegate.initialize(this, null, fromCode);
                 if (!fromCode)
                     fillLayout(oldConstraints);
                 getPropertySets(); // force properties and listeners creation
@@ -220,7 +219,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
     public void setUnknownLayoutDelegate(boolean fromCode) {
         try {
-            setLayoutDelegate(new UnknownLayoutSupport(), null, fromCode);
+            setLayoutDelegate(new UnknownLayoutSupport(), fromCode);
         }
         catch (Exception ex) { // nothing should happen, ignore
             ex.printStackTrace();

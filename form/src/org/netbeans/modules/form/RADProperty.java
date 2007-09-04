@@ -44,6 +44,7 @@ public class RADProperty extends FormProperty {
 
     private RADComponent component;
     private PropertyDescriptor desc;
+    private Object defaultValue;
 
     public RADProperty(RADComponent metacomp, PropertyDescriptor propdesc) {
         super(new FormPropertyContext.Component(metacomp),//new RADPropertyContext(metacomp),
@@ -55,10 +56,18 @@ public class RADProperty extends FormProperty {
         component = metacomp;
         desc = propdesc;
 
-        if (desc.getWriteMethod() == null)
+        if (desc.getWriteMethod() == null) {
             setAccessType(NO_WRITE);
-        else if (desc.getReadMethod() == null)
+        } else if (desc.getReadMethod() == null) {
             setAccessType(DETACHED_READ);
+        } // assuming a bean property is at least readable or writeable
+
+        defaultValue = BeanSupport.NO_VALUE;
+        if (canReadFromTarget()) {
+            try {
+                defaultValue = getTargetValue();
+            } catch (Exception ex) {}
+        }
     }
 
     public RADComponent getRADComponent() {
@@ -163,14 +172,14 @@ public class RADProperty extends FormProperty {
     }
 
     public boolean supportsDefaultValue() {
-        return BeanSupport.NO_VALUE != BeanSupport.getDefaultPropertyValue(
-                                                   component.getBeanInstance(),
-                                                   getName());
+        return defaultValue != BeanSupport.NO_VALUE;
     }
 
     public Object getDefaultValue() {
-        return BeanSupport.getDefaultPropertyValue(component.getBeanInstance(),
-                                                   getName());
+        Object specialDefaultValue = FormUtils.getSpecialDefaultPropertyValue(
+                component.getBeanInstance(), getName());
+        return specialDefaultValue != BeanSupport.NO_VALUE
+                ? specialDefaultValue : defaultValue;
     }
 
     // ----------

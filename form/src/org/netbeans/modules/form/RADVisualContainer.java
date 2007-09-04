@@ -81,11 +81,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
     }
 
-    public void setLayoutSupportDelegate(LayoutSupportDelegate layoutDelegate,
-                                         LayoutManager lmInstance)
+    public void setLayoutSupportDelegate(LayoutSupportDelegate layoutDelegate)
         throws Exception
     {
-        layoutSupport.setLayoutDelegate(layoutDelegate, lmInstance, false);
+        layoutSupport.setLayoutDelegate(layoutDelegate,false);
         setLayoutNodeReference(null);
     }
 
@@ -122,7 +121,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         else {
             if (layoutSupport != null) { // clean the layout delegate and related code structre objects
                 try {
-                    layoutSupport.setLayoutDelegate(null, null, false);
+                    layoutSupport.setLayoutDelegate(null, false);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }

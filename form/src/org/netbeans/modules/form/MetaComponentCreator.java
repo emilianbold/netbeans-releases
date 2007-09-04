@@ -323,7 +323,7 @@ public class MetaComponentCreator {
                                                 Object constraints)
     {
         if (targetPlacement == TARGET_LAYOUT)
-            return setContainerLayout(compClass, null, targetComp);
+            return setContainerLayout(compClass, targetComp);
 
         if (targetPlacement == TARGET_BORDER)
             return setComponentBorder(compClass, targetComp);
@@ -884,14 +884,7 @@ public class MetaComponentCreator {
         formModel.addComponent(newMetaComp, targetCont, newlyAdded);
     }
 
-//    private RADComponent setContainerLayout(Class layoutClass,
-//                                            RADComponent targetComp)
-//    {
-//        return setContainerLayout(layoutClass, null, targetComp);
-//    }
-
     private RADComponent setContainerLayout(Class layoutClass,
-                                            LayoutManager layoutInstance,
                                             RADComponent targetComp)
     {
         // get container on which the layout is to be set
@@ -947,9 +940,7 @@ public class MetaComponentCreator {
         }
 
         try {
-            formModel.setContainerLayout(metacont,
-                                         layoutDelegate,
-                                         layoutInstance);
+            formModel.setContainerLayout(metacont, layoutDelegate);
         }
         catch (Exception ex) {
             t = ex;
@@ -975,16 +966,8 @@ public class MetaComponentCreator {
                                             RADComponent targetComp)
     {
         try {
-            LayoutManager lmInstance = (LayoutManager)
-                                       sourceComp.cloneBeanInstance(null);
-            // we clone the instance as we need the property values copied
-            // for the LayoutSupportDelegate initialization which is done
-            // and the delegate set before we can copy the properties...
-
             RADVisualContainer targetCont = (RADVisualContainer)
-                setContainerLayout(sourceComp.getBeanClass(),
-                                   lmInstance,
-                                   targetComp);
+                setContainerLayout(sourceComp.getBeanClass(), targetComp);
 
             // copy properties additionally to handle design values
             Node.Property[] sourceProps = sourceComp.getKnownBeanProperties();

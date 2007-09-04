@@ -128,15 +128,14 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         Class cls = getSupportedClass();
         if (cls != null && LayoutManager.class.isAssignableFrom(cls)) {
             // create MetaLayout to manage layout manager as a bean
-            boolean defaultInstance = lmInstance == null;
             if (lmInstance == null || !lmInstance.getClass().equals(cls)) {
                 // no valid layout manager instance - create a default one
                 lmInstance = createDefaultLayoutInstance();
-                defaultInstance = true;
             }
 
-            if (lmInstance != null)
-                metaLayout = new MetaLayout(this, lmInstance, defaultInstance);
+            if (lmInstance != null) {
+                metaLayout = new MetaLayout(this, lmInstance);
+            }
         }
         else metaLayout = null;
 
