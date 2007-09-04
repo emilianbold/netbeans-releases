@@ -65,12 +65,10 @@ Microsystems, Inc. All Rights Reserved.
 	</folder>
     </folder>
 
-    <!-- XXX conflicts with enterprise/bpel/xpath; choose something else or omit:
     <folder name="Shortcuts">
-	<file name="DS-9.shadow">
+	<file name="D-9.shadow">
 	    <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.classview-ClassViewAction.instance"/>
 	</file>
     </folder>
-    -->
     
 </filesystem>
