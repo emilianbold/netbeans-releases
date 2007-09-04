@@ -53,8 +53,7 @@ public class FavoritesWindow extends org.netbeans.performance.test.utilities.Per
     
     public ComponentOperator open() {
         // invoke Favorites from the main menu
-        new FavoritesAction().performMenu();
-waitNoEvent(3000);
+        new FavoritesAction().performShortcut();
         return new FavoritesOperator();
     }
 
