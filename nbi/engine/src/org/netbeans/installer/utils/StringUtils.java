@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -68,17 +68,70 @@ public abstract class StringUtils {
     
     public static char fetchMnemonic(
             final String string) {
-        int index = string.indexOf(MNEMONIC_CHAR);
-        if ((index != -1) && (index < string.length() - 1)) {
-            return string.charAt(index + 1);
-        }
-        
-        return NO_MNEMONIC;
+        // source is org.openide.awt.Mnemonics
+        int i = findMnemonicAmpersand(string);
+        return (i >= 0) ? string.charAt(i+1) : NO_MNEMONIC;
     }
     
     public static String stripMnemonic(
             final String string) {
-        return string.replaceFirst(MNEMONIC, EMPTY_STRING);
+        int i = findMnemonicAmpersand(string);
+        String s = string;
+        if( i>=0 ) {
+            if (string.startsWith("<html>")) { // NOI18N
+                // Workaround for JDK bug #6510775                
+                s = string.substring(0, i) + 
+                        "<u>" + string.charAt(i + 1) + "</u>" + // NOI18N
+                        string.substring(i + 2);                 
+            } else {
+                s = string.substring(0, i) + string.substring(i + 1);
+            }
+        } 
+        return s;
+    }
+    
+    // source - org.openide.awt.Mnenonics;
+    public static int findMnemonicAmpersand(String text) {
+        int i = -1;
+        boolean isHTML = text.startsWith("<html>");
+        
+        do {
+            // searching for the next ampersand
+            i = text.indexOf(MNEMONIC_CHAR, i + 1);
+            
+            if ((i >= 0) && ((i + 1) < text.length())) {
+                if (isHTML) {
+                    boolean startsEntity = false;
+                    for (int j = i + 1; j < text.length(); j++) {
+                        char c = text.charAt(j);
+                        if (c == ';') {
+                            startsEntity = true;
+                            break;
+                        }
+                        if (!Character.isLetterOrDigit(c)) {
+                            break;
+                        }
+                    }
+                    if (!startsEntity) {
+                        return i;
+                    }
+                } else {
+                    // before ' '
+                    if (text.charAt(i + 1) == ' ') {
+                        continue;
+                        
+                        // before ', and after '
+                    } else if ((text.charAt(i + 1) == '\'') && (i > 0) && (text.charAt(i - 1) == '\'')) {
+                        continue;
+                    }
+                    
+                    // ampersand is marking mnemonics
+                    return i;
+                }
+            }
+        } while (i >= 0);
+        
+        return -1;
     }
     
     public static String capitalizeFirst(
