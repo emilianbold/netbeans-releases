@@ -282,7 +282,25 @@ class FilesystemHandler extends VCSInterceptor {
                 int retryCounter = 6;
                 while (true) {
                     try {
-                        client.move(srcFile, dstFile, force);
+                        
+                        // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
+                        // then it also can't be moved via the svn client
+                        ISVNStatus status = client.getSingleStatus(srcFile);
+                        if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED)) {                                            
+                            client.revert(srcFile, true);  
+                            renameFile(srcFile, dstFile);                
+                        } else if (status != null && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {                                            
+                            renameFile(srcFile, dstFile);                            
+                        } else {                            
+                            List<File> srcChildren = listAllChildren(srcFile);                
+                            client.move(srcFile, dstFile, force);
+                            
+                            // fire events explicitly for all children which are already gone
+                            for(File f : srcChildren) {
+                                cache.onNotify(f, null);    
+                            }                                 
+                        }                        
+                        
                         break;
                     } catch (SVNClientException e) {                        
                         // svn: Working copy '/tmp/co/svn-prename-19/AnagramGame-pack-rename/src/com/toy/anagrams/ui2' locked
@@ -316,6 +334,31 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
+    private void renameFile(File srcFile, File dstFile) {
+        List<File> srcChildren = listAllChildren(srcFile);        
+        srcFile.renameTo(dstFile);
+
+        // notify the cache
+        cache.onNotify(srcFile, null);
+        for(File f : srcChildren) {
+            // fire events explicitly for 
+            // all children which are already gone
+            cache.onNotify(f, null);    
+        }        
+        cache.onNotify(dstFile, null);        
+    }
+        
+    private List<File> listAllChildren(File file) {
+        if(file.isFile()) return new ArrayList<File>(0);        
+        List<File> ret = new ArrayList<File>();     
+        File[] files = file.listFiles();
+        for(File f : files) {
+            ret.add(f);
+            ret.addAll(listAllChildren(f));
+        }
+        return ret;
+    }
+    
     /**
      * Seeks versioned root and then adds all folders
      * under Subversion (so it contains metadata),
