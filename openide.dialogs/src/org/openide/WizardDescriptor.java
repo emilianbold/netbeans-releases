@@ -1164,7 +1164,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 resetWizard();
             } catch (RuntimeException x) {
                 // notify to log
-                err.log(Level.FINE, null, x);
+                err.log(Level.INFO, null, x);
             }
         } else if (FINISH_OPTION.equals(convertedValue) || NEXT_OPTION.equals(convertedValue)) {
             //Bugfix #25820: make sure that storeSettings
@@ -1879,7 +1879,7 @@ public class WizardDescriptor extends DialogDescriptor {
                                     resetWizard();
                                 } catch (IOException ioe) {
                                     // notify to log
-                                    err.log(Level.FINE, null, ioe);
+                                    err.log(Level.INFO, null, ioe);
 
                                     setValueWithoutPCH(NEXT_OPTION);
                                     updateStateWithFeedback();
@@ -1891,7 +1891,7 @@ public class WizardDescriptor extends DialogDescriptor {
                                     return;
                                 } catch (RuntimeException x) {
                                     // notify to log
-                                    err.log(Level.FINE, null, x);
+                                    err.log(Level.INFO, null, x);
 
                                     setValueWithoutPCH(NEXT_OPTION);
                                     updateStateWithFeedback();
@@ -1945,7 +1945,7 @@ public class WizardDescriptor extends DialogDescriptor {
                         resetWizard();
                     } catch (RuntimeException x) {
                         // notify to log
-                        err.log(Level.FINE, null, x);
+                        err.log(Level.INFO, null, x);
                     }
 
                 }

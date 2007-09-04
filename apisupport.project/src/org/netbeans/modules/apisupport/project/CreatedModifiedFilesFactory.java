@@ -241,6 +241,9 @@ public final class CreatedModifiedFilesFactory {
         public CreateFile(Project project, String path, URL content, Map<String,String> tokens) {
             super(project);
             this.path = path;
+            if (content == null) {
+                throw new NullPointerException();
+            }
             this.content = content;
             this.tokens = tokens;
             addCreatedOrModifiedPath(path, false);
