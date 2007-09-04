@@ -360,7 +360,6 @@ public class DetectPanel extends javax.swing.JPanel {
         jPanel2.add(jScrollPane4, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(addSourceButton, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add")); // NOI18N
-        addSourceButton.setLabel(org.openide.util.NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add")); // NOI18N
         addSourceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addSourceButtonActionPerformed(evt);
@@ -375,8 +374,8 @@ public class DetectPanel extends javax.swing.JPanel {
         addSourceButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add")); // NOI18N
         addSourceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(removeSourceButton, org.openide.util.NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Remove")); // NOI18N
         removeSourceButton.setEnabled(false);
-        removeSourceButton.setLabel(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Remove")); // NOI18N
         removeSourceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeSourceButtonActionPerformed(evt);
