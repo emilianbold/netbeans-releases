@@ -40,7 +40,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import javax.servlet.ServletContext;
-import javax.portlet.PortletContext;
+//import javax.portlet.PortletContext;
 
 import javax.faces.FactoryFinder;
 import javax.faces.application.Application;
@@ -157,28 +157,28 @@ public class ThemeFactory {
      * @param context the PortletContext in which the application
      * is running
      */
-    protected static void initializeThemeManager(PortletContext context) {
-        
-        // We don't need to synchronize this method. It must only be
-        // invoked during during the initialization of a
-        // PortletContext
-        
-        if(DEBUG) log("initializeThemeManager(PortletContext)");
-        if(context.getAttribute(ThemeManager.THEME_MANAGER) != null) {
-            if(DEBUG)  log("ThemeManager already initialized");
-        }
-        
-        // Set the default theme if specified in the DD
-        String defaultThemeName =
-                processInitParameter(context.getInitParameter(DEFAULT_THEME));
-        String messageOverride =
-                processInitParameter(context.getInitParameter(MESSAGES_PARAM));
-        
-        ThemeFactory themeFactory = new ThemeFactory(messageOverride);
-        ThemeManager manager =
-                themeFactory.createThemeManager(defaultThemeName);
-        context.setAttribute(ThemeManager.THEME_MANAGER, manager);
-    }
+//    protected static void initializeThemeManager(PortletContext context) {
+//        
+//        // We don't need to synchronize this method. It must only be
+//        // invoked during during the initialization of a
+//        // PortletContext
+//        
+//        if(DEBUG) log("initializeThemeManager(PortletContext)");
+//        if(context.getAttribute(ThemeManager.THEME_MANAGER) != null) {
+//            if(DEBUG)  log("ThemeManager already initialized");
+//        }
+//        
+//        // Set the default theme if specified in the DD
+//        String defaultThemeName =
+//                processInitParameter(context.getInitParameter(DEFAULT_THEME));
+//        String messageOverride =
+//                processInitParameter(context.getInitParameter(MESSAGES_PARAM));
+//        
+//        ThemeFactory themeFactory = new ThemeFactory(messageOverride);
+//        ThemeManager manager =
+//                themeFactory.createThemeManager(defaultThemeName);
+//        context.setAttribute(ThemeManager.THEME_MANAGER, manager);
+//    }
     
     /**
      * Initializes a ThemeManager based on an External Context.

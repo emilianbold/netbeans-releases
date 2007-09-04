@@ -22,7 +22,7 @@ import java.beans.Beans;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
-import javax.portlet.PortletContext;
+//import javax.portlet.PortletContext;
 
 /**
  * Strategies for finding the current ClassLoader such as

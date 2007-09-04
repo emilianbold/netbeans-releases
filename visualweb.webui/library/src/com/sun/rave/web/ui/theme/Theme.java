@@ -31,7 +31,7 @@ import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.portlet.PortletRequest;
+//import javax.portlet.PortletRequest;
 
 import com.sun.rave.web.ui.component.Icon;
 import com.sun.rave.web.ui.util.ClassLoaderFinder;
@@ -490,12 +490,12 @@ public class Theme  {
             port = sr.getServerPort();
         }
        
-        else if(request instanceof PortletRequest) { 
-	    PortletRequest pr = (PortletRequest)request; 
-	    protocol = pr.getScheme();
-	    server = pr.getServerName(); 
-	    port = pr.getServerPort();
-        }
+//        else if(request instanceof PortletRequest) { 
+//	    PortletRequest pr = (PortletRequest)request; 
+//	    protocol = pr.getScheme();
+//	    server = pr.getServerName(); 
+//	    port = pr.getServerPort();
+//        }
         else { 
             String message = "REquest opbject is " + request.getClass().getName(); 
             throw new RuntimeException(message);
