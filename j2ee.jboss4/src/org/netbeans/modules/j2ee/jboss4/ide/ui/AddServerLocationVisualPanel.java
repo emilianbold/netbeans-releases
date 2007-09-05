@@ -35,11 +35,9 @@ import org.openide.util.NbBundle;
  * @author Ivan Sidorkin
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel {
+    
     private final Set listeners = new HashSet();
-    //private static JFileChooser chooser = null;
-    
-    
-    
+
     /** Creates new form AddServerLocationVisualPanel */
     public AddServerLocationVisualPanel() {
         initComponents();
@@ -108,21 +106,14 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
         chooser.setMultiSelectionEnabled(false);
-            chooser.addChoosableFileFilter(new DirectoryFilter());
-            chooser.setAcceptAllFileFilterUsed(false);
         chooser.setApproveButtonToolTipText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
 
         chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
         chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
 
         // set the current directory
-        File currentLocation = new File(locationTextField.getText().trim());
-        if (currentLocation.exists() && currentLocation.isDirectory()) {
-            //chooser.setCurrentDirectory(currentLocation.getParentFile());
-            chooser.setSelectedFile(currentLocation);
-        }
-        
-        
+        chooser.setSelectedFile(new File(locationTextField.getText().trim()));
+
         return chooser;
     }
     
@@ -188,27 +179,11 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         
     }
 
-
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
         String newLoc = browseInstallLocation();
-        if ((newLoc!=null)&&(!newLoc.equals("")))
-        locationTextField.setText(newLoc);
-    }
-    
-    private static class DirectoryFilter extends javax.swing.filechooser.FileFilter {
-        
-        public boolean accept(File f) {
-            if(!f.exists() || !f.canRead() || !f.isDirectory() ) {
-                return false;
-            }else{
-                return true;
-            }
+        if (newLoc != null && !"".equals(newLoc)) {
+            locationTextField.setText(newLoc);
         }
-        
-        public String getDescription() {
-            return NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_DirType");
-        }
-        
     }
     
     // Variables declaration - do not modify
