@@ -111,7 +111,7 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
   </target>
 
-  <property name="glassfish.appname" value="glassfish-v2b58c"/>
+  <property name="glassfish.appname" value="glassfish-v2b58e"/>
   <target name="build-glassfish-pkg" if="build_glassfish">
     <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
     <ant dir="glassfish" target="build-pkg" inheritAll="false">

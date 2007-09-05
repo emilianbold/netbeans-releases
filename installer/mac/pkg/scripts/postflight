@@ -25,7 +25,7 @@ dirname=`dirname "$0"`
 
 "$dirname"/unpack200.sh "$2/$NETBEANS_INSTALL_DIR" "$2/$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans"
 
-"$dirname"/add_gf.sh "$2/$NETBEANS_INSTALL_DIR" "/Applications/NetBeans/glassfish-v2b58c"
+"$dirname"/add_gf.sh "$2/$NETBEANS_INSTALL_DIR" "/Applications/NetBeans/glassfish-v2b58e"
 
 "$dirname"/add_tc.sh "$2/$NETBEANS_INSTALL_DIR" "/Applications/NetBeans/apache-tomcat-6.0.13"
 
