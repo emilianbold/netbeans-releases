@@ -14,6 +14,7 @@ import java.io.PrintStream;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -86,6 +87,7 @@ public class DeleteTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
+            OutputOperator.invoke();
             TestKit.closeProject(PROJECT_NAME);
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
