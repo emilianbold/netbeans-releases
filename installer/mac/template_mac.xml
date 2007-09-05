@@ -97,7 +97,7 @@ appdir
     <echo message="Executing pack200 in ${appdir}"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value='cd "${appdir}"; find . -name \*.jar -exec pack200 -g {}.pack {} \;'/>
+      <arg value='cd "${appdir}"; find . -name \*.jar -exec pack200 -J-Xmx256m -g {}.pack {} \;'/>
     </exec>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
