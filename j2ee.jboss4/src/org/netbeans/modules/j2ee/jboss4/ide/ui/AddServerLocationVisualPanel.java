@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -35,7 +36,7 @@ import org.openide.util.NbBundle;
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel {
     private final Set listeners = new HashSet();
-    private static JFileChooser chooser = null;
+    //private static JFileChooser chooser = null;
     
     
     
@@ -90,7 +91,8 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
     private String browseInstallLocation(){
         String insLocation = null;
         JFileChooser chooser = getJFileChooser();
-        int returnValue = chooser.showDialog(this, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooseButton")); //NOI18N
+        int returnValue = chooser.showDialog(SwingUtilities.getWindowAncestor(this),
+                NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooseButton")); //NOI18N
         
         if(returnValue == JFileChooser.APPROVE_OPTION){
             insLocation = chooser.getSelectedFile().getAbsolutePath();
@@ -99,30 +101,24 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
     }
     
     private JFileChooser getJFileChooser(){
-        //JFileChooser chooser = new JFileChooser();
-        
-        if (chooser == null) {
-        
-            chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
+        chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
 
-            chooser.setDialogTitle(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
-            chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
-
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
-            chooser.setMultiSelectionEnabled(false);
-            chooser.addChoosableFileFilter(new dirFilter());
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
+        chooser.setMultiSelectionEnabled(false);
+            chooser.addChoosableFileFilter(new DirectoryFilter());
             chooser.setAcceptAllFileFilterUsed(false);
-            chooser.setApproveButtonToolTipText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
+        chooser.setApproveButtonToolTipText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
 
-            chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
-            chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
-        }
+        chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
 
         // set the current directory
-        File currentLocation = new File(locationTextField.getText());
+        File currentLocation = new File(locationTextField.getText().trim());
         if (currentLocation.exists() && currentLocation.isDirectory()) {
-            chooser.setCurrentDirectory(currentLocation.getParentFile());
+            //chooser.setCurrentDirectory(currentLocation.getParentFile());
             chooser.setSelectedFile(currentLocation);
         }
         
@@ -135,28 +131,12 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel2 = new javax.swing.JPanel();
-//        jTextArea1 = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         locationTextField = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
-
-//        jTextArea1.setBackground(java.awt.Color.lightGray);
-//        jTextArea1.setEditable(false);
-//        jTextArea1.setLineWrap(true);
-//        //jTextArea1.setText(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocationInfo"));
-//        jTextArea1.setText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocationInfo"));
-//        jTextArea1.setWrapStyleWord(true);
-//        jTextArea1.setFocusable(false);
-//        jTextArea1.setOpaque(false);
-//        gridBagConstraints = new java.awt.GridBagConstraints();
-//        gridBagConstraints.gridwidth = 3;
-//        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-//        gridBagConstraints.weightx = 1.0;
-//        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-//        add(jTextArea1, gridBagConstraints);
 
         jLabel1.setLabelFor(locationTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocation"));
@@ -214,8 +194,8 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         if ((newLoc!=null)&&(!newLoc.equals("")))
         locationTextField.setText(newLoc);
     }
-
-    private static class dirFilter extends javax.swing.filechooser.FileFilter {
+    
+    private static class DirectoryFilter extends javax.swing.filechooser.FileFilter {
         
         public boolean accept(File f) {
             if(!f.exists() || !f.canRead() || !f.isDirectory() ) {
