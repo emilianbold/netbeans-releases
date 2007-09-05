@@ -604,81 +604,64 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     /** Selects component at the position e.getPoint() on component layer.
      * What component is selected further depends on whether CTRL or ALT
      * keys are hold. */
-    private RADComponent selectComponent(MouseEvent e) {
+    private RADComponent selectComponent(MouseEvent e, boolean mousePressed) {
         RADComponent hitMetaComp;
         if (formDesigner.getSelectedComponents().size() > 1
-                && !e.isShiftDown() && !e.isControlDown() && !e.isAltDown()) {
-            hitMetaComp = selectedComponentAt(e.getPoint(), 0, false);
+            && mousePressed
+            && !e.isShiftDown() && !e.isControlDown() && !e.isAltDown()) {
             // If multiple components already selected and some of them is on
-            // current mouse position, keep this component selected.
-            // (This is to ease dragging of multiple scrollpanes.)
-        } else {
-            hitMetaComp = null;
+            // current mouse position, keep this component selected on mouse
+            // pressed (i.e. don't try to selected a possible subcomponent).
+            // This is to ease dragging of multiple scrollpanes or containers
+            // covered entirely by subcomponents.
+            // OTOH mouse release should cancel the multiselection - if no
+            // dragging happened.
+            hitMetaComp = selectedComponentAt(e.getPoint(), 0, false);
+            if (hitMetaComp != null) {
+                return hitMetaComp;
+            }
         }
-        if (hitMetaComp == null) {
-            int selMode = !e.isAltDown() ? COMP_DEEPEST :
-                    (!e.isShiftDown() ? COMP_ABOVE_SELECTED : COMP_UNDER_SELECTED);
-            hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
 
-            // Help with selecting a component in scroll pane (e.g. JTable of zero size).
-            // Prefer selcting the component rather than the scrollpane if the view port
-            // or header is clicked.
-            if (hitMetaComp != null && !e.isAltDown()
-                    && hitMetaComp.getAuxValue("autoScrollPane") != null // NOI18N
-                    && hitMetaComp instanceof RADVisualContainer) {
-                RADVisualComponent[] sub = ((RADVisualContainer)hitMetaComp).getSubComponents();
-                Component scroll = (Component) formDesigner.getComponent(hitMetaComp);
-                if (sub.length > 0 && scroll instanceof JScrollPane) {
-                    Point p = e.getPoint();
-                    convertPointToComponent(p, scroll);
-                    Component clicked = SwingUtilities.getDeepestComponentAt(scroll, p.x, p.y);
-                    while (clicked != null && clicked != scroll) {
-                        if (clicked instanceof JViewport) {
-                            hitMetaComp = sub[0];
-                            break;
-                        }
-                        clicked = clicked.getParent();
+        int selMode = !e.isAltDown() ? COMP_DEEPEST :
+                (!e.isShiftDown() ? COMP_ABOVE_SELECTED : COMP_UNDER_SELECTED);
+        hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
+
+        // Help with selecting a component in scroll pane (e.g. JTable of zero size).
+        // Prefer selcting the component rather than the scrollpane if the view port
+        // or header is clicked.
+        if (hitMetaComp != null && !e.isAltDown()
+                && hitMetaComp.getAuxValue("autoScrollPane") != null // NOI18N
+                && hitMetaComp instanceof RADVisualContainer) {
+            RADVisualComponent[] sub = ((RADVisualContainer)hitMetaComp).getSubComponents();
+            Component scroll = (Component) formDesigner.getComponent(hitMetaComp);
+            if (sub.length > 0 && scroll instanceof JScrollPane) {
+                Point p = e.getPoint();
+                convertPointToComponent(p, scroll);
+                Component clicked = SwingUtilities.getDeepestComponentAt(scroll, p.x, p.y);
+                while (clicked != null && clicked != scroll) {
+                    if (clicked instanceof JViewport) {
+                        hitMetaComp = sub[0];
+                        break;
                     }
+                    clicked = clicked.getParent();
                 }
             }
         }
 
         if ((e.isControlDown() || e.isShiftDown()) && !e.isAltDown()) {
-            // Control is pressed - add component to selection
-            if (hitMetaComp != null)
-                if (formDesigner.isComponentSelected(hitMetaComp))
-                    formDesigner.removeComponentFromSelection(hitMetaComp);
-                else
-                    formDesigner.addComponentToSelection(hitMetaComp);
-        }
-        // [interval selection commented out - is confusing if following just
-        //  the creation order of components and not the visual appearance]
-/*        else if (e.isShiftDown() && !e.isAltDown()) {
-            // Shift is pressed - select interval
-            if (hitMetaComp != null
-                && !formDesigner.isComponentSelected(hitMetaComp))
-            {
-                if (formDesigner.getSelectedComponents().size() > 0) {
-                    RADComponent[] intervalToSelect =
-                        getComponentsIntervalToSelect(hitMetaComp, false);
-                    if (intervalToSelect == null)
-                        intervalToSelect = getComponentsIntervalToSelect(
-                                                       hitMetaComp, true);
-                    if (intervalToSelect != null)
-                        formDesigner.setSelectedComponents(intervalToSelect);
-                    else
-                        formDesigner.setSelectedComponent(hitMetaComp);
-                }
-                else
-                    formDesigner.setSelectedComponent(hitMetaComp);
-            }
-        } */
-        else { // no reasonable modifier key pressed - select single component
             if (hitMetaComp != null) {
-                if (!formDesigner.isComponentSelected(hitMetaComp))
-                    formDesigner.setSelectedComponent(hitMetaComp);
+                // Shift adds to selection, Ctrl toggles selection,
+                // other components selection is not affected
+                if (!formDesigner.isComponentSelected(hitMetaComp)) {
+                    formDesigner.addComponentToSelection(hitMetaComp);
+                } else if (!e.isShiftDown()) {
+                    formDesigner.removeComponentFromSelection(hitMetaComp);
+                }
             }
-            else formDesigner.clearSelection();
+        } else if (hitMetaComp != null) {
+            formDesigner.setSelectedComponent(hitMetaComp);
+        } else {
+            formDesigner.clearSelection();
         }
 
         return hitMetaComp;
@@ -1504,11 +1487,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     }
                 }
                 else if (e.getClickCount() == 1
-                         && e.isShiftDown()
                          && !e.isAltDown()
                          && !e.isControlDown())
-                {   // Shift + mouse release - interval selection
-                    selectComponent(e);
+                {   // plain click or shift click
+                    selectComponent(e, false);
                 }
             }
 
@@ -1568,7 +1550,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 } else {
                     // [we used to only select the component if there was nothing selected
                     //  on current position, but changed to always select - #94543]
-                    RADComponent hitMetaComp = selectComponent(e);
+                    RADComponent hitMetaComp = selectComponent(e, true);
                     processMouseClickInLayoutSupport(hitMetaComp, e);
                 }
                 draggingEnded = false; // reset flag preventing dragging from start
@@ -1595,7 +1577,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                         else if (resizeType == 0 // no resizing
                                  && (e.getClickCount() != 2 || !processDoubleClick(e)) // no doubleclick
                                  && (!e.isShiftDown() || e.isAltDown())) {
-                            RADComponent hitMetaComp = selectComponent(e); 
+                            RADComponent hitMetaComp = selectComponent(e, true); 
                             if (!modifier) { // plain single click
                                 processMouseClickInLayoutSupport(hitMetaComp, e);
                             }
@@ -1607,7 +1589,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
             else if (!viewOnly) { // form can be modified
                 if (formDesigner.getDesignerMode() == FormDesigner.MODE_CONNECT) {
-                    selectComponent(e);
+                    selectComponent(e, true);
                 }
                 else if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
                     endDragging(e);
