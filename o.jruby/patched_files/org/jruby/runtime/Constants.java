@@ -69,7 +69,7 @@ public final class Constants {
         VERSION = properties.getProperty("version.jruby");
         BUILD = properties.getProperty("build.jruby");
         TARGET = properties.getProperty("target.jruby");
-        Matcher matcher = Pattern.compile("\\$Revision$").matcher(properties.getProperty("revision.jruby"));
+        Matcher matcher = Pattern.compile("\\$Re" + "vision: (.*?) \\$").matcher(properties.getProperty("revision.jruby"));
         if (matcher.find()) {
             REVISION = matcher.group(1);
         } else {
