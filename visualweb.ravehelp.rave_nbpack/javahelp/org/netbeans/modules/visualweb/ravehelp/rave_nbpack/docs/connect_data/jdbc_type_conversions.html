@@ -18,6 +18,9 @@
 <p> SQL data types returned in rowsets are converted to Java specification data types according to 
 the table of JDBC Types Mapped to Java Types in Appendix B of the JDBC 3.0 Specification 
 (copied below). For more information, see JDBC 3.0 - Final Release.</p>
+<ul class="note">
+  <li><b>Note: </b>When specifying SQL identifiers like column names, table names, index names, and view names, if you use characters outside of the standard SQL identifier characters of <code>A-Z</code>, <code>a-z</code>, <code>0-9</code> and <code>_</code>, then you must quote the identifier. </li>
+</ul>
 <p>
 <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the JDBC type. 
 The right column lists the Java type to which it is converted.">
@@ -166,7 +169,9 @@ The right column lists the Java type to which it is converted.">
     <td>(underlying Java class)</td>
   </tr>
 </table>
-
+<ul class="note">
+  <li><b>Note: </b>There may be other characters that do not need to be quoted for a specific database.  To find out what these are, you can call the JDBC MetaData method <code>DatabaseMetadata.getExtraNameCharacters()</code>. </li>
+</ul>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="about_data_binding.html">About Binding Components to Data</a></dd>
