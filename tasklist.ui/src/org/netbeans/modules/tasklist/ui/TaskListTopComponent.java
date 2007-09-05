@@ -257,6 +257,9 @@ final class TaskListTopComponent extends TopComponent {
         ScanningScopeList.getDefault().removePropertyChangeListener( getScopeListListener() );
         taskManager.observe( null, null );
         taskManager.removePropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, getChangeListener() );
+        if( null != progress )
+            progress.finish();
+        progress = null;
         try {
             FilterRepository.getDefault().save();
         } catch( IOException ioE ) {
