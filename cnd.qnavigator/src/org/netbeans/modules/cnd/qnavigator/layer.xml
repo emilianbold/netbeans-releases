@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-
+<!-- 
     <folder name="Editors">
 	<folder name="text">
 
@@ -60,10 +60,6 @@ Microsystems, Inc. All Rights Reserved.
 	    </folder>
 
 	    <folder name="x-c">
-                <!-- 
-                    Seems it's not necessary to register here colorings, settings, other?
-                    because C is used with C++ 
-                -->
 		<folder name="Toolbars">
 		    <folder name="Default">
 			<file name="org-netbeans-modules-cnd-qnavigator-NavigateAction.instance">
@@ -87,4 +83,5 @@ Microsystems, Inc. All Rights Reserved.
 	    </folder>
 	</folder>
     </folder>
+-->
 </filesystem>
