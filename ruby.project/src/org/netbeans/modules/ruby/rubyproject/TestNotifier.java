@@ -21,8 +21,9 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.SettingsDefaults;
@@ -31,10 +32,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer.ActionText;
 import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-
 
 /**
  * Notifier which listens on test output and if it sees what looks like a a failure,
@@ -138,7 +136,7 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
 
                 if (failure) {
                     warning = true;
-                    if (pattern == RAKE_PATTERN) {
+                    if (!accumulate && pattern == RAKE_PATTERN) {
                         message = summary;
                     } else {
                         message = NbBundle.getMessage(AutoTestSupport.class, "TestsFailed", summary);
@@ -166,44 +164,31 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
             SwingUtilities.invokeLater(this);
             return;
         }
-        org.openide.nodes.Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-        if (nodes == null) {
-            return;
-        }
-        for (org.openide.nodes.Node node : nodes) {
-            EditorCookie ec = node.getCookie(EditorCookie.class);
-            if (ec == null) {
-                continue;
-            }
-            JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes == null) {
-                continue;
-            }
-            for (JEditorPane pane : panes) {
-                if (pane.isShowing()) {
-                    if (warning) {
-                        org.netbeans.editor.Utilities.setStatusBoldText(pane, message);
-                    } else {
-                        // Attempt to show the text in green
-                        EditorUI eui = Utilities.getEditorUI(pane);
-                        if (eui != null) {
-                            StatusBar statusBar = eui.getStatusBar();
-                            if (statusBar != null) {
-                                Coloring coloring = null;
-                                if (notImplemented > 0) {
-                                    // Not implemented rspecs: show yellow rather than green
-                                    coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.YELLOW);
-                                } else {
-                                    coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.GREEN);
-                                }
-                                statusBar.setText(StatusBar.CELL_MAIN, message, coloring);
-                                return;
+
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
+        if (pane != null) {
+            if (pane.isShowing()) {
+                if (warning) {
+                    org.netbeans.editor.Utilities.setStatusBoldText(pane, message);
+                } else {
+                    // Attempt to show the text in green
+                    EditorUI eui = Utilities.getEditorUI(pane);
+                    if (eui != null) {
+                        StatusBar statusBar = eui.getStatusBar();
+                        if (statusBar != null) {
+                            Coloring coloring = null;
+                            if (notImplemented > 0) {
+                                // Not implemented rspecs: show yellow rather than green
+                                coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.YELLOW);
+                            } else {
+                                coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.GREEN);
                             }
+                            statusBar.setText(StatusBar.CELL_MAIN, message, coloring);
+                            return;
                         }
-                        
-                        org.netbeans.editor.Utilities.setStatusText(pane, message);
                     }
-                    return;
+
+                    org.netbeans.editor.Utilities.setStatusText(pane, message);
                 }
             }
         }
