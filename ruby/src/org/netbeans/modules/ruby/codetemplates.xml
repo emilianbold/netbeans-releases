@@ -17,30 +17,26 @@ end]]></code>
     <codetemplate abbreviation="if" descriptionId="ct_if" contexts="ruby">
 <code><![CDATA[if ${condition}
   ${selection line}${cursor}
-end
-]]></code>
+end]]></code>
     </codetemplate>
     <codetemplate abbreviation="ife" descriptionId="ct_ife" contexts="ruby">
 <code><![CDATA[if ${condition}
   ${selection line}${tabStop1 default=""}
 else
   ${tabStop2 default=""}
-end
-]]></code>
+end]]></code>
     </codetemplate>
     <codetemplate abbreviation="module" descriptionId="ct_module" contexts="ruby">
 <code><![CDATA[module ${name}
   ${cursor}
-end
-]]></code>
+end]]></code>
     </codetemplate>
     <codetemplate abbreviation="begin" descriptionId="ct_begin" contexts="ruby">
 <code><![CDATA[begin
   ${selection line}${cursor}
 rescue ${Exception} => ${unusedlocal defaults="ex,boom,bang,var"}
   ${code}
-end
-]]></code>
+end]]></code>
   </codetemplate>
 
 
@@ -167,7 +163,7 @@ require "tc_${2 default="test_case_file"}"
   </codetemplate>
   <codetemplate abbreviation="Yd-" descriptionId="ct_Yd-">
     <code>
-<![CDATA[File.open(, "w") { |${3 default="file"}| YAML.dump(${4 default="obj"}, ${3 default="file"}) }]]>
+<![CDATA[File.open("${1 default="path/to/file"}.yaml", "w") { |${3 default="file"}| YAML.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="sel" descriptionId="ct_sel">
@@ -339,7 +335,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="collect" descriptionId="ct_collect">
     <code>
-<![CDATA[collect { |${1 default="element"}| ${1 default="element"}.${cursor} }]]>
+<![CDATA[collect { |${1 default="element"}| ${1 editable="false"}.${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="app" descriptionId="ct_app">
@@ -426,7 +422,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="File" descriptionId="ct_File">
     <code>
-<![CDATA[File.foreach() { |${3 default="line"}| ${cursor} }]]>
+<![CDATA[File.foreach("${1 default="path/to/file"}") { |${3 default="line"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="vp" descriptionId="ct_vp">
@@ -527,7 +523,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="each" descriptionId="ct_each">
     <code>
-<![CDATA[each { |${1 default="element"}| ${1 default="element"}.${cursor} }]]>
+<![CDATA[each { |${1 default="element"}| ${1 editable="false"}.${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="vu" descriptionId="ct_vu">
@@ -576,12 +572,12 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="flao" descriptionId="ct_flao">
     <code>
-<![CDATA[inject(Array.new) { |${1 default="arr"}, ${2 default="a"}| ${1 default="arr"}.push(*${2 default="a"}) }]]>
+<![CDATA[inject(Array.new) { |${1 default="arr"}, ${2 default="a"}| ${1 editable="false"}.push(*${2 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="Ml" descriptionId="ct_Ml">
     <code>
-<![CDATA[File.open() { |${3 default="file"}| Marshal.load(${3 default="file"}) }]]>
+<![CDATA[File.open("${1 default="path/to/file"}.dump") { |${3 default="file"}| Marshal.load(${3 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eawi" descriptionId="ct_eawi">
@@ -632,7 +628,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="select" descriptionId="ct_select">
     <code>
-<![CDATA[select { |${1 default="element"}| ${1 default="element"}.${tabStop2 default=""} }${cursor}]]>
+<![CDATA[select { |${1 default="element"}| ${1 editable="false"}.${tabStop2 default=""} }${cursor}]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="va" descriptionId="ct_va">
@@ -642,7 +638,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="reject" descriptionId="ct_reject">
     <code>
-<![CDATA[reject { |${1 default="element"}| ${1 default="element"}.${cursor} }]]>
+<![CDATA[reject { |${1 default="element"}| ${1 editable="false"}.${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="rt" descriptionId="ct_rt">
@@ -694,7 +690,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="Hash" descriptionId="ct_Hash">
     <code>
-<![CDATA[Hash.new { |${1 default="hash"}, ${2 default="key"}| ${1 default="hash"}[${2 default="key"}] = ${cursor} }]]>
+<![CDATA[Hash.new { |${1 default="hash"}, ${2 default="key"}| ${1 editable="false"}[${2 editable="false"}] = ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="cla" descriptionId="ct_cla">
@@ -712,7 +708,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="Yl-" descriptionId="ct_Yl-">
     <code>
-<![CDATA[File.open() { |${3 default="file"}| YAML.load(${3 default="file"}) }]]>
+<![CDATA[File.open("${1 default="path/to/file"}.yaml") { |${3 default="file"}| YAML.load(${3 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="when" descriptionId="ct_when">
@@ -775,7 +771,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="Md" descriptionId="ct_Md">
     <code>
-<![CDATA[File.open(, "w") { |${3 default="file"}| Marshal.dump(${4 default="obj"}, ${3 default="file"}) }]]>
+<![CDATA[File.open("${1 default="path/to/file"}.dump", "w") { |${3 default="file"}| Marshal.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="rns" descriptionId="ct_rns">
@@ -810,7 +806,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="each_with_index" descriptionId="ct_each_with_index">
     <code>
-<![CDATA[each_with_index { |${1 default="element"}, ${2 default="idx"}| ${1 default="element"}.${cursor} }]]>
+<![CDATA[each_with_index { |${1 default="element"}, ${2 default="idx"}| ${1 editable="false"}.${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="rec" descriptionId="ct_rec">
