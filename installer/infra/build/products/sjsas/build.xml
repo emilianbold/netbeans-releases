@@ -259,7 +259,7 @@
 		<include name="addons/**"/>
                 <exclude name="addons"/>
                 <include name="lib/addons/*.*"/>
-                <include name="Sun_Java_System_Application_Server_Platform_Edition_install.*"/>
+                <include name="Sun_Java_System_Application_Server_install.*"/>
 		<include name="Install_Application_Server*"/>
                 <include name="appserv_uninstall.class"/>
 		<include name="uninstall*"/>
