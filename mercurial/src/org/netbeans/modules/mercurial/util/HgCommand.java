@@ -1652,8 +1652,10 @@ public class HgCommand {
         File file = new File(path + HG_STR_CONFLICT_EXT);
         boolean bExists = file.canWrite();
         
-        Mercurial.LOG.log(Level.FINE, "existsConflictFile(): File: {0} {1}", // NOI18N
-                new Object[] {path + HG_STR_CONFLICT_EXT, bExists? "Exists": "Does Not Exist"} ); // NOI18N
+        if (bExists) {
+            Mercurial.LOG.log(Level.FINE, "existsConflictFile(): File: {0} {1}", // NOI18N
+                    new Object[] {path + HG_STR_CONFLICT_EXT, "Exists"} ); // NOI18N
+        }
         return bExists;
     }
 
