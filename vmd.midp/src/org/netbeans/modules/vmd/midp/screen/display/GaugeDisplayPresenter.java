@@ -79,7 +79,7 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
         }
         gauge.setMaxValue(maxValue);
         
-        pv = getComponent().readProperty(GaugeCD.PROP_MAX_VALUE);
+        pv = getComponent().readProperty(GaugeCD.PROP_VALUE);
         int value = 0;
         if (PropertyValue.Kind.VALUE.equals(pv.getKind())) {
             value = MidpTypes.getInteger(pv);
