@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -48,7 +47,6 @@ import javax.swing.JComponent;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.TextUI;
 import javax.swing.plaf.ToolBarUI;
@@ -105,24 +103,6 @@ import org.openide.util.lookup.ProxyLookup;
     private static final Lookup NO_ACTION_CONTEXT = Lookups.fixed();
     
     private FileChangeListener moduleRegListener;
-
-    /** Runnable for returning the focus back to the last active text component. */
-    private static final Runnable returnFocusRunnable
-        = new Runnable() {
-            public void run() {
-                Component c = Utilities.getLastActiveComponent();
-                if (c != null) {
-                    c.requestFocus();
-                }   
-            }
-        };
-       
-    private static final ActionListener sharedActionListener
-        = new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                SwingUtilities.invokeLater(returnFocusRunnable);
-            }
-        };
 
     /** Shared mouse listener used for setting the border painting property
      * of the toolbar buttons and for invoking the popup menu.
@@ -623,7 +603,6 @@ import org.openide.util.lookup.ProxyLookup;
     private void processButton(AbstractButton button) {
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
-        button.addActionListener(sharedActionListener);
         button.setMargin(BUTTON_INSETS);
         if (button instanceof AbstractButton) {
             button.addMouseListener(sharedMouseListener);
