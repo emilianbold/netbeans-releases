@@ -22,11 +22,7 @@ package org.netbeans.modules.ruby.railsprojects;
 import java.io.File;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tor Norbye
