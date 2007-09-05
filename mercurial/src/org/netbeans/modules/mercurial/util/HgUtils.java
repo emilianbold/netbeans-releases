@@ -58,6 +58,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.Project;
 
 /**
  *
@@ -332,24 +333,33 @@ itor tabs #66700).
     }
     
    /**
-     * Returns path to Project Directory root
+     * Returns File object for Project Directory
      *
      * @param VCSContext
-     * @return String of Project Directory path
+     * @return File object of Project Directory
      */
     public static File getProjectFile(VCSContext context){
         if (context == null) return null;
-        Mercurial hg = Mercurial.getInstance();
-        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-        if (files == null || files.length == 0) return null;
-        
-        File root = files[0];
-        final ProjectManager projectManager = ProjectManager.getDefault();
-        for (;root != null; root = root.getParentFile()) {
-            FileObject rootFileObj = FileUtil.toFileObject(FileUtil.normalizeFile(root));
-            if (projectManager.isProject(rootFileObj)){
-                break;
-             }
+        Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
+        File root = null;
+        for (Node node : nodes) {
+            Node tmpNode = node;
+            Project project = (Project) tmpNode.getLookup().lookup(Project.class);
+
+            while (project == null) {
+                tmpNode = tmpNode.getParentNode();
+                if (tmpNode ==  null) {
+                    Mercurial.LOG.log(Level.FINE, "getParent(): No project for {0}",  // NOI18N
+                        node.toString());
+                    break;
+                }
+                project = (Project) tmpNode.getLookup().lookup(Project.class);
+            } 
+            if (project != null) {
+                FileObject fo = project.getProjectDirectory();
+                root = FileUtil.toFile(fo);
+                return root;
+            }
         }
         return root;
     }
