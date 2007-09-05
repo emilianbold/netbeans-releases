@@ -77,7 +77,7 @@ public abstract class RestSupport {
     public static final String TEST_RESBEANS_CSS = TEST_RESBEANS + ".css";
     public static final String REST_SERVLET_ADAPTOR = "ServletAdaptor";
     public static final String REST_SERVLET_ADAPTOR_CLASS = "com.sun.ws.rest.impl.container.servlet.ServletAdaptor";   
-    public static final String REST_SERVLET_ADAPTOR_MAPPING = "/restbean/*";
+    public static final String REST_SERVLET_ADAPTOR_MAPPING = "/resources/*";
     public static final String PARAM_WEB_RESOURCE_CLASS = "webresourceclass";
     public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";
     public static final String REST_API_JAR = "jsr311-api.jar";
