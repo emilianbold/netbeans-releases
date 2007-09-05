@@ -12,7 +12,7 @@
                 <!--attr name="templateCategory" stringvalue="web-services"/-->
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/EntityResources.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/RestService.png"/> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/> 
             </file>
             <file name="RestServicesFromPatterns">
                 <attr name="position" intvalue="400"/>
@@ -21,7 +21,7 @@
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.PatternResourcesIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/PatternResources.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/RestService.png"/> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/> 
             </file>
             <file name="RestClientStubs">
                 <attr name="position" intvalue="350"/>
@@ -30,7 +30,7 @@
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.ClientStubsIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/ClientStubs.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/RestService.png"/> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/> 
             </file>
             <file name="DefaultResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/DefaultResource.template">
                 <attr name="position" intvalue="0"/>
