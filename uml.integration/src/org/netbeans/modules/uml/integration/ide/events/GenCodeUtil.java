@@ -289,29 +289,30 @@ public final class GenCodeUtil
 	boolean isPrimitive = false;
 
 	ArrayList<String[]> refs;
-	if (classType instanceof IDerivationClassifier) {
+	if (classType instanceof IDerivationClassifier) 
+	{
 	    refs = getReferredCodeGenTypes(classType, container);
-	} else {
-	    String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(classType);
+	} 
+	else 
+        {
+	    IClassifier impClass = classType;
+	    IElement owner = classType.getOwner();
+            while ( (owner != null) && (owner instanceof IClassifier)) 
+	    {
+		impClass = (IClassifier)owner;
+		owner = impClass.getOwner();
+            }
+	    String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(impClass);
 	    if ( ! ( fqType != null && fqType.length == 2 && fqType[1] != null) ) {	
 		return null;
 	    }
 	    
-	    String fullClassName = fqType[1];
-	    int ind = fullClassName.indexOf('.');
-	    if (ind > 0)
-	    {
-		// nested class, only it outer most owner 
-		// is needed to be referred/imported
-		fullClassName = fullClassName.substring(0, ind); 
-		fqType[1] = fullClassName;
-	    }	   
 	    refs = new ArrayList<String[]>();
 	    if (! isNameCodeGenConflict(container, classType)) 
 	    {
 		refs.add(fqType);
 	    }
-	    isPrimitive = JavaClassUtils.isPrimitive(fullClassName);
+	    isPrimitive = JavaClassUtils.isPrimitive(fqType[1]);
 	}
 
 	boolean reffersTheType = true;
