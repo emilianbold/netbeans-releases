@@ -106,7 +106,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
                         PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class,
                             "LBL_LoginScreen_Username")), PROP_USERNAME) // NOI18N
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_Password"), // NOI18N
-                        PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class,
+                        PropertyEditorString.createTextFieldInstance(NbBundle.getMessage(LoginScreenCD.class,
                             "LBL_LoginScreen_Password")), PROP_PASSWORD) // NOI18N
                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_UsernameLabel"), // NOI18N
