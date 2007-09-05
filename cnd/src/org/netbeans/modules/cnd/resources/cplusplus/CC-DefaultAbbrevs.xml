@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
 <codetemplates>
         
     <codetemplate abbreviation="def"><code><![CDATA[#define ]]></code></codetemplate> 
-    <codetemplate abbreviation="inc"><code><![CDATA[#include ]]></code></codetemplate> 
+    <codetemplate abbreviation="inc"><code><![CDATA[#include]]></code></codetemplate> 
     <codetemplate abbreviation="ifd"><code><![CDATA[#ifdef ]]></code></codetemplate> 
     <codetemplate abbreviation="ifn"><code><![CDATA[#ifndef ]]></code></codetemplate> 
     <codetemplate abbreviation="eif"><code><![CDATA[#endif]]></code></codetemplate> 
