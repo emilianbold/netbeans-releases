@@ -53,7 +53,7 @@ public abstract class CsmUsingResolver {
         if (defaultResolver != null) {
             return defaultResolver;
         }
-        defaultResolver = (CsmUsingResolver) Lookup.getDefault().lookup(CsmUsingResolver.class);
+        defaultResolver = Lookup.getDefault().lookup(CsmUsingResolver.class);
         return defaultResolver == null ? EMPTY : defaultResolver;
     }
     

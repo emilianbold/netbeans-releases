@@ -48,7 +48,7 @@ public abstract class CsmFriendResolver {
         if (defaultResolver != null) {
             return defaultResolver;
         }
-        defaultResolver = (CsmFriendResolver) Lookup.getDefault().lookup(CsmFriendResolver.class);
+        defaultResolver = Lookup.getDefault().lookup(CsmFriendResolver.class);
         return defaultResolver == null ? EMPTY : defaultResolver;
     }
     
