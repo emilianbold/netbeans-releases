@@ -67,5 +67,11 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.createInvalidPreprocState(orig);
     }
 
+    public static List<String> extractSystemIncludePaths(APTPreprocHandler.State state) {
+        return APTHandlersSupportImpl.extractSystemIncludePaths(state);
+    }
 
+    public static List<String> extractUserIncludePaths(APTPreprocHandler.State state) {
+        return APTHandlersSupportImpl.extractUserIncludePaths(state);
+    }
 }

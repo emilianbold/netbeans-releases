@@ -338,6 +338,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return new StateImpl(this, cleanState);
         }
         
+        /*package*/ List<String> getSysIncludePaths() {
+            return this.systemIncludePaths;
+        }
+        
+        /*package*/ List<String> getUserIncludePaths() {
+            return this.userIncludePaths;
+        }        
     }
     
     ////////////////////////////////////////////////////////////////////////////

@@ -74,7 +74,19 @@ public class APTHandlersSupportImpl {
     public static APTPreprocHandler.State copyPreprocState(APTPreprocHandler.State orig) {
         return ((APTPreprocHandlerImpl.StateImpl)orig).copy();
     }
-
+    
+    public static List<String> extractSystemIncludePaths(APTPreprocHandler.State state) {
+        assert state != null;
+        List<String> sysPaths = ((APTPreprocHandlerImpl.StateImpl)state).getSysIncludePaths();
+        return sysPaths;
+    }
+    
+    public static List<String> extractUserIncludePaths(APTPreprocHandler.State state) {
+        assert state != null;
+        List<String> usrPaths = ((APTPreprocHandlerImpl.StateImpl)state).getUserIncludePaths();
+        return usrPaths;
+    } 
+    
     /*package*/ static APTIncludeHandler.State copyIncludeState(APTIncludeHandler.State inclState, boolean cleanState) {
         return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
     }
@@ -94,5 +106,15 @@ public class APTHandlersSupportImpl {
     /*package*/ static boolean isCleanedIncludeState(APTIncludeHandler.State inclState) {
         assert inclState != null;
         return ((APTIncludeHandlerImpl.StateImpl)inclState).isCleaned();
-    }      
+    }     
+
+    /*package*/ static List<String> extractSystemIncludePaths(APTIncludeHandler.State inclState) {
+        assert inclState != null;
+        return ((APTIncludeHandlerImpl.StateImpl)inclState).getSysIncludePaths();
+    }  
+    
+    /*package*/ static List<String> extractUserIncludePaths(APTIncludeHandler.State inclState) {
+        assert inclState != null;
+        return ((APTIncludeHandlerImpl.StateImpl)inclState).getUserIncludePaths();
+    }        
 }

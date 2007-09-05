@@ -175,6 +175,13 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             return new StateImpl(this, false, false);
         }
         
+        /*package*/ List<String> getSysIncludePaths() {
+            return APTHandlersSupportImpl.extractSystemIncludePaths(this.inclState);
+        }
+        
+        /*package*/ List<String> getUserIncludePaths() {
+            return APTHandlersSupportImpl.extractUserIncludePaths(this.inclState);
+        }        
         ////////////////////////////////////////////////////////////////////////
         // persistence support
 
