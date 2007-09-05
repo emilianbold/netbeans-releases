@@ -44,7 +44,7 @@ public class GsfEditorSettings extends Settings.AbstractInitializer {
     
     public static final Acceptor defaultAbbrevResetAcceptor = new Acceptor() {
           public final boolean accept(char ch) {
-              return !Character.isJavaIdentifierPart(ch) && ch != ':';
+              return !Character.isJavaIdentifierPart(ch) && ch != ':' && ch != '-';
           }
       };
 
