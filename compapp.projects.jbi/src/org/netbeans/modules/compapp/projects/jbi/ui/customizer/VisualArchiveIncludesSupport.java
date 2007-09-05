@@ -655,15 +655,22 @@ final class VisualArchiveIncludesSupport {
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
         } else {
-            AdministrationService adminService = new AdministrationService(
-                    jbiClassLoader, hostName, port, userName, password);
-            if (adminService != null) {
-                adminService.clearJBIComponentStatusCache(JBIComponentType.SERVICE_ENGINE);
-                adminService.clearJBIComponentStatusCache(JBIComponentType.BINDING_COMPONENT);
-                List<JBIComponentStatus> compList = new ArrayList<JBIComponentStatus>();
-                compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.SERVICE_ENGINE));
-                compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.BINDING_COMPONENT));
-                updateComponentTable(compList);
+            try {
+                AdministrationService adminService = new AdministrationService(
+                        jbiClassLoader, hostName, port, userName, password);
+                if (adminService != null) {
+                    adminService.clearJBIComponentStatusCache(JBIComponentType.SERVICE_ENGINE);
+                    adminService.clearJBIComponentStatusCache(JBIComponentType.BINDING_COMPONENT);
+                    List<JBIComponentStatus> compList = new ArrayList<JBIComponentStatus>();
+                    compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.SERVICE_ENGINE));
+                    compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.BINDING_COMPONENT));
+                    updateComponentTable(compList);
+                }
+            } catch (Exception e) {
+                String msg = e.getMessage();  
+                NotifyDescriptor d =
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
             }
         }
     }
