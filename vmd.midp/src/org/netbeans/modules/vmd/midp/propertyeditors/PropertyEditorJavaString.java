@@ -161,7 +161,7 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
-            JLabel label = new JLabel(getLabelName() + ':'); // NOI18N
+            JLabel label = new JLabel(getLabelName());
             constraints.insets = new Insets(12, 12, 3, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
             constraints.gridx = 0;
