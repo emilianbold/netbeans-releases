@@ -105,10 +105,6 @@ public class WebServiceHandler implements AnnotationHandler{
                 service = new QName(tns, svcName);
 
                 portName = ws.getStringValue(PROP_PORT_NAME);
-                if ((portName == null) || "".equals(portName)){
-                    usedDefaultName = true;
-                    portName = className + "Port" ; // No I18N
-                }
 
                 portTypeName = ws.getStringValue(PROP_NAME);
                 if ((portTypeName == null) || ("".equals(portTypeName))){
@@ -121,9 +117,27 @@ public class WebServiceHandler implements AnnotationHandler{
                     if (portType == null){
                         usedDefaultName = true;
                         portType = new QName(tns, className);
+                        
+                        // PROP_PORT_NAME                        
+                        if ((portName == null) || "".equals(portName)){
+                            usedDefaultName = true;
+                            portName = className + "Port" ; // No I18N
+                        }
+                    } else {
+                        // PROP_PORT_NAME
+                        if ((portName == null) || "".equals(portName)){
+                            usedDefaultName = true;
+                            portName = className + "Port" ; // No I18N
+                        }                    
                     }
                 } else {
                     portType = new QName(tns, portTypeName);
+                    // Default PROP_PORT_NAME when portType is not default for 
+                    // 'PortType' is 'PortTypePort'
+                    if ((portName == null) || "".equals(portName)){
+                        usedDefaultName = true;
+                        portName = portTypeName + "Port" ; // No I18N
+                    }                    
                 }
 
                 Endpoint ep = new Endpoint(Endpoint.EndPointType.Provider, portName, portType, service );
