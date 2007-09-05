@@ -26,9 +26,12 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,15 +74,39 @@ public class WLStartServer extends StartServer {
      */
     private static final int SERVER_CHECK_TIMEOUT = 10000;
 
+    private static final int AVERAGE_SERVER_INSTANCES = 2;
+
+    private static Set<String> debuggingUris;
+
     /**
      * The server's deployment manager, to be exact the plugin's wrapper for it
      */
-    private WLDeploymentManager dm;
+    private final WLDeploymentManager dm;
 
     /**
      * WL server process instance
      */
     private Process serverProcess;
+
+    private static synchronized void addDebugModeUri(String uri) {
+        if (debuggingUris == null) {
+            debuggingUris = new HashSet<String>(AVERAGE_SERVER_INSTANCES);
+        }
+
+        debuggingUris.add(uri);
+    }
+
+    private static synchronized void removeDebugModeUri(String uri) {
+        if (debuggingUris == null) {
+            return;
+        }
+
+        debuggingUris.remove(uri);
+    }
+
+    private static synchronized boolean existsDebugModeUri(String uri) {
+        return debuggingUris != null && debuggingUris.contains(uri);
+    }
 
     /**
      * Creates a new instance of WLStartServer
@@ -118,16 +145,11 @@ public class WLStartServer extends StartServer {
                 serverProgress), 0, Thread.NORM_PRIORITY);
 
         // set the debuggable marker
-        isDebuggable = true;
+        addDebugModeUri(dm.getURI());
 
         // return the progress object
         return serverProgress;
     }
-
-    /**
-     * Marker describing whether the server is started in debug mode
-     */
-    private boolean isDebuggable;
 
     /**
      * Specifies whether the server instance is started in debug mode. The
@@ -139,7 +161,13 @@ public class WLStartServer extends StartServer {
      * @return whether the instance is started in debug mode
      */
     public boolean isDebuggable(Target target) {
-        return isDebuggable;
+        if (!existsDebugModeUri(dm.getURI())) {
+            return false;
+        }
+        if (!isRunning()) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -201,7 +229,7 @@ public class WLStartServer extends StartServer {
         RequestProcessor.getDefault().post(new WLStopRunnable(serverProgress), 0, Thread.NORM_PRIORITY);
 
         // set the debugguable marker to false as the server is stopped
-        isDebuggable = false;
+        removeDebugModeUri(dm.getURI());
 
         // return the progress object
         return serverProgress;
@@ -229,7 +257,7 @@ public class WLStartServer extends StartServer {
 
         // set the debuggble marker to false as we do not start the server in
         // debug mode
-        isDebuggable = false;
+        removeDebugModeUri(dm.getURI());
 
         // return the progress object
         return serverProgress;
