@@ -58,7 +58,7 @@ public class ImportRegistrationHelper {
     }
 
     private void addRecursiveSchemaImports(SchemaModel imp_model) {
-        addRecursiveSchemaImports(imp_model.getSchema());
+       /* addRecursiveSchemaImports(imp_model.getSchema());*/
     }
 
     private void addRecursiveSchemaImports(Schema schema) {
@@ -122,12 +122,14 @@ public class ImportRegistrationHelper {
                     }
                 }
             }
+/*
             org.netbeans.modules.xml.wsdl.model.Types types = defs.getTypes();
             if (types != null) {
                 for (Schema s : types.getSchemas()) {
                     addRecursiveSchemaImports(s);
                 }
             }
+*/
         }
     }
 
