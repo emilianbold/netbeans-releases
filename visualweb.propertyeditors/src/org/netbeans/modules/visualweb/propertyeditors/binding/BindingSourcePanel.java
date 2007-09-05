@@ -389,8 +389,8 @@ public class BindingSourcePanel extends JPanel {
                 sb.append(pd.getName());
                 if (bold) {
                     sb.append("</b>"); //NOI18N
-                }
-                sb.append(" &nbsp; <font size=\"-1\"><i>"); //NOI18N
+                }                
+                sb.append(" &nbsp; <font><i>"); //NOI18N
                 sb.append(cn);
                 sb.append("</i></font></html>"); //NOI18N
                 this.setText(sb.toString());

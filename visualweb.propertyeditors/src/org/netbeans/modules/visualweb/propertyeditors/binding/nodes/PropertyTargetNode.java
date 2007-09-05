@@ -131,8 +131,8 @@ public class PropertyTargetNode extends BindingTargetNode {
         }
         if (enableNode) {
             sb.append("</b>");  //NOI18N
-        }
-        sb.append(" &nbsp; <font size=\"-1\"><i>");  //NOI18N
+        }        
+        sb.append(" &nbsp; <font><i>");  //NOI18N
         sb.append(getTargetTypeDisplayName());
         sb.append("</i></font>");  //NOI18N
         if (!enableNode) {
