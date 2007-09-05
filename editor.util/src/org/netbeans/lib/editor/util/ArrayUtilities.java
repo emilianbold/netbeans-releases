@@ -262,4 +262,60 @@ public final class ArrayUtilities {
 
     }
 
+    /**
+     * Searches for the <code>key</code> in the <code>array</code>.
+     * 
+     * @param array the array to search in
+     * @param key the number to search for
+     * 
+     * @return The index of the <code>key</code> in the <code>array</code>. For
+     *   details see {@link #binarySearch(int[], int, int, int)}.
+     * @since 1.18
+     */
+    public static int binarySearch(int[] array, int key) {
+        return binarySearch(array, 0, array.length - 1, key);
+    }
+    
+    /**
+     * Searches for the <code>key</code> in the <code>array</code> in the area
+     * between <code>start</code> and <code>end</code>.
+     * 
+     * @param array the array to search in
+     * @param start the first index to look at
+     * @param end the last index to look at
+     * @param key the number to search for
+     * 
+     * @return The index of the search key, if it is contained in the array;
+     *	       otherwise, <tt>(-(<i>insertion point</i>) - 1)</tt>.  The
+     *	       <i>insertion point</i> is defined as the point at which the
+     *	       key would be inserted into the array: the index of the first
+     *	       element greater than the key, or <tt>array.length</tt>, if all
+     *	       elements in the array are less than the specified key.  Note
+     *	       that this guarantees that the return value will be &gt;= 0 if
+     *	       and only if the key is found.
+     * @since 1.18
+     */
+    public static int binarySearch(int[] array, int start, int end, int key) {
+        assert start >= 0 && start < array.length : "Invalid start index " + start + " (lenght = " + array.length + ")"; //NOI18N
+        assert end >= start && end < array.length : "Invalid end index " + end + " (start = " + start + ", lenght = " + array.length + ")"; //NOI18N
+        
+	int low = start;
+	int high = end;
+
+	while (low <= high) {
+	    int mid = (low + high) >> 1;
+	    int midVal = array[mid];
+	    int cmp = midVal - key;
+
+	    if (cmp < 0) {
+		low = mid + 1;
+            } else if (cmp > 0) {
+		high = mid - 1;
+            } else {
+		return mid; // key found
+            }
+	}
+        
+	return -(low + 1);  // key not found
+    }
 }
