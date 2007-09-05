@@ -21,4 +21,8 @@ Microsystems, Inc. All Rights Reserved.
 <project name="org.netbeans.modules.visualweb.webui.jsf.defaulttheme" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project com.sun.rave.webui.jsf.themes.defaulttheme.</description>
     <import file="../../../nbbuild/templates/projectized.xml"/>
+    <target name="common-init" depends="default.init">
+	<mkdir dir="build/external"/>
+	<unzip src="../external/woodstock-4.1.zip" dest="build/external"/>
+    </target>
 </project>
