@@ -1,0 +1,58 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+<#if methodTearDown?? && methodTearDown>
+import org.junit.After;
+</#if>
+<#if classTearDown?? && classTearDown>
+import org.junit.AfterClass;
+</#if>
+<#if methodSetUp?? && methodSetUp>
+import org.junit.Before;
+</#if>
+<#if classSetUp?? && classSetUp>
+import org.junit.BeforeClass;
+</#if>
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} {
+
+    public ${name}() {
+    }
+
+<#if classSetUp?? && classSetUp>
+    @BeforeClass
+    public static void setUpClass() {
+    }
+
+</#if>
+<#if classTearDown?? && classTearDown>
+    @AfterClass
+    public static void tearDownClass() {
+    }
+
+</#if>
+<#if methodSetUp?? && methodSetUp>
+    @Before
+    public void setUp() {
+    }
+
+</#if>
+<#if methodTearDown?? && methodTearDown>
+    @After
+    public void tearDown() {
+    }
+
+</#if>
+}

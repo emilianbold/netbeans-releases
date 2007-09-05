@@ -313,27 +313,10 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                            String name,
                                            TypeElement srcClass,
                                            List<ExecutableElement> srcMethods) {
-        List<? extends Tree> initMembers = generateInitMembers(workingCopy);
         List<MethodTree> testMethods = generateTestMethods(srcClass,
                                                            srcMethods,
                                                            workingCopy);
-        List<? extends Tree> members;
-        if (initMembers.isEmpty() && testMethods.isEmpty()) {
-            members = Collections.<Tree>emptyList();
-        } else if (initMembers.isEmpty()) {
-            members = testMethods;
-        } else if (testMethods.isEmpty()) {
-            members = initMembers;
-        } else {
-            List<Tree> allMembers = new ArrayList<Tree>(
-                                initMembers.size() + testMethods.size());
-            allMembers.addAll(initMembers);
-            allMembers.addAll(testMethods);
-
-            members = allMembers;
-        }
-
-        return composeNewTestClass(workingCopy, name, members);
+        return composeNewTestClass(workingCopy, name, testMethods);
     }
 
     /**

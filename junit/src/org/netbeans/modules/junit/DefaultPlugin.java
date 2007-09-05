@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -113,6 +114,22 @@ public final class DefaultPlugin extends JUnitPlugin {
     
     /** */
     private JUnitVersion junitVer;
+
+    /** name of FreeMarker template property - generate {@code &#64;BeforeClass} method? */
+    private static final String templatePropBeforeClass = "classSetUp"; //NOI18N
+    /** name of FreeMarker template property - generate {@code &#64;AfterClass} method? */
+    private static final String templatePropAfterClass = "classTearDown";//NOI18N
+    /** name of FreeMarker template property - generate {@code &#64;Before} method? */
+    private static final String templatePropBefore = "setUp";           //NOI18N
+    /** name of FreeMarker template property - generate {@code &#64;After} method? */
+    private static final String templatePropAfter = "tearDown";         //NOI18N
+    /** name of FreeMarker template property - list of class names */
+    private static final String templatePropClassNames = "classNames";  //NOI18N
+    /**
+     * name of FreeMarker template property - list of class names,
+     * each with a suffix <code>&quot;.class&quot;</code>
+     */
+    private static final String templatePropClasses = "classes";        //NOI18N
     
     /** */
     private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
@@ -698,28 +715,46 @@ public final class DefaultPlugin extends JUnitPlugin {
         
         CreationResults results;
         try {
+            final String templateId;
+            final String suiteTemplateId;
+            boolean forTestSuite
+                    = (filesToTest != null)
+                      && (filesToTest.length != 0)
+                      && ((filesToTest.length > 1) || !filesToTest[0].isData());
+            switch (junitVer) {
+                case JUNIT3:
+                    templateId = "PROP_junit3_testClassTemplate";       //NOI18N
+                    suiteTemplateId = forTestSuite
+                                      ? "PROP_junit3_testSuiteTemplate" //NOI18N
+                                      : null;
+                    break;
+                case JUNIT4:
+                    templateId = "PROP_junit4_testClassTemplate";       //NOI18N
+                    suiteTemplateId = forTestSuite
+                                      ? "PROP_junit4_testSuiteTemplate" //NOI18N
+                                      : null;
+                    break;
+                default:
+                    assert false;
+                    templateId = null;
+                    suiteTemplateId = null;
+                    break;
+            }
+            DataObject doTestTempl = (templateId != null)
+                                     ? loadTestTemplate(templateId)
+                                     : null;
+            if (doTestTempl == null) {
+                return null;
+            }
+            DataObject doSuiteTempl = (suiteTemplateId != null)
+                                      ? loadTestTemplate(suiteTemplateId)
+                                      : null;
+            if (forTestSuite && (doSuiteTempl == null)) {
+                return null;
+            }
+            
             if ((filesToTest == null) || (filesToTest.length == 0)) {
                 //XXX: Not documented that filesToTest may be <null>
-                
-                final String templateId;
-                switch (junitVer) {
-                    case JUNIT3:
-                        templateId = "PROP_junit3_emptyTestClassTemplate";//NOI18N
-                        break;
-                    case JUNIT4:
-                        templateId = "PROP_junit4_emptyTestClassTemplate";//NOI18N
-                        break;
-                    default:
-                        assert false;
-                        templateId = null;
-                        break;
-                }
-                DataObject doTestTempl = (templateId != null)
-                                         ? loadTestTemplate(templateId)
-                                         : null;
-                if (doTestTempl == null) {
-                    return null;
-                }
                 
                 String testClassName = (String) params.get(CreateTestParam.CLASS_NAME);
                 assert testClassName != null;
@@ -733,30 +768,11 @@ public final class DefaultPlugin extends JUnitPlugin {
                 }
                 
             } else {
-                final String templateId;
-                switch (junitVer) {
-                    case JUNIT3:
-                        templateId = "PROP_junit3_testClassTemplate";   //NOI18N
-                        break;
-                    case JUNIT4:
-                        templateId = "PROP_junit4_testClassTemplate";   //NOI18N
-                        break;
-                    default:
-                        assert false;
-                        templateId = null;
-                        break;
-                }
-                DataObject doTestTempl = (templateId != null)
-                                         ? loadTestTemplate(templateId)
-                                         : null;
-                if (doTestTempl == null) {
-                    return null;
-                }
-                
                 ClassPath testClassPath = ClassPathSupport.createClassPath(
                                                 new FileObject[] {targetRoot});
+                Map<String, ? extends Object> templateParams = createTemplateParams(params);
                 
-                if ((filesToTest.length == 1) && filesToTest[0].isData()) {
+                if (!forTestSuite) {
                     String testClassName = (String) params.get(CreateTestParam.CLASS_NAME);
                     if (testClassName == null) {
                         String srcClassName
@@ -769,6 +785,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 filesToTest[0],
                                 testClassName,
                                 testCreator,
+                                templateParams,
                                 doTestTempl,
                                 testClassPath,
                                 false,             //do not skip any classes
@@ -779,26 +796,6 @@ public final class DefaultPlugin extends JUnitPlugin {
                         results = new CreationResults(1);
                     }
                 } else {
-                    final String suiteTemplateId;
-                    switch (junitVer) {
-                        case JUNIT3:
-                            suiteTemplateId = "PROP_junit3_testSuiteTemplate";  //NOI18N
-                            break;
-                        case JUNIT4:
-                            suiteTemplateId = "PROP_junit4_testSuiteTemplate";  //NOI18N
-                            break;
-                        default:
-                            assert false;
-                            suiteTemplateId = null;
-                            break;
-                    }
-                    DataObject doSuiteTempl = (suiteTemplateId != null)
-                                              ? loadTestTemplate(suiteTemplateId)
-                                              : null;
-                    if (doSuiteTempl == null) {
-                        return null;
-                    }
-                    
                     results = new CreationResults();
 
                     // go through all nodes
@@ -806,6 +803,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                         try {
                             results.combine(createTests(fileToTest,
                                                         testCreator,
+                                                        templateParams,
                                                         doTestTempl,
                                                         doSuiteTempl,
                                                         testClassPath,
@@ -875,6 +873,39 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
         }
         return createdFiles;
+    }
+
+    /**
+     * Create a map of FreeMaker template parameters from a map
+     * of {@code CreateTestParam}s.
+     */
+    public static final Map<String, ? extends Object> createTemplateParams(
+                                          Map<CreateTestParam, Object> params) {
+        Map<String,Boolean> result = new HashMap<String,Boolean>(7);
+
+        Object value;
+
+        value = params.get(CreateTestParam.INC_CLASS_SETUP);
+        if (value instanceof Boolean) {
+            result.put(templatePropBeforeClass, Boolean.class.cast(value));
+        }
+
+        value = params.get(CreateTestParam.INC_CLASS_TEAR_DOWN);
+        if (value instanceof Boolean) {
+            result.put(templatePropAfterClass, Boolean.class.cast(value));
+        }
+
+        value = params.get(CreateTestParam.INC_SETUP);
+        if (value instanceof Boolean) {
+            result.put(templatePropBefore, Boolean.class.cast(value));
+        }
+
+        value = params.get(CreateTestParam.INC_TEAR_DOWN);
+        if (value instanceof Boolean) {
+            result.put(templatePropAfter, Boolean.class.cast(value));
+        }
+
+        return result;
     }
 
     /**
@@ -1517,7 +1548,9 @@ public final class DefaultPlugin extends JUnitPlugin {
         try {
             DataFolder targetFolderDataObj = DataFolder.findFolder(targetRoot);
             testDataObj = templateDataObj.createFromTemplate(
-                                            targetFolderDataObj, testClassName);
+                                        targetFolderDataObj,
+                                        testClassName,
+                                        Collections.<String,Object>emptyMap());
 
             /* fill in setup etc. according to dialog settings */
             FileObject testFileObj = testDataObj.getPrimaryFile();
@@ -1536,6 +1569,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 FileObject sourceFile,
                 String testClassName,
                 final TestCreator testCreator,
+                final Map<String, ? extends Object> templateParams,
                 DataObject templateDataObj,
                 ClassPath testClassPath,
                 boolean skipNonTestable,
@@ -1598,7 +1632,8 @@ public final class DefaultPlugin extends JUnitPlugin {
                     if (testFile == null) {
                         testDataObj = createTestClass(testClassPath,
                                                       testResourceName,
-                                                      templateDataObj);
+                                                      templateDataObj,
+                                                      templateParams);
                         testFile = testDataObj.getPrimaryFile();
                     }
                     
@@ -1629,6 +1664,7 @@ public final class DefaultPlugin extends JUnitPlugin {
     private static CreationResults createTests(
                 final FileObject srcFileObj,
                 final TestCreator testCreator,
+                final Map<String, ? extends Object> templateParams,
                 DataObject doTestT,
                 DataObject doSuiteT,
                 final ClassPath testClassPath,
@@ -1650,6 +1686,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 }
                 results.combine(createTests(childFileObj,
                                             testCreator,
+                                            templateParams,
                                             doTestT,
                                             doSuiteT,
                                             testClassPath,
@@ -1668,6 +1705,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 createSuiteTest(srcFileObj,
                                 (String) null,
                                 testCreator,
+                                templateParams,
                                 doSuiteT,
                                 testClassPath,
                                 mySuite,
@@ -1678,6 +1716,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             results = createSingleTest(srcFileObj,
                                        (String) null, //use the default clsName
                                        testCreator,
+                                       templateParams,
                                        doTestT,
                                        testClassPath,
                                        true,
@@ -1696,6 +1735,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             FileObject folder,
             String suiteName,
             final TestCreator testCreator,
+            final Map<String, ? extends Object> templateParams,
             DataObject templateDataObj,
             ClassPath testClassPath,
             List<String> classesToInclude,
@@ -1715,6 +1755,14 @@ public final class DefaultPlugin extends JUnitPlugin {
                                ? pkg + '/' + suiteName
                                : TestUtil.convertPackage2SuiteName(pkg);
 
+        String classNames = makeListOfClasses(classesToInclude, null);
+        String classes = makeListOfClasses(classesToInclude, ".class"); //NOI18N
+
+        final Map<String, Object> suiteTemplParams
+                = new HashMap<String, Object>(templateParams);
+        suiteTemplParams.put(templatePropClassNames, classNames);
+        suiteTemplParams.put(templatePropClasses,    classes);
+
         try {
             /* find or create the test class DataObject: */
             DataObject testDataObj = null;
@@ -1724,16 +1772,17 @@ public final class DefaultPlugin extends JUnitPlugin {
             if (testFile == null) {
                 testDataObj = createTestClass(testClassPath,
                                               fullSuiteName,
-                                              templateDataObj);
+                                              templateDataObj,
+                                              suiteTemplParams);
                 testFile = testDataObj.getPrimaryFile();
             }
             
-            List<String> processedClasses;
-            JavaSource testSrc = JavaSource.forFileObject(testFile);
+//            List<String> processedClasses;
+//            JavaSource testSrc = JavaSource.forFileObject(testFile);
             try {
-                processedClasses = testCreator.createTestSuite(classesToInclude,
-                                                               testSrc,
-                                                               isNew);
+//                processedClasses = testCreator.createTestSuite(classesToInclude,
+//                                                               testSrc,
+//                                                               isNew);
                 if (testDataObj == null) {
                     testDataObj = DataObject.find(testFile);
                 }
@@ -1744,17 +1793,56 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
 
             // add the suite class to the list of members of the parent
-            if ((parentSuite != null) && !processedClasses.isEmpty()) {
-                for (String simpleClassName : processedClasses) {
-                    parentSuite.add(dotPkg.length() != 0
-                                    ? dotPkg + '.' + simpleClassName
-                                    : simpleClassName);
-                }
-            }
+//            if ((parentSuite != null) && !processedClasses.isEmpty()) {
+//                for (String simpleClassName : processedClasses) {
+//                    parentSuite.add(dotPkg.length() != 0
+//                                    ? dotPkg + '.' + simpleClassName
+//                                    : simpleClassName);
+//                }
+//            }
             return testDataObj;
         } catch (IOException ioe) {
             throw new CreationError(ioe);
         }
+    }
+
+    /**
+     * Makes a string contaning comma-separated list of the given names.
+     * If the {@code suffix} parameter is non-{@code null}, each of the given
+     * names is appended a given suffix.
+     * <p>
+     * Examples:
+     * <pre>
+     *     makeListOfClasses(<"Alpha", "Beta", "Gamma">, null)
+     *         =&gt; "Alpha,Beta,Gamma"
+     *     makeListOfClasses(<"Alpha", "Beta", "Gamma">, ".class")
+     *         =&gt; "Alpha.class,Beta.class,Gamma.class"
+     * </pre>
+     */
+    private static final String makeListOfClasses(final List<String> clsNames,
+                                                  final String suffix) {
+        if (clsNames.isEmpty()) {
+            return "";                                                  //NOI18N
+        }
+
+        if (clsNames.size() == 1) {
+            return (suffix == null) ? clsNames.get(0)
+                                    : clsNames.get(0) + suffix;
+        }
+
+        StringBuilder buf = new StringBuilder(128);
+        boolean first = true;
+        for (String clsName : clsNames) {
+            if (!first) {
+                buf.append(',');
+            }
+            buf.append(clsName);
+            if (suffix != null) {
+                buf.append(suffix);
+            }
+            first = false;
+        }
+        return buf.toString();
     }
 
     /**
@@ -1765,6 +1853,22 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 final FileObject targetFolder,
                                 final String suiteName,
                                 final Map<CreateTestParam, Object> params) {
+        return createSuiteTest(targetRootFolder,
+                               targetFolder,
+                               suiteName,
+                               params,
+                               createTemplateParams(params));
+    }
+
+    /**
+     *
+     */
+    public DataObject createSuiteTest(
+                                final FileObject targetRootFolder,
+                                final FileObject targetFolder,
+                                final String suiteName,
+                                final Map<CreateTestParam, Object> params,
+                                final Map<String, ? extends Object> templateParams) {
         TestCreator testCreator = new TestCreator(params, junitVer);
         ClassPath testClassPath = ClassPathSupport.createClassPath(
                 new FileObject[] {targetRootFolder});
@@ -1795,6 +1899,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             return createSuiteTest(targetFolder,
                                    suiteName,
                                    testCreator,
+                                   templateParams,
                                    doSuiteTempl,
                                    testClassPath,
                                    new LinkedList<String>(testClassNames),
@@ -1810,7 +1915,9 @@ public final class DefaultPlugin extends JUnitPlugin {
     private static DataObject createTestClass(
             ClassPath cp,
             String testClassName,
-            DataObject templateDataObj) throws DataObjectNotFoundException,
+            DataObject templateDataObj,
+            final Map<String, ? extends Object> templateParams)
+                                        throws DataObjectNotFoundException,
                                                IOException {
         
         assert cp.getRoots().length == 1;
@@ -1828,7 +1935,8 @@ public final class DefaultPlugin extends JUnitPlugin {
         // instantiate template into the package
         return templateDataObj.createFromTemplate(          //IOException
                     DataFolder.findFolder(root),
-                    clazz);
+                    clazz,
+                    templateParams);
     }
 
     /**

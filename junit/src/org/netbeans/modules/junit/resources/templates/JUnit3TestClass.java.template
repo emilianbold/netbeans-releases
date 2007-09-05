@@ -1,0 +1,34 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import junit.framework.TestCase;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends TestCase {
+    
+    public ${name}(String testName) {
+        super(testName);
+    }            
+
+<#if methodSetUp?? && methodSetUp>
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+</#if>
+<#if methodTearDown?? && methodTearDown>
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+</#if>
+}

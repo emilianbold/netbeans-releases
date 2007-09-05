@@ -1,0 +1,23 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
+/**
+ *
+ * @author ${user}
+ */
+<#-- classNames:  "FooA,FooB" -->
+<#-- classes:     "FooA.class,FooB.class" -->
+@RunWith(Suite.class)
+@Suite.SuiteClasses({${classes}})
+public class ${name} {
+
+}
