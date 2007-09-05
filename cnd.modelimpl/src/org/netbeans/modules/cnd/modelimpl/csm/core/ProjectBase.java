@@ -93,7 +93,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             this.globalNamespaceUID = null;
         }
     }
-    
+
     private void init(ModelImpl model, Object platformProject) {
         this.model = model;
         this.platformProject = platformProject;
@@ -750,6 +750,16 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         APTPreprocHandler.State state = getPreprocState(file);
         preprocHandler = restorePreprocHandler(file, preprocHandler, state);
         return preprocHandler;
+    }
+    
+    public final APTPreprocHandler.State getPreprocState(FileImpl fileImpl) {
+        APTPreprocHandler.State state = null;
+        FileContainer fc = getFileContainer();
+        if (fc != null) {
+            File file = fileImpl.getBuffer().getFile();
+            state = fc.getPreprocState(file);
+        }
+        return state;
     }
     
     /**
