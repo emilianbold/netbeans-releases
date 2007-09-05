@@ -33,6 +33,7 @@ import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCrea
 import org.netbeans.modules.visualweb.dataconnectivity.explorer.RowSetBeanCreateInfoSet;
 
 import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.Result;
 import java.awt.datatransfer.DataFlavor;
@@ -193,6 +194,10 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 return super.beansCreatedSetup(designBeans);
             }
             
+             // remove unused data provider that was created
+            final DesignBean deleteMeBean = designBeans[0];
+            DesignContext dc = deleteMeBean.getDesignContext();
+            dc.deleteBean(deleteMeBean);
             return null;
         }
         
