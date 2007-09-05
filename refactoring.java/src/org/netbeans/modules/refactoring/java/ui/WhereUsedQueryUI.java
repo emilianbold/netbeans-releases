@@ -95,7 +95,11 @@ public class WhereUsedQueryUI implements RefactoringUI {
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
         if (panel.getScope()==WhereUsedPanel.Scope.ALL) {
-            query.getContext().add(RetoucheUtils.getClasspathInfoFor(element));
+            if (kind==ElementKind.METHOD && panel.isMethodFromBaseClass()) {
+                query.getContext().add(RetoucheUtils.getClasspathInfoFor(panel.getBaseMethod()));
+            } else {
+                query.getContext().add(RetoucheUtils.getClasspathInfoFor(element));
+            }
         } else {
             ClasspathInfo info = query.getContext().lookup(ClasspathInfo.class);
             Project p = FileOwnerQuery.getOwner(element.getFileObject());
