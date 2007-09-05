@@ -176,7 +176,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="theme-default-green.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-green.xml"/>
             <file name="theme-default-gray.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-gray.xml"/>
             <file name="woodstock-theme-default.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/woodstock-theme-default.xml"/>
-            <file name="ejbsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/ejbsupport-designtime.xml"/>
             <!-- Deprecated libraries below for backward compatible -->
             <file name="jsfsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsfsupport-designtime.xml"/>
             <file name="jsfsupport-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsfsupport-runtime.xml"/>
