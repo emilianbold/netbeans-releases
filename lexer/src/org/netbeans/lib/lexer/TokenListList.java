@@ -243,8 +243,24 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
         return tokenLists.size();
     }
 
+    /**
+     * Find the previous sections with at least one token.
+     * <br/>
+     * Force creation of token lists below the offset if they do not exist yet.
+     */
     public int findPreviousNonEmptySectionIndex(int offset) {
         int high = sizeCurrent() - 1;
+        if (!complete) {
+            if (high == -1) {
+                getOrNull(0); // Force init of first item
+                return findPreviousNonEmptySectionIndex(offset);
+            }
+            TokenList<?> tokenList = get(high); // Should be non-null
+            if (tokenList.endOffset() < offset) {
+                while ((tokenList = getOrNull(++high)) != null && tokenList.endOffset() < offset) { }
+                return findPreviousNonEmptySectionIndex(offset);
+            }
+        }
         int low = 0;
         while (low <= high) {
             int mid = (low + high) >> 1;

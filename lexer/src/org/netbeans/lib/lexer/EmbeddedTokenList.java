@@ -311,28 +311,19 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         int endOffset = tokenStartOffset + tokenText.length()
             - embedding.endSkipLength();
         
-        TokenList<?> prevSection;
         if (embedding.joinSections()) {
                 TokenListList tll = tokenHierarchyOperation().tokenListList(languagePath());
                 int prevSectionIndex = tll.findPreviousNonEmptySectionIndex(relexOffset);
-                prevSection = (prevSectionIndex >= 0)
+                TokenList<?> prevSection = (prevSectionIndex >= 0)
                         ? tll.get(prevSectionIndex)
                         : null;
                 if (tokenIndex == 0 && prevSection != null) {
                     relexState = prevSection.state(prevSection.tokenCount() - 1);
                 }
-
-        } else { // Not joining sections
-            prevSection = null;
         }
                 
-        // Do not need to update offset - clients
-        // (constructor or token list updater) call updateStartOffset()
-        // before calling this method
-        @SuppressWarnings("unchecked")
-        TokenList<T> prevSectionT = (TokenList<T>)prevSection;
-        return new EmbeddedLexerInputOperation<T>(this, tokenIndex, relexState, tokenText,
-                tokenStartOffset, relexOffset, endOffset, prevSectionT);
+        return new TextLexerInputOperation<T>(this, tokenIndex, relexState, tokenText,
+                tokenStartOffset, relexOffset, endOffset);
     }
 
     public boolean isFullyLexed() {

@@ -512,13 +512,9 @@ public final class TokenHierarchyUpdate {
 //                                tokenListList.languagePath() + " is not fully lexed"); // NOI18N
 //                    }
                     TokenList<?> lastTokenList;
-                    if (tokenListList.size() == 0 
-                            || (lastTokenList = tokenListList.getExistingOrNull(tokenListList.size() - 1)) == null
-                            || (lastTokenList.endOffset() < tokenList.endOffset())
-                    ) {
-                        lexedBeyondModPoint = Boolean.FALSE;
-                        
-                    }
+                    lexedBeyondModPoint = tokenListList.size() > 0 
+                            && (lastTokenList = tokenListList.getExistingOrNull(tokenListList.size() - 1)) != null
+                            && (lastTokenList.endOffset() >= tokenList.endOffset());
                 }
             }
             return lexedBeyondModPoint.booleanValue();
