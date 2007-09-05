@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.navigation.actions;
 
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.navigation.JavaHierarchy;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -38,8 +39,7 @@ public final class InspectHierarchyAction extends AbstractNavigationAction {
     }
     
     protected void performAction(Node[] activatedNodes) {
-        DataObject dataObject = 
-                (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+        DataObject dataObject = getDataObject(activatedNodes); 
 
         if (dataObject != null) {
             final FileObject fileObject = dataObject.getPrimaryFile();
@@ -65,4 +65,22 @@ public final class InspectHierarchyAction extends AbstractNavigationAction {
     protected Class[] cookieClasses() {
         return new Class[] { DataObject.class };
     }
+    
+    @Override
+    public boolean enable(Node nodes[]) {
+        if ( OpenProjects.getDefault().getOpenProjects().length == 0) {
+            return false;
+        }
+        return getDataObject(nodes) != null;
+    }
+    
+    private DataObject getDataObject(Node nodes[]) {
+        
+        if ( nodes == null || nodes.length == 0) {
+            return null;
+        }
+        
+        return nodes[0].getLookup().lookup(DataObject.class);
+    }
+    
 }

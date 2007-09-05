@@ -22,6 +22,7 @@ package org.netbeans.modules.java.navigation.actions;
 import com.sun.source.util.TreePath;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import org.netbeans.api.editor.EditorRegistry;
 
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
@@ -53,6 +54,7 @@ import javax.lang.model.type.TypeMirror;
 
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.ui.OpenProjects;
 
 /**
  * This actions shows the hierarchy of the type of the element under the caret
@@ -81,6 +83,15 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
+    public boolean isEnabled() {
+        if ( EditorRegistry.lastFocusedComponent() == null ||
+             !EditorRegistry.lastFocusedComponent().isShowing() ) {
+             return false;
+        }
+        return OpenProjects.getDefault().getOpenProjects().length > 0;        
+    }
+    
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
         if (target == null) {
             Toolkit.getDefaultToolkit().beep();

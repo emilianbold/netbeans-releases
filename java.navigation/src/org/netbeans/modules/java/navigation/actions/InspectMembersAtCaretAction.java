@@ -53,6 +53,9 @@ import javax.lang.model.type.TypeMirror;
 
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.windows.TopComponent;
 
 /**
  * This actions shows the members of the type of the element under the caret
@@ -78,6 +81,15 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                                       INSPECT_MEMBERS_AT_CARET_POPUP));
 
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        if ( EditorRegistry.lastFocusedComponent() == null ||
+             !EditorRegistry.lastFocusedComponent().isShowing() ) {
+             return false;
+        }
+        return OpenProjects.getDefault().getOpenProjects().length > 0;        
     }
 
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
