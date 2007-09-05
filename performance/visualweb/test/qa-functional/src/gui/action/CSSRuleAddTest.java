@@ -19,7 +19,7 @@
 
 package gui.action;
 
-//import gui.VWPUtilities;
+import gui.VWPUtilities;
 import java.awt.Component;
 import javax.swing.JButton;
 import org.netbeans.jellytools.EditorOperator;
@@ -48,8 +48,8 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
     
     /** Node to be opened/edited */
     private static Node openNode ;       
-    //protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");    
-    protected static String OPEN = "Open";
+    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");    
+    //protected static String OPEN = "Open";
     
     private TopComponentOperator cssEditor = null;
     private NbDialogOperator createRuleDialog = null;
