@@ -312,6 +312,9 @@ public class CopyNode extends BpelNode<Copy> {
         }
         
         stringFrom =  DecorationProvider.Util.getFromLabel(from);
+        stringFrom = stringFrom.replace(">", "&gt;");
+        stringFrom = stringFrom.replace("<", "&lt;");
+        
         stringTo = DecorationProvider.Util.getToLabel(to);
         if (stringFrom == null && stringTo == null) {
             return "";
