@@ -46,10 +46,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.WeakListeners;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
@@ -540,10 +537,23 @@ public class ImageViewer extends CloneableTopComponent {
     /** Overrides superclass method. Gets actions for this top component. */
     public SystemAction[] getSystemActions() {
         SystemAction[] oldValue = super.getSystemActions();
+        SystemAction fsa = null;
+        try {
+            ClassLoader l = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+            if (l == null) {
+                l = getClass().getClassLoader();
+            }
+            Class c = Class.forName("org.openide.actions.FileSystemAction", true, l).asSubclass(SystemAction.class); // NOI18N
+            fsa = (SystemAction) SystemAction.findObject(c, true);
+        } catch (Exception ex) {
+            // there are no filesystem actions
+        }
+
         return SystemAction.linkActions(new SystemAction[] {
             SystemAction.get(ZoomInAction.class),
             SystemAction.get(ZoomOutAction.class),
             SystemAction.get(CustomZoomAction.class),
+            fsa,
             null},
             oldValue);
     }
