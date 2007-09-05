@@ -64,12 +64,11 @@ public class ThemeUtilities {
                 msgBuffer.append(" is not of type Theme");
                 throw new RuntimeException(msgBuffer.toString());
             }
-        } 
-//        else {
-//	    if(DEBUG) log("Initializing ThemeManager"); //NOI18N
-//            manager = 
-//                ThemeFactory.initializeThemeManager(appContext);
-//        }
+        } else {
+	    if(DEBUG) log("Initializing ThemeManager"); //NOI18N
+            manager = 
+                ThemeFactory.initializeThemeManager(appContext);
+        }
         
         Map sessionAttributes = appContext.getSessionMap(); 
      
