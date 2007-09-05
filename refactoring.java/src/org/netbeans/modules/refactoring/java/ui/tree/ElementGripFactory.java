@@ -126,7 +126,7 @@ public class ElementGripFactory {
                 Interval i = null;
                 if (root != null) {
                     Interval o = root.get(start);
-                    if (o!= null && o.item.resolveElement(info).equals(current)) {
+                    if (o!= null && current!=null && current.equals(o.item.resolveElement(info))) {
                         if (p!=null)
                             o.subintervals.add(p);
                         return null;
