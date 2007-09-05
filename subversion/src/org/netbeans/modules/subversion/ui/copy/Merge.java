@@ -53,7 +53,9 @@ public class Merge extends CopyDialog implements ItemListener {
         
     private String MERGE_START_URL_HISTORY_KEY = Merge.class.getName() + "_merge_from"; // NOI18N
     private String MERGE_END_URL_HISTORY_KEY = Merge.class.getName() + "_merge_after"; // NOI18N
-    
+
+    private String lastSelectedUrl;
+
     public Merge(RepositoryFile repositoryRoot, File root) {
         super(new MergePanel(), NbBundle.getMessage(Merge.class, "CTL_Merge_Prompt", root.getName()), NbBundle.getMessage(Merge.class, "CTL_Merge_Title")); // NOI18N
 
@@ -107,10 +109,30 @@ public class Merge extends CopyDialog implements ItemListener {
             }
         };
     }
-
+    
     public void itemStateChanged(ItemEvent e) {        
-        final MergeType type = (MergeType) e.getItem();        
-        mergeTypeSelected(type);
+        final MergeType type = (MergeType) e.getItem();                
+        
+        JTextComponent text;
+        if(type instanceof MergeSinceOriginType) {
+            text = (JTextComponent) type.getEndUrlComboBox().getEditor().getEditorComponent();    
+        } else {
+            text = (JTextComponent) type.getStartUrlComboBox().getEditor().getEditorComponent();    
+        }
+        
+        if(e.getStateChange() == ItemEvent.SELECTED) {            
+            
+            mergeTypeSelected(type);
+            
+            if(text.getText().trim().equals("") && lastSelectedUrl != null) {
+                text.setText(lastSelectedUrl);
+            }
+            
+        } else if(e.getStateChange() == ItemEvent.DESELECTED) {
+            if(!text.getText().trim().equals("")) {
+                lastSelectedUrl = text.getText();
+            }
+        }
     }
 
     private void mergeTypeSelected(MergeType type) {                        
@@ -131,7 +153,6 @@ public class Merge extends CopyDialog implements ItemListener {
         resetUrlComboBoxes();
         setupUrlComboBox(type.getStartUrlComboBox(), MERGE_START_URL_HISTORY_KEY);
         setupUrlComboBox(type.getEndUrlComboBox(), MERGE_END_URL_HISTORY_KEY);
-
     }    
 
     private abstract class MergeType implements DocumentListener, PropertyChangeListener {
