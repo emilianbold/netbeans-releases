@@ -756,6 +756,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             FindDialogMemory.getDefault().storeReplacementExpression(
                     replacementPatternEditor.getText());
         }
+        searchCriteria.setRegexp(chkRegexp.isSelected());
+        searchCriteria.setWholeWords(chkWholeWords.isSelected());
+        searchCriteria.setCaseSensitive(chkCaseSensitive.isSelected());
         FindDialogMemory.getDefault().setWholeWords(chkWholeWords.isSelected());
         FindDialogMemory.getDefault().setCaseSensitive(chkCaseSensitive.isSelected());
         FindDialogMemory.getDefault().setRegularExpression(chkRegexp.isSelected());
