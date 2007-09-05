@@ -99,7 +99,7 @@ public final class EntityManagerGenerator {
     
         if (strategyClass == null){
             NotifyDescriptor d = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupportedAMJTA"), NotifyDescriptor.INFORMATION_MESSAGE);
+                    NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupported"), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             
             return targetFo;

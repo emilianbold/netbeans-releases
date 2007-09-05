@@ -35,6 +35,7 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTANonInjectableInWeb;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -56,14 +57,14 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
         String jtaDataSource = persistenceUnit.getJtaDataSource();
         String transactionType = persistenceUnit.getTransactionType();
         boolean isInjectionTarget = isInjectionTarget(target);
-        boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && (transactionType != null && transactionType.equals("JTA")); //NO18N
         boolean isJTA = (transactionType == null || transactionType.equals("JTA")); // JTA is default value for transaction type in non-J2SE projects
+        boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && isJTA; //NO18N
         
         if (isContainerManaged) { // Container-managed persistence context
             if (isInjectionTarget) { // servlet, JSF managed bean ...
-                return ContainerManagedJTAInjectableInEJB.class;
+                return ContainerManagedJTAInjectableInWeb.class;
             } else { // other classes
-                return ContainerManagedJTAInjectableInWeb .class;
+                return ContainerManagedJTANonInjectableInWeb.class;
             }
         } else if (!isJTA){ // Application-managed persistence context (Resource-transaction)
             if (isInjectionTarget) { // servlet, JSF managed bean ...

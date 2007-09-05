@@ -36,6 +36,7 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTANonInjectableInWeb;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.openide.filesystems.FileObject;
@@ -67,12 +68,14 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
         
         String jtaDataSource = persistenceUnit.getJtaDataSource();
         String transactionType = persistenceUnit.getTransactionType();
-        boolean isInjectionTarget = isInjectionTarget(target);
-        boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && (transactionType != null && transactionType.equals("JTA")); //NO18N
+            boolean isInjectionTarget = isInjectionTarget(target);
         boolean isJTA = (transactionType == null || transactionType.equals("JTA")); // JTA is default value for transaction type in non-J2SE projects
+        boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && isJTA; //NO18N
         
         if (isContainerManaged && isInjectionTarget) { // Container-managed persistence context, managed class
             return ContainerManagedJTAInjectableInEJB.class;
+        } else if (isContainerManaged){
+            return ContainerManagedJTANonInjectableInWeb.class;
         } else if (!isJTA) { // Application-managed resource-local persistence context
             if (isInjectionTarget) { // session, MDB
                 return ApplicationManagedResourceTransactionInjectableInEJB.class;
