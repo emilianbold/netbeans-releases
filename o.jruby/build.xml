@@ -32,6 +32,22 @@
         <copy todir="${src.dir}" overwrite="true">
             <fileset dir="patched_files" />
         </copy>
+
+        <tstamp><format property="build.date" pattern="yyyy-MM-dd"/></tstamp>
+        <copy todir="${src.dir}/org/jruby" overwrite="true">
+            <fileset file="${patched_source}/jruby-${jruby_src_version}/src/jruby.properties" />
+            <filterset>
+                <filter token="os.arch" value="${os.arch}"/>
+                <filter token="java.specification.version" value="${java.specification.version}"/>
+                <!--
+                Defined in jruby-1.0.1/default.build.properties
+                <filter token="javac.version" value="${javac.version}"/>
+                -->
+                <filter token="javac.version" value="1.4"/>
+                <filter token="build.date" value="${build.date}"/>
+            </filterset>
+        </copy>
+        <delete file="${patched_source}/jruby-${jruby_src_version}/src/jruby.properties" />
     </target>    
 
     <target name="release" depends="init">
@@ -51,4 +67,5 @@
         <delete dir="patched_source"/>
     </target>
 
+    
 </project>

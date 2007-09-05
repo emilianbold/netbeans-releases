@@ -1227,6 +1227,24 @@ diff -u -r jruby-1.0.1/src/org/jruby/parser/Tokens.java jruby-1.0.1/src/org/jrub
      String[] operators = {"+@", "-@", "**", "<=>", "==", "===", "!=", ">=", "<=", "&&",
                            "||", "=~", "!~", "..", "...", "[]", "[]=", "<<", ">>", "::"};
  }
+diff -u -r jruby-1.0.1/src/org/jruby/runtime/Constants.java jruby-1.0.1/src/org/jruby/runtime/Constants.java
+--- jruby-1.0.1/src/org/jruby/runtime/Constants.java	2007-08-23 19:13:48.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/runtime/Constants.java	2007-09-05 13:14:16.000000000 -0700
+@@ -52,7 +52,13 @@
+ 
+     static {
+         try {
+-            properties.load(Constants.class.getResourceAsStream("/jruby.properties"));
++            // BEGIN NETBEANS MODIFICATIONS
++            // See issue 114387 - can't load jruby.properties from the default package
++            // when running inside the IDE. JRuby will soon move this file into the
++            // org.jruby package as well.
++            //properties.load(Constants.class.getResourceAsStream("/jruby.properties"));
++            properties.load(Constants.class.getResourceAsStream("/org/jruby/jruby.properties"));
++            // END NETBEANS MODIFICATIONS
+         } catch (IOException ioe) {
+             ioe.printStackTrace();
+         }
 diff -u -r jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java
 --- jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java	2007-08-23 19:13:48.000000000 -0700
 +++ jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java	2007-08-31 08:46:21.000000000 -0700
