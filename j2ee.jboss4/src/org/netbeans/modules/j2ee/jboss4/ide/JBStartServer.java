@@ -19,13 +19,13 @@
 package org.netbeans.modules.j2ee.jboss4.ide;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import java.io.IOException;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -58,20 +58,24 @@ public class JBStartServer extends StartServer implements ProgressObject{
     
     static enum ACTION_STATUS { SUCCESS, FAILURE, UNKNOWN };
     
+    private static final int AVERAGE_SERVER_INSTANCES = 2;
+    
     private MODE mode;
     
-    private JBDeploymentManager dm;
-    private static Map isDebugModeUri = Collections.synchronizedMap((Map)new HashMap(2,1));
+    private final JBDeploymentManager dm;
+
+    private static Set<String> isDebugModeUri = Collections.synchronizedSet(
+            new HashSet<String>(AVERAGE_SERVER_INSTANCES));
     
     public JBStartServer(DeploymentManager dm) {
         if (!(dm instanceof JBDeploymentManager)) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("Not an instance of JBDeploymentManager"); // NOI18N
         }
         this.dm = (JBDeploymentManager) dm;
     }
     
     private void addDebugModeUri() {
-        isDebugModeUri.put(dm.getUrl(), new Object());
+        isDebugModeUri.add(dm.getUrl());
     }
     
     private void removeDebugModeUri() {
@@ -79,7 +83,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
     }
     
     private boolean existsDebugModeUri() {
-        return isDebugModeUri.containsKey(dm.getUrl());
+        return isDebugModeUri.contains(dm.getUrl());
     }
     
     public ProgressObject startDebugging(Target target) {
