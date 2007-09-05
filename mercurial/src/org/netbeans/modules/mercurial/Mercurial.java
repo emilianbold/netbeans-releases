@@ -96,7 +96,6 @@ public class Mercurial {
         checkVersion();
         goodVersion = true;
         fileStatusCache = new FileStatusCache();
-        fileStatusCache.cleanUp();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
     }
