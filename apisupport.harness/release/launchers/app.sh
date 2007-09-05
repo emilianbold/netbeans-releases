@@ -59,16 +59,14 @@ readClusters() {
   else
     echo=echo
   fi
-  sep=""
   while read X; do
     if [ "$X" \!= "" ]; then
-      $echo -n $sep
-      $echo -n "$progdir/../$X"
-      sep=":"
+      $echo "$progdir/../$X"
     fi
   done
 }
-clusters=`(cat "$progdir/../etc/$APPNAME".clusters; echo) | readClusters`
+
+clusters=`(cat "$progdir/../etc/$APPNAME".clusters; echo) | readClusters | tr '\012' ':'`
 
 if [ ! -z "$extraclusters" ] ; then
     clusters="$clusters:$extraclusters"
