@@ -24,6 +24,10 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -95,6 +99,9 @@ public class JavaCodegen implements ICodeGenerator
 	String tempTemplatesDirName = null;
 	FileObject tempTemplatesDirFO = null;
 	
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        ScriptEngine engine = mgr.getEngineByName("freemarker");
+
 	ClassInfo.eraseRefClasses();
 	
         for (IElement pElement: elements)
@@ -201,12 +208,9 @@ public class JavaCodegen implements ICodeGenerator
 			
 			templteFileObject.setAttribute(
                             "javax.script.ScriptEngine", "freemarker"); // NOI18N
-                    
-			DataObject templateDataObject = 
-                            DataObject.find(templteFileObject);
-                    
+                                        
 			FileMapping fmap = new FileMapping();
-			fmap.templateDataObject = templateDataObject;
+			fmap.templateFileObject = templteFileObject;
 			fmap.domainTemplate = domainTemplate;
 			    
 			FileObject exportPkgFileObject = 
@@ -215,25 +219,22 @@ public class JavaCodegen implements ICodeGenerator
 			
 			if (exportPkgFileObject != null) {
 
-			    // lets check for existing source 
-			    String templExt = templateDataObject.getPrimaryFile().getExt();
-			    String extAdd = domainTemplate.getExtension();
-			    if (extAdd != null && extAdd.length() > 0) 
+			    String ext = domainTemplate.getExtension();
+			    if (ext == null) 
 			    {
-				String ext = extAdd;
+				ext = templteFileObject.getExt();
+			    }
+			    if (ext != null) 
+			    {
 				if (ext.startsWith(".")) 
 				{
 				    ext = ext.substring(1);
 				}				
-				if (! ext.equals(templExt)) 
-				{
-				    fmap.ext = ext;
-				}
+				fmap.ext = ext;				
 			    } 
-			    else
-			    {
-				extAdd = "." + templExt; // NOI18N
-			    }
+
+			    // lets check for existing source 
+			    String extAdd = (fmap.ext != null ? "." + fmap.ext : "");
 			    String targetPackageFolderPath = FileUtil.toFile(exportPkgFileObject).getCanonicalPath();
 			    String targName = getOutputName(clinfo.getName(), domainTemplate) + extAdd;
 			    String targetFilePath = targetPackageFolderPath + SEP + targName;
@@ -347,7 +348,6 @@ public class JavaCodegen implements ICodeGenerator
 		for(FileMapping fmap : fmappings)
 		{ 
 		    DomainTemplate domainTemplate = fmap.domainTemplate;	    
-		    DataObject templateDataObject = fmap.templateDataObject;
 			
 		    task.log(task.SUMMARY, LOG_INDENT 
 			+ NbBundle.getMessage(JavaCodegen.class, "MSG_SourceCodeGenerating", // NOI18N
@@ -365,9 +365,6 @@ public class JavaCodegen implements ICodeGenerator
 				FileUtil.toFileObject(new File(fmap.existingSourcePath)).delete(); 
 			    }
 
-			    DataFolder folder = 
-				DataFolder.findFolder(exportPkgFileObject);
-			    
 			    HashMap parameters = new HashMap();
 			    parameters.put("classInfo", clinfo); // NOI18N
 			    parameters.put("modelElement", classifier); // NOI18N
@@ -375,31 +372,28 @@ public class JavaCodegen implements ICodeGenerator
 			    codegenOptions.put("GENERATE_MARKER_ID", genMarkers); // NOI18N
 			    parameters.put("codegenOptions", codegenOptions); // NOI18N
 			    
-			    DataObject n = templateDataObject.createFromTemplate(
-				folder, 
-				getOutputName(clinfo.getName(), domainTemplate), 
-				parameters);
 
-			    FileObject genedFO = n.getPrimaryFile();
-			    if (genedFO != null) 
+			    FileObject templFO = fmap.templateFileObject;		    
+			    engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
+			    engine.getContext().setAttribute(FileObject.class.getName(), templFO, ScriptContext.ENGINE_SCOPE);
+			    engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).putAll(parameters);
+
+			    String pathto = 
+				FileUtil.toFile(exportPkgFileObject).getCanonicalPath() 
+				+ SEP 
+				+ getOutputName(clinfo.getName(), domainTemplate) 
+				+ ( fmap.ext != null ? "." + fmap.ext : "" ) ; 
+			    File fileto = new File(pathto);
+			    Writer w = new BufferedWriter(new FileWriter(fileto));
+			    engine.getContext().setWriter(w);
+			    InputStreamReader is = new InputStreamReader(templFO.getInputStream());
+			    engine.eval(is);
+			    is.close();
+			    w.close();
+
+			    if (fileto.exists()) 
 			    {
-				String genedPath = FileUtil.toFile(genedFO).getCanonicalPath();
-				String genedExt = genedFO.getExt();
-				if (fmap.ext != null && ! fmap.ext.equals(genedExt)) 
-				{ 				    
-				    if (genedPath.endsWith("."+genedExt)) // really expected to 
-				    {
-					int l = ("."+genedExt).length();
-					genedPath = genedPath.substring(0, genedPath.length() - l) 
-					    + "." + fmap.ext;
-					File genedFile = FileUtil.toFile(genedFO);
-					if (genedFile != null) 
-					{
-					    genedFile.renameTo(new File(genedPath));
-					}
-				    }
-				}
-				fmap.generatedFilePath = genedPath;
+				fmap.generatedFilePath = fileto.getCanonicalPath();
 				task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N	
 			    }	
 			    else 
@@ -768,7 +762,7 @@ public class JavaCodegen implements ICodeGenerator
 	public String existingSourceBackupPath = null;
 	public ParsedInfo existingFileInfo = null;
 	public boolean merge = false;
-	public DataObject templateDataObject = null;
+	public FileObject templateFileObject = null;
 	public DomainTemplate domainTemplate = null;
     }
 
