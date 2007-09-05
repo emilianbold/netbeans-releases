@@ -58,6 +58,7 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     private int errors;
     private boolean seenTestUnit;
     private boolean seenRSpec;
+    private boolean seenRake;
     
     /** 
      * Create a new TestNotifier.
@@ -82,10 +83,15 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         Pattern.compile("(\\d+) tests, (\\d+) assertions, (\\d+) failures, (\\d+) errors\\s?"); // NOI18N
          
     // RSpec: see {rspec}/lib/spec/runner/formatter/base_text_formatter.rb#dump_summary
+    // "not implemented" changed to "pending" in rspec 1.0.8
     private final static Pattern RSPEC_PATTERN = 
-        Pattern.compile("(\\d+) examples?, (\\d)+ failures?(, (\\d+) not implemented)?\\s?"); // NOI18N
+        Pattern.compile("(\\d+) examples?, (\\d)+ failures?(, (\\d+) (pending|not implemented))?\\s?"); // NOI18N
     
-    private final Pattern[] PATTERNS = new Pattern[] { TEST_UNIT_PATTERN, RSPEC_PATTERN };
+    // Rake: lib/tasks/testing.rake:53:  raise "Test failures" unless exceptions.empty?
+    private final static Pattern RAKE_PATTERN =
+        Pattern.compile("Test failures\\s?"); // NOI18N
+    
+    private final Pattern[] PATTERNS = new Pattern[] { TEST_UNIT_PATTERN, RSPEC_PATTERN, RAKE_PATTERN };
     
     /** Schedlued message to be displayed in the editor */
     private String message;
@@ -121,18 +127,24 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                     if (line.indexOf("0 failures") == -1) {
                         failure = true;
                     }
-                } else {
-                    assert pattern == TEST_UNIT_PATTERN;
+                } else if (pattern == TEST_UNIT_PATTERN) {
                     if ((line.indexOf(" 0 failures") == -1) || (line.indexOf(" 0 errors") == -1)) { // NOI18N
                         failure = true;
                     }
+                } else {
+                    assert pattern == RAKE_PATTERN;
+                    failure = true;
                 }
 
                 if (failure) {
                     warning = true;
-                    message = NbBundle.getMessage(AutoTestSupport.class, "TestsFailed", summary);
+                    if (pattern == RAKE_PATTERN) {
+                        message = summary;
+                    } else {
+                        message = NbBundle.getMessage(AutoTestSupport.class, "TestsFailed", summary);
+                    }
                     run();
-                } else if (showSuccesses) {
+                } else if (showSuccesses || notImplemented > 0) {
                     warning = false;
                     message = NbBundle.getMessage(AutoTestSupport.class, "TestsCompleted", summary);
                     run();
@@ -177,7 +189,13 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                         if (eui != null) {
                             StatusBar statusBar = eui.getStatusBar();
                             if (statusBar != null) {
-                                Coloring coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.GREEN);
+                                Coloring coloring = null;
+                                if (notImplemented > 0) {
+                                    // Not implemented rspecs: show yellow rather than green
+                                    coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.YELLOW);
+                                } else {
+                                    coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.GREEN);
+                                }
                                 statusBar.setText(StatusBar.CELL_MAIN, message, coloring);
                                 return;
                             }
@@ -206,23 +224,25 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     }
 
     private void addTotals(Pattern pattern, Matcher matcher, String line) {
-        assert PATTERNS.length == 2; // If you add more patterns, make sure you update the below logic
+        assert PATTERNS.length == 3; // If you add more patterns, make sure you update the below logic
         if (pattern == TEST_UNIT_PATTERN) {
             seenTestUnit = true;
             tests += Integer.parseInt(matcher.group(1));
             assertions += Integer.parseInt(matcher.group(2));
             failures += Integer.parseInt(matcher.group(3));
             errors += Integer.parseInt(matcher.group(4));
-        } else {
-            assert pattern == RSPEC_PATTERN;
+        } else if (pattern == RSPEC_PATTERN) {
             seenRSpec = true;
             examples += Integer.parseInt(matcher.group(1));
             failures += Integer.parseInt(matcher.group(2));
             if (matcher.group(4) != null) {
                 notImplemented += Integer.parseInt(matcher.group(4));
             }
+        } else {
+            assert pattern == RAKE_PATTERN;
+            seenRake = true;
+            errors += 1;
         }
-        assert matcher.matches();
     }
 
     private void appendSummary(StringBuilder sb, String s) {
@@ -249,7 +269,9 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         if (seenRSpec || examples > 0) {
             appendSummary(sb, getCountDescription("OneExample", "ManyExamples", examples));
         }
-        appendSummary(sb, getCountDescription("OneFailure", "ManyFailures", failures));
+        if (!seenRake || seenTestUnit || seenRSpec) {
+            appendSummary(sb, getCountDescription("OneFailure", "ManyFailures", failures));
+        }
         if (seenTestUnit || errors > 0) {
             appendSummary(sb, getCountDescription("OneError", "ManyErrors", errors));
         }
