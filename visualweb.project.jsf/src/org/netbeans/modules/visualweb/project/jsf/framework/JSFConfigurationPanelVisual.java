@@ -501,11 +501,13 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
                     webModule25Version = currentWebModule25Version;
                     serverInstanceID = currentServerInstanceID;
-                    // <RAVE>
-                    initLibSettings(wizardDescriptor, webModule25Version, serverInstanceID);
-                    // </RAVE>
+                    initLibSettings(webModule25Version, serverInstanceID);
                 }
             }
+
+            // <RAVE>
+            initRowsetSettings(wizardDescriptor);
+            // </RAVE>
         }
         
         // <RAVE>
@@ -608,15 +610,17 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             webModule25Version = false;
         
         serverInstanceID = (String) d.getProperty("serverInstanceID"); //NOI18N
+        initLibSettings(webModule25Version, serverInstanceID);
+
         // <RAVE>
-        initLibSettings(d, webModule25Version, serverInstanceID);
+        initRowsetSettings(d);
         // </RAVE>
                 
 //        projectLocationPanel.read(d);
 //        optionsPanel.read(d);
     }
     
-    private void initLibSettings(WizardDescriptor wizardDescriptor, boolean webModule25Version, String serverInstanceID) {
+    private void initLibSettings(boolean webModule25Version, String serverInstanceID) {
         try {
             addJSF = false;
             // <RAVE> fix issue#112245, java.lang.NullPointerException
@@ -655,21 +659,23 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                     rbNewLibrary.setSelected(true);
                     addJSF = true;
             }
-
-            // <RAVE>
-            addRowset = false;
-            String setSrcLevel = (String) wizardDescriptor.getProperty("setSourceLevel"); //NOI18N
-            if ("1.4".equals(setSrcLevel)) { // NOI18N
-                // It's a J2SE 1.4 project
-                Library libRowset = LibraryManager.getDefault().getLibrary("rowset-ri"); // NOI18N
-                if (libRowset == null) {
-                    addRowset = true;
-                }
-            }
-            // </RAVE>
         } catch (IOException exc) {
         }
     }
+
+    // <RAVE>
+    private void initRowsetSettings(WizardDescriptor wizardDescriptor) {
+        addRowset = false;
+        String setSrcLevel = (String) wizardDescriptor.getProperty("setSourceLevel"); //NOI18N
+        if ("1.4".equals(setSrcLevel)) { // NOI18N
+            // It's a J2SE 1.4 project
+            Library libRowset = LibraryManager.getDefault().getLibrary("rowset-ri"); // NOI18N
+            if (libRowset == null) {
+                addRowset = true;
+            }
+        }
+    }
+    // </RAVE>
 
     void store(WizardDescriptor d) {
 //        projectLocationPanel.store(d);
