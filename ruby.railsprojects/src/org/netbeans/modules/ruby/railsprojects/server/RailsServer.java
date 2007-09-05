@@ -29,6 +29,7 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.DirectoryFileLocator;
 import org.netbeans.api.ruby.platform.RubyInstallation;
@@ -36,7 +37,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer.RecognizedOutput;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -152,7 +152,7 @@ public class RailsServer {
         desc.postBuild(finishedAction);
         desc.classPath(classPath);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new WebrickMessageListener(getStartedMessage(serverId)));
+        desc.addOutputRecognizer(new RailsServerRecognizer(getStartedMessage(serverId)));
         desc.frontWindow(false);
         desc.debug(debug);
         desc.fastDebugRequired(debug);
@@ -391,25 +391,35 @@ public class RailsServer {
         }
     }
     
-    private class WebrickMessageListener extends OutputRecognizer {
+    private class RailsServerRecognizer extends OutputRecognizer {
         private String startedMessage;
         
-        WebrickMessageListener(String startedMessage) {
+        RailsServerRecognizer(String startedMessage) {
             this.startedMessage = startedMessage;
         }
 
         @Override
-        public RecognizedOutput processLine(String line) {
+        public ActionText processLine(String outputLine) {
+            String line = outputLine;
+            
+            if (Util.containsAnsiColors(outputLine)) {
+                line = Util.stripAnsiColors(outputLine);
+            }
+
             // This is ugly, but my attempts to use URLConnection on the URL repeatedly
             // and check for connection.getResponseCode()==HttpURLConnection.HTTP_OK didn't
             // work - try that again later
-            if (line.startsWith(startedMessage)) { // NOI18N
+            if (outputLine.startsWith(startedMessage)) { // NOI18N
 
                 synchronized (RailsServer.this) {
                     status = ServerStatus.RUNNING;
                 }
-            } else if (line.contains("in `new': Address in use (Errno::EADDRINUSE)")) { // NOI18N
+            } else if (outputLine.contains("in `new': Address in use (Errno::EADDRINUSE)")) { // NOI18N
                 portConflict = true;
+            }
+
+            if (line != outputLine) {
+                return new ActionText(new String[] { line }, null, null, null);
             }
 
             return null;
