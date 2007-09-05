@@ -108,7 +108,8 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         boolean isBroken = false;         
         
         if (ImportDataSource.isLegacyProject(nbProject)) {
-            if (!new ProjectDataSourceManager(nbProject).isRequestedJdbcResourceAvailable()) {
+            ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(nbProject);
+            if (!projectDataSourceManager.isRequestedJdbcResourceAvailable() || (BrokenDataSourceSupport.isBroken(nbProject))) {
                 DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
             }
         }                       
