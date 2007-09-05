@@ -315,7 +315,7 @@ function download(option) {
     //if ((platform == "macosx-x86") || (platform != "macosx-ppc")) {
     //  basename  = "netbeans-trunk-nightly-{build.number}-";
     //} else {
-	basename  = "netbeans-6.0-nightly-{build.number}-";
+	basename  = "{nb.files.prefix}-{build.number}-";
     //}
 
     var file_name = "start.html?" + basename + option;
