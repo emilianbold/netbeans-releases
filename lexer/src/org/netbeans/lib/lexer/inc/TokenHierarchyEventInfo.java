@@ -49,6 +49,8 @@ public final class TokenHierarchyEventInfo {
     private final CharSequence removedText;
 
     private final int insertedLength;
+    
+    private final int diffLengthOrZero;
 
     private OriginalText originalText;
     
@@ -75,6 +77,9 @@ public final class TokenHierarchyEventInfo {
         this.removedLength = removedLength;
         this.removedText = removedText;
         this.insertedLength = insertedLength;
+        this.diffLengthOrZero = Math.max(0, insertedLength - removedLength);
+        this.affectedStartOffset = modificationOffset;
+        this.affectedEndOffset = modificationOffset + diffLengthOrZero;
     }
 
     public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
@@ -97,10 +102,6 @@ public final class TokenHierarchyEventInfo {
         return affectedStartOffset;
     }
     
-    public void setAffectedStartOffset(int affectedStartOffset) {
-        this.affectedStartOffset = affectedStartOffset;
-    }
-    
     public void setMinAffectedStartOffset(int affectedStartOffset) {
         if (affectedStartOffset < this.affectedStartOffset) {
             this.affectedStartOffset = affectedStartOffset;
@@ -111,10 +112,6 @@ public final class TokenHierarchyEventInfo {
         return affectedEndOffset;
     }
     
-    public void setAffectedEndOffset(int affectedEndOffset) {
-        this.affectedEndOffset = Math.max(this.affectedEndOffset, affectedEndOffset);
-    }
-
     public void setMaxAffectedEndOffset(int affectedEndOffset) {
         if (affectedEndOffset > this.affectedEndOffset) {
             this.affectedEndOffset = affectedEndOffset;
@@ -135,6 +132,13 @@ public final class TokenHierarchyEventInfo {
 
     public int insertedLength() {
         return insertedLength;
+    }
+    
+    /**
+     * Get <code>Math.max(0, insertedLength() - removedLength())</code>.
+     */
+    public int diffLengthOrZero() {
+        return diffLengthOrZero;
     }
 
     public OriginalText originalText() {

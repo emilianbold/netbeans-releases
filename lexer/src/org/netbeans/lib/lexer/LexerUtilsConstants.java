@@ -211,9 +211,14 @@ public final class LexerUtilsConstants {
         return maxPathSize;
     }
 
-    public static <T extends TokenId> StringBuilder appendTokenList(StringBuilder sb,
-    TokenList<T> tokenList, int currentIndex) {
-        return appendTokenList(sb, tokenList, currentIndex, 0, Integer.MAX_VALUE, true, 0);
+    public static <T extends TokenId> StringBuilder appendTokenList(StringBuilder sb, TokenList<T> tokenList) {
+        return appendTokenList(sb, tokenList, -1, 0, Integer.MAX_VALUE, true, 0);
+    }
+
+    public static <T extends TokenId> StringBuilder appendTokenListIndented(
+        StringBuilder sb, TokenList<T> tokenList, int indent
+    ) {
+        return appendTokenList(sb, tokenList, -1, 0, Integer.MAX_VALUE, true, indent);
     }
 
     public static <T extends TokenId> StringBuilder appendTokenList(StringBuilder sb,

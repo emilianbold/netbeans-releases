@@ -19,6 +19,8 @@
 package org.netbeans.lib.lexer;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
@@ -46,6 +48,9 @@ public class JoinSectionsTest extends NbTestCase {
     }
 
     public void testJoinSections() throws Exception {
+        // Turn on detailed checking
+//        Logger.getLogger(TokenHierarchyOperation.class.getName()).setLevel(Level.FINEST);
+
         //             000000000011111111112222222222
         //             012345678901234567890123456789
         String text = "a{b<cd>e}f<gh>i{j<kl>m}n";
@@ -53,8 +58,8 @@ public class JoinSectionsTest extends NbTestCase {
         doc.insertString(0, text, null);
         doc.putProperty(Language.class,TestJoinSectionsTopTokenId.language());
         
-        TokenHierarchy<?> th = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = th.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "a{b", -1);
         assertTrue(ts.moveNext());
@@ -65,11 +70,93 @@ public class JoinSectionsTest extends NbTestCase {
         // Get embedded tokens within TEXT tokens. There should be "a" then BRACES start "{b" then BRACES end "e}|" then "f"
         LanguagePath innerLP = LanguagePath.get(TestJoinSectionsTopTokenId.language()).
                 embedded(TestJoinSectionsTextTokenId.language());
-        List<TokenSequence<?>> tsList = th.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
-        assertEquals(4, tsList.size()); // 4 sections
+        List<TokenSequence<?>> tsList = hi.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
+        checkInitialTokens(tsList);
+        
+        
+        // Use iterator for fetching token sequences
+        int i = 0;
+        for (TokenSequence<?> ts2 : tsList) {
+            assertSame(ts2, tsList.get(i++));
+        }
+
+        LexerTestUtilities.assertConsistency(hi);
+        
+
+        // Do modifications
+        // Remove second closing brace '}'
+        doc.remove(8, 1);
+        LexerTestUtilities.assertConsistency(hi);
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        // before:    "a{b<cd>e}f<gh>i{j<kl>m}n";
+        // after:     "a{b<cd>ef<gh>i{j<kl>m}n";
+        tsList = hi.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
+        assertEquals(4, tsList.size()); // 2 sections
 
         // 1.section
         ts = tsList.get(0);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "a", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "{b", -1);
+        Token<?> token = ts.token();
+        assertEquals(PartType.START, token.partType());
+        assertFalse(ts.moveNext());
+        
+        // 2.section
+        ts = tsList.get(1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "ef", -1);
+        token = ts.token();
+        assertEquals(PartType.MIDDLE, token.partType());
+        assertFalse(ts.moveNext());
+        
+        // 3.section
+        ts = tsList.get(2);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "i{j", -1);
+        token = ts.token();
+        assertEquals(PartType.MIDDLE, token.partType());
+        assertFalse(ts.moveNext());
+        
+        // 4.section
+        ts = tsList.get(3);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "m}", -1);
+        token = ts.token();
+        assertEquals(PartType.END, token.partType());
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "n", -1);
+        assertFalse(ts.moveNext());
+        
+
+        // Re-add second closing brace '}'
+        doc.insertString(8, "}", null);
+        LexerTestUtilities.assertConsistency(hi);
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        // before:    "a{b<cd>ef<gh>i{j<kl>m}n";
+        // after:     "a{b<cd>e}f<gh>i{j<kl>m}n";
+        tsList = hi.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
+        checkInitialTokens(tsList);
+        
+        doc.remove(0, doc.getLength());
+        LexerTestUtilities.assertConsistency(hi);
+        ts = hi.tokenSequence();
+        assertFalse(ts.moveNext());
+        doc.insertString(0, text, null);
+
+    }
+
+    private void checkInitialTokens(List<TokenSequence<?>> tsList) {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        // text:      "a{b<cd>e}f<gh>i{j<kl>m}n";
+        assertEquals(4, tsList.size()); // 4 sections
+
+        // 1.section
+        TokenSequence<?> ts = tsList.get(0);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "a", -1);
         assertTrue(ts.moveNext());
@@ -107,62 +194,6 @@ public class JoinSectionsTest extends NbTestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "n", -1);
         assertFalse(ts.moveNext());
-        
-        
-        // Use iterator for fetching token sequences
-        int i = 0;
-        for (TokenSequence<?> ts2 : tsList) {
-            assertSame(ts2, tsList.get(i++));
-        }
-        
-        
-        // Do modifications
-        // Remove second closing brace '}'
-        doc.remove(8, 1);
-        //             000000000011111111112222222222
-        //             012345678901234567890123456789
-        //            "a{b<cd>e}f<gh>i{j<kl>m}n";
-        // becomes:   "a{b<cd>ef<gh>i{j<kl>m}n";
-        tsList = th.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
-        assertEquals(4, tsList.size()); // 2 sections
-
-        // 1.section
-        ts = tsList.get(0);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "a", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "{b", -1);
-        token = ts.token();
-        assertEquals(PartType.START, token.partType());
-        assertFalse(ts.moveNext());
-        
-        // 2.section
-        ts = tsList.get(1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "ef", -1);
-        token = ts.token();
-        assertEquals(PartType.MIDDLE, token.partType());
-        assertFalse(ts.moveNext());
-        
-        // 3.section
-        ts = tsList.get(2);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "i{j", -1);
-        token = ts.token();
-        assertEquals(PartType.MIDDLE, token.partType());
-        assertFalse(ts.moveNext());
-        
-        // 4.section
-        ts = tsList.get(3);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "m}", -1);
-        token = ts.token();
-        assertEquals(PartType.END, token.partType());
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "n", -1);
-        assertFalse(ts.moveNext());
-        
-        
     }
 
 }

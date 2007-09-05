@@ -43,8 +43,24 @@ public final class TokenUtilities {
      * @return <code>true</code> if the given character sequences represent
      *  the same text content.
      */
-    public static boolean equals(CharSequence text1, CharSequence text2) {
+    public static boolean textEquals(CharSequence text1, CharSequence text2) {
         return CharSequenceUtilities.textEquals(text1, text2);
+    }
+    
+    /**
+     * Compare character sequence to another object.
+     * The match is successful if the second object is a character sequence as well
+     * and both character sequences contain the same characters (or if both objects are null).
+     *
+     * @param text character sequence being compared to the given object.
+     *  It may be <code>null</code>.
+     * @param o object to be compared to the character sequence.
+     *  It may be <code>null</code>.
+     * @return true if both parameters are null or both are non-null
+     *  and they contain the same text.
+     */
+    public static boolean equals(CharSequence text1, Object o) {
+        return CharSequenceUtilities.equals(text1, o);
     }
     
     /**

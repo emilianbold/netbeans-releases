@@ -104,11 +104,6 @@ public final class TokenListUpdater {
     public static <T extends TokenId> void update(MutableTokenList<T> tokenList,
     int modOffset, int insertedLength, int removedLength,
     TokenListChange<T> change) {
-        // Ensure the offsets in token list are up-to-date
-        if (tokenList.getClass() == EmbeddedTokenList.class) {
-            ((EmbeddedTokenList<? extends TokenId>)tokenList).updateStatus();
-        }
-
         // Fetch offset where the modification occurred
         LanguageOperation<T> languageOperation = LexerUtilsConstants.innerLanguageOperation(
                 tokenList.languagePath());

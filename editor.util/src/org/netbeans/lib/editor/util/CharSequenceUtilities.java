@@ -49,33 +49,24 @@ public final class CharSequenceUtilities {
     }
 
     /**
-     * Method that compares a given character sequence to another object.
-     * The match is successful if the other object is a character sequence as well
-     * and both character sequences contain the same characters.
+     * Compare character sequence to another object.
+     * The match is successful if the second object is a character sequence as well
+     * and both character sequences contain the same characters (or if both objects are null).
      *
      * @param text character sequence being compared to the given object.
-     *  It must not be <code>null</code>.
+     *  It may be <code>null</code>.
      * @param o object to be compared to the character sequence.
-     *  It can be <code>null</code>.
-     * @return true if both parameters are non-null
-     *  and they are equal in String-like manner.
+     *  It may be <code>null</code>.
+     * @return true if both parameters are null or both are non-null
+     *  and they contain the same text.
      */
     public static boolean equals(CharSequence text, Object o) {
         if (text == o) {
             return true;
         }
 
-        if (o instanceof CharSequence) { // both non-null
-            CharSequence text2 = (CharSequence)o;
-            int len = text.length();
-            if (len == text2.length()) {
-                for (int i = len - 1; i >= 0; i--) {
-                    if (text.charAt(i) != text2.charAt(i)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
+        if (text != null && o instanceof CharSequence) { // both non-null
+            return textEquals(text, (CharSequence)o);
         }
         return false;
     }

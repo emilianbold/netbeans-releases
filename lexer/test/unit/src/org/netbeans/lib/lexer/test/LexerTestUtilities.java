@@ -38,6 +38,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.test.dump.TokenDumpCheck;
@@ -61,6 +62,13 @@ public final class LexerTestUtilities {
         // no instances
     }
     
+    public static void assertConsistency(TokenHierarchy<?> hi) {
+        String error = LexerApiPackageAccessor.get().tokenHierarchyOperation(hi).checkConsistency();
+        if (error != null) {
+            TestCase.fail("Consistency error:\n" + error);
+        }
+    }
+    
     /**
      * @see #assertTokenEquals(String, TokenSequence, TokenId, String, int)
      */
@@ -79,7 +87,7 @@ public final class LexerTestUtilities {
         Token<? extends TokenId> t = ts.token();
         TestCase.assertNotNull("Token is null", t);
         TokenId tId = t.id();
-        TestCase.assertEquals(message + "Invalid token.id() for text=\"" + TokenUtilities.debugText(t.text()) + '"', id, tId);
+        TestCase.assertEquals(message + "Invalid token.id() for text=\"" + debugTextOrNull(t.text()) + '"', id, tId);
         CharSequence tText = t.text();
         assertTextEquals(message + "Invalid token.text() for id=" + LexerUtilsConstants.idToString(id), text, tText);
         // The token's length must correspond to text.length()
@@ -395,6 +403,17 @@ public final class LexerTestUtilities {
         return TokenUtilities.debugText(text);
     }
     
+    /**
+     * Return the given text as String
+     * translating the special characters (and '\') into escape sequences.
+     *
+     * @param text non-null text to be debugged.
+     * @return non-null string containing the debug text or "<null>".
+     */
+    public static String debugTextOrNull(CharSequence text) {
+        return (text != null) ? debugText(text) : "<null>";
+    }
+
     public static void initLastDocumentEventListening(Document doc) {
         doc.addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent evt) {

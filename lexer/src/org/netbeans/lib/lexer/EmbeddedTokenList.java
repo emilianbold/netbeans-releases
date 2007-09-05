@@ -406,7 +406,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
     
     public String toString() {
-        return LexerUtilsConstants.appendTokenList(null, this, -1).toString();
+        return LexerUtilsConstants.appendTokenList(null, this).toString();
     }
 
 }

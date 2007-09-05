@@ -93,7 +93,7 @@ public final class EmbeddingContainer<T extends TokenId> {
         synchronized (root) {
             EmbeddedTokenList<? extends TokenId> prevEtl;
             if (ec != null) {
-                ec.updateStatus();
+                ec.updateStatusImpl();
                 EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
                 prevEtl = null;
                 while (etl != null) {
@@ -254,8 +254,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 TokenHierarchyEventType.EMBEDDING,
                 aOffset, 0, "", 0
         );
-        eventInfo.setAffectedStartOffset(aOffset);
-        eventInfo.setAffectedEndOffset(aOffset + token.length());
+        eventInfo.setMaxAffectedEndOffset(aOffset + token.length());
         // Construct outer token change info
         TokenChangeInfo<T> info = new TokenChangeInfo<T>(tokenList);
         info.setIndex(index);
@@ -326,8 +325,9 @@ public final class EmbeddingContainer<T extends TokenId> {
     private EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList; // 40 bytes
     
     public EmbeddingContainer(AbstractToken<T> token, TokenList<?> rootTokenList) {
-        setToken(token);
+        this.token = token;
         this.rootTokenList = rootTokenList;
+        this.rootToken = token; // Has to be non-null since updateStatusImpl() would not update null rootToken
         // cachedModCount must differ from root's one to sync offsets
         // Root mod count can be >= 0 or -1 for non-incremental token lists
         // It also cannot be -2 which means that this container is no longer
@@ -344,14 +344,10 @@ public final class EmbeddingContainer<T extends TokenId> {
     
     /**
      * Make this container serve a different token.
-     * The updateStatus() should be called afterwards to update tokenStartOffset etc.
+     * The updateStatusImpl() should be called afterwards to update tokenStartOffset etc.
      */
     public void setToken(AbstractToken<T> token) {
         this.token = token;
-        TokenList<T> tokenList = token.tokenList();
-        this.rootToken = (tokenList.getClass() == EmbeddedTokenList.class)
-                ? ((EmbeddedTokenList<? extends TokenId>)tokenList).rootToken()
-                : token;
     }
     
     public TokenList<? extends TokenId> rootTokenList() {
@@ -415,7 +411,8 @@ public final class EmbeddingContainer<T extends TokenId> {
                     tokenStartOffset = etl.childTokenOffsetNoUpdate(token.rawOffset());
                     offsetShiftFromRootToken = tokenStartOffset - rootToken.offset(null);
                 }
-            } else { // parent is in IncTokenList: rootToken == token
+            } else { // parent is a root token list: rootToken == token
+                rootToken = token;
                 tokenStartOffset = token.offset(null);
                 offsetShiftFromRootToken = 0;
             }

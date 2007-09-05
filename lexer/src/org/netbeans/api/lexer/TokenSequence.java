@@ -691,7 +691,8 @@ public final class TokenSequence<T extends TokenId> {
     }
     
     public String toString() {
-        return LexerUtilsConstants.appendTokenList(null, tokenList, tokenIndex).toString();
+        return LexerUtilsConstants.appendTokenList(null, tokenList,
+                tokenIndex, 0, Integer.MAX_VALUE, true, 0).toString();
     }
     
     int[] parentTokenIndexes() {

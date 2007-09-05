@@ -225,6 +225,7 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
         TokenList<?>[] removed;
         if (removeCount > 0) {
             removed = new TokenList<?>[removeCount];
+            tokenLists.copyElements(index, index + removeCount, removed, 0);
             tokenLists.remove(index, removeCount);
         } else {
             removed = EMPTY_TOKEN_LIST_ARRAY;
@@ -325,6 +326,26 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
             explorers.remove(explorerIndex);
         }
         complete = true;
+    }
+    
+    public String toString() {
+        StringBuilder sb = new StringBuilder("TokenListList for ");
+        sb.append(languagePath().mimePath());
+        if (!isComplete()) {
+            sb.append(", incomplete");
+        }
+        sb.append('\n');
+        int digitCount = ArrayUtilities.digitCount(tokenLists.size());
+        for (int i = 0; i < tokenLists.size(); i++) {
+            TokenList<?> tokenList = tokenLists.get(i);
+            ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
+            sb.append("range:[").append(tokenList.startOffset()).append(",").
+                    append(tokenList.endOffset()).append(']');
+            sb.append(", IHC=").append(System.identityHashCode(tokenList));
+            sb.append('\n');
+            LexerUtilsConstants.appendTokenListIndented(sb, tokenList, 4);
+        }
+        return sb.toString();
     }
 
     private static final class TokenListExplorer {
