@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
@@ -58,15 +59,16 @@ import org.openide.util.NbBundle;
 public class SVGImageEditorElement extends PropertyEditorResourceElement {
 
     private static final String EXTENSION = "svg"; // NOI18N
-    
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
     private String lastDir;
     private SVGImageComponent imageView;
     private DefaultComboBoxModel comboBoxModel;
+    private Map<String, String> paths;
 
     public SVGImageEditorElement() {
+        paths = new HashMap<String, String>();
         comboBoxModel = new DefaultComboBoxModel();
         initComponents();
         imageView = new SVGImageComponent();
@@ -143,7 +145,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
 
         addImage(text);
     }
-    
+
     private void addImage(String path) {
         doNotFireEvent = true;
         if (comboBoxModel.getIndexOf(path) == -1) {
@@ -203,7 +205,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
                 searchImagesInDirectory(fo);
             } else {
                 if (EXTENSION.equals(fo.getExt().toLowerCase())) {
-                    String path = convertFile(fo);
+                    String path = convertFile(fo, false);
                     if (path != null) {
                         addImage(path);
                     }
@@ -214,12 +216,14 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
 
     private void updatePreview() {
         String relativePath = (String) pathTextComboBox.getSelectedItem();
-        String path = getSourceFolder().getPath() + relativePath;
+        String path = paths.get(relativePath);
         SVGImage svgImage = null;
         try {
-            FileObject svgFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
-            if (svgFileObject != null) {
-                svgImage = Util.createSVGImage(svgFileObject, true);
+            if (path != null) {
+                FileObject svgFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
+                if (svgFileObject != null) {
+                    svgImage = Util.createSVGImage(svgFileObject, true);
+                }
             }
         } catch (IOException e) {
         }
@@ -248,27 +252,35 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         return ProjectUtils.getSourceGroups(projectID).iterator().next().getRootFolder();
     }
 
-    private String convertFile(FileObject file) {
+    private String convertFile(FileObject file, boolean needCopy) {
         String fullPath = file.getPath();
         FileObject sourceFolder = getSourceFolder();
         String sourcePath = sourceFolder.getPath();
 
-        if (!fullPath.contains(sourcePath)) {
+        if (needCopy && !fullPath.contains(sourcePath)) {
             File possible = new File(sourcePath + File.separator + file.getNameExt());
             if (possible.exists()) {
                 return null;
-            } else {
-                try {
-                    file = file.copy(sourceFolder, file.getName(), file.getExt());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            }
+
+            try {
+                file = file.copy(sourceFolder, file.getName(), file.getExt());
+            } catch (IOException ex) {
+                Debug.warning("SVGImageEditorElement.convertFile()", fullPath, ex); // NOI18N
             }
         }
 
-        fullPath = file.getPath();
-        int i = fullPath.indexOf(sourcePath) + sourcePath.length();
-        return fullPath.substring(i);
+        String relativePath;
+        if (needCopy || fullPath.contains(sourcePath)) { // file was copied or is in some package, not in roof folder in sources
+            fullPath = file.getPath();
+            int i = fullPath.indexOf(sourcePath) + sourcePath.length();
+            relativePath = fullPath.substring(i);
+        } else {
+            relativePath = "/" + file.getNameExt(); // NOI18N
+        }
+        paths.put(relativePath, fullPath);
+
+        return relativePath;
     }
 
     private static class ImageFilter extends FileFilter {
@@ -414,7 +426,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(chooser.getSelectedFile()));
             lastDir = chooser.getSelectedFile().getParentFile().getPath();
-            String relativePath = convertFile(fo);
+            String relativePath = convertFile(fo, true);
             if (relativePath != null) {
                 setText(relativePath);
                 pathTextComboBoxActionPerformed(null);
@@ -431,10 +443,8 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
             String text = (String) pathTextComboBox.getSelectedItem();
             fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
             updatePreview();
-       }
+        }
     }//GEN-LAST:event_pathTextComboBoxActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooserButton;
     private javax.swing.JLabel heightLabel;

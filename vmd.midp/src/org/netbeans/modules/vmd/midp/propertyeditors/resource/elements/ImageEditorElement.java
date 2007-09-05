@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
@@ -51,7 +52,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,8 +68,10 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     private ImagePreview imagePreview;
     private Image image;
     private DefaultComboBoxModel comboBoxModel;
+    private Map<String, String> paths;
 
     public ImageEditorElement() {
+        paths = new HashMap<String, String>();
         comboBoxModel = new DefaultComboBoxModel();
         initComponents();
         imagePreview = new ImagePreview();
@@ -209,7 +211,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             } else {
                 for (String ext : EXTENSIONS) {
                     if (ext.equals(fo.getExt().toLowerCase())) {
-                        String path = convertFile(fo);
+                        String path = convertFile(fo, false);
                         if (path != null) {
                             addImage(path);
                         }
@@ -222,14 +224,16 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
 
     private void updatePreview() {
         String relativePath = (String) pathTextComboBox.getSelectedItem();
-        String path = getSourceFolder().getPath() + relativePath;
+        String path = paths.get(relativePath);
         BufferedImage bufferedImage = null;
         FileObject fo = null;
         try {
-            File file = new File(path);
-            bufferedImage = ImageIO.read(file);
-            if (bufferedImage != null) {
-                fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            if (path != null) {
+                File file = new File(path);
+                bufferedImage = ImageIO.read(file);
+                if (bufferedImage != null) {
+                    fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                }
             }
         } catch (IOException ex) {
         }
@@ -267,27 +271,35 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         return ProjectUtils.getSourceGroups(projectID).iterator().next().getRootFolder();
     }
 
-    private String convertFile(FileObject file) {
+    private String convertFile(FileObject file, boolean needCopy) {
         String fullPath = file.getPath();
         FileObject sourceFolder = getSourceFolder();
         String sourcePath = sourceFolder.getPath();
 
-        if (!fullPath.contains(sourcePath)) {
+        if (needCopy && !fullPath.contains(sourcePath)) {
             File possible = new File(sourcePath + File.separator + file.getNameExt());
             if (possible.exists()) {
                 return null;
-            } else {
-                try {
-                    file = file.copy(sourceFolder, file.getName(), file.getExt());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            }
+
+            try {
+                file = file.copy(sourceFolder, file.getName(), file.getExt());
+            } catch (IOException ex) {
+                Debug.warning("ImageEditorElement.convertFile()", fullPath, ex); // NOI18N
             }
         }
 
-        fullPath = file.getPath();
-        int i = fullPath.indexOf(sourcePath) + sourcePath.length();
-        return fullPath.substring(i);
+        String relativePath;
+        if (needCopy || fullPath.contains(sourcePath)) { // file was copied or is in some package, not in roof folder in sources
+            fullPath = file.getPath();
+            int i = fullPath.indexOf(sourcePath) + sourcePath.length();
+            relativePath = fullPath.substring(i);
+        } else {
+            relativePath = "/" + file.getNameExt(); // NOI18N
+        }
+        paths.put(relativePath, fullPath);
+
+        return relativePath;
     }
 
     private static class ImageFilter extends FileFilter {
@@ -498,7 +510,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(chooser.getSelectedFile()));
             lastDir = chooser.getSelectedFile().getParentFile().getPath();
-            String relativePath = convertFile(fo);
+            String relativePath = convertFile(fo, true);
             if (relativePath != null) {
                 setText(relativePath);
                 pathTextComboBoxActionPerformed(null);

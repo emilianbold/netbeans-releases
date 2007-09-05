@@ -61,7 +61,7 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
         DesignComponent imageComponent = null;
         String path = null;
         if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
-            value.getComponent();
+            imageComponent = value.getComponent();
             if (imageComponent != null) {
                 path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
             }
