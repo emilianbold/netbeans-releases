@@ -32,11 +32,6 @@ public class TestNotifierTest extends TestCase {
         assertTrue(notifier.recognizeLine("1 example, 1 failure"));
     }
 
-    public void testStripAnsiColors() {
-        assertEquals("3 examples, 0 failures", TestNotifier.stripAnsiColors("\033[32m3 examples, 0 failures\033[0m"));
-        assertEquals("3 examples, 0 failures", TestNotifier.stripAnsiColors("\033[1;35m3 examples, 0 failures\033[0m"));
-    }
-    
     public void testWindows() {        
         TestNotifier notifier = new TestNotifier(false, false);
 

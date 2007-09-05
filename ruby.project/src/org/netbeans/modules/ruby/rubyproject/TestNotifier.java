@@ -98,12 +98,12 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
             return null;
         }
 
-        for (Pattern pattern : PATTERNS) {
-            String line = outputLine;
-            if (pattern == RSPEC_PATTERN && containsAnsiColors(outputLine)) {
-                line = stripAnsiColors(outputLine);
-            }
+        String line = outputLine;
+        if (Util.containsAnsiColors(outputLine)) {
+            line = Util.stripAnsiColors(outputLine);
+        }
 
+        for (Pattern pattern : PATTERNS) {
             Matcher match = pattern.matcher(line);
             if (match.matches()) {
                 String summary;
@@ -116,7 +116,19 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                 
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestNotifier.class, "TestsCompleted", summary));
                 // TODO - fail on "not implemented" too?
-                if ((line.indexOf(" 0 failures") == -1) || (line.indexOf(" 0 errors") == -1)) { // NOI18N
+                boolean failure = false;
+                if (pattern == RSPEC_PATTERN) {
+                    if (line.indexOf("0 failures") == -1) {
+                        failure = true;
+                    }
+                } else {
+                    assert pattern == TEST_UNIT_PATTERN;
+                    if ((line.indexOf(" 0 failures") == -1) || (line.indexOf(" 0 errors") == -1)) { // NOI18N
+                        failure = true;
+                    }
+                }
+
+                if (failure) {
                     warning = true;
                     message = NbBundle.getMessage(AutoTestSupport.class, "TestsFailed", summary);
                     run();
@@ -125,11 +137,11 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                     message = NbBundle.getMessage(AutoTestSupport.class, "TestsCompleted", summary);
                     run();
                 }
-                
-                if (line != outputLine) {
-                    return new ActionText(new String[] { line }, null, null, null);
-                }
             }
+        }
+
+        if (line != outputLine) {
+            return new ActionText(new String[] { line }, null, null, null);
         }
         return null;
     }
@@ -179,32 +191,6 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         }
     }
     
-    static boolean containsAnsiColors(String line) {
-        // RSpec will color output with ANSI color sequence terminal escapes
-        return line.startsWith("\033["); // NOI18N
-    }
-    
-    static String stripAnsiColors(String line) {
-        if (line.startsWith("\033[")) { // NOI18N
-            int start = line.indexOf("m"); // NOI18N
-            if (start != -1) {
-                StringBuilder sb = new StringBuilder(line.length());
-                for (int i = start+1; i < line.length(); i++) {
-                    char c = line.charAt(i);
-                    if (c == '\033') {
-                        break;
-                    } else {
-                        sb.append(c);
-                    }
-                }
-
-                return sb.toString();
-            }
-        }
- 
-        return line;
-    }
-
     /** For unit tests only.
      * @todo Use a mock object for the status displayer and test processLine itself instead
      */

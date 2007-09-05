@@ -52,6 +52,44 @@ public class Util {
     
     private Util() {}
     
+    /** Return true iff the given line seems to be colored using ANSI terminal escape codes */
+    public static boolean containsAnsiColors(String line) {
+        // RSpec will color output with ANSI color sequence terminal escapes
+        return line.indexOf("\033[") != -1; // NOI18N
+    }
+    
+    /**
+     * Remove ANSI terminal escape codes from a line.
+     */
+    public static String stripAnsiColors(String line) {
+        StringBuilder sb = new StringBuilder(line.length());
+        int index = 0;
+        int max = line.length();
+        while (index < max) {
+            int nextEscape = line.indexOf("\033[", index);
+            if (nextEscape == -1) {
+                nextEscape = line.length();
+            }
+            
+            for (int n = (nextEscape == -1) ? max : nextEscape; index < n; index++) {
+                sb.append(line.charAt(index));
+            }
+
+            if (nextEscape != -1) {
+                for (; index < max; index++) {
+                    char c = line.charAt(index);
+                    if (c == 'm') {
+                        index++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    
     // XXX XML methods copied from ant/project... make a general API of these instead?
     
     /**
