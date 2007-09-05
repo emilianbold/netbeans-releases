@@ -66,7 +66,8 @@ public class FastImportAction extends BaseAction {
             final Point where = new Point( carretRectangle.x, carretRectangle.y + carretRectangle.height );
             SwingUtilities.convertPointToScreen( where, target);
 
-            final String ident = Utilities.getIdentifier(Utilities.getDocument(target), target.getCaretPosition());
+            final int position = target.getCaretPosition();
+            final String ident = Utilities.getIdentifier(Utilities.getDocument(target), position);
             FileObject file = getFile(target.getDocument());
             
             if (ident == null || file == null) {
@@ -96,13 +97,13 @@ public class FastImportAction extends BaseAction {
                         return ;
                     }
                     
-                    final List<TypeElement> denied      = new ArrayList(result.b.get(ident));
+                    final List<TypeElement> denied = new ArrayList<TypeElement>(result.b.get(ident));
                     
                     denied.removeAll(priviledged);
                     
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            ImportClassPanel panel = new ImportClassPanel(priviledged, denied, font, javaSource);                            
+                            ImportClassPanel panel = new ImportClassPanel(priviledged, denied, font, javaSource, position);
                             PopupUtil.showPopup(panel, "", where.x, where.y, true, carretRectangle.height );
                         }
                     });
