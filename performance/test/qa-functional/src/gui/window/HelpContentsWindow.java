@@ -50,8 +50,7 @@ public class HelpContentsWindow extends org.netbeans.performance.test.utilities.
     
     public ComponentOperator open() {
         // invoke Help / Contents from the main menu
-        new HelpAction().performMenu();
-        waitNoEvent(2000);
+        new HelpAction().performShortcut();
         return new HelpOperator();
     }
     
