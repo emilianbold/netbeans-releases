@@ -596,7 +596,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     
     public static abstract class NodeToFileObjectTask implements Runnable, CancellableTask<CompilationController> {
         private Collection<? extends Node> nodes;
-        private RefactoringUI ui;
         public NonRecursiveFolder pkg[];
         public WeakReference<CompilationInfo> cinfo;
         Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
