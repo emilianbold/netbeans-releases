@@ -64,12 +64,12 @@ public class CsmImageLoader implements CsmImageName {
         return getCachedImageIcon(iconPath);        
     }
     
-    public static ImageIcon getIncludeImageIcon(boolean usrIncludeKind, boolean folder) {
+    public static ImageIcon getIncludeImageIcon(boolean sysIncludeKind, boolean folder) {
         String iconPath;
         if (folder) {
-            iconPath = usrIncludeKind ? INCLUDE_USR_FOLDER : INCLUDE_SYS_FOLDER;
+            iconPath = sysIncludeKind ? INCLUDE_SYS_FOLDER : INCLUDE_USR_FOLDER;
         } else {
-            iconPath = usrIncludeKind ? INCLUDE_USER : INCLUDE_SYSTEM;
+            iconPath = sysIncludeKind ? INCLUDE_SYSTEM : INCLUDE_USER;
         }
         return getCachedImageIcon(iconPath);        
     }
