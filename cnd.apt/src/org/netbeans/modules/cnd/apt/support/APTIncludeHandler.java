@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.util.Stack;
-import org.netbeans.modules.cnd.repository.spi.Key;
-
 /**
  *
  * @author Vladimir Voskresensky
