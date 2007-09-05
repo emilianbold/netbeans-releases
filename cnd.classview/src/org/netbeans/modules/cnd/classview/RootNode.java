@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.classview;
 
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 
 /**
  *
@@ -35,6 +34,5 @@ public class RootNode extends AbstractNode{
     public void destroy(){
         ProjectsKeyArray keys = (ProjectsKeyArray)getChildren();
         keys.dispose();
-        setChildren(new Children.Array());
     }
 }
