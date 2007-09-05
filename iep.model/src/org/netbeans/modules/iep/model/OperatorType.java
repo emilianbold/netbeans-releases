@@ -6,7 +6,7 @@ public enum OperatorType {
 	OPERATOR_NONE("i18n.IEP.IOType.none"),
 	OPERATOR_STREAM("i18n.IEP.IOType.stream"),
 	OPERATOR_RELATION("i18n.IEP.IOType.relation"), 
-	OPERATOR_TABLE("i18n.IEP.IOType.stream");
+	OPERATOR_TABLE("i18n.IEP.IOType.table");
 	
 	private final String mType;
 	
