@@ -376,7 +376,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 return false;
             
             //it is drag and drop
-            Set<DataFolder> folders = new HashSet();
+            Set<DataFolder> folders = new HashSet<DataFolder>();
             boolean jdoFound = false;
             for (Node n:nodes) {
                 DataObject dob = n.getCookie(DataObject.class);
@@ -629,9 +629,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             }
             if (!publicHandles.isEmpty()) {
-                handles = publicHandles;
+                handles.addAll(publicHandles);
             } else {
-                handles = sameNameHandles;
+                handles.addAll(sameNameHandles);
             }
             cinfo=new WeakReference<CompilationInfo>(info);
         }
@@ -641,7 +641,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             pkg = new NonRecursiveFolder[fobs.length];
             int i = 0;
             for (Node node:nodes) {
-                DataObject dob = (DataObject) node.getCookie(DataObject.class);
+                DataObject dob = node.getCookie(DataObject.class);
                 if (dob!=null) {
                     fobs[i] = dob.getPrimaryFile();
                     if (RetoucheUtils.isJavaFile(fobs[i])) {
