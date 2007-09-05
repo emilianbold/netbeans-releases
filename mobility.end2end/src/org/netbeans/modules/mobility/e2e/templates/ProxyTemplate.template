@@ -11,28 +11,35 @@ import ${servicePackage}.*;
  */
 public class ${proxyClassName} {
 
-    @WebServiceRef( wsdlLocation = "${service.getUrl()}" )
     public ${service.getType()} service;
 
 <#list methods as method>
     public ${method.getReturnType().getName()} ${method.getName()}(<#rt>
-    <#lt><#list method.getParameters() as parameter>${parameter.getType().getName()} ${parameter.getName()}<#if parameter_has_next>, </#if></#list>) {
+    <#lt><#list method.getParameters() as parameter>${parameter.getType().getName()} ${parameter.getName()}<#if parameter_has_next>, </#if></#list>) throws Exception {
         <#if method.getReturnType().getName() != "void"><#rt>
-            ${method.getReturnType().getName()} _result = null;
+            ${method.getReturnType().getName()} _result;
         </#if>
         try { // Call Web Service Operation
-            ${portClassName} port = service.${portGetterName}();
+            ${portClassName} port = getService().${portGetterName}();
             <#if method.getReturnType().getName() == "void"><#rt>
                 port.${method.getName()}(<#list method.getParameters() as parameter>${parameter.getName()}<#if parameter_has_next>, </#if></#list>);
             <#else>
-                _result = ${method.getName()}(<#list method.getParameters() as parameter>${parameter.getName()}<#if parameter_has_next>, </#if></#list>);
+                _result = port.${method.getName()}(<#list method.getParameters() as parameter>${parameter.getName()}<#if parameter_has_next>, </#if></#list>);
             </#if>
         } catch( Exception ex ) {
             ex.printStackTrace();
+            throw ex;
         }
         <#if method.getReturnType().getName() != "void"><#rt>
         return _result;
         </#if>
     }
 </#list>
+
+    public ${service.getType()} getService(){
+        if (service == null){
+            service = new ${service.getType()}();
+        }
+        return service;
+    }
 }
