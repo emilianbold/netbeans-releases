@@ -41,6 +41,7 @@ public class DerbyDatabaseTest extends DbJellyTestCase {
     public void testStartAction() {
        StartAction start=SystemAction.get(StartAction.class);
        start.performAction();
+       // we need a support to detect that the DB started see: #112788
        sleep(15000);
     }
     
