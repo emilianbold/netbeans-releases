@@ -41,6 +41,7 @@ import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -110,7 +111,8 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
         lblTitle.setText(getBundleString("FixDupImportStmts_IntroLbl")); //NOI18N
         lblHeader.setText(getBundleString("FixDupImportStmts_Header")); //NOI18N
         
-        checkUnusedImports = new JCheckBox(getBundleString("FixDupImportStmts_UnusedImports")); //NOI18N
+        checkUnusedImports = new JCheckBox();
+        Mnemonics.setLocalizedText(checkUnusedImports, getBundleString("FixDupImportStmts_UnusedImports")); //NOI18N
         bottomPanel.add( checkUnusedImports, BorderLayout.WEST );
         checkUnusedImports.setEnabled(true);
         checkUnusedImports.setSelected(removeUnusedImports);
