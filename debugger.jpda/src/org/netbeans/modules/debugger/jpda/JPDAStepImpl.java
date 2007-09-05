@@ -118,6 +118,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         if (vm == null) {
             return ; // The session has finished
         }
+        SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
+        boolean[] setStoppedStateNoContinue = new boolean[] { false };
+        synchronized (((JPDADebuggerImpl) debugger).LOCK) {
+        // Synchronize on debugger LOCK first so that it can not happen that we
+        // take locks in the opposite order.
         synchronized (tr) {
             ((JPDAThreadImpl) tr).waitUntilMethodInvokeDone();
             EventRequestManager erm = vm.eventRequestManager();
@@ -134,7 +139,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                            ((getDepth() == JPDAStep.STEP_OVER) ? "over" : "out"))
                        +" in thread "+tr.getName());
             if (size == JPDAStep.STEP_OPERATION) {
-                stepAdded = addOperationStep(trImpl, false);
+                stepAdded = addOperationStep(trImpl, false, sourcePath,
+                                             setStoppedStateNoContinue);
                 if (!stepAdded) {
                     size = JPDAStep.STEP_LINE;
                     logger.log(Level.FINE, "Operation step changed to line step");
@@ -163,9 +169,15 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 }
             }
         }
+        }
+        if (setStoppedStateNoContinue[0]) {
+            debuggerImpl.setStoppedStateNoContinue(trImpl.getThreadReference());
+        }
     }
     
-    private boolean addOperationStep(JPDAThreadImpl tr, boolean lineStepExec) {
+    private boolean addOperationStep(JPDAThreadImpl tr, boolean lineStepExec,
+                                     SourcePath sourcePath,
+                                     boolean[] setStoppedStateNoContinue) {
         ThreadReference trRef = tr.getThreadReference();
         StackFrame sf;
         try {
@@ -176,7 +188,6 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         Location loc = sf.location();
         Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         String language = currentSession == null ? null : currentSession.getCurrentLanguage();
-        SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
         String url = sourcePath.getURL(loc, language);
         ExpressionPool exprPool = ((JPDADebuggerImpl) debugger).getExpressionPool();
         ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);
@@ -201,8 +212,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         return false;
                     }
                     if (! getHidden()) {
-                        JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl)debugger;
-                        debuggerImpl.setStoppedStateNoContinue(tr.getThreadReference());
+                        setStoppedStateNoContinue[0] = true;
                     }
                     return true;
                 }
@@ -305,63 +315,76 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             stepWatch = null;
         }
         // TODO: Check the location, follow the smart-stepping logic!
+        SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
+        boolean stepAdded = false;
+        boolean[] setStoppedStateNoContinue = new boolean[] { false };
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl)debugger;
-        JPDAThreadImpl tr = (JPDAThreadImpl)debuggerImpl.getCurrentThread();
-        VirtualMachine vm = debuggerImpl.getVirtualMachine();
-        if (vm == null) {
-            return false; // The session has finished
-        }
-        if (lastMethodExitBreakpointListener != null) {
-            Variable returnValue = lastMethodExitBreakpointListener.getReturnValue();
-            lastMethodExitBreakpointListener.destroy();
-            lastMethodExitBreakpointListener = null;
-            lastOperation.setReturnValue(returnValue);
-        }
-        if (lastOperation != null) {
-            tr.addLastOperation(lastOperation);
-        }
-        Operation currentOperation = null;
-        boolean addExprStep = false;
-        if (currentOperations != null) {
-            if (event.request() instanceof BreakpointRequest) {
-                long codeIndex = ((BreakpointRequest) event.request()).location().codeIndex();
-                for (int i = 0; i < currentOperations.length; i++) {
-                    if (currentOperations[i].getBytecodeIndex() == codeIndex) {
-                        currentOperation = currentOperations[i];
-                        break;
+        JPDAThreadImpl tr;
+        synchronized {
+            tr = (JPDAThreadImpl) debuggerImpl.getCurrentThread();
+            VirtualMachine vm = debuggerImpl.getVirtualMachine();
+            if (vm == null) {
+                return false; // The session has finished
+            }
+            if (lastMethodExitBreakpointListener != null) {
+                Variable returnValue = lastMethodExitBreakpointListener.getReturnValue();
+                lastMethodExitBreakpointListener.destroy();
+                lastMethodExitBreakpointListener = null;
+                lastOperation.setReturnValue(returnValue);
+            }
+            if (lastOperation != null) {
+                tr.addLastOperation(lastOperation);
+            }
+            Operation currentOperation = null;
+            boolean addExprStep = false;
+            if (currentOperations != null) {
+                if (event.request() instanceof BreakpointRequest) {
+                    long codeIndex = ((BreakpointRequest) event.request()).location().codeIndex();
+                    for (int i = 0; i < currentOperations.length; i++) {
+                        if (currentOperations[i].getBytecodeIndex() == codeIndex) {
+                            currentOperation = currentOperations[i];
+                            break;
+                        }
                     }
+                } else {
+                    // A line step was finished, the execution of current expression
+                    // has finished, we need to check the expression on this line.
+                    addExprStep = true;
                 }
-            } else {
-                // A line step was finished, the execution of current expression
-                // has finished, we need to check the expression on this line.
-                addExprStep = true;
+                this.currentOperations = null;
             }
-            this.currentOperations = null;
-        }
-        tr.setCurrentOperation(currentOperation);
-        EventRequestManager erm = vm.eventRequestManager();
-        EventRequest eventRequest = event.request();
-        erm.deleteEventRequest(eventRequest);
-        if (eventRequest instanceof StepRequest) {
-            SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
-        }
-        if (operationBreakpoints != null) {
-            for (Iterator<BreakpointRequest> it = operationBreakpoints.iterator(); it.hasNext(); ) {
-                erm.deleteEventRequest(it.next());
+            tr.setCurrentOperation(currentOperation);
+            EventRequestManager erm = vm.eventRequestManager();
+            EventRequest eventRequest = event.request();
+            erm.deleteEventRequest(eventRequest);
+            if (eventRequest instanceof StepRequest) {
+                SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
             }
-            this.operationBreakpoints = null;
-        }
-        if (boundaryStepRequest != null) {
-            erm.deleteEventRequest(boundaryStepRequest);
-            SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
-        }
-        int suspendPolicy = debugger.getSuspend();
-        if (addExprStep) {
-            if (addOperationStep(tr, true)) {
-                return true; // Resume
+            if (operationBreakpoints != null) {
+                for (Iterator<BreakpointRequest> it = operationBreakpoints.iterator(); it.hasNext(); ) {
+                    erm.deleteEventRequest(it.next());
+                }
+                this.operationBreakpoints = null;
+            }
+            if (boundaryStepRequest != null) {
+                erm.deleteEventRequest(boundaryStepRequest);
+                SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
+            }
+            int suspendPolicy = debugger.getSuspend();
+            if (addExprStep) {
+                stepAdded = addOperationStep(tr, true, sourcePath,
+                                             setStoppedStateNoContinue);
+            }
+            if (!stepAdded) {
+                if ((event.request() instanceof StepRequest) && shouldNotStopHere(event)) {
+                    return true; // Resume
+                }
             }
         }
-        if ((event.request() instanceof StepRequest) && shouldNotStopHere(event)) {
+        if (stepAdded) {
+            if (setStoppedStateNoContinue[0]) {
+                debuggerImpl.setStoppedStateNoContinue(tr.getThreadReference());
+            }
             return true; // Resume
         }
         firePropertyChange(PROP_STATE_EXEC, null, null);
