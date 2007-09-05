@@ -219,6 +219,7 @@ public class ProjectsRootNode extends AbstractNode {
             LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
             
             Node nodes[] = null;
+            boolean projectInLookup = true;
                         
             if ( type == PHYSICAL_VIEW ) {
                 Sources sources = ProjectUtils.getSources( project );
@@ -245,6 +246,8 @@ public class ProjectsRootNode extends AbstractNode {
                 if (nodes[0].getLookup().lookup(Project.class) != project) {
                     // Various actions, badging, etc. are not going to work.
                     ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view"); // NOI18N
+                    //#114664
+                    projectInLookup = false;
                 }
             }
 
@@ -256,7 +259,7 @@ public class ProjectsRootNode extends AbstractNode {
                 }
                 else {
                     badgedNodes[i] = new BadgingNode( nodes[i],
-                                                      type == LOGICAL_VIEW );
+                                                      type == LOGICAL_VIEW  && projectInLookup);
                 }
             }
                         
