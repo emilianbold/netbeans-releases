@@ -362,7 +362,6 @@ public final class ModuleUpdater extends Thread {
 
                     if (! nbmFiles[i].delete ()) {
                         System.out.println("Error: Cannot delete " + nbmFiles [i]); // NOI18N
-                        assert false : "Cannot delete " + nbmFiles [i];
                         nbmFiles [i].deleteOnExit ();
                     }
                 }
@@ -509,6 +508,8 @@ public final class ModuleUpdater extends Thread {
         finally {
             bsrc.close();
             bdest.close();
+            src.close();
+            dest.close();
         }
         return progressVal;
 
