@@ -855,6 +855,21 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0.1/src/org
 +    public abstract void setMutableState(Object o);
 +    // END NETBEANS MODIFICATIONS
  }
+diff -u -r jruby-1.0.1/src/org/jruby/libraries/RbConfigLibrary.java jruby-1.0.1/src/org/jruby/libraries/RbConfigLibrary.java
+--- jruby-1.0.1/src/org/jruby/libraries/RbConfigLibrary.java	2007-08-23 19:14:44.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/libraries/RbConfigLibrary.java	2007-09-05 13:43:41.000000000 -0700
+@@ -76,9 +76,9 @@
+         setConfig(configHash, "target_cpu", System.getProperty("os.arch"));
+         
+         String jrubyJarFile = "jruby.jar";
+-        URL jrubyPropertiesUrl = Ruby.class.getClassLoader().getResource("jruby.properties");
++        URL jrubyPropertiesUrl = Ruby.class.getClassLoader().getResource("/org/jruby/jruby.properties");
+         if (jrubyPropertiesUrl != null) {
+-            Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!/jruby.properties");
++            Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!/org/jruby/jruby.properties");
+             Matcher jarMatcher = jarFile.matcher(jrubyPropertiesUrl.toString());
+             jarMatcher.find();
+             if (jarMatcher.matches()) {
 diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java
 --- jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java	2007-08-23 19:14:06.000000000 -0700
 +++ jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java	2007-08-31 08:46:21.000000000 -0700
@@ -1245,6 +1260,15 @@ diff -u -r jruby-1.0.1/src/org/jruby/runtime/Constants.java jruby-1.0.1/src/org/
          } catch (IOException ioe) {
              ioe.printStackTrace();
          }
+@@ -63,7 +69,7 @@
+         VERSION = properties.getProperty("version.jruby");
+         BUILD = properties.getProperty("build.jruby");
+         TARGET = properties.getProperty("target.jruby");
+-        Matcher matcher = Pattern.compile("\\$Revision$").matcher(properties.getProperty("revision.jruby"));
++        Matcher matcher = Pattern.compile("\\$Re" + "vision: (.*?) \\$").matcher(properties.getProperty("revision.jruby"));
+         if (matcher.find()) {
+             REVISION = matcher.group(1);
+         } else {
 diff -u -r jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java
 --- jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java	2007-08-23 19:13:48.000000000 -0700
 +++ jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java	2007-08-31 08:46:21.000000000 -0700
