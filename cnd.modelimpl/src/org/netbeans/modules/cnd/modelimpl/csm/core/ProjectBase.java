@@ -431,7 +431,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                     }
                     try {
                         System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
-                        Thread.currentThread().sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
+                        Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
                         System.err.println("woke up after sleep");
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
@@ -456,7 +456,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
             try {
                 System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before getting files from project");
-                Thread.currentThread().sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
+                Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
                 System.err.println("woke up after sleep");
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
@@ -487,7 +487,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
             try {
                 System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec after getting files from project");
-                Thread.currentThread().sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
+                Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
                 System.err.println("woke up after sleep");
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
@@ -702,8 +702,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         if (!isSourceFile(nativeFile)){
             nativeFile = new DefaultFileItem(nativeFile);
         }
-        List userIncludePaths = nativeFile.getUserIncludePaths();
-        List sysIncludePaths = nativeFile.getSystemIncludePaths();
+        List<String> userIncludePaths = nativeFile.getUserIncludePaths();
+        List<String> sysIncludePaths = nativeFile.getSystemIncludePaths();
         sysIncludePaths = sysAPTData.getIncludes(sysIncludePaths.toString(), sysIncludePaths);
         StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true),
                 RepositoryUtils.UIDtoKey(getUID()));
@@ -1188,8 +1188,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     private NamespaceImpl _getNamespace( String key ) {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespace> uid = namespaces.get(key);
-            NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(uid);
+            CsmUID<CsmNamespace> nsUID = namespaces.get(key);
+            NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(nsUID);
             return ns;
         } else {
             return namespacesOLD.get(key);
@@ -1201,9 +1201,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         String key = ns.getQualifiedName();
         assert (key != null);
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespace> uid = RepositoryUtils.put(ns);
-            assert uid != null;
-            namespaces.put(key, uid);
+            CsmUID<CsmNamespace> nsUID = RepositoryUtils.put(ns);
+            assert nsUID != null;
+            namespaces.put(key, nsUID);
         } else {
             namespacesOLD.put(key, ns);
         }
@@ -1215,9 +1215,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         String key = ns.getQualifiedName();
         assert (key != null);
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespace> uid = namespaces.remove(key);
-            assert uid != null;
-            RepositoryUtils.remove(uid);
+            CsmUID<CsmNamespace> nsUID = namespaces.remove(key);
+            assert nsUID != null;
+            RepositoryUtils.remove(nsUID);
         } else {
             namespacesOLD.remove(key);
         }
@@ -1329,6 +1329,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return getFileContainer().getSize();
     }
     
+    @Override
     public String toString() {
         return getName() + ' ' + getClass().getName() + " @" + hashCode(); // NOI18N
     }
@@ -1338,7 +1339,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             File file = fileImpl.getBuffer().getFile();
             Object stateLock = getFileContainer().getLock(file);
             synchronized (stateLock) {
-                APTPreprocHandler.State rememberedState = (APTPreprocHandler.State) getPreprocState(file);
+                APTPreprocHandler.State rememberedState = getPreprocState(file);
                 if (TRACE_PP_STATE_OUT) System.err.println("was " + rememberedState);
                 if (rememberedState != null) {
                     if (state2Clean.equals(rememberedState)) {
@@ -1403,7 +1404,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                         walker.visit();
                         if (REMEMBER_RESTORED) {
                             if (testRestoredFiles == null) {
-                                testRestoredFiles = new ArrayList();
+                                testRestoredFiles = new ArrayList<String>();
                             }
                             FileImpl interestedFileImpl = getFile(interestedFile);
                             assert interestedFileImpl != null;
@@ -1464,32 +1465,32 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             this.absolutePath = nativeFile.getFile().getAbsolutePath();
         }
         
-        public List getUserMacroDefinitions() {
+        public List<String> getUserMacroDefinitions() {
             if (project != null) {
                 return project.getUserMacroDefinitions();
             }
-            return Collections.EMPTY_LIST;
+            return Collections.<String>emptyList();
         }
         
-        public List getUserIncludePaths() {
+        public List<String> getUserIncludePaths() {
             if (project != null) {
                 return project.getUserIncludePaths();
             }
-            return Collections.EMPTY_LIST;
+            return Collections.<String>emptyList();
         }
         
-        public List getSystemMacroDefinitions() {
+        public List<String> getSystemMacroDefinitions() {
             if (project != null) {
                 return project.getSystemMacroDefinitions();
             }
-            return Collections.EMPTY_LIST;
+            return Collections.<String>emptyList();
         }
         
-        public List getSystemIncludePaths() {
+        public List<String> getSystemIncludePaths() {
             if (project != null) {
                 return project.getSystemIncludePaths();
             }
-            return Collections.EMPTY_LIST;
+            return Collections.<String>emptyList();
         }
         
         public NativeProject getNativeProject() {
@@ -1586,7 +1587,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return testRestoredFiles;
     }
     
-    private static List testRestoredFiles = null;
+    private static List<String> testRestoredFiles = null;
     ////////////////////////////////////////////////////////////////////////////
     
     ////////////////////////////////////////////////////////////////////////////
@@ -1646,11 +1647,11 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         this.globalNamespaceOLD = null;
     }
     
-    public DeclarationContainer getDeclarationsSorage() {
+    DeclarationContainer getDeclarationsSorage() {
         return (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
     }
     
-    public FileContainer getFileContainer() {
+    FileContainer getFileContainer() {
         FileContainer fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
         if( fc == null ) {
             System.err.printf("Failed to get FileContainer by key %s\n", fileContainerKey);
