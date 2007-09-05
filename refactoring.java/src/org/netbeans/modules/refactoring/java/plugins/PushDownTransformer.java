@@ -71,7 +71,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                     Element current = workingCopy.getTrees().getElement(TreePath.getPath(workingCopy.getCompilationUnit(), t));
                     if (members[i].getGroup()!=MemberInfo.Group.IMPLEMENTS && current!=null && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
                         if (members[i].isMakeAbstract()) {
-                            if (current.getKind().isClass()) {
+                            if (el.getKind().isClass()) {
                                 if (!classIsAbstract) {
                                     classIsAbstract = true;
                                     Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
@@ -84,15 +84,15 @@ public class PushDownTransformer extends RefactoringVisitor {
                                 MethodTree method = (MethodTree) t;
                                 Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
                                 mod.add(Modifier.ABSTRACT);
-                            MethodTree nju = make.Method(
-                                    make.Modifiers(mod),
-                                    method.getName(),
-                                    method.getReturnType(),
-                                    method.getTypeParameters(),
-                                    method.getParameters(),
-                                    method.getThrows(),
-                                    (BlockTree) null,
-                                    (ExpressionTree)method.getDefaultValue());
+                                MethodTree nju = make.Method(
+                                        make.Modifiers(mod),
+                                        method.getName(),
+                                        method.getReturnType(),
+                                        method.getTypeParameters(),
+                                        method.getParameters(),
+                                        method.getThrows(),
+                                        (BlockTree) null,
+                                        (ExpressionTree)method.getDefaultValue());
                                 rewrite(method, nju);
                             }
                         } else {
