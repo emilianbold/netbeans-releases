@@ -3,4 +3,4 @@ OpenIDE-Module: org.netbeans.modules.cnd.model.services/1
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/model/services/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1.1
-
+AutoUpdate-Show-In-Client: false
