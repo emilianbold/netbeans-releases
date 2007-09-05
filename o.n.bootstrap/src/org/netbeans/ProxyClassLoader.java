@@ -95,10 +95,15 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             for (String pkg : coveredPackages) {
                 Set<ProxyClassLoader> delegates = packageCoverage.get(pkg); 
                 if (delegates == null) { 
-                    delegates = new HashSet<ProxyClassLoader>();
+                    delegates = Collections.<ProxyClassLoader>singleton(this);
                     packageCoverage.put(pkg, delegates); 
-                } 
-                delegates.add(this); 
+                } else if (delegates.size() == 1) {
+                    delegates = new HashSet<ProxyClassLoader>(delegates);
+                    packageCoverage.put(pkg, delegates);
+                    delegates.add(this); 
+                } else {
+                    delegates.add(this);
+                }
             }
         }
         
@@ -156,7 +161,8 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         Class cls = null;
 
         int last = name.lastIndexOf('.');
-        String pkg = (last >= 0) ? name.substring(0, last) : "";
+        // Strip+intern or use from package coverage
+        String pkg = (last >= 0) ? name.substring(0, last) : ""; 
 
         final String path = pkg.replace('.', '/') + "/";
 
@@ -180,7 +186,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             // simple package coverage
             ProxyClassLoader pcl = del.iterator().next();
             if (pcl == this || (parentSet.contains(pcl) && shouldDelegateResource(path, pcl))) {
-                cls = pcl.selfLoadClass(name);
+                cls = pcl.selfLoadClass(pkg, name);
                 if (cls != null) sclPackages.put(pkg, false);
             }/* else { // maybe it is also covered by SCL
                 if (shouldDelegateResource(path, null)) cls = systemCL.loadClass(name);
@@ -189,11 +195,11 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             // multicovered package, search in order
             for (ProxyClassLoader pcl : parents) { // all our accessible parents
                 if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
-                    cls = pcl.selfLoadClass(name);
+                    cls = pcl.selfLoadClass(pkg, name);
                     if (cls != null) break;
                 } 
             } 
-            if (cls == null && del.contains(this)) cls = selfLoadClass(name); 
+            if (cls == null && del.contains(this)) cls = selfLoadClass(pkg, name); 
             if (cls != null) sclPackages.put(pkg, false); 
         } 
         if (cls == null && shouldDelegateResource(path, null)) cls = systemCL.loadClass(name); // may throw CNFE
@@ -203,9 +209,9 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     }       
 
     /** May return null */ 
-    private synchronized Class selfLoadClass(String name) { 
+    private synchronized Class selfLoadClass(String pkg, String name) { 
         Class cls = findLoadedClass(name); 
-        if (cls == null) cls = doLoadClass(name); 
+        if (cls == null) cls = doLoadClass(pkg, name); 
         return cls; 
     }
 
@@ -218,7 +224,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
      * @param  name the name of the class
      * @return the resulting <code>Class</code> object or <code>null</code>
      */
-    protected Class doLoadClass(String name) {
+    protected Class doLoadClass(String pkg, String name) {
         return null;
     }
     
@@ -569,8 +575,10 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             for (Iterator<String> it = packageCoverage.keySet().iterator(); it.hasNext(); ) {
                 String pkg = it.next();
                 Set<ProxyClassLoader> set = packageCoverage.get(pkg);
-                if (set.remove(this)) {
-                    if (set.isEmpty()) it.remove();
+                if (set.contains(this) && set.size() == 1 ) {
+                    it.remove();
+                } else {
+                    if (set.remove(this));
                 }
             }
         }

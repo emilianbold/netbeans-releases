@@ -138,7 +138,7 @@ public class JarClassLoader extends ProxyClassLoader {
     }
 
     @Override
-    protected Class doLoadClass(String name) {
+    protected Class doLoadClass(String pkgName, String name) {
         String path = name.replace('.', '/').concat(".class"); // NOI18N
         
         // look up the Sources and return a class based on their content
@@ -151,8 +151,6 @@ public class JarClassLoader extends ProxyClassLoader {
             byte[] d = PatchByteCode.patch (data, name);
             data = d;
             
-            int j = name.lastIndexOf('.');
-            String pkgName = name.substring(0, j);
             // Note that we assume that if we are defining a class in this package,
             // we should also define the package! Thus recurse==false.
             // However special packages might be defined in a parent and then we want
@@ -219,7 +217,7 @@ public class JarClassLoader extends ProxyClassLoader {
         
         public final ProtectionDomain getProtectionDomain() {
             if (pd == null) {
-                CodeSource cs = new CodeSource(url, new Certificate[0]);
+                CodeSource cs = new CodeSource(url, (Certificate[])null);
                 pd = new ProtectionDomain(cs, jcl.getPermissions(cs));
             }
             return pd;
@@ -273,7 +271,7 @@ public class JarClassLoader extends ProxyClassLoader {
         private int used;
         
         JarSource(File file) throws IOException {
-            super(file.toURI().toURL());
+            super(file.toURL());
             resPrefix = "jar:" + file.toURI() + "!/"; // NOI18N;
             this.file = file;
         }
@@ -509,7 +507,7 @@ public class JarClassLoader extends ProxyClassLoader {
         File dir;
         
         DirSource(File file) throws MalformedURLException {
-            super(file.toURI().toURL());
+            super(file.toURL());
             dir = file;
         }
 
