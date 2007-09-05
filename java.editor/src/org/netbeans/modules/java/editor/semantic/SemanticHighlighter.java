@@ -83,7 +83,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -473,7 +472,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.READ));
             }
 	    
-	    if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
+	    if (el != null && (el.getKind().isClass() || el.getKind().isInterface()) && 
+		    getCurrentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS) {
 		handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.CLASS_USE));
 	    }
 	    
