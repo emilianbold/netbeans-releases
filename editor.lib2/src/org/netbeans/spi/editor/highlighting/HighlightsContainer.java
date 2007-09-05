@@ -19,8 +19,6 @@
 
 package org.netbeans.spi.editor.highlighting;
 
-import javax.swing.text.Position;
-
 /**
  * The container of highlighted areas and their attributes.
  *
