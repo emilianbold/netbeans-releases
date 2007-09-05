@@ -407,7 +407,7 @@ public class SessionImpl extends PersistentObject implements Session {
         // TODO
         try {
             String[] businessLocal = getBusinessLocal();
-            if (businessLocal.length > 0) {
+            if (businessLocal != null && businessLocal.length > 0) {
                 return businessLocal[0];
             }
         } catch (VersionNotSupportedException ex) {
@@ -420,7 +420,7 @@ public class SessionImpl extends PersistentObject implements Session {
         // TODO
         try {
             String[] businessRemote = getBusinessRemote();
-            if (businessRemote.length > 0) {
+            if (businessRemote != null && businessRemote.length > 0) {
                 return businessRemote[0];
             }
         } catch (VersionNotSupportedException ex) {
