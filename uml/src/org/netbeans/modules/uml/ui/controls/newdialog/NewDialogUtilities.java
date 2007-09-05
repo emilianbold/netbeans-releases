@@ -660,38 +660,48 @@ public class NewDialogUtilities
      
     public static int getNextDiagramCounter(int kind)
     {
-        ETList<IProxyDiagram> diagrams = ProxyDiagramManager.instance()
-            .getDiagramsInProject(getProject());
-        
-        String baseName = getDefaultDiagramBaseName(kind);
-        int baseLength = baseName.length();
-        int maxNumber = 0;
-        
-        for (IProxyDiagram diagram: diagrams)
+        if (getProject() == null)
         {
-            if (diagram.getDiagramKind() == kind)
-            {
-                String dname = diagram.getName();
-                if (dname.length() > baseLength && dname.startsWith(baseName))
-                {
-                    String ending = dname.substring(baseLength).trim();
-                    
-                    try
-                    {
-                        Integer number = Integer.valueOf(ending);
-                        if (number > maxNumber)
-                            maxNumber = number;
-                    }
-                    
-                    catch (NumberFormatException ex)
-                    {
-                        // silently ignore this; means it wasn't a number
-                    }
-                }
-            } // for
+            // this means that a new project is being created
+            // so all diagrams are reset to 1
+            return 1;
         }
         
-        return ++maxNumber;
+        else
+        {
+            ETList<IProxyDiagram> diagrams = ProxyDiagramManager.instance()
+                .getDiagramsInProject(getProject());
+
+            String baseName = getDefaultDiagramBaseName(kind);
+            int baseLength = baseName.length();
+            int maxNumber = 0;
+
+            for (IProxyDiagram diagram: diagrams)
+            {
+                if (diagram.getDiagramKind() == kind)
+                {
+                    String dname = diagram.getName();
+                    if (dname.length() > baseLength && dname.startsWith(baseName))
+                    {
+                        String ending = dname.substring(baseLength).trim();
+
+                        try
+                        {
+                            Integer number = Integer.valueOf(ending);
+                            if (number > maxNumber)
+                                maxNumber = number;
+                        }
+
+                        catch (NumberFormatException ex)
+                        {
+                            // silently ignore this; means it wasn't a number
+                        }
+                    }
+                } // for
+            }
+
+            return ++maxNumber;
+        }
     }
    
    public static String getDefaultElementName()
