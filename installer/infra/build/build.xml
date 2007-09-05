@@ -1321,7 +1321,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- Full bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-windows.exe">
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-windows.exe">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
@@ -1339,7 +1339,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-linux.sh">
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-linux.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
@@ -1357,7 +1357,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-solaris-x86.sh">
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-solaris-x86.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
@@ -1374,7 +1374,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-solaris-sparc.sh">
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-solaris-sparc.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
@@ -1391,7 +1391,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-macosx-x86.zip">
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
@@ -1408,7 +1408,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-macosx-ppc.zip">
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
@@ -1569,12 +1569,12 @@ jarsigner.storepass=${jarsigner.storepass}
             <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-ppc.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-macosx-x86.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-all-macosx-ppc.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.tgz"/>
         </antcall>
 
 	<!-- Java Tools Bundle installers processing -->

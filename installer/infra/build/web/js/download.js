@@ -313,15 +313,19 @@ function download(option) {
 	
 
     //if ((platform == "macosx-x86") || (platform != "macosx-ppc")) {
-    //  basename  = "netbeans-trunk-nightly-{build.number}-";
+    //  basename  = "{nb.files.prefix}-{build.number}-";
     //} else {
 	basename  = "{nb.files.prefix}-{build.number}-";
     //}
 
-    var file_name = "start.html?" + basename + option;
+    var file_name = "start.html?" + basename;
+
+    if (option != "all" ) {
+    	file_name += option + "-";
+    }
 
     //if ((platform != "macosx-x86") && (platform != "macosx-ppc")) {
-    	file_name += "-" + platform;
+    	file_name += platform;
     //}
 
     if (platform == "windows") {
