@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.source.ui;
 
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -32,9 +33,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.ui.Icons;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * 
@@ -75,7 +79,11 @@ public class JavaTypeDescription extends TypeDescriptor {
 
                     public void run(CompilationController info) {
                         el[0] = eh.resolve (info);
-                        UiUtils.open(ci, el[0]);
+                        if (!UiUtils.open(ci, el[0])) {
+                            final String message = NbBundle.getMessage(JavaTypeDescription.class, "LBL_JavaTypeDescription_nosource",eh.getQualifiedName());
+                            StatusDisplayer.getDefault().setStatusText(message);
+                            Toolkit.getDefaultToolkit().beep();
+                        }
                     }
 
                 }, true);
@@ -88,6 +96,7 @@ public class JavaTypeDescription extends TypeDescriptor {
         else {
             //XXX: Why is this different? Why not UiUtils.open () is used?
             FileObject folder = packageName != null ? cacheItem.getRoot().getFileObject(packageName.replace(".", "/")) : cacheItem.getRoot(); // NOI18N
+            boolean opened = false;
             if (folder != null) {
                 FileObject[] ch = folder.getChildren();
                 String name = outerName == null ? simpleName : outerName; // NOI18N
@@ -98,12 +107,28 @@ public class JavaTypeDescription extends TypeDescriptor {
                 for (FileObject fileObject : ch) {
                     if ( name.equals( fileObject.getName() ) && 
                          "java".equals( fileObject.getExt().toLowerCase() ) ) {
-                        UiUtils.open(fileObject, handle);
+                        opened = UiUtils.open(fileObject, handle);
                     }
                 }
             }
             else {
                 Logger.getLogger(JavaTypeDescription.class.getName()).info("Package " + packageName +" doesn't exist in root: " + FileUtil.getFileDisplayName(cacheItem.getRoot()));
+            }
+            if (!opened) {
+                StringBuilder name = new StringBuilder ();
+                if (packageName != null) {
+                    name.append(packageName);
+                    name.append('.');           //NOI18N
+                }
+                if (outerName != null) {
+                    name.append(outerName);
+                }
+                else {
+                    name.append(simpleName);
+                }
+                final String message = NbBundle.getMessage(JavaTypeDescription.class, "LBL_JavaTypeDescription_nosource",name.toString());
+                StatusDisplayer.getDefault().setStatusText(message);
+                Toolkit.getDefaultToolkit().beep();
             }
         }
     }
