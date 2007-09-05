@@ -23,8 +23,6 @@ import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -100,7 +98,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                 labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Classes",handles.size());
             }
         } else if (handles.size()>1) {
-            labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Classes",handles.size());;
+            labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Classes",handles.size());
         } else if (handles.size()==1) {
           JavaSource s = JavaSource.forFileObject(handles.iterator().next().getFileObject());
           final String[] name = new String[1];
@@ -149,6 +147,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
         initialized = true;
     }
     
+    @Override
     public void requestFocus() {
         super.requestFocus();
     }
@@ -211,6 +210,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
     // End of variables declaration//GEN-END:variables
     private javax.swing.JCheckBox safeDelete;
     
+    @Override
     public Dimension getPreferredSize() {
         Dimension orig = super.getPreferredSize();
         return new Dimension(orig.width + 30 , orig.height + 30);
@@ -229,96 +229,5 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
     public Component getComponent() {
         return this;
     }
-
-    
-//--public utility methods--
-//    
-//    //This method has been made public so that another class might be able to reuse this.
-//    //This should be moved to a common utility class.
-//    /**
-//     * Returns the formatted string corresponding to the declaration
-//     * of a CallableFeature(a {@link org.netbeans.jmi.javamodel.Method}
-//     * or a {@link org.netbeans.jmi.javamodel.Constructor})
-//     * Copied from {@link org.netbeans.modules.refactoring.ui.WhereUsedPanel}
-//     */
-//    public String getHeader(CallableFeature call) {
-//        if (((CallableFeatureImpl) call).getParser() == null) {
-//            if (call instanceof Method) {
-//                return ((Method) call).getName();
-//            } else if (call instanceof Constructor) {
-//                return getSimpleName(call.getDeclaringClass());
-//            }
-//            return "";
-//        }
-//        int s = ((MetadataElement) call).getPartStartOffset(ElementPartKindEnum.HEADER);
-//        int element = ((MetadataElement) call).getPartEndOffset(ElementPartKindEnum.HEADER);
-//        String result =  call.getResource().getSourceText().substring(s,element);
-//        if (result.length() > 50) {
-//            result = result.substring(0,49) + "..."; // NOI18N
-//        }
-//        return CheckUtils.htmlize(result);
-//    }
-//    
-//    //This method has been made public so that another class might be able to reuse this.
-//    //This should be moved to a common utility class.
-//    /**
-//     * Returns the SimpleName for a class, accounting for
-//     * anonymous classes as well.
-//     * Copied from {@link org.netbeans.modules.refactoring.ui.WhereUsedPanel}
-//     */
-//    public String getSimpleName(ClassDefinition clazz) {
-//        if (clazz instanceof JavaClass) {
-//            return ((JavaClass) clazz).getSimpleName();
-//        } else {
-//            return NbBundle.getMessage(SafeDeleteUI.class, "LBL_AnonymousClass"); // NOI18N
-//        }
-//    }
-//    
-//    
-////--private helper methods--
-//    /**
-//     * Returns a string constructed by passing the parameter to
-//     * <CODE>NbBundle.getMessage</CODE> with the Bundle key LBL_SafeDelHeader
-//     */
-//    private String getCustomString(Object refElement) {
-//        //This check for elementreference may not be needed, now that safe delete action
-//        //extracts the referred element. TODO:remove this check later.
-//        if(refElement instanceof ElementReference){
-//            NamedElement referredElement = ((ElementReference) refElement).getElement();
-//            return NbBundle.getMessage(SafeDeleteUI.class,"LBL_SafeDelRefWarning",referredElement.getName());//NOI18N
-//        } else{
-//            if(refElement instanceof Method)
-//                return NbBundle.getMessage(SafeDeleteUI.class,"LBL_SafeDelMethod", 
-//                        getHeader((CallableFeature)refElement), 
-//                        getSimpleName(((CallableFeature) refElement).getDeclaringClass())); // NOI18N
-//            else if (refElement instanceof Constructor) {
-//                return NbBundle.getMessage(SafeDeleteUI.class,"LBL_SafeDelConstructor", 
-//                        getHeader((CallableFeature)refElement), 
-//                        getSimpleName(((CallableFeature) refElement).getDeclaringClass())); // NOI18N
-//            } else if (refElement instanceof Field) {
-//                return NbBundle.getMessage(SafeDeleteUI.class,"LBL_SafeDelField", 
-//                        ((Field)refElement).getName(), 
-//                        getSimpleName(((Field) refElement).getDeclaringClass())); // NOI18N
-//            }  else if (refElement instanceof Variable) {
-//                return NbBundle.getMessage(SafeDeleteUI.class,"LBL_SafeDelVariable",((Variable)refElement).getName());//NOI18N
-//            }
-//            else if(refElement instanceof NamedElement){
-//                //Handle any named element that is not of any of the above types
-//                String typeName = ((NamedElement) refElement).getName();
-//                return NbBundle.getMessage(SafeDeleteUI.class,"LBL_SafeDelHeader",typeName);//NOI18N
-//            }
-//            else
-//                return NbBundle.getMessage(SafeDeleteUI.class,"LBL_SafeDelHeader",refElement);//NOI18N
-//        }
-//    }
-//    
-//    private String getElementName(Element element) {
-//        if(element instanceof Resource){
-//            FileObject fileObject = JavaModel.getFileObject((Resource) element);
-//            return fileObject.getNameExt();
-//        } else
-//            return element.toString();
-//    }
-//    
 }
 
