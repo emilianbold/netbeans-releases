@@ -69,6 +69,11 @@ Microsystems, Inc. All Rights Reserved.
 	<file name="D-9.shadow">
 	    <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.classview-ClassViewAction.instance"/>
 	</file>
+        <!-- Conflict with Window-Other-BPEL Mapper
+        <file name="DS-9.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-cnd-classview-actions-SelectInClassesAction.instance"/>
+	</file>
+        -->
     </folder>
     
 </filesystem>

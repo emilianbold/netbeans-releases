@@ -16,10 +16,13 @@
  */
 package org.netbeans.modules.cnd.classview.actions;
 
+import javax.swing.JMenuItem;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.classview.ClassViewTopComponent;
 import org.netbeans.modules.cnd.classview.resources.I18n;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.cnd.loaders.CCDataObject;
+import org.netbeans.modules.cnd.loaders.CDataObject;
+import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
@@ -41,24 +44,23 @@ public class SelectInClassesAction extends CookieAction {
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length > 0){
-            return ContextUtils.getContext(activatedNodes) != null;
-        }
-        return false;
+    public JMenuItem getPopupPresenter() {
+        JMenuItem item = super.getPopupPresenter();
+        item.setText(I18n.getMessage("CTL_SelectInClasses")); // NOI18N
+        return item;
     }
-    
+
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
     
     public String getName() {
-        return I18n.getMessage("CTL_SelectInClasses"); // NOI18N
+        return I18n.getMessage("CTL_NavigateSelectInClasses"); // NOI18N
     }
     
     protected Class[] cookieClasses() {
         return new Class[] {
-            EditorCookie.class
+            CDataObject.class, CCDataObject.class, HDataObject.class
         };
     }
     
