@@ -28,6 +28,9 @@ import java.util.*;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.*;
@@ -35,6 +38,8 @@ import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
@@ -44,7 +49,6 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     ArrayList<FileObject> filesToMove = new ArrayList<FileObject>();
     HashMap<FileObject,ElementHandle> classes;
     Map<FileObject, Set<FileObject>> whoReferences = new HashMap<FileObject, Set<FileObject>>();
-    private FileObject[] origFilesToMove;
     
     public MoveRefactoringPlugin(MoveRefactoring move) {
         this.refactoring = move;
@@ -169,6 +173,47 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         return super.fastCheckParameters();
     }
 
+    private Problem checkProjectDeps(Set<FileObject> a) {
+        if (refactoring instanceof MoveRefactoring) {
+            Set<FileObject> sourceRoots = new HashSet<FileObject>();
+            for (FileObject file : filesToMove) {
+                ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+                if (cp != null) {
+                    FileObject root = cp.findOwnerRoot(file);
+                    sourceRoots.add(root);
+                }
+            }
+            URL target = ((MoveRefactoring) refactoring).getTarget().lookup(URL.class);
+            if (target == null) {
+                return null;
+            }
+            try {
+                FileObject r = RetoucheUtils.getClassPathRoot(target);
+                URL targetUrl = URLMapper.findURL(r, URLMapper.EXTERNAL);
+                Set<URL> deps = SourceUtils.getDependentRoots(targetUrl);
+                for (FileObject sourceRoot : sourceRoots) {
+                    URL sourceUrl = URLMapper.findURL(sourceRoot, URLMapper.INTERNAL);
+                    if (!deps.contains(sourceUrl)) {
+                        Project sourceProject = FileOwnerQuery.getOwner(sourceRoot);
+                        for (FileObject affected: a) {
+                            if (FileOwnerQuery.getOwner(affected).equals(sourceProject) && !filesToMove.contains(affected)) {
+                                Project targetProject = FileOwnerQuery.getOwner(r);
+                                assert sourceProject!=null;
+                                assert targetProject!=null;
+                                String sourceName = ProjectUtils.getInformation(sourceProject).getDisplayName();
+                                String targetName = ProjectUtils.getInformation(targetProject).getDisplayName();
+                                return createProblem(null, false, NbBundle.getMessage(MoveRefactoringPlugin.class, "ERR_MissingProjectDeps", sourceName, targetName));
+                            }
+                        }
+                    }
+                }
+            } catch (IOException iOException) {
+                Exceptions.printStackTrace(iOException);
+            }
+        }
+        return null;
+    }
+
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         ClassIndex idx = cpInfo.getClassIndex();
@@ -221,13 +266,29 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         initClasses();
         
         Set<FileObject> a = getRelevantFiles();
+        Problem p = checkProjectDeps(a);
         fireProgressListenerStart(ProgressEvent.START, a.size());
         MoveTransformer t;
         TransformTask task = new TransformTask(t=new MoveTransformer(this), null);
         createAndAddElements(a, task, elements, refactoring);
         fireProgressListenerStop();
-        return t.getProblem();
+        p = chainProblems(p, t.getProblem());
+        return p;
     }
+    
+    private static Problem chainProblems(Problem p,Problem p1) {
+        Problem problem;
+        
+        if (p==null) return p1;
+        if (p1==null) return p;
+        problem=p;
+        while(problem.getNext()!=null) {
+            problem=problem.getNext();
+        }
+        problem.setNext(p1);
+        return p;
+    }
+
     String getNewPackageName() {
         if (refactoring instanceof MoveRefactoring) {
             return RetoucheUtils.getPackageName(((MoveRefactoring) refactoring).getTarget().lookup(URL.class));        
