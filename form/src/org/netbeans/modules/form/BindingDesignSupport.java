@@ -903,7 +903,7 @@ public class BindingDesignSupport {
             }
             buf.append(variable);
             buf.append(" = "); // NOI18N
-            buf.append(SwingBindings.class.getName()).append(".createTableBinding("); // NOI18N
+            buf.append(SwingBindings.class.getName()).append(".createJTableBinding("); // NOI18N
             buf.append(strategy);
             buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getSource().getCodeExpression(), "this")); // NOI18N
             buf.append(", "); // NOI18N
@@ -966,7 +966,7 @@ public class BindingDesignSupport {
             }
             buf.append(variable);
             buf.append(" = "); // NOI18N
-            buf.append(SwingBindings.class.getName()).append(".createListBinding("); // NOI18N
+            buf.append(SwingBindings.class.getName()).append(".createJListBinding("); // NOI18N
             buf.append(strategy);
             buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getSource().getCodeExpression(), "this")); // NOI18N
             buf.append(", "); // NOI18N
@@ -995,7 +995,7 @@ public class BindingDesignSupport {
             }
             buf.append(variable);
             buf.append(" = "); // NOI18N
-            buf.append(SwingBindings.class.getName()).append(".createComboBoxBinding("); // NOI18N
+            buf.append(SwingBindings.class.getName()).append(".createJComboBoxBinding("); // NOI18N
             buf.append(strategy);
             buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getSource().getCodeExpression(), "this")); // NOI18N
             buf.append(", "); // NOI18N
@@ -1145,9 +1145,9 @@ public class BindingDesignSupport {
                 && ((source instanceof List) || (sourcePath != null))) { // NOI18N
             JTableBinding<Object,Object,Object> tableBinding;
             if (sourcePath == null) {
-                tableBinding = SwingBindings.createTableBinding(updateStrategy, (List)source, (JTable)target, name);
+                tableBinding = SwingBindings.createJTableBinding(updateStrategy, (List)source, (JTable)target, name);
             } else {
-                tableBinding = SwingBindings.createTableBinding(updateStrategy, source, sourceProperty, (JTable)target, name);
+                tableBinding = SwingBindings.createJTableBinding(updateStrategy, source, sourceProperty, (JTable)target, name);
             }
             if (bindingDef.hasSubBindings()) {
                 Collection<MetaBinding> subBindings = bindingDef.getSubBindings();
@@ -1190,9 +1190,9 @@ public class BindingDesignSupport {
                 && ((source instanceof List) || (sourcePath != null))) { // NOI18N
             JListBinding listBinding;
             if (sourcePath == null) {
-                listBinding = SwingBindings.createListBinding(updateStrategy, (List)source, (JList)target, name);
+                listBinding = SwingBindings.createJListBinding(updateStrategy, (List)source, (JList)target, name);
             } else {
-                listBinding = SwingBindings.createListBinding(updateStrategy, source, sourceProperty, (JList)target, name);
+                listBinding = SwingBindings.createJListBinding(updateStrategy, source, sourceProperty, (JList)target, name);
             }
             String detailPath = bindingDef.getParameter(MetaBinding.DISPLAY_PARAMETER);
             if (detailPath != null) {
@@ -1203,9 +1203,9 @@ public class BindingDesignSupport {
                 && ((source instanceof List) || (sourcePath != null))) { // NOI18N
             JComboBoxBinding comboBinding;
             if (sourcePath == null) {
-                comboBinding = SwingBindings.createComboBoxBinding(updateStrategy, (List)source, (JComboBox)target, name);
+                comboBinding = SwingBindings.createJComboBoxBinding(updateStrategy, (List)source, (JComboBox)target, name);
             } else {
-                comboBinding = SwingBindings.createComboBoxBinding(updateStrategy, source, sourceProperty, (JComboBox)target, name);
+                comboBinding = SwingBindings.createJComboBoxBinding(updateStrategy, source, sourceProperty, (JComboBox)target, name);
             }
 //            String detailPath = bindingDef.getParameter(MetaBinding.DISPLAY_PARAMETER);
 //            if (detailPath != null) {
