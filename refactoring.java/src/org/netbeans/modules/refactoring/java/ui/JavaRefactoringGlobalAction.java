@@ -91,9 +91,9 @@ public abstract class JavaRefactoringGlobalAction extends NodeAction {
 
     
     protected static EditorCookie getTextComponent(Node n) {
-        DataObject dobj = (DataObject) n.getCookie(DataObject.class);
+        DataObject dobj = n.getCookie(DataObject.class);
         if (dobj != null) {
-            EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
             if (ec != null) {
                 TopComponent activetc = TopComponent.getRegistry().getActivated();
                 if (activetc instanceof Pane) {
