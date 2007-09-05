@@ -292,7 +292,8 @@ public class DefaultProjectActionHandler implements ActionListener {
         
         public void executionFinished(int rc) {
             Integer i = tabMap.get(tabName);
-            tabMap.put(tabName, --i);
+            if (i != null)
+                tabMap.put(tabName, --i);
             if (paes[currentAction].getID() == ProjectActionEvent.BUILD || paes[currentAction].getID() == ProjectActionEvent.CLEAN) {
                 // Refresh all files
                 try {
