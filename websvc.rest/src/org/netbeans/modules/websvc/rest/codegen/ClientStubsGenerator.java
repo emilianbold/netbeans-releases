@@ -145,7 +145,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             StringBuffer sb = new StringBuffer();
             while ((line = reader.readLine()) != null) {
                 if (line.contains("__BASE_URL__")) {
-                    sb.append(line.replaceAll("__BASE_URL__", "http://localhost:8080/"+prjName+"/restbean"));
+                    sb.append(line.replaceAll("__BASE_URL__", "http://localhost:8080/"+prjName+"/resources"));
                 } else if (line.contains("__PROJECT_NAME__")) {
                     sb.append(line.replaceAll("__PROJECT_NAME__", prjName));
                 } else if (line.contains("__PROJECT_INIT_BODY__")) {

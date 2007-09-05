@@ -6,7 +6,7 @@ function CustomerDB() {}
 
 CustomerDB.prototype = {
 
-   uri : 'http://localhost:8080/CustomerDB/restbean',
+   uri : 'http://localhost:8080/CustomerDB/resources',
 
    resources : new Array(),
    
