@@ -56,6 +56,8 @@ public class GoToPanel extends javax.swing.JPanel {
     private boolean containsScrollPane;
     private JLabel messageLabel;
     
+    private String oldText;
+    
     // Time when the serach stared (for debugging purposes)
     long time = -1;
     
@@ -120,6 +122,7 @@ public class GoToPanel extends javax.swing.JPanel {
     
     /** Sets the initial text to find in case the user did not start typing yet. */
     public void setInitialText( final String text ) {
+        oldText = text;
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 String textInField = nameField.getText();
@@ -401,7 +404,7 @@ public class GoToPanel extends javax.swing.JPanel {
         
         // DocumentListener ----------------------------------------------------
         
-        public void changedUpdate( DocumentEvent e ) {
+        public void changedUpdate( DocumentEvent e ) {            
             update();
         }
 
@@ -439,8 +442,12 @@ public class GoToPanel extends javax.swing.JPanel {
         
         private void update() {
             dialog.time = System.currentTimeMillis();
-            dialog.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_Searching")); // NOI18N
-            dialog.contentProvider.setListModel(dialog, dialog.getText());            
+            String text = dialog.getText();
+            if ( dialog.oldText == null || dialog.oldText.trim().length() == 0 || !text.startsWith(dialog.oldText) ) {
+                dialog.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_Searching")); // NOI18N
+            }
+            dialog.oldText = text;
+            dialog.contentProvider.setListModel(dialog,text);            
         }
                                          
     }
