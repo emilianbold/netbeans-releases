@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.highlight;
 
+import org.netbeans.modules.cnd.highlight.error.*;
 import org.openide.modules.ModuleInstall;
 
 /**
