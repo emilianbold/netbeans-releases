@@ -84,4 +84,8 @@ public class Connection implements Serializable {
         }
         return true;
     }
+    
+    public String toString() {
+        return consume.getFullyQualifiedName() + " -> " + provide.getFullyQualifiedName();
+    }
 }

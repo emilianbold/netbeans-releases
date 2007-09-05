@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.xml.namespace.QName;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.projects.jbi.CasaConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Connection;
@@ -117,7 +118,7 @@ public class ConnectionResolver implements CasaConstants {
                 // check the number of providers
                 int numProviders = providers.size();
                 if (numProviders > 1) { // report error... more than 1 providers
-                    log("***WARNING: 1 port with " + numProviders + " providers [" + pt + "]");
+                    log("WARNING: 1 port with " + numProviders + " providers [" + pt + "]", Project.MSG_WARN);
                     // todo: OK, we will just add the first one in...
                 }
                 
@@ -125,7 +126,7 @@ public class ConnectionResolver implements CasaConstants {
                 String bcName = repo.getBindingComponentName(p);
                 QName ptQName = p.getBinding().get().getType().getQName();
                 if (bcName == null) { // report error.. no binding
-                    log("***WARNING: PORT w/o address: " + ptQName);
+                    log("WARNING: PORT w/o address: " + ptQName, Project.MSG_WARN);
                 } else {                    
                     // Create the endpoint for port
                     Service sv = (Service) p.getParent();
@@ -162,8 +163,9 @@ public class ConnectionResolver implements CasaConstants {
                 
             } else if (numPorts == 0) { // no external port...
                 // report unused wsdl port, or internal connection
-                log("***WARNING: there is no WSDL Port implementing PortType [" + pt + "]");
-                
+                if (!pt.endsWith("}dummyCasaPortType")) {
+                    log("WARNING: there is no WSDL Port implementing PortType [" + pt + "]", Project.MSG_WARN);
+                }
                 // resolve internal connections...
                 List<Endpoint> consumers = ptConnection.getConsumes();
                 List<Endpoint> providers = ptConnection.getProvides();
@@ -182,9 +184,9 @@ public class ConnectionResolver implements CasaConstants {
                     }
                 } else if (numProviders > 1) {
                     // report error... more than 1 providers
-                    log("***WARNING: 0 port, " +
+                    log("WARNING: 0 port, " +
                             numConsumers + " consumers, " +
-                            numProviders + " providers. [" + pt + "]");
+                            numProviders + " providers. [" + pt + "]", Project.MSG_WARN);
                     dumpPorts(ports);
                     dumpEndpoints(consumers, "Consumer");
                     dumpEndpoints(providers, "Provider");
@@ -202,14 +204,14 @@ public class ConnectionResolver implements CasaConstants {
                 int numConsumers = consumers.size();
                 if (numProviders > 1) {
                     // report error... more than 1 providers
-                    log("***WARNING: " + numPorts + " ports and " + numProviders
-                            + " providers [" + pt + "]");
+                    log("WARNING: " + numPorts + " ports and " + numProviders
+                            + " providers [" + pt + "]", Project.MSG_WARN);
                     dumpPorts(ports);
                     dumpEndpoints(providers, "Provider");
                 } else if (numConsumers > 0) {
                     // report error... more than 1 consumers
-                    log("***WARNING: 1 or more consumers with " + numPorts
-                            + " ports [" + pt + "]");
+                    log("WARNING: 1 or more consumers with " + numPorts
+                            + " ports [" + pt + "]", Project.MSG_WARN);
                     dumpPorts(ports);
                     dumpEndpoints(consumers, "Consumer");
                 } else if (numProviders == 1) {
@@ -218,7 +220,7 @@ public class ConnectionResolver implements CasaConstants {
                         String bcName = repo.getBindingComponentName(p);
                         QName ptQName = p.getBinding().get().getType().getQName();
                         if (bcName == null) {
-                            log("***Warning: PORT w/o address: " + ptQName);
+                            log("Warning: PORT w/o address: " + ptQName, Project.MSG_WARN);
                         } else {                            
                             Service sv = (Service) p.getParent();
                             String tns = ((Definitions) sv.getParent()).getTargetNamespace();
@@ -312,10 +314,9 @@ public class ConnectionResolver implements CasaConstants {
                 Endpoint consume = connection.getConsume();
                 for (Connection con : clist[0]) {
                     if (con.getConsume().equals(consume)) {
-                        log("INFO: A Consume endpoint (" + consume +
-                                ") is only allowed to connect to at most 1 provider. " +
-                                ". Old connection (" + con +
-                                ") is replaced by the new one (" + connection + ").");
+                        log("INFO: A new connection (" + con +
+                                ") is suppressed by an existing connection (" + connection + ").",
+                                Project.MSG_INFO);
                         clist[0].remove(con);
 //                        connectionList.remove(con);
                         removeConnectionFromList(connectionList, con); // FIXME
@@ -345,7 +346,7 @@ public class ConnectionResolver implements CasaConstants {
                     CASA_SERVICE_UNITS_ELEM_NAME).item(0);
             
             if (sus == null) {
-                log("WARNING: Old version of casa format is not supported.");
+                log("WARNING: Old version of casa format is not supported.", Project.MSG_WARN);
                 return;
             }
             
@@ -466,6 +467,10 @@ public class ConnectionResolver implements CasaConstants {
         
     private void log(String msg) {
         task.log(msg);
+    }
+    
+    private void log(String msg, int level) {
+        task.log(msg, level);
     }
     
 }

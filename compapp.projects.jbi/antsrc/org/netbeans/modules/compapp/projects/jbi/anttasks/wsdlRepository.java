@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
@@ -40,6 +38,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.util.MyFileUtil;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
@@ -59,6 +58,7 @@ import org.openide.filesystems.FileUtil;
 public class wsdlRepository {
     
     private Project project;
+    private Task task;
     
     private List<WSDLModel> wsdlModels = null;
     
@@ -66,7 +66,7 @@ public class wsdlRepository {
     private Map<String, PortType> portTypes = new HashMap<String, PortType>();
     
     // mapping Binding QName to Binding
-    private Map<String, Binding> bindings = new HashMap();
+    private Map<String, Binding> bindings = new HashMap<String, Binding>();
     
     // mapping PartnerLinkType QName to PartnerLinkType
     private Map<String, PartnerLinkType> partnerLinkTypes = new HashMap<String, PartnerLinkType>();
@@ -84,18 +84,16 @@ public class wsdlRepository {
     private Map<String, PtConnection> connections = new HashMap<String, PtConnection>();
     
     // mapping bc namespace to bc name
-    private Map<String, String> bcNsMap = new HashMap<String, String>(); 
-    
-//    private boolean repoLoaded = true;
-    private Logger logger = Logger.getLogger(getClass().getName());    
-    
+    private Map<String, String> bcNsMap = new HashMap<String, String>();    
+  
     private static final String WSDL_FILE_EXTENSION = "wsdl";
-    private static final WSDLFileFilter WSDL_FILE_FILTER = new WSDLFileFilter();
+    //private static final WSDLFileFilter WSDL_FILE_FILTER = new WSDLFileFilter();
     
     
-    public wsdlRepository(Project project) {
+    public wsdlRepository(Project project, Task task) {
         
         this.project = project;
+        this.task = task;
         
         wsdlModels = getAllWsdlModels(project);
         
@@ -250,9 +248,9 @@ public class wsdlRepository {
     public static String getWsdlFilePath(WSDLModel doc) {
         String wsdlFilePath = null;
         Lookup lookup = doc.getModelSource().getLookup();
-        File wsdlFile = (File) lookup.lookup(File.class);
+        File wsdlFile = lookup.lookup(File.class);
         if (wsdlFile == null) {
-            FileObject wsdlFileObject = (FileObject) lookup.lookup(FileObject.class);
+            FileObject wsdlFileObject = lookup.lookup(FileObject.class);
             wsdlFile = FileUtil.toFile(wsdlFileObject);
         }
         wsdlFilePath = wsdlFile.getPath();
@@ -310,10 +308,10 @@ public class wsdlRepository {
                 if (ee.getQName().getLocalPart().equals("partnerLinkType")) {
                     String pltNS = ee.getQName().getNamespaceURI();
                     if (!pltNS.equals("http://docs.oasis-open.org/wsbpel/2.0/plnktype")) {
-                        logger.log(Level.SEVERE, 
-                                "The Partnerlink namespace URI in " + 
+                        task.log("The Partnerlink namespace URI in " + 
                                 wsdlFilePath + " is \"" + pltNS + "\". " + 
-                                "It should be changed to \"http://docs.oasis-open.org/wsbpel/2.0/plnktype\".");
+                                "It should be changed to \"http://docs.oasis-open.org/wsbpel/2.0/plnktype\".",
+                                Project.MSG_ERR);
                         return;
                     }
                     PartnerLinkType plt = (PartnerLinkType) ee;
@@ -366,7 +364,8 @@ public class wsdlRepository {
                                     if (bcName != null) {
                                         port2BC.put(p, bcName);
                                     } else {
-                                        System.out.println("***WARNING: Missing WSDL extension plug-in for \"" + bcNs + "\".");
+                                        task.log("WARNING: Missing WSDL extension plug-in for \"" + bcNs + "\".", 
+                                                Project.MSG_WARN);
                                     }
                                 }
                             }
@@ -402,10 +401,10 @@ public class wsdlRepository {
     private Role[] getRoles(PartnerLinkType plt) {
         Role r1 = plt.getRole1();
         Role r2 = plt.getRole2();
-        ArrayList rs = new ArrayList();
+        List<Role> rs = new ArrayList<Role>();
         if (r1 != null) rs.add(r1);
         if (r2 != null) rs.add(r2);
-        return (Role[]) rs.toArray(new Role[] {});
+        return rs.toArray(new Role[] {});
     }
     
     public PortType getPartnerLinkPortType(String pname) {

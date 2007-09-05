@@ -179,7 +179,7 @@ public class BuildServiceAssembly extends Task {
             saInternalRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_SA_INTERNAL_ROUTING)), true);
             
             // create project wsdl repository...
-            mRepo = new wsdlRepository(p);
+            mRepo = new wsdlRepository(p, this);
             
             String jbiFileLoc = buildDir + "/META-INF/jbi.xml";
             String genericBCJarFileLoc = buildDir + "/BCDeployment.jar";            
