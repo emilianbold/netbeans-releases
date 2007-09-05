@@ -238,10 +238,14 @@ public class PropertiesStructure extends Element {
             synchronized(getParent()) {
             synchronized(getParentBundleStructure()) {
                 PositionBounds pos = getBounds();
+ 
+                PositionBounds itemBounds;
+                if (pos.getText().endsWith("\n")) {
+                    itemBounds = pos.insertAfter(item.getDocumentString()); 
+                } else {
+                    itemBounds = pos.insertAfter("\n").insertAfter(item.getDocumentString()); 
+                }
                 
-                PositionBounds itemBounds
-                        = pos.insertAfter("\n")
-                             .insertAfter(item.getDocumentString());
                 item.bounds = itemBounds;
 
                 //#17044 update in-memory model
