@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="build-pkg" depends="build-app">
-    <echo message="NETBEANS_INSTALL_DIR=${appname}.app${line.separator}" file="pkg/scripts/env.sh"/>
+    <echo message="NETBEANS_INSTALL_DIR=&quot;${appname}.app&quot;${line.separator}" file="pkg/scripts/env.sh"/>
     <mkdir dir="build/pkg"/>
     <delete dir="build/pkg/NetBeans.pkg"/>
     <exec executable="sh" failonerror="yes">
@@ -173,6 +173,7 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="tomcat" target="clean" inheritAll="false"/>
     <ant dir="openesb" target="clean" inheritAll="false"/>
     <delete dir="build"/>
+    <delete file="pkg/scripts/env.sh"/>
   </target>
 
   <target name="distclean" depends="clean">
