@@ -305,10 +305,15 @@
    <mapID target="org.netbeans.modules.diff.Diff.services" url="configure/diff_textual.html" />
 <!-- are these merge visualizers still used? -->   
    <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="configure/diff_textual.html" />
+   
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="configure/diff_textual.html" />
 <!--possibly remap the following target to configure_options.html :-->
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
 
+   <!-- Diff: options window help ids -->
+   <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/options_diffengine.html" />
+   <!-- <mapID target="org.netbeans.modules.versioning.util.VcsAdvancedOptions" url="configure/options_diffengine.html" /> -->
+   
    <mapID target="org.netbeans.core.execution.ProcessNode" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/files_runtime.html" /> 
