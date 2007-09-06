@@ -59,6 +59,9 @@ public interface DiscoveryDescriptor {
     
     boolean isSimpleMode();
     void setSimpleMode(boolean simple);
+
+    boolean isCutResult();
+    void setCutResult(boolean cutResult);
     
     void setMessage(String message);
 

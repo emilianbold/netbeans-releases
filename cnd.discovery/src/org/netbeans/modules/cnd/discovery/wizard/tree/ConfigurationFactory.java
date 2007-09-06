@@ -42,19 +42,17 @@ public class ConfigurationFactory {
     private ConfigurationFactory() {
     }
     
-    public static ProjectConfigurationImpl makeRoot(ProjectProperties project, String rootFolder){
+    public static ProjectConfigurationImpl makeRoot(ProjectProperties project, String rootFolder, boolean cutResult){
         Collection<FolderProperties> folders = project.getConfiguredFolders();
         FolderConfigurationImpl root = new FolderConfigurationImpl("");
         for(FolderProperties folder : folders){
-            //if (folder.getItemPath().startsWith(rootFolder)) {
+            if (!cutResult || (cutResult && folder.getItemPath().startsWith(rootFolder))) {
                 FolderConfigurationImpl fo = addChild(folder.getItemPath(), root);
                 for(SourceFileProperties file : folder.getFiles()){
                     FileConfigurationImpl fi = new FileConfigurationImpl(file);
                     fo.addFile(fi);
                 }
-            //} else {
-                //System.out.println("Out of scope "+folder);
-            //}
+            }
         }
         // remove empty root
         StringTokenizer st = new StringTokenizer(rootFolder,"/\\"); // NOI18N

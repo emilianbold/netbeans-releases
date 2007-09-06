@@ -47,6 +47,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     
     private boolean stateChanged = true;
     private boolean simple = true;
+    private boolean cutResult = false;
     
     public DiscoveryWizardDescriptor(WizardDescriptor.Iterator panels){
         super(panels);
@@ -164,6 +165,14 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public void setSimpleMode(boolean simple) {
         this.simple = simple;
     }
+
+    public boolean isCutResult() {
+        return cutResult;
+    }
+
+    public void setCutResult(boolean cutResult) {
+        this.cutResult = cutResult;
+    }
    
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
         private WizardDescriptor wizard;
@@ -270,6 +279,13 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         
         public void setSimpleMode(boolean simple) {
+        }
+
+        public boolean isCutResult() {
+            return false;
+        }
+
+        public void setCutResult(boolean cutResult) {
         }
         
         public void setMessage(String message) {
@@ -395,6 +411,13 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         
         public void setSimpleMode(boolean simple) {
         }
+
+        public boolean isCutResult() {
+            return false;
+        }
+
+        public void setCutResult(boolean cutResult) {
+        }
         
         public void setMessage(String message) {
             map.put("WizardPanel_errorMessage", message); // NOI18N
@@ -411,4 +434,5 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             setIncludedFiles(null);
         }
     }
+
 }
