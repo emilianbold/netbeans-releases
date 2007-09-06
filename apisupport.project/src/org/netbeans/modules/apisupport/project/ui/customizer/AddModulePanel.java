@@ -26,7 +26,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -185,7 +184,7 @@ public final class AddModulePanel extends JPanel {
         final boolean nonApiDeps = showNonAPIModules.isSelected();
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
-                final Set universeDeps = props.getUniverseDependencies(true, !nonApiDeps);
+                final Set<ModuleDependency> universeDeps = props.getUniverseDependencies(true, !nonApiDeps);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         universeModules = CustomizerComponentFactory.createSortedDependencyListModel(universeDeps);
@@ -230,13 +229,13 @@ public final class AddModulePanel extends JPanel {
                     String filterTextLC = filterText.toLowerCase(Locale.US);
                     Style match = doc.addStyle(null, null);
                     match.addAttribute(StyleConstants.Background, new Color(246, 248, 139));
-                    Set<String> matches = filterer.getMatchesFor(filterText, deps[0]);
-                    Iterator it = matches.iterator();
                     boolean isEven = false;
                     Style even = doc.addStyle(null, null);
                     even.addAttribute(StyleConstants.Background, new Color(235, 235, 235));
-                    while (it.hasNext()) {
-                        String hit = (String) it.next();
+                    if (filterer == null) {
+                        return; // #101776
+                    }
+                    for (String hit : filterer.getMatchesFor(filterText, deps[0])) {
                         int loc = doc.getLength();
                         doc.insertString(loc, hit, (isEven ? even : null));
                         int start = hit.toLowerCase(Locale.US).indexOf(filterTextLC);
