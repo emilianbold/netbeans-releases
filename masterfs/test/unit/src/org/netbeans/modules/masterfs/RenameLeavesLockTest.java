@@ -66,16 +66,21 @@ public class RenameLeavesLockTest extends NbTestCase {
             assertEquals("F.java", all[0]);
         }
         FileLock lock = f.lock();
+        assertTrue(f.isLocked());
         f.rename(lock, "Jarda", "java");
+        f.rename(lock, "F", "java");
+        f.rename(lock, "Jarda", "java");
+        assertTrue(f.isLocked());
         lock.releaseLock();
+        assertFalse(f.isLocked());
+        
 
-        /* Issue 109462, this is failing:
+        //Issue 109462, this is failing:
         {
             String[] all = dir.list();
             assertEquals("One: " + Arrays.asList(all), 1, all.length);
             assertEquals("Jarda.java", all[0]);
         }
-        */
     }
     
 }
