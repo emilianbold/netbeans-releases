@@ -95,7 +95,8 @@ ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-cnd -Dxtest.ins
 # Profiler UI validation tests
 ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-profiler -Dxtest.instance.name="Profiler tests" -Dxtest.no.cleanresults=true runtests
 # J2EE UI validation tests
-ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish runtests
+# Temporarily disable because JVM randomly crashes (see bug 6598709)
+#ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish runtests
 # Mobility UI validation tests
 ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-mobility -Dxtest.instance.name="Mobility tests" -Dxtest.no.cleanresults=true -Dwtk.dir=/hudson runtests
 # UML UI validation tests
