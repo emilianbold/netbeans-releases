@@ -18,6 +18,7 @@ package org.netbeans.modules.cnd.completion.includes;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -26,7 +27,6 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -40,7 +40,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeCompletionProvider implements CompletionProvider  {
-    private final static boolean TRACE = false;
+    private final static boolean TRACE = Boolean.getBoolean("cnd.completion.includes.trace");
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
@@ -75,16 +75,23 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         }
         return null;
     }
-
-    public static final CsmIncludeCompletionQuery getCompletionQuery() {
-        return new CsmIncludeCompletionQuery(null);
-    }
     
-    public static final CsmIncludeCompletionQuery getCompletionQuery(CsmFile csmFile) {
-        return new CsmIncludeCompletionQuery(csmFile);
+    // method for tests
+    /*package*/ static Collection<CsmIncludeCompletionItem> getFilteredData(BaseDocument doc, int caretOffset, int queryType) {
+        Query query = new Query(caretOffset, true);
+        Collection<CsmIncludeCompletionItem> items = query.getItems(doc, caretOffset);
+        items = query.getFilteredData(items, query.filterPrefix);
+        if (TRACE) {
+            System.err.println("Completion Items " + items.size());
+            for (CsmIncludeCompletionItem completionItem : items) {
+                System.err.println(completionItem.toString());
+            }              
+        }
+        return items;
     }
-    
-    static final class Query extends AsyncCompletionQuery {
+        
+            
+    private static final class Query extends AsyncCompletionQuery {
         
         private JTextComponent component;
         
@@ -100,7 +107,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         private Boolean usrInclude;
         private boolean showAll;
         
-        Query(int caretOffset, boolean showAll) {
+        /*package*/ Query(int caretOffset, boolean showAll) {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
             this.resultSetAnchorOffset = creationCaretOffset;
@@ -124,22 +131,17 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         }        
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            try {
-                if (TRACE) System.out.println("query on " + caretOffset + " anchor " + queryAnchorOffset);
-                if (init((BaseDocument) doc, caretOffset)) {
-                    CsmIncludeCompletionQuery query = getCompletionQuery();
-                    Collection<CsmIncludeCompletionItem> items = query.query( (BaseDocument)doc, dirPrefix, queryAnchorOffset, usrInclude,showAll);
-                    if (items != null && items.size() > 0) {
-                            this.results = items;
-                            items = getFilteredData(items, filterPrefix);
-                            resultSet.estimateItems(items.size(), -1);
-                            resultSet.addAllItems(items);
-                            resultSet.setAnchorOffset(resultSetAnchorOffset);
-                    }
-                    resultSet.setHasAdditionalItems(true);
+            if (TRACE) System.out.println("query on " + caretOffset + " anchor " + queryAnchorOffset);
+            Collection<CsmIncludeCompletionItem> items = getItems((BaseDocument)doc, caretOffset);
+            if (this.queryAnchorOffset > 0) {
+                if (items != null && items.size() > 0) {
+                        this.results = items;
+                        items = getFilteredData(items, filterPrefix);
+                        resultSet.estimateItems(items.size(), -1);
+                        resultSet.addAllItems(items);
+                        resultSet.setAnchorOffset(resultSetAnchorOffset);
                 }
-            } catch (BadLocationException ex) {
-                // skip;
+                resultSet.setHasAdditionalItems(true);
             }
             resultSet.finish();
         }
@@ -203,6 +205,18 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
             }
         }
 
+        private Collection<CsmIncludeCompletionItem> getItems(BaseDocument doc, int caretOffset) {
+            Collection<CsmIncludeCompletionItem> items = Collections.<CsmIncludeCompletionItem>emptyList();
+            try {
+                if (init(doc, caretOffset)) {
+                    CsmIncludeCompletionQuery query = new CsmIncludeCompletionQuery(null);
+                    items = query.query(doc, dirPrefix, queryAnchorOffset, usrInclude, showAll);
+                }
+            } catch (BadLocationException ex) {
+            }
+            return items;
+        }
+        
         private boolean init(BaseDocument doc, int caretOffset) throws BadLocationException {
             resultSetAnchorOffset = caretOffset;
             filterPrefix = null;
@@ -304,7 +318,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                 return true;
             }
         }
-        
+
         private Collection<CsmIncludeCompletionItem> getFilteredData(Collection<CsmIncludeCompletionItem> data, String prefix) {
             Collection<CsmIncludeCompletionItem> out;
             if (prefix == null) {

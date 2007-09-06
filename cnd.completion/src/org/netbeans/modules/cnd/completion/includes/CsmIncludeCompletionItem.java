@@ -185,19 +185,21 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     }
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(false), g, defaultFont);
+        return CompletionUtilities.getPreferredWidth(getLeftHtmlText(true), getRightHtmlText(false), g, defaultFont);
     }
     
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
-        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(true), g, defaultFont, defaultColor, width, height, selected);
+        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(true), getRightHtmlText(true), g, defaultFont, defaultColor, width, height, selected);
     }
 
     @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
-        out.append(this.isSysInclude() ? "[S ": "[U ");
-        out.append(this.isFolder() ? "D] ": "F] ");
-        out.append(this.getLeftHtmlText()).append(" : ");
+        out.append(this.isFolder() ? "[D] ": "[F] ");
+        out.append(this.isSysInclude() ? "<" : "\"");
+        out.append(this.getLeftHtmlText(false));
+        out.append(this.isSysInclude() ? ">" : "\"");
+        out.append(" : ");
         out.append(this.getRightHtmlText(false));
         return out.toString();
     }
@@ -218,8 +220,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         return CsmImageLoader.getIncludeImageIcon(isSysInclude(),isFolder());
     }
     
-    protected String getLeftHtmlText() {
-        return (isFolder() ? "<i>" : "") + this.getItemText(); // NOI18N
+    protected String getLeftHtmlText(boolean html) {
+        return (html ? (isFolder() ? "<i>" : "") : "") + this.getItemText(); // NOI18N
     }
     
     protected String getRightHtmlText(boolean shrink) {
@@ -253,7 +255,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                 }
             }
         }
-        return "<font color=\"#557755\">" + builder.toString(); // NOI18N
+        return (shrink ? "<font color=\"#557755\">" : "") + builder.toString(); // NOI18N
     }
     
     protected int substituteText(JTextComponent c, int offset, int len, String toAdd) {
