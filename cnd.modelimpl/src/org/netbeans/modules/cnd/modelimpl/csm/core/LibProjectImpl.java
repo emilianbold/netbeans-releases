@@ -36,7 +36,7 @@ public final class LibProjectImpl extends ProjectBase {
     private final String includePath;
     
     private LibProjectImpl(ModelImpl model, String includePathName) {
-        super(model, new File(includePathName), includePathName);
+        super(model, includePathName, includePathName);
         this.includePath = includePathName;
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
@@ -131,6 +131,6 @@ public final class LibProjectImpl extends ProjectBase {
         super(aStream);
         this.includePath = FilePathCache.getString(aStream.readUTF());
         assert this.includePath != null;
-        setPlatformProject(new File(this.includePath));
+        setPlatformProject(this.includePath);
     }
 }

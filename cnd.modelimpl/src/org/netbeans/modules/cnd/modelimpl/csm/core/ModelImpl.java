@@ -160,7 +160,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                         new IllegalStateException("CsmProject does not exist: " + id).printStackTrace(System.err); // NOI18N
                         name = "<unnamed>"; // NOI18N
                     }
-                    prj = ProjectImpl.createInstance(this, id,  name);
+                    prj = ProjectImpl.createInstance(this, (NativeProject) id,  name);
                     putProject2Map(id,  prj);
                 }
             }
@@ -171,7 +171,15 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 //    public void onProjectOpen(Object platformProject) {
 //    }
 
-    public ProjectBase addProject(Object id, String name, boolean enableModel) {
+    public ProjectBase addProject(String id, String name, boolean enableModel) {
+        return addProject((Object) id, name, enableModel);
+    }
+    
+    public ProjectBase addProject(NativeProject id, String name, boolean enableModel) {
+        return addProject((Object) id, name, enableModel);
+    }
+    
+    private ProjectBase addProject(Object id, String name, boolean enableModel) {
         ProjectBase prj = null;
         if (enableModel) {
             synchronized( lock ) {
@@ -180,7 +188,15 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 }
                 prj = obj2Project(id);
                 if( prj == null ) {
-                    prj = ProjectImpl.createInstance(this, id,  name);
+                    if( id instanceof NativeProject ) {
+                        prj = ProjectImpl.createInstance(this, (NativeProject) id,  name);
+                    }
+                    else if( id instanceof String ) {
+                        prj = ProjectImpl.createInstance(this, (String) id,  name);
+                    }
+                    else {
+                        throw new IllegalArgumentException("The platform project is neither NativeProject nor String"); // NOI18N
+                    }
                     putProject2Map(id,  prj);
                 } else {
                     String expectedUniqueName = ProjectBase.getUniqueName(id);

@@ -173,28 +173,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return this.uniqueName;
     }
     
-    private static String getQualifiedName(Object platformProject) {
-	String result;
-        if (platformProject instanceof NativeProject) {
-            result = ((NativeProject)platformProject).getProjectRoot();
-        } else if( platformProject instanceof File ) {
-            result = ((File) platformProject).getAbsolutePath();
-        } else if( platformProject instanceof String ) {
-            result = (String) platformProject;
-        } else if( platformProject == null ) {
-	    throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
-        } else {
-	    throw new IllegalArgumentException("Incorrect platform project class: " + platformProject.getClass()); // NOI18N
-        }
-        return ProjectNameCache.getString(result);
-    }
-
     public static String getUniqueName(Object platformProject) {
 	String result;
         if (platformProject instanceof NativeProject) {
             result = ((NativeProject)platformProject).getProjectRoot() + 'N';
-        } else if( platformProject instanceof File ) {
-            result = ((File) platformProject).getAbsolutePath() + 'F';
         } else if( platformProject instanceof String ) {
             result = (String) platformProject + 'L';
         } else if( platformProject == null ) {
@@ -1022,7 +1004,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         List<Key> res = new ArrayList<Key>();
         if (platformProject instanceof NativeProject){
             for(NativeProject nativeLib : ((NativeProject)platformProject).getDependences()){
-                final String qName = getQualifiedName(nativeLib);
+                final String qName = getUniqueName(nativeLib);
                 final Key key = KeyUtilities.createProjectKey(qName);
                 if (key != null) {
                     res.add(key);

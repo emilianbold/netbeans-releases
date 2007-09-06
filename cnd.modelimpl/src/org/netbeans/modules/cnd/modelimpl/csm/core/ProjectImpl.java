@@ -27,6 +27,7 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
@@ -46,7 +47,15 @@ public final class ProjectImpl extends ProjectBase {
         // RepositoryUtils.put(this);
     }
     
-    public static ProjectImpl createInstance(ModelImpl model, Object platformProject, String name) {
+    public static ProjectImpl createInstance(ModelImpl model, String platformProject, String name) {
+        return createInstance(model, (Object) platformProject, name);
+    }
+    
+    public static ProjectImpl createInstance(ModelImpl model, NativeProject platformProject, String name) {
+        return createInstance(model, (Object) platformProject, name);
+    }
+    
+    private static ProjectImpl createInstance(ModelImpl model, Object platformProject, String name) {
 	ProjectBase instance = null;
 	if( TraceFlags.PERSISTENT_REPOSITORY ) {
 	    try {

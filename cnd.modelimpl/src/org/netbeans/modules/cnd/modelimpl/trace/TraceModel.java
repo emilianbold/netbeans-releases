@@ -257,7 +257,7 @@ public class TraceModel {
 			getProject().dispose(true);
 			((ModelImpl) CsmModelAccessor.getModel()).removeProject(platformProject);
 		}
-		setProject(model.addProject("DummyPrjId", "DummyProject", true)); // NOI18N
+		setProject(model.addProject("DummyProject", "DummyProject", true)); // NOI18N
 	}
 	
 	private boolean processFlag(char flag, String argRest) {
