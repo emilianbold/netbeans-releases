@@ -139,14 +139,22 @@ import org.openide.nodes.Node;
             return null;
         }
         List<CsmObject> path = new ArrayList<CsmObject>();
+        CsmObject scope = null;
         if (CsmKindUtilities.isFunctionDefinition(decl)){
             CsmFunction func = ((CsmFunctionDefinition)decl).getDeclaration();
             if (func != null){
                 decl = func;
             }
+            path.add(decl);
+            scope = decl.getScope();
+        } else if (CsmKindUtilities.isNamespaceDefinition(decl)){
+            CsmNamespace ns = ((CsmNamespaceDefinition)decl).getNamespace();
+            path.add(ns);
+            scope = ns.getParent();
+        } else {
+            path.add(decl);
+            scope = decl.getScope();
         }
-        path.add(decl);
-        CsmObject scope = decl.getScope();
         while(scope != null) {
             if (CsmKindUtilities.isFile(scope)) {
                 path.add(project.getGlobalNamespace());
