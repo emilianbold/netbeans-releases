@@ -161,6 +161,10 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         Class cls = null;
 
         int last = name.lastIndexOf('.');
+        if (last == -1) {
+            throw new ClassNotFoundException("Will not load classes from default package (" + name + ")"); // NOI18N
+        }
+
         // Strip+intern or use from package coverage
         String pkg = (last >= 0) ? name.substring(0, last) : ""; 
 
@@ -250,6 +254,10 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         name = stripInitialSlash(name);
 
         int last = name.lastIndexOf('/');
+        if (last == -1) {
+            printDefaultPackageWarning(name);
+        }
+
         String pkg = (last >= 0) ? name.substring(0, last).replace('/', '.') : "";
         String path = name.substring(0, last+1);
         
@@ -304,7 +312,12 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
      */    
     @Override
     protected final synchronized Enumeration<URL> findResources(String name) throws IOException {
+        name = stripInitialSlash(name);
         final int slashIdx = name.lastIndexOf('/');
+        if (slashIdx == -1) {
+            printDefaultPackageWarning(name);
+        }
+
         final String path = name.substring(0, slashIdx + 1);
         List<Enumeration<URL>> sub = new ArrayList<Enumeration<URL>>();
 

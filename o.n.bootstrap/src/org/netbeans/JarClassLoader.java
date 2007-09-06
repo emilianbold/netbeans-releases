@@ -557,6 +557,8 @@ public class JarClassLoader extends ProxyClassLoader {
                     String str = (String)en.nextElement();
                     known.add(str);
                 }
+                // #114856 - StringTokenizer doesn't recognize empty tokens
+                if (pack.startsWith(",") || pack.endsWith(",") || pack.contains(",,")) known.add("");
                 return known;
             }
         }
