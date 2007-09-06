@@ -37,7 +37,13 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         super.setUp();
         clearWorkDir();
     }
-    
+
+    protected File getXTestJRubyHome() {
+        String destDir = System.getProperty("xtest.jruby.home");
+        assertNotNull("xtest.jruby.home property has to be set when running within binary distribution", destDir);
+        return new File(destDir);
+    }
+
     protected Project getTestProject(String path) {
         FileObject fo = getTestFile(path);
         Project p = FileOwnerQuery.getOwner(fo);
