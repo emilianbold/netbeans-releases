@@ -986,7 +986,13 @@ public class CasualDiff {
             copyTo(localPointer, elemtypeBounds[0]);
             localPointer = diffTree(oldT.elemtype, newT.elemtype, elemtypeBounds);
         }
-//        diffParameterList(oldT.dims, newT.dims, endPos(oldT.dims));
+        if (!listsMatch(oldT.dims, newT.dims)) {
+            // solved just for the change, not insert and delete
+            for (com.sun.tools.javac.util.List<JCExpression> l1 = oldT.dims, l2 = newT.dims;
+                l1.nonEmpty(); l1 = l1.tail, l2 = l2.tail) {
+                localPointer = diffTree(l1.head, l2.head, new int[] { localPointer, getBounds(l1.head)[1] });
+            }
+        }
         if (oldT.elems != null && oldT.elems.head != null) {
             copyTo(localPointer, getOldPos(oldT.elems.head));
             localPointer = diffParameterList(oldT.elems, newT.elems, null, getOldPos(oldT.elems.head), Measure.ARGUMENT);
