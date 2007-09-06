@@ -21,6 +21,7 @@ import org.netbeans.modules.xml.xam.TestComponent.E;
 import org.netbeans.modules.xml.xdm.Util;
 import org.netbeans.modules.xml.xdm.diff.Change;
 import org.netbeans.modules.xml.xdm.diff.Difference;
+import org.netbeans.modules.xml.xdm.nodes.Element;
 
 /**
  *
@@ -39,8 +40,15 @@ public class AbstractModelTest extends NbTestCase {
         }
         
         public void assertEvent(String propertyName, Object old, Object now) {
+            assertEvent(propertyName, null, old, now);
+        }
+        
+        public void assertEvent(String propertyName, Object source, Object old, Object now) {
             for (PropertyChangeEvent e : events) {
                 if (propertyName.equals(e.getPropertyName())) {
+                    if (source != null && source != e.getSource()) {
+                        continue;
+                    }
                     if (old != null && ! old.equals(e.getOldValue()) ||
                         old == null && e.getOldValue() != null) {
                         continue;
@@ -53,6 +61,23 @@ public class AbstractModelTest extends NbTestCase {
                 }
             }
             assertTrue("Expect property change event on "+propertyName+" with "+old+" and "+now, false);
+        }
+        
+        public void assertNoEvent(String propertyName) {
+            for (PropertyChangeEvent e : events) {
+                if (propertyName.equals(e.getPropertyName())) {
+                    assertTrue("Got unexpected event "+propertyName, false);
+                }
+            }
+        }
+        
+        public PropertyChangeEvent getEvent(String propertyName, Object source) {
+            for (PropertyChangeEvent e : events) {
+                if (propertyName.equals(e.getPropertyName()) && source == e.getSource()) {
+                    return e;
+                }
+            }
+            return null;
         }
     }
     
@@ -904,5 +929,72 @@ public class AbstractModelTest extends NbTestCase {
         assertNull(model.getRootComponent().getChild(D.class));
         model = Util.dumpAndReloadModel(model);
         assertNull(model.getRootComponent().getChild(D.class));
+    }
+
+    public void testXmlContentPropertyChangeEventRemove() throws Exception {
+        setUp();
+        doc = Util.getResourceAsDocument("resources/testXmlContentEvent.xml");
+        model = Util.loadModel(doc);
+        model.addComponentListener(listener);
+        model.addPropertyChangeListener(plistener);
+
+        A a = model.getRootComponent().getChild(A.class);
+        assertEquals(0, a.getChildren().size());
+        
+        Util.setDocumentContentTo(doc, "resources/testXmlContentEvent_1.xml");
+        model.sync();
+        listener.assertEvent(EventType.VALUE_CHANGED, a);
+        PropertyChangeEvent event = plistener.getEvent("nondomain", a);
+        List<Element> now = (List<Element>) event.getNewValue();
+        List<Element> old = (List<Element>) event.getOldValue();
+        assertEquals(0, now.size());
+        assertEquals(1, old.size());
+        assertEquals("101", old.get(0).getXmlFragmentText());
+        plistener.assertNoEvent(DocumentComponent.TEXT_CONTENT_PROPERTY);
+    }
+
+    public void testXmlContentPropertyChangeEventAdd() throws Exception {
+        setUp();
+        doc = Util.getResourceAsDocument("resources/testXmlContentEvent_1.xml");
+        model = Util.loadModel(doc);
+        model.addComponentListener(listener);
+        model.addPropertyChangeListener(plistener);
+
+        A a = model.getRootComponent().getChild(A.class);
+        assertEquals(0, a.getChildren().size());
+        
+        Util.setDocumentContentTo(doc, "resources/testXmlContentEvent.xml");
+        model.sync();
+        listener.assertEvent(EventType.VALUE_CHANGED, a);
+        PropertyChangeEvent event = plistener.getEvent("nondomain", a);
+        List<Element> now = (List<Element>) event.getNewValue();
+        List<Element> old = (List<Element>) event.getOldValue();
+        assertEquals(0, old.size());
+        assertEquals(1, now.size());
+        assertEquals("101", now.get(0).getXmlFragmentText());
+        plistener.assertNoEvent(DocumentComponent.TEXT_CONTENT_PROPERTY);
+    }
+
+    public void testXmlContentPropertyChangeEventChange() throws Exception {
+        setUp();
+        doc = Util.getResourceAsDocument("resources/testXmlContentEvent.xml");
+        model = Util.loadModel(doc);
+        model.addComponentListener(listener);
+        model.addPropertyChangeListener(plistener);
+
+        A a = model.getRootComponent().getChild(A.class);
+        assertEquals(0, a.getChildren().size());
+        
+        Util.setDocumentContentTo(doc, "resources/testXmlContentEvent_2.xml");
+        model.sync();
+        listener.assertEvent(EventType.VALUE_CHANGED, a);
+        PropertyChangeEvent event = plistener.getEvent("nondomain", a);
+        List<Element> now = (List<Element>) event.getNewValue();
+        List<Element> old = (List<Element>) event.getOldValue();
+        assertEquals(1, now.size());
+        assertEquals(1, old.size());
+        assertEquals("101", old.get(0).getXmlFragmentText());
+        assertEquals("1001", now.get(0).getXmlFragmentText());
+        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, a, " <nondomain>101</nondomain>", " <nondomain>1001</nondomain>");
     }
 }

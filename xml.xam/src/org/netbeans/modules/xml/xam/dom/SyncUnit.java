@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,6 +44,7 @@ public class SyncUnit {
     private Map<String, Attr> addedAttributes = new HashMap<String, Attr>();
     private boolean componentChanged;
     private boolean hasTextContentChanges = false;
+    private Set<String> nonDomainedChanges = new HashSet<String>(); //tagname of top level non-domained element
     
     public SyncUnit(DocumentComponent syncTarget) {
         if (syncTarget == null) {
@@ -63,14 +65,17 @@ public class SyncUnit {
             } else {
                 addToRemovedAttributes(attr);
             }
-        } else {
+        } else if (! change.isDomainElement()) {
             Node actualChanged = change.getActualChangedNode();
             if (! (actualChanged instanceof Attribute || actualChanged instanceof Element)) {
                 // should be text, cdata, comment...
-                if (actualChanged.getNodeType() != Node.TEXT_NODE ||
+                if (actualChanged.getNodeType() != Node.TEXT_NODE || 
                     ((Text)actualChanged).getNodeValue().trim().length() != 0) {
                     setHasTextContentChanges(true);
+                    addNonDomainedElementChange(change);
                 }
+            } else {
+                addNonDomainedElementChange(change);
             }
         }
     }
@@ -168,6 +173,16 @@ public class SyncUnit {
 
     public void setHasTextContentChanges(boolean val) {
         hasTextContentChanges = val;
+    }
+    
+    public Set<String> getNonDomainedElementChanges() {
+        return nonDomainedChanges;
+    }
+
+    public void addNonDomainedElementChange(ChangeInfo change) {
+        if (change.getChangedNode() instanceof Element) {
+            nonDomainedChanges.add(((Element)change.getChangedNode()).getTagName());
+        }
     }
     
     public boolean hasWhitespaceChangeOnly() {

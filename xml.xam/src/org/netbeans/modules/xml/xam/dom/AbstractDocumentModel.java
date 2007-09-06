@@ -44,6 +44,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * @author Chris Webster
@@ -334,6 +335,27 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
                     oldElement == null ? "" : getAccess().getXmlFragment(oldElement),
                     getAccess().getXmlFragment(unit.getTarget().getPeer())));
         }
+
+        for (String tagname : unit.getNonDomainedElementChanges()) {
+            List<Element> old = new ArrayList<Element>();
+            List<Element> now = new ArrayList<Element>();
+            NodeList oldNodes = oldElement.getElementsByTagName(tagname);
+            for (int i=0; i<oldNodes.getLength(); i++) {
+                Element e = (Element)oldNodes.item(i);
+                old.add((Element)e.cloneNode(true));
+            }
+            NodeList newNodes = unit.getTarget().getPeer().getElementsByTagName(tagname);
+            for (int i=0; i<newNodes.getLength(); i++) {
+                now.add((Element)newNodes.item(i).cloneNode(true));
+            }
+            super.firePropertyChangeEvent(
+                    new PropertyChangeEvent(unit.getTarget(), toLocalName(tagname), old, now));
+        }
+    }
+    
+    protected static String toLocalName(String tagName) {
+        String[] parts = tagName.split(":"); //NOI18N
+        return parts[parts.length-1];
     }
     
     public void processSyncUnit(SyncUnit syncOrder) {

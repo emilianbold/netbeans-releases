@@ -74,7 +74,8 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         } else if (e.getLocalName().equals("e") && NS_URI.equals(namespace)) {
             return new TestComponent.E(model, e);
         } else {
-            throw new RuntimeException("unsupported element type "+ e.getNodeName());
+            return null;
+            //throw new RuntimeException("unsupported element type "+ e.getNodeName());
         }
     }
     
