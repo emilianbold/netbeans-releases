@@ -37,6 +37,8 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="glassfish_image.zip"/>
     <delete file="pkg/scripts/add_gf.sh"/>
     <delete file="pkg/scripts/unpack200.sh"/>
+    <delete file="pkg/scripts/env.sh"/>
+    <delete file="pkg/scripts/perm.sh"/>
   </target>
 
   <target name="get-bits">
@@ -57,5 +59,6 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="${basedir}/../pkg/scripts/add_gf.sh" tofile="${basedir}/pkg/scripts/add_gf.sh"/>
     <copy file="${basedir}/../pkg/scripts/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
     <copy file="${basedir}/../pkg/scripts/env.sh" tofile="${basedir}/pkg/scripts/env.sh"/>
+    <copy file="${basedir}/../pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
   </target>
 </project>

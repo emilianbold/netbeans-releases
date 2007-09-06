@@ -27,3 +27,5 @@ cd "$2"
 cd ..
 ./bin/asadmin install-addon "`pwd`/addons/jbi_components_installer.jar"
 
+"$script_dir"/perm.sh
+

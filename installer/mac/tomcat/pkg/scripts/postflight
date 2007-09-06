@@ -33,3 +33,5 @@ chmod -R a+r *
 
 chmod a+w logs
 
+"$script_dir"/perm.sh
+

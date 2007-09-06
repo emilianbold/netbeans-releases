@@ -34,6 +34,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean-impl">
     <delete file="jbi_components_installer.jar"/>
     <delete file="pkg/scripts/unpack200.sh"/>
+    <delete file="pkg/scripts/perm.sh"/>
   </target>
 
   <target name="get-bits">
@@ -49,5 +50,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="pre-build-pkg">
     <copy file="${basedir}/../pkg/scripts/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
+    <copy file="${basedir}/../pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
   </target>
 </project>

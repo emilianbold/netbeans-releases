@@ -48,3 +48,5 @@ else
   echo No ant found: $ant_bin
 fi
 
+"$script_dir"/perm.sh
+
