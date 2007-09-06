@@ -67,15 +67,15 @@ public final class DiagnosticTask implements Runnable {
             lr.setParameters(new Object[] {freeMem});
             Logger.getLogger("org.netbeans.ui.performance").log(lr);
         } catch (NoSuchMethodException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
         } catch (SecurityException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
         } catch (InvocationTargetException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
         }
     }
 
