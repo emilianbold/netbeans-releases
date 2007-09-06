@@ -217,7 +217,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                     for( Node portNode : serviceNode.getChildren().getNodes()) {
                         boolean portValid = false;
                         WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
-                        if( port != null && !portNode.getName().equals( port.getName())) continue;
+                        if (port == null || !portNode.getName().equals( port.getName())) continue;
                         org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
                         HashSet<String> methodIDs = new HashSet();
                         if (cd != null) {
