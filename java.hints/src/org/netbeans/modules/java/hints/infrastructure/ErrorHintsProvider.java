@@ -318,7 +318,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
                 
                 int len = doc.getLength();
                 
-                if (startOffsetFinal >= len || endOffsetFinal >= len) {
+                if (startOffsetFinal >= len || endOffsetFinal > len) {
                     if (!isCanceled() && ERR.isLoggable(ErrorManager.WARNING)) {
                         ERR.log(ErrorManager.WARNING, "document changed, but not canceled?" );
                         ERR.log(ErrorManager.WARNING, "len = " + len );
