@@ -36,6 +36,7 @@ import com.sun.source.util.Trees;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -315,6 +316,15 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         }
     }
     
+    public static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path) {
+        ExecutableElement[] arr = overridesHashCodeAndEquals(wc, wc.getTrees().getElement(path), null);
+
+        Collection<VariableElement> e = arr[0] == null ? Collections.<VariableElement>emptySet() : null;
+        Collection<VariableElement> h = arr[1] == null ? Collections.<VariableElement>emptySet() : null;
+
+        generateEqualsAndHashCode(wc, path, e, h, -1);
+    }
+    
     private static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> equalsFields, Iterable<? extends VariableElement> hashCodeFields, int index) {
         assert path.getLeaf().getKind() == Tree.Kind.CLASS;
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
@@ -322,10 +332,18 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             TreeMaker make = wc.getTreeMaker();
             ClassTree nue = (ClassTree)path.getLeaf();
             if (hashCodeFields != null) {
-                nue = make.insertClassMember(nue, index, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType()));
+                if (index >= 0) {
+                    nue = make.insertClassMember(nue, index, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType()));
+                } else {
+                    nue = make.addClassMember(nue, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType()));
+                }
             }
             if (equalsFields != null) {
-                nue = make.insertClassMember(nue, index, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType()));
+                if (index >= 0) {
+                    nue = make.insertClassMember(nue, index, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType()));
+                } else {
+                    nue = make.addClassMember(nue, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType()));
+                }
             }
             wc.rewrite(path.getLeaf(), nue);
         }        

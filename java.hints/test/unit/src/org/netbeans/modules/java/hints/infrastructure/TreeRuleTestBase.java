@@ -131,11 +131,11 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         assertTrue(errorsNames.toString(), Arrays.equals(golden, errorsNames.toArray(new String[0])));
     }
     
-    protected void performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
-        performFixTest(fileName, code, pos, errorDescriptionToString, fixDebugString, fileName, golden);
+    protected String performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
+        return performFixTest(fileName, code, pos, errorDescriptionToString, fixDebugString, fileName, golden);
     }
     
-    protected void performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String goldenFileName, String golden) throws Exception {
+    protected String performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String goldenFileName, String golden) throws Exception {
         prepareTest(fileName, code);
         
         TreePath path = info.getTreeUtilities().pathFor(pos);
@@ -183,10 +183,14 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         //ignore whitespaces:
         realCode = realCode.replaceAll("[ \t\n]+", " ");
-        
-        assertEquals(golden, realCode);
+
+        if (golden != null) {
+            assertEquals(golden, realCode);
+        }
         
         LifecycleManager.getDefault().saveAll();
+
+        return realCode;
     }
     
     protected FileObject[] extraClassPath() {

@@ -31,7 +31,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  * @author Jaroslav Tulach
  */
 public class MissingHashCodeTest extends TreeRuleTestBase {
-    
+
     public MissingHashCodeTest(String testName) {
         super(testName);
     }
@@ -41,54 +41,53 @@ public class MissingHashCodeTest extends TreeRuleTestBase {
         Locale.setDefault(Locale.US);
         SourceUtilsTestUtil.setLookup(new Object[0], getClass().getClassLoader());
     }
-    
-    
-    
+
     public void testMissingHashCode() throws Exception {
-        String before = "package test; public class Test extends Object {" +
-            " public boolean ";
-        String after = " equals(Object snd) {" +
-            "  return snd != null && getClass().equals(snd.getClass());" +
-            " }" +
-            "}";
-        
-        performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:65-0:71:verifier:Generate missing hashCode()"
-        );
+        String before = "package test; public class Test extends Object {" + " public boolean ";
+        String after = " equals(Object snd) {" + "  return snd != null && getClass().equals(snd.getClass());" + " }" + "}";
+
+        performAnalysisTest("test/Test.java", before + after, before.length(), "0:65-0:71:verifier:Generate missing hashCode()");
     }
 
     public void testMissingEquals() throws Exception {
-        String before = "package test; public class Test extends Object {" +
-            " public int ";
-        String after = " hashCode() {" +
-            "  return 1;" +
-            " }" +
-            "}";
-        
-        performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:61-0:69:verifier:Generate missing equals(Object)"
-        );
+        String before = "package test; public class Test extends Object {" + " public int ";
+        String after = " hashCode() {" + "  return 1;" + " }" + "}";
+
+        performAnalysisTest("test/Test.java", before + after, before.length(), "0:61-0:69:verifier:Generate missing equals(Object)");
     }
 
     public void testNoHintOnOtherMethods() throws Exception {
-        String before = "package test; public class Test extends Object {" +
-            " public boolean equals(Object snd) {" +
-            "  return snd != null && getClass().equals(snd.getClass());" +
-            " }\n" +
-            " public static void main(String[] ";
-        String after = 
-            "   args) {" +
-            " }" +
-            "}";
-        
+        String before = "package test; public class Test extends Object {" + " public boolean equals(Object snd) {" + "  return snd != null && getClass().equals(snd.getClass());" + " }\n" + " public static void main(String[] ";
+        String after = "   args) {" + " }" + "}";
+
         performAnalysisTest("test/Test.java", before + after, before.length());
+    }
+
+    public void testWhenNoFieldsGenerateHashCode() throws Exception {
+        String before = "package test; public class Test extends Object {" + " public boolean equa";
+        String after = "ls(Object snd) { return snd == this; } }";
+
+        String res = performFixTest("test/Test.java", before + after, before.length(), "0:64-0:70:verifier:Generate missing hashCode()", "Fix", null);
+
+        if (!res.matches(".*equals.*hashCode.*")) {
+            fail("We want equals and hashCode:\n" + res);
+        }
+    }
+
+    public void testWhenNoFieldsGenerateEquals() throws Exception {
+        String before = "package test; public class Test extends Object {" + " public int hash";
+        String after = "Code() { return 1; } }";
+
+        String res = performFixTest("test/Test.java", before + after, before.length(), "0:60-0:68:verifier:Generate missing equals(Object)", "Fix", null);
+
+        if (!res.matches(".*hashCode.*equals.*")) {
+            fail("We want equals and hashCode:\n" + res);
+        }
     }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return new MissingHashCode().run(info, path);
     }
-    
     private String sourceLevel = "1.5";
-    
 }

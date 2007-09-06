@@ -16,11 +16,11 @@
  */
 package org.netbeans.modules.java.hints;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -29,13 +29,16 @@ import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.EqualsHashCodeGenerator;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
@@ -152,10 +155,11 @@ public class MissingHashCode extends AbstractHint {
         return null;
     }    
           
-    private static final class FixImpl implements Fix, Runnable {
+    private static final class FixImpl implements Fix, Runnable, Task<WorkingCopy> {
         private TreePathHandle handle;
         private FileObject file;
         private String msg;
+        private boolean fieldFound;
         
         public FixImpl(String type, TreePathHandle handle, FileObject file) {
             this.handle = handle;
@@ -169,8 +173,14 @@ public class MissingHashCode extends AbstractHint {
         
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
         
-        public ChangeInfo implement() {
-            EventQueue.invokeLater(this);
+        public ChangeInfo implement() throws IOException {
+            ModificationResult result = JavaSource.forFileObject(file).runModificationTask(this);
+            if (fieldFound) {
+                EventQueue.invokeLater(this);
+            } else {
+                result.commit();
+            }
+            
             return null;
         }
         
@@ -185,6 +195,22 @@ public class MissingHashCode extends AbstractHint {
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+        
+        public void run(WorkingCopy wc) throws Exception {
+            wc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            for (Element elem : handle.resolveElement(wc).getEnclosedElements()) {
+                if (elem.getKind() == ElementKind.FIELD) {
+                    fieldFound = true;
+                    return;
+                }
+            }
+            EqualsHashCodeGenerator.generateEqualsAndHashCode(wc, handle.resolve(wc));
+        }
+        
+        @Override
+        public String toString() {
+            return "Fix";
         }
     }
     
