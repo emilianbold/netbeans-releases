@@ -24,7 +24,6 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.openide.nodes.Node;
 
@@ -48,7 +47,7 @@ public class DiffAction extends AbstractSystemAction {
     }
 
     protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE;
+        return getDirectoryEnabledStatus();
     }
 
     protected int getDirectoryEnabledStatus() {
