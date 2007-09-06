@@ -338,10 +338,12 @@
     <component-class>com.sun.rave.web.ui.component.Selector</component-class>
   </component>
 
+  <!-- Bug Fix: 114655 (TemplateComponentBase is an abstract class!)
   <component>
     <component-type>com.sun.rave.web.ui.Template</component-type>
     <component-class>com.sun.rave.web.ui.component.TemplateComponentBase</component-class>
   </component>
+  -->
 
   <component>
     <component-type>com.sun.rave.web.ui.Table</component-type>
@@ -820,6 +822,7 @@
       </renderer-class>
     </renderer>
 
+    <!--
     <renderer>
       <component-family>com.sun.rave.web.ui.Template</component-family>
       <renderer-type>com.sun.rave.web.ui.Template</renderer-type>
@@ -827,6 +830,7 @@
 	com.sun.rave.web.ui.renderer.template.TemplateRenderer
       </renderer-class>
     </renderer>
+    -->
 
     <renderer>
       <component-family>com.sun.rave.web.ui.Tab</component-family>
