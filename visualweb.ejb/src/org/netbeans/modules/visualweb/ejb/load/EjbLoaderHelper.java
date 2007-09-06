@@ -6,12 +6,6 @@
 
 package org.netbeans.modules.visualweb.ejb.load;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
-import org.netbeans.modules.visualweb.ejb.util.JarExploder;
-
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -20,8 +14,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
+import org.netbeans.modules.visualweb.ejb.util.JarExploder;
 
 /**
  * 
@@ -56,30 +54,7 @@ public class EjbLoaderHelper {
             URL[] classPathArray = classPathUrls.toArray(new URL[classPathUrls.size()]);
             URLClassLoader classloader = URLClassLoader.newInstance(classPathArray);
             return classloader;
-        }
-        // try {
-        // // Class loader for loading the classes in the client jar files
-        // // and the ejb-2.0.jar (it contains the super classes/interfaces for the EJBs)
-        //            
-        // URL[] clientJarURLs = new URL[ ejbGroup.getClientJarFiles().size() + 1 ];
-        //            
-        // // Client jars
-        // ArrayList jarFileNames = ejbGroup.getClientJarFiles();
-        // for( int i = 0; i < jarFileNames.size(); i ++ ) {
-        // String fileName = (String)jarFileNames.get( i );
-        // clientJarURLs[i] = new File(fileName).toURL();
-        //                
-        // }
-        //            
-        // // ejb-2.0.jar
-        // clientJarURLs[jarFileNames.size()] = new File(EjbLoader.ejb20Jar).toURL();
-        //            
-        // URLClassLoader classloader = URLClassLoader.newInstance( clientJarURLs );
-        //            
-        // return classloader;
-        //            
-        // }
-        catch (java.net.MalformedURLException e) {
+        } catch (java.net.MalformedURLException e) {
             // Log error
             String logMsg = "Error occurred when trying load classes from "
                     + ejbGroup.getClientJarFiles().toString();
