@@ -226,14 +226,14 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                     continue;
                 }
                 
-                String libProperty = 
-                        (wsMetadataDesc.getWsType() == wsMetadataDesc.JAX_WS_TYPE) ? "libs.jaxws21.classpath" : "libs.jaxrpc16.classpath";
-                
                 // Create a temporary jar so the proxy jar is not locked (for further updates + deletions)
                 File tmpProxy = createTempCopy(proxyJar);
                 tmpProxy.deleteOnExit();
                 
-                URLClassLoader classLoader = new URLClassLoader(Util.buildClasspath(tmpProxy, libProperty).toArray(new URL[0]), this.getClass().getClassLoader());
+                URLClassLoader classLoader = new URLClassLoader(
+                    Util.buildClasspath(tmpProxy, 
+                                        wsMetadataDesc.getWsType() == WebServiceDescriptor.JAX_WS_TYPE).toArray(new URL[0]), 
+                    this.getClass().getClassLoader());
                 
                 
                 // Verify that the port getter method exists in the Service class, otherwise

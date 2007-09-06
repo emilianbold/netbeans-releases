@@ -36,7 +36,6 @@ import org.netbeans.modules.visualweb.websvcmgr.consumer.DesignerWebServiceExtIm
 import org.netbeans.modules.visualweb.websvcmgr.model.WebServiceData;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
 
 import org.w3c.dom.*;
 
@@ -86,7 +85,20 @@ public class Util {
     public static final String xsdNamespace = "xsd";
     final static public String WSDL_FILE_EXTENSION = "wsdl";
 
-    
+    public static boolean isJAXRPCAvailable() {
+        return getWebServiceSupportLibDef(false) != null;
+    }
+
+    /**
+     * @return The library definition containing the web service support jar files, null if it does not exist
+     */
+    public static Library getWebServiceSupportLibDef(boolean isJ2EE_15) {
+        String libraryName = (isJ2EE_15) ? "jaxws21" : "jaxrpc16";
+        Library libDef = LibraryManager.getDefault().getLibrary(libraryName);
+
+        return libDef;
+    }
+
     public static Method getPropertyGetter(String type, String propName, ClassLoader loader) {
         try {
             Class typeClass = Class.forName(type, true, loader);
@@ -275,34 +287,6 @@ public class Util {
             return null;
         }
         return FileOwnerQuery.getOwner(fileObject);
-    }
-    
-    private void addLibraryDefsAndRefs(String libName)
-    throws IOException {
-        
-        Project project = getActiveProject();
-        
-        Library libDef = LibraryManager.getDefault().getLibrary(libName);
-        if (libDef == null) {
-            
-        }
-        
-        // If needed, create new compile-time Library Ref
-        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                ClassPath.COMPILE)) {
-            if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef }, ClassPath.COMPILE)) {
-                
-            }
-        }
-        
-        // If needed, create new "deploy" Library Ref
-        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                ClassPath.EXECUTE)) {
-            if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef }, ClassPath.EXECUTE)) {
-            }
-        }
     }
     
     /**
@@ -677,7 +661,7 @@ public class Util {
             return null;
         }
         try {
-            List<URL> urlList = buildClasspath(null, "libs.jaxrpc16.classpath"); // NOI18N
+            List<URL> urlList = buildClasspath(null, false); // NOI18N
             for (WebServiceDescriptor.JarEntry entry : descriptor.getJars()) {
                 if (entry.getType().equals(WebServiceDescriptor.JarEntry.PROXY_JAR_TYPE)) {
                     File jarFile = new File(descriptor.getXmlDescriptorFile().getParent(), entry.getName());
@@ -895,11 +879,11 @@ public class Util {
      * Creates a classpath from a set of properties from the $userdir/build.properties file
      * 
      * @param srcPath
-     * @param libProperties
+     * @param isJaxWS true if the classpath should include the JAX-WS jars, false if JAX-RPC should be used
      * @return a URL array containing the classpath jars and directories
      * @throws java.io.IOException 
      */
-    public static List<URL> buildClasspath(File srcPath, String... libProperties) throws IOException {
+    public static List<URL> buildClasspath(File srcPath, boolean isJaxWS) throws IOException {
         // The classpath needs to be equivalent to (plus the ws client package root):
         // classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${libs.jsf12-support.classpath}"
         ArrayList<URL> urls = new ArrayList<URL>();
@@ -916,9 +900,9 @@ public class Util {
         
         String pathSeparator = System.getProperty("path.separator");
         String longCP = properties.getProperty("libs.jsf12-support.classpath");
-        for (int i = 0; libProperties != null && i < libProperties.length; i++) {
-            longCP = properties.getProperty(libProperties[i]) + pathSeparator + longCP;
-        }
+
+        String libProperty = isJaxWS ? "libs.jaxws21.classpath" : "libs.jaxrpc16.classpath"; // NOI18N
+        longCP = properties.getProperty(libProperty) + pathSeparator + longCP;
         
         StringTokenizer st = new StringTokenizer(longCP, pathSeparator);
         

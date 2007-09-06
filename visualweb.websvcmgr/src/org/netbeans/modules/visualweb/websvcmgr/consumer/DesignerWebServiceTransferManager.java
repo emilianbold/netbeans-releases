@@ -164,7 +164,7 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
      */
     private static void addLibraryDefinitions(boolean isJ2EE_15, Project project, WebServiceDescriptor descriptor) {
         List<Library> compiletimeLibs = new LinkedList<Library>();
-        Library webService20LibDef = WebServiceLibReferenceHelper.getWebServiceSupportLibDef(isJ2EE_15);
+        Library webService20LibDef = Util.getWebServiceSupportLibDef(isJ2EE_15);
         
         compiletimeLibs.add(webService20LibDef);
         WebServiceLibReferenceHelper.addLibRefsToProject( project, compiletimeLibs);
