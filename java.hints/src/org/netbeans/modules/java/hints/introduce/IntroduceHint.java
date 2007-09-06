@@ -1322,8 +1322,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             List<StatementTree> nueStatements = new LinkedList<StatementTree>();
                             ExpressionTree reference = hasParameterOfTheSameName ? make.MemberSelect(make.Identifier("this"), name) : make.Identifier(name); // NOI18N
                             
+                            List<? extends StatementTree> origStatements = origBody.getStatements();
+                            StatementTree canBeSuper = origStatements.get(0);
+                            if (!parameter.getTreeUtilities().isSynthetic(TreePath.getPath(constructor, canBeSuper))) {
+                                nueStatements.add(canBeSuper);
+                            }
                             nueStatements.add(make.ExpressionStatement(make.Assignment(reference, expressionCopy)));
-                            nueStatements.addAll(origBody.getStatements().subList(1, origBody.getStatements().size()));
+                            nueStatements.addAll(origStatements.subList(1, origStatements.size()));
                             
                             BlockTree nueBlock = make.Block(nueStatements, false);
                             
