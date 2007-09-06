@@ -23,7 +23,6 @@ import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 
 import java.awt.Image;
-import javax.swing.*;
 
 
 /**
@@ -32,7 +31,8 @@ import javax.swing.*;
  */
 public class CasaDataNode extends DataNode {
 
-    private static Image icon = loadImage(CasaDataObject.CASA_ICON_BASE_WITH_EXT); // NOI18N
+    private static Image icon = org.openide.util.Utilities.loadImage(
+            CasaDataObject.CASA_ICON_BASE_WITH_EXT);
     
     private CasaDataObject obj = null;
     
@@ -46,11 +46,6 @@ public class CasaDataNode extends DataNode {
 
         this.obj = obj;
         this.getCookieSet().add( obj.getEditorSupport() );
-    }
-
-    
-    private static Image loadImage(String path) {
-        return (new ImageIcon(CasaDataNode.class.getClassLoader().getResource(path))).getImage();
     }
 
     /**
