@@ -273,9 +273,7 @@ public final class SourceRoots {
         for (FileObject child : folder.getChildren()) {
             if (child.isFolder()) {
                 String name = child.getNameExt();
-                // FIXME: workaround for #114690. Fix better using VisibilityQuery (as commented). See the issue comments.
-                String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"; // NOI18N
-                if (!known.contains(name) && !name.matches(ignoredFiles)) {// && VisibilityQuery.getDefault().isVisible(child)) {
+                if (!known.contains(name) && SourceRoots.isVisible(name)) { // && VisibilityQuery.getDefault().isVisible(child)) {
                     if (result == null) {
                         result = new ArrayList<String>();
                     }
@@ -290,6 +288,12 @@ public final class SourceRoots {
         }
         
         return result;
+    }
+    
+    private static boolean isVisible(final String name) {
+        // FIXME: workaround for #114690. Fix better using VisibilityQuery (as commented). See the issue comments.
+        String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"; // NOI18N
+        return !name.matches(ignoredFiles);
     }
     
     /** Initialize source roots to just match the Rails view.
@@ -313,7 +317,7 @@ public final class SourceRoots {
 
         FileObject[] children = fo.getChildren();
         for (FileObject f : children) {
-            if (!VisibilityQuery.getDefault().isVisible(f)) {
+            if (!SourceRoots.isVisible(f.getNameExt())) {
                 continue;
             }
             if (FileUtil.isArchiveFile(f)) {
