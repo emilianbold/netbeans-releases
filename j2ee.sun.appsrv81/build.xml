@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${cluster}/modules/ext"/>
         <copy file="../appsrvbridge/dist/appsrvbridge.jar" todir="${cluster}/modules/ext"/>
         <mkdir dir="${cluster}/ant/nblib"/>
-        <copy file="../../external/org-netbeans-modules-j2ee-sun-appsrv81.jar" todir="${cluster}/ant/nblib"/>
+        <copy file="external/org-netbeans-modules-j2ee-sun-appsrv81.jar" todir="${cluster}/ant/nblib"/>
     </target>
 
     <target name="javahelp" depends="init">
