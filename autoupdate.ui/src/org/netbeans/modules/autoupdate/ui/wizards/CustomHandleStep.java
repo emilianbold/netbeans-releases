@@ -193,7 +193,7 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     public void storeSettings (WizardDescriptor wd) {
         if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
             try {
-                model.doCleanup ();
+                model.doCleanup (true);
             } catch (OperationException x) {
                 Logger.getLogger (InstallUnitWizardModel.class.getName ()).log (Level.INFO, x.getMessage (), x);
             }

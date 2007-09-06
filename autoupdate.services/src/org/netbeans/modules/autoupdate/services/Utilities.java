@@ -141,9 +141,7 @@ public class Utilities {
     public static void deleteInstall_Later() {
         List<File> clusters = UpdateTracking.clusters(true);
         assert clusters != null : "Clusters cannot be empty."; // NOI18N
-        Iterator iter =  clusters.iterator();
-        while (iter.hasNext()) {
-            File installLaterFile = getInstall_Later((File)iter.next());
+        for (File installLaterFile : clusters) {
             if (installLaterFile != null && installLaterFile.exists()) {
                 installLaterFile.delete();                
             }
@@ -168,6 +166,7 @@ public class Utilities {
             return ;
         }
         
+        boolean isEmpty = true;
         for (UpdateElementImpl elementImpl : updates.keySet ()) {
             File c = updates.get(elementImpl);
             // pass this module to given cluster ?
@@ -180,7 +179,12 @@ public class Utilities {
                 module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), true).getName());
 
                 root.appendChild( module );
+                isEmpty = false;
             }
+        }
+        
+        if (isEmpty) {
+            return ;
         }
         
         document.getDocumentElement().normalize();

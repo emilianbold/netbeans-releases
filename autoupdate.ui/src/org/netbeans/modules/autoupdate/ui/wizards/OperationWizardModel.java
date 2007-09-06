@@ -278,7 +278,7 @@ public abstract class OperationWizardModel {
         wd.setOptions (newOptionsL.toArray ());
     }
     
-    public void doCleanup () throws OperationException {
+    public void doCleanup (boolean cancel) throws OperationException {
         getBaseContainer ().removeAll ();
         getCustomHandledContainer ().removeAll ();
     }

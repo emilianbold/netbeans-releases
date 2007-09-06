@@ -24,7 +24,6 @@ import java.util.Locale;
 import javax.swing.*;
 import java.io.*;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.net.URL;
 
 
@@ -36,8 +35,6 @@ import javax.swing.border.LineBorder;
  * @version
  */
 public class UpdaterFrame extends javax.swing.JPanel {
-
-    int xxx = 0xFFFFFF;
 
     /** Operating system is Windows x */
     public static final int OS_WIN = 1;
@@ -51,7 +48,6 @@ public class UpdaterFrame extends javax.swing.JPanel {
     public static final int OS_OTHER = 65536;
     
     private static final String SPLASH_PATH = "org/netbeans/updater/resources/updatersplash"; // NOI18N
-    private static final String UNDERLINE = "_";
 
     private static UpdaterFrame panel;
 
@@ -152,6 +148,7 @@ public class UpdaterFrame extends javax.swing.JPanel {
     }
     // </editor-fold>//GEN-END:initComponents
 
+    @Override
     protected void paintComponent (Graphics g) {
         if (isGradient ()) {
             Color outerColor = stringToColor ("UpdaterFrame.outerColor", new Color(230, 242, 234));
@@ -209,27 +206,12 @@ public class UpdaterFrame extends javax.swing.JPanel {
 
     }
 
-    public static void runFromIDE (File[] files, PropertyChangeListener listener, String brandingToken, boolean dontShowSplash) {
-        noSplash = dontShowSplash;
-        runFromIDE (files, listener, brandingToken);
+    public static Thread runFromIDE (File[] files, PropertyChangeListener listener, String brandingToken, boolean showSplash) {
+        noSplash = ! showSplash;
+        return runFromIDE (files, listener, brandingToken);
     }
 
-    public static void runFromIDE (File[] files, PropertyChangeListener listener, String brandingToken) {
-        fromIDE = true;        
-        Localization.setBranding (brandingToken);
-        panel = new UpdaterFrame ();
-        panel.addPropertyChangeListener( listener );
-        if (! noSplash) {
-            showSplash();
-        }
-        
-        mu = new ModuleUpdater();
-        mu.setInstallOnly (files);
-        mu.start();
-    }
-
-    public static Thread startFromIDE (File[] files, PropertyChangeListener listener, String brandingToken) {
-        noSplash = true;
+    public static Thread runFromIDE (File[] files, PropertyChangeListener listener, String brandingToken) {
         fromIDE = true;        
         Localization.setBranding (brandingToken);
         panel = new UpdaterFrame ();
@@ -419,6 +401,7 @@ public class UpdaterFrame extends javax.swing.JPanel {
             center(this);
         }
         
+        @Override
         public java.awt.Dimension getPreferredSize () {
             return stringToDimension("UpdaterFrame.Splash.PreferredSize", new Dimension (400, 280));
         }
@@ -435,6 +418,7 @@ public class UpdaterFrame extends javax.swing.JPanel {
             center(this);
         }
 
+        @Override
         public java.awt.Dimension getPreferredSize () {
             return stringToDimension("UpdaterFrame.Splash.PreferredSize", new Dimension (400, 280));
         }        

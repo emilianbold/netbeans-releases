@@ -305,10 +305,10 @@ public class InstallSupportImpl {
                     if (! getDownloadedFiles ().isEmpty ()) {
                         
                         // XXX: should run in single Thread
-                        Thread th = org.netbeans.updater.UpdaterFrame.startFromIDE(
+                        Thread th = org.netbeans.updater.UpdaterFrame.runFromIDE(
                                 getDownloadedFiles ().toArray(new File [0]),
                                 new RefreshModulesListener (progress),
-                                NbBundle.getBranding());
+                                NbBundle.getBranding(), false);
                         
                         try {
                             th.join();
@@ -354,6 +354,7 @@ public class InstallSupportImpl {
                         progress.progress("");
                         progress.finish();
                     }
+                    downloadedFiles = null;
                 }
                 
                 return needsRestart ? Boolean.TRUE : Boolean.FALSE;

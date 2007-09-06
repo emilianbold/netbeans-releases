@@ -262,7 +262,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 if (lazyDependingTask != null && ! lazyDependingTask.isFinished ()) {
                     lazyDependingTask.cancel ();
                 }
-                model.doCleanup ();
+                model.doCleanup (true);
             } catch (OperationException x) {
                 Logger.getLogger (InstallUnitWizardModel.class.getName ()).log (Level.INFO, x.getMessage (), x);
             }

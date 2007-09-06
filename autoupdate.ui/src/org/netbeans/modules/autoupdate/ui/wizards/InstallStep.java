@@ -78,6 +78,8 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private static final String HEAD_RESTART = "InstallStep_Header_Restart_Head";
     private static final String CONTENT_RESTART = "InstallStep_Header_Restart_Content";
     
+    private boolean wasStored = false;
+    
     /** Creates a new instance of OperationDescriptionStep */
     public InstallStep (InstallUnitWizardModel model) {
         this.model = model;
@@ -289,10 +291,15 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
 
     public void readSettings (WizardDescriptor wd) {
         this.wd = wd;
+        this.wasStored = false;
     }
 
     public void storeSettings (WizardDescriptor wd) {
         assert ! WizardDescriptor.PREVIOUS_OPTION.equals (wd.getValue ()) : "Cannot invoke Back in this case.";
+        if (wasStored) {
+            return ;
+        }
+        this.wasStored = true;
         if (restarter != null) {
             InstallSupport support = model.getInstallSupport ();
             assert support != null;
@@ -308,11 +315,16 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 if (model.getAdditionallyInstallSupport () != null) {
                     model.getAdditionallyInstallSupport ().doRestartLater (restarter);
                 }
+                try {
+                    model.doCleanup (false);
+                } catch (OperationException x) {
+                    log.log (Level.INFO, x.getMessage (), x);
+                }
                 return ;
             }
         }
         try {
-            model.doCleanup ();
+            model.doCleanup (! WizardDescriptor.FINISH_OPTION.equals (wd.getValue ()));
         } catch (OperationException x) {
             log.log (Level.INFO, x.getMessage (), x);
         }

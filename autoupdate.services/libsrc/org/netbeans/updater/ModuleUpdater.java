@@ -95,13 +95,15 @@ public final class ModuleUpdater extends Thread {
             installFiles = new HashSet<File> ();
             for (File cluster : UpdateTracking.clusters (true)) {
                 installFiles.addAll (getModulesToInstall (cluster));
-                deleteInstall_Later (cluster);
+                if (! UpdaterFrame.isFromIDE ()) {
+                    deleteInstall_Later (cluster);
+                }
             }
 
             if (installOnly != null) {
                 // keep only those that we really wish to install
                 installFiles.retainAll (installOnly);
-                    }
+            }
 
             if (installFiles.isEmpty ()) {
                 endRun();
