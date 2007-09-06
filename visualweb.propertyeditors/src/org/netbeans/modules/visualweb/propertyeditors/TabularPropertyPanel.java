@@ -406,6 +406,8 @@ public class TabularPropertyPanel extends PropertyPanelBase implements TableMode
         public CellEditor( JTable table, JTextField component ) {
             super( component );
             this.table = table;
+            component.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TabularPropertyPanel.class, "TablePropertyPanel.textField.accessibleName")); // NOI18N
+            component.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TabularPropertyPanel.class, "TablePropertyPanel.textField.accessibleDesc")); // NOI18N
         }
     
         // This method is called when a cell value is edited by the user.
