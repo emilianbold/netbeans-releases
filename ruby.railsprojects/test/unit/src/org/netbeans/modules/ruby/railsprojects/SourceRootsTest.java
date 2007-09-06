@@ -34,7 +34,7 @@ public class SourceRootsTest extends RailsProjectTestBase {
     }
     
     private RailsProject constructRailsProject(String dataFile) throws Exception {
-        RailsProject project = createTestProject();
+        RailsProject project = createTestProject("RubyProject", "app/.svn/dummy.txt");
         // Create file from data folder
         createFilesFromDesc(project.getProjectDirectory(), dataFile);
         return project;

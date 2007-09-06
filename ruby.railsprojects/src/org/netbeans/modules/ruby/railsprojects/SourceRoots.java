@@ -268,12 +268,14 @@ public final class SourceRoots {
     }
     
     /** Look in the given directory and identify any folders we don't "know" about yet */
-    private List<String> findUnknownFolders(FileObject folder, Set<String> known) {
+    private static List<String> findUnknownFolders(FileObject folder, Set<String> known) {
         List<String> result = null;
         for (FileObject child : folder.getChildren()) {
             if (child.isFolder()) {
                 String name = child.getNameExt();
-                if (!known.contains(name) && VisibilityQuery.getDefault().isVisible(child)) {
+                // FIXME: workaround for #114690. Fix better using VisibilityQuery (as commented). See the issue comments.
+                String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"; // NOI18N
+                if (!known.contains(name) && !name.matches(ignoredFiles)) {// && VisibilityQuery.getDefault().isVisible(child)) {
                     if (result == null) {
                         result = new ArrayList<String>();
                     }
