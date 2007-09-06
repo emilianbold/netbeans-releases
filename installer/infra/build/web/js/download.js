@@ -148,7 +148,8 @@ function update() {
         product_messages[i] = null;
         
         if (!is_compatible(i, platform)) {
-            product_messages[i] = '<tr><td class="no_padding no_border"><img src="img/warning_badge_text_' + platform + '.gif"/></td><td class="no_padding no_border left"><span class="warning">' + product_display_names[i] + ' is not available for ' + platform_display_name + '.</span></td></tr>';
+            //product_messages[i] = '<tr><td class="no_padding no_border"><img src="img/warning_badge_text_' + platform + '.gif"/></td><td class="no_padding no_border left"><span class="warning">' + product_display_names[i] + ' is not available for ' + platform_display_name + '.</span></td></tr>';
+	     product_messages[i] = product_display_names[i];
         }
 		
         if (product_properties[i] & PROPERTY_FULL) {
@@ -219,14 +220,49 @@ function update() {
     }
     
     // update the error message
-    var error_message = '<table>' + 
-            '<tr><td class="no_padding no_border"><img src="img/comment_badge_text.gif"/></td><td class="no_padding no_border left"><span class="comment">JDK is not included, but JDK 6 or JDK 5.0 is required for installing and running NetBeans IDE.</span></td></tr>';
+    var error_message = "";
+    var messages_number = 0;
+    
     for (var i = 0; i < product_uids.length; i++) {
         if (product_messages[i] != null) {
-            error_message += product_messages[i];
+        messages_number += 1;
         }
     }
-    error_message += '</table>';
+    if (messages_number != 0 ) {
+	
+	var messages_counter = 0;	
+	
+	error_message = '<td class="no_padding no_border left">' + 
+			'<span class="warning">';
+	error_message += 'Note: ';
+	
+    	for (var j = 0; j < product_uids.length; j++) {
+        	if (product_messages[j] != null) {
+			
+			if ( messages_counter == 0) {
+            			error_message += product_messages[j];
+			} else if (messages_counter == (messages_number-1) ){
+				error_message += ' and ' + product_messages[j];
+			} else {
+				error_message += ', ' + product_messages[j];
+			}
+			
+			messages_counter += 1;			
+        	}
+    	}
+	if (messages_number == 1 ) {
+		error_message += ' is not available for';
+        } else {
+		error_message += ' are not available for';
+	}
+	error_message += ' ' + platform_display_name;
+	
+	error_message += '.</span></td>';
+    } else {
+	error_message = '<br>';
+    }
+
+    //error_message += '</table>';
     
     document.getElementById("error_message").innerHTML = error_message;
     

@@ -70,6 +70,17 @@ table.l_p_select td.label {
 	padding-right:		5px;
 }
 
+
+/* Missing components warning ************************************************/
+div.missing_components {
+	margin:				10px auto 0px auto;
+	width:				95%;
+	border-collapse:	collapse;	
+	text-align:         	    right;
+	color:          #777777;
+}
+
+
 /* Components table ***********************************************************/
 table.components_table {
     margin:             10px auto 0px auto;
@@ -153,7 +164,7 @@ table.components_table .product_display_name {
 }
 
 table.components_table .product_display_name_no {
-    color:              grey;
+    color:              #bbbbbb;
 }
 
 
@@ -172,8 +183,8 @@ table.components_table .title {
 
 
 .pop_up {
-    width:              400px;
-    min-height:         100px;
+    width:              250px;
+    min-height:         140px;
     margin-top:         1.2em;
     margin-left:        30px;
     padding:            5px 5px 5px 5px;
