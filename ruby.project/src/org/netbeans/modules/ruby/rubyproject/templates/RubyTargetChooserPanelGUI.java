@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,11 +25,11 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingUtilities;
@@ -52,13 +52,12 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
- * Permits user to select a package to place a Java class (or other resource) into.
+ * Permits user to select a floder to place a Ruby file (or other resource) into.
  * @author Petr Hrebejk, Jesse Glick, Tor Norbye
  */
-public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
+public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener, DocumentListener {
   
     private static final String NEW_CLASS_PREFIX = 
         NbBundle.getMessage( RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_NewRubyClassPrefix" ); // NOI18N
@@ -174,7 +173,7 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         SourceGroup preselectedGroup = getPreselectedGroup( preselectedFolder );
         //ignoreRootCombo = true;
         rootComboBox.setSelectedItem( preselectedGroup );                       
-        folderTextField.setText(FileUtil.toFile(((SourceGroup)rootComboBox.getSelectedItem()).getRootFolder()).getPath());
+        folderTextField.setText(FileUtil.toFile(preselectedFolder).getPath());
         
         //ignoreRootCombo = false;
 
