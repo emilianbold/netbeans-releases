@@ -21,26 +21,17 @@
 package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.zip.ZipOutputStream;
-import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.applications.JavaUtils;
-import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
-import org.netbeans.installer.utils.system.launchers.impl.CommandLauncher;
 import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
@@ -81,106 +72,26 @@ public class CreateNativeLauncherAction extends WizardAction {
             final Platform platform = Registry.getInstance().getTargetPlatform();
             final LauncherProperties properties = new LauncherProperties();
             
-            if(platform.isCompatibleWith(Platform.MACOSX)) {
-                final String appName = "NetBeans IDE Installer";
-                final String testJDKName = ResourceUtils.getResourceFileName(JavaUtils.TEST_JDK_RESOURCE);
-                properties.addJar(new LauncherResource(
-                        LauncherResource.Type.RELATIVE_LAUNCHER_PARENT,
-                        "../Resources/" +
-                        appName +
-                        "/" + new File(targetPath).getName()));
-                properties.setTestJVM(new LauncherResource(
-                        LauncherResource.Type.RELATIVE_LAUNCHER_PARENT,
-                        "../Resources/" +
-                        appName +
-                        "/" +
-                        testJDKName));
-                
-                properties.setJvmArguments(new String[]{
-                    "-Xmx256m",
-                    "-Xms64m"
-                });
-                properties.setMainClass(Installer.class.getName());
-                properties.setTestJVMClass(JavaUtils.TEST_JDK_CLASSNAME);
-                
-                File tmpDirectory =
-                        FileUtils.createTempFile(SystemUtils.getTempDirectory(), false, true);
-                FileUtils.mkdirs(tmpDirectory);
-                File appDirectory       = new File(tmpDirectory, appName + ".app");
-                File contentsDirectory  = new File(appDirectory, "Contents");
-                File resDirectory       = new File(contentsDirectory, "Resources");
-                File macosDirectory     = new File(contentsDirectory, "MacOS");
-                File appInsideDir       = new File(resDirectory, appName);
-                File outputFile         = new File(macosDirectory, "executable");
-                
-                FileUtils.mkdirs(appDirectory);
-                FileUtils.mkdirs(contentsDirectory);
-                FileUtils.mkdirs(resDirectory);
-                FileUtils.mkdirs(appInsideDir);
-                FileUtils.mkdirs(macosDirectory);
-                
-                properties.getJvmArguments().add("-Xdock:icon=" +
-                        LauncherResource.Type.RELATIVE_LAUNCHER_PARENT.
-                        getPathString("../Resources/icon.icns"));
-                properties.setOutput(outputFile, false);
-                
-                File file = SystemUtils.createLauncher(
-                        properties, platform, progress).getOutputFile();
-                String uri = System.getProperty(CommandLauncher.JAVA_APPLICATION_ICON_PROPERTY);
-                if(uri == null) {
-                    uri = CommandLauncher.JAVA_APPLICATION_ICON_DEFAULT_URI;
-                }
-                File iconFile = FileProxy.getInstance().getFile(uri);
-                FileUtils.copyFile(iconFile,
-                        new File(resDirectory, "icon.icns"));
-                
-                File testJDKFile = FileProxy.getInstance().getFile(JavaUtils.TEST_JDK_URI);
-                
-                FileUtils.copyFile(testJDKFile,
-                        new File(appInsideDir, testJDKName));
-                
-                FileUtils.copyFile(targetFile,
-                        new File(appInsideDir, targetFile.getName()));
-                
-                File infoplist = new File(contentsDirectory, "Info.plist");
-                FileUtils.writeFile(infoplist, StringUtils.format(
-                        FileUtils.INFO_PLIST_STUB, appName, 1.0, 0));
-                
-                String name = targetFile.getName();
-                int index = name.lastIndexOf(".");
-                String zipName = name.substring(0, (index==-1) ? name.length() : index) + ".zip";
-                File zipFile = new File(targetFile.getParentFile(), zipName);
-                ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));
-                FileUtils.zip(appDirectory, zos, appDirectory.getParentFile(), new ArrayList <File> ());
-                zos.close();
-                FileUtils.deleteFile(tmpDirectory, true);
+            properties.addJar(new LauncherResource(new File(targetPath)));
+            
+            properties.setJvmArguments(new String[]{
+                "-Xmx256m",
+                "-Xms64m"
+            });
+            
+            File file = SystemUtils.createLauncher(
+                    properties, platform, progress).getOutputFile();
+            
+            if ( !targetFile.equals(file)) {
+                FileUtils.deleteFile(targetFile);
                 System.setProperty(
                         Registry.CREATE_BUNDLE_PATH_PROPERTY,
-                        zipFile.getPath());
-            } else {
-                properties.addJar(new LauncherResource(new File(targetPath)));
+                        file.getPath());
                 
-                properties.setJvmArguments(new String[]{
-                    "-Xmx256m",
-                    "-Xms64m"
-                });
-                
-                File file = SystemUtils.createLauncher(
-                        properties, platform, progress).getOutputFile();
-                
-                if ( !targetFile.equals(file)) {
-                    FileUtils.deleteFile(targetFile);
-                    System.setProperty(
-                            Registry.CREATE_BUNDLE_PATH_PROPERTY,
-                            file.getPath());
-                }
             }
         } catch (IOException e) {
             ErrorManager.notifyError("Failed to create the launcher", e);
-        } catch (DownloadException e) {
-            ErrorManager.notifyError("Failed to create the launcher", e);
-        }
-        
+        } 
         LogManager.logExit("finished creating the native launcher");
     }
 }

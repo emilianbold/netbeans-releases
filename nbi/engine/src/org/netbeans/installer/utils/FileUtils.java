@@ -1705,7 +1705,7 @@ public final class FileUtils {
             "    <string>{1}</string>\n" +
             "    \n" +
             "    <key>CFBundleExecutable</key>\n" +
-            "    <string>executable</string>\n" +
+            "    <string>{3}</string>\n" +
             "    \n" +
             "    <key>CFBundlePackageType</key>\n" +
             "    <string>APPL</string>\n" +
@@ -1720,7 +1720,7 @@ public final class FileUtils {
             "    <string>6.0</string>\n" +
             "    \n" +
             "    <key>CFBundleIconFile</key>\n" +
-            "    <string>icon.icns</string>\n" +
+            "    <string>{4}</string>\n" +
             "  </dict>\n" +
             "</plist>\n";
     

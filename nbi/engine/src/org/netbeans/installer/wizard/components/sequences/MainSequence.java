@@ -28,8 +28,10 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.ExecutionMode;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.wizard.components.WizardSequence;
 import org.netbeans.installer.wizard.components.actions.CreateBundleAction;
+import org.netbeans.installer.wizard.components.actions.CreateMacOSAppLauncherAction;
 import org.netbeans.installer.wizard.components.actions.CreateNativeLauncherAction;
 import org.netbeans.installer.wizard.components.actions.DownloadConfigurationLogicAction;
 import org.netbeans.installer.wizard.components.actions.DownloadInstallationDataAction;
@@ -56,6 +58,7 @@ public class MainSequence extends WizardSequence {
     private PreCreateBundleSummaryPanel preCreateBundleSummaryPanel;
     private CreateBundleAction createBundleAction;
     private CreateNativeLauncherAction createNativeLauncherAction;
+    private CreateMacOSAppLauncherAction createAppLauncherAction ;
     private PostCreateBundleSummaryPanel postCreateBundleSummaryPanel;
     
     private Map<Product, ProductWizardSequence> productSequences;
@@ -71,6 +74,7 @@ public class MainSequence extends WizardSequence {
         preCreateBundleSummaryPanel = new PreCreateBundleSummaryPanel();
         createBundleAction = new CreateBundleAction();
         createNativeLauncherAction = new CreateNativeLauncherAction();
+        createAppLauncherAction = new CreateMacOSAppLauncherAction();
         postCreateBundleSummaryPanel = new PostCreateBundleSummaryPanel();
         
         productSequences = new HashMap<Product, ProductWizardSequence>();
@@ -124,7 +128,12 @@ public class MainSequence extends WizardSequence {
                 addChild(downloadConfigurationLogicAction);
                 addChild(downloadInstallationDataAction);
                 addChild(createBundleAction);
-                addChild(createNativeLauncherAction);
+                
+                if(registry.getTargetPlatform().isCompatibleWith(Platform.MACOSX)) {
+                    addChild(createAppLauncherAction);
+                } else {
+                    addChild(createNativeLauncherAction);
+                }
                 addChild(postCreateBundleSummaryPanel);
                 break;
             default:

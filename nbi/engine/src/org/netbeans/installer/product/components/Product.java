@@ -189,18 +189,25 @@ public final class Product extends RegistryNode {
                 installedFiles.add(FileUtils.mkdirs(resourcesDir));
                 installedFiles.add(FileUtils.mkdirs(macosDir));
                 
+                final String executableName = "executable"; //NOI18N
+                
                 installedFiles.add(utils.createSymLink(
-                        new File(macosDir, "executable"),
+                        new File(macosDir, executableName),
                         new File(getInstallationLocation(), configurationLogic.getExecutable())));
+                
+                final String iconName = "icon.icns"; //NOI18N
+                
                 installedFiles.add(utils.createSymLink(
-                        new File(resourcesDir, "icon.icns"),
+                        new File(resourcesDir, iconName),
                         new File(getInstallationLocation(), configurationLogic.getIcon())));
                 
                 installedFiles.add(FileUtils.writeFile(infoplist, StringUtils.format(
                         INFO_PLIST_STUB,
                         getDisplayName(),
                         getVersion().toString(),
-                        getVersion().toMinor())));
+                        getVersion().toMinor(),
+                        executableName,
+                        iconName)));
             } catch (IOException e) {
                 throw new InstallationException("Cannot wrap for MacOS", e);
             }
