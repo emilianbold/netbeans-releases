@@ -100,7 +100,7 @@ public class CompletionTestPerformer {
     public CompletionTestPerformer() {
     }
     
-    private CompletionItem[] completionQuery(
+    protected CompletionItem[] completionQuery(
             PrintWriter  log,
             JEditorPane  editor,
             BaseDocument doc,

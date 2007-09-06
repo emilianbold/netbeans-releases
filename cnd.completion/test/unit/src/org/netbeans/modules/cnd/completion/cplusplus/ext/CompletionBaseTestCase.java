@@ -77,7 +77,7 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
         File output = new File(workDir, goldenFileName);
         PrintStream streamOut = new PrintStream(output);
         
-        CompletionItem[] array = new CompletionTestPerformer().test(logWriter, textToInsert, offsetAfterInsertion, false, testFile, lineIndex, colIndex); // NOI18N        
+        CompletionItem[] array = createTestPerformer().test(logWriter, textToInsert, offsetAfterInsertion, false, testFile, lineIndex, colIndex); // NOI18N        
 
 	assertNotNull("Result should not be null", array);
         Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
@@ -97,5 +97,9 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
             fail("OUTPUT Difference between " + output + " and " + goldenCopyFile); // NOI18N
         }
+    }
+    
+    protected CompletionTestPerformer createTestPerformer() {
+        return new CompletionTestPerformer();
     }
 }
