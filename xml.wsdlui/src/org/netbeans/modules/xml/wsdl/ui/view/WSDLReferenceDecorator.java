@@ -109,8 +109,7 @@ public class WSDLReferenceDecorator extends AbstractReferenceDecorator {
             }
         }
         ImportViewNodes.DuplicateFileCookie cookie =
-                (ImportViewNodes.DuplicateFileCookie) node.getCookie(
-                ImportViewNodes.DuplicateFileCookie.class);
+                node.getCookie(ImportViewNodes.DuplicateFileCookie.class);
         if (cookie != null) {
             Project ownerProject = cookie.getPrecedingOwnerProject();
             String projectName = "";

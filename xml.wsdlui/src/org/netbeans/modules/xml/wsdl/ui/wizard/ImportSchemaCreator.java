@@ -25,12 +25,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.ImportSchemaCustomizer;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDataNode;
-import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceNode;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -85,7 +84,7 @@ public class ImportSchemaCreator extends ImportSchemaCustomizer {
         // have nothing to add during that early phase, so just skip it.
         if (selectedFiles != null) {
             // Mark the node selected if it had been selected earlier.
-            DataObject dobj = (DataObject) erdn.getLookup().lookup(DataObject.class);
+            DataObject dobj = erdn.getLookup().lookup(DataObject.class);
             String location = dataObjectToURI(dobj);
             if (selectedFiles.contains(location)) {
                 ignorePropertyChange = true;
@@ -136,7 +135,7 @@ public class ImportSchemaCreator extends ImportSchemaCustomizer {
             ExternalReferenceDataNode erdn =
                     (ExternalReferenceDataNode) event.getSource();
             boolean selected = ((Boolean) event.getNewValue()).booleanValue();
-            DataObject dobj = (DataObject) erdn.getLookup().lookup(DataObject.class);
+            DataObject dobj = erdn.getLookup().lookup(DataObject.class);
             String uri = dataObjectToURI(dobj);
             if (selected) {
                 selectedFiles.add(uri);

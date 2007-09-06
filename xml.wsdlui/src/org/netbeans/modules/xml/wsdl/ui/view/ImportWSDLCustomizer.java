@@ -52,7 +52,7 @@ public class ImportWSDLCustomizer extends ExternalReferenceCustomizer<Import> {
     @Override
     public void applyChanges() throws IOException {
         super.applyChanges();
-        Import _import = (Import) getModelComponent();
+        Import _import = getModelComponent();
         if (isLocationChanged()) {
             // Save the file location.
             _import.setLocation(getEditedLocation());
@@ -64,7 +64,7 @@ public class ImportWSDLCustomizer extends ExternalReferenceCustomizer<Import> {
             _import.setNamespace(namespace);
         }
 
-        WSDLModel model = (WSDLModel) getModelComponent().getModel();
+        WSDLModel model = getModelComponent().getModel();
         if (mustNamespaceDiffer() && isPrefixChanged()) {
             // Save the prefix.
             String prefix = getEditedPrefix();
@@ -79,19 +79,19 @@ public class ImportWSDLCustomizer extends ExternalReferenceCustomizer<Import> {
     }
 
     protected String getReferenceLocation() {
-        Import _import = (Import) getModelComponent();
+        Import _import = getModelComponent();
         return _import.getLocation();
     }
 
     protected String getNamespace() {
-        Import _import = (Import) getModelComponent();
+        Import _import = getModelComponent();
         return _import.getNamespace();
     }
 
     protected String getPrefix() {
-        Import _import = (Import) getModelComponent();
+        Import _import = getModelComponent();
         String namespace = _import.getNamespace();
-        WSDLModel model = (WSDLModel) getModelComponent().getModel();
+        WSDLModel model = getModelComponent().getModel();
         AbstractDocumentComponent def =
                 (AbstractDocumentComponent) model.getDefinitions();
         Map<String, String> prefixMap = def.getPrefixes();
@@ -135,7 +135,7 @@ public class ImportWSDLCustomizer extends ExternalReferenceCustomizer<Import> {
     }
 
     protected String generatePrefix() {
-        WSDLModel model = (WSDLModel) getModelComponent().getModel();
+        WSDLModel model = getModelComponent().getModel();
         return NameGenerator.getInstance().generateNamespacePrefix(null, model);
     }
 

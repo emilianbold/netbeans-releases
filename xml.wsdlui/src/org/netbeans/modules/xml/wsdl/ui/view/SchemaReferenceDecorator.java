@@ -61,11 +61,22 @@ public class SchemaReferenceDecorator extends AbstractReferenceDecorator {
                 return NbBundle.getMessage(SchemaReferenceDecorator.class,
                         "LBL_ReferenceDecorator_NoModel");
             }
+            
+            //For wsdl, imported schema's should have a namespace.
+            if (model instanceof SchemaModel) {
+                String tns = ((SchemaModel) model).getSchema().getTargetNamespace();
+                if (tns == null) {
+                    return NbBundle.getMessage(SchemaReferenceDecorator.class,
+                    "LBL_ReferenceDecorator_NoNamespace");
+                }
+            }
+            
             Model componentModel = customizer.getComponentModel();
             if (model.equals(componentModel)) {
                 return NbBundle.getMessage(SchemaReferenceDecorator.class,
                         "LBL_ReferenceDecorator_SameModel");
             }
+
             // It had better be a schema model, but check anyway.
             if (componentModel instanceof SchemaModel) {
                 SchemaModel sm = (SchemaModel) componentModel;
@@ -94,7 +105,7 @@ public class SchemaReferenceDecorator extends AbstractReferenceDecorator {
             if (ns != null && !Utilities.NO_NAME_SPACE.equals(ns) &&
                     namespace.equals(ns)) {
                 return NbBundle.getMessage(SchemaReferenceDecorator.class,
-                        "LBL_ReferenceDecorator_SameNamespace");
+                "LBL_ReferenceDecorator_SameNamespace");
             }
         } else {
             // This is an include or redefine, which must have no namespace,

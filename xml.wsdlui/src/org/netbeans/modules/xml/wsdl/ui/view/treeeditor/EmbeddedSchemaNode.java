@@ -21,20 +21,16 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.Action;
-
 import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.view.DesignGotoType;
 import org.netbeans.modules.xml.wsdl.ui.view.StructureGotoType;
-import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
 import org.netbeans.modules.xml.xam.ui.actions.GotoType;
 import org.netbeans.modules.xml.xam.ui.actions.SourceGotoType;
 import org.netbeans.modules.xml.xam.ui.actions.SuperGotoType;
 import org.netbeans.modules.xml.xam.ui.cookies.GotoCookie;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;

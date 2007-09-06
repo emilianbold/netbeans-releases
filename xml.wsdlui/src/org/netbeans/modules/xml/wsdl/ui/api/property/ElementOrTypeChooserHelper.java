@@ -42,7 +42,6 @@ import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.ui.view.ElementOrTypeChooserPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.BuiltInTypeFolderNode;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -256,7 +255,11 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
                     File[] files = recursiveListFiles(FileUtil.toFile(dobj.getPrimaryFile()), new SchemaFileFilter());
                     for (File file : files) {
                         FileObject fo = FileUtil.toFileObject(file);
-                        keys.add(fo);
+                        ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false); 
+                        SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(modelSource);
+                        if (schemaModel != null && schemaModel.getSchema().getTargetNamespace() != null) {
+                            keys.add(fo);
+                        }
                     }
                 }
             }

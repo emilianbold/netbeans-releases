@@ -39,6 +39,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -169,12 +170,18 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     public void storeSettings(Object settings) {
         TemplateWizard wiz = (TemplateWizard) settings;
         
+        if(templateWizard.getValue() == TemplateWizard.CANCEL_OPTION) {
+            if (mTempWSDLModel != null) {
+                DataObject dobj = ActionHelper.getDataObject(mTempWSDLModel);
+                if (dobj != null) dobj.setModified(false);
+            }
+            return;
+        }
+        
         if (WizardDescriptor.PREVIOUS_OPTION.equals(((WizardDescriptor) settings).getValue())) {
             return;
         }
-        if (WizardDescriptor.CANCEL_OPTION.equals(((WizardDescriptor) settings).getValue())) {
-            return;
-        }
+        
         
         String fileName = Templates.getTargetName(wiz);
         if (fileName == null) return;
