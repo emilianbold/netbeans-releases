@@ -159,7 +159,7 @@ public class VerifyLibsAndLicenses extends Task {
             Set<String> textFiles = findCvsControlledFiles(d, true);
             FILE: for (String n : findCvsControlledFiles(d, false)) {
                 String path = module + "/external/" + n;
-                if (textFiles.contains(n) ^ !n.matches(".*\\.(zip|jar)")) {
+                if (textFiles.contains(n) ^ !n.matches(".*\\.(zip|jar|dll|gz)")) {
                     msg.append("\n" + path + " may have -kb improperly (un)set");
                 }
                 if (!n.endsWith("-license.txt")) {
@@ -262,6 +262,8 @@ public class VerifyLibsAndLicenses extends Task {
                 } else {
                     for (String header : requiredHeaders) {
                         if (!headers.containsKey(header)) {
+			    if (header.equals("OSR") && (headers.get("License") != null && headers.get("License").startsWith("CDDL")))
+				continue;
                             msg.append("\n" + path + " is missing a required header: " + header);
                         }
                     }
