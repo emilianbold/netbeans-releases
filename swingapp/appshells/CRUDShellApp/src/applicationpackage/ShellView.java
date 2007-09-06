@@ -109,10 +109,7 @@ public class ShellView extends FrameView {
             @Override
             public void targetEdited(Binding binding) {
                 // save action observes saveNeeded property
-                if (!saveNeeded) {
-                    saveNeeded = true;
-                    firePropertyChange("saveNeeded", false, true);
-                }
+                setSaveNeeded(true);
             }
         });
 
@@ -123,6 +120,13 @@ public class ShellView extends FrameView {
 
     public boolean isSaveNeeded() {
         return saveNeeded;
+    }
+
+    private void setSaveNeeded(boolean saveNeeded) {
+        if (saveNeeded != this.saveNeeded) {
+            this.saveNeeded = saveNeeded;
+            firePropertyChange("saveNeeded", !saveNeeded, saveNeeded);
+        }
     }
 
     public boolean isRecordSelected() {
@@ -141,6 +145,7 @@ public class ShellView extends FrameView {
         int row = list.size()-1;
         masterTable.setRowSelectionInterval(row, row);
         masterTable.scrollRectToVisible(masterTable.getCellRect(row, 0, true));
+        setSaveNeeded(true);
     }
 
     @Action(enabledProperty = "recordSelected")
@@ -153,6 +158,7 @@ public class ShellView extends FrameView {
             entityManager.remove(_masterEntityInitial_);
         }
         list.removeAll(toRemove);
+        setSaveNeeded(true);
     }
     /* DETAIL_ONLY */
     @Action(enabledProperty = "recordSelected")
@@ -173,6 +179,7 @@ public class ShellView extends FrameView {
         int row = _detailEntityInitial_s.size()-1;
         detailTable.setRowSelectionInterval(row, row);
         detailTable.scrollRectToVisible(detailTable.getCellRect(row, 0, true));
+        setSaveNeeded(true);
     }
 
     @Action(enabledProperty = "detailRecordSelected")
@@ -194,6 +201,7 @@ public class ShellView extends FrameView {
         _detailEntityInitial_s.removeAll(toRemove);
         masterTable.clearSelection();
         masterTable.setRowSelectionInterval(index, index);
+        setSaveNeeded(true);
     }/* DETAIL_ONLY */
 
     @Action(enabledProperty = "saveNeeded")
@@ -206,8 +214,7 @@ public class ShellView extends FrameView {
             }
             @Override
             protected void finished() {
-                saveNeeded = false;
-                ShellView.this.firePropertyChange("saveNeeded", true, false);
+                setSaveNeeded(false);
             }
         };
     }
@@ -248,6 +255,7 @@ public class ShellView extends FrameView {
             }
             protected void finished() {
                 setMessage("Done.");
+                setSaveNeeded(false);
             }
         };
     }
