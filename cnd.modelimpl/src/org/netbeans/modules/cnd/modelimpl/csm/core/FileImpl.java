@@ -88,15 +88,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** 
      * It's a map since we need to eliminate duplications 
      */
-    private Map/*<String, CsmOffsetableDeclaration>*/ declarationsOLD = Collections.synchronizedSortedMap(new TreeMap/*<String, CsmOffsetableDeclaration>*/());
+    private Map<String, CsmOffsetableDeclaration> declarationsOLD = Collections.synchronizedSortedMap(new TreeMap<String, CsmOffsetableDeclaration>());
     private Map<String, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>();
     private ReadWriteLock  declarationsLock = new ReentrantReadWriteLock();
 
-    private Set<CsmInclude> includesOLD = Collections.synchronizedSortedSet(new TreeSet<CsmInclude>(START_OFFSET_COMPARATOR));
+    private Set<CsmInclude> includesOLD = Collections.<CsmInclude>synchronizedSortedSet(new TreeSet<CsmInclude>(START_OFFSET_COMPARATOR));
     private Set<CsmUID<CsmInclude>> includes = new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR);
     private ReadWriteLock includesLock = new ReentrantReadWriteLock();
 
-    private Set<CsmMacro> macrosOLD = Collections.synchronizedSortedSet(new TreeSet<CsmMacro>(START_OFFSET_COMPARATOR));    
+    private Set<CsmMacro> macrosOLD = Collections.<CsmMacro>synchronizedSortedSet(new TreeSet<CsmMacro>(START_OFFSET_COMPARATOR));    
     private Set<CsmUID<CsmMacro>> macros = new TreeSet<CsmUID<CsmMacro>>(UID_START_OFFSET_COMPARATOR);    
     private ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     
@@ -117,8 +117,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private Object stateLock = new Object();
     
-    private Collection/*<FunctionDefinitionImpl>*/ fakeRegistrationsOLD = new ArrayList();
-    private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList();
+    private Collection<FunctionImplEx> fakeRegistrationsOLD = new ArrayList<FunctionImplEx>();
+    private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
     
     private final Object fakeLock;
 
@@ -395,7 +395,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             Collection<CsmOffsetableDeclaration> arr;
             synchronized (declarationsOLD) {
                 arr = declarationsOLD.values();
-                declarationsOLD = Collections.synchronizedSortedMap(new TreeMap/*<String, CsmOffsetableDeclaration>*/());
+                declarationsOLD = Collections.synchronizedSortedMap(new TreeMap<String, CsmOffsetableDeclaration>());
                 if (clearNonDisposable) {
                     _clearIncludes();
                     _clearMacros();
@@ -660,15 +660,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
-    public static final Comparator/*<? super CsmOffsetable>*/ START_OFFSET_COMPARATOR = new Comparator() {
-        public int compare(Object o1, Object o2) {
+    public static final Comparator<CsmOffsetable> START_OFFSET_COMPARATOR = new Comparator<CsmOffsetable>() {
+        public int compare(CsmOffsetable o1, CsmOffsetable o2) {
             if (o1 == o2) {
                 return 0;
             }
-            CsmOffsetable i1 = (CsmOffsetable)o1;
-            CsmOffsetable i2 = (CsmOffsetable)o2; 
-            int ofs1 = i1.getStartOffset();
-            int ofs2 = i2.getStartOffset();
+            int ofs1 = o1.getStartOffset();
+            int ofs2 = o2.getStartOffset();
             if (ofs1 == ofs2) {
                 return 0;
             } else {
@@ -676,32 +674,30 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }   
         
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             return super.equals(obj);
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             return 11; // any dummy value
         }          
     };
         
-    static final private Comparator<CsmUID> UID_START_OFFSET_COMPARATOR = new Comparator() {
-        public int compare(Object o1, Object o2) {
+    static final private Comparator<CsmUID> UID_START_OFFSET_COMPARATOR = new Comparator<CsmUID>() {
+        public int compare(CsmUID o1, CsmUID o2) {
             if (o1 == o2) {
                 return 0;
             }
-            Comparable i1 = (Comparable)o1;
-            Comparable i2 = (Comparable)o2; 
+            Comparable<CsmUID> i1 = (Comparable<CsmUID>)o1;
             assert i1 != null;
-            assert i2 != null;
-            return i1.compareTo(i2);
+            return i1.compareTo(o2);
         }   
         
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             return super.equals(obj);
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             return 11; // any dummy value
         }          
     };
@@ -741,7 +737,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public List<CsmInclude> getIncludes() {
         if (TraceFlags.USE_REPOSITORY) {
-            List out;
+            List<CsmInclude> out;
             try {
                 includesLock.readLock().lock();
                 out = UIDCsmConverter.UIDsToIncludes(includes);
@@ -751,7 +747,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return out;
         } else {
             synchronized (includesOLD) {
-                return new ArrayList(includesOLD);
+                return new ArrayList<CsmInclude>(includesOLD);
             }
         }
     }
@@ -772,7 +768,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return decls;
         } else {
             synchronized (declarationsOLD) {
-                return new ArrayList(declarationsOLD.values());
+                return new ArrayList<CsmOffsetableDeclaration>(declarationsOLD.values());
             }
         }
     }
@@ -794,7 +790,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public List<CsmMacro> getMacros() {
         if (TraceFlags.USE_REPOSITORY) {
-            List out;
+           List<CsmMacro> out;
            try {
                 macrosLock.readLock().lock();
                 out = UIDCsmConverter.UIDsToMacros(macros);
@@ -804,7 +800,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return out;
         } else {
             synchronized (macrosOLD) {
-                return new ArrayList(macrosOLD);
+                return new ArrayList<CsmMacro>(macrosOLD);
             }
         }
     }
@@ -822,10 +818,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private void _addDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
+            CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
             try {
                 declarationsLock.writeLock().lock();
-                declarations.put(getSortKey(decl), uid);
+                declarations.put(getSortKey(decl), uidDecl);
             } finally {
                 declarationsLock.writeLock().unlock();
             }
@@ -858,14 +854,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private void _removeDeclaration(CsmOffsetableDeclaration declaration) {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uid;
+            CsmUID<CsmOffsetableDeclaration> uidDecl;
             try {
                 declarationsLock.writeLock().lock();
-                uid = declarations.remove(getSortKey(declaration));
+                uidDecl = declarations.remove(getSortKey(declaration));
             } finally {
                 declarationsLock.writeLock().unlock();
             }
-            RepositoryUtils.remove(uid);
+            RepositoryUtils.remove(uidDecl);
             // update repository
             RepositoryUtils.put(this);
         } else {
@@ -996,8 +992,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public void onFakeRegisration(FunctionImplEx decl) {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<FunctionImplEx> uid = UIDCsmConverter.declarationToUID(decl);
-                fakeRegistrationUIDs.add(uid);
+            CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
+                fakeRegistrationUIDs.add(uidDecl);
         } else {
             synchronized( fakeLock ) {
                 fakeRegistrationsOLD.add(decl);
@@ -1009,7 +1005,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (!isValid()) {
             return;
         }
-        Collection<FunctionImplEx> fakes = Collections.EMPTY_SET;
+        Collection<FunctionImplEx> fakes = Collections.<FunctionImplEx>emptySet();
         
         if (TraceFlags.USE_REPOSITORY) {
             if (fakeRegistrationUIDs.size() > 0) {
@@ -1021,7 +1017,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 // Right now we do not need to make a copy, fakeRegistrations is cleared anyway
                 fakes = fakeRegistrationsOLD;
                 //fakes = (FunctionDefinitionImpl[]) fakeRegistrations.toArray(new FunctionDefinitionImpl[fakeRegistrations.size()]);
-                fakeRegistrationsOLD = new ArrayList();
+                fakeRegistrationsOLD = new ArrayList<FunctionImplEx>();
             }
         }
 	for (FunctionImplEx curElem: fakes) {
@@ -1029,7 +1025,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	}
     }
     
-    public String toString() {
+    public @Override String toString() {
 	return "FileImpl @" + hashCode() + ' ' + getAbsolutePath(); // NOI18N
     }
 
@@ -1102,7 +1098,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         assert TraceFlags.USE_REPOSITORY;
     }
 
-    public int hashCode() {
+    public @Override int hashCode() {
 	if( hash == 0 ) {   // we don't need sync here - at worst, we'll calculate the same value twice
 	    String identityHashPath = getProject().getQualifiedName() + "*" + getAbsolutePath(); // NOI18N
 	    hash = identityHashPath.hashCode();
@@ -1110,7 +1106,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return hash;
     }
 
-    public boolean equals(Object obj) {
+    public @Override boolean equals(Object obj) {
         if (obj == null || !(obj instanceof CsmFile)) {
             return false;
         }
@@ -1198,7 +1194,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     public int[] getLineColumn(int offset) {
         int[] lineCol = new int[] { 1, 1 };
-        int startLineOffset = 0;
         String text = getText();
         if (text.length() < offset) {
             throw new IllegalArgumentException("offset is out of file length; " + // NOI18N
@@ -1213,7 +1208,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if ( curChar == '\n') {
                 // just increase line number
                 lineCol[0] = lineCol[0]+1;
-                startLineOffset = curOffset+1;
                 lineCol[1] = 1;
             } else if (curChar == '\t') {
                 int col = lineCol[1];
