@@ -210,8 +210,8 @@ public class MakeUpdateDesc extends MatchingTask {
             for (Module m : modules) {
                 Element manifest = ((Element) m.xml.getElementsByTagName("manifest").item(0));
                 use25DTD |= (m.autoload || m.eager ||
-                        manifest.getAttribute("AutoUpdate-Show-In-Client") != null ||
-                        manifest.getAttribute("AutoUpdate-Essential-Module") != null);
+                        manifest.getAttribute("AutoUpdate-Show-In-Client").length() > 0 ||
+                        manifest.getAttribute("AutoUpdate-Essential-Module").length() > 0);
             }
         }
         
@@ -441,24 +441,36 @@ public class MakeUpdateDesc extends MatchingTask {
                                     }
                                 }
                             }
-                            String cnb = manifest.getAttribute("OpenIDE-Module").replaceFirst("/\\d+$", "");
-                            entry = zip.getEntry("netbeans/config/Modules/" + cnb.replace('.', '-') + ".xml");
-                            if (entry != null) {
-                                is = zip.getInputStream(entry);
-                                try {
-                                    NodeList nl = XMLUtil.parse(new InputSource(is), false, false, null, nullResolver).getElementsByTagName("param");
-                                    for (int i = 0; i < nl.getLength(); i++) {
-                                        String name = ((Element) nl.item(i)).getAttribute("name");
-                                        String value = ((Text) nl.item(i).getFirstChild()).getData();
-                                        if (name.equals("autoload") && value.equals("true")) {
-                                            m.autoload = true;
-                                        }
-                                        if (name.equals("eager") && value.equals("true")) {
-                                            m.eager = true;
-                                        }
+                            boolean old = false; // #110661
+                            String destDir = getProject().getProperty("netbeans.dest.dir");
+                            if (destDir != null) {
+                                for (File cluster : getProject().resolveFile(destDir).listFiles()) {
+                                    if (new File(cluster, "modules/org-netbeans-modules-autoupdate.jar").isFile()) {
+                                        old = true;
+                                        break;
                                     }
-                                } finally {
-                                    is.close();
+                                }
+                            }
+                            if (!old) {
+                                String cnb = manifest.getAttribute("OpenIDE-Module").replaceFirst("/\\d+$", "");
+                                entry = zip.getEntry("netbeans/config/Modules/" + cnb.replace('.', '-') + ".xml");
+                                if (entry != null) {
+                                    is = zip.getInputStream(entry);
+                                    try {
+                                        NodeList nl = XMLUtil.parse(new InputSource(is), false, false, null, nullResolver).getElementsByTagName("param");
+                                        for (int i = 0; i < nl.getLength(); i++) {
+                                            String name = ((Element) nl.item(i)).getAttribute("name");
+                                            String value = ((Text) nl.item(i).getFirstChild()).getData();
+                                            if (name.equals("autoload") && value.equals("true")) {
+                                                m.autoload = true;
+                                            }
+                                            if (name.equals("eager") && value.equals("true")) {
+                                                m.eager = true;
+                                            }
+                                        }
+                                    } finally {
+                                        is.close();
+                                    }
                                 }
                             }
                             moduleCollection.add(m);
