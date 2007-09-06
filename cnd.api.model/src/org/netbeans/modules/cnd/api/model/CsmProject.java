@@ -103,4 +103,11 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
      * return true for auto created projects for included standard headers.
      */
     boolean isArtificial();
+
+    /**
+     * Returns a string that uniquely identifies this project.
+     * One should never rely on this name structure, 
+     * just use it as in unique identifier
+     */
+    String getUniqueName();
 }
