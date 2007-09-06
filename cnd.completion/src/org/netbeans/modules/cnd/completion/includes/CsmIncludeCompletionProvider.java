@@ -40,7 +40,8 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeCompletionProvider implements CompletionProvider  {
-    static int index = 0;
+    private final static boolean TRACE = false;
+    
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
         if (typedText.equals(CsmIncludeCompletionItem.QUOTE) || 
@@ -48,28 +49,28 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                 typedText.equals(" ") ||
                 typedText.equals(CsmIncludeCompletionItem.SLASH)) {
             int dot = component.getCaret().getDot();
-            System.out.println("offset " + dot);
+            if (TRACE) System.out.println("offset " + dot);
             if (!sup.isIncludeCompletionDisabled(dot)) {
-                System.out.println("include completion will be shown on " + dot);
+                if (TRACE) System.out.println("include completion will be shown on " + dot);
                 return COMPLETION_QUERY_TYPE;
             } else {
-                System.out.println("include completion will NOT be shown on " + dot);
+                if (TRACE) System.out.println("include completion will NOT be shown on " + dot);
             }
         }
         return 0;
     }
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        System.out.println("queryType = " + queryType);
+        if (TRACE) System.out.println("queryType = " + queryType);
         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
             boolean all = (queryType == COMPLETION_ALL_QUERY_TYPE);
             int dot = component.getCaret().getDot();
             CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
             if (!sup.isIncludeCompletionDisabled(dot)) {
-                System.out.println("include completion task is created with offset " + dot);
+                if (TRACE) System.out.println("include completion task is created with offset " + dot);
                 return new AsyncCompletionTask(new Query(dot, all), component);
             } else {
-                System.out.println("include completion task is NOT created on " + dot);
+                if (TRACE) System.out.println("include completion task is NOT created on " + dot);
             }
         }
         return null;
@@ -90,7 +91,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         private Collection<CsmIncludeCompletionItem> results;
         
         private int creationCaretOffset;
-        private int queryCaretOffset;
+        private int resultSetAnchorOffset;
         
         private int queryAnchorOffset;
         
@@ -102,13 +103,14 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         Query(int caretOffset, boolean showAll) {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
+            this.resultSetAnchorOffset = creationCaretOffset;
             this.showAll = showAll;
         }
         
         @Override
         protected void preQueryUpdate(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
-            System.out.println("preQueryUpdate on " + caretOffset + " created on " + creationCaretOffset);
+            if (TRACE) System.out.println("preQueryUpdate on " + caretOffset + " created on " + creationCaretOffset);
             Document doc = component.getDocument();
             if (creationCaretOffset > 0 && caretOffset >= creationCaretOffset) {
                 try {
@@ -123,7 +125,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
-                System.out.println("query on " + caretOffset + " anchor " + queryAnchorOffset);
+                if (TRACE) System.out.println("query on " + caretOffset + " anchor " + queryAnchorOffset);
                 if (init((BaseDocument) doc, caretOffset)) {
                     CsmIncludeCompletionQuery query = getCompletionQuery();
                     Collection<CsmIncludeCompletionItem> items = query.query( (BaseDocument)doc, dirPrefix, queryAnchorOffset, usrInclude,showAll);
@@ -132,8 +134,9 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                             items = getFilteredData(items, filterPrefix);
                             resultSet.estimateItems(items.size(), -1);
                             resultSet.addAllItems(items);
+                            resultSet.setAnchorOffset(resultSetAnchorOffset);
                     }
-                    resultSet.setHasAdditionalItems(!this.showAll);
+                    resultSet.setHasAdditionalItems(true);
                 }
             } catch (BadLocationException ex) {
                 // skip;
@@ -151,19 +154,46 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
             filterPrefix = null;
-            if (caretOffset >= queryCaretOffset) {
-                if (queryAnchorOffset > -1) {
-                    try {
-                        filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                        if (!isValidIncludeNamePart(filterPrefix)) {
-                            filterPrefix = null;
-                        }
-                    } catch (BadLocationException e) {
-                        // filterPrefix stays null -> no filtering
+            String oldDir = dirPrefix;
+            dirPrefix = "";
+            if (queryAnchorOffset > -1 && caretOffset > queryAnchorOffset) {
+                try {
+                    String typedText = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                    if (isValidIncludeNamePart(typedText)) {
+                        filterPrefix = typedText;
                     }
+                } catch (BadLocationException e) {
+                    // filterPrefix stays null -> no filtering
                 }
             }
+            fixFilter();
+            if (TRACE) {
+                System.out.println("canFilter INCINFO: usrInclude=" + usrInclude +            
+                    " anchorOffset=" + queryAnchorOffset + " oldDir=" + oldDir +
+                    " dirPrefix="+dirPrefix + " filterPrefix=" + filterPrefix);
+            }
+            return (filterPrefix != null) && oldDir.equals(dirPrefix);
+        }        
+        
+        @Override
+        protected void filter(CompletionResultSet resultSet) {
+            if (filterPrefix != null && results != null) {
+                resultSet.setAnchorOffset(resultSetAnchorOffset);
+                Collection<? extends CsmIncludeCompletionItem> items = getFilteredData(results, filterPrefix);
+                resultSet.estimateItems(items.size(), -1);
+                resultSet.addAllItems(items);
+            }
+            resultSet.setHasAdditionalItems(true);
+	    resultSet.finish();
+        }
+
+        private void fixFilter() {
             if (filterPrefix != null) {
+                int origSlash = filterPrefix.lastIndexOf(CsmIncludeCompletionItem.SLASH);
+                resultSetAnchorOffset = queryAnchorOffset;
+                if (origSlash != -1) {
+                    resultSetAnchorOffset += origSlash + 1;
+                }
                 filterPrefix = trimIncludeSigns(filterPrefix);
                 int slash = filterPrefix.lastIndexOf(CsmIncludeCompletionItem.SLASH);
                 if (slash != -1) {
@@ -171,25 +201,10 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                     filterPrefix = filterPrefix.substring(slash + 1);
                 }
             }
-            System.out.println("canFilter INCINFO: usrInclude=" + usrInclude + 
-                    " anchorOffset=" + queryAnchorOffset + 
-                    " dirPrefix="+dirPrefix + " filterPrefix=" + filterPrefix);
-            return (filterPrefix != null);
-        }        
-        
-        @Override
-        protected void filter(CompletionResultSet resultSet) {
-            if (filterPrefix != null && results != null) {
-                resultSet.setAnchorOffset(queryAnchorOffset);
-                Collection<? extends CsmIncludeCompletionItem> items = getFilteredData(results, filterPrefix);
-                resultSet.estimateItems(items.size(), -1);
-                resultSet.addAllItems(items);
-            }
-	    resultSet.finish();
         }
 
         private boolean init(BaseDocument doc, int caretOffset) throws BadLocationException {
-            queryCaretOffset = caretOffset;
+            resultSetAnchorOffset = caretOffset;
             filterPrefix = null;
             queryAnchorOffset = -1;
             usrInclude = null;
@@ -246,17 +261,12 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                     }
                 }
             }
-            if (filterPrefix != null) {
-                filterPrefix = trimIncludeSigns(filterPrefix);
-                int slash = filterPrefix.lastIndexOf(CsmIncludeCompletionItem.SLASH);
-                if (slash != -1) {
-                    dirPrefix = filterPrefix.substring(0, slash + 1);
-                    filterPrefix = filterPrefix.substring(slash + 1);
-                }
-            }
-            System.out.println("INCINFO: usrInclude=" + usrInclude + 
+            fixFilter();
+            if (TRACE) {
+                System.out.println("INCINFO: usrInclude=" + usrInclude +
                     " anchorOffset=" + queryAnchorOffset + 
                     " dirPrefix="+dirPrefix + " filterPrefix=" + filterPrefix);
+            }
             return this.queryAnchorOffset > 0;
         }
 
@@ -273,12 +283,18 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         }
 
         private boolean isValidIncludeNamePart(String text) {
-            if (text == null || text.length() == 0 ||
-                    (text.length() == 1 && 
-                       (text.startsWith(CsmIncludeCompletionItem.QUOTE) ||
-                        text.startsWith(CsmIncludeCompletionItem.SYS_OPEN)))) {
-                // nothing or just opening " or <
+            if (text == null || text.length() == 0) {
+                // nothing
                 return true;
+            }
+            if (text.length() == 1) {
+               if (text.startsWith(CsmIncludeCompletionItem.QUOTE)) {
+                   // opening "
+                   return true;
+               } else if (text.startsWith(CsmIncludeCompletionItem.SYS_OPEN)) {
+                   // opening <, need to recalc data if not system was calculated before
+                   return usrInclude == Boolean.FALSE;
+               }
             }
             if (text.endsWith(CsmIncludeCompletionItem.QUOTE) ||
                         text.endsWith(CsmIncludeCompletionItem.SYS_CLOSE)) {

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.loaders.ExtensionList;
@@ -47,57 +48,69 @@ public class CsmIncludeCompletionQuery {
         String usrFilePath;
         Collection<String> usrPaths = Collections.<String>emptyList();
         Collection<String> sysPaths = Collections.<String>emptyList();
+        if (childSubDir.startsWith(CsmIncludeCompletionItem.SLASH)) {
+            // special handling for absolute paths...
+            addFolderItems(CsmIncludeCompletionItem.SLASH, 
+                    CsmIncludeCompletionItem.SLASH, 
+                    childSubDir, true, (usrInclude != null ? usrInclude : false), 
+                    true, substitutionOffset);
+            return results;
+        }
         if (docFile != null) {
             usrFilePath = docFile.getAbsolutePath();
-            usrPaths = getFileIncludes(docFile, true);
-            sysPaths = getFileIncludes(docFile, false);
+            usrPaths = getFileIncludes(docFile, false);
+            sysPaths = getFileIncludes(docFile, true);
         } else {
             File baseFile = CsmUtilities.getFile(doc);
             usrFilePath = baseFile.getAbsolutePath();
         }
         File usrDir = new File(usrFilePath).getParentFile();
         if (usrInclude == null || usrInclude == Boolean.TRUE) {
-            addFolderItems(usrDir.getAbsolutePath(), childSubDir, true, true, true, substitutionOffset);
+            addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset);
             if (showAll) {
                 for (String usrPath : usrPaths) {
-                    addFolderItems(usrPath, childSubDir, true, true, false, substitutionOffset);
+                    addFolderItems(usrPath, usrPath, childSubDir, false, false, false, substitutionOffset);
                 }
                 for (String sysPath : sysPaths) {
-                    addFolderItems(sysPath, childSubDir, false, false, false, substitutionOffset);
+                    addFolderItems(sysPath, sysPath, childSubDir, false, true, false, substitutionOffset);
                 }
             }
             addParentFolder(substitutionOffset, childSubDir, true);
         } else {
             for (String sysPath : sysPaths) {
-                addFolderItems(sysPath, childSubDir, true, false, false, substitutionOffset);
+                addFolderItems(sysPath, sysPath, childSubDir, false, true, false, substitutionOffset);
             }
             if (showAll) {
                 for (String usrPath : usrPaths) {
-                    addFolderItems(usrPath, childSubDir, false, true, false, substitutionOffset);
+                    addFolderItems(usrPath, usrPath, childSubDir, false, false, false, substitutionOffset);
                 }
-                addFolderItems(usrDir.getAbsolutePath(), childSubDir, false, true, true, substitutionOffset);
+                addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset);
                 addParentFolder(substitutionOffset, childSubDir, false);
             }
         }
         return results;
     }
     
-    private void addFolderItems(String folder, String childSubDir, boolean highPriority, boolean quoted, boolean filtered, int substitutionOffset) {
-        File dir = new File (folder, childSubDir);
+    private void addFolderItems(String parentFolder, String parentFolderPresentation,
+            String childSubDir, boolean highPriority, boolean system, boolean filtered, int substitutionOffset) {
+        File dir = new File (parentFolder, childSubDir);
         if (dir != null && dir.exists()) {
             File[] list = filtered ?  dir.listFiles(new MyFileFilter(HDataLoader.getInstance().getExtensions())) :
                                     dir.listFiles();
             String relFileName;
             for (File curFile : list) {
                 relFileName = curFile.getName();
-                CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(substitutionOffset, relFileName, childSubDir, quoted, highPriority, curFile.isDirectory());
+                CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
+                        substitutionOffset, relFileName, parentFolderPresentation, childSubDir,
+                        system, highPriority, curFile.isDirectory(), true);
                 results.add(item);
             }
         }        
     }
 
-    private void addParentFolder(int substitutionOffset, String childSubDir, boolean quoted) {
-        CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(substitutionOffset, "..", childSubDir, quoted, false, true);
+    private void addParentFolder(int substitutionOffset, String childSubDir, boolean system) {
+        CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
+                substitutionOffset, "..", ".", childSubDir, system, false, true, false); // NOI18N
         results.add(item);
     }
     
@@ -118,12 +131,11 @@ public class CsmIncludeCompletionQuery {
         
     }
 
-    private Collection<String> getFileIncludes(CsmFile file, boolean usr) {
-        if (usr) {
-            return Collections.singletonList("/usr/include");
-//            return Collections.<String>emptyList();
+    private Collection<String> getFileIncludes(CsmFile file, boolean system) {
+        if (system) {
+            return CsmFileInfoQuery.getDefault().getSystemIncludePaths(file);
         } else {
-            return Collections.singletonList("/usr/include");
+            return CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
         }
     }
 }
