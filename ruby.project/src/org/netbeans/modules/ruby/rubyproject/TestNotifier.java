@@ -91,11 +91,6 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     
     private final Pattern[] PATTERNS = new Pattern[] { TEST_UNIT_PATTERN, RSPEC_PATTERN, RAKE_PATTERN };
     
-    /** Schedlued message to be displayed in the editor */
-    private String message;
-    /** Schedule message type - if true, show as warning */
-    private boolean warning;
-
     @Override
     public ActionText processLine(String outputLine) {
         if (QUIET) {
@@ -110,42 +105,19 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         for (Pattern pattern : PATTERNS) {
             Matcher match = pattern.matcher(line);
             if (match.matches()) {
-                String summary;
-                if (accumulate) {
-                    addTotals(pattern, match, line);
-                    summary = getSummary();
-                } else {
-                    summary = line;
-                }
-                
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestNotifier.class, "TestsCompleted", summary));
-                // TODO - fail on "not implemented" too?
-                boolean failure = false;
-                if (pattern == RSPEC_PATTERN) {
-                    if (line.indexOf("0 failures") == -1) {
-                        failure = true;
-                    }
-                } else if (pattern == TEST_UNIT_PATTERN) {
-                    if ((line.indexOf(" 0 failures") == -1) || (line.indexOf(" 0 errors") == -1)) { // NOI18N
-                        failure = true;
-                    }
-                } else {
-                    assert pattern == RAKE_PATTERN;
-                    failure = true;
+                if (!accumulate) {
+                    resetResults();
                 }
 
-                if (failure) {
-                    warning = true;
-                    if (!accumulate && pattern == RAKE_PATTERN) {
-                        message = summary;
-                    } else {
-                        message = NbBundle.getMessage(AutoTestSupport.class, "TestsFailed", summary);
-                    }
+                addTotals(pattern, match, line);
+                
+                if (isError() || isWarning() || showSuccesses) {
+                    // Display in editor - asynchronously since it must be done
+                    // from the event dispatch thread
                     run();
-                } else if (showSuccesses || notImplemented > 0) {
-                    warning = false;
-                    message = NbBundle.getMessage(AutoTestSupport.class, "TestsCompleted", summary);
-                    run();
+                } else {
+                    String summary = getSummary();
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestNotifier.class, "TestsCompleted", summary));
                 }
             }
         }
@@ -156,19 +128,35 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         return null;
     }
     
+    private void resetResults() {
+        examples = 0;
+        failures = 0;
+        notImplemented = 0;
+        tests = 0;
+        assertions = 0;
+        errors = 0;
+        seenTestUnit = false;
+        seenRake = false;
+        seenRake = false;
+    }
+    
     public void run() {
-        if (message == null) {
-            return;
-        }
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(this);
             return;
         }
 
+        String summary = getSummary();
+        String message;
+        if (isError()) {
+            message = NbBundle.getMessage(AutoTestSupport.class, "TestsFailed", summary);
+        } else {
+            message = NbBundle.getMessage(AutoTestSupport.class, "TestsCompleted", summary);
+        }
         JTextComponent pane = EditorRegistry.lastFocusedComponent();
         if (pane != null) {
             if (pane.isShowing()) {
-                if (warning) {
+                if (isError()) {
                     org.netbeans.editor.Utilities.setStatusBoldText(pane, message);
                 } else {
                     // Attempt to show the text in green
@@ -177,7 +165,7 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                         StatusBar statusBar = eui.getStatusBar();
                         if (statusBar != null) {
                             Coloring coloring = null;
-                            if (notImplemented > 0) {
+                            if (isWarning()) {
                                 // Not implemented rspecs: show yellow rather than green
                                 coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.YELLOW);
                             } else {
@@ -191,6 +179,9 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                     org.netbeans.editor.Utilities.setStatusText(pane, message);
                 }
             }
+        } else {
+            // Can't find an editor window - just show in status bar
+             StatusDisplayer.getDefault().setStatusText(message);
         }
     }
     
@@ -241,6 +232,14 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         String countString = Integer.toString(count);
         
         return NbBundle.getMessage(TestNotifier.class, count == 1 ? oneKey : manyKey, countString);
+    }
+    
+    boolean isError() {
+        return errors > 0 || failures > 0;
+    }
+    
+    boolean isWarning() {
+        return notImplemented > 0;
     }
     
     String getSummary() {

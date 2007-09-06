@@ -1,0 +1,98 @@
+(in C:/InstantRails/rails_apps/rfs)
+
+C:/InstantRails/ruby/bin/ruby -Ilib;test
+"C:/InstantRails/ruby/lib/ruby/gems/1.8/gems/rake-0.7.3/lib/rake/rake_test_loader.rb" "test/unit/accountant_test.rb"
+"test/unit/activity_alert_test.rb" "test/unit/activity_mailer_test.rb" "test/unit/asterisk_call_file_test.rb"
+"test/unit/call_session_test.rb" "test/unit/cepstral_test.rb" "test/unit/customer_phone_menu_test.rb"
+"test/unit/customer_test.rb" "test/unit/http_phone/asterisk_cmd_test.rb"
+"test/unit/http_phone/asterisk_response_test.rb" "test/unit/http_phone/asterisk_test.rb" "test/unit/http_phone_test.rb"
+"test/unit/named_arguments/class_settings_mixin_test.rb" "test/unit/named_arguments/hash_extended_tools_test.rb"
+"test/unit/named_arguments/method_extensions_test.rb" "test/unit/named_arguments_test.rb"
+"test/unit/phone_number_test.rb" "test/unit/piggy_bank_test.rb" "test/unit/piggy_bank_transaction_test.rb"
+"test/unit/rest_phone/array_of_ranges_test.rb" "test/unit/rest_phone/call_info/inbound_test.rb"
+"test/unit/rest_phone/call_info/outbound_test.rb" "test/unit/rest_phone/call_info_test.rb"
+"test/unit/rest_phone/dummy_asterisk_server_test.rb" "test/unit/rest_phone/dummy_line_server_test.rb"
+"test/unit/rest_phone/phone_action/phone_action_subtypes_test.rb" "test/unit/rest_phone/phone_action_test.rb"
+"test/unit/rest_phone/phone_audio_script_test.rb" "test/unit/rest_phone/phone_call_test.rb"
+"test/unit/rest_phone/phone_event_test.rb" "test/unit/rest_phone/phone_logger_test.rb"
+"test/unit/rest_phone/phone_menu_builder_test.rb" "test/unit/rest_phone/phone_menu_condition_test.rb"
+"test/unit/rest_phone/phone_menu_test.rb" "test/unit/rest_phone/phone_number/north_america_test.rb"
+"test/unit/rest_phone/phone_number_support_test.rb" "test/unit/rest_phone/phone_number_test.rb"
+"test/unit/rest_phone/phone_prompt_test.rb" "test/unit/rest_phone/phone_request_test.rb"
+"test/unit/rest_phone/remote_session_manager_test.rb" "test/unit/rest_phone/schedule_test.rb"
+"test/unit/rest_phone_utilities/array_of_ranges_test.rb" "test/unit/rest_phone_utilities/factory_create_method_test.rb"
+"test/unit/rest_phone_utilities/utilities_test.rb" "test/unit/sound_collection_test.rb"
+"test/unit/sound_item/file_system_test.rb" "test/unit/sound_item/s3_test.rb" "test/unit/sound_item_test.rb"
+"test/unit/user_call_log_test.rb" "test/unit/user_call_request_test.rb" 
+
+Loaded suite C:/InstantRails/ruby/lib/ruby/gems/1.8/gems/rake-0.7.3/lib/rake/rake_test_loader
+
+Started
+
+...........................................................................................................................................................................
+
+--- 
+
+
+
+..........................................................F..............
+
+Finished in 10.961 seconds.
+
+
+
+  1) Failure:
+
+test_navigate_previous(SoundCollectionTest) [./test/unit/sound_collection_test.rb:11]:
+
+<#<SoundItem::FileSystem id: 9, sound_collection_id: 12, file_extension: "wav", type: "FileSystem", position: 1,
+lock_version: 0, created_at: "2007-09-06 08:19:49">> expected but was
+
+<nil>.
+
+
+
+244 tests, 399 assertions, 1 failures, 0 errors
+
+chmod 100644 
+
+chmod 100644 
+
+C:/InstantRails/ruby/bin/ruby -Ilib;test
+"C:/InstantRails/ruby/lib/ruby/gems/1.8/gems/rake-0.7.3/lib/rake/rake_test_loader.rb"
+"test/functional/account_controller_test.rb" "test/functional/activity_alert_controller_test.rb"
+"test/functional/content_controller_test.rb" "test/functional/customers_controller_test.rb"
+"test/functional/customer_phone_menus_controller_test.rb" "test/functional/help_controller_test.rb"
+"test/functional/money_transactions_controller_test.rb" "test/functional/paypal_controller_test.rb"
+"test/functional/phone_call_session_controller_test.rb" "test/functional/phone_number_assignments_controller_test.rb"
+"test/functional/user_call_logs_controller_test.rb" "test/functional/user_call_requests_controller_test.rb" 
+
+Loaded suite C:/InstantRails/ruby/lib/ruby/gems/1.8/gems/rake-0.7.3/lib/rake/rake_test_loader
+
+Started
+
+...................................................
+
+Finished in 3.508 seconds.
+
+
+
+51 tests, 98 assertions, 0 failures, 0 errors
+
+C:/InstantRails/ruby/bin/ruby -Ilib;test
+"C:/InstantRails/ruby/lib/ruby/gems/1.8/gems/rake-0.7.3/lib/rake/rake_test_loader.rb" "test/integration/daemons_test.rb"
+"test/integration/external_tools_test.rb" "test/integration/site_interaction_stories_test.rb" 
+
+Loaded suite C:/InstantRails/ruby/lib/ruby/gems/1.8/gems/rake-0.7.3/lib/rake/rake_test_loader
+
+Started
+
+..................
+
+Finished in 0.37 seconds.
+
+
+
+18 tests, 7 assertions, 0 failures, 0 errors
+
+
