@@ -517,7 +517,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         return bundledRegistry;
     }
     
-    private enum BundleType {
+    public enum BundleType {
         JAVASE("javase"),
         JAVAEE("javaee"),
         JAVAME("javame"),
