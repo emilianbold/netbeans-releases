@@ -85,7 +85,7 @@ public abstract class OperationWidget<T extends Operation>
 
             @Override
             public State keyPressed (Widget widget, WidgetKeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                if (event.getKeyCode() == KeyEvent.VK_F2 || event.getKeyCode() == KeyEvent.VK_ENTER) {
                     if (editorAction == null || mOperationNameLabelWidget == null) return State.REJECTED;
                     InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
                     if (inplaceEditorController.openEditor (mOperationNameLabelWidget)) {

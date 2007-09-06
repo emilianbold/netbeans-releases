@@ -136,7 +136,7 @@ public class GraphView extends JPanel {
 
         scene.addChild(mDragLayer);
         scene.validate();
-        sceneView.setFocusCycleRoot(true);
+
         panel = new JScrollPane(sceneView);
         panel.getVerticalScrollBar().setUnitIncrement(16);
         panel.getHorizontalScrollBar().setUnitIncrement(16);

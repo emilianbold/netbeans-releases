@@ -91,33 +91,6 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         focusAction = ActionFactory.createCycleFocusAction(mycycleFocusProvider);
 
         getPriorActions().addAction(focusAction);
-        getPriorActions().addAction(new WidgetAction.Adapter() {
-
-            @Override
-            public State keyPressed(Widget widget, WidgetKeyEvent event) {
-                //temp
-/*                if (event.getKeyCode() == KeyEvent.VK_F3) {
-                    printFocusCycle(widget.getScene(), "", false, false);
-                }
-                if (event.getKeyCode() == KeyEvent.VK_F4) {
-                    if ((event.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
-                        printFocusCycle(widget.getScene(), "", true, true);
-                    } else {
-                        printFocusCycle(widget.getScene(), "", true, false);
-                    }
-                }*/
-            	if (event.getKeyCode() == KeyEvent.VK_F5) {
-                    widget.getScene().validate();
-                }
-                //end temp
-                Widget w = getFocusedWidget();
-                if (w == null) return State.REJECTED;
-                
-                return w.getActions().keyPressed(w, event);
-
-            }
-        });
-
         getActions().addAction(selectAction);
         getActions().addAction(buttonAction);
         getActions().addAction(dndAction);
@@ -125,7 +98,7 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         this.addObjectSceneListener(cycleFocusProviderAndSceneListener, ObjectSceneEventType.OBJECT_FOCUS_CHANGED, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         selectedWidgets = new ArrayList<Widget>();
     }
-    private Logger mLogger = Logger.getLogger(PartnerScene.class.getName());
+    /*private Logger mLogger = Logger.getLogger(PartnerScene.class.getName());
     protected void printFocusCycle(Widget widget, String indent, boolean onlyFocusables, boolean onlyFocusableTrue) {
         for (Widget w : widget.getChildren()) {
             if (w instanceof FocusableWidget) {
@@ -139,7 +112,7 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
             }
             printFocusCycle(w, indent  + "--", onlyFocusables, onlyFocusableTrue);
         }
-    }
+    }*/
 
     public WSDLModel getModel() {
         return model;
@@ -446,12 +419,11 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
                 } else {
                     scene.userSelectionSuggested(Collections.emptySet(), false);
                     next.setState(next.getState().deriveSelected(true));
-/*                    for (Widget w : scene.getSelectedWidgets()) {
-                    	w.setState(w.getState().deriveSelected(false));
-                    }
-                    scene.getSelectedWidgets().clear();*/
                     scene.getSelectedWidgets().add(next);
+                    scene.setFocusedObject(null);
+                    scene.setFocusedWidget(next);
                 }
+
                 return true;
             }
             

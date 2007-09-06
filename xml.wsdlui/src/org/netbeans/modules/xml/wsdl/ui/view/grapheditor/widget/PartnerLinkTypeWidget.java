@@ -132,17 +132,17 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
 
             @Override
             public State keyPressed (Widget widget, WidgetKeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                if (event.getKeyCode() == KeyEvent.VK_ENTER && (event.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+                    if (mHeaderWidget != null) {
+                        return mHeaderWidget.getActions().keyPressed(widget, event);
+                    }
+                } else if (event.getKeyCode() == KeyEvent.VK_F2 || event.getKeyCode() == KeyEvent.VK_ENTER) {
                     if (editorAction == null || mLabelWidget == null) return State.REJECTED;
                     InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
                     if (inplaceEditorController.openEditor (mLabelWidget)) {
                         return State.createLocked (widget, this);
                     }
                     return State.CONSUMED;
-                } else if (event.getKeyCode() == KeyEvent.VK_ENTER) {
-                	if (mHeaderWidget != null) {
-                		return mHeaderWidget.getActions().keyPressed(widget, event);
-                	}
                 }
                 return State.REJECTED;
             }

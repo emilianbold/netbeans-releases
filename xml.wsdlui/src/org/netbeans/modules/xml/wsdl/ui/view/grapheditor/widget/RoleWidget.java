@@ -175,7 +175,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
 
             @Override
             public State keyPressed (Widget widget, WidgetKeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                if (event.getKeyCode() == KeyEvent.VK_F2 || event.getKeyCode() == KeyEvent.VK_ENTER) {
                     if (editorAction == null || mLabelWidget == null) return State.REJECTED;
                     InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
                     if (inplaceEditorController.openEditor (mLabelWidget)) {
@@ -289,7 +289,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
             mPortTypeWidget = (PortTypeWidget) factory.createWidget(
                     getScene(), portType, getLookup(), true);
             //if already being used, create new one.
-            if (mPortTypeWidget.getParentWidget() != null) {
+            if (mPortTypeWidget.getParentWidget() != null && mPortTypeWidget.getParentWidget() != this) {
                 mPortTypeWidget = (PortTypeWidget) factory.createWidget(
                         getScene(), portType, getLookup());
             }

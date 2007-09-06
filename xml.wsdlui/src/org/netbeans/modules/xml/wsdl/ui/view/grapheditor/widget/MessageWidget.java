@@ -185,17 +185,17 @@ public class MessageWidget extends AbstractWidget<Message>
 
             @Override
             public State keyPressed (Widget widget, WidgetKeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                if (event.getKeyCode() == KeyEvent.VK_ENTER && (event.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+                    if (header != null) {
+                        return header.getActions().keyPressed(widget, event);
+                    }
+                } else if (event.getKeyCode() == KeyEvent.VK_F2 || event.getKeyCode() == KeyEvent.VK_ENTER) {
                     if (editorAction == null || labelWidget == null) return State.REJECTED;
                     InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
                     if (inplaceEditorController.openEditor (labelWidget)) {
                         return State.createLocked (widget, this);
                     }
                     return State.CONSUMED;
-                } else if (event.getKeyCode() == KeyEvent.VK_ENTER) {
-                	if (header != null) {
-                		return header.getActions().keyPressed(widget, event);
-                	}
                 }
                 return State.REJECTED;
             }

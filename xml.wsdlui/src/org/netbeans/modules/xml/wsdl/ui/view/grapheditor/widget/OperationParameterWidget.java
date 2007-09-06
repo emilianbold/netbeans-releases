@@ -227,7 +227,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
             
             @Override
             public State keyPressed (Widget widget, WidgetKeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                if (event.getKeyCode() == KeyEvent.VK_F2 || event.getKeyCode() == KeyEvent.VK_ENTER) {
                     if (editorAction == null || mNameLabel == null) return State.CONSUMED;
                     InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
                     if (inplaceEditorController.openEditor (mNameLabel)) {
