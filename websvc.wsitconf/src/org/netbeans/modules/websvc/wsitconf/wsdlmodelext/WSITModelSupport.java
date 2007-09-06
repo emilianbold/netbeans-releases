@@ -624,6 +624,12 @@ public class WSITModelSupport {
     public static Binding getBinding(Service service, FileObject implClass, Project project, boolean create, Collection<FileObject> createdFiles) {
         String portName = service.getPortName();
         String serviceName = service.getServiceName();
+        if (serviceName == null) {
+            QName serviceQ = JavaWsdlMapper.getServiceName(implClass);
+            if (serviceQ != null) {
+                serviceName = serviceQ.getLocalPart();
+            }
+        }
         if (serviceName == null) return null;
         WSDLModel model = WSITModelSupport.getModelForService(service, implClass, project, create, createdFiles);
         if (model == null) return null;
@@ -636,10 +642,18 @@ public class WSITModelSupport {
             if (s == null) continue;
             if (serviceName.equals(s.getName())) {
                 Collection<Port> ports = s.getPorts();
-                for (Port p : ports) {
-                    if (portName.equals(p.getName())) {
+                if (portName == null) {
+                    if ((ports != null) && (!ports.isEmpty())) {
+                        Port p = ports.iterator().next();
                         QName b = p.getBinding().getQName();
                         return model.findComponentByName(b, Binding.class);
+                    }
+                } else {
+                    for (Port p : ports) {
+                        if (portName.equals(p.getName())) {
+                            QName b = p.getBinding().getQName();
+                            return model.findComponentByName(b, Binding.class);
+                        }
                     }
                 }
             }
