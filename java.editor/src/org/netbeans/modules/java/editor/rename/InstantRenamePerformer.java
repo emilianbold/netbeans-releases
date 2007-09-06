@@ -207,7 +207,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 
                 ts.move(caret);
                 
-                if (ts.moveNext() && ts.token().id() == JavaTokenId.IDENTIFIER) {
+                if (ts.moveNext() && ts.token()!=null && ts.token().id() == JavaTokenId.IDENTIFIER) {
                     adjustedCaret[0] = ts.offset() + ts.token().length() / 2 + 1;
                 }
             }
