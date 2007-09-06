@@ -374,12 +374,13 @@ public class TargetLister {
                         // #50087: <import> resolves file against the script, *not* the basedir.
                         file = new File(apc.getFile().getParentFile(), fileSubstituted);
                     }
+                    file = FileUtil.normalizeFile(file); // #112591
                     if (alreadyImported.contains(file)) {
                         // #55263: avoid a stack overflow on a recursive import.
                         continue;
                     }
                     if (file.canRead()) {
-                        FileObject fileObj = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                        FileObject fileObj = FileUtil.toFileObject(file);
                         assert fileObj != null : file;
                         AntProjectCookie importedApc = getAntProjectCookie(fileObj);
                         imports.add(new Script(this, importedApc, alreadyImported, propertyDefs, macroDefs));
