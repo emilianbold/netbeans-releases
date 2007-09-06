@@ -224,11 +224,27 @@ public class FileEntryNode extends AbstractNode {
             fireCookieChange();
             return;
         }
-        firePropertyChange(propertyName, ev.getOldValue(), ev.getNewValue());
+        // dataobject may have a property that this node does not have
+        if (hasProperty(propertyName)) {
+            firePropertyChange(propertyName, ev.getOldValue(), ev.getNewValue());
+        }
         if (propertyName.equals(DataObject.PROP_NAME)) {
             super.setName (entry.getName ());
         }
     }
+    
+    private boolean hasProperty(String name) {
+        Node.PropertySet[] npsets = getPropertySets();
+        for (int i = 0; i < npsets.length; i++) {
+            Node.PropertySet npset = npsets[i];
+            Node.Property[] nps = npset.getProperties();
+            for (int j = 0; j < nps.length; j++) {
+                Node.Property np = nps[j];
+                if (name.equals(np.getName())) return true;
+            }
+        }
+        return false;
+    }    
 
     /** Property listener on data object that delegates all changes of
      * properties to this node.
