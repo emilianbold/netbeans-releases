@@ -369,21 +369,18 @@ public class FormLAF {
     }
 
     static String oldNoXP;
-    static void setUsePreviewDefaults(FormModel formModel, Class previewLAF, UIDefaults uiDefaults) {
+    static void setUsePreviewDefaults(ClassLoader classLoader, Class previewLAF, UIDefaults uiDefaults) {
         boolean classic = (previewLAF == null)
             ? ((previewLaf == null) ? false : isClassicWinLAF(previewLaf.getName()))
             : isClassicWinLAF(previewLAF.getName());
-        preview = (formModel != null);
+        preview = (classLoader != null);
         previewLaf = previewLAF;
-        ClassLoader classLoader = null;
         if (preview) {
             if (classic) {
                 oldNoXP = System.getProperty(SWING_NOXP);
                 System.setProperty(SWING_NOXP, "y"); // NOI18N
                 invalidateXPStyle();
             }
-            FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
-            classLoader = ClassPathUtils.getProjectClassLoader(formFile);
             classLoaderDefaults = classLoaderToDefaults.get(classLoader);
             if (classLoaderDefaults == null) {
                 classLoaderDefaults = new HashMap<Object,Object>();

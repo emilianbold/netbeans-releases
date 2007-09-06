@@ -57,6 +57,7 @@ import org.netbeans.modules.form.layoutdesign.LayoutConstants.PaddingType;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -515,10 +516,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     {
         final UIDefaults uiDefaults = FormLAF.initPreviewLaf(previewLaf);
         Container result = null;
-        final FormModel formModel = metacomp.getFormModel();
+        FormModel formModel = metacomp.getFormModel();
+        FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
+        final ClassLoader classLoader = ClassPathUtils.getProjectClassLoader(formFile);
         Locale defaultLocale = switchToDesignLocale(formModel);
         try {
-            FormLAF.setUsePreviewDefaults(formModel, previewLaf, uiDefaults);
+            FormLAF.setUsePreviewDefaults(classLoader, previewLaf, uiDefaults);
             result = (Container) FormLAF.executeWithLookAndFeel(formModel,
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
@@ -531,7 +534,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                             @Override
                             public void paint(Graphics g) {
                                 try {
-                                    FormLAF.setUsePreviewDefaults(formModel, previewLaf, uiDefaults);
+                                    FormLAF.setUsePreviewDefaults(classLoader, previewLaf, uiDefaults);
                                     super.paint(g);
                                 } finally {
                                     FormLAF.setUsePreviewDefaults(null, null, null);
