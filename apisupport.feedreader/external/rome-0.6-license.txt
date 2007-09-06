@@ -1,6 +1,6 @@
 Version: 0.6
 License: Apache-2.0
-Description: Java tools for parsing, generating and publishing RSS and Atom feeds 
+Description: Java tools for parsing, generating and publishing RSS and Atom feeds
 Name: Rome
 OSR: 3390
 Origin: https://rome.dev.java.net/

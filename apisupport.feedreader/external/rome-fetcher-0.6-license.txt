@@ -1,7 +1,7 @@
 Version: 0.6
 License: Apache-2.0
 Description: Java tools for parsing, generating and publishing RSS and Atom feeds
-Name: Rome HTTP Fetcher 
+Name: Rome HTTP Fetcher
 OSR: 3453
 Origin: https://rome.dev.java.net/
 
