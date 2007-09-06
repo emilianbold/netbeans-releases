@@ -145,6 +145,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
     
     private void setAccessible() {
         getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_IntroLbl")); // NOI18N
+	checkUnusedImports.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_checkUnusedImports_a11y")); // NOI18N
     }
     
     public String[] getSelections() {
