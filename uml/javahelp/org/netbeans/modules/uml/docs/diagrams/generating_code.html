@@ -32,14 +32,15 @@
       An existing source file will be saved to a similarly named file with a number and a tilde (~) symbol appended to its file name. For example, a source file named <i>sample.java</i> 
       will be saved to a file named <i>sample.java1~. </i> On the next backup request, <i>sample.java</i> will be saved to <i>sample.java2~</i>, and so on. The most recent backup file is the file with the highest sequential number at the end of its filename. 
       <ul class="note">
-        <li>Backup files are not displayed in the IDE's Projects window, but are accessible outside of the IDE. </li>
-	  </ul>
+        <li>These backup files are not displayed in the IDE's Projects window, but are accessible outside of the IDE. </li>
+	    <li>The IDE maintains an internal history of recent changes to source files, which can be retrieved using the IDE's Local History tools. </li>
+      </ul>
 	</li>  
    <li><b>Generate Markers for Source File Merging.</b> If selected, specifies that code be annotated with special code generation merge markers so that further code generation for the sources can be intelligently merged with existing code. Keep this option enabled until you are confident that you are finished modeling and you would like to generate the sources without the markers, if desired.
 
 Attributes and operations that do not have any markers are ignored by the generate code process. </li>
    <li><b>Add Merge Markers to Existing Source Elements.</b> If selected, merge markers are created in the existing source files which have  attributes and operations that are 
-not yet annotated with the code generation marker. </li>
+not yet annotated with the code generation marker. Once this option is selected, the marked elements can be overwritten immediately in the next invocation of the code generation process </li>
    <li><b>Prompt Before Generating Code. </b>If selected, the Generate Code dialog is prompted every time the Generate Code action is invoked. This is the default action and  provides you with the chance to change the generate code options (backup, merge markers or active templates) or to cancel out of the action before any sources are updated. Some may prefer to set the options once and never be prompted again. Disabling this option will prevent the dialog from displaying with each Generate Code execution.</li>
    <li><b>Templates</b> Displays a list of available domain template categories.    Under each category is a list of the
 domain templates in summarized form (name, description, element type
