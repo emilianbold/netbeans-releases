@@ -54,6 +54,8 @@ public class GetterSetterPanel extends JPanel {
         selectorLabel.setLabelFor(elementSelector);
         
         elementSelector.doInitialExpansion(1);
+	
+	this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetterSetterGenerator.class, "A11Y_Generate_GetterSetter"));
     }
     
     public List<ElementHandle<? extends Element>> getVariables() {

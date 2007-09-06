@@ -48,6 +48,8 @@ public class ImplementOverridePanel extends JPanel {
         selectorLabel.setLabelFor(elementSelector);
         
         elementSelector.doInitialExpansion(isImplement ? -1 : 1);
+	
+	this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImplementOverrideMethodGenerator.class, "A11Y_Generate_ImplementOverride"));
     }
     
     public List<ElementHandle<? extends Element>> getSelectedMethods() {

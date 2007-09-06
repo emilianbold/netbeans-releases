@@ -80,6 +80,8 @@ public class ConstructorPanel extends JPanel {
             fieldSelectorLabel.setText(NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor_select")); //NOI18N
             fieldSelectorLabel.setLabelFor(fieldSelector);
         }
+	
+	this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConstructorGenerator.class, "A11Y_Generate_Constructor"));
     }
     
     public ElementHandle<? extends Element> getInheritedConstructor() {

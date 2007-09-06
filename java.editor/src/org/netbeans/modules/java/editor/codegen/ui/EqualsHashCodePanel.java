@@ -99,6 +99,8 @@ public class EqualsHashCodePanel extends JPanel {
         
             hashCodeLabel.setLabelFor(hashCodeSelector);
         }
+	
+	this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EqualsHashCodeGenerator.class, "A11Y_Generate_EqualsHashCode"));
     }
     
     

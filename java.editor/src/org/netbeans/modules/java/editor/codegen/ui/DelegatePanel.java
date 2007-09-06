@@ -71,6 +71,8 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
         
         
         delegateSelector.doInitialExpansion(1);
+	
+	this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DelegateMethodGenerator.class, "A11Y_Generate_Delegate"));
     }
 
     public ElementHandle<? extends Element> getDelegateField() {
