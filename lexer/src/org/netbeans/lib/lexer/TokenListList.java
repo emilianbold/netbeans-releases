@@ -350,6 +350,12 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
         if (!isComplete()) {
             sb.append(", incomplete");
         }
+        if (isJoinSections()) {
+            sb.append(", joinSections");
+        }
+        if (hasChildren()) {
+            sb.append(", hasChildren");
+        }
         sb.append('\n');
         int digitCount = ArrayUtilities.digitCount(tokenLists.size());
         for (int i = 0; i < tokenLists.size(); i++) {

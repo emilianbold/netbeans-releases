@@ -220,6 +220,7 @@ public final class EmbeddingContainer<T extends TokenId> {
 
         EmbeddedTokenList<ET> etl;
         LanguageEmbedding<ET> embedding;
+        TokenListList tll = null;
         synchronized (root) {
             if (startSkipLength + endSkipLength > token.length()) // Check for appropriate size
                 return false;
@@ -233,7 +234,7 @@ public final class EmbeddingContainer<T extends TokenId> {
             // Even possibly existing token list list needs to be marked as mandatory
             // since there is at least one embedding that joins the sections.
             if (embedding.joinSections()) {
-                TokenListList tll = tokenHierarchyOperation.tokenListList(embeddedLanguagePath);
+                tll = tokenHierarchyOperation.tokenListList(embeddedLanguagePath);
                 tll.setJoinSections(true);
             }
             // Make the embedded token list to be the first in the list
@@ -269,6 +270,10 @@ public final class EmbeddingContainer<T extends TokenId> {
         //  - would prevent further lazy embedded lexing so leave to zero for now
         //info.setAddedTokenCount(0);
         info.addEmbeddedChange(embeddedInfo);
+        
+        if (tll != null) {
+            new TokenHierarchyUpdate(eventInfo).updateCreateEmbedding(etl);
+        }
 
         // Fire the change
         tokenHierarchyOperation.fireTokenHierarchyChanged(

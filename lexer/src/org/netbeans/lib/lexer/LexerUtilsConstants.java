@@ -32,7 +32,6 @@ import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
-import org.netbeans.spi.lexer.EmbeddingPresence;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
@@ -72,6 +71,11 @@ public final class LexerUtilsConstants {
      * for large inputs.
      */
     public static final int LEXED_AREA_INPUT_SIZE_FRACTION = 10;
+    
+    /**
+     * Marker value to recognize an uninitialized state variable.
+     */
+    public static final Object INVALID_STATE = new Object();
     
     /**
      * Check that there are no more characters to be read from the given
@@ -249,6 +253,19 @@ public final class LexerUtilsConstants {
     public static boolean statesEqual(Object state1, Object state2) {
         return (state1 == null && state2 == null)
             || (state1 != null && state1.equals(state2));
+    }
+    
+    public static Object endState(TokenList<?> tokenList) {
+        int tokenCount = tokenList.tokenCount();
+        return (tokenCount > 0) ? tokenList.state(tokenList.tokenCount() - 1) : INVALID_STATE;
+    }
+    
+    public static Object endState(TokenList<?> tokenList, Object state) {
+        int tokenCount = tokenList.tokenCount();
+        if (tokenCount > 0) {
+            state = tokenList.state(tokenList.tokenCount() - 1);
+        }
+        return state;
     }
     
     public static String idToString(TokenId id) {

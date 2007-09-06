@@ -176,6 +176,9 @@ public final class TokenListChange<T extends TokenId> {
         sb.append(index());
         sb.append(", offset=");
         sb.append(offset());
+        if (isBoundsChange()) {
+            sb.append(", boundsChange");
+        }
         TokenList<T> removedTL = tokenChangeInfo.removedTokenList();
         if (removedTL != null && removedTL.tokenCount() > 0) {
             int digitCount = ArrayUtilities.digitCount(removedTL.tokenCount() - 1);

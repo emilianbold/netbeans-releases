@@ -315,7 +315,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 assert (text != null);
                 incTokenList.setText(new OriginalText(text, offset, removedText, insertedLength));
                 // Dump all contents
-                TokenHierarchyUpdate.LOG.log(Level.FINEST, toString());
+                TokenHierarchyUpdate.LOG.finest(toString());
                 // Return the original text
                 incTokenList.setText(text);
             }
@@ -334,6 +334,11 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                         extraMsg = "(TokenHierarchy Check OK) ";
                 }
                 TokenHierarchyUpdate.LOG.fine(">>>>>>>>>>>>>>>>>> LEXER CHANGE END " + extraMsg + "------------------\n"); // NOI18N
+            }
+
+            if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINEST)) {
+                TokenHierarchyUpdate.LOG.finest("AFTER UPDATE:\n");
+                TokenHierarchyUpdate.LOG.finest(toString());
             }
 
             fireTokenHierarchyChanged(LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
@@ -554,7 +559,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                             tokenList, i, parentIndexes);
                 }
             }
-            if (token.tokenList() != tokenList) {
+            if (!token.isFlyweight() && token.tokenList() != tokenList) {
                 return dumpContext("Invalid token.tokenList()=" + token.tokenList(),
                         tokenList, i, parentIndexes);
             }
