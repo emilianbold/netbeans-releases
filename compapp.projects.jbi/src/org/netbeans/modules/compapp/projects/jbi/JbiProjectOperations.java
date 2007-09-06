@@ -30,7 +30,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.projects.jbi.util.MyFileUtil;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
@@ -41,8 +40,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -128,14 +125,17 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
     }
     
     public void notifyDeleting() throws IOException {
-        JbiActionProvider ap = (JbiActionProvider) project.getLookup().lookup(JbiActionProvider.class);
+        JbiActionProvider ap = project.getLookup().lookup(JbiActionProvider.class);
         
-        assert ap != null;
+        assert ap != null;        
         
-        Lookup context = Lookups.fixed(new Object[0]);
         Properties p = new Properties();
-        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, context, p);
-        FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        // #114826 skip cleaning subprojects ("deps-clean")
+        // Lookup context = Lookups.fixed(new Object[0]);
+        // String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, context, p); 
+        String[] targetNames = new String[] {"do-clean"}; // NOI18N
+        FileObject projDir = project.getProjectDirectory();
+        FileObject buildXML = projDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         
         assert targetNames != null;
         assert targetNames.length > 0;
@@ -207,7 +207,7 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
                 }
                 
                 // Fix dist.jar
-                String distJarName = (String) props.get(JbiProjectProperties.DIST_JAR);
+                String distJarName = props.get(JbiProjectProperties.DIST_JAR);
                 if (distJarName.endsWith("/" + oldName + ".zip")) { // NOI18N
                     int distJarNamePrefixLen = distJarName.length() - oldName.length() - 4;
                     String distJarNamePrefix = distJarName.substring(0, distJarNamePrefixLen);
