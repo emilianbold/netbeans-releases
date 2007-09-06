@@ -293,7 +293,7 @@ class ConfigurationsProvider
                         final Action actions[]=gray ? new Action[] {} : new Action[] { 
                                                                                        NodeActions.RemoveResourceAction.getStaticInstance(),
                                                                                      };
-                        final Node n=new FNode(new NodeFactory.ActionNode(Children.LEAF,lookup,iPath,item.getDisplayName(),null,actions),lookup,null,item);
+                        final Node n=new FNode(new NodeFactory.ActionNode(Children.LEAF,lookup,iPath,item.getDisplayName(),null,actions),lookup,gray?emptyAction:null,item);
                         n.setValue("error",Boolean.TRUE);
                         brokenArray.add(n);
                         File parent=f.getParentFile();
