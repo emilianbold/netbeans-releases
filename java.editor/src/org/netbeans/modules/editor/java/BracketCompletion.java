@@ -85,6 +85,9 @@ class BracketCompletion {
         ExtSyntaxSupport ssup = (ExtSyntaxSupport)doc.getSyntaxSupport();
         int lastParenPos = dotPos;
         TokenItem token = ssup.getTokenChain(dotPos, eolPos);
+        if (token == null) {
+            return;
+        }
         for (TokenItem item = token.getNext(); item != null && item.getOffset() <= eolPos; item = item.getNext()) {
             TokenID tokenID = item.getTokenID();
             if (tokenID == JavaTokenContext.RPAREN) {
