@@ -67,7 +67,7 @@ public class RADComponent {
     private RADProperty[] beanProperties2;
     private BindingProperty[][] bindingProperties;
     private EventProperty[] eventProperties;
-    private Map<Object,FormProperty[]> otherProperties;
+    private Map<Object,RADProperty[]> otherProperties;
     private List actionProperties;
 
     private RADProperty[] knownBeanProperties;
@@ -657,10 +657,7 @@ public class RADComponent {
         return actionProperties;
     }
 
-    protected Node.Property getPropertyByName(String name,
-                                              Class<? extends Object> propertyType,
-                                              boolean fromAll)
-    {
+    protected <T> T getPropertyByName(String name, Class<? extends T> propertyType, boolean fromAll) {
         Node.Property prop = nameToProperty.get(name);
         if (prop == null && fromAll) {
             if (beanProperties1 == null && !name.startsWith("$")) // NOI18N
@@ -673,7 +670,7 @@ public class RADComponent {
         return prop != null
                  && (propertyType == null
                      || propertyType.isAssignableFrom(prop.getClass())) ?
-               prop : null;
+               (T)prop : null;
     }
 
     /**
@@ -686,7 +683,7 @@ public class RADComponent {
     }
 
     public final RADProperty getBeanProperty(String name) {
-        return (RADProperty) getPropertyByName(name, RADProperty.class, true);
+        return getPropertyByName(name, RADProperty.class, true);
     }
 
     public final Node.Property getSyntheticProperty(String name) {
@@ -774,8 +771,7 @@ public class RADComponent {
             }
             else { // force all properties creation, there might be more
                    // properties than from BeanInfo [currently just ButtonGroup]
-                properties[i] = (RADProperty)
-                                getPropertyByName(name, RADProperty.class, true);
+                properties[i] = getPropertyByName(name, RADProperty.class, true);
                 empty = false;
                 newProps = null;
             }
@@ -1083,11 +1079,11 @@ public class RADComponent {
     }
 
     private void createBeanProperties() {
-        List<FormProperty> prefProps = new ArrayList<FormProperty>();
-        List<FormProperty> normalProps = new ArrayList<FormProperty>();
-        List<FormProperty> expertProps = new ArrayList<FormProperty>();
-        Map<Object,List<FormProperty>> otherProps = new TreeMap<Object,List<FormProperty>>();
-        List<FormProperty> actionProps = new LinkedList<FormProperty>();
+        List<RADProperty> prefProps = new ArrayList<RADProperty>();
+        List<RADProperty> normalProps = new ArrayList<RADProperty>();
+        List<RADProperty> expertProps = new ArrayList<RADProperty>();
+        Map<Object,List<RADProperty>> otherProps = new TreeMap<Object,List<RADProperty>>();
+        List<RADProperty> actionProps = new LinkedList<RADProperty>();
 
         Object[] propsCats = FormUtils.getPropertiesCategoryClsf(
                                  beanClass, getBeanInfo().getBeanDescriptor());
@@ -1099,7 +1095,7 @@ public class RADComponent {
             PropertyDescriptor pd = props[i];
             boolean action = (pd.getValue("action") != null); // NOI18N
             Object category = pd.getValue("category"); // NOI18N
-            List<FormProperty> listToAdd;
+            List<RADProperty> listToAdd;
             
             if ((category == null) || (!(category instanceof String))) {
                 Object propCat = FormUtils.getPropertyCategory(pd, propsCats);
@@ -1114,12 +1110,12 @@ public class RADComponent {
             } else {
                 listToAdd = otherProps.get(category);
                 if (listToAdd == null) {
-                    listToAdd = new ArrayList<FormProperty>();
+                    listToAdd = new ArrayList<RADProperty>();
                     otherProps.put(category, listToAdd);
                 }
             }
             
-            FormProperty prop = (FormProperty) nameToProperty.get(pd.getName());
+            RADProperty prop = getPropertyByName(pd.getName(), RADProperty.class, false);
             if (prop == null)
                 prop = createBeanProperty(pd, propsAccess, propParentChildDepClsf);
 
@@ -1166,10 +1162,10 @@ public class RADComponent {
             else beanProperties2 = new RADProperty[0];
         }
         
-        Map<Object,FormProperty[]> otherProps2 = new TreeMap<Object,FormProperty[]>();
-        FormProperty[] array = new FormProperty[0];
-        for (Map.Entry<Object,List<FormProperty>> entry : otherProps.entrySet()) {
-            List<FormProperty> catProps = entry.getValue();
+        Map<Object,RADProperty[]> otherProps2 = new TreeMap<Object,RADProperty[]>();
+        RADProperty[] array = new RADProperty[0];
+        for (Map.Entry<Object,List<RADProperty>> entry : otherProps.entrySet()) {
+            List<RADProperty> catProps = entry.getValue();
             otherCount += catProps.size();
             otherProps2.put(entry.getKey(), catProps.toArray(array));
         }
@@ -1189,8 +1185,8 @@ public class RADComponent {
         
         int where = beanProperties1.length + beanProperties2.length;
         
-        for (Map.Entry<Object,FormProperty[]> entry : otherProperties.entrySet()) {
-            RADProperty[] catProps = (RADProperty[])entry.getValue();
+        for (Map.Entry<Object,RADProperty[]> entry : otherProperties.entrySet()) {
+            RADProperty[] catProps = entry.getValue();
             System.arraycopy(catProps, 0,
                 knownBeanProperties, where,
                 catProps.length);
@@ -1293,9 +1289,9 @@ public class RADComponent {
     /** Called to modify original bean properties obtained from BeanInfo.
      * Properties may be added, removed etc. - due to specific needs.
      */
-    protected void changePropertiesExplicitly(List<FormProperty> prefProps,
-                                              List<FormProperty> normalProps,
-                                              List<FormProperty> expertProps) {
+    protected void changePropertiesExplicitly(List<RADProperty> prefProps,
+                                              List<RADProperty> normalProps,
+                                              List<RADProperty> expertProps) {
          // hack for buttons - add fake property for ButtonGroup
         if (getBeanInstance() instanceof javax.swing.AbstractButton) {
             try {

@@ -252,8 +252,7 @@ public class VisualReplicator {
             // make the component visible according to the explicitly set property
             // or component's original visibility
             Boolean visible = null;
-            FormProperty visibilityProp = (RADProperty) metacomp.getPropertyByName(
-                    "visible", RADProperty.class, false); // NOI18N
+            RADProperty visibilityProp = metacomp.getPropertyByName("visible", RADProperty.class, false); // NOI18N
             if (visibilityProp != null && visibilityProp.isChanged()) {
                 Object value;
                 try {

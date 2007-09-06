@@ -518,8 +518,7 @@ public class RADComponentNode extends FormNode
     // FormPropertyCookie implementation
     
     public FormProperty getProperty(String name) {
-        return (FormProperty)
-                component.getPropertyByName(name, FormProperty.class, true);
+        return component.getPropertyByName(name, FormProperty.class, true);
         //        Node.Property prop = component.getPropertyByName(name, true);
         //        return (FormProperty) (prop instanceof FormProperty ? prop : null);
     }

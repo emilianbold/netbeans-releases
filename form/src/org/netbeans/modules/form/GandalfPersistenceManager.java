@@ -2412,11 +2412,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                                 RADComponent metacomp)
     {   
         FormProperty[] properties = new FormProperty[propertyNames.length];
-        for (int i=0; i < propertyNames.length; i++)
-            properties[i] = (FormProperty) metacomp.getPropertyByName(
-                                                      propertyNames[i],
-                                                      FormProperty.class,
-                                                      true);
+        for (int i=0; i < propertyNames.length; i++) {
+            properties[i] = metacomp.getPropertyByName(propertyNames[i], FormProperty.class, true);
+        }
 
         return properties;
     }

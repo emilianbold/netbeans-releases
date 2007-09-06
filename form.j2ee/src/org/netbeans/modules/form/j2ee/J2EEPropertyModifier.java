@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.form.ComponentChooserEditor;
 import org.netbeans.modules.form.FormEditor;
-import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.PropertyModifier;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADProperty;
@@ -56,7 +55,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
      * @return <code>true</code> if some properties were removed/added,
      * returns <code>false</code> otherwise.
      */
-    public boolean modifyProperties(RADComponent metacomp, List<FormProperty> prefProps, List<FormProperty> normalProps, List<FormProperty> expertProps) {
+    public boolean modifyProperties(RADComponent metacomp, List<RADProperty> prefProps, List<RADProperty> normalProps, List<RADProperty> expertProps) {
         String className = metacomp.getBeanClass().getName();
         if (className.equals("javax.persistence.EntityManager")) { // NOI18N
             prefProps.clear();

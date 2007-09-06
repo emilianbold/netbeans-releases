@@ -218,10 +218,8 @@ public class RADVisualComponent extends RADComponent {
             });
     }
 
-    public Node.Property getPropertyByName(String name,
-                                           Class propertyType,
-                                           boolean fromAll)
-    {
+    @Override
+    public <T> T getPropertyByName(String name, Class<? extends T> propertyType, boolean fromAll) {
         if (fromAll && accessibilityProperties == null)
             createAccessibilityProperties();
         return super.getPropertyByName(name, propertyType, fromAll);
