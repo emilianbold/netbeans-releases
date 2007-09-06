@@ -251,20 +251,29 @@ public class JaxwsOperationInfo {
                 int repeatCount = 0;
                 Class type = null;
 
-                // This is hack to wait for the complex type to become
-                // available.
-                try {
-                    while (repeatCount < 10) {
-                        type = Util.getType(project, p.getTypeName());
+                // This is a hack to wait for the complex type to become
+                // available. We will give up after 120 seconds.
+                synchronized (this) {
+                    try {
+                        while (repeatCount < 60) {
+                            type = Util.getType(project, p.getTypeName());
 
-                        if (type != null) {
-                            break;
+                            if (type != null) {
+                                break;
+                            }
+
+                            repeatCount++;
+                            this.wait(2000);
                         }
-
-                        this.wait(1000);
-                        repeatCount++;
+                    } catch (InterruptedException ex) {
                     }
-                } catch (InterruptedException ex) {
+                }
+
+                // RESOLVE:
+                // Need to failure gracefully by displaying an error dialog.
+                // For now, set it to Object.class.
+                if (type == null) {
+                    type = Object.class;
                 }
 
                 types.add(type);
