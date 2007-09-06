@@ -103,6 +103,15 @@ public class ImportClassPanel extends javax.swing.JPanel {
             //nothingFoundJL.setOpaque(true);
             add( nothingFoundJL );
         }
+	
+	setA11Y();
+    }
+    
+    private void setA11Y() {
+	this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ImportClassPanel.class, "ImportClassPanel_ACN"));
+	this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportClassPanel.class, "ImportClassPanel_ACSD"));
+	jList1.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ImportClassPanel.class, "ImportClassPanel_JList1_ACN"));
+	jList1.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportClassPanel.class, "ImportClassPanel_JList1_ACSD"));
     }
     
     /** This method is called from within the constructor to
@@ -138,6 +147,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
+        jLabel1.setLabelFor(jList1);
         jLabel1.setText("Type to import:");
         jLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
         jLabel1.setOpaque(true);
