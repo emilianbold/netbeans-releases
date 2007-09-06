@@ -525,8 +525,8 @@ function createIFrame(url) {
     return c;
 }
 function showViews(name) {
-    //if(name == 'raw' && currentMethod == 'GET' && currentMimeType == 'application/xml') //This step is needed for Firefox to show content as xml
-    //	updatepage('rawContent', createIFrame(currentValidUrl));
+    if(name == 'raw' && currentMethod == 'GET' && currentMimeType == 'text/html')
+    	updatepage('rawContent', createIFrame(currentValidUrl));
     var tableNode = document.getElementById('tableContent').style;
     var rawNode = document.getElementById('rawContent').style;
     var headerNode = document.getElementById('headerInfo').style;
