@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -39,9 +38,9 @@ import org.apache.tools.ant.taskdefs.Manifest;
  * @author Jesse Glick
  */
 public class JarWithModuleAttributes extends Jar {
-    
+
     public JarWithModuleAttributes() {}
-    
+
     private static final Pattern COMMA_SPACE = Pattern.compile(", *");
     private static final Pattern IMPL_DEP = Pattern.compile(" *([a-zA-Z0-9_.]+)(/[0-9]+)? *= *(.+) *");
 
@@ -133,11 +132,10 @@ public class JarWithModuleAttributes extends Jar {
                         getProject().log(manifestFile + ": warning: use of spec.version.base with non-integer OpenIDE-Module-Implementation-Version (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
                     }
                 }
-                SortedMap<String,Integer> additions = new TreeMap<String, Integer>();
+                SortedMap<String,Integer> additions = new TreeMap<String,Integer>();
                 if (moduleDeps != null) {
-                    String[] individualDeps = COMMA_SPACE.split(moduleDeps);
-                    for (int j = 0; j < individualDeps.length; j++) {
-                        Matcher m = IMPL_DEP.matcher(individualDeps[j]);
+                    for (String individualDep : COMMA_SPACE.split(moduleDeps)) {
+                        Matcher m = IMPL_DEP.matcher(individualDep);
                         if (m.matches()) {
                             String cnb = m.group(1);
                             String version = m.group(3);
@@ -155,9 +153,7 @@ public class JarWithModuleAttributes extends Jar {
                         }
                     }
                 }
-                Iterator versions = additions.values().iterator();
-                while (versions.hasNext()) {
-                    Integer version = (Integer) versions.next();
+                for (int version : additions.values()) {
                     specVersBase += "." + version;
                     edited = true;
                 }
@@ -203,5 +199,5 @@ public class JarWithModuleAttributes extends Jar {
             throw new BuildException(e, getLocation());
         }
     }
-    
+
 }
