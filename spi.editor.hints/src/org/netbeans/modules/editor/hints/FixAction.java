@@ -24,7 +24,9 @@ import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.ImplementationProvider;
 import org.openide.awt.StatusDisplayer;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -33,7 +35,6 @@ import org.openide.util.NbBundle;
 public class FixAction extends AbstractAction {
     
     public FixAction() {
-        setEnabled(true);
         putValue(NAME, NbBundle.getMessage(FixAction.class, "NM_FixAction"));
     }
     
@@ -66,6 +67,14 @@ public class FixAction extends AbstractAction {
             }
         }
     }
-    
+
+    @Override
+    public boolean isEnabled() {
+        TopComponent activetc = TopComponent.getRegistry().getActivated();
+        if (activetc instanceof CloneableEditorSupport.Pane) {
+            return true;
+        }
+        return false;
+    }
 }
 
