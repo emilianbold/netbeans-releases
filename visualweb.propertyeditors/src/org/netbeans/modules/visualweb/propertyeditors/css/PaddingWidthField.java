@@ -60,8 +60,16 @@ public class PaddingWidthField extends javax.swing.JPanel {
      * Adds a PropertyChangeListener to the listener list.
      * @param l The listener to add.
      */
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public void addCssPropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(l);
+    }
+    
+    /**
+     * Removes a PropertyChangeListener from the listener list.
+     * @param l The listener to remove.
+     */
+    public void removeCssPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
     }
     
     public void setPaddingString(String paddingStr){
@@ -82,6 +90,8 @@ public class PaddingWidthField extends javax.swing.JPanel {
     public String getPaddingString(){
         return borderPaddingData.toString();
     }
+
+     
     private String getUnit(String paddingStr){
         DefaultComboBoxModel unitList = marginPaddingModel.getPaddingUnitList();
         for(int i=0; i< unitList.getSize(); i++){
@@ -115,13 +125,7 @@ public class PaddingWidthField extends javax.swing.JPanel {
         }
     }
     
-    /**
-     * Removes a PropertyChangeListener from the listener list.
-     * @param l The listener to remove.
-     */
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener(l);
-    }
+     
     
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {

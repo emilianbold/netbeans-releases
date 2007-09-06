@@ -108,7 +108,7 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         }
         styleEditorListPanel.setSelectedEditor((StyleEditor)styleEditorList.get(0));
         setEditorListPanel(styleEditorListPanel);
-        cssStyleData.addPropertyChangeListener(this);
+        cssStyleData.addCssPropertyChangeListener(this);
         /*previewImage = new BufferedImage(200,50,BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = (Graphics2D)previewImage.getGraphics();
         g2d.setColor(Color.BLUE);
@@ -150,7 +150,7 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
      * The property change listener is added to the CssStyleData
      * @param listener The listener to add.
      */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addCssPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
     
@@ -159,7 +159,7 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
      * The property change listener is removed from the CssStyleData
      * @param listener The listener to remove.
      */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removeCssPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
     

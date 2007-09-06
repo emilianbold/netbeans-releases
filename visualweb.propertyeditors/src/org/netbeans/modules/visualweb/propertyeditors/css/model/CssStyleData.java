@@ -250,7 +250,7 @@ public class CssStyleData {
      * Adds a PropertyChangeListener to the listener list.
      * @param listener The listener to add.
      */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addCssPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
     
@@ -258,7 +258,7 @@ public class CssStyleData {
      * Removes a PropertyChangeListener from the listener list.
      * @param listener The listener to remove.
      */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removeCssPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 }

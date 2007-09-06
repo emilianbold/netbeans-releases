@@ -61,7 +61,7 @@ public class BorderWidthField extends javax.swing.JPanel {
      * Adds a PropertyChangeListener to the listener list.
      * @param l The listener to add.
      */
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public void addCssPropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(l);
     }
     
@@ -69,7 +69,7 @@ public class BorderWidthField extends javax.swing.JPanel {
      * Removes a PropertyChangeListener from the listener list.
      * @param l The listener to remove.
      */
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public void removeCssPropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
     }
     

@@ -42,7 +42,7 @@ public class StyleBuilderDialog extends JPanel implements PropertyChangeListener
         initComponents();
         String cssStyleString = "font-family:'Arial', 'Times New Roman', 'sans-serif'" ;
         StyleBuilderPanel styleBuilderPanel = new StyleBuilderPanel(cssStyleString);
-        styleBuilderPanel.addPropertyChangeListener(this);
+        styleBuilderPanel.addCssPropertyChangeListener(this);
         add(styleBuilderPanel, BorderLayout.CENTER);
     }
     

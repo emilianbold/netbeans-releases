@@ -60,7 +60,7 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         setDisplayName(NbBundle.getMessage(StyleBuilderDialog.class, "BACKGROUND_EDITOR_DISPNAME"));
         initComponents();
         colorSelectionPanel.add(colorField,BorderLayout.CENTER);
-        colorField.addPropertyChangeListener(this);
+        colorField.addCssPropertyChangeListener(this);
         initialize();
         
         // Add editor listeners to the horizontal position combobox

@@ -144,12 +144,12 @@ public class BorderDataTable extends JTable{
                 NbBundle.getMessage(BorderDataTable.class, "ALL_SIDE_BORDER_WIDTH_UNIT_ACCESS_NAME"));
         allWidthField.setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "ALL_SIDE_BORDER_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(BorderDataTable.class, "ALL_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
-        allWidthField.addPropertyChangeListener(widthPropertyChangeListener);
+        allWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
         setValueAt(allWidthField, 1, 2);
         
         // All Side Width
         allColorField = new ColorSelectionField();
-        allColorField.addPropertyChangeListener(colorPropertyChangeListener);
+        allColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
         setValueAt(allColorField, 1, 3);
         
         // Set the value for the top side border
@@ -172,13 +172,13 @@ public class BorderDataTable extends JTable{
         topWidthField.setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "TOP_SIDE_BORDER_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(BorderDataTable.class, "TOP_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
         topWidthField.setWidthString(cssStyleData.getProperty(CssStyleData.BORDER_TOP_WIDTH));
-        topWidthField.addPropertyChangeListener(widthPropertyChangeListener);
+        topWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
         setValueAt(topWidthField, 2, 2);
         
         // Top Side Color
         topColorField = new ColorSelectionField();
         topColorField.setColorString(cssStyleData.getProperty(CssStyleData.BORDER_TOP_COLOR));
-        topColorField.addPropertyChangeListener(colorPropertyChangeListener);
+        topColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
         setValueAt(topColorField, 2, 3);
         
         // Set the Bottom Side data
@@ -201,13 +201,13 @@ public class BorderDataTable extends JTable{
         bottomWidthField.setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "BOTTOM_SIDE_BORDER_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(BorderDataTable.class, "BOTTOM_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
         bottomWidthField.setWidthString(cssStyleData.getProperty(CssStyleData.BORDER_BOTTOM_WIDTH));
-        bottomWidthField.addPropertyChangeListener(widthPropertyChangeListener);
+        bottomWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
         setValueAt(bottomWidthField, 3, 2);
         
         // Bottom Side Width
         bottomColorField = new ColorSelectionField();
         bottomColorField.setColorString(cssStyleData.getProperty(CssStyleData.BORDER_BOTTOM_COLOR));
-        bottomColorField.addPropertyChangeListener(colorPropertyChangeListener);
+        bottomColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
         setValueAt(bottomColorField, 3, 3);
         
         
@@ -231,13 +231,13 @@ public class BorderDataTable extends JTable{
         leftWidthField.setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "LEFT_SIDE_BORDER_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(BorderDataTable.class, "LEFT_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
         leftWidthField.setWidthString(cssStyleData.getProperty(CssStyleData.BORDER_LEFT_WIDTH));
-        leftWidthField.addPropertyChangeListener(widthPropertyChangeListener);
+        leftWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
         setValueAt(leftWidthField, 4, 2);
         
         // Left Side Width
         leftColorField = new ColorSelectionField();
         leftColorField.setColorString(cssStyleData.getProperty(CssStyleData.BORDER_LEFT_COLOR));
-        leftColorField.addPropertyChangeListener(colorPropertyChangeListener);
+        leftColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
         setValueAt(leftColorField, 4, 3);
         
         // Set the Right Side data
@@ -261,13 +261,13 @@ public class BorderDataTable extends JTable{
         rightWidthField.setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "RIGHT_SIDE_BORDER_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(BorderDataTable.class, "RIGHT_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
         rightWidthField.setWidthString(cssStyleData.getProperty(CssStyleData.BORDER_RIGHT_WIDTH));
-        rightWidthField.addPropertyChangeListener(widthPropertyChangeListener);
+        rightWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
         setValueAt(rightWidthField, 5, 2);
         
         // Right Side Color
         rightColorField = new ColorSelectionField();
         rightColorField.setColorString(cssStyleData.getProperty(CssStyleData.BORDER_RIGHT_COLOR));
-        rightColorField.addPropertyChangeListener(colorPropertyChangeListener);
+        rightColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
         setValueAt(rightColorField, 5, 3);
         
         checkBorderStyleAll();
@@ -294,7 +294,7 @@ public class BorderDataTable extends JTable{
     }
     
     private void checkBorderWidthAll(){
-        allWidthField.removePropertyChangeListener(widthPropertyChangeListener);
+        allWidthField.removeCssPropertyChangeListener(widthPropertyChangeListener);
         
         String topWidth = cssStyleData.getProperty(CssStyleData.BORDER_TOP_WIDTH);
         String bottomWidth = cssStyleData.getProperty(CssStyleData.BORDER_BOTTOM_WIDTH);
@@ -308,11 +308,11 @@ public class BorderDataTable extends JTable{
         }else{
             allWidthField.setWidthString(null);
         }
-        allWidthField.addPropertyChangeListener(widthPropertyChangeListener);
+        allWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
     }
     
     private void checkBorderColorAll(){
-        allColorField.removePropertyChangeListener(colorPropertyChangeListener);
+        allColorField.removeCssPropertyChangeListener(colorPropertyChangeListener);
         String topColor = cssStyleData.getProperty(CssStyleData.BORDER_TOP_COLOR);
         String bottomColor = cssStyleData.getProperty(CssStyleData.BORDER_BOTTOM_COLOR);
         String leftColor = cssStyleData.getProperty(CssStyleData.BORDER_LEFT_COLOR);
@@ -325,7 +325,7 @@ public class BorderDataTable extends JTable{
         }else{
             allColorField.setColorString(null);
         }
-        allColorField.addPropertyChangeListener(colorPropertyChangeListener);
+        allColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
     }
     
     private class StyleItemListener implements ItemListener {
@@ -375,10 +375,10 @@ public class BorderDataTable extends JTable{
     private class WidthPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getSource() == allWidthField){
-                topWidthField.removePropertyChangeListener(widthPropertyChangeListener);
-                bottomWidthField.removePropertyChangeListener(widthPropertyChangeListener);
-                leftWidthField.removePropertyChangeListener(widthPropertyChangeListener);
-                rightWidthField.removePropertyChangeListener(widthPropertyChangeListener);
+                topWidthField.removeCssPropertyChangeListener(widthPropertyChangeListener);
+                bottomWidthField.removeCssPropertyChangeListener(widthPropertyChangeListener);
+                leftWidthField.removeCssPropertyChangeListener(widthPropertyChangeListener);
+                rightWidthField.removeCssPropertyChangeListener(widthPropertyChangeListener);
                 
                 cssStyleData.modifyProperty(CssStyleData.BORDER_TOP_WIDTH, evt.getNewValue().toString());
                 topWidthField.setWidthString(evt.getNewValue().toString());
@@ -392,10 +392,10 @@ public class BorderDataTable extends JTable{
                 cssStyleData.modifyProperty(CssStyleData.BORDER_RIGHT_WIDTH, evt.getNewValue().toString());
                 rightWidthField.setWidthString(evt.getNewValue().toString());
                 
-                topWidthField.addPropertyChangeListener(widthPropertyChangeListener);
-                bottomWidthField.addPropertyChangeListener(widthPropertyChangeListener);
-                leftWidthField.addPropertyChangeListener(widthPropertyChangeListener);
-                rightWidthField.addPropertyChangeListener(widthPropertyChangeListener);
+                topWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
+                bottomWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
+                leftWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
+                rightWidthField.addCssPropertyChangeListener(widthPropertyChangeListener);
             }else if(evt.getSource() == topWidthField){
                 cssStyleData.modifyProperty(CssStyleData.BORDER_TOP_WIDTH, evt.getNewValue().toString());
                 checkBorderWidthAll();
@@ -415,10 +415,10 @@ public class BorderDataTable extends JTable{
     private class ColorPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getSource() == allColorField){
-                topColorField.removePropertyChangeListener(colorPropertyChangeListener);
-                bottomColorField.removePropertyChangeListener(colorPropertyChangeListener);
-                leftColorField.removePropertyChangeListener(colorPropertyChangeListener);
-                rightColorField.removePropertyChangeListener(colorPropertyChangeListener);
+                topColorField.removeCssPropertyChangeListener(colorPropertyChangeListener);
+                bottomColorField.removeCssPropertyChangeListener(colorPropertyChangeListener);
+                leftColorField.removeCssPropertyChangeListener(colorPropertyChangeListener);
+                rightColorField.removeCssPropertyChangeListener(colorPropertyChangeListener);
                 
                 topColorField.setColorString(allColorField.getColorString());
                 cssStyleData.modifyProperty(CssStyleData.BORDER_TOP_COLOR, allColorField.getColorString());
@@ -432,10 +432,10 @@ public class BorderDataTable extends JTable{
                 rightColorField.setColorString(allColorField.getColorString());
                 cssStyleData.modifyProperty(CssStyleData.BORDER_RIGHT_COLOR, allColorField.getColorString());
                 
-                topColorField.addPropertyChangeListener(colorPropertyChangeListener);
-                bottomColorField.addPropertyChangeListener(colorPropertyChangeListener);
-                leftColorField.addPropertyChangeListener(colorPropertyChangeListener);
-                rightColorField.addPropertyChangeListener(colorPropertyChangeListener);
+                topColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
+                bottomColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
+                leftColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
+                rightColorField.addCssPropertyChangeListener(colorPropertyChangeListener);
             }if(evt.getSource() == topColorField){
                 cssStyleData.modifyProperty(CssStyleData.BORDER_TOP_COLOR, topColorField.getColorString());
                 checkBorderColorAll();

@@ -40,7 +40,7 @@ public class CssStylePropertyEditor extends PropertyEditorBase implements
     public Component getCustomEditor() {
         StyleBuilderPanel styleBuilderPanel = 
                 new StyleBuilderPanel(getAsText(), this.getDesignProperty());
-        styleBuilderPanel.addPropertyChangeListener(this);
+        styleBuilderPanel.addCssPropertyChangeListener(this);
         return styleBuilderPanel;
     }
     

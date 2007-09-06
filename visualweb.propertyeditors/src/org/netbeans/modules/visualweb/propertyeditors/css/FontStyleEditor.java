@@ -57,7 +57,7 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         setDisplayName(NbBundle.getMessage(StyleBuilderDialog.class, "FONT_EDITOR_DISPNAME"));
         initComponents();
         colorSelectionPanel.add(colorField,BorderLayout.CENTER);
-        colorField.addPropertyChangeListener(this);
+        colorField.addCssPropertyChangeListener(this);
         initialize();
     }
     

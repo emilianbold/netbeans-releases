@@ -121,7 +121,7 @@ public class MarginDataTable extends JTable{
                 NbBundle.getMessage(MarginDataTable.class, "ALL_SIDE_MARGIN_WIDTH_UNIT_ACCESS_NAME"));
         allMarginField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "ALL_SIDE_MARGIN_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "ALL_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
-        allMarginField.addPropertyChangeListener(marginPropertyChangeListener);
+        allMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
         setValueAt(allMarginField, 1, 1);
         
         // All Side Margin
@@ -130,7 +130,7 @@ public class MarginDataTable extends JTable{
                 NbBundle.getMessage(MarginDataTable.class, "ALL_SIDE_PADDING_WIDTH_UNIT_ACCESS_NAME"));
         allPaddingField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "ALL_SIDE_PADDING_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "ALL_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
-        allPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
+        allPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
         setValueAt(allPaddingField, 1, 2);
         
         // Top Side Margin
@@ -140,7 +140,7 @@ public class MarginDataTable extends JTable{
         topMarginField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "TOP_SIDE_MARGIN_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "TOP_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
         topMarginField.setMarginString(cssStyleData.getProperty(CssStyleData.MARGIN_TOP));
-        topMarginField.addPropertyChangeListener(marginPropertyChangeListener);
+        topMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
         setValueAt(topMarginField, 2, 1);
         
         // Top Side Margin
@@ -150,7 +150,7 @@ public class MarginDataTable extends JTable{
         topPaddingField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "TOP_SIDE_PADDING_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "TOP_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
         topPaddingField.setPaddingString(cssStyleData.getProperty(CssStyleData.PADDING_TOP));
-        topPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
+        topPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
         setValueAt(topPaddingField, 2, 2);
         
         // Bottom Side Margin
@@ -160,7 +160,7 @@ public class MarginDataTable extends JTable{
         bottomMarginField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "BOTTOM_SIDE_MARGIN_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "BOTTOM_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
         bottomMarginField.setMarginString(cssStyleData.getProperty(CssStyleData.MARGIN_BOTTOM));
-        bottomMarginField.addPropertyChangeListener(marginPropertyChangeListener);
+        bottomMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
         setValueAt(bottomMarginField, 3, 1);
         
         // Bottom Side Margin
@@ -170,7 +170,7 @@ public class MarginDataTable extends JTable{
         bottomPaddingField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "BOTTOM_SIDE_PADDING_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "BOTTOM_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
         bottomPaddingField.setPaddingString(cssStyleData.getProperty(CssStyleData.PADDING_BOTTOM));
-        bottomPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
+        bottomPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
         setValueAt(bottomPaddingField, 3, 2);
         
         // Left Side Margin
@@ -180,7 +180,7 @@ public class MarginDataTable extends JTable{
         leftMarginField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "LEFT_SIDE_MARGIN_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "LEFT_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
         leftMarginField.setMarginString(cssStyleData.getProperty(CssStyleData.MARGIN_LEFT));
-        leftMarginField.addPropertyChangeListener(marginPropertyChangeListener);
+        leftMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
         setValueAt(leftMarginField, 4, 1);
         
         // Left Side Margin
@@ -190,7 +190,7 @@ public class MarginDataTable extends JTable{
         leftPaddingField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "LEFT_SIDE_PADDING_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "LEFT_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
         leftPaddingField.setPaddingString(cssStyleData.getProperty(CssStyleData.PADDING_LEFT));
-        leftPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
+        leftPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
         setValueAt(leftPaddingField, 4, 2);
         
         // Left Side Margin
@@ -200,7 +200,7 @@ public class MarginDataTable extends JTable{
         rightMarginField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "RIGHT_SIDE_MARGIN_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "RIGHT_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
         rightMarginField.setMarginString(cssStyleData.getProperty(CssStyleData.MARGIN_RIGHT));
-        rightMarginField.addPropertyChangeListener(marginPropertyChangeListener);
+        rightMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
         setValueAt(rightMarginField, 5, 1);
         
         // Left Side Margin
@@ -210,12 +210,12 @@ public class MarginDataTable extends JTable{
         rightPaddingField.setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "RIGHT_SIDE_PADDING_WIDTH_ACCESS_DESC"),
                 NbBundle.getMessage(MarginDataTable.class, "RIGHT_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
         rightPaddingField.setPaddingString(cssStyleData.getProperty(CssStyleData.PADDING_RIGHT));
-        rightPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
+        rightPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
         setValueAt(rightPaddingField, 5, 2);
     }
     
     private void checkMarginAll(){
-        allMarginField.removePropertyChangeListener(marginPropertyChangeListener);
+        allMarginField.removeCssPropertyChangeListener(marginPropertyChangeListener);
         String topMargin = cssStyleData.getProperty(CssStyleData.MARGIN_TOP);
         String bottomMargin = cssStyleData.getProperty(CssStyleData.MARGIN_BOTTOM);
         String leftMargin = cssStyleData.getProperty(CssStyleData.MARGIN_LEFT);
@@ -228,11 +228,11 @@ public class MarginDataTable extends JTable{
         }else{
             allMarginField.setMarginString(null);
         }
-        allMarginField.addPropertyChangeListener(marginPropertyChangeListener);
+        allMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
     }
     
     private void checkPaddingAll(){
-        allPaddingField.removePropertyChangeListener(paddingPropertyChangeListener);
+        allPaddingField.removeCssPropertyChangeListener(paddingPropertyChangeListener);
         String topPadding = cssStyleData.getProperty(CssStyleData.PADDING_TOP);
         String bottomPadding = cssStyleData.getProperty(CssStyleData.PADDING_BOTTOM);
         String leftPadding = cssStyleData.getProperty(CssStyleData.PADDING_LEFT);
@@ -246,17 +246,17 @@ public class MarginDataTable extends JTable{
             allPaddingField.setPaddingString(null);
         }
         
-        allPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
+        allPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
     }
     
     private class MarginPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getSource() == allMarginField){
                 
-                topMarginField.removePropertyChangeListener(marginPropertyChangeListener);
-                bottomMarginField.removePropertyChangeListener(marginPropertyChangeListener);
-                leftMarginField.removePropertyChangeListener(marginPropertyChangeListener);
-                rightMarginField.removePropertyChangeListener(marginPropertyChangeListener);
+                topMarginField.removeCssPropertyChangeListener(marginPropertyChangeListener);
+                bottomMarginField.removeCssPropertyChangeListener(marginPropertyChangeListener);
+                leftMarginField.removeCssPropertyChangeListener(marginPropertyChangeListener);
+                rightMarginField.removeCssPropertyChangeListener(marginPropertyChangeListener);
                 
                 cssStyleData.modifyProperty(CssStyleData.MARGIN_TOP, evt.getNewValue().toString());
                 topMarginField.setMarginString(evt.getNewValue().toString());
@@ -270,10 +270,10 @@ public class MarginDataTable extends JTable{
                 cssStyleData.modifyProperty(CssStyleData.MARGIN_RIGHT, evt.getNewValue().toString());
                 rightMarginField.setMarginString(evt.getNewValue().toString());
                 
-                topMarginField.addPropertyChangeListener(marginPropertyChangeListener);
-                bottomMarginField.addPropertyChangeListener(marginPropertyChangeListener);
-                leftMarginField.addPropertyChangeListener(marginPropertyChangeListener);
-                rightMarginField.addPropertyChangeListener(marginPropertyChangeListener);
+                topMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
+                bottomMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
+                leftMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
+                rightMarginField.addCssPropertyChangeListener(marginPropertyChangeListener);
             }else if(evt.getSource() == topMarginField){
                 cssStyleData.modifyProperty(CssStyleData.MARGIN_TOP, evt.getNewValue().toString());
                 checkMarginAll();
@@ -293,10 +293,10 @@ public class MarginDataTable extends JTable{
     private class PaddingPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getSource() == allPaddingField){
-                topPaddingField.removePropertyChangeListener(paddingPropertyChangeListener);
-                bottomPaddingField.removePropertyChangeListener(paddingPropertyChangeListener);
-                leftPaddingField.removePropertyChangeListener(paddingPropertyChangeListener);
-                rightPaddingField.removePropertyChangeListener(paddingPropertyChangeListener);
+                topPaddingField.removeCssPropertyChangeListener(paddingPropertyChangeListener);
+                bottomPaddingField.removeCssPropertyChangeListener(paddingPropertyChangeListener);
+                leftPaddingField.removeCssPropertyChangeListener(paddingPropertyChangeListener);
+                rightPaddingField.removeCssPropertyChangeListener(paddingPropertyChangeListener);
                 
                 cssStyleData.modifyProperty(CssStyleData.PADDING_TOP, evt.getNewValue().toString());
                 topPaddingField.setPaddingString(evt.getNewValue().toString());
@@ -310,10 +310,10 @@ public class MarginDataTable extends JTable{
                 cssStyleData.modifyProperty(CssStyleData.PADDING_RIGHT, evt.getNewValue().toString());
                 rightPaddingField.setPaddingString(evt.getNewValue().toString());
                 
-                topPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
-                bottomPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
-                leftPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
-                rightPaddingField.addPropertyChangeListener(paddingPropertyChangeListener);
+                topPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
+                bottomPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
+                leftPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
+                rightPaddingField.addCssPropertyChangeListener(paddingPropertyChangeListener);
             }else if(evt.getSource() == topPaddingField){
                 cssStyleData.modifyProperty(CssStyleData.PADDING_TOP, evt.getNewValue().toString());
                 checkPaddingAll();
