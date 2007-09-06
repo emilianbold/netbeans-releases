@@ -23,6 +23,7 @@ import java.util.Collections;
 import com.sun.source.tree.*;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Task;
@@ -92,6 +93,9 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("testModifyingIf"));
 //        suite.addTest(new BodyStatementTest("testRenameInParens"));
 //        suite.addTest(new BodyStatementTest("test111983"));
+//        suite.addTest(new BodyStatementTest("test112290_1"));
+//        suite.addTest(new BodyStatementTest("test112290_2"));
+//        suite.addTest(new BodyStatementTest("test112290_3"));
         return suite;
     }
 
@@ -2350,6 +2354,146 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
                 MemberSelectTree mst = (MemberSelectTree) mit.getMethodSelect();
                 workingCopy.rewrite(mst, make.setLabel(mst, "metoda"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // test 112290
+    public void test112290_1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class NewClass {\n" +
+            "    static void m() {\n" +
+            "        int size = 5;\n" +
+            "        int[][][] array = new int[size][size][size];\n" +
+            "    }\n" +
+            "}\n");
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class NewClass {\n" +
+            "    static void m() {\n" +
+            "        int velikost = 5;\n" +
+            "        int[][][] array = new int[velikost][velikost][velikost];\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> statements = method.getBody().getStatements();
+                VariableTree var = (VariableTree) statements.get(0);
+                workingCopy.rewrite(var, make.setLabel(var, "velikost"));
+                var = (VariableTree) statements.get(1);
+                NewArrayTree newArr = (NewArrayTree) var.getInitializer();
+                for (ExpressionTree t : newArr.getDimensions()) {
+                    workingCopy.rewrite(t, make.Identifier("velikost"));
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // test 112290
+    public void test112290_2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class NewClass {\n" +
+            "    static void m() {\n" +
+            "        int size = 5;\n" +
+            "        int[][][] array = new int[size][size][size];\n" +
+            "    }\n" +
+            "}\n");
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class NewClass {\n" +
+            "    static void m() {\n" +
+            "        int velikost = 5;\n" +
+            "        int[][][] array = new int[size][size][velikost];\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> statements = method.getBody().getStatements();
+                VariableTree var = (VariableTree) statements.get(0);
+                workingCopy.rewrite(var, make.setLabel(var, "velikost"));
+                var = (VariableTree) statements.get(1);
+                NewArrayTree newArr = (NewArrayTree) var.getInitializer();
+                workingCopy.rewrite(newArr.getDimensions().get(2), make.Identifier("velikost"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // test 112290
+    public void test112290_3() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class NewClass {\n" +
+            "    static void m() {\n" +
+            "        int size = 5;\n" +
+            "        int[][][] array = new int[size][size][size];\n" +
+            "    }\n" +
+            "}\n");
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class NewClass {\n" +
+            "    static void m() {\n" +
+            "        int velikost = 5;\n" +
+            "        int[][][] array = new int[velikost][size][size];\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> statements = method.getBody().getStatements();
+                VariableTree var = (VariableTree) statements.get(0);
+                workingCopy.rewrite(var, make.setLabel(var, "velikost"));
+                var = (VariableTree) statements.get(1);
+                NewArrayTree newArr = (NewArrayTree) var.getInitializer();
+                workingCopy.rewrite(newArr.getDimensions().get(0), make.Identifier("velikost"));
             }
             
             public void cancel() {
