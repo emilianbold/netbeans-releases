@@ -1027,6 +1027,7 @@ public class JspLexer implements Lexer<JspTokenId> {
         
         switch(lexerState) {
             case INIT:
+            case ISA_BS:
             case ISA_LT:
             case ISA_LT_SLASH:
                 if (input.readLength() == 0) {

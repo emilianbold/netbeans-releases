@@ -708,77 +708,62 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISA_SGML_ESCAPE:
             case ISA_SGML_DASH:
             case ISI_TAG_SLASH:
-                lexerState = INIT;
                 return token(HTMLTokenId.TEXT);
                 
             case ISA_REF:
             case ISA_REF_HASH:
-                lexerState = INIT;
                 if( lexerSubState == ISI_TEXT ) return token(HTMLTokenId.TEXT);
                 else return token(HTMLTokenId.VALUE);
                 
             case ISI_HTML_COMMENT:
             case ISA_HTML_COMMENT_DASH:
             case ISI_HTML_COMMENT_WS:
-                lexerState = INIT;
                 return token(HTMLTokenId.BLOCK_COMMENT);
                 
             case ISI_TAG:
-                lexerState = INIT;
                 return token(HTMLTokenId.TAG_OPEN);
             case ISI_ENDTAG:
-                lexerState = INIT;
                 return token(HTMLTokenId.TAG_CLOSE);
                 
             case ISI_ARG:
-                lexerState = INIT;
                 return token(HTMLTokenId.ARGUMENT);
                 
             case ISI_ERROR:
-                lexerState = INIT;
                 return token(HTMLTokenId.ERROR);
                 
             case ISP_ARG_WS:
             case ISP_TAG_WS:
             case ISP_ENDTAG_WS:
             case ISP_EQ_WS:
-                lexerState = INIT;
                 return token(HTMLTokenId.WS);
                 
             case ISP_ARG_X:
             case ISP_TAG_X:
             case ISP_ENDTAG_X:
             case ISP_EQ:
-                lexerState = INIT;
                 return token(HTMLTokenId.WS);
                 
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
-                lexerState = INIT;
                 return token(HTMLTokenId.VALUE);
                 
             case ISI_SGML_DECL:
             case ISA_SGML_DECL_DASH:
-                lexerState = INIT;
                 return token(HTMLTokenId.DECLARATION);
                 
             case ISI_SGML_COMMENT:
             case ISA_SGML_COMMENT_DASH:
-                lexerState = INIT;
                 return token(HTMLTokenId.SGML_COMMENT);
                 
             case ISI_REF_NAME:
             case ISI_REF_DEC:
             case ISA_REF_X:
             case ISI_REF_HEX:
-                lexerState = INIT;
                 return token(HTMLTokenId.CHARACTER);
             case ISI_SCRIPT_CONTENT:
             case ISI_SCRIPT_CONTENT_ENDTAG:
             case ISI_SCRIPT_CONTENT_AFTER_LT:
-                lexerState = INIT;
-                lexerScriptState = INIT;
                 return token(HTMLTokenId.SCRIPT);
                 
         }
