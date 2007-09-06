@@ -36,15 +36,12 @@ import org.openide.nodes.Node;
     
     private static final boolean showLibs = Boolean.getBoolean("cnd.classview.sys-includes"); // NOI18N
     
-    //private RequestProcessor requestProcessor;
     private ClassViewUpdater updater;
     private ChildrenUpdater childrenUpdater;
     
     public ClassViewModel() {
-        //requestProcessor = new RequestProcessor("Class View Updater", 1); // NOI18N
         updater = new ClassViewUpdater(this);
         childrenUpdater = new ChildrenUpdater();
-        //requestProcessor.post(updater);
         updater.start();
     }
     
@@ -55,7 +52,7 @@ import org.openide.nodes.Node;
         return root;
     }
     
-    protected RootNode createRoot() {
+    private RootNode createRoot() {
         return new RootNode(childrenUpdater);
     }
     
@@ -63,7 +60,7 @@ import org.openide.nodes.Node;
         return showLibs;
     }
     
-    public void openProject(CsmProject project){
+    /*package local*/ void openProject(CsmProject project){
         if( root == null ) { // paranoya
             root = createRoot();
             //return;
@@ -75,9 +72,8 @@ import org.openide.nodes.Node;
         children.openProject(project);
     }
     
-    public void closeProject(CsmProject project){
+    /*package local*/ void closeProject(CsmProject project){
         if( root == null ) { // paranoya
-            //root = createRoot();
             return;
         }
         childrenUpdater.unregister(project);
@@ -85,55 +81,44 @@ import org.openide.nodes.Node;
         children.closeProject(project);
     }
 
-//    public void resetProjects() {
-//        if( root == null ) { // paranoya
-//            root = createRoot();
-//            return;
-//        }
-//        ProjectsKeyArray children = (ProjectsKeyArray)root.getChildren();
-//        children.resetProjects();
-//    }
-    
-    public void scheduleUpdate(CsmChangeEvent e) {
+    /*package local*/ void scheduleUpdate(CsmChangeEvent e) {
         updater.scheduleUpdate(e);
     }
     
     private volatile boolean userActivity = false;
-    public void setUserActivity(boolean active){
+    /*package local*/ void setUserActivity(boolean active){
         userActivity = active;
     }
-    public boolean isUserActivity(){
+    /*package local*/ boolean isUserActivity(){
         return userActivity;
     }
     
-    public void dispose() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace(">>> Dispose model"); // NOI18N
+    /*package local*/ void dispose() {
+        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesM: Dispose model"); // NOI18N
         updater.setStop();
         childrenUpdater.unregister();
         if (root !=null){
             root.destroy();
             root = null;
         }
-        //requestProcessor.stop();
-        //requestProcessor = null;
         updater = null;
         childrenUpdater = null;
     }
     
-    public void update(final SmartChangeEvent e) {
+    /*package local*/ void update(final SmartChangeEvent e) {
         if (childrenUpdater != null) {
             childrenUpdater.update(e);
         }
     }
 
-    Node findDeclaration(CsmOffsetableDeclaration decl) {
+    /*package local*/ Node findDeclaration(CsmOffsetableDeclaration decl) {
         if (root == null) {
             return null;
         }
         ProjectsKeyArray children = (ProjectsKeyArray)root.getChildren();
         CsmFile file = decl.getContainingFile();
         CsmProject project = file.getProject();
-        children.addNotify();
+        children.ensureAddNotify();
         ProjectNode projectNode = (ProjectNode) children.findChild(project.getName());
         if (projectNode == null) {
             return null;

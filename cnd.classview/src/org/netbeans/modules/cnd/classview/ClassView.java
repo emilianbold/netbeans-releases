@@ -28,7 +28,6 @@ import java.beans.PropertyVetoException;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
-import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import java.awt.*;
@@ -39,7 +38,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.*;
-//import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.classview.resources.I18n;
 import org.openide.util.Exceptions;
 
@@ -52,12 +50,8 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
     
     /** composited view */
     protected BeanTreeView view;
-    
     private ClassViewModel model;// = new ClassViewModel();
     private ViewMouseListener mouseListener = new ViewMouseListener();
-    
-    private boolean fillingModel = false;
-    
     private ExplorerManager manager;
     
     private static final boolean TRACE_MODEL_CHANGE_EVENTS = Boolean.getBoolean("cnd.classview.trace.events"); // NOI18N
@@ -66,26 +60,19 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
         setLayout(new BorderLayout());
         //init();
         manager = new ExplorerManager();
-        
         ActionMap map = this.getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
-//        map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
-//        map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
-//        map.put("delete", ExplorerUtils.actionDelete (manager, true)); // or false
-//
-//        // following line tells the top component which lookup should be associated with it
-//        associateLookup (ExplorerUtils.createLookup (manager, map));
-        
         setupRootContext(createEmptyRoot());
     }
 
-    void selectInClasses(final CsmOffsetableDeclaration decl) {
+    /*package local*/ void selectInClasses(final CsmOffsetableDeclaration decl) {
       	CsmModelAccessor.getModel().enqueue(new Runnable() {
 	    public void run() {
 		if (model != null) {
                     Node node = model.findDeclaration(decl);
                     if (node != null) {
                         try {
+                            setUserActivity();
                             getExplorerManager().setSelectedNodes(new Node[]{node});
                         } catch (PropertyVetoException ex) {
                             Exceptions.printStackTrace(ex);
@@ -102,6 +89,8 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
         view.setRootVisible(false);
         view.setDragSource(true);
         add(view, BorderLayout.CENTER);
+        setToolTipText(I18n.getMessage("ClassViewTitle")); // NOI18N
+        setName(I18n.getMessage("ClassViewTooltip")); // NOI18N
     }
     
     /* Read accessible context
@@ -209,19 +198,24 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
         }
     }
     
-    public void startup() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is starting up"); // NOI18N
+    /*package local*/ void startup() {
+        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: startup()"); // NOI18N
         if( model != null ) {
             model.dispose();
         }
         init();
         model = new ClassViewModel();
+        //setupRootContext(CVUtil.createLoadingRoot());
         addRemoveViewListeners(true);
-        startFillingModel();
+        if( CsmModelAccessor.getModel().projects().isEmpty() ) {
+            setupRootContext(createEmptyRoot());
+        } else {
+            setupRootContext(model.getRoot());
+        }
     }
     
-    public void shutdown() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is shutting down"); // NOI18N
+    /*package local*/ void shutdown() {
+        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: shutdown()"); // NOI18N
         addRemoveViewListeners(false);
         if( model != null ) {
             model.dispose();
@@ -239,20 +233,20 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
         return manager;
     }
     
-    public void projectOpened(final CsmProject project) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT OPENED " + project); // NOI18N
-	CsmModelAccessor.getModel().enqueue(new Runnable() {
-	    public void run() {
+    /*package local*/ void projectOpened(final CsmProject project) {
+        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: projectOpened() "+project); // NOI18N
+//	CsmModelAccessor.getModel().enqueue(new Runnable() {
+//	    public void run() {
 		if (model != null) {
 		    model.openProject(project);
 		    setupRootContext(model.getRoot());
 		}
-	    }
-	}, "Class View: creating project node"); // NOI18N
+//	    }
+//	}, "Class View: creating project node"); // NOI18N
     }
     
-    public void projectClosed(CsmProject project) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT CLOSEED " + project); // NOI18N
+    /*package local*/ void projectClosed(CsmProject project) {
+        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: projectClosed() " + project); // NOI18N
         if (model != null && !getExplorerManager().getRootContext().isLeaf()) {
             model.closeProject(project);
             RootNode root = model.getRoot();
@@ -265,49 +259,13 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
         }
     }
     
-    public void modelChanged(CsmChangeEvent e) {
+    /*package local*/ void modelChanged(CsmChangeEvent e) {
         if( TRACE_MODEL_CHANGE_EVENTS ) {
             new CsmTracer().dumpModelChangeEvent(e);
         }
         if (model != null) {
             model.scheduleUpdate(e);
         }
-    }
-    
-    private void startFillingModel() {
-        
-        if( CsmModelAccessor.getModel().projects().isEmpty() ) {
-            return;
-        }
-        
-        synchronized(this) {
-            if( Diagnostic.DEBUG ) Diagnostic.trace("startFillingModel; fillingModel=" + fillingModel + " this.hash=" + this.hashCode()); // NOI18N
-            if( fillingModel ) {
-                if( Diagnostic.DEBUG ) Diagnostic.trace("  already running"); // NOI18N
-                return;
-            }
-            fillingModel = true;
-            if( Diagnostic.DEBUG ) Diagnostic.trace("  fillingModel set to true"); // NOI18N
-        }
-        
-        setupRootContext(CVUtil.createLoadingRoot());
-        // We are in event queue now.
-        // So though Filler.run seems not to be rather light
-        // we better launch it in a thread!
-        ModelFiller filler = new ModelFiller();
-        //filler.run();
-        CsmModelAccessor.getModel().enqueue(filler, "Class View initial filler"); // NOI18N
-        
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//		setupRootContext(CVUtil.createLoadingRoot());
-//                ModelFiller filler = new ModelFiller();
-//                //filler.start();
-//                //RequestProcessor.getDefault().post(filler);
-//                CsmModelAccessor.getModel().enqueue(filler, "Class View");
-//            }
-//        });
-        
     }
     
     private Node createEmptyRoot() {
@@ -317,60 +275,17 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
     // VK: code is copied from org.netbeans.modules.favorites.Tab class
     /** Exchanges deserialized root context to projects root context
      * to keep the uniquennes. */
-    protected void setupRootContext(final Node rc) {
-        try {
-            getExplorerManager().setSelectedNodes(new Node[0]);
-        } catch (PropertyVetoException ex) {
-            ex.printStackTrace();
+    private void setupRootContext(final Node rc) {
+        if (getExplorerManager().getRootContext() != rc){
+            try {
+                getExplorerManager().setSelectedNodes(new Node[0]);
+            } catch (PropertyVetoException ex) {
+                ex.printStackTrace();
+            }
+            if (Diagnostic.DEBUG) Diagnostic.trace("ClassesV: setupRootContext() " + rc); // NOI18N
+            getExplorerManager().setRootContext(rc);
         }
-        getExplorerManager().setRootContext(rc);
-//        try {
-//            getExplorerManager().setSelectedNodes(new Node[0]);
-//        } catch (PropertyVetoException ex) {
-//            ex.printStackTrace();
-//        }
-        if( Diagnostic.DEBUG ) Diagnostic.trace(">>> Setup root context "+rc); // NOI18N
-        //setIcon(rc.getIcon(BeanInfo.ICON_COLOR_16x16));
-        setToolTipText(I18n.getMessage("ClassViewTitle"));	// NOI18N
-        setName(I18n.getMessage("ClassViewTooltip"));	// NOI18N
     }
-    
-    private class ModelFiller /*extends Thread*/ implements Runnable {
-        
-        public ModelFiller() {
-        }
-        
-        public void run() {
-            
-            if( Diagnostic.DEBUG ) Diagnostic.trace("ModelFiller started"); // NOI18N
-            if( model != null ) {
-                if( Diagnostic.DEBUG ) Diagnostic.trace("Dispose old model"); // NOI18N
-                //model.dispose();
-            }
-            if (model == null) {
-                model = new ClassViewModel();
-            }
-            
-            long t = System.currentTimeMillis();
-            final Node root = model.getRoot();
-            
-            t = System.currentTimeMillis() - t;
-            if( Diagnostic.DEBUG ) Diagnostic.trace("#### Model filling took " + t + " ms"); // NOI18N
-            
-            synchronized(ClassView.this) {
-                fillingModel = false;
-                if( Diagnostic.DEBUG ) Diagnostic.trace("fillingModel set to false"); // NOI18N
-            }
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if( Diagnostic.DEBUG ) Diagnostic.trace("setting root context"); // NOI18N
-                    setupRootContext(root);
-                }
-            });
-        }
-        
-    };
     
     private class ViewMouseListener implements MouseListener, MouseMotionListener{
         

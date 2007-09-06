@@ -44,6 +44,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     public ProjectsKeyArray(ChildrenUpdater childrenUpdater){
         this.childrenUpdater = childrenUpdater;
     }
+
     private synchronized void resetKeys(){
         List<java.util.Map.Entry<CsmProject,SortedName>> list =
                 new ArrayList<java.util.Map.Entry<CsmProject,SortedName>>(myProjects.entrySet());
@@ -66,8 +67,12 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     
     private Set<CsmProject> getProjects(){
         Set<CsmProject> projects = new HashSet<CsmProject>();
-        for (Iterator iter = CsmModelAccessor.getModel().projects().iterator(); iter.hasNext(); ) {
-            CsmProject p = (CsmProject) iter.next();
+        for (CsmProject p : CsmModelAccessor.getModel().projects()) {
+            if (ClassViewModel.isShowLibs()) {
+                for(CsmProject lib : p.getLibraries()) {
+                    projects.add(lib);
+                }
+            }
             projects.add(p);
         }
         return projects;
@@ -161,10 +166,15 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         super.destroyNodes(node);
     }
     
+    void ensureAddNotify() {
+        if (myProjects == null){
+            addNotify();
+        }
+    }
     
     @Override
     protected void addNotify() {
-        myProjects = createProjectsMap();
+        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesP: addNotify()"); // NOI18N
         resetProjects();
         super.addNotify();
     }

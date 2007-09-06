@@ -37,7 +37,9 @@ public class SelectInClassesAction extends CookieAction {
         CsmOffsetableDeclaration decl = ContextUtils.getContext(activatedNodes);
         if (decl != null){
             ClassViewTopComponent view = ClassViewTopComponent.findDefault();
-            view.open();
+            if (!view.isOpened()) {
+                view.open();
+            }
             view.requestActive();
             view.selectInClasses(decl);
         }

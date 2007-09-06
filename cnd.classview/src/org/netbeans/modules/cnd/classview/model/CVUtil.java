@@ -49,13 +49,6 @@ public class CVUtil {
         return  NameCache.getString(displayName);
     }
 
-    public static Node createLoadingRoot() {
-        Children.Array children = new Children.SortedArray();
-        children.add(new Node[] { createLoadingNode() });
-        AbstractNode root = new AbstractNode(children);
-        return root;
-    }
-    
     public static Node createLoadingNode() {
         BaseNode node = new LoadingNode();
         return node;
