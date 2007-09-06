@@ -203,15 +203,22 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             // webservice port/method node is even dragged onto the designer 
             // without dropping
             WebServiceDescriptor wsDescriptor = getProxyDescriptorForProject(wsData);
-            DesignerWebServiceExtData data =
-                    (DesignerWebServiceExtData)wsDescriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
-            String beanClassName = data.getPortToProxyBeanNameMap().get(port.getName());
+            String beanClassName = null;
+            
+            if (wsDescriptor != null) {
+                DesignerWebServiceExtData data =
+                        (DesignerWebServiceExtData)wsDescriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
+                beanClassName = data.getPortToProxyBeanNameMap().get(port.getName());
+            }
             
             if (beanClassName != null) {
                 addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), WebServiceLibReferenceHelper.getActiveProject(), wsDescriptor);
+                return beanClassName;
+            }else {
+                return "x";
             }
             
-            return beanClassName;
+            
         }
         
         public Result beanCreatedSetup(DesignBean designBean) {
@@ -262,7 +269,9 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             WebServiceDescriptor wsDescriptor = getProxyDescriptorForProject(wsData);
             String methodSig = null;
             
-            if (wsDescriptor.getWsType() == WebServiceDescriptor.JAX_WS_TYPE) {
+            if (wsDescriptor == null) {
+                return "x";
+            }else if (wsDescriptor.getWsType() == WebServiceDescriptor.JAX_WS_TYPE) {
                 methodSig = Util.getMethodSignatureAsString(new DataProviderModelMethod(javaMethod));
             }else {
                 java.lang.reflect.Method m = Util.getCorrespondingJaxRpcMethod(javaMethod, port.getName(), wsData);
