@@ -209,7 +209,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     e);
         }
     }
-    
+    @Override
+    public boolean allowModifyMode() {
+        return false;
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String WIZARD_COMPONENTS_URI =
