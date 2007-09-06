@@ -26,6 +26,7 @@ import java.util.SortedSet;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
@@ -39,7 +40,6 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     private boolean noBundle;
     private boolean showInPluginManagerCheckboxChanged;
     
-    /** Creates new form CustomizerDisplay */
     CustomizerDisplay(final SingleModuleProperties props, ProjectCustomizer.Category cat) {
         super(props, CustomizerDisplay.class, cat);
         initComponents();
@@ -64,6 +64,14 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         }
         showInPluginManagerCheckbox.setSelected(autoUpdateShowInClient);
         showInPluginManagerCheckboxChanged = false;
+        NbPlatform plaf = getProperties().getActivePlatform();
+        if (plaf != null) {
+            // #110661: only show for new target platforms.
+            // Checking harness version is not enough - a new harness with an old platform should *not* write this attr,
+            showInPluginManagerCheckbox.setVisible(plaf.getModule("org.netbeans.modules.autoupdate.services") != null); // NOI18N
+        } else {
+            // XXX netbeans.org module; harder to check; skip for now and always show checkbox
+        }
     }
     
     private void checkValidity() {
