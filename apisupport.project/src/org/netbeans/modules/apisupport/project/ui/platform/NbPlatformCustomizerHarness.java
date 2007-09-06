@@ -21,12 +21,13 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -48,7 +49,8 @@ public class NbPlatformCustomizerHarness extends JPanel {
             ideButton.setSelected(true);
         } else {
             File harnessLocation = plaf.getHarnessLocation();
-            if (harnessLocation.equals(NbPlatform.getDefaultPlatform().getHarnessLocation())) {
+            NbPlatform dflt = NbPlatform.getDefaultPlatform();
+            if (dflt != null && harnessLocation.equals(dflt.getHarnessLocation())) {
                 ideButton.setSelected(true);
             } else if (harnessLocation.equals(plaf.getBundledHarnessLocation())) {
                 platformButton.setSelected(true);
@@ -189,7 +191,7 @@ public class NbPlatformCustomizerHarness extends JPanel {
             try {
                 plaf.setHarnessLocation(FileUtil.normalizeFile(jfc.getSelectedFile()));
             } catch (IOException e) {
-                Util.err.notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         update();
@@ -200,7 +202,7 @@ public class NbPlatformCustomizerHarness extends JPanel {
         try {
             plaf.setHarnessLocation(FileUtil.normalizeFile(new File(otherText.getText())));
         } catch (IOException e) {
-            Util.err.notify(e);
+            Exceptions.printStackTrace(e);
         }
         update();
     }//GEN-LAST:event_otherButtonActionPerformed
@@ -209,16 +211,22 @@ public class NbPlatformCustomizerHarness extends JPanel {
         try {
             plaf.setHarnessLocation(plaf.getBundledHarnessLocation());
         } catch (IOException e) {
-            Util.err.notify(e);
+            Exceptions.printStackTrace(e);
         }
         update();
     }//GEN-LAST:event_platformButtonActionPerformed
 
     private void ideButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ideButtonActionPerformed
         try {
-            plaf.setHarnessLocation(NbPlatform.getDefaultPlatform().getHarnessLocation());
+            assert plaf != null;
+            NbPlatform dflt = NbPlatform.getDefaultPlatform();
+            if (dflt != null) {
+                plaf.setHarnessLocation(dflt.getHarnessLocation());
+            } else {
+                Logger.getLogger(NbPlatformCustomizerHarness.class.getName()).warning("No default platform found"); // #113233
+            }
         } catch (IOException e) {
-            Util.err.notify(e);
+            Exceptions.printStackTrace(e);
         }
         update();
     }//GEN-LAST:event_ideButtonActionPerformed
