@@ -364,7 +364,8 @@ public class wsdlRepository {
                                     if (bcName != null) {
                                         port2BC.put(p, bcName);
                                     } else {
-                                        task.log("WARNING: Missing WSDL extension plug-in for \"" + bcNs + "\".", 
+                                        task.log("WARNING: Missing WSDL extension plug-in for \"" + bcNs + 
+                                                "\" or missing binding component definition in the config file.", 
                                                 Project.MSG_WARN);
                                     }
                                 }
