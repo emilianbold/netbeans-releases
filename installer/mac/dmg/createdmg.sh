@@ -35,11 +35,11 @@ rm -f $tmpdir/template.sparseimage
 bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > $tmpdir/template.sparseimage
 rm -rf $tmpdir/mountpoint
 mkdir $tmpdir/mountpoint
-hdiutil mount -mountpoint $tmpdir/mountpoint $tmpdir/template.sparseimage
+hdiutil mount -verbose -mountpoint $tmpdir/mountpoint $tmpdir/template.sparseimage
 rsync -a $srcdirs --exclude .DS_Store $tmpdir/mountpoint/
 diskutil rename $tmpdir/mountpoint "$volname"
-hdiutil unmount $tmpdir/mountpoint
+hdiutil unmount -verbose $tmpdir/mountpoint
 rm -f "$dmg"
-hdiutil create -srcdevice $tmpdir/template.sparseimage "$dmg"
+hdiutil create -verbose -srcdevice $tmpdir/template.sparseimage "$dmg"
 rm -f $tmpdir/template.sparseimage
 rmdir $tmpdir/mountpoint
