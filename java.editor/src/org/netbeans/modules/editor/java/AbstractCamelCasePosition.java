@@ -21,10 +21,12 @@ package org.netbeans.modules.editor.java;
 
 import java.awt.event.ActionEvent;
 import java.util.MissingResourceException;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -84,7 +86,10 @@ import org.openide.util.NbBundle;
         return shortDesc;
     }
     
+    
+    
     private boolean isUsingCamelCase() {
-        return !Boolean.getBoolean("no-java-camel-case-style-navigation");
+        Preferences p = NbPreferences.forModule(AbstractCamelCasePosition.class);
+        return p.getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
     }
 }

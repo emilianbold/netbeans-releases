@@ -23,11 +23,15 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 
 public class Model {
@@ -202,7 +206,22 @@ public class Model {
         }
     }
     
+    Boolean isCamelCaseJavaNavigation() {
+        Preferences p = getJavaModulePreferenes();
+        if ( p == null ) {
+            return null;
+        }
+        return p.getBoolean("useCamelCaseStyleNavigation", true) ? Boolean.TRUE : Boolean.FALSE; // NOI18N
+    }
     
+    void setCamelCaseNavigation(boolean value) {
+        Preferences p = getJavaModulePreferenes();
+        if ( p == null ) {
+            return;
+        }
+        p.putBoolean("useCamelCaseStyleNavigation", value); // NOI18N
+    }
+        
     // private helper methods ..................................................
     
     private boolean getFoldingParameter (
@@ -264,6 +283,20 @@ public class Model {
     private static BaseOptions getOptions (String mimeType) {
         return MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
     }
+    
+    private Preferences getJavaModulePreferenes() {
+        try {
+            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+            Class accpClass = cl.loadClass("org.netbeans.modules.editor.java.AbstractCamelCasePosition"); // NOI18N
+            if (accpClass == null) {
+                return null;
+            }
+            return NbPreferences.forModule(accpClass);
+        } catch (ClassNotFoundException ex) {
+            return null;
+        }
+    }
+    
 }
 
 
