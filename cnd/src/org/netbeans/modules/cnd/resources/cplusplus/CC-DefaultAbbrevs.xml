@@ -138,4 +138,6 @@ private:
     <codetemplate abbreviation="co"><code><![CDATA[const ]]></code></codetemplate> 
     <codetemplate abbreviation="wc"><code><![CDATA[wchar_t ]]></code></codetemplate> 
 
+    <codetemplate abbreviation="ns"><code><![CDATA[namespace ]]></code></codetemplate> 
+
 </codetemplates>
