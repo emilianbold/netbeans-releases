@@ -1406,6 +1406,10 @@ public class DiagramTopComponent extends CloneableTopComponent
                     dobj.addSaveCookie();
                     diagDataNode.setDisplayName(mControl.getNameWithAlias());
                     
+                    diagDataNode.setValue(
+                        DiagramDataNode.IMAGE_ICON_ATTR_NAME, 
+                        mControl.getDiagramKind());
+                    
                     diagDataNode.setIconBaseWithExtension(ImageUtil.instance()
                         .getDiagramTypeImageName(mControl.getDiagramKind()));
                     
@@ -1417,7 +1421,11 @@ public class DiagramTopComponent extends CloneableTopComponent
                 {
                     dobj.removeSaveCookie();
                     dobj.setModified(modified);
-                    
+
+                    diagDataNode.setValue(
+                        DiagramDataNode.IMAGE_ICON_ATTR_NAME, 
+                        mControl.getDiagramKind());
+
                     diagDataNode.setIconBaseWithExtension(ImageUtil.instance()
                         .getDiagramTypeImageName(mControl.getDiagramKind()));
                     

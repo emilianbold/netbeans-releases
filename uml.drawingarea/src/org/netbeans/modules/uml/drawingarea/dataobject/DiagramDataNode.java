@@ -48,14 +48,9 @@ public class DiagramDataNode extends DataNode
         IProxyDiagram proxyDiagram = ProxyDiagramManager.instance().getDiagram(
             FileUtil.getFileDisplayName(obj.getPrimaryFile()));
 
-//        setIconBaseWithExtension(ImageUtil.instance()
-//            .getDiagramTypeImageName(0));
-
         setValue(IMAGE_ICON_ATTR_NAME, proxyDiagram.getDiagramKind());
     }
     
-    // TODO: this method does not appeared to be used anywhere, and the param
-    // is not used at all in the method ???
     public Image getIcon(int i)
     {
         String imageFile = ImageUtil.DIAGRAM_ICON_DEFAULT;

@@ -48,7 +48,6 @@ import org.openide.util.NbPreferences;
  */
 public class DiagramDataObject extends MultiDataObject
 {
-    transient private String diagramName = null;
     transient private DiagramEditorSupport diagramEditor;
     transient private OpenViewEdit openViewEdit;
     
