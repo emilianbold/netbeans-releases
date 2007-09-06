@@ -43,7 +43,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     CustomizerDisplay(final SingleModuleProperties props, ProjectCustomizer.Category cat) {
         super(props, CustomizerDisplay.class, cat);
         initComponents();
-        initAccesibility();
+        initAccessibility();
         refresh();
         checkValidity();
     }
@@ -134,14 +134,14 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);
-        if (SingleModuleProperties.NB_PLATFORM_PROPERTY == evt.getPropertyName()) {
+        if (SingleModuleProperties.NB_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
             fillUpCategoryValue();
         }
     }
     
     private String getSelectedCategory() {
         String cat = (String) categoryValue.getSelectedItem();
-        return CustomizerComponentFactory.WAIT_VALUE == cat ? getCategory() : cat;
+        return CustomizerComponentFactory.WAIT_VALUE.equals(cat) ? getCategory() : cat;
     }
     
     /** This method is called from within the constructor to
@@ -284,7 +284,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         return NbBundle.getMessage(CustomizerDisplay.class, key);
     }
     
-    private void initAccesibility() {
+    private void initAccessibility() {
         longDescValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_LongDescValue"));
         nameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_NameValue"));
         shortDescValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ShortDescValue"));
