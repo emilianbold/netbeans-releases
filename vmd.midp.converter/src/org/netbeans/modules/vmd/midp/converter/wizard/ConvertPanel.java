@@ -66,6 +66,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         this.outputDirectory = outputDirectory;
         this.inputFileName.setText (inputPrimaryFile.getName ());
         progress.setIndeterminate(false);
+        progress.setValue(100);
         finishIcon.setVisible (false);
         finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_ShownMessage")); // NOI18N
         startButton.setEnabled(true);
@@ -91,6 +92,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     
     public void switchToFinished () {
         progress.setIndeterminate(false);
+        progress.setValue(100);
         finishIcon.setVisible (true);
         finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_FinishMessage")); // NOI18N
         descriptor.setOptions(new Object[] { finishButton });
@@ -148,11 +150,10 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
 
         outputFileName.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.outputFileName.text")); // NOI18N
 
-        progress.setMaximum(0);
-
         finishMessage.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         finishIcon.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.finishIcon.text")); // NOI18N
+        finishIcon.setPreferredSize(new java.awt.Dimension(16, 16));
 
         message.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.message.text")); // NOI18N
 
@@ -161,27 +162,33 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, progress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(inputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, outputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, finishIcon)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
-                            .add(message, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))))
+                .addContainerGap()
+                .add(finishIcon, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(finishMessage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 454, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(message, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                .addContainerGap(12, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(inputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, outputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE))
+                .addContainerGap(12, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(progress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                .addContainerGap(12, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                .addContainerGap(12, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -200,8 +207,8 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
                 .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(finishIcon)
-                    .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
+                    .add(finishIcon, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(message)
                 .addContainerGap())
