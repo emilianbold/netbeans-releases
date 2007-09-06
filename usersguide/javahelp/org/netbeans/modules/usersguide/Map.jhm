@@ -312,7 +312,7 @@
 
    <!-- Diff: options window help ids -->
    <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/options_diffengine.html" />
-   <!-- <mapID target="org.netbeans.modules.versioning.util.VcsAdvancedOptions" url="configure/options_diffengine.html" /> -->
+   <mapID target="org.netbeans.modules.versioning.util.VcsAdvancedOptions" url="configure/options_versioning.html" />
    
    <mapID target="org.netbeans.core.execution.ProcessNode" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/files_runtime.html" /> 
