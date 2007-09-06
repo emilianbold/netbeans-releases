@@ -213,7 +213,9 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 PortData port = null;
                 if( ports != null && ports.size() > 0 ) port = (PortData)ports.get( 0 ); // Only one port allowed
                 for( Node serviceNode : rootNode.getChildren().getNodes()) {
+                    boolean serviceValid = false;
                     for( Node portNode : serviceNode.getChildren().getNodes()) {
+                        boolean portValid = false;
                         WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
                         if( port != null && !portNode.getName().equals( port.getName())) continue;
                         org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
@@ -235,10 +237,15 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                                 int i = pt.indexOf('<'); //cutting off any generics from the ID
                                 operationId.append(',').append(i > 0 ? pt.substring(0, i) : pt);
                             }
-                            operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, methodIDs.contains(operationId.toString()));
-                            if (cd != null) operationNode.setValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE, selectedIDs.contains(cd.getFullyQualifiedName()+'.'+operationId.toString()) ? MultiStateCheckBox.State.SELECTED : MultiStateCheckBox.State.UNSELECTED);
+                            boolean operationValid = methodIDs.contains(operationId.toString());
+                            operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, operationValid);
+                            if (operationValid && cd != null) operationNode.setValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE, selectedIDs.contains(cd.getFullyQualifiedName()+'.'+operationId.toString()) ? MultiStateCheckBox.State.SELECTED : MultiStateCheckBox.State.UNSELECTED);
+                            portValid = portValid || operationValid;
                         }
+                        portNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, portValid);
+                        serviceValid = serviceValid || portValid;
                     }
+                    serviceNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, serviceValid);
                 }  
                 checkedTreeView.updateTreeNodeStates(null);
             }
