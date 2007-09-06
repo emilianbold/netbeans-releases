@@ -309,16 +309,18 @@ public class ResourceSupport {
                 Object resValue = makeResource0(prop.getValue(), prop);
                 prop.setValue(resValue);
                 // raise form version here - FormProperty won't do since firing is off
-                formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+                formModel.raiseVersionLevel(FormModel.FormVersion.NB60_PRE, FormModel.FormVersion.NB60);
                 if (update) {
                     resValue = prop.getValue(); // makeResource might return ValueWithEditor...
-                    if (resValue instanceof I18nValue)
+                    if (resValue instanceof I18nValue) {
                         getI18nService().update(null, (I18nValue) resValue,
                                 getSrcDataObject(), getI18nBundleName(), designLocale,
                                 true);
-                    else if (resValue instanceof ResourceValue)
+                    } else if (resValue instanceof ResourceValue) {
                         getResourceService().update(null, (ResourceValue) resValue,
                                                     getSourceFile(), designLocale);
+                        formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
+                    }
                 }
                 // otherwise update will be triggered by component addition
                 // (called when copying a component)

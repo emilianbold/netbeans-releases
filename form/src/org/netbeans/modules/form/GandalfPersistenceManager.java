@@ -2954,6 +2954,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if ((comp == formModel.getTopRADComponent() && (name.startsWith(FORM_SETTINGS_PREFIX)))) {
                 String settingName = name.substring(FORM_SETTINGS_PREFIX.length());
                 formModel.getSettings().set(settingName, value);
+                // hack: if loading from updated 5.5 or early 6.0, the version
+                // might be 1.3 even if using auto i18n, which should be 1.4
+                if ("FormSettings_i18nAutoMode".equals(settingName) && Boolean.TRUE.equals(value)) { // NOI18N
+                    formModel.raiseVersionLevel(FormModel.FormVersion.NB60_PRE, FormModel.FormVersion.NB60_PRE);
+                }
             } else {
                 // we have a valid name / value pair
                 comp.setAuxValue(name, value);
