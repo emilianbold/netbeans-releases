@@ -25,36 +25,11 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="../appsrvbridge" target="jar" inheritall="false"/>
         <mkdir dir="${cluster}/modules/ext"/>
         <copy file="../appsrvbridge/dist/appsrvbridge.jar" todir="${cluster}/modules/ext"/>
-        <mkdir dir="${cluster}/ant/nblib"/>
-        <copy file="external/org-netbeans-modules-j2ee-sun-appsrv81.jar" todir="${cluster}/ant/nblib"/>
     </target>
 
     <target name="javahelp" depends="init">
         <antcall target="projectized.javahelp"/>
         <delete dir="javahelp/com"/>
-    </target>
-
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <property name="nbm.target.cluster" value=""/> <!-- fallback -->        
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}"
-                 global="${nbm.is.global}"
-                 targetcluster="${nbm.target.cluster}">
-            <license>
-                <text>For the integration module:</text>
-                <file location="${license.file}"/>
-                <text>For the Persistence UI implementation and documentation:</text>
-                <file location="../../external/appsrv81license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
     </target>
 
     <target name="clean" depends="projectized-common.clean">
