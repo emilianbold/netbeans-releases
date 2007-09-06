@@ -131,7 +131,6 @@ Microsystems, Inc. All Rights Reserved.
             </not>
         </condition>
     </fail>
-    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
     <taskdef name="getdependsclusters" classname="org.netbeans.nbbuild.GetDependsClusters" classpath="nbantext.jar"/>
@@ -1008,7 +1007,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="build/antclasses"/>
   </target>
 
-    <target name="-define-cvsfileset" depends="init">
+    <target name="-define-cvsfileset" depends="bootstrap">
         <typedef name="cvsfileset" classname="org.netbeans.nbbuild.CvsFileSet" classpath="nbantext.jar"/>
         <!-- To make sure CvsFileSet$Mode.class is also loaded before nbantext.jar is deleted: -->
         <cvsfileset dir="dummy" mode="controlled"/>
@@ -1047,7 +1046,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </delete>
   </target>
 
-  <target name="localclean" depends="clean-cluster-flags,init">
+  <target name="localclean" depends="clean-cluster-flags">
     <delete dir="${test.user.dir}"/>
     <delete dir="build"/>
     <delete file="moduledefs-tmp.properties"/>
@@ -1114,7 +1113,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </ant>
   </target>
 
-  <target name="cleanall" depends="init">
+  <target name="cleanall" depends="init-module-list">
+    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <cleanall topdir=".." 
               modules="${allmodules}" 
               targetname="clean"
@@ -1123,7 +1123,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               failonerror="${stop.when.clean.error}" />
   </target>
 
-  <target name="clean" depends="init,cleanall,localclean"
+  <target name="clean" depends="cleanall,localclean"
           description="Clean out (almost) all build products.">
     <echo message="Run `ant real-clean' if desired."/>
   </target>
