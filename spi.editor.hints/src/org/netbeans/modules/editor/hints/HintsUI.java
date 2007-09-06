@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -366,8 +366,13 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
             }
             
             if (f != null) {
+                e.consume();
                 JTextComponent c = this.comp;
                 invokeHint (f);
+                if (c != null && org.openide.util.Utilities.isMac()) {
+                    // see issue #65326
+                    c.requestFocus();
+                }
                 setHints (null, null, false);
                 //the component was reset when setHints was called, set it back so further hints will work:
                 setComponent(c);
