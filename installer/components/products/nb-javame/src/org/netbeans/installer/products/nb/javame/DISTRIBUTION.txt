@@ -2,7 +2,7 @@ DistributionREADME for components identified below covered under the
 Sun Microsystems, Inc. ("Sun") SOFTWARE LICENSE AGREEMENT.
 
 Software:
--J2ME Wireless Toolkit (J2ME WTK)
+-Sun Java Wireless Toolkit 2.5.2 for CLDC (SJWTK)
 -SVG Renderer Library
 
 Subject to the terms and conditions of the Software License Agreement
@@ -30,7 +30,7 @@ from the use or distribution of any and all Programs and/or Software.
 
 Software specific restrictions:
 
-(i) Redistribution of J2ME Wireless Toolkit (J2ME WTK) requires that You 
-have a valid agreement with Sun authorizing the commercial 
-redistribution of the J2ME WTK.
+(i) Redistribution of Sun Java Wireless Toolkit 2.5.2 for CLDC (SJWTK) 
+requires that You have a valid agreement with Sun authorizing the commercial 
+redistribution of the SJWTK.
 
