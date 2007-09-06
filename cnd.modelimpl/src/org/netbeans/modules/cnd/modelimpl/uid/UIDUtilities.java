@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -55,11 +56,11 @@ public class UIDUtilities {
     private UIDUtilities() {
     }
  
-    public static CsmUID<CsmProject> createProjectUID(CsmProject prj) {
+    public static CsmUID<CsmProject> createProjectUID(ProjectBase prj) {
         return UIDManager.instance().getSharedUID(new ProjectUID(prj));
     } 
     
-    public static CsmUID<CsmFile> createFileUID(CsmFile file) {
+    public static CsmUID<CsmFile> createFileUID(FileImpl file) {
         return UIDManager.instance().getSharedUID(new FileUID(file));
     } 
 
@@ -124,7 +125,7 @@ public class UIDUtilities {
      * UID for CsmProject
      */
     /* package */ static final class ProjectUID extends KeyBasedUID<CsmProject> {
-        public ProjectUID(CsmProject project) {
+        public ProjectUID(ProjectBase project) {
             super(KeyUtilities.createProjectKey(project));
         }
         
@@ -150,7 +151,7 @@ public class UIDUtilities {
      * UID for CsmFile
      */
     /* package */ static final class FileUID extends KeyBasedUID<CsmFile> {
-        public FileUID(CsmFile file) {
+        public FileUID(FileImpl file) {
             super(KeyUtilities.createFileKey(file));
         }
         

@@ -23,6 +23,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -34,12 +35,12 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 /*package*/
 final class ProjectKey extends ProjectNameBasedKey {
     
-    public ProjectKey(CsmProject project) {
+    public ProjectKey(ProjectBase project) {
 	super(project.getUniqueName());
     }
     
-    public ProjectKey(String projectQualifiedName) {
-	super(projectQualifiedName);
+    public ProjectKey(String projectUniqueName) {
+	super(projectUniqueName);
     }
     
     /*package*/ ProjectKey(DataInput aStream) throws IOException {

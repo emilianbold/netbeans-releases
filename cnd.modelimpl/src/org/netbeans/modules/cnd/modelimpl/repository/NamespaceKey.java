@@ -23,8 +23,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
@@ -41,7 +41,7 @@ final class NamespaceKey extends ProjectNameBasedKey {
     }
     
     private static String getProjectName(CsmNamespace ns) {
-	CsmProject prj = ns.getProject();
+	ProjectBase prj = (ProjectBase) ns.getProject();
 	assert (prj != null) : "no project in namespace";
 	return prj == null ? "<No Project Name>" : prj.getUniqueName();  // NOI18N
     }

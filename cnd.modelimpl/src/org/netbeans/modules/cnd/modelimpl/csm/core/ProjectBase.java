@@ -97,7 +97,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     private void init(ModelImpl model, Object platformProject) {
         this.model = model;
         this.platformProject = platformProject;
-        this.fqn = null;
         if (TraceFlags.USE_REPOSITORY) {
             // remember in repository
             RepositoryUtils.hang(this);
@@ -129,7 +128,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
         
         assert TraceFlags.PERSISTENT_REPOSITORY;
-        String qName = getQualifiedName(platformProject);
+        String qName = getUniqueName(platformProject);
         Key key = KeyUtilities.createProjectKey(qName);
         RepositoryUtils.openUnit(key);
         Persistent o = RepositoryUtils.get(key);
@@ -162,13 +161,11 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         this.name = name;
     }
     
-    public String getQualifiedName() {
-        if (this.fqn == null) {
-            this.fqn = getQualifiedName(getPlatformProject());
-        }
-        return this.fqn;
-    }
-
+    /**
+     * Returns a string that uniquely identifies this project.
+     * One should never rely on this name structure, 
+     * just use it as in unique identifier
+     */
     public String getUniqueName() {
         if (this.uniqueName == null) {
             this.uniqueName = getUniqueName(getPlatformProject());
@@ -216,7 +213,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     /** Gets an object, which represents correspondent IDE project */
     protected void setPlatformProject(Object platformProject) {
         this.platformProject = platformProject;
-        this.fqn = null;
+        this.uniqueName = null;
     }
     
     /** Finds namespace by its qualified name */
@@ -1584,7 +1581,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     //private Object disposeLock = new Object();
     private ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     
-    private String fqn = null; // lazy inited
     private String uniqueName = null; // lazy initialized
     
     // only one of namespaces/namespacesOLD must be used (based on USE_REPOSITORY)
@@ -1642,7 +1638,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         ProjectComponent.writeKey(declarationsSorageKey, aStream);
         ProjectComponent.writeKey(graphStorageKey, aStream);
 	
-	PersistentUtils.writeUTF(this.fqn, aStream);
+	PersistentUtils.writeUTF(this.uniqueName, aStream);
     }
     
     protected ProjectBase(DataInput aStream) throws IOException {
@@ -1673,8 +1669,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         graphStorageKey = ProjectComponent.readKey(aStream);
 	assert graphStorageKey != null : "graphStorageKey can not be null";
 	
-	this.fqn = PersistentUtils.readUTF(aStream);
-	assert fqn != null : "fqn can not be null";
+	this.uniqueName = PersistentUtils.readUTF(aStream);
+	assert uniqueName != null : "uniqueName can not be null";
         
         this.model = (ModelImpl) CsmModelAccessor.getModel();
         

@@ -24,6 +24,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
  * A common ancestor for keys 
@@ -41,13 +43,13 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
 	this.fileNameIndex = KeyUtilities.getFileIdByName(unitIndex, fileName);
     }
     
-    protected ProjectFileNameBasedKey(CsmFile file) {
+    protected ProjectFileNameBasedKey(FileImpl file) {
 	this(getProjectName(file), file.getAbsolutePath());
     }
     
-    protected static String getProjectName(CsmFile file) {
+    protected static String getProjectName(FileImpl file) {
 	assert (file != null);
-	CsmProject prj = file.getProject();
+	ProjectBase prj = file.getProjectImpl();
 	assert (prj != null);
 	return prj == null ? "<No Project Name>" : prj.getUniqueName();  // NOI18N
     }

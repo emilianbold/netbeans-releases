@@ -25,7 +25,7 @@ import java.util.Collection;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQualifiedNamedElement, CsmValidable {
+public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmNamedElement, CsmValidable {
 
     CsmNamespace getGlobalNamespace();
     
@@ -104,10 +104,4 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
      */
     boolean isArtificial();
 
-    /**
-     * Returns a string that uniquely identifies this project.
-     * One should never rely on this name structure, 
-     * just use it as in unique identifier
-     */
-    String getUniqueName();
 }

@@ -24,7 +24,9 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -40,7 +42,7 @@ public class KeyUtilities {
     ////////////////////////////////////////////////////////////////////////////
     // key generators
     
-    public static Key createFileKey(CsmFile file) {
+    public static Key createFileKey(FileImpl file) {
         return new FileKey(file);
     }
     
@@ -48,7 +50,7 @@ public class KeyUtilities {
         return new NamespaceKey(ns);
     }
     
-    public static Key createProjectKey(CsmProject project) {
+    public static Key createProjectKey(ProjectBase project) {
         return new ProjectKey(project);
     }
     

@@ -23,12 +23,13 @@ import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /*package*/
 final class FileKey extends ProjectFileNameBasedKey {
     
-    public FileKey(CsmFile file) {
+    public FileKey(FileImpl file) {
 	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
     }
     

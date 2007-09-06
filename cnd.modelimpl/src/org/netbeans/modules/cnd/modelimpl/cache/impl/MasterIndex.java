@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
  
 /** implementation of master index file
@@ -75,7 +76,7 @@ final class MasterIndex extends AbstractCacheIndex implements Serializable {
     // index map content support
     
     protected String getIndexKey(Object obj) {
-        return ((CsmProject) obj).getUniqueName();
+        return ((ProjectBase) obj).getUniqueName();
     }  
 
     protected String getBaseCacheName(Object obj) {

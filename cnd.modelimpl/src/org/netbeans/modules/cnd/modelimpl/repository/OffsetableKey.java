@@ -24,6 +24,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 
 /**
@@ -40,7 +41,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     private final String name;
     
     protected OffsetableKey(CsmOffsetable obj, String kind, String name) {
-	super(obj.getContainingFile());
+	super((FileImpl) obj.getContainingFile());
 	this.startOffset = obj.getStartOffset();
 	this.endOffset = obj.getEndOffset();
 	this.kind = kind;
