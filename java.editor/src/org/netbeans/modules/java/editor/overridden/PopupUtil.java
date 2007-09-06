@@ -86,6 +86,15 @@ public final class PopupUtil  {
         popupWindow.setUndecorated(undecorated);
         popupWindow.getRootPane().getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put( ESC_KEY_STROKE, CLOSE_KEY );
         popupWindow.getRootPane().getActionMap().put( CLOSE_KEY, CLOSE_ACTION );
+	
+	//set a11y
+	String a11yName = content.getAccessibleContext().getAccessibleName();
+	if(a11yName != null && !a11yName.equals(""))
+	    popupWindow.getAccessibleContext().setAccessibleName(a11yName);
+	String a11yDesc = content.getAccessibleContext().getAccessibleDescription();
+	if(a11yDesc != null && !a11yDesc.equals(""))
+	    popupWindow.getAccessibleContext().setAccessibleDescription(a11yDesc);
+	    
         if ( title != null ) {
             // popupWindow.setTitle( title );
         }
