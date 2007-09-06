@@ -79,24 +79,30 @@ public class FastOpenInfoParser {
         try {
             if(wm != null && wm.getDocumentBase() != null && useEditor) return null; //better let the parser do it
             
-            //if there is not wemodule detect the encoding from the file only
+            //if there isn't a webmodule detect the encoding from the file only
             if(wm != null) {
                 //find deployment descriptor
                 FileObject documentBase = wm.getDocumentBase();
                 if(documentBase != null) {
-                    FileObject dd = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(documentBase).getWebInf().getFileObject("web.xml"); //NOI18N
-                    
-                    //test whether the DD exists, if not parse the JSP file
-                    if(dd != null) {
-                        //parse the DD and try to find <jsp-property-group> element with <page-encoding> and <is-xml> elements
-                        DDParseInfo ddParseInfo = parse(new InputSource(dd.getInputStream())); //parse with default encoding
-                        
-                        //if the DD defines encoding or marks jsps as xml documents return null
-                        if(ddParseInfo.definesEncoding || ddParseInfo.marksXMLDocuments) return null;
+                    org.netbeans.modules.web.api.webmodule.WebModule wmod = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(documentBase);
+                    if (wmod != null) { //can be null if the document out of any webmodule
+                        FileObject webinf = wmod.getWebInf();
+                        if (webinf != null) { //there might not be WEB-INF folder in the webmodule
+                            FileObject dd = webinf.getFileObject("web.xml"); //NOI18N
+                            //test whether the DD exists, if not parse the JSP file
+                            if (dd != null) {
+                                //parse the DD and try to find <jsp-property-group> element with <page-encoding> and <is-xml> elements
+                                DDParseInfo ddParseInfo = parse(new InputSource(dd.getInputStream())); //parse with default encoding
+                                //if the DD defines encoding or marks jsps as xml documents return null
+                                if (ddParseInfo.definesEncoding || ddParseInfo.marksXMLDocuments) {
+                                    return null;
+                                }
+                            }
+                        }
                     }
                 }
             }
-            
+
             String enc = null;
             
             //get encoding from the disk file if webmodule is null and useEditor is true (during file save)
