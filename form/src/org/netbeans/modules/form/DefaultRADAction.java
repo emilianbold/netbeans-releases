@@ -71,18 +71,15 @@ public class DefaultRADAction extends CookieAction {
      * @param activatedNodes the set of activated nodes
      * @return <code>true</code> to enable
      */
-//    protected boolean enable(Node[] activatedNodes) {
-//        if (activatedNodes.length == 0)
-//            return false;
-//
-//        RADComponentCookie radCookie = (RADComponentCookie)
-//            activatedNodes[0].getCookie(RADComponentCookie.class);
-//        if (radCookie == null)
-//            return false;
-//
-//        RADComponent comp = radCookie.getRADComponent();
-//        return comp.hasDefaultEvent();
-//    }
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length == 1) {
+            RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
+            if (radCookie != null) {
+                return radCookie.getRADComponent().getDefaultEvent() != null;
+            }
+        }
+        return false;
+    }
 
     /**
      * Standard perform action extended by actually activated nodes.
@@ -90,17 +87,11 @@ public class DefaultRADAction extends CookieAction {
      * @param activatedNodes gives array of actually activated nodes.
      */
     protected void performAction(Node[] activatedNodes) {
-        if (activatedNodes.length == 0)
-            return;
-
-        RADComponentCookie radCookie = (RADComponentCookie)
-            activatedNodes[0].getCookie(RADComponentCookie.class);
-        if (radCookie == null)
-            return;
-
-//        RADComponent comp = radCookie.getRADComponent();
-//        if (comp.hasDefaultEvent())
-//            comp.attachDefaultEvent();
-        radCookie.getRADComponent().attachDefaultEvent();
+        if (activatedNodes != null && activatedNodes.length == 1) {
+            RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
+            if (radCookie != null) {
+                radCookie.getRADComponent().attachDefaultEvent();
+            }
+        }
     }
 }

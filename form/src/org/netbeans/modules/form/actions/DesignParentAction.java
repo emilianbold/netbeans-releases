@@ -24,7 +24,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Vector;
 import javax.swing.*;
 
 import org.openide.util.HelpCtx;
@@ -33,12 +32,12 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.*;
-import org.openide.util.SharedClassObject;
 
 /**
  * Class used to represent the parent hierarchy of a single selected component in
  * the UI editor. This allows the user to quickly jump to editing a parent without
  * having to move their mouse to the inspector window and perform an action.
+ * 
  * @author Wade Chandler
  */
 
@@ -49,7 +48,19 @@ public class DesignParentAction extends NodeAction {
         if (nodes != null && nodes.length == 1){
             RADComponentCookie radCookie = nodes[0].getCookie(RADComponentCookie.class);
             RADComponent comp = (radCookie != null) ? radCookie.getRADComponent() : null;
-            ret = (comp != null) && isParentEditableComponent(comp);
+            if (comp != null && isParentEditableComponent(comp)) {
+                FormDesigner designer = getDesigner(comp);
+                if (designer != null) {
+                    RADVisualComponent designed = designer.getTopDesignComponent();
+                    if (comp == designed
+                        || (designed != null && designed.isParentComponent(comp)
+                            && isParentEditableComponent(comp.getParentComponent()))) {
+                        ret = true;
+                        // the component must be in the designed tree and have
+                        // some designable parent that is not designed at this moment
+                    }
+                }
+            }
         }
         return ret;
     }
@@ -67,6 +78,22 @@ public class DesignParentAction extends NodeAction {
         return false;
     }
 
+    protected void performAction(Node[] activatedNodes) {
+    }
+
+    static void reenable(Node[] nodes) {
+        SystemAction.get(DesignParentAction.class).reenable0(nodes);
+    }
+
+    private void reenable0(Node[] nodes) {
+        setEnabled(enable(nodes));
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
     public String getName() {
         return NbBundle.getMessage(DesignParentAction.class, "ACT_DesignParentAction"); // NOI18N
     }
@@ -74,8 +101,6 @@ public class DesignParentAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
-    protected void performAction(Node[] activatedNodes) { }
     
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
@@ -162,6 +187,14 @@ public class DesignParentAction extends NodeAction {
             if (designer != null) {
                 designer.setTopDesignComponent((RADVisualComponent)lc, true);
                 designer.requestActive();
+
+                // NodeAction is quite unreliable in enabling, do it ourselves for sure
+                Node[] n = new Node[] { lc.getNodeReference() };
+                if (n[0] != null) {
+                    EditContainerAction.reenable(n);
+                    DesignParentAction.reenable(n);
+                    EditFormAction.reenable(n);
+                }
             }
         }
     }

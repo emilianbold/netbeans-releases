@@ -945,23 +945,26 @@ public class RADComponent {
     // ---------
     // events
 
-    void attachDefaultEvent() {
-        Event event = null;
-
+    Event getDefaultEvent() {
         int eventIndex = getBeanInfo().getDefaultEventIndex();
-        if (eventIndex < getEventProperties().length && eventIndex >= 0)
-            event = eventProperties[eventIndex].getEvent();
-        else
+        if (eventIndex < getEventProperties().length && eventIndex >= 0) {
+            return eventProperties[eventIndex].getEvent();
+        } else {
             for (int i=0; i < eventProperties.length; i++) {
                 Event e = eventProperties[i].getEvent();
                 if ("actionPerformed".equals(e.getListenerMethod().getName())) { // NOI18N
-                    event = e;
-                    break;
+                    return e;
                 }
             }
+        }
+        return null;
+    }
 
-        if (event != null)
+    void attachDefaultEvent() {
+        Event event = getDefaultEvent();
+        if (event != null) {
             getFormModel().getFormEvents().attachEvent(event, null, null);
+        }
     }
 
     // -----------------------------------------------------------------------------

@@ -757,19 +757,18 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
              else return false;
         }
 
-        formDesigner.startInPlaceEditing(metacomp);
+        Node node = metacomp.getNodeReference();
+        if (node != null) {
+            Action action = node.getPreferredAction();
+            if (action != null) {// && action.isEnabled()) {
+                action.actionPerformed(new ActionEvent(
+                        node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                prevLeftMousePoint = null; // to prevent inplace editing on mouse release
+                return true;
+            }
+        }
 
-        // [perhaps we should remove the default action from node completely]
-//        Node node = metacomp.getNodeReference();
-//        if (node != null) {
-//            Action action = node.getPreferredAction();
-//            if (action != null) {// && action.isEnabled()) {
-//                action.actionPerformed(new ActionEvent(
-//                        node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-//            }
-//        }
-
-        return true;
+        return false;
     }
 
     private void processMouseClickInLayoutSupport(RADComponent metacomp,
@@ -1477,8 +1476,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     dispatchToNonVisualTray(e);
                 }
                 else if (prevLeftMousePoint != null
-                         && e.getClickCount() == 1
-                         && prevLeftMousePoint.distance(e.getPoint()) <= 2
+                         && prevLeftMousePoint.distance(e.getPoint()) <= 3
                          && !modifier)
                 {   // second click on the same place in a component
                     RADComponent metacomp = getMetaComponentAt(e.getPoint(), COMP_SELECTED);

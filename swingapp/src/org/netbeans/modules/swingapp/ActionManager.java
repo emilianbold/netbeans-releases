@@ -50,6 +50,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -60,6 +62,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -306,29 +309,41 @@ public class ActionManager {
             }.execute();
 
             int position = result.intValue();
-            DataObject dobj = DataObject.find(sourceFile);
-            EditorCookie editorCookie = (EditorCookie) dobj.getCookie(EditorCookie.class);
-            // make sure the document is opened
-            if(editorCookie.getDocument() == null) {
-                editorCookie.openDocument();
-            }
-            // make sure the editor window is open
-            editorCookie.open();
-            
             Line lineObj = null;
+            EditorCookie editorCookie = DataObject.find(sourceFile).getCookie(EditorCookie.class);
             if (editorCookie != null) {
+                // make sure the document is opened
+                if(editorCookie.getDocument() == null) {
+                    editorCookie.openDocument();
+                }
+                // make sure the editor window is open
+                editorCookie.open();
+
+                StyledDocument doc = editorCookie.getDocument();
+                String sub = doc.getText(position, doc.getLength()-position);
+                int i = sub.indexOf('{');
+                if (i >= 0) {
+                    while (++i < sub.length()) {
+                        if (sub.charAt(i) > ' ') {
+                            position += i; // first non-white char after opening brace
+                            break;
+                        }
+                    }
+                }
+            
                 Line.Set lineSet = editorCookie.getLineSet();
-                int line = editorCookie.getDocument().getParagraphElement(0).getParentElement().getElementIndex(position);
+                int line = doc.getParagraphElement(0).getParentElement().getElementIndex(position);
                 lineObj = lineSet.getCurrent(line);
             }
+
             if (lineObj == null) {
                 p("the line is still null"); //log
                 Toolkit.getDefaultToolkit().beep();
             } else {
                 lineObj.show(Line.SHOW_GOTO);
             }
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(ActionMethodTask.class.getName()).log(Level.INFO, null, ex);
         }
     }
 

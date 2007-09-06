@@ -133,13 +133,18 @@ public class RADComponentNode extends FormNode
 
     @Override
     public Action getPreferredAction() {
-        if (EditContainerAction.isEditableComponent(component)) {
-            return SystemAction.get(EditContainerAction.class);
+        FormEditor formEditor = FormEditor.getFormEditor(component.getFormModel());
+        if (formEditor == null) {
+            return null;
         }
-        //        if (component.getEventHandlers().getDefaultEvent() != null)
-        return SystemAction.get(DefaultRADAction.class);
-        
-        //        return null;
+
+        for (Action action : formEditor.getDefaultComponentActions()) {
+            if (action.isEnabled()) {
+                return action;
+            }
+        }
+
+        return null;
     }
 
     @Override

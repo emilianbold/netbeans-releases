@@ -28,6 +28,8 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import org.netbeans.api.editor.guards.SimpleSection;
+import org.netbeans.modules.form.actions.EditContainerAction;
+import org.netbeans.modules.form.actions.EditFormAction;
 import org.netbeans.modules.form.assistant.AssistantModel;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
@@ -39,6 +41,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.windows.*;
+import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
@@ -101,6 +104,9 @@ public class FormEditor {
     
     // listeners
     private FormModelListener formListener;
+
+    /** List of actions that are tried when a component is double-clicked. */
+    private List<Action> defaultActions;
 
     /** Indicates that a task has been posted to ask the user about format
      * upgrade - not to show the confirmation dialog multiple times.
@@ -1069,6 +1075,35 @@ public class FormEditor {
     public void unregisterFloatingWindow(java.awt.Window window) {
         if (floatingWindows != null)
             floatingWindows.remove(window);
+    }
+
+    public void registerDefaultComponentAction(Action action) {
+        if (defaultActions == null) {
+            createDefaultComponentActionsList();
+        } else {
+            defaultActions.remove(action);
+        }
+        defaultActions.add(0, action);
+    }
+
+    public void unregisterDefaultComponentAction(Action action) {
+        if (defaultActions != null) {
+            defaultActions.remove(action);
+        }
+    }
+
+    private void createDefaultComponentActionsList() {
+        defaultActions = new LinkedList<Action>();
+        defaultActions.add(SystemAction.get(EditContainerAction.class));
+        defaultActions.add(SystemAction.get(EditFormAction.class));
+        defaultActions.add(SystemAction.get(DefaultRADAction.class));
+    }
+
+    Collection<Action> getDefaultComponentActions() {
+        if (defaultActions == null) {
+            createDefaultComponentActionsList();
+        }
+        return Collections.unmodifiableList(defaultActions);
     }
 
     /**

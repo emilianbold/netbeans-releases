@@ -34,30 +34,32 @@ public class EditContainerAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
-            RADComponentCookie radCookie = (RADComponentCookie)activatedNodes[0]
-                                            .getCookie(RADComponentCookie.class);
-            RADComponent metacomp = radCookie == null ? null :
-                                      radCookie.getRADComponent();
+            RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
+            RADComponent metacomp = (radCookie != null) ? radCookie.getRADComponent() : null;
             if (isEditableComponent(metacomp)) {
                 FormDesigner designer = FormEditor.getFormDesigner(metacomp.getFormModel());
                 if (designer != null) {
                     designer.setTopDesignComponent((RADVisualComponent)metacomp, true);
                     designer.requestActive();
+
+                    // same node keeps selected, but the state changed
+                    reenable0(activatedNodes);
+                    DesignParentAction.reenable(activatedNodes);
+                    EditFormAction.reenable(activatedNodes);
                 }
             }
         }
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
-            RADComponentCookie radCookie = (RADComponentCookie)activatedNodes[0]
-                                            .getCookie(RADComponentCookie.class);
-            RADComponent metacomp = radCookie == null ? null :
-                                      radCookie.getRADComponent();
+            RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
+            RADComponent metacomp = (radCookie != null) ? radCookie.getRADComponent() : null;
             if (isEditableComponent(metacomp)) {
                 FormDesigner designer = FormEditor.getFormDesigner(metacomp.getFormModel());
                 if (designer != null && metacomp != designer.getTopDesignComponent()) {
@@ -66,6 +68,14 @@ public class EditContainerAction extends NodeAction {
             }
         }
         return false;
+    }
+
+    static void reenable(Node[] nodes) {
+        SystemAction.get(EditContainerAction.class).reenable0(nodes);
+    }
+
+    private void reenable0(Node[] nodes) {
+        setEnabled(enable(nodes));
     }
 
     public String getName() {

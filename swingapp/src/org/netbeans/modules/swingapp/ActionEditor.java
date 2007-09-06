@@ -72,7 +72,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     private FileObject sourceFile;
     // disabled for 6.0 release: private String NEW_ACTION = "Create new action...";
     private String GLOBAL_SUFFIX = "(global)";
-
+    private static Action jumpToSourceAction;
     
     /** Creates a new instance of ActionEditor */
     public ActionEditor(FileObject sourceFile) {
@@ -124,6 +124,13 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         this.formProperty = (RADProperty)property;
         this.radComponent = formProperty.getRADComponent();
         this.componentClass = formProperty.getRADComponent().getBeanInstance().getClass();
+        FormEditor formEditor = FormEditor.getFormEditor(formModel);
+        if (formEditor != null) {
+            if (jumpToSourceAction == null) {
+                jumpToSourceAction = new JumpToOrCreateNewAction();
+            }
+            formEditor.registerDefaultComponentAction(jumpToSourceAction);
+        }
     }
 
     // FormAwareEditor impl
@@ -270,7 +277,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             ActionManager.getActionManager(getSourceFile()).removeRADComponent(oldAction, radComponent);
         }
     }
-    
+
     
     // property editor impl
     public String[] getTags() {
