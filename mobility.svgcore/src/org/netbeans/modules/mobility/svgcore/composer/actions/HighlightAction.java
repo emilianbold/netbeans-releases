@@ -13,8 +13,8 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.Graphics;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerActionFactory;
@@ -29,7 +29,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *
  * @author Pavel Benes
  */
-public class HighlightAction extends AbstractComposerAction {
+public final class HighlightAction extends AbstractComposerAction {
     private final SVGObject m_highlighted;
 
     public HighlightAction(ComposerActionFactory factory, SVGObject highlighted) {
@@ -40,7 +40,7 @@ public class HighlightAction extends AbstractComposerAction {
         m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
     }
 
-    public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
+    public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
         SceneManager sceneMgr = m_factory.getSceneManager();
         assert sceneMgr.containsAction(HighlightAction.class);
  
@@ -60,7 +60,7 @@ public class HighlightAction extends AbstractComposerAction {
         return false;
     }
 
-    public void paint(Graphics g, int x, int y) {
+    public void paint(Graphics g, int x, int y, boolean isReadOnly) {
         if (!m_highlighted.isDeleted()) {
             if (getScreenManager().getHighlightObject()) {
                 m_highlighted.getOutline().highlight(g, x, y);

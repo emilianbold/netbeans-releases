@@ -16,30 +16,50 @@
 
 package org.netbeans.modules.mobility.svgcore.view.svg;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.util.MissingResourceException;
+import javax.swing.ImageIcon;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Pavel Benes
  */
 public abstract class AbstractSVGToggleAction extends AbstractSVGAction {
-    protected final String  m_label1;
-    protected final String  m_hint1;
-    protected       boolean m_on;
+    private static final String RES_NAME_SUFFIX = "1_"; //NOI18N
     
+    protected final String    m_label1;
+    protected final String    m_hint1;
+    protected final ImageIcon m_icon1;
+    protected       boolean   m_on;
+
     public AbstractSVGToggleAction(String name) {
-        super(name);
+        this(name, true);
+    }
+    
+    public AbstractSVGToggleAction(String name, boolean enabled) {
+        super(name, enabled);
         m_on = true;
-        m_label1 = getMessage(LBL_ID_PREFIX + "1_" + name); //NOI18N
+        m_label1 = getMessage(LBL_ID_PREFIX + RES_NAME_SUFFIX + name); 
         
         String hint;
         try {
-            hint = getMessage(HINT_ID_PREFIX + "1_" + name); //NOI18N
+            hint = getMessage(HINT_ID_PREFIX + RES_NAME_SUFFIX + name);
         } catch( MissingResourceException e) {
             hint = m_label1;
         }
         m_hint1 = hint;
+        
+        ImageIcon icon = null;
+        try {
+            String iconPath = ICON_PATH_PREFIX + getMessage( ICON_ID_PREFIX + RES_NAME_SUFFIX + name);
+            Image img = Utilities.loadImage(iconPath);
+            assert img != null : "Icon not found: " + iconPath;
+            icon = new ImageIcon(img);
+        } catch( MissingResourceException e) {}
+        
+        m_icon1 = icon;
     }
     
     protected String getLabel() {
@@ -49,5 +69,6 @@ public abstract class AbstractSVGToggleAction extends AbstractSVGAction {
     public void actionPerformed(ActionEvent e) {
         m_on = !m_on;
         setDescription(m_on ? m_hint : m_hint1);
+        setIcon(m_on ? m_icon : m_icon1);
     }
 }

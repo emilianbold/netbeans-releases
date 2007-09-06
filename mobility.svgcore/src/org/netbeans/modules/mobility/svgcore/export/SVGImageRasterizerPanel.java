@@ -89,7 +89,7 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
         jPanel1 = new javax.swing.JPanel();
         progressiveCheckBox = new javax.swing.JCheckBox();
         compressionLabel = new javax.swing.JLabel();
-        compressionLevelCombo = new JComboBox( AnimationRasterizer.COMPRESSION_LEVEL_NAMES);
+        compressionLevelCombo = new JComboBox( AnimationRasterizer.CompressionLevel.values());
         compressionQualityLabel = new javax.swing.JLabel();
         transparentCheckBox = new javax.swing.JCheckBox();
         compressionQualitySpinner = new javax.swing.JSpinner();
@@ -194,7 +194,7 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
         org.openide.awt.Mnemonics.setLocalizedText(compressionLabel, org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsQuality")); // NOI18N
 
         compressionQualityLabel.setLabelFor(compressionQualitySpinner);
-        org.openide.awt.Mnemonics.setLocalizedText(compressionQualityLabel, "&Quality");
+        org.openide.awt.Mnemonics.setLocalizedText(compressionQualityLabel, "&Rate");
 
         org.openide.awt.Mnemonics.setLocalizedText(transparentCheckBox, "&Transparent");
         transparentCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -223,32 +223,32 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                 .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(245, 245, 245)
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE))
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 43, Short.MAX_VALUE))
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(transparentCheckBox)
                         .addContainerGap(102, Short.MAX_VALUE))
+                    .add(optionsPanelLayout.createSequentialGroup()
+                        .add(compressionLabel)
+                        .addContainerGap(76, Short.MAX_VALUE))
+                    .add(optionsPanelLayout.createSequentialGroup()
+                        .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, reductionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, reductionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap(54, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, optionsPanelLayout.createSequentialGroup()
                         .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, optionsPanelLayout.createSequentialGroup()
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(formatComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, progressiveCheckBox))
-                        .addContainerGap(13, Short.MAX_VALUE))
-                    .add(optionsPanelLayout.createSequentialGroup()
-                        .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, compressionLevelCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, compressionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(compressionQualityLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(compressionQualitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(106, 106, 106))
-                    .add(optionsPanelLayout.createSequentialGroup()
-                        .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, reductionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, reductionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap(54, Short.MAX_VALUE))))
+                                .add(formatComboBox, 0, 87, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, progressiveCheckBox)
+                            .add(optionsPanelLayout.createSequentialGroup()
+                                .add(compressionLevelCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(compressionQualityLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(compressionQualitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(106, 106, 106))))
         );
         optionsPanelLayout.setVerticalGroup(
             optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -271,8 +271,8 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(compressionQualitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(compressionQualityLabel)
-                    .add(compressionLevelCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(compressionLevelCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(compressionQualityLabel))
                 .addContainerGap())
         );
 
@@ -386,7 +386,7 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(previewSizeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(previewFileText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
+                    .add(previewFileText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
                     .add(previewFormatText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -420,7 +420,7 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                 .addContainerGap()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -475,12 +475,10 @@ private void transparencyChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
 }//GEN-LAST:event_transparencyChanged
 
 private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formatComboBoxActionPerformed
-    // TODO add your handling code here:
      updateImage((JComponent)evt.getSource(), true);
 }//GEN-LAST:event_formatComboBoxActionPerformed
 
     private void keepRatioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keepRatioActionPerformed
-    // TODO add your handling code here:
      spinnerHeight.setEnabled( !keepRatio.isSelected());   
 }//GEN-LAST:event_keepRatioActionPerformed
 
@@ -517,11 +515,11 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     // End of variables declaration//GEN-END:variables
 
     public int getImageWidth(){
-        return overrideWidth != -1 ? overrideWidth : ((Integer)spinnerWidth.getValue()).intValue();
+        return m_overrideWidth != -1 ? m_overrideWidth : ((Integer)spinnerWidth.getValue()).intValue();
     }
     
     public int getImageHeight(){
-        return overrideHeight != -1 ? overrideHeight : ((Integer)spinnerHeight.getValue()).intValue();
+        return m_overrideHeight != -1 ? m_overrideHeight : ((Integer)spinnerHeight.getValue()).intValue();
     }
         
     public boolean isForAllConfigurations(){

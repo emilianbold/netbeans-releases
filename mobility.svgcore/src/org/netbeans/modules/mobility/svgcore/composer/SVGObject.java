@@ -16,12 +16,9 @@ package org.netbeans.modules.mobility.svgcore.composer;
 
 import com.sun.perseus.j2d.Transform;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedTransformableElement;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGMatrix;
 import org.w3c.dom.svg.SVGRect;
@@ -122,32 +119,7 @@ public final class SVGObject {
     }
     
     public SVGMatrix getParentTransformation() {
-        Node            node       = m_elem.getParentNode();
-        List<SVGMatrix> transforms = null;
-        
-        
-        while(node != null) {
-            if ( (node instanceof PatchedTransformableElement) ) {
-                Transform temp = ((PatchedTransformableElement) node).getTransform();
-                if (temp != null) {
-                    if (transforms == null) {
-                        transforms = new ArrayList<SVGMatrix>();
-                    }
-                    transforms.add( new Transform(temp));
-                }
-            }
-            node = node.getParentNode();
-       }
-        SVGMatrix total = null;
-        
-        if (transforms != null) {
-            total = transforms.get(0);
-            for (int i = 1; i < transforms.size(); i++) {
-                total = total.mMultiply(transforms.get(i));
-            }
-        }
-
-        return total;
+        return PerseusController.getParentTransformation(m_elem.getParentNode());
     }
     
     public void translate(final float dx, final float dy, final boolean isRelative) {

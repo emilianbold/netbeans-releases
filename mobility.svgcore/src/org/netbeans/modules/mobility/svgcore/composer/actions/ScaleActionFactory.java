@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -32,12 +33,11 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  *
  * @author Pavel Benes
  */
-public class ScaleActionFactory extends AbstractComposerActionFactory {
+public final class ScaleActionFactory extends AbstractComposerActionFactory {
     private static final ActionMouseCursor SCALE_MOUSE_CURSOR = new ActionMouseCursor( 
                 Toolkit.getDefaultToolkit().createCustomCursor(org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/resize_cursor.png"), // NOI18N
                 new Point(8,8), "rotateCursor"), 2);  //NOI18N
     
-    //TODO make it non-static inner class
     private static class ScaleAction extends AbstractComposerAction {
         private final SVGObject m_scaled;
         private final int       m_x;
@@ -50,7 +50,7 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
             m_y = me.getY();
         }
 
-        public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
+        public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
             if ( !isOutsideEvent && evt.getID() == MouseEvent.MOUSE_DRAGGED) {
                 MouseEvent me = (MouseEvent)evt;
                 
@@ -90,7 +90,7 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
         super(sceneMgr);
     }
     
-    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+    public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
         if ( !isOutsideEvent &&
              !m_sceneMgr.isReadOnly() &&
              e.getID() == MouseEvent.MOUSE_PRESSED) {

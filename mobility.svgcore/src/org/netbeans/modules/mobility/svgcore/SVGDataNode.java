@@ -12,6 +12,8 @@
  */   
 package org.netbeans.modules.mobility.svgcore;
 
+import java.awt.datatransfer.Transferable;
+import java.util.List;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 
@@ -26,5 +28,13 @@ public class SVGDataNode extends DataNode {
     public SVGDataNode(SVGDataObject obj) {
         super(obj, Children.LEAF);
         setIconBaseWithExtension(IMAGE_ICON_BASE);
+    }
+        
+    public boolean canCopy() {
+        return false;
+    }
+
+    public boolean canCut() {
+        return false;
     }
 }

@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
@@ -25,32 +26,21 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  *
  * @author Pavel Benes
  */
-public class HighlightActionFactory extends AbstractComposerActionFactory {
+public final class HighlightActionFactory extends AbstractComposerActionFactory {
     
     public HighlightActionFactory(SceneManager sceneMgr) {
         super(sceneMgr);
     }
 
-    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+    public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
         if ( !isOutsideEvent && e.getID() == MouseEvent.MOUSE_MOVED) {
-            if ( !m_sceneMgr.isReadOnly() &&  !m_sceneMgr.containsAction(HighlightAction.class)) {
+            if ( !m_sceneMgr.containsAction(HighlightAction.class)) {
                 MouseEvent me = (MouseEvent)e;
                 SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
                 if (objects != null && objects.length > 0 && objects[0] != null)  {
                     return new HighlightAction(this, objects[0]);
                 }
-            } else {
-                if (m_sceneMgr.getScreenManager().getAssignFocus()) {
-                    MouseEvent me = (MouseEvent)e;
-                    SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
-                    if (objects != null && objects.length > 0 && objects[0] != null)  {
-                        m_sceneMgr.getPerseusController().focusElement(objects[0]);
-                    } else {
-                        m_sceneMgr.getPerseusController().focusElement(null);
-                    }
-                }
-            }
-            
+            }             
         }
         return null;
     }

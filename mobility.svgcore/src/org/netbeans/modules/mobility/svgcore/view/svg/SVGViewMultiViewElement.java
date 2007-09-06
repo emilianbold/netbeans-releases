@@ -15,13 +15,10 @@ package org.netbeans.modules.mobility.svgcore.view.svg;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import javax.swing.JComponent;
-import javax.swing.text.Keymap;
-import org.netbeans.editor.MultiKeymap;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.xml.multiview.AbstractMultiViewElement;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -31,18 +28,22 @@ import org.openide.util.lookup.ProxyLookup;
 public class SVGViewMultiViewElement extends AbstractMultiViewElement {
     private static final long serialVersionUID = 7526471457562007148L;        
     
-    //private final     int                 index;
-    private transient SVGViewTopComponent svgView    = null;
+    private transient SVGViewTopComponent svgView = null;
 
     public SVGViewMultiViewElement(SVGDataObject obj) {
         super(obj);
-//        this.index = index;
     }
     
     public void componentActivated() {
+        if (svgView != null) {
+            svgView.componentActivated();
+        }
     }
 
     public void componentDeactivated() {        
+        if (svgView != null) {
+            svgView.componentDeactivated();
+        }
     }
     
     public void componentClosed() {
@@ -82,7 +83,6 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
             svgView.getLookup(),
             dObj.getNodeDelegate().getLookup()
         }); 
-        //return dObj.getNodeDelegate().getLookup();        
     }
 
     public JComponent getToolbarRepresentation() {
@@ -118,17 +118,5 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
         } catch( Exception e) {
             e.printStackTrace();
         }    
-    }
-    
-    /*
-    private void showSVGSyntaxError(final String msg) {
-        SwingUtilities.invokeLater( new Runnable() {
-            public void run() {
-                dObj.openView(SVGDataObject.XML_VIEW_INDEX);
-                DialogDisplayer.getDefault().notify(
-                  new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE));
-            }            
-        });
-    } 
-     */       
+    }    
 }

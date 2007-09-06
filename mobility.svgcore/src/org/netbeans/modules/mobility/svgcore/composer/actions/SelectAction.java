@@ -13,48 +13,30 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.Graphics;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
-import org.netbeans.modules.editor.structure.api.DocumentElement;
-import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
-import org.netbeans.modules.mobility.svgcore.view.source.SVGSourceMultiViewElement;
 
 /**
  *
  * @author Pavel Benes
  */
-public class SelectAction extends AbstractComposerAction {
+public final class SelectAction extends AbstractComposerAction {
     private final SVGObject m_selected;
 
     public SelectAction(SelectActionFactory factory, SVGObject selected) {
         super(factory);
         m_selected = selected;
+        assert m_selected != null : "The selected object cannot be null";
         m_selected.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
     }
     
-    public SelectAction(ComposerActionFactory factory, SVGObject selected, MouseEvent me) {
-        super(factory);
-        m_selected = selected;
-        assert m_selected != null : "The selected object cannot be null";
-
-        if (me.getClickCount() > 1) {
-            SVGDataObject dObj = m_factory.getSceneManager().getDataObject();
-            String id = m_selected.getElementId();
-            DocumentElement delem = dObj.getModel().getElementById(id);
-            if (delem != null) {
-                SVGSourceMultiViewElement.selectElement( dObj, delem, true);
-            }
-        }
-        m_selected.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
-    }
-
-    public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
+    public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
         SceneManager sceneMgr = m_factory.getSceneManager();
         assert sceneMgr.containsAction(SelectAction.class);
 
@@ -74,9 +56,9 @@ public class SelectAction extends AbstractComposerAction {
         return false;
     }
 
-    public void paint(Graphics g, int x, int y) {
-        if ( !m_isCompleted && !m_selected.isDeleted()) {
-            m_selected.getOutline().draw(g, x, y);
+    public void paint(Graphics g, int x, int y, boolean isReadOnly) {
+        if ( !isReadOnly && !m_isCompleted && !m_selected.isDeleted()) {
+            m_selected.getOutline().draw(g, x, y, SVGObjectOutline.SELECTOR_BODY, true);
         }
     }
 

@@ -26,7 +26,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  *
  * @author Pavel Benes
  */
-public class MoveToBottomActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
+public final class MoveToBottomActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction  m_moveToBottomAction = 
         new AbstractSVGAction("svg_move_to_bottom") {  //NOI18N
             public void actionPerformed(ActionEvent e) {

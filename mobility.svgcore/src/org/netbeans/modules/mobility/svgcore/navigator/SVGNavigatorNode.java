@@ -545,7 +545,6 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
                 main_loop : while( childIndex < childNum || elemIndex < elemNum) {
                     DocumentElement childNodeElem;
                     if (childIndex < childNum) {
-                        //TODO Fix OutOfBoundsException here
                         childNodeElem = ((SVGNavigatorNode) m_children.get(childIndex)).m_de;
                     } else {
                         childNodeElem = null;

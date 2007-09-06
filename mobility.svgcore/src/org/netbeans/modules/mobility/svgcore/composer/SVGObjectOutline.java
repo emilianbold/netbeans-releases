@@ -29,7 +29,7 @@ public final class SVGObjectOutline {
     public static final int    SELECTOR_OVERLAP    = ROUND_CORNER_SIZE + 2;
     
     private static final float HANDLE_DIST         = 30;
-    private static final Color SELECTOR_BODY       = Color.RED;
+    public static final Color SELECTOR_BODY       = Color.RED;
     private static final Color SELECTOR_OUTLINE    = Color.WHITE;
     private static final Color COLOR_HIGHLIGHT     = new Color( 0,0,0, 64);
     private static final int   ROTATE_CORNER_INDEX = 1;
@@ -54,28 +54,34 @@ public final class SVGObjectOutline {
         m_tickerCopy = -1;
     }
     
-    public void draw(Graphics g, int xOff, int yOff) {
-        checkObject();
-        
-        g.setColor(SELECTOR_BODY);
-        
+    public static void drawOutline( Graphics g, int xOff, int yOff, float [][] coords) {
         for (int i = 0; i < 4; i++) {
             int j = (i+1) % 4;
-            g.drawLine((int)m_coords[i][0] + xOff, (int)m_coords[i][1] + yOff,
-                       (int)m_coords[j][0] + xOff, (int)m_coords[j][1] + yOff);
+            g.drawLine(Math.round(coords[i][0]) + xOff, Math.round(coords[i][1]) + yOff,
+                       Math.round(coords[j][0]) + xOff, Math.round(coords[j][1]) + yOff);
         }
+    }
+    
+    public void draw(Graphics g, int xOff, int yOff, Color color, boolean drawCorners) {
+        checkObject();
 
-        for (int i = 0; i < 4; i++) {
-            if ( i == ROTATE_CORNER_INDEX) {
-                GraphicUtils.drawRoundSelectorCorner(g, SELECTOR_OUTLINE, SELECTOR_BODY,
-                        (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff,
-                        ROUND_CORNER_SIZE);
-            } else if ( i == SKEW_CORNER_INDEX) {
-                GraphicUtils.drawDiamondSelectorCorner(g, SELECTOR_OUTLINE, SELECTOR_BODY,
-                        (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff,
-                        DIAMOND_CORNER_SIZE);
-            } else {
-                drawRectSelectorCorner(g, (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff);
+        g.setColor(color);        
+
+        drawOutline( g, xOff, yOff, m_coords);
+
+        if (drawCorners) {
+            for (int i = 0; i < 4; i++) {
+                if ( i == ROTATE_CORNER_INDEX) {
+                    GraphicUtils.drawRoundSelectorCorner(g, SELECTOR_OUTLINE, SELECTOR_BODY,
+                            (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff,
+                            ROUND_CORNER_SIZE);
+                } else if ( i == SKEW_CORNER_INDEX) {
+                    GraphicUtils.drawDiamondSelectorCorner(g, SELECTOR_OUTLINE, SELECTOR_BODY,
+                            (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff,
+                            DIAMOND_CORNER_SIZE);
+                } else {
+                    drawRectSelectorCorner(g, (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff);
+                }
             }
         }
     }
@@ -93,16 +99,14 @@ public final class SVGObjectOutline {
         g.fillPolygon( xPoints, yPoints, 4);        
     }
     
-    public Rectangle getScreenBoundingBox() {
-        checkObject();
-        
+    public static Rectangle getShapeBoundingBox(float [][] points) {
         float min_x, max_x, min_y, max_y;
-        min_x = max_x = m_coords[0][0]; 
-        min_y = max_y = m_coords[0][1];
+        min_x = max_x = points[0][0]; 
+        min_y = max_y = points[0][1];
         
-        for (int i = 1; i < m_coords.length; i++) {
-            float x = m_coords[i][0];
-            float y = m_coords[i][1];
+        for (int i = 1; i < points.length; i++) {
+            float x = points[i][0];
+            float y = points[i][1];
             
             if ( x < min_x) {
                 min_x = x;
@@ -117,6 +121,11 @@ public final class SVGObjectOutline {
         }
         return new Rectangle( Math.round(min_x), Math.round(min_y),
                               Math.round(max_x - min_x), Math.round(max_y - min_y));
+    }
+    
+    public Rectangle getScreenBoundingBox() {
+        checkObject();
+        return getShapeBoundingBox(m_coords);
     }
 
     public float[] getRotatePivotPoint() {
@@ -184,24 +193,25 @@ public final class SVGObjectOutline {
         short ticker = m_svgObject.getScreenManager().getChangeTicker();
         
         if (ticker != m_tickerCopy) {
-            SVGRect bBox = m_svgObject.getSafeBBox();
-            Transform txf = (Transform) m_svgObject.getSVGElement().getScreenCTM();
-            
-            float x = bBox.getX(),
-                  y = bBox.getY(),
-                  w = bBox.getWidth(),
-                  h = bBox.getHeight();
-            
-            float [][] points = new float[][] {
-                {x, y}, {x+w, y}, {x+w, y+h}, {x, y+h}
-            };
-
-            for (int i = 0; i < m_coords.length; i++) {
-                txf.transformPoint(points[i], m_coords[i]);
-            }
-            
-
+            transformRectangle(m_svgObject.getSafeBBox(),
+                    (Transform) m_svgObject.getSVGElement().getScreenCTM(), m_coords);
             m_tickerCopy = ticker;
         }        
+    }
+    
+    public static float [][] transformRectangle( SVGRect rect, Transform txf, float [][] coords) {
+        float x = rect.getX(),
+              y = rect.getY(),
+              w = rect.getWidth(),
+              h = rect.getHeight();
+
+        float [][] points = new float[][] {
+            {x, y}, {x+w, y}, {x+w, y+h}, {x, y+h}
+        };
+        assert coords.length == 4;
+        for (int i = 0; i < 4; i++) {
+            txf.transformPoint(points[i], coords[i]);
+        }
+        return coords;
     }    
 }

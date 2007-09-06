@@ -88,7 +88,7 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         public void fillNumbers(SVGFileModel fileModel) {
             if ( m_line == -1) {
                 int p1 = m_text.indexOf('"');
-                if (p1 != -1 && m_text.indexOf("\" is missing on element") == -1) {
+                if (p1 != -1 && m_text.indexOf("\" is missing on element") == -1) { //NOI18N
                     int p2 = m_text.lastIndexOf('"');
                     if ( p2 > p1) {
                         String invalidValue = m_text.substring(p1, p2+1);
@@ -118,7 +118,6 @@ final class ParsingTask extends Thread implements HyperlinkListener {
     private final JPanel              m_panel;
     private final JEditorPane         m_textPane;
     private final SVGViewTopComponent m_svgView;
-//    private final SVGFileModel        m_fileModel;
 
     public ParsingTask(SVGDataObject dObj, SVGViewTopComponent svgView) throws Exception {
         m_dObj = dObj;
@@ -136,7 +135,6 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         m_textPane.addHyperlinkListener( this);
         m_panel.add(new JScrollPane(m_textPane), BorderLayout.CENTER);
         setPriority( Thread.MIN_PRIORITY);
-        // ensure that model is valid
     }
 
     public JComponent getPanel() {
@@ -285,14 +283,15 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 m_textPane.setText(errorMsg);
-                m_textPane.validate();
-                m_textPane.repaint();
+                m_textPane.invalidate();
+                m_svgView.validate();
+                m_svgView.repaint();
             }
         });
     }
     
     private static String position2string(int lineNum, int colNumber) {
-        return lineNum + "_" + colNumber;
+        return lineNum + "_" + colNumber; //NOI18N
     }
     
     private static int [] string2position(String str) {

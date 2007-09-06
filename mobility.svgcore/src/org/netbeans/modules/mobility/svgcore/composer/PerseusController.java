@@ -16,6 +16,7 @@ package org.netbeans.modules.mobility.svgcore.composer;
 import com.sun.perseus.awt.SVGAnimatorImpl;
 import com.sun.perseus.builder.ModelBuilder;
 import com.sun.perseus.j2d.Point;
+import com.sun.perseus.j2d.Transform;
 import com.sun.perseus.model.AbstractAnimate;
 import com.sun.perseus.model.CompositeGraphicsNode;
 import com.sun.perseus.model.DocumentNode;
@@ -25,14 +26,22 @@ import com.sun.perseus.model.SVGImageImpl;
 import com.sun.perseus.model.Time;
 import com.sun.perseus.model.UpdateAdapter;
 import com.sun.perseus.util.SVGConstants;
+import java.awt.AWTEvent;
+import java.awt.AWTEvent;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.microedition.m2g.ExternalResourceHandler;
 import javax.microedition.m2g.SVGAnimator;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
+import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedAnimationElement;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedElement;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
+import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedTransformableElement;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.SVGComposerPrototypeFactory;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
@@ -60,7 +69,10 @@ public final class PerseusController {
     public static final float ANIMATION_DEFAULT_STEP     = 0.1f;
     public static final String ID_VIEWBOX_MARKER         = "$VIEWBOX$"; //NOI18N
     public static final String ID_BBOX_MARKER            = "$BBOX$"; //NOI18N
-        
+
+    public static final int        EVENT_ANIM_STARTED = AWTEvent.RESERVED_ID_MAX + 534;
+    public static final int        EVENT_ANIM_STOPPED = EVENT_ANIM_STARTED + 1;
+    
     protected final SceneManager        m_sceneMgr;
     protected       SVGAnimatorImpl     m_animator;
     protected       SVGImage            m_svgImage;
@@ -147,11 +159,7 @@ public final class PerseusController {
     public DocumentNode getSVGDocument() {
         return m_svgDoc;        
     }
-    
-    public void focusElement( SVGObject svgObj) {
-        m_svgImage.focusOn( svgObj != null ? svgObj.getSVGElement() : null);
-    }
-    
+        
     public SVGSVGElement getSVGRootElement() {
         return (SVGSVGElement) m_svgDoc.getDocumentElement();        
     }
@@ -305,7 +313,6 @@ public final class PerseusController {
             }
             return obj;
         } else {
-            //TODO error reports
             System.err.println("PatchedElement must be used instead of " + elem.getClass().getName());
             return null;
         }   
@@ -389,17 +396,27 @@ public final class PerseusController {
         return m_animationState;
     }
     
+    
     public void startAnimator(){
         if (m_animationState == ANIMATION_NOT_RUNNING ||
             m_animationState == ANIMATION_PAUSED){
             if (m_animator.getState() != SVGAnimatorImpl.STATE_PLAYING) {
                 m_animator.play();
+                m_sceneMgr.processEvent( new AWTEvent(this, EVENT_ANIM_STARTED){});
             }
             m_animationState = ANIMATION_RUNNING;
             m_sceneMgr.getScreenManager().repaint();
         }
     }
     
+     public void getFocusableTargets(List<String> focusableTargets) {
+        SVGElement root = getSVGRootElement();
+        Set<String> ids = new HashSet<String>();
+        collectFocusableElements(root, ids);
+        focusableTargets.add(null);
+        orderFocusableElements(root, ids, focusableTargets);
+        
+    }
     public void pauseAnimator(){
         if (m_animationState == ANIMATION_RUNNING){
             if (m_animator.getState() == SVGAnimatorImpl.STATE_PLAYING) {
@@ -417,18 +434,23 @@ public final class PerseusController {
             m_animator.pause();
             setAnimatorTime(0);
             m_animationState = ANIMATION_NOT_RUNNING;
+            m_sceneMgr.processEvent( new AWTEvent(this, EVENT_ANIM_STOPPED){});            
             m_sceneMgr.getScreenManager().repaint();            
         }
     }
 
     public float getAnimatorTime() {
         try {
-            m_animator.invokeAndWait(new Runnable() {
-                public void run() {
-                    m_currentTime = getSVGRootElement().getCurrentTime();
-                    m_sceneMgr.updateAnimationDuration(m_currentTime);
-                }
-            });
+            if (m_animator.getState() != SVGAnimatorImpl.STATE_STOPPED) {
+                m_animator.invokeAndWait(new Runnable() {
+                    public void run() {
+                        m_currentTime = getSVGRootElement().getCurrentTime();
+                        m_sceneMgr.updateAnimationDuration(m_currentTime);
+                    }
+                });
+            } else {
+                m_currentTime = 0;
+            }
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -470,7 +492,7 @@ public final class PerseusController {
             System.err.println("Animation element not found: " + id);
         }
     }
-    
+           
     public static ModelNode getRootElement(ModelNode node) {
         ModelNode parent;
         
@@ -479,8 +501,7 @@ public final class PerseusController {
         }
         return node;
     }
-    
-    
+        
 /*    
     public void _mergeImage(File file) throws FileNotFoundException {
         FileInputStream     fin = new FileInputStream(file);
@@ -656,27 +677,73 @@ public final class PerseusController {
             child = child.getNextSiblingNode();
         }               
     }
-/*
-    public static void _adoptNodes( DocumentNode doc, ModelNode node) {
-        ModelNode child = node.getFirstChildNode();
+    
+    private static final String [] ANIM_PATTERNS = new String [] {
+        "." + SVGConstants.SVG_DOMFOCUSIN_EVENT_TYPE, 
+        "." + SVGConstants.SVG_DOMFOCUSOUT_EVENT_TYPE + 
+        "." + SVGConstants.SVG_DOMACTIVATE_EVENT_TYPE};
+    
+    /*
+     * Collect all element ids referenced by animation begin trait.
+     */
+    private void collectFocusableElements(SVGElement elem, Set<String> elemIds) {
+        if (elem instanceof PatchedAnimationElement ) {
+            String beginTrait = elem.getTrait(SVGConstants.SVG_BEGIN_ATTRIBUTE);
+            for (String pattern : ANIM_PATTERNS) {
+                int p = 0;
+                while ( (p=beginTrait.indexOf(pattern, p)) != -1) {
+                    int i = p - 1;
+                    while( i >= 0 && isElementIdChar(beginTrait.charAt(i))) {
+                        i--;
+                    }
+                    String id = beginTrait.substring(i+1, p);
+                    if ( getElementById(id) != null) {
+                        elemIds.add(id);
+                    }
+                    
+                    p += pattern.length();
+                }
+            }
+        }
+        
+        SVGElement child = (SVGElement) elem.getFirstElementChild();
         while(child != null) {
-            _adoptNodes(doc, child);
-            child = child.getNextSiblingNode();
-        }               
-        System.out.println("Adopting node: " + node);
-        doc.adoptNode((Node)node, false);
+            collectFocusableElements( child, elemIds);
+            child = (SVGElement)child.getNextElementSibling();
+        }
     }
     
-    private static int getChildCount(ModelNode node) {
-        ModelNode child = node.getFirstChildNode();
-        int count = 0;
+    /*
+     * Order element ids by their occurence in SVG document.
+     */
+    private boolean orderFocusableElements(SVGElement elem, Set<String>ids, List<String>orderedIds) {
+        String id = elem.getId();
+        if (id != null) {
+            if ( ids.remove(id)) {
+                orderedIds.add(id);
+                if (ids.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        SVGElement child = (SVGElement) elem.getFirstElementChild();
         while(child != null) {
-            child = child.getNextSiblingNode();
-            count++;
-        }               
-        return count;      
+            if (orderFocusableElements( child, ids, orderedIds)) {
+                return true;
+            }
+            child = (SVGElement)child.getNextElementSibling();
+        }
+        return false;
     }
- */
+    
+    private static boolean isElementIdChar(char c) {
+        return Character.isLetter(c) ||
+             Character.isDigit(c) ||
+             c == '.' ||
+             c == '_' ||
+             c == '-' ||
+             c == ':';
+    }
     
     public static void setNullIds(SVGElement elem, boolean isNull) {
         if (elem instanceof PatchedElement) {
@@ -732,11 +799,38 @@ public final class PerseusController {
         return (Document) elem;
     }   
 
+    public static SVGMatrix getParentTransformation(Node node) {
+        List<SVGMatrix> transforms = null;
+        
+        
+        while(node != null) {
+            if ( (node instanceof PatchedTransformableElement) ) {
+                Transform temp = ((PatchedTransformableElement) node).getTransform();
+                if (temp != null) {
+                    if (transforms == null) {
+                        transforms = new ArrayList<SVGMatrix>();
+                    }
+                    transforms.add( new Transform(temp));
+                }
+            }
+            node = node.getParentNode();
+       }
+        SVGMatrix total = null;
+        
+        if (transforms != null) {
+            total = transforms.get(0);
+            for (int i = 1; i < transforms.size(); i++) {
+                total = total.mMultiply(transforms.get(i));
+            }
+        }
+
+        return total;
+    }
+    
     /*
     public void mergeImage(File file) throws FileNotFoundException, IOException, DocumentModelException, BadLocationException {
         DocumentModel docModel = SVGFileModel.loadDocumentModel(file);
               
-        //TODO move it to the SVGFileModel class
         DocumentElement svgElem = SVGFileModel.getSVGRoot(docModel);
         int childElemNum;
         

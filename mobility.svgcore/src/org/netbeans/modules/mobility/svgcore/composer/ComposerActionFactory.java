@@ -14,17 +14,16 @@
 
 package org.netbeans.modules.mobility.svgcore.composer;
 
-import java.awt.event.InputEvent;
+import java.awt.AWTEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.Action;
-import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 
 /**
  *
  * @author Pavel Benes
  */
 public interface ComposerActionFactory {
-    public ComposerAction       startAction(InputEvent event, boolean isOutsideEvent);
+    public ComposerAction       startAction(AWTEvent event, boolean isOutsideEvent);
     public boolean              isBlocked();
     public void                 setBlocked(boolean isBlocked);
     public SceneManager         getSceneManager();

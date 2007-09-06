@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
@@ -26,12 +27,12 @@ import org.w3c.dom.svg.SVGPoint;
  *
  * @author Pavel Benes
  */
-public class CursorPositionActionFactory extends AbstractComposerActionFactory {
+public final class CursorPositionActionFactory extends AbstractComposerActionFactory {
     
     public CursorPositionActionFactory(SceneManager sceneMgr) {
         super(sceneMgr);
     }
-    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+    public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
         if ( !isOutsideEvent) {
             switch( e.getID()) {
                 case MouseEvent.MOUSE_EXITED:

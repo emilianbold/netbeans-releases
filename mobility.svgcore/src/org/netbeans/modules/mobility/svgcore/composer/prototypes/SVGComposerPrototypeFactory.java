@@ -29,7 +29,6 @@ import java.util.Vector;
  */
 @SuppressWarnings({"unchecked"})
 public abstract class SVGComposerPrototypeFactory  {
-    //TODO Hack - leaks memory
     private static final Map<DocumentNode, Vector> s_prototypeMap = new HashMap<DocumentNode, Vector>();
     
     public static synchronized Vector getPrototypes(final DocumentNode doc) {

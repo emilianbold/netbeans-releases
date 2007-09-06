@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer;
 
+import java.awt.AWTEvent;
 import java.awt.Graphics;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 
@@ -30,6 +31,10 @@ public abstract class AbstractComposerAction implements ComposerAction{
         m_isCompleted = false;
     }
 
+    public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
+        return false;
+    }
+    
     public synchronized void actionCompleted() {
         m_isCompleted = true;
     }
@@ -38,7 +43,7 @@ public abstract class AbstractComposerAction implements ComposerAction{
         return m_isCompleted;
     }
 
-    public void paint(Graphics g, int x, int y) {
+    public void paint(Graphics g, int x, int y, boolean isReadOnly) {
     }
         
     protected ScreenManager getScreenManager() {

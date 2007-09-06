@@ -17,7 +17,6 @@ package org.netbeans.modules.mobility.svgcore.composer.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
-import org.netbeans.modules.mobility.svgcore.composer.ActionWrapper;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
@@ -26,7 +25,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  *
  * @author Pavel Benes
  */
-public class MoveBackwardActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
+public final class MoveBackwardActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction  m_moveBackwardAction = 
         new AbstractSVGAction("svg_move_backward") {  //NOI18N
             public void actionPerformed(ActionEvent e) {

@@ -13,6 +13,7 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
@@ -27,7 +28,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
  *
  * @author Pavel Benes
  */
-public class TranslateAction extends AbstractComposerAction {
+public final class TranslateAction extends AbstractComposerAction {
     private final SVGObject m_translated;
     private       int       m_x;
     private       int       m_y;
@@ -52,7 +53,7 @@ public class TranslateAction extends AbstractComposerAction {
         translate(m_x, m_y, true);
     }
     
-    public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
+    public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
         if ( !isOutsideEvent)  {
             if (evt.getID() == MouseEvent.MOUSE_DRAGGED) {
                 MouseEvent me = (MouseEvent)evt;

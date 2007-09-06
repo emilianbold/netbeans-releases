@@ -16,6 +16,7 @@
 
 package org.netbeans.modules.mobility.svgcore.view.svg;
 
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
@@ -44,6 +45,7 @@ public abstract class AbstractSVGAction extends AbstractAction implements Presen
     protected final String m_name;
     protected final String m_label;
     protected final String m_hint;
+    protected final ImageIcon m_icon;
     protected final int    m_toolbarPos;
         
     public AbstractSVGAction(String name) {
@@ -58,8 +60,16 @@ public abstract class AbstractSVGAction extends AbstractAction implements Presen
         m_name  = name;
         m_label = getMessage(LBL_ID_PREFIX + name);
         
-        String iconPath = ICON_PATH_PREFIX + getMessage( ICON_ID_PREFIX + name);
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage( iconPath)));
+        ImageIcon icon = null;
+        
+        try {
+            String iconPath = ICON_PATH_PREFIX + getMessage( ICON_ID_PREFIX + name);
+            Image img = Utilities.loadImage(iconPath);
+            assert img != null : "Icon not found: " + iconPath;
+            icon = new ImageIcon(img);
+        } catch( MissingResourceException e) {}
+        
+        setIcon( m_icon = icon);
         
         String hint;
         try {
@@ -85,7 +95,13 @@ public abstract class AbstractSVGAction extends AbstractAction implements Presen
         m_toolbarPos = toolBarPos;
     }
 
-    protected void setDescription(String hint) {
+    protected final void setIcon(ImageIcon icon) {
+        if (icon != null) {
+            putValue(Action.SMALL_ICON, icon);
+        }
+    }
+    
+    protected final void setDescription(String hint) {
         KeyStroke stroke = (KeyStroke) getValue(Action.ACCELERATOR_KEY);
         if (stroke != null) {
             hint += " (";

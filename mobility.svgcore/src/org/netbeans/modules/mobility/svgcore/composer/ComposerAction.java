@@ -14,21 +14,21 @@
 
 package org.netbeans.modules.mobility.svgcore.composer;
 
+import java.awt.AWTEvent;
 import java.awt.Graphics;
-import java.awt.event.InputEvent;
 
 /**
  *
  * @author Pavel Benes
  */
 public interface ComposerAction {
-    public boolean consumeEvent(InputEvent event, boolean isOutsideEvent);
+    public boolean consumeEvent(AWTEvent event, boolean isOutsideEvent);
     
     public ActionMouseCursor getMouseCursor(boolean isOutsideEvent);
 
     public void actionCompleted();
-    //TODO offset should be handled somewhere else
-    public void paint(Graphics g, int x, int y);
+
+    public void paint(Graphics g, int x, int y, boolean isReadOnly);
 
     public boolean isCompleted();
 }

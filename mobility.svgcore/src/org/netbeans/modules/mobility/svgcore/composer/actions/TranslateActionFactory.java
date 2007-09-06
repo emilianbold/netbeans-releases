@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.Cursor;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -28,7 +29,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  *
  * @author Pavel Benes
  */
-public class TranslateActionFactory extends AbstractComposerActionFactory {
+public final class TranslateActionFactory extends AbstractComposerActionFactory {
     private static final ActionMouseCursor TRANSLATE_MOUSE_CURSOR = new ActionMouseCursor( Cursor.MOVE_CURSOR, 1);
     
     private static int [] DIFF_LEFT   = new int[] { -1, 0};
@@ -40,7 +41,7 @@ public class TranslateActionFactory extends AbstractComposerActionFactory {
         super(sceneMgr);
     }
     
-    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+    public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
         if ( !isOutsideEvent &&
              !m_sceneMgr.isReadOnly()) {            
             if ( e.getID() == MouseEvent.MOUSE_PRESSED) {
@@ -100,20 +101,23 @@ public class TranslateActionFactory extends AbstractComposerActionFactory {
         return null;
     }
     
-    static int [] getCoordDiff(InputEvent e) {
-        if ( e.getID() == KeyEvent.KEY_PRESSED &&
-                e.getModifiers() == 0) {
-            switch( ((KeyEvent)e).getKeyCode()) {
-                case KeyEvent.VK_DOWN:
-                    return DIFF_DOWN;
-                case KeyEvent.VK_LEFT:
-                    return DIFF_LEFT;
-                case KeyEvent.VK_RIGHT:
-                    return DIFF_RIGHT;
-                case KeyEvent.VK_UP:
-                    return DIFF_UP;
+    static int [] getCoordDiff(AWTEvent e) {
+        if ( e.getID() == KeyEvent.KEY_PRESSED) {
+            KeyEvent ke = (KeyEvent)e;
+            if ( ke.getModifiers() == 0) {
+                switch( ke.getKeyCode()) {
+                    case KeyEvent.VK_DOWN:
+                        return DIFF_DOWN;
+                    case KeyEvent.VK_LEFT:
+                        return DIFF_LEFT;
+                    case KeyEvent.VK_RIGHT:
+                        return DIFF_RIGHT;
+                    case KeyEvent.VK_UP:
+                        return DIFF_UP;
             }
         }  
+            
+        }
         return null;
     }
 }

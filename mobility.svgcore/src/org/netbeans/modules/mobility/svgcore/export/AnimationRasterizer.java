@@ -12,7 +12,6 @@
  */   
 package org.netbeans.modules.mobility.svgcore.export;
 
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -62,10 +61,44 @@ import org.w3c.dom.svg.SVGSVGElement;
  * @author breh
  */
 public class AnimationRasterizer {
-    public static final String [] COMPRESSION_LEVEL_NAMES     = new String [] { "Minimum", "Low", "Medium", "High", "Very high", "Maximum" };
-    public static final int []    COMPRESSION_LEVELS          = new int [] { 10, 30, 40, 60, 80, 99 };
-    public static final int       DEFAULT_COMPRESSION_QUALITY = 3;
-    
+    public enum CompressionLevel {
+        MAXIMUM( "Maximum", 10),
+        VERY_HIGH("Very High", 30),
+        HIGH("High", 40),
+        MEDIUM("Medium", 60),
+        LOW("Low", 80),
+        MINIMUM("Minimum", 99);
+
+        private final String  m_name;
+        private final int     m_rate;
+        
+        CompressionLevel(String name, int rate) {
+            m_name = name;
+            m_rate = rate;
+        }
+        
+        public String toString() {
+            return m_name;
+        }
+        
+        public int getRate() {
+            return m_rate;
+        }
+        
+        public static CompressionLevel getLevel( int rate) {
+            assert rate >= 0 && rate <= 99;
+            for (CompressionLevel level : CompressionLevel.values()) {
+                if ( rate <= level.getRate()) {
+                    return level;
+                }
+            }
+            assert false : "Could not find compression level for rate: " + rate;
+            return MINIMUM;
+        }
+    }    
+
+    public static final CompressionLevel DEFAULT_COMPRESSION = CompressionLevel.HIGH;
+
     private interface ColorReducer {
         BufferedImage reduceColors(BufferedImage image, Params params);
     }
@@ -93,9 +126,9 @@ public class AnimationRasterizer {
     }
     
     public enum ImageType {
-        JPEG("JPG", "JPEG", true, false, false, ".jpg"),
-        PNG8("PNG", "PNG-8", false, true, true, ".png"),
-        PNG24("PNG", "PNG-24", false, true, false, ".png");
+        JPEG("JPG", "JPEG", true, false, false, ".jpg"), //NOI18N
+        PNG8("PNG", "PNG-8", false, true, true, ".png"), //NOI18N
+        PNG24("PNG", "PNG-24", false, true, false, ".png"); //NOI18N
 
         private final String  m_name;
         private final String  m_displayName;
@@ -200,17 +233,17 @@ public class AnimationRasterizer {
         if (params.isForAllConfigurations()) {
             if (projectCfg != null) {
                 if (projectCfg != params.getProject().getConfigurationHelper().getDefaultConfiguration ()){
-                    filenameRoot += "_" + projectCfg.getDisplayName();
+                    filenameRoot += "_" + projectCfg.getDisplayName(); //NOI18N
                 }
             } else {
-                filenameRoot += "_{configuration-name-here}";
+                filenameRoot += "_{configuration-name-here}"; //NOI18N
             }
         } else {
             filenameRoot += getActiveConfigurationName(fo);
         }
         
         if ( params.getElementId() != null) {
-            filenameRoot += "_" + params.getElementId();
+            filenameRoot += "_" + params.getElementId(); //NOI18N
         }
         
         return filenameRoot;
@@ -220,14 +253,14 @@ public class AnimationRasterizer {
         if (!params.isInSingleImage()) {
             assert frameIndex >= 0;
             assert frameNum >= 0;
-            filenameRoot += "_" + frameIndex + "_" + frameNum;
+            filenameRoot += "_" + frameIndex + "_" + frameNum; //NOI18N
         }
         filenameRoot = params.getImageType().getFileName(filenameRoot);
         return filenameRoot;
     }
     
     static void export(final SVGDataObject dObj, final Params params) throws MissingResourceException {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExportProgress"));
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExportProgress")); //NOI18N
         try {   
             final FileObject fo        = dObj.getPrimaryFile();
             final File       directory = FileUtil.toFile(fo.getParent());
@@ -271,9 +304,8 @@ public class AnimationRasterizer {
         }
     }
 
+/*
     static void exportElement(final FileObject fo, final J2MEProject project, final SVGImage svgImage, String id, Params params) throws MissingResourceException {
-        //TODO Implement
-        /*
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExportProgress"));
         try {                    
             id = id != null ? "_" + id + "_": "";
@@ -324,8 +356,8 @@ public class AnimationRasterizer {
         } finally {
             handle.finish();
         }
-         * */
     }    
+*/
     
     /**
      * @param args 
@@ -551,11 +583,11 @@ public class AnimationRasterizer {
     
     public static String getSizeText( int size) {
         if ( size < 1024) {
-            return size + " Bytes";
+            return size + " Bytes"; //NOI18N
         } else if ( size < 1024 * 1024) {
-            return (Math.round(size / 102.4) / 10.0) + " KBytes";
+            return (Math.round(size / 102.4) / 10.0) + " KBytes"; //NOI18N
         } else {
-            return (Math.round(size / (102.4 * 1024)) / 10.0) + " MBytes";
+            return (Math.round(size / (102.4 * 1024)) / 10.0) + " MBytes"; //NOI18N
         }
     }
     
@@ -848,6 +880,6 @@ public class AnimationRasterizer {
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ProjectConfigurationsHelper confs = project.getConfigurationHelper();
         
-        return confs.getActiveConfiguration () != confs.getDefaultConfiguration () ? "_" + confs.getActiveConfiguration ().getDisplayName () : "";
+        return confs.getActiveConfiguration () != confs.getDefaultConfiguration () ? "_" + confs.getActiveConfiguration ().getDisplayName () : ""; //NOI18N
     }
 }

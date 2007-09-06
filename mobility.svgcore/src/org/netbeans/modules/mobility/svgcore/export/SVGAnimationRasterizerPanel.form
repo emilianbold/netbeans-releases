@@ -25,11 +25,11 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel3" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="exportPanel" min="-2" pref="210" max="-2" attributes="1"/>
-                  <Component id="sizePanel" min="-2" max="-2" attributes="1"/>
-                  <Component id="timeLinePanel" min="-2" max="-2" attributes="1"/>
-                  <Component id="optionsPanel" min="-2" pref="210" max="-2" attributes="1"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="optionsPanel" alignment="0" min="-2" pref="222" max="-2" attributes="1"/>
+                  <Component id="sizePanel" alignment="0" min="-2" max="-2" attributes="1"/>
+                  <Component id="timeLinePanel" alignment="0" min="-2" max="-2" attributes="1"/>
+                  <Component id="exportPanel" alignment="0" min="-2" max="-2" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -90,7 +90,7 @@
                           <Component id="keepRatio" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="80" max="32767" attributes="0"/>
+                  <EmptySpace pref="92" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -205,39 +205,41 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="84" max="-2" attributes="0"/>
-                          <Component id="jPanel1" pref="159" max="32767" attributes="0"/>
+                          <Component id="jPanel1" pref="141" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="formatComboBox" min="-2" pref="75" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="formatComboBox" min="-2" pref="93" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" attributes="0">
                           <Component id="progressiveCheckBox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="87" max="32767" attributes="0"/>
+                          <EmptySpace pref="107" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="compressionLevelCombo" alignment="0" max="32767" attributes="1"/>
-                              <Component id="compressionLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="compressionLabel" min="-2" max="-2" attributes="1"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="compressionLevelCombo" min="-2" pref="94" max="-2" attributes="1"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="compressionQualityLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="5" pref="5" max="-2" attributes="0"/>
+                                  <Component id="compressionQualitySpinner" min="-2" pref="48" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
-                          <Component id="compressionQualityLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="compressionQualitySpinner" min="-2" pref="48" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="transparentCheckBox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="91" max="32767" attributes="0"/>
+                          <EmptySpace pref="103" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
                               <Component id="reductionCombo" alignment="0" max="32767" attributes="1"/>
                               <Component id="reductionLabel" alignment="0" max="32767" attributes="1"/>
                           </Group>
-                          <EmptySpace pref="43" max="32767" attributes="0"/>
+                          <EmptySpace pref="55" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -345,7 +347,7 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JComboBox( AnimationRasterizer.COMPRESSION_LEVEL_NAMES)"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JComboBox( AnimationRasterizer.CompressionLevel.values())"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="compressionQualityLabel">
@@ -353,7 +355,7 @@
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="compressionQualitySpinner"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="&amp;Quality"/>
+            <Property name="text" type="java.lang.String" value="&amp;Rate"/>
           </Properties>
           <AuxValues>
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -423,22 +425,22 @@
                       <Group type="102" attributes="0">
                           <EmptySpace min="12" pref="12" max="12" attributes="0"/>
                           <Component id="framesPerSecLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="14" max="32767" attributes="0"/>
+                          <EmptySpace pref="26" max="32767" attributes="0"/>
                           <Component id="framesPerSecSpinner" min="-2" pref="46" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="startTimeSlider" alignment="0" pref="182" max="32767" attributes="0"/>
-                      <Component id="stopTimeSlider" alignment="1" pref="182" max="32767" attributes="0"/>
+                      <Component id="startTimeSlider" alignment="0" pref="194" max="32767" attributes="0"/>
+                      <Component id="stopTimeSlider" alignment="1" pref="194" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="stopTimeLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="32" max="32767" attributes="0"/>
+                                  <EmptySpace pref="44" max="32767" attributes="0"/>
                                   <Component id="stopTimeSpinner" min="-2" pref="84" max="-2" attributes="1"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="startTimeLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="26" max="32767" attributes="0"/>
+                                  <EmptySpace pref="38" max="32767" attributes="0"/>
                                   <Component id="startTimeSpinner" min="-2" pref="83" max="-2" attributes="1"/>
                               </Group>
                           </Group>
@@ -560,7 +562,7 @@
                       <Component id="allFramesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="radioExportCurrent" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="1" max="32767" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -667,19 +669,19 @@
                           <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="previewMaxFrameText" min="-2" pref="35" max="-2" attributes="0"/>
-                          <EmptySpace pref="124" max="32767" attributes="0"/>
+                          <EmptySpace pref="79" max="32767" attributes="0"/>
                           <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="previewCurrentTimeText" min="-2" pref="40" max="-2" attributes="0"/>
+                          <Component id="previewCurrentTimeText" min="-2" pref="56" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="previewEndTimeText" min="-2" pref="37" max="-2" attributes="0"/>
+                          <Component id="previewEndTimeText" min="-2" pref="54" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="jPanel4" alignment="0" max="32767" attributes="1"/>
-                      <Component id="imageHolder" alignment="0" pref="412" max="32767" attributes="1"/>
+                      <Component id="imageHolder" alignment="0" pref="400" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -696,9 +698,9 @@
                       <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="previewMaxFrameText" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="previewCurrentTimeText" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="previewEndTimeText" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="previewMaxFrameText" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                   <Component id="imageHolder" pref="488" max="32767" attributes="0"/>
@@ -741,7 +743,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="previewAnimationSizeText" min="-2" pref="126" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="previewFileText" alignment="0" pref="330" max="32767" attributes="0"/>
+                          <Component id="previewFileText" alignment="0" pref="318" max="32767" attributes="0"/>
                           <Component id="previewFormatText" alignment="0" min="-2" pref="55" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -875,9 +877,10 @@
           <Properties>
             <Property name="editable" type="boolean" value="false"/>
             <Property name="text" type="java.lang.String" value="30"/>
+            <Property name="toolTipText" type="java.lang.String" value="Number of frames"/>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Current frame"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
           </AccessibilityProperties>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel7">
@@ -890,6 +893,7 @@
             <Property name="editable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="4"/>
             <Property name="text" type="java.lang.String" value="0"/>
+            <Property name="toolTipText" type="java.lang.String" value="Current time"/>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Current time"/>
@@ -917,6 +921,7 @@
           <Properties>
             <Property name="editable" type="boolean" value="false"/>
             <Property name="text" type="java.lang.String" value="60"/>
+            <Property name="toolTipText" type="java.lang.String" value="Duration"/>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="End time"/>

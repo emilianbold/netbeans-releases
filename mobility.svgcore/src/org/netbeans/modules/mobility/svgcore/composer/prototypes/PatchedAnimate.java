@@ -18,13 +18,14 @@ import com.sun.perseus.model.*;
 import com.sun.perseus.model.Animate;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
+import com.sun.perseus.util.SVGConstants;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
  *
  * @author Pavel Benes
  */
-public final class PatchedAnimate extends Animate implements PatchedElement {
+public final class PatchedAnimate extends Animate implements PatchedAnimationElement {
     private String    m_idBackup = null;
     private SVGObject m_svgObject = null; 
     
@@ -56,4 +57,8 @@ public final class PatchedAnimate extends Animate implements PatchedElement {
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedAnimate(doc, getLocalName());
     }   
+    
+    public String getBeginTrait() {
+        return getTrait(SVGConstants.SVG_BEGIN_ATTRIBUTE);
+    }    
 }

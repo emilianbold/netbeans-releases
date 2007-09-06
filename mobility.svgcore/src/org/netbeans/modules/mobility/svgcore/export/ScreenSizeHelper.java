@@ -69,13 +69,7 @@ public class ScreenSizeHelper {
         AntProjectHelper helper = (AntProjectHelper) project.getLookup ().lookup (AntProjectHelper.class);
         EditableProperties ep = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ProjectConfigurationsHelper confs = project.getConfigurationHelper ();
-        String activeConfiguration;
-        //TODO fix import 
-     //   if (configuration == null){
-     //       activeConfiguration = confs.getActiveConfiguration () != confs.getDefaultConfiguration () ? confs.getActiveConfiguration ().getDisplayName () : null;
-     //   } else {
-            activeConfiguration = configuration;
-     //   }
+        String activeConfiguration = configuration;
         
         String platformActive = evaluateProperty (ep, DefaultPropertiesDescriptor.PLATFORM_ACTIVE, activeConfiguration);
         String deviceActive = evaluateProperty (ep, DefaultPropertiesDescriptor.PLATFORM_DEVICE, activeConfiguration);

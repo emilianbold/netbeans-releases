@@ -201,33 +201,15 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="245" max="-2" attributes="0"/>
-                          <Component id="jPanel1" pref="50" max="32767" attributes="0"/>
+                          <Component id="jPanel1" pref="43" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="transparentCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace pref="102" max="32767" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="formatComboBox" min="-2" pref="76" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="progressiveCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace pref="13" max="32767" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="compressionLevelCombo" alignment="0" max="32767" attributes="1"/>
-                              <Component id="compressionLabel" alignment="0" max="32767" attributes="1"/>
-                          </Group>
-                          <EmptySpace max="32767" attributes="0"/>
-                          <Component id="compressionQualityLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
-                          <Component id="compressionQualitySpinner" min="-2" pref="41" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="106" max="-2" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <Component id="compressionLabel" min="-2" max="-2" attributes="1"/>
+                          <EmptySpace pref="76" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -235,6 +217,24 @@
                               <Component id="reductionLabel" alignment="0" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace pref="54" max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="formatComboBox" pref="87" max="32767" attributes="0"/>
+                              </Group>
+                              <Component id="progressiveCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <Component id="compressionLevelCombo" min="-2" pref="93" max="-2" attributes="1"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="compressionQualityLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
+                                  <Component id="compressionQualitySpinner" min="-2" pref="46" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace min="-2" pref="106" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -263,8 +263,8 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="2" attributes="0">
                       <Component id="compressionQualitySpinner" alignment="2" min="-2" pref="25" max="-2" attributes="0"/>
-                      <Component id="compressionQualityLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="compressionLevelCombo" alignment="2" min="-2" pref="25" max="-2" attributes="0"/>
+                      <Component id="compressionQualityLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -350,7 +350,7 @@
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Compression level"/>
           </AccessibilityProperties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JComboBox( AnimationRasterizer.COMPRESSION_LEVEL_NAMES)"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JComboBox( AnimationRasterizer.CompressionLevel.values())"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="compressionQualityLabel">
@@ -358,7 +358,7 @@
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="compressionQualitySpinner"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="&amp;Quality"/>
+            <Property name="text" type="java.lang.String" value="&amp;Rate"/>
           </Properties>
           <AuxValues>
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -590,7 +590,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
                       <Component id="jPanel4" alignment="0" max="32767" attributes="1"/>
-                      <Component id="imageHolder" alignment="0" pref="345" max="32767" attributes="1"/>
+                      <Component id="imageHolder" alignment="0" pref="344" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -635,7 +635,7 @@
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="previewSizeText" alignment="0" min="-2" pref="82" max="-2" attributes="0"/>
-                          <Component id="previewFileText" pref="264" max="32767" attributes="0"/>
+                          <Component id="previewFileText" pref="263" max="32767" attributes="0"/>
                           <Component id="previewFormatText" alignment="0" min="-2" pref="64" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>

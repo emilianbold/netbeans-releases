@@ -13,7 +13,7 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer;
 
-import java.awt.event.InputEvent;
+import java.awt.AWTEvent;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -31,6 +31,7 @@ import org.netbeans.modules.mobility.svgcore.composer.actions.CursorPositionActi
 import org.netbeans.modules.mobility.svgcore.composer.actions.DeleteActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.HighlightActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.MoveBackwardActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.actions.MoveFocusActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.MoveForwardActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.MoveToBottomActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.MoveToTopActionFactory;
@@ -48,6 +49,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
@@ -67,7 +69,6 @@ public final class SceneManager {
     private transient List<ComposerActionFactory> m_actionFactories;
     private transient Stack<ComposerAction>       m_activeActions;
     private transient List<Action>                m_registeredActions;
-    //TODO revisit    
     public transient SelectActionFactory          m_selectActionFactory;
     private transient List<SelectionListener>     m_selectionListeners;
     private transient SVGImage                    m_svgImage;
@@ -130,7 +131,6 @@ public final class SceneManager {
         m_activeActions         = new Stack<ComposerAction>();
         m_selectionListeners    = new ArrayList<SelectionListener>();
         
-        //TODO maybe use some Netbeans mechanism for action registration
         m_selectActionFactory = new SelectActionFactory(this); 
         addSelectionListener(m_selectActionFactory);
         
@@ -146,6 +146,7 @@ public final class SceneManager {
         m_actionFactories.add( new MoveForwardActionFactory(this));
         m_actionFactories.add( new MoveBackwardActionFactory(this));
         m_actionFactories.add( new CursorPositionActionFactory(this));
+        m_actionFactories.add( new MoveFocusActionFactory(this));
 
         m_screenMgr = new ScreenManager(this);
         updateStatusBar();
@@ -234,17 +235,19 @@ public final class SceneManager {
     }
     
     public void saveSelection() {
-        SVGObject [] selected = getSelected();
-        if ( selected != null && selected.length > 0 && selected[0] != null) {
-            m_selectedId = selected[0].getElementId();
-        } else {
-            m_selectedId = null;
+        if (m_selectedId == null) {
+            SVGObject [] selected = getSelected();
+            if ( selected != null && selected.length > 0 && selected[0] != null) {
+                m_selectedId = selected[0].getElementId();
+            } else {
+                m_selectedId = null;
+            }
         }
     }
     
     public void restoreSelection() {
         if ( m_selectedId != null) {
-            setSelection(m_selectedId);
+            setSelection(m_selectedId, false);
             m_selectedId = null;
         }
     }
@@ -281,7 +284,7 @@ public final class SceneManager {
         return null;
     }
     
-    public void registerPopupActions( Action [] guiActions, Lookup lookup) {
+    public void registerPopupActions( Action [] guiActions, TopComponent tc, Lookup lookup) {
         for (Action action : guiActions) {
             m_registeredActions.add(action);
         }
@@ -296,7 +299,11 @@ public final class SceneManager {
         for ( Iterator<? extends ActionWrapper> iter = wrapperCol.iterator(); iter.hasNext(); ) {
             ActionWrapper wrapper = iter.next();
             if (wrapper != null) {
-                popupActions[i++] = wrapper.getAction();
+                Action a = wrapper.getAction();
+                popupActions[i++] = a;
+                if ( a instanceof AbstractSVGAction) {
+                    ((AbstractSVGAction) a).registerAction(tc);
+                }
             }
         }
         m_screenMgr.registerPopupMenu(popupActions, lookup);
@@ -376,31 +383,38 @@ public final class SceneManager {
             m_screenMgr.repaint();
         }
     }
-    
-    public void setSelection(String id) {
-        SVGObject selectedObj = m_perseusController.getObjectById(id);
-        
-        if (selectedObj != null) {
-            SVGObject [] oldSelection = getSelected();
+    public void setSelection(String id, boolean isDelayed) {
+        if ( isDelayed) {
+            m_selectedId = id;
+        } else {
+            SVGObject selectedObj = m_perseusController.getObjectById(id);
 
-            SelectAction action = m_selectActionFactory.getActiveAction();
-            if (action != null) {
-                action.actionCompleted();
+            if (selectedObj != null) {
+                SVGObject [] oldSelection = getSelected();
+
+                SelectAction action = m_selectActionFactory.getActiveAction();
+                if (action != null) {
+                    action.actionCompleted();
+                }
+
+                m_activeActions.push( m_selectActionFactory.startAction(selectedObj));
+                ActionMouseCursor cursor = m_selectActionFactory.getMouseCursor(null, false);
+                m_screenMgr.setCursor(cursor != null ? cursor.getCursor() : null);
+
+                //TODO implement better selection change handling
+                SVGObject [] newSelection = getSelected();
+                if (!SVGObject.areSame(newSelection, oldSelection)) {
+                    selectionChanged(newSelection, oldSelection);
+                }        
             }
-            
-            m_activeActions.push( m_selectActionFactory.startAction(selectedObj));
-            ActionMouseCursor cursor = m_selectActionFactory.getMouseCursor(null, false);
-            m_screenMgr.setCursor(cursor != null ? cursor.getCursor() : null);
-
-            //TODO implement better selection change handling
-            SVGObject [] newSelection = getSelected();
-            if (!SVGObject.areSame(newSelection, oldSelection)) {
-                selectionChanged(newSelection, oldSelection);
-            }        
         }
     }
     
-     void processEvent(InputEvent event) {
+    public void startAction( ComposerAction action) {
+        m_activeActions.add(action);
+    }
+    
+     void processEvent(AWTEvent event) {
         boolean isOutsideEvent = event.getSource() != m_screenMgr.getAnimatorView(); 
         SVGObject [] oldSelection = getSelected();
 
@@ -415,9 +429,6 @@ public final class SceneManager {
                 cursor = c;
             }
             if ( action.consumeEvent(event, isOutsideEvent)) {
-                if ( isOutsideEvent) {
-                    System.out.println("hol");
-                }
                 consumed = true;
                 break;
             }
@@ -522,6 +533,8 @@ public final class SceneManager {
         }
 
         if (newSelection != null && newSelection.length > 0) {
+            m_dObj.getModel().storeSelection( newSelection[0].getElementId());
+
             for (int i = 0; i < newSelection.length; i++) {
                 m_lookupContent.add(newSelection[i]);
             }

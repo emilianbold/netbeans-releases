@@ -14,17 +14,19 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.editor.structure.api.DocumentElement;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
-import org.netbeans.modules.mobility.svgcore.composer.ActionWrapper;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.view.source.SVGSourceMultiViewElement;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGLocatableElement;
@@ -33,13 +35,13 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *
  * @author Pavel Benes
  */
-public class SelectActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
+public final class SelectActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction       m_navigateBackAction = 
-        new AbstractSVGAction("svg_prev_sel", false, 0) {  //NOI18N
+        new AbstractSVGAction("svg_prev_sel", false) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 if ( m_selectionHistoryIndex > 0){
                     String [] selection = m_selectionHistory.get(--m_selectionHistoryIndex);
-                    m_sceneMgr.setSelection(selection[0]);
+                    m_sceneMgr.setSelection(selection[0], false);
                     updateSelectionHistoryButtons();
                 }
             }
@@ -50,7 +52,7 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
             public void actionPerformed(ActionEvent e) {
                 if ( m_selectionHistoryIndex < m_selectionHistory.size() - 1){
                     String [] selection = m_selectionHistory.get(++m_selectionHistoryIndex);
-                    m_sceneMgr.setSelection(selection[0]);
+                    m_sceneMgr.setSelection(selection[0], false);
                     updateSelectionHistoryButtons();
                 }
             }
@@ -71,7 +73,7 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
                     }
                     if (parent != null) {
                         String elemId = ((SVGLocatableElement) parent).getId();
-                        m_sceneMgr.setSelection(elemId);
+                        m_sceneMgr.setSelection(elemId, false);
                         updateSelectionHistory(elemId);
                     }                           
                 }
@@ -86,10 +88,10 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
         super(sceneMgr);
     }
 
-    public static MouseEvent getSelectionEvent(InputEvent evt) {
+    public static MouseEvent getSelectionEvent(AWTEvent evt) {
         if ( evt.getID() == MouseEvent.MOUSE_CLICKED) {
             MouseEvent me = (MouseEvent)evt;
-            if ( me.getClickCount() > 0) {
+            if ( me.getButton() == MouseEvent.BUTTON1 && me.getClickCount() > 0) {
                 return me;
             }
         }
@@ -100,16 +102,24 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
         return setActiveAction( new SelectAction(this, selected));
     }
     
-    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+    public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
         MouseEvent me;
         
-        if (!isOutsideEvent &&
-            !m_sceneMgr.isReadOnly() &&
-            (me=getSelectionEvent(e)) != null) {
+        if (!isOutsideEvent && (me=getSelectionEvent(e)) != null) {
             SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
             if (objects != null && objects.length > 0)  {
-                updateSelectionHistory( objects[0].getElementId());
-                return setActiveAction(new SelectAction(this, objects[0], me));
+                String id = objects[0].getElementId();
+                
+                if (me.getClickCount() > 1) {
+                    SVGDataObject dObj = m_sceneMgr.getDataObject();
+                    DocumentElement delem = dObj.getModel().getElementById(id);
+                    if (delem != null) {
+                        SVGSourceMultiViewElement.selectElement( dObj, delem, true);
+                    }
+                } 
+                
+                updateSelectionHistory( id);
+                return setActiveAction(new SelectAction(this, objects[0]));
             }    
         }
         return null;

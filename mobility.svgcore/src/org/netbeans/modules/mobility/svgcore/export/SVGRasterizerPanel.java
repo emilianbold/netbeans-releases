@@ -18,8 +18,12 @@
 
 package org.netbeans.modules.mobility.svgcore.export;
 
+import com.sun.perseus.j2d.Box;
+import com.sun.perseus.j2d.Transform;
 import com.sun.perseus.model.ModelNode;
+import com.sun.perseus.util.SVGConstants;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.IOException;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.ComboBoxModel;
@@ -37,10 +41,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
+import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
+import org.netbeans.modules.mobility.svgcore.export.ComponentGroup.ComponentWrapper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGMatrix;
 import org.w3c.dom.svg.SVGRect;
 import org.w3c.dom.svg.SVGSVGElement;
 
@@ -49,21 +56,19 @@ import org.w3c.dom.svg.SVGSVGElement;
  * @author  Pavel Benes
  */
 public abstract class SVGRasterizerPanel extends JPanel implements AnimationRasterizer.Params {
-    protected static final String SVG_VIEW_BOX_ATTRIBUTE = "viewBox";  //NOI18N
-    
-    protected final    SVGDataObject  m_dObj;
-    protected final    String         m_elementId;
-    protected final    J2MEProject    m_project;
-    protected final    Dimension      m_dim;
-    protected          double         m_ratio;      
-    protected          int            overrideWidth = -1;
-    protected          int            overrideHeight = -1;
-    protected volatile boolean        m_updateInProgress = false;
-    protected volatile SVGImage       m_svgImage;
+    protected final    SVGDataObject       m_dObj;
+    protected final    String              m_elementId;
+    protected final    J2MEProject         m_project;
+    protected final    Dimension           m_dim;
+    protected          double              m_ratio;      
+    protected          int                 m_overrideWidth = -1;
+    protected          int                 m_overrideHeight = -1;
+    protected volatile boolean             m_updateInProgress = false;
+    protected volatile SVGImage            m_svgImage;
     private            SVGLocatableElement m_exportedElement = null;            
     
     protected class SVGRasterizerComponentGroup extends ComponentGroup {
-        public SVGRasterizerComponentGroup( Object [] comps) {
+        public SVGRasterizerComponentGroup( Object ... comps) {
             super(comps);
         }
         public void refresh(JComponent source) {
@@ -88,34 +93,43 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
             m_dim = ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, null);
         } else {
             getSVGImage();
-            if ( m_exportedElement != null) {
-                SVGRect screenBBox = m_exportedElement.getScreenBBox();
-                m_dim = new Dimension( (int) screenBBox.getWidth(), (int) screenBBox.getHeight());
-            } else {
-                m_dim = new Dimension( m_svgImage.getViewportWidth(), m_svgImage.getViewportHeight());
-            }
+            m_dim = new Dimension( m_svgImage.getViewportWidth(), m_svgImage.getViewportHeight());
         }
     }
     
-    protected ComponentGroup createTimeGroup(  JSpinner spinner, JSlider slider,boolean isStart) {
-        float duration = m_dObj.getSceneManager().getAnimationDuration();
+    protected ComponentGroup createTimeGroup( JSpinner spinner, final JSlider slider, boolean isStart) {
+        final float duration = m_dObj.getSceneManager().getAnimationDuration();
         int p = Math.round(duration * 100);
         slider.setMinimum( 0);
         slider.setMaximum( p);
-        slider.setValue(isStart ? 0 : p);        
-        spinner.setModel( new SpinnerNumberModel( (double) (isStart ? 0 : duration), 0.0, duration, 1.0));
-        return new SVGRasterizerComponentGroup( new JComponent[] { spinner, slider});
+        ComponentWrapper sliderWrapper;
+        
+        if (!isStart) {
+            slider.setInverted(true);
+            sliderWrapper = new ComponentGroup.SliderWrapper(slider) {
+                public float getValue() {
+                    return duration - super.getValue();
+                }
+
+                public void setValue(float value) {
+                    super.setValue(duration - value);
+                }
+            };
+        } else {
+            sliderWrapper = ComponentWrapper.wrap(slider);
+        }
+       
+        final SpinnerNumberModel model = new SpinnerNumberModel( (double) (isStart ? 0 : duration), 0.0, duration, 1.0);
+        spinner.setModel( model);
+        return new SVGRasterizerComponentGroup( spinner, sliderWrapper);
     }
     
     protected ComponentGroup createCompressionGroup(JComboBox combo, JSpinner spinner) {
         spinner.setModel( new SpinnerNumberModel( 0, 0, 99, 1));
-        spinner.setValue( new Integer( AnimationRasterizer.COMPRESSION_LEVELS[AnimationRasterizer.DEFAULT_COMPRESSION_QUALITY]));
-        combo.setSelectedIndex(AnimationRasterizer.DEFAULT_COMPRESSION_QUALITY);
+        spinner.setValue( new Integer( AnimationRasterizer.DEFAULT_COMPRESSION.getRate()));
+        combo.setSelectedItem(AnimationRasterizer.DEFAULT_COMPRESSION);
         
-        return new SVGRasterizerComponentGroup( new Object[] {
-            createComboWrapper(combo),
-            spinner
-        });
+        return new SVGRasterizerComponentGroup( createComboWrapper(combo), spinner);
     }
     
     protected final boolean isInProject() {
@@ -125,20 +139,13 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
     protected ComponentGroup.ComponentWrapper createComboWrapper( JComboBox combo) {
         return  new ComponentGroup.ComponentWrapper(combo) {
             public float getValue() {
-                int index = ((JComboBox) m_delegate).getSelectedIndex();
-                return (float) AnimationRasterizer.COMPRESSION_LEVELS[index];
+                Object obj = ((JComboBox) m_delegate).getSelectedItem();
+                return ((AnimationRasterizer.CompressionLevel) obj).getRate();
             }
 
             public void setValue(float value) {
-                int i;
                 int q = Math.round(value);
-                for (i = 0; i < AnimationRasterizer.COMPRESSION_LEVELS.length; i++) {
-                    if (AnimationRasterizer.COMPRESSION_LEVELS[i] >= q) {
-                        ((JComboBox) m_delegate).setSelectedIndex(i);
-                        return;
-                    } 
-                }
-                System.err.println("Invalid value");
+                ((JComboBox) m_delegate).setSelectedItem(AnimationRasterizer.CompressionLevel.getLevel(q));
             }
         };
     }
@@ -148,11 +155,11 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
     }
     
     public final void setImageWidth(int w) {
-        overrideWidth = w;
+        m_overrideWidth = w;
     }
 
     public final void setImageHeight(int h) {
-        overrideHeight = h;
+        m_overrideHeight = h;
     }
     
     public float getEndTime(){
@@ -194,13 +201,36 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
             assert m_svgImage != null;
             
             if ( m_elementId != null) {
-                ModelNode svg = (ModelNode) m_svgImage.getDocument().getDocumentElement();
-                SVGElement elem = PerseusController.hideAllButSubtree(svg, m_elementId);
+                SVGSVGElement svg = (SVGSVGElement) m_svgImage.getDocument().getDocumentElement();
+                SVGElement elem = PerseusController.hideAllButSubtree((ModelNode) svg, m_elementId);
                 if (elem != null && elem instanceof SVGLocatableElement) {
                     m_exportedElement = (SVGLocatableElement) elem;
                     SVGRect bBox = m_exportedElement.getBBox();
-                    System.out.println("BBox: " + bBox);
-                    ((SVGSVGElement) svg).setRectTrait("viewBox", bBox);
+                    SVGMatrix screenCTM = m_exportedElement.getScreenCTM();
+                    float [][] coords = SVGObjectOutline.transformRectangle(bBox, (Transform) screenCTM, new float[4][2]);
+                    Rectangle rect1 = SVGObjectOutline.getShapeBoundingBox(coords);
+                    
+                    // svg -> screen
+                    SVGMatrix svgCTM = svg.getScreenCTM();
+
+                    // element -> svg -> screen
+                    SVGMatrix eltCTM = m_exportedElement.getScreenCTM();
+
+                    // screen -> svg
+                    SVGMatrix svgICTM = svgCTM.inverse();
+
+                    // elt-> svg matrix
+                    SVGMatrix eltToSvg = svgICTM.mMultiply(eltCTM);
+            
+                    coords = SVGObjectOutline.transformRectangle(m_exportedElement.getBBox(),
+                            (Transform) eltToSvg, new float[4][2]);
+                    Rectangle rect2 = SVGObjectOutline.getShapeBoundingBox(coords);
+                    
+                    bBox = new Box(rect2.x - 1, rect2.y - 1, rect2.width + 2, rect2.height + 2);
+                            
+                    svg.setRectTrait(SVGConstants.SVG_VIEW_BOX_ATTRIBUTE, bBox);
+                    m_svgImage.setViewportWidth( Math.round(bBox.getWidth()));
+                    m_svgImage.setViewportHeight( Math.round(bBox.getHeight()));
                 }
             }
         }

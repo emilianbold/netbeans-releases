@@ -13,8 +13,6 @@
 package org.netbeans.modules.mobility.svgcore;
 
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +47,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -72,7 +69,6 @@ public class SVGDataObject extends XmlMultiViewDataObject {
     
     private transient SVGFileModel m_model;
     private transient SceneManager m_sceneManager;
-    private transient boolean      m_wasSaved = false;
     
     private final DataCache m_dataCache = new XmlMultiViewDataObject.DataCache() {
         public void loadData(FileObject file, FileLock dataLock) throws IOException {
@@ -86,16 +82,6 @@ public class SVGDataObject extends XmlMultiViewDataObject {
     private class SVGEditorSupport extends XmlMultiViewEditorSupport {
         public SVGEditorSupport() {
             super(SVGDataObject.this);
-            env.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange( PropertyChangeEvent evt) {
-                    if ( CloneableEditorSupport.Env.PROP_TIME.equals( evt.getPropertyName())) {
-                        if ( !m_wasSaved) {
-                            m_wasSaved = true;
-                            fireContentChanged();
-                        }
-                    }
-                }
-            });
         }
 
         protected void notifyClosed() {
@@ -107,7 +93,7 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         throws IOException, BadLocationException {
             FileObject fo = getPrimaryFile();
             
-            m_wasSaved = true;
+            //m_wasSaved = true;
             
             if ( isSVGZ(fo.getExt())) {
                 GZIPOutputStream gzipStream = new GZIPOutputStream(stream);            

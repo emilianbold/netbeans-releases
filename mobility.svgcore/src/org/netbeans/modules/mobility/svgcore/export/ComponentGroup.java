@@ -28,8 +28,9 @@ import javax.swing.event.ChangeListener;
  */
     
 public class ComponentGroup implements ActionListener, ChangeListener {
+        
     public static abstract class ComponentWrapper {
-        protected final JComponent m_delegate;
+        protected final JComponent      m_delegate;
 
         public abstract float getValue();
         public abstract void  setValue(float value);
@@ -54,15 +55,16 @@ public class ComponentGroup implements ActionListener, ChangeListener {
             } else if (comp instanceof JSlider) {
                 return wrap( (JSlider) comp);
             } else {
-                throw new java.lang.IllegalArgumentException("Could not wrap " + comp);
+                throw new IllegalArgumentException("Could not wrap " + comp);
             }
         }
 
         public static ComponentWrapper wrap( JSpinner spinner) {
             return new ComponentWrapper(spinner) {
                 public float getValue() {
-                    return ((Number) ((JSpinner) m_delegate).getValue()).floatValue();                    
+                    return ((Number) ((JSpinner) m_delegate).getValue()).floatValue();
                 }
+                
                 public void setValue(float value) {
                     JSpinner spinner = (JSpinner) m_delegate;
                     Object prevValue = spinner.getValue();
@@ -76,22 +78,29 @@ public class ComponentGroup implements ActionListener, ChangeListener {
         }
 
         public static ComponentWrapper wrap( JSlider slider) {
-            return new ComponentWrapper(slider) {
-                public float getValue() {
-                    return ((JSlider)m_delegate).getValue() / 100.0f;
-                }
-                public void setValue(float value) {
-                    ((JSlider)m_delegate).setValue( Math.round(value * 100));
-                }
-            };
+            return new SliderWrapper(slider);
+        }
+    }
+    
+    public static class SliderWrapper extends ComponentWrapper {
+        protected SliderWrapper(JSlider slider) {
+            super(slider);
+        }
+        public float getValue() {
+            return ((JSlider)m_delegate).getValue() / 100.0f;
+        }
+
+        public void setValue(float value) {
+            ((JSlider)m_delegate).setValue( Math.round(value * 100));
         }
     }
 
     private final ComponentWrapper [] m_wrappers;
     private       boolean             m_isUpdateInProgress = false;
 
-    public ComponentGroup( Object [] objects) {
+    public ComponentGroup( Object ... objects) {
         m_wrappers = new ComponentWrapper[objects.length];
+        
         for (int i = 0; i < objects.length; i++) {
             Object o = objects[i];
             if ( o instanceof JComponent) {
@@ -149,6 +158,7 @@ public class ComponentGroup implements ActionListener, ChangeListener {
 
     public void actionPerformed(ActionEvent e) {
         JComponent comp = (JComponent) e.getSource();
+
         if ( valueChanged( comp)) {
             refresh(comp);
         }
@@ -156,6 +166,7 @@ public class ComponentGroup implements ActionListener, ChangeListener {
 
     public void stateChanged(ChangeEvent e) {
         JComponent comp = (JComponent) e.getSource();
+
         if ( valueChanged( comp)) {
             refresh(comp);
         }
@@ -163,4 +174,4 @@ public class ComponentGroup implements ActionListener, ChangeListener {
     
     protected void refresh(JComponent comp) {        
     }
-}
+}    

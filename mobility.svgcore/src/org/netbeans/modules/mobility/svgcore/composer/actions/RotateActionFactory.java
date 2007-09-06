@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -35,7 +36,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  *
  * @author Pavel Benes
  */
-public class RotateActionFactory extends AbstractComposerActionFactory {
+public final class RotateActionFactory extends AbstractComposerActionFactory {
     private static final int   ROTATE_PIVOT_SIZE          = 4;
     private static final Color COLOR_ROTATE_PIVOT_BODY    = Color.BLACK;
     private static final Color COLOR_ROTATE_PIVOT_OUTLINE = Color.WHITE;
@@ -54,7 +55,7 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
             m_initialAngle = calculateRotate(me.getX(), me.getY());
         }
 
-        public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
+        public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
             if ( !isOutsideEvent && evt.getID() == MouseEvent.MOUSE_DRAGGED) {
                 MouseEvent me = (MouseEvent)evt;
                 
@@ -75,11 +76,13 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
             return false;
         }
 
-        public void paint(Graphics g, int x, int y) {
-            float [] pt = m_rotated.getOutline().getRotatePivotPoint();
-            GraphicUtils.drawRoundSelectorCorner(g, COLOR_ROTATE_PIVOT_OUTLINE,
-                    COLOR_ROTATE_PIVOT_BODY, (int) (pt[0] + x),(int)(pt[1] + y),
-                    ROTATE_PIVOT_SIZE);
+        public void paint(Graphics g, int x, int y, boolean isReadOnly) {
+            if ( !isReadOnly) {
+                float [] pt = m_rotated.getOutline().getRotatePivotPoint();
+                GraphicUtils.drawRoundSelectorCorner(g, COLOR_ROTATE_PIVOT_OUTLINE,
+                        COLOR_ROTATE_PIVOT_BODY, (int) (pt[0] + x),(int)(pt[1] + y),
+                        ROTATE_PIVOT_SIZE);
+            }
         }
 
         public ActionMouseCursor getMouseCursor(boolean isOutsideEvent) {
@@ -111,7 +114,7 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
         super(sceneMgr);
     }
     
-    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+    public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
         if ( !isOutsideEvent &&
              !m_sceneMgr.isReadOnly() &&
              e.getID() == MouseEvent.MOUSE_PRESSED) {

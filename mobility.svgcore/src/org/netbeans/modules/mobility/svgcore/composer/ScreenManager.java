@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer;
 
+import com.sun.perseus.util.SVGConstants;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -56,7 +57,6 @@ public final class ScreenManager {
     private       Cursor         m_cursor;    
     private       boolean        m_showAllArea;
     private       boolean        m_showTooltip;
-    private       boolean        m_assignFocus;
     private       boolean        m_highlightObject;
     private       short          m_changeTicker = 0;
     
@@ -66,7 +66,6 @@ public final class ScreenManager {
         m_showAllArea     = false;
         m_showTooltip     = true;
         m_highlightObject = true;
-        m_assignFocus     = false;
     }
     
     void initialize() {
@@ -75,38 +74,40 @@ public final class ScreenManager {
                        
         m_imageContainer = new SVGImagePanel(m_animatorView) {
             protected void paintPanel(Graphics g, int x, int y, int w, int h) {
-                Shape clip = g.getClip();
-                try {
-                    g.setClip(x, y, w, h);
-                    PerseusController perseus = m_sceneMgr.getPerseusController();
-                    if (m_showAllArea) {
-                        SVGLocatableElement elem = perseus.getViewBoxMarker();
-                        if (elem != null) {
-                            SVGRect rect = elem.getScreenBBox();
-                            g.setColor( VIEWBOXBORDER_COLOR);
-                            g.drawRect((int)(x + rect.getX()), (int)(y + rect.getY()),
-                                       (int)(rect.getWidth()), (int)(rect.getHeight()) - 1);
-                        }
-                    }
-
-                    if (!m_sceneMgr.isReadOnly()) {
-                        Stack<ComposerAction> actions = m_sceneMgr.getActiveActions();
-                        if (actions != null) {
-                            for (int i = actions.size()-1; i >= 0; i--) {
-                                actions.get(i).paint(g, x, y);
+                PerseusController perseus = m_sceneMgr.getPerseusController();
+                if (perseus != null) {
+                    Shape clip = g.getClip();
+                    try {
+                        g.setClip(x, y, w, h);
+                        if (m_showAllArea) {
+                            SVGLocatableElement elem = perseus.getViewBoxMarker();
+                            if (elem != null) {
+                                SVGRect rect = elem.getScreenBBox();
+                                g.setColor( VIEWBOXBORDER_COLOR);
+                                g.drawRect((int)(x + rect.getX()), (int)(y + rect.getY()),
+                                           (int)(rect.getWidth()), (int)(rect.getHeight()) - 1);
                             }
                         }
 
-                        x += 1;
-                        y += h - PEN_ICON.getHeight(null) - 1;
-                        g.drawImage(PEN_ICON, x, y, null);
+                        boolean isReadOnly = m_sceneMgr.isReadOnly();
+                        Stack<ComposerAction> actions = m_sceneMgr.getActiveActions();
+                        if (actions != null) {
+                            for (int i = actions.size()-1; i >= 0; i--) {
+                                actions.get(i).paint(g, x, y, isReadOnly);
+                            }
+                        }
+
+                        if (!isReadOnly) {
+                            x += 1;
+                            y += h - PEN_ICON.getHeight(null) - 1;
+                            g.drawImage(PEN_ICON, x, y, null);
+                        }
+                    } finally {
+                        g.setClip(clip);
                     }
-                } finally {
-                    g.setClip(clip);
                 }
             }
         };
-        
         m_topComponent = new JScrollPane(m_imageContainer);
         incrementChangeTicker();
     }
@@ -202,14 +203,6 @@ public final class ScreenManager {
         return m_showTooltip;
     }
 
-    public void setAssignFocus(boolean assignFocus) {
-        m_assignFocus = assignFocus;
-    }
-    
-    public boolean getAssignFocus() {
-        return m_assignFocus;
-    }
-    
     public void setHighlightObject(boolean highlightObject) {
         m_highlightObject = highlightObject;
     }
@@ -237,6 +230,7 @@ public final class ScreenManager {
     } 
     
     public void repaint() {
+        //TODO FIX: NPE when playing with window cloning
         m_animatorView.invalidate();
         m_topComponent.validate(); 
         m_animatorView.repaint();
@@ -245,7 +239,7 @@ public final class ScreenManager {
     
     public void refresh() {
         SVGSVGElement svg        = m_sceneMgr.getPerseusController().getSVGRootElement();                
-        SVGRect   viewBoxRect    = svg.getRectTrait("viewBox");
+        SVGRect   viewBoxRect    = svg.getRectTrait(SVGConstants.SVG_VIEW_BOX_ATTRIBUTE);
         SVGPoint  translatePoint = svg.getCurrentTranslate();
         SVGRect   rect           = null;
         Dimension size;

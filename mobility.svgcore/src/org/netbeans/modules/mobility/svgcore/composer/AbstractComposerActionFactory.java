@@ -14,10 +14,10 @@
 
 package org.netbeans.modules.mobility.svgcore.composer;
 
+import java.awt.AWTEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.Action;
-import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 
 /**
  *
@@ -42,8 +42,12 @@ public abstract class AbstractComposerActionFactory implements ComposerActionFac
     public SceneManager getSceneManager() {
         return m_sceneMgr;
     }
+    
+    protected PerseusController getPerseusController() {
+        return m_sceneMgr.getPerseusController();
+    }
 
-    public ComposerAction startAction(InputEvent event, boolean isOutsideEvent) {
+    public ComposerAction startAction(AWTEvent event, boolean isOutsideEvent) {
         return null;
     }
     

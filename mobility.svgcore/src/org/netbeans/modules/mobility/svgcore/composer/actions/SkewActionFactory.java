@@ -14,10 +14,10 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
+import java.awt.AWTEvent;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
@@ -31,12 +31,12 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  *
  * @author Pavel Benes
  */
-public class SkewActionFactory extends AbstractComposerActionFactory {
+public final class SkewActionFactory extends AbstractComposerActionFactory {
     private static final ActionMouseCursor SKEW_MOUSE_CURSOR = new ActionMouseCursor( 
                 Toolkit.getDefaultToolkit().createCustomCursor(org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/skew_cursor.png"), // NOI18N
                 new Point(8,8), "skewCursor"), 3);  //NOI18N
     
-    private class SkewAction extends AbstractComposerAction {
+    private final class SkewAction extends AbstractComposerAction {
         private final SVGObject m_skewed;
         private final int       m_initialX;
         private final int       m_initialY;
@@ -48,7 +48,7 @@ public class SkewActionFactory extends AbstractComposerActionFactory {
             m_initialY = me.getY();
         }
 
-        public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
+        public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
             if ( !isOutsideEvent && evt.getID() == MouseEvent.MOUSE_DRAGGED) {
                 MouseEvent me = (MouseEvent)evt;
                 
@@ -93,7 +93,7 @@ public class SkewActionFactory extends AbstractComposerActionFactory {
         super(sceneMgr);
     }
     
-    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+    public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
         if ( !isOutsideEvent &&
              !m_sceneMgr.isReadOnly() &&
              e.getID() == MouseEvent.MOUSE_PRESSED) {

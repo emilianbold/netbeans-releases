@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringBufferInputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -74,17 +75,16 @@ public final class SVGFileModel {
         public void run() {
             //System.out.println("Transaction started.");
             try {
+                incrementTransactionCounter();
                 checkModel();
                 assert SwingUtilities.isEventDispatchThread() : "Transaction must be called in AWT thread.";                
                 getDoc().atomicLock();
-                //m_isTransactionInProgress = true;
                 transaction();
             } catch(Exception e) {
                 getDoc().atomicUndo();
                 //System.out.println("Transaction failed!");
                 e.printStackTrace();
             } finally {
-                //m_isTransactionInProgress = false;
                 getDoc().atomicUnlock();
                 //System.out.println("Transaction completed.");
                 if ( m_fireUpdate) {
@@ -92,6 +92,7 @@ public final class SVGFileModel {
                 } else {
                     m_model.forceUpdate();
                 }
+                decrementTransactionCounter();
             }
         }
         
@@ -108,7 +109,8 @@ public final class SVGFileModel {
     private volatile boolean                m_eventInProgress  = false;
     private volatile boolean                m_sourceChanged    = false;
     private volatile boolean                m_updateInProgress = false;
-    private volatile boolean                m_undoInProcess    = false;
+    private volatile boolean                m_updateInProcess    = false;
+    private volatile int []                 m_transactionCounter = new int[] {0};
     
     private final DocumentListener          docListener = new DocumentListener() {
         public void removeUpdate(DocumentEvent e) {documentModified(e);}
@@ -122,6 +124,7 @@ public final class SVGFileModel {
         public void documentElementRemoved(DocumentElement de) {
             if (isTagElement(de)) {
                 //System.out.println("Element removed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
+                m_mapping.remove(de);
                 fireModelChange();
             }
         }
@@ -135,13 +138,6 @@ public final class SVGFileModel {
 
         public void documentElementAttributesChanged(DocumentElement de) {
             if (isTagElement(de)) {
-                //TODO solve the assert problem
-                /*java.lang.AssertionError
-                    at org.netbeans.modules.editor.structure.api.DocumentModel.getChildren(DocumentModel.java:551)
-                    at org.netbeans.modules.editor.structure.api.DocumentElement.getChildren(DocumentElement.java:274)
-                    at org.netbeans.modules.editor.structure.api.DocumentElement.getElementCount(DocumentElement.java:145)
-                    at org.netbeans.modules.mobility.svgcore.model.SVGFileModel$2.documentElementAttributesChanged(SVGFileModel.java:84)
-                 */
                 //System.out.println("Element attrs changed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
                 fireModelChange();
             }
@@ -149,10 +145,7 @@ public final class SVGFileModel {
 
         public void documentElementAdded(DocumentElement de) {
             if (isTagElement(de)) {
-                String id = getIdAttribute(de);
-                if (id != null) {
-                    m_mapping.add( id, de);
-                }
+                m_mapping.add( de);
                 //System.out.println("Element added " + de.getName() + " " + de.toString() + "[" + de.getElementCount() + "]");
                 fireModelChange();
             }
@@ -209,7 +202,7 @@ public final class SVGFileModel {
     public SVGFileModel(XmlMultiViewEditorSupport edSup) {
         m_edSup   = edSup;
         m_model   = null;
-        m_mapping = new ElementMapping( getDataObject().getEncodingHelper().getEncoding());
+        m_mapping = new ElementMapping( getDataObject());
     }        
 
     public synchronized void attachToOpenedDocument() {
@@ -240,6 +233,24 @@ public final class SVGFileModel {
         }
     }
     
+    private void incrementTransactionCounter() {
+        synchronized( m_transactionCounter) {
+            m_transactionCounter[0]++;
+        }
+    }
+
+    private void decrementTransactionCounter() {
+        synchronized( m_transactionCounter) {
+            m_transactionCounter[0]--;
+        }
+    }
+    
+    private int getTransactionCounter() {
+        synchronized( m_transactionCounter) {
+            return m_transactionCounter[0];
+        }
+    }
+    
     private synchronized BaseDocument getDoc() {
         if ( m_bDoc == null) {
             try {
@@ -261,7 +272,6 @@ public final class SVGFileModel {
                 m_model.addDocumentModelListener(modelListener);
                 m_model.addDocumentModelStateListener(modelStateListener);
             } catch (DocumentModelException ex) {
-                //TODO Revisit
                 Exceptions.printStackTrace(ex);
             }
         }    
@@ -298,15 +308,17 @@ public final class SVGFileModel {
     }
         
     protected void documentModified(DocumentEvent e) {
-        if ( e instanceof BaseDocumentEvent) {
+        if ( e instanceof BaseDocumentEvent) {                    
             BaseDocumentEvent bde = (BaseDocumentEvent) e;
-            if (bde.isInRedo() || bde.isInUndo()) {
+            if ( bde.isInRedo() || 
+                 bde.isInUndo() || 
+                 getTransactionCounter() == 0) {
                 synchronized(this) {
-                    if ( !m_undoInProcess) {
-                        m_undoInProcess = true;
+                    if ( !m_updateInProcess) {
+                        m_updateInProcess = true;
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                m_undoInProcess = false;
+                                m_updateInProcess = false;
                                 ((SVGDataObject) m_edSup.getDataObject()).fireContentChanged();
                             }
                         });
@@ -356,7 +368,23 @@ public final class SVGFileModel {
         DocumentElement elem = m_mapping.id2element(id);
         return elem;
     }
+
+    public void storeSelection(String id) {
+        m_mapping.storeSelection(id);
+    }
     
+    public String getElementAsText(String id) throws BadLocationException {
+        updateModel();
+        DocumentElement de = getElementById(id);
+        if (de != null) {
+            BaseDocument doc = getDoc();
+            int startOffset = de.getStartOffset();
+            int endOffset   = de.getEndOffset();
+            return doc.getText(startOffset, endOffset - startOffset + 1);
+        } else {
+            return null;
+        }
+    }
     
     public String getElementId(DocumentElement de) {
         String id = m_mapping.element2id(de);
@@ -468,7 +496,7 @@ public final class SVGFileModel {
         });
     }
 
-    public void _appendElement( final String insertString) {
+    public void appendElement( final String insertString) {
         runTransaction(new FileModelTransaction(true) {
             protected void transaction() throws BadLocationException {
                 DocumentElement svgRoot = getSVGRoot(m_model);
@@ -729,15 +757,33 @@ public final class SVGFileModel {
         //System.out.println("Model update completed.");
     }
         
-    public void mergeImage(File file) throws FileNotFoundException, IOException, DocumentModelException, BadLocationException {
+    public String mergeImage(File file) throws FileNotFoundException, IOException, DocumentModelException, BadLocationException {
         DocumentModel   modelToInsert = loadDocumentModel(file);
-        String          wrapperId     = createUniqueId(file.getName().replace('.', '_'), true);
-        String          textToInsert  = m_mapping.getWithUniqueIds(modelToInsert, wrapperId);
-
-        textToInsert = wrapText( wrapperId, textToInsert);
-        _appendElement(textToInsert);
+        return mergeImage(modelToInsert, file.getName(), true, true);
     } 
+    
+    public String mergeImage(String str, boolean wrap) throws IOException, DocumentModelException, BadLocationException {
+        StringBufferInputStream in = new StringBufferInputStream(str);
+        return mergeImage(loadDocumentModel(in), "", false, wrap);
+    }
 
+    protected String mergeImage( DocumentModel docModel, String name, boolean isSvgRoot, boolean wrap) throws BadLocationException {
+        String wrapperId    = null;
+        String textToInsert = null;
+        
+        if (wrap) {
+            wrapperId    = createUniqueId(name.replace('.', '_'), true);
+            textToInsert = m_mapping.getWithUniqueIds(docModel, wrapperId, isSvgRoot, null);
+            textToInsert = wrapText( wrapperId, textToInsert);
+        } else {
+            String [] rootId = new String[1];
+            textToInsert = m_mapping.getWithUniqueIds(docModel, wrapperId, isSvgRoot, rootId);
+            wrapperId = rootId[0];
+        }
+        appendElement(textToInsert);
+        return wrapperId;
+    }
+    
     protected static String wrapText(String wrapperId, String textToWrap) {
         //TODO indent the wrapped text
         StringBuilder sb = new StringBuilder();
@@ -839,23 +885,19 @@ public final class SVGFileModel {
     public static DocumentModel loadDocumentModel( File file) throws FileNotFoundException, IOException, DocumentModelException {
         InputStream in = null;
         
-        try {
-            FileInputStream fin = new FileInputStream(file);
-            in = new BufferedInputStream(fin);
+        FileInputStream fin = new FileInputStream(file);
+        in = new BufferedInputStream(fin);
 
-            String fileName = file.getName();
+        String fileName = file.getName();
 
-            int p;
-            if ( (p=fileName.indexOf('.')) != -1) {
-                if (SVGDataObject.isSVGZ(fileName.substring(p+1))) {
-                    in = new BufferedInputStream(new GZIPInputStream(in));
-                }
+        int p;
+        if ( (p=fileName.indexOf('.')) != -1) {
+            if (SVGDataObject.isSVGZ(fileName.substring(p+1))) {
+                in = new BufferedInputStream(new GZIPInputStream(in));
             }
-            
-            return loadDocumentModel(in);
-        } finally {
-            in.close();
         }
+
+        return loadDocumentModel(in);
     }
     
     protected static DocumentModel loadDocumentModel(InputStream in) throws IOException, DocumentModelException {

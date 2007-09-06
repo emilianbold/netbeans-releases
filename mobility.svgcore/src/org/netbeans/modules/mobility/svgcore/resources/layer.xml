@@ -89,21 +89,35 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="actionId" stringvalue="svg_anim_pause"/>
                         <attr name="position" intvalue="90"/>
                     </file>     
-
+<!--
                     <file name="StopAnimationAction.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
                         <attr name="actionId" stringvalue="svg_anim_stop"/>
                         <attr name="position" intvalue="100"/>
-                    </file>     
+                    </file>     -->
 
-                    <file name="SetFocusToggleAction.instance">
+                    <file name="FocusNext.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
-                        <attr name="actionId" stringvalue="svg_set_focus"/>
+                        <attr name="actionId" stringvalue="svg_focus_next"/>
                         <attr name="position" intvalue="110"/>
                     </file>     
-                    
+
+                    <file name="FocusPrevious.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_focus_previous"/>
+                        <attr name="position" intvalue="111"/>
+                    </file>     
+
+                    <file name="ActivateFocused.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_activate_focused"/>
+                        <attr name="position" intvalue="112"/>
+                    </file>     
+
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
                         <attr name="position" intvalue="115"/>
