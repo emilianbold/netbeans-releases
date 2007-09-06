@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -482,7 +484,14 @@ public final class NbModuleProject implements Project {
             // #67148: have to use something... (and getEntry(codeNameBase) will certainly fail!)
             return ModuleList.getModuleList(getProjectDirectoryFile(), NbPlatform.getDefaultPlatform().getDestDir());
         }
-        ModuleList ml = ModuleList.getModuleList(getProjectDirectoryFile(), p.getDestDir());
+        ModuleList ml;
+        try {
+            ml = ModuleList.getModuleList(getProjectDirectoryFile(), p.getDestDir());
+        } catch (IOException x) {
+            // #69029: maybe invalidated platform? Try the default platform instead.
+            Logger.getLogger(NbModuleProject.class.getName()).log(Level.FINE, null, x);
+            return ModuleList.getModuleList(getProjectDirectoryFile(), NbPlatform.getDefaultPlatform().getDestDir());
+        }
         if (ml.getEntry(getCodeNameBase()) == null) {
             ModuleList.refresh();
             ml = ModuleList.getModuleList(getProjectDirectoryFile());

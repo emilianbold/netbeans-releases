@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -479,6 +481,10 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (universeDependencies == null) {
             reloadModuleListInfo();
         }
+        if (universeDependencies == null) {
+            // Broken platform.
+            return Collections.emptySet();
+        }
         Set<ModuleDependency> result = new HashSet<ModuleDependency>(universeDependencies);
         if (filterExcludedModules && isSuiteComponent()) {
             SuiteProject suite = getSuite();
@@ -823,8 +829,13 @@ public final class SingleModuleProperties extends ModuleProperties {
      */
     ModuleList getModuleList() throws IOException {
         if (getActivePlatform() != this.originalPlatform) {
-            return ModuleList.getModuleList(
-                    getProjectDirectoryFile(), getActivePlatform().getDestDir());
+            try {
+                return ModuleList.getModuleList(getProjectDirectoryFile(), getActivePlatform().getDestDir());
+            } catch (IOException x) {
+                // #69029: maybe invalidated platform? Try the default platform instead.
+                Logger.getLogger(SingleModuleProperties.class.getName()).log(Level.FINE, null, x);
+                return ModuleList.getModuleList(getProjectDirectoryFile(), NbPlatform.getDefaultPlatform().getDestDir());
+            }
         } else {
             return ModuleList.getModuleList(getProjectDirectoryFile());
         }

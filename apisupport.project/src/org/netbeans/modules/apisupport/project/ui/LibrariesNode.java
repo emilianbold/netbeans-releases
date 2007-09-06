@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -188,7 +190,7 @@ final class LibrariesNode extends AbstractNode {
                 public void run() {
                     try {
                         ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
-                            public Void run() throws Exception {
+                            public Void run() throws IOException {
                                 ProjectXMLManager pxm = new ProjectXMLManager(project);
                                 final List<Object> keys = new ArrayList<Object>();
                                 keys.add(JDK_PLATFORM_NAME);
@@ -207,7 +209,7 @@ final class LibrariesNode extends AbstractNode {
                             }
                         });
                     } catch (MutexException e) {
-                        assert false : e.getException();
+                        Logger.getLogger(LibrariesNode.class.getName()).log(Level.FINE, null, e);
                     }
                 }
             });
