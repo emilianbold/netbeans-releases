@@ -60,7 +60,7 @@ public final class PointsCategoryCD extends ComponentDescriptor {
             // inspector
             InspectorPositionPresenter.create(new CategoryPC()),
             // actions
-            AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 30, PointCD.TYPEID) //NOI18N //TODO Localization
+            AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 30, PointCD.TYPEID)
         );
     }
 

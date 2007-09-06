@@ -143,7 +143,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
 
     private void setText(String text) {
         if (text == null) {
-            text = "";
+            text = ""; // NOI18N
         }
 
         addImage(text);
@@ -160,7 +160,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         updatePreview();
     }
 
-    @SuppressWarnings(value = "unchecked")
+    @SuppressWarnings(value = "unchecked") // NOI18N
     private void sortComboBoxContent() {
         int size = pathTextComboBox.getItemCount();
         List list = new ArrayList(size);
