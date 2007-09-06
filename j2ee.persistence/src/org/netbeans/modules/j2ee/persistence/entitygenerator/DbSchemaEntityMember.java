@@ -67,10 +67,37 @@ class DbSchemaEntityMember extends EntityMember {
         // allowed to be of a primitive type, so the first corresponding class  
         // if extracted from the sqlType
         if (isPkField) {
-            setMemberType(sqlType.getFirstNonPrimitiveType());
+            setMemberType(getRespectiveNonPrimitiveType());
         }
     }
 
+    /**
+     * Tries to get the respective non-primitive type for the type of
+     * this member. In other words, gets the respective wrapper class for 
+     * the member type if it is a primitive <code>int, long, short, byte, 
+     * double, float or char</code>, otherwise 
+     * returns <code>sqlType#getFirstNonPrimitiveType</code>.
+     */ 
+    private String getRespectiveNonPrimitiveType(){
+        String type = getMemberType();
+        if ("int".equals(type)){//NO18N
+            return Integer.class.getName();
+        } else if ("long".equals(type)){//NO18N
+            return Long.class.getName();
+        } else if ("short".equals(type)){//NO18N
+            return Short.class.getName();
+        } else if ("byte".equals(type)){//NO18N
+            return Byte.class.getName();
+        } else if ("double".equals(type)){//NO18N
+            return Double.class.getName();
+        } else if ("float".equals(type)){//NO18N
+            return Float.class.getName();
+        } else if ("char".equals(type)){//NO18N
+            return Character.class.getName();
+        }
+        return sqlType.getFirstNonPrimitiveType();
+    }
+    
     private ColumnElement getColumnElement() {
         return columnElement;
     }
