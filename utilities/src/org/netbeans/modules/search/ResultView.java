@@ -629,7 +629,7 @@ final class ResultView extends TopComponent {
     }
     
     /** Set new model. */
-    void setResultModel(final ResultModel resultModel) {
+    synchronized void setResultModel(final ResultModel resultModel) {
         assert EventQueue.isDispatchThread();
         
         if ((this.resultModel == null) && (resultModel == null)) {
@@ -828,12 +828,17 @@ final class ResultView extends TopComponent {
     /**
      * Updates the number of found nodes in the name of the root node.
      */
-    private void updateObjectsCount(final int totalDetailsCount) {
+    private synchronized void updateObjectsCount(final int totalDetailsCount) {
         assert EventQueue.isDispatchThread();
+        
+        if(resultModel == null) {
+            // a new search was scheduled, so don't do anything
+            return;
+        }
         
         objectsCount++;
         hasResults = true;
-        
+                
         setRootDisplayName(
                 resultModel.isBasicCriteriaOnly && resultModel.basicCriteria.isFullText()
                 ? nodeCountFormatFullText.format(
