@@ -1038,7 +1038,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                             if( !isArray ) {
                                                 off.write( "return " + typeName.replace( '.', '_' ) + "_fromObject((Object[])((Object[]) resultObj)[0]);\n" );
                                             } else {
-                                                off.write( "return " + typeName.replace( '.', '_' ) + "_ArrayfromObject((Object []) resultObj);\n" );
+                                                off.write( "return " + typeName.replace( '.', '_' ) + "_ArrayfromObject((Object[])((Object[]) resultObj)[0]);\n" );
                                             }
                                             fromObjects.add( e );
                                         }
@@ -1441,7 +1441,12 @@ public class WSDL2JavaImpl implements WSDL2Java {
                     initTypes( off, scit.next(), qnames, elements );
                     if( scit.hasNext()) off.write( ",\n" );
                 }
-                off.write( "}))" );
+                if( e.getMinOccurs() != 0 || e.getMaxOccurs() != 1 || e.isNillable()) {
+                    off.write( "}), " + e.getMinOccurs() + ", " + 
+                            ( e.getMaxOccurs() == Type.UNBOUNDED ? "Element.UNBOUNDED" : e.getMaxOccurs()) + ", " + e.isNillable()+ " )" );
+                } else {
+                    off.write( "}))" );
+                }
             } else if( Type.FLAVOR_PRIMITIVE == e.getType().getFlavor()) {
                 String eName = e.getName().getLocalPart();
                 off.write( "new Element( " );
