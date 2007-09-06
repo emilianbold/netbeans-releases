@@ -49,7 +49,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     
     private final static int MAX_DISPLAYED_DIR_LENGTH = 35;
     private final static int NR_DISPLAYED_FRONT_DIRS = 2;
-    private final static int NR_DISPLAYED_TRAILING_DIRS = 1;
+    private final static int NR_DISPLAYED_TRAILING_DIRS = 2;
 
     private final int substitutionOffset;
     private final int priority;
@@ -137,7 +137,6 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                     Completion.get().hideDocumentation();
                     Completion.get().hideCompletion();
                     break;
-//                case '<':
                 case '"':
                     doc.atomicLock();
                     try {
@@ -220,7 +219,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     }
     
     protected String getLeftHtmlText() {
-        return this.item;
+        return (isFolder() ? "<i>" : "") + this.getItemText(); // NOI18N
     }
     
     protected String getRightHtmlText(boolean shrink) {
@@ -254,7 +253,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                 }
             }
         }
-        return builder.toString();
+        return "<font color=\"#557755\">" + builder.toString(); // NOI18N
     }
     
     protected int substituteText(JTextComponent c, int offset, int len, String toAdd) {
@@ -269,11 +268,12 @@ public class CsmIncludeCompletionItem implements CompletionItem {
             if (toAdd != null) {
                 text += toAdd;
             }
-            String pref = "";
-            String post = "";
+            String pref = QUOTE;
+            String post = QUOTE;
             if (token != null) {
                 switch (token.getTokenID().getNumericID()) {
                 case CCTokenContext.WHITESPACE_ID:
+                case CCTokenContext.IDENTIFIER_ID:
                     pref = this.isSysInclude ? SYS_OPEN : QUOTE;
                     post = this.isSysInclude ? SYS_CLOSE : QUOTE;
                     break;

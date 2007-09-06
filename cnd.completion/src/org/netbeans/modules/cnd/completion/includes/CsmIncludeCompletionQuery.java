@@ -75,7 +75,7 @@ public class CsmIncludeCompletionQuery {
                     addFolderItems(sysPath, sysPath, childSubDir, false, true, false, substitutionOffset);
                 }
             }
-            addParentFolder(substitutionOffset, childSubDir, true);
+            addParentFolder(substitutionOffset, childSubDir, false);
         } else {
             for (String sysPath : sysPaths) {
                 addFolderItems(sysPath, sysPath, childSubDir, false, true, false, substitutionOffset);
@@ -85,7 +85,7 @@ public class CsmIncludeCompletionQuery {
                     addFolderItems(usrPath, usrPath, childSubDir, false, false, false, substitutionOffset);
                 }
                 addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset);
-                addParentFolder(substitutionOffset, childSubDir, false);
+                addParentFolder(substitutionOffset, childSubDir, true);
             }
         }
         return results;
@@ -96,7 +96,7 @@ public class CsmIncludeCompletionQuery {
         File dir = new File (parentFolder, childSubDir);
         if (dir != null && dir.exists()) {
             File[] list = filtered ?  dir.listFiles(new MyFileFilter(HDataLoader.getInstance().getExtensions())) :
-                                    dir.listFiles();
+                                    dir.listFiles(new DefFileFilter());
             String relFileName;
             for (File curFile : list) {
                 relFileName = curFile.getName();
@@ -113,23 +113,6 @@ public class CsmIncludeCompletionQuery {
                 substitutionOffset, "..", ".", childSubDir, system, false, true, false); // NOI18N
         results.add(item);
     }
-    
-    private static final class MyFileFilter implements FileFilter {
-        private final ExtensionList exts;
-
-        protected MyFileFilter(ExtensionList exts) {
-            this.exts = exts;
-        }
-        
-        public boolean accept(File dir, String name) {
-            return exts.isRegistered(name);
-        }
-
-        public boolean accept(File pathname) {
-            return exts.isRegistered(pathname.getName()) || pathname.isDirectory();
-        }
-        
-    }
 
     private Collection<String> getFileIncludes(CsmFile file, boolean system) {
         if (system) {
@@ -137,5 +120,39 @@ public class CsmIncludeCompletionQuery {
         } else {
             return CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
         }
+    }
+    
+    private static final class DefFileFilter implements FileFilter {
+
+        public boolean accept(File pathname) {
+            return !specialFile(pathname);
+        }
+    }
+    
+    private static final class MyFileFilter implements FileFilter {
+        private final ExtensionList exts;
+
+        protected MyFileFilter(ExtensionList exts) {
+            this.exts = exts;
+        }
+
+        public boolean accept(File pathname) {
+            return !specialFile(pathname) && 
+                    (exts.isRegistered(pathname.getName()) || pathname.isDirectory());
+        }
+    }    
+    
+    private static boolean specialFile(File file) {
+        String name = file.getName();
+        if (name.startsWith(".")) { // NOI18N
+            return true;
+        } else if (name.endsWith("~")) { // NOI18N
+            return true;
+        } else if (file.isDirectory()) {
+            if (name.equals("CVS") || name.equals("SCCS")) { // NOI8N
+                return true;
+            }
+        }
+        return false;
     }
 }
