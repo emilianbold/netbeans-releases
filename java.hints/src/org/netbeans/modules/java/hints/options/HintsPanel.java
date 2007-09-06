@@ -231,7 +231,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     }
     
     boolean isChanged() {
-        return logic.isChanged();
+        return logic != null ? logic.isChanged() : false;
     }
     
     void applyChanges() {
