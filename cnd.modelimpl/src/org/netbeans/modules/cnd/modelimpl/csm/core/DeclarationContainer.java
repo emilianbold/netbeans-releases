@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(ProjectBase project) {
-	super(new DeclarationContainerKey(project.getQualifiedName()));
+	super(new DeclarationContainerKey(project.getUniqueName()));
 	put();
     }
     
@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	    o = declarations.get(uniqueName);
 
 	    if (o instanceof CsmUID[]) {
+                @SuppressWarnings("unchecked")
 		CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[])o;
 		int size = uids.length;
 		CsmUID<CsmOffsetableDeclaration> res = null;
@@ -104,6 +105,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 		} else if (k == 1){
 		    declarations.put(uniqueName,res);
 		} else {
+                    @SuppressWarnings("unchecked")
 		    CsmUID<CsmOffsetableDeclaration>[] newUids = new CsmUID[k];
 		    k = 0;
 		    for(int i = 0; i < size; i++){
@@ -198,9 +200,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         }
     }
 
-    private void putDeclarationOld(CsmDeclaration decl) {
-	String name = decl.getUniqueName();
-	CsmOffsetableDeclaration newDecl = (CsmOffsetableDeclaration)decl;
+    private void putDeclarationOld(CsmOffsetableDeclaration newDecl) {
+	String name = newDecl.getUniqueName();
 	synchronized(declarationsOLD){
 	    Object o = declarationsOLD.get(name);
 	    if (o instanceof CsmOffsetableDeclaration[]) {
@@ -224,7 +225,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	    } else if (o instanceof CsmOffsetableDeclaration) {
 		CsmOffsetableDeclaration oldDecl = (CsmOffsetableDeclaration)o;
 		if (isSameFile(oldDecl, newDecl)) {
-		    declarationsOLD.put(name, decl);
+		    declarationsOLD.put(name, newDecl);
 		} else {
 		    CsmOffsetableDeclaration[] decls = new CsmOffsetableDeclaration[]{newDecl,oldDecl};
 		    declarationsOLD.put(name, decls);
@@ -236,8 +237,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	put();
     }
     
-    private void putDeclarationNew(CsmDeclaration decl) {
+    private void putDeclarationNew(CsmOffsetableDeclaration decl) {
 	String name = decl.getUniqueName();
+        @SuppressWarnings("unchecked")
 	CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
 	assert uid != null;
 //            synchronized(declarations) {
@@ -246,6 +248,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 	    Object o = declarations.get(name);
 	    if (o instanceof CsmUID[]) {
+                @SuppressWarnings("unchecked")
 		CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID[])o;
 		boolean find = false;
 		for(int i = 0; i < uids.length; i++){
@@ -256,6 +259,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 		    }
 		}
 		if (!find){
+                    @SuppressWarnings("unchecked")
 		    CsmUID<CsmOffsetableDeclaration>[] res = new CsmUID[uids.length+1];
 		    res[0]=uid;
 		    for(int i = 0; i < uids.length; i++){
@@ -264,6 +268,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 		    declarations.put(name, res);
 		}
 	    } else if (o instanceof CsmUID) {
+                @SuppressWarnings("unchecked")
 		CsmUID<CsmOffsetableDeclaration> oldUid = (CsmUID<CsmOffsetableDeclaration>)o;
 		if (isSameFile(oldUid,uid)) {
 		    declarations.put(name, uid);
@@ -280,7 +285,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	putFriend(decl);
 //            }
     }
-    public void putDeclaration(CsmDeclaration decl) {
+    public void putDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.USE_REPOSITORY) {
 	    putDeclarationNew(decl);
         } else {

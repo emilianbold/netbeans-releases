@@ -49,9 +49,10 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
 	assert (file != null);
 	CsmProject prj = file.getProject();
 	assert (prj != null);
-	return prj == null ? "<No Project Name>" : prj.getQualifiedName();  // NOI18N
+	return prj == null ? "<No Project Name>" : prj.getUniqueName();  // NOI18N
     }
     
+    @Override
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
 	aStream.writeInt(fileNameIndex);
@@ -62,12 +63,14 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
 	this.fileNameIndex = aStream.readInt();
     }
     
+    @Override
     public int hashCode() {
 	int key = super.hashCode();
 	key = 17*key + fileNameIndex;
 	return key;
     }
     
+    @Override
     public boolean equals(Object obj) {
 	if (!super.equals(obj)) {
 	    return false;
@@ -86,11 +89,13 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
 	return KeyUtilities.getFileNameByIdSafe(unitIndex, this.fileNameIndex);
     }
     
+    @Override
     public int getDepth() {
 	assert super.getDepth() == 0;
 	return 1;
     }
     
+    @Override
     public String getAt(int level) {
 	assert super.getDepth() == 0 && level < getDepth();
 	return getFileName();

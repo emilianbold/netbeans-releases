@@ -35,7 +35,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 final class ProjectKey extends ProjectNameBasedKey {
     
     public ProjectKey(CsmProject project) {
-	super(project.getQualifiedName());
+	super(project.getUniqueName());
     }
     
     public ProjectKey(String projectQualifiedName) {
@@ -46,6 +46,7 @@ final class ProjectKey extends ProjectNameBasedKey {
 	super(aStream);
     }
     
+    @Override
     public String toString() {
 	String retValue;
 	
@@ -66,6 +67,7 @@ final class ProjectKey extends ProjectNameBasedKey {
 	return KeyObjectFactory.KEY_PROJECT_KEY;
     }
     
+    @Override
     public Key.Behavior getBehavior() {
 	return Behavior.LargeAndMutable;
     }

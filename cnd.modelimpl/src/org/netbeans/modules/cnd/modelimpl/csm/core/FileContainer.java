@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
-	super(new FileContainerKey(project.getQualifiedName()));
+	super(new FileContainerKey(project.getUniqueName()));
 	put();
     }
     
@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         String path = getFileKey(file, true);
         MyFile newEntry;
         if (TraceFlags.USE_REPOSITORY) {
+            @SuppressWarnings("unchecked")
             CsmUID<CsmFile> uid = RepositoryUtils.put(impl);
             newEntry = new MyFile(uid, state, path);
         } else {

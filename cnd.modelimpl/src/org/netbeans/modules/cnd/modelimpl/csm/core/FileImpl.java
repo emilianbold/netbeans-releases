@@ -1100,7 +1100,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public @Override int hashCode() {
 	if( hash == 0 ) {   // we don't need sync here - at worst, we'll calculate the same value twice
-	    String identityHashPath = getProject().getQualifiedName() + "*" + getAbsolutePath(); // NOI18N
+	    String identityHashPath = getProject().getUniqueName() + "*" + getAbsolutePath(); // NOI18N
 	    hash = identityHashPath.hashCode();
 	}
         return hash;
@@ -1115,7 +1115,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	}
 	CsmFile other = (CsmFile)obj;
 	if( this.getAbsolutePath().equals(other.getAbsolutePath()) ) {
-	    return this.getProject().getQualifiedName().equals(other.getProject().getQualifiedName());
+	    return this.getProject().getUniqueName().equals(other.getProject().getUniqueName());
 	}
 	return false;
     }

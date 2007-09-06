@@ -55,7 +55,7 @@ public final class ProjectImpl extends ProjectBase {
 	    catch( Exception e ) {
 		// just report to console;
 		// the code below will create project "from scratch"
-		cleanRepository(platformProject, name);
+		cleanRepository(platformProject, false);
 		e.printStackTrace(System.err);
 	    }
 	}

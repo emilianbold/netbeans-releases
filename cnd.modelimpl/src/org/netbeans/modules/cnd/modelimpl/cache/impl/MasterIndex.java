@@ -24,7 +24,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 
  
 /** implementation of master index file
@@ -52,6 +51,7 @@ final class MasterIndex extends AbstractCacheIndex implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     // save/load implmentation
     
+    @Override
     protected void loadData(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         int version = ois.readInt();
         if (version >= 1) {
@@ -61,6 +61,7 @@ final class MasterIndex extends AbstractCacheIndex implements Serializable {
         }
     }
     
+    @Override
     protected void saveData(ObjectOutputStream oos) throws IOException {
         int version = 1;
         oos.writeInt(version);
@@ -74,7 +75,7 @@ final class MasterIndex extends AbstractCacheIndex implements Serializable {
     // index map content support
     
     protected String getIndexKey(Object obj) {
-        return ((CsmProject) obj).getQualifiedName();
+        return ((CsmProject) obj).getUniqueName();
     }  
 
     protected String getBaseCacheName(Object obj) {

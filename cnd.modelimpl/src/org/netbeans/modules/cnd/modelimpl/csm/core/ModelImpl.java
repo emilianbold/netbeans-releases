@@ -33,7 +33,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
-import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
@@ -114,7 +113,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 
     public CsmProject getProject(Object id) {
         if(id instanceof Project) {
-            NativeProject prj = (NativeProject) ((Project)id).getLookup().lookup(NativeProject.class);
+            NativeProject prj = ((Project) id).getLookup().lookup(NativeProject.class);
             if (prj != null) {
                 id = prj;
             }
@@ -184,9 +183,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                     prj = ProjectImpl.createInstance(this, id,  name);
                     putProject2Map(id,  prj);
                 } else {
-                    String fqn = ProjectBase.getQualifiedName(id);
-                    if( ! prj.getQualifiedName().equals(fqn) ) {
-                        new IllegalStateException("Existing project qualified name differ: " + prj.getName() + " - expected " + name).printStackTrace(System.err); // NOI18N
+                    String expectedUniqueName = ProjectBase.getUniqueName(id);
+                    String defactoUniqueName = prj.getUniqueName();
+                    if( ! defactoUniqueName.equals(expectedUniqueName) ) {
+                        new IllegalStateException("Existing project unique name differ: " + defactoUniqueName + " - expected " + expectedUniqueName).printStackTrace(System.err); // NOI18N
                     }
                 }
             }
@@ -323,7 +323,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             synchronized (lock) {
                 vals = new ArrayList<CsmUID<CsmProject>>(platf2csm.values());
             }
-            Collection out = new ArrayList(vals.size());
+            Collection<CsmProject> out = new ArrayList<CsmProject>(vals.size());
             for (CsmUID<CsmProject> uid : vals) {
                 ProjectBase prj = (ProjectBase)UIDCsmConverter.UIDtoProject(uid);
                 assert prj != null : "null project for UID " + uid;
@@ -600,7 +600,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             while( ParserQueue.instance().isParsing(csmProject) ) {
                 try {
                     if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.disableProject3: waiting for current parse...");
-                    Thread.currentThread().sleep(100);
+                    Thread.sleep(100);
                 } catch( InterruptedException e ) {}
             }
             
@@ -659,7 +659,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     public static Project findProjectByNativeProject(NativeProject nativeProjectToSearch) {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for( int i = 0; i < projects.length; i++ ) {
-            NativeProject nativeProject = (NativeProject) projects[i].getLookup().lookup(NativeProject.class);
+            NativeProject nativeProject = projects[i].getLookup().lookup(NativeProject.class);
             if (nativeProject != null && nativeProject == nativeProjectToSearch) {
                 return projects[i];
             }
@@ -709,5 +709,5 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     private double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;
 
-    private Set disabledProjects = new HashSet();
+    private Set<Object> disabledProjects = new HashSet<Object>();
 }

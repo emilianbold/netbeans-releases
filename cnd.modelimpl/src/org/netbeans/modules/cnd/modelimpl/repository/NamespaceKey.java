@@ -43,9 +43,10 @@ final class NamespaceKey extends ProjectNameBasedKey {
     private static String getProjectName(CsmNamespace ns) {
 	CsmProject prj = ns.getProject();
 	assert (prj != null) : "no project in namespace";
-	return prj == null ? "<No Project Name>" : prj.getQualifiedName();  // NOI18N
+	return prj == null ? "<No Project Name>" : prj.getUniqueName();  // NOI18N
     }
     
+    @Override
     public String toString() {
 	return "NSKey " + fqn + " of project " + getProjectName(); // NOI18N
     }
@@ -54,12 +55,14 @@ final class NamespaceKey extends ProjectNameBasedKey {
 	return CsmObjectFactory.instance();
     }
     
+    @Override
     public int hashCode() {
 	int key = super.hashCode();
 	key = 17*key + fqn.hashCode();
 	return key;
     }
     
+    @Override
     public boolean equals(Object obj) {
 	if (!super.equals(obj)) {
 	    return false;
@@ -68,6 +71,7 @@ final class NamespaceKey extends ProjectNameBasedKey {
 	return this.fqn.equals(other.fqn);
     }
     
+    @Override
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
 	assert fqn != null;
@@ -80,11 +84,13 @@ final class NamespaceKey extends ProjectNameBasedKey {
 	assert fqn != null;
     }
     
+    @Override
     public int getDepth() {
 	assert super.getDepth() == 0;
 	return 1;
     }
     
+    @Override
     public String getAt(int level) {
 	assert super.getDepth() == 0 && level < getDepth();
 	return this.fqn;
@@ -99,6 +105,7 @@ final class NamespaceKey extends ProjectNameBasedKey {
 	return KeyObjectFactory.KEY_NAMESPACE_KEY;
     }
     
+    @Override
     public Key.Behavior getBehavior() {
 	return Behavior.LargeAndMutable;
     }

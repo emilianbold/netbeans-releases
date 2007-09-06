@@ -115,8 +115,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
 	status = newStatus;
     }
     
-    protected static void cleanRepository(Object platformProject, String name) {
-        Key key = KeyUtilities.createProjectKey(getQualifiedName(platformProject));
+    protected static void cleanRepository(Object platformProject, boolean articicial) {
+        Key key = KeyUtilities.createProjectKey(getUniqueName(platformProject));
         RepositoryUtils.closeUnit(key, null, true);
     }
     
@@ -168,8 +168,15 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
         return this.fqn;
     }
+
+    public String getUniqueName() {
+        if (this.uniqueName == null) {
+            this.uniqueName = getUniqueName(getPlatformProject());
+        }
+        return this.uniqueName;
+    }
     
-    public static String getQualifiedName(Object platformProject) {
+    private static String getQualifiedName(Object platformProject) {
 	String result;
         if (platformProject instanceof NativeProject) {
             result = ((NativeProject)platformProject).getProjectRoot();
@@ -177,6 +184,22 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             result = ((File) platformProject).getAbsolutePath();
         } else if( platformProject instanceof String ) {
             result = (String) platformProject;
+        } else if( platformProject == null ) {
+	    throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
+        } else {
+	    throw new IllegalArgumentException("Incorrect platform project class: " + platformProject.getClass()); // NOI18N
+        }
+        return ProjectNameCache.getString(result);
+    }
+
+    public static String getUniqueName(Object platformProject) {
+	String result;
+        if (platformProject instanceof NativeProject) {
+            result = ((NativeProject)platformProject).getProjectRoot() + 'N';
+        } else if( platformProject instanceof File ) {
+            result = ((File) platformProject).getAbsolutePath() + 'F';
+        } else if( platformProject instanceof String ) {
+            result = (String) platformProject + 'L';
         } else if( platformProject == null ) {
 	    throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
         } else {
@@ -297,7 +320,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return true;
     }
     
-    public void registerDeclaration(CsmDeclaration decl) {
+    public void registerDeclaration(CsmOffsetableDeclaration decl) {
         
         if( !ProjectBase.canRegisterDeclaration(decl) ) {
             if (TraceFlags.TRACE_REGISTRATION) {
@@ -1562,6 +1585,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     private ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     
     private String fqn = null; // lazy inited
+    private String uniqueName = null; // lazy initialized
     
     // only one of namespaces/namespacesOLD must be used (based on USE_REPOSITORY)
     private Map<String, NamespaceImpl> namespacesOLD = new ConcurrentHashMap<String, NamespaceImpl>();

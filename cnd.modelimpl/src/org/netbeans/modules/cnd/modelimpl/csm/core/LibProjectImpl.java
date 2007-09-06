@@ -52,7 +52,7 @@ public final class LibProjectImpl extends ProjectBase {
 	    catch( Exception e ) {
 		// just report to console;
 		// the code below will create project "from scratch"
-		cleanRepository(includePathName, includePathName);
+		cleanRepository(includePathName, true);
 		e.printStackTrace(System.err);
 	    }
 	}
