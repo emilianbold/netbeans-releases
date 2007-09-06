@@ -728,17 +728,19 @@ public class InstallSupportImpl {
     }
     
     private static Collection<Certificate> getNbmCertificates (File nbmFile) throws IOException {
-        
-        JarFile jf = new JarFile (nbmFile);
-        
-        Set<Certificate> certs = new HashSet<Certificate> ();
-        for (JarEntry entry : Collections.list (jf.entries ())) {
-            verifyEntry (jf, entry);
-            if (entry.getCertificates () != null) {
-                certs.addAll (Arrays.asList(entry.getCertificates ()));
+        Set<Certificate> certs = new HashSet<Certificate>();
+        JarFile jf = new JarFile(nbmFile);
+        try {
+            for (JarEntry entry : Collections.list(jf.entries())) {
+                verifyEntry(jf, entry);
+                if (entry.getCertificates() != null) {
+                    certs.addAll(Arrays.asList(entry.getCertificates()));
+                }
             }
+        } finally {
+            jf.close();
         }
-        
+
         return certs;
     }
     

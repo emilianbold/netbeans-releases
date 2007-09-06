@@ -294,12 +294,16 @@ public class InstallManager extends InstalledFileLocator{
         boolean res = false;
         try {
             JarFile jf = new JarFile (nbmFile);
-            for (JarEntry entry : Collections.list (jf.entries ())) {
-                String entryName = entry.getName ();
-                if (entryName.startsWith (NBM_CORE + "/") || entryName.startsWith (NBM_LIB + "/")) {
-                    res = true;
-                    break;
+            try {
+                for (JarEntry entry : Collections.list (jf.entries ())) {
+                    String entryName = entry.getName ();
+                    if (entryName.startsWith (NBM_CORE + "/") || entryName.startsWith (NBM_LIB + "/")) {
+                        res = true;
+                        break;
+                    }
                 }
+            } finally {
+                jf.close();
             }
         } catch (IOException ioe) {
             ERR.log (Level.INFO, ioe.getMessage (), ioe);
