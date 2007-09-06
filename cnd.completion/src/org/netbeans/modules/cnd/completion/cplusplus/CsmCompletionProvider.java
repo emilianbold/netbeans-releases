@@ -60,7 +60,9 @@ public class CsmCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
-        if (!sup.isCompletionDisabled(component.getCaret().getDot())) {
+        final int dot = component.getCaret().getDot();
+        // do not work together with include completion
+        if (sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot)) {
             try {
                 if (sup.needShowCompletionOnText(component, typedText)) {
                     return COMPLETION_QUERY_TYPE;
@@ -73,12 +75,17 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType == COMPLETION_QUERY_TYPE) {
-            return new AsyncCompletionTask(new Query(component.getCaret().getDot()), component);
-        } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-            return new AsyncCompletionTask(new DocQuery(null), component);
-        } else if (queryType == TOOLTIP_QUERY_TYPE) {
-            return new AsyncCompletionTask(new ToolTipQuery(), component);
+        CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
+        final int dot = component.getCaret().getDot();
+        // do not work together with include completion
+        if (sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot)) {
+            if (queryType == COMPLETION_QUERY_TYPE) {
+                return new AsyncCompletionTask(new Query(dot), component);
+            } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
+                return new AsyncCompletionTask(new DocQuery(null), component);
+            } else if (queryType == TOOLTIP_QUERY_TYPE) {
+                return new AsyncCompletionTask(new ToolTipQuery(), component);
+            }
         }
         return null;
     }
