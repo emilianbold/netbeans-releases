@@ -82,11 +82,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
     public void updateState(PropertyValue value) {
         if (value != null) {
             DesignComponent eventHandler = value.getComponent();
-            System.out.println("eventHandler.getType() = " + eventHandler.getType());
             if (eventHandler.getType().equals(CallPointEventHandlerCD.TYPEID) || eventHandler.getType().equals(MethodPointEventHandlerCD.TYPEID)) {
-                System.out.println("WTF?");
-                System.out.println("eventHandler.getType().equals(CallPointEventHandlerCD.TYPEID) = " + eventHandler.getType().equals(CallPointEventHandlerCD.TYPEID));
-                System.out.println("eventHandler.getType().equals(MethodPointEventHandlerCD.TYPEID) = " + eventHandler.getType().equals(MethodPointEventHandlerCD.TYPEID));
                 radioButton.setSelected(true);
             }
         }
