@@ -69,10 +69,10 @@ public class HgUtils {
     
     // IGNORE SUPPORT HG: following file patterns are added to {Hg repos}/.hgignore and Hg will ignore any files
     // that match these patterns, reporting "I"status for them // NOI18N
-    private static final String [] HG_IGNORE_FILES = { ".hgignore", "*.orig"}; // NOI18N
+    //private static final String [] HG_IGNORE_FILES = { "^nbproject/private$", "\.orig$"}; // NOI18N
+    private static final String [] HG_IGNORE_FILES = { "^nbproject/private$", "\\.orig$"}; // NOI18N
     
     private static final String HG_IGNORE_FILE = ".hgignore"; // NOI18N
-    private static final String HG_IGNORE_PATTERN = "syntax: glob\n"; // NOI18N
 
 
     /**
@@ -158,7 +158,6 @@ public class HgUtils {
         try     {
             fileWriter = new BufferedWriter(
                     new OutputStreamWriter(new FileOutputStream(ignore)));
-            fileWriter.write(HG_IGNORE_PATTERN);
             for (String name : HG_IGNORE_FILES) {
                 fileWriter.write(name + "\n"); // NOI18N
             }
@@ -349,7 +348,7 @@ itor tabs #66700).
             while (project == null) {
                 tmpNode = tmpNode.getParentNode();
                 if (tmpNode ==  null) {
-                    Mercurial.LOG.log(Level.FINE, "getParent(): No project for {0}",  // NOI18N
+                    Mercurial.LOG.log(Level.FINE, "HgUtils.getProjectFile(): No project for {0}",  // NOI18N
                         node.toString());
                     break;
                 }
