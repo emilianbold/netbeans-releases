@@ -28,21 +28,29 @@
 
 package org.netbeans.modules.compapp.javaee.codegen.model;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.compapp.javaee.util.ProjectUtil;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
 
 /**
  *
  * @author gpatil
  */
 public class EnterpriseAppProject extends AbstractProject{
+    private static Logger logger = Logger.getLogger(EnterpriseAppProject.class.getName());
+    private static String JAR_SEPERATOR = "!/" ; //NOI18Ns
+    private static String SU_FILE_EXT = "ear" ; //NOI18N
+    
     private List<JavaEEProject> subProjs = new ArrayList<JavaEEProject>();
     
     /**
@@ -51,12 +59,62 @@ public class EnterpriseAppProject extends AbstractProject{
     public EnterpriseAppProject(String path2eEar) {
         super(path2eEar);
         this.projType = JavaEEProject.ProjectType.ENT;
+        initEarProj();
     }
     
+    @Override
     public void addSubproject(JavaEEProject subProj){
         this.subProjs.add(subProj);
     }
+
+    @Override
+    protected String renameToSvcUnitExtension(String javaEEName){
+        StringBuffer ret = new StringBuffer();
+        int index = -1;
+        if (javaEEName != null){
+            index = javaEEName.lastIndexOf("."); //NOI18N
+            if (index >= 0){
+                ret.append(javaEEName.substring(0, index + 1));
+                ret.append(SU_FILE_EXT);
+            }
+        }
+        
+        return ret.toString();
+    }
     
+    private void initEarProj() {
+        JarFile ear = null;
+        String jarUrlPrefix = null;
+        JarInJarProject subProject = null;
+        URL subProjUrl = null;
+        try {
+            File earFile = new File(this.jarPath);
+            jarUrlPrefix = "jar:" + earFile.toURL().toString() + JAR_SEPERATOR ; //NOI18N
+            
+            ear = new JarFile(this.jarPath);
+            Enumeration<JarEntry> entries = ear.entries();
+            JarEntry je = null;
+            while (entries.hasMoreElements()){
+                je = entries.nextElement();
+                if ((!je.isDirectory()) && (
+                        (je.getName().endsWith(".jar")) || //NOI18N
+                        (je.getName().endsWith(".war"))    //NOI18N
+                        )){
+                    subProjUrl = new URL(jarUrlPrefix + je.getName() );
+                    subProject = new JarInJarProject(subProjUrl);
+                    this.addSubproject(subProject);
+                }
+            }
+        } catch (IOException ex){
+            logger.log(Level.SEVERE, "Exception while reading EAR archive.", ex);
+        } finally {
+            if (ear != null){
+                ProjectUtil.close(ear);
+            }
+        }
+    }
+    
+    @Override
     public List<Endpoint> getWebservicesEndpoints() throws IOException {
         Iterator<JavaEEProject> itr = this.subProjs.iterator();
         JavaEEProject subp = null;

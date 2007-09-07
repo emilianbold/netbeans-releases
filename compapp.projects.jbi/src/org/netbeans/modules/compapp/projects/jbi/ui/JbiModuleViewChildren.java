@@ -128,7 +128,7 @@ public class JbiModuleViewChildren extends Children.Keys implements PropertyChan
         Node[]  ret = null;
         if (obj instanceof AntArtifact) {
             aa = (AntArtifact) obj;
-            if (aa.getType().startsWith(JbiProjectConstants.JAVA_EE_EAR_COMPONENT_ARCHIVE)){
+            if (JbiProjectConstants.JAVA_EE_AA_TYPES.contains(aa.getType())){
                 ret = new Node[] {new JavaEEModuleNode(vcpi, this.project )};
             } else {
                 ret = new Node[] {new JbiModuleNode(vcpi)};

@@ -29,7 +29,6 @@
 package org.netbeans.modules.compapp.javaee.annotation.handler;
 
 import java.util.List;
-import java.util.jar.JarFile;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.compapp.javaee.codegen.model.Endpoint;
 
@@ -53,5 +52,5 @@ public interface AnnotationHandler {
     public String getAnnotationClassConstant();
     public List<Endpoint> getEndPoints();
     public void resetEndPoints();
-    public void handle(JarClassFileLoader cl, ClassFile theClass);
+    public void handle(ClassFileLoader cl, ClassFile theClass);
 }

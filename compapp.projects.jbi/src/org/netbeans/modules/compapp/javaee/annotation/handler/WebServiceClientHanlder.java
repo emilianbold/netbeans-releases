@@ -52,7 +52,7 @@ public class WebServiceClientHanlder  implements AnnotationHandler {
         return ANNO_WEBSERVICE_CLIENT;
     }
     
-    public void handle(JarClassFileLoader cl, ClassFile theClass) {
+    public void handle(ClassFileLoader cl, ClassFile theClass) {
         Annotation annoWsc = theClass.getAnnotation(ClassName.getClassName(ANNO_WEBSERVICE_CLIENT));
         Annotation annoWep = null;
         NBAnnonationWrapper wsc = null;

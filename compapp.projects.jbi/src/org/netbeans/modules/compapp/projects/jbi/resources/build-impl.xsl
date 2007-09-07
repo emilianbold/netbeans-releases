@@ -150,7 +150,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path id="ant.task.classpath">
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-projects-jbi.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-apache-xmlbeans.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-soa-libs-xmlbeans.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
                     <!--<pathelement location="${{netbeans.home}}/../soa1/modules/ext/jbi/anttask.jar"/>-->
                     <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
@@ -809,12 +809,8 @@ Microsystems, Inc. All Rights Reserved.
                 </xsl:variable>
                 <ant target="{$subtarget}" inheritall="false">
                     <!-- XXX #43624: cannot use inline attr on JDK 1.5 -->
-                    <xsl:attribute name="dir">${project.<xsl:value-of select="$subproj"/>}<xsl:value-of select="$scriptdirslash"/></xsl:attribute>
-                    <xsl:if test="$scriptfile != 'build.xml'">
-                        <xsl:attribute name="antfile">
-                            <xsl:value-of select="$scriptfile"/>
-                        </xsl:attribute>
-                    </xsl:if>
+                    <!-- 'dir' attribute overrides sub-sub-project base directory with sub-projects, so using 'antfile' attribute-->
+                    <xsl:attribute name="antfile">${project.<xsl:value-of select="$subproj"/>}<xsl:value-of select="$scriptdirslash"/>/<xsl:value-of select="$scriptfile"/></xsl:attribute>
                 </ant>
                 <xsl:if test="$type">
                     <!--
@@ -936,12 +932,7 @@ Microsystems, Inc. All Rights Reserved.
                     </xsl:choose>
                 </xsl:variable>
                 <ant target="{$subtarget}" inheritall="false">
-                    <xsl:attribute name="dir">${project.<xsl:value-of select="$subproj"/>}<xsl:value-of select="$scriptdirslash"/></xsl:attribute>
-                    <xsl:if test="$scriptfile != 'build.xml'">
-                        <xsl:attribute name="antfile">
-                            <xsl:value-of select="$scriptfile"/>
-                        </xsl:attribute>
-                    </xsl:if>
+                    <xsl:attribute name="antfile">${project.<xsl:value-of select="$subproj"/>}<xsl:value-of select="$scriptdirslash"/>/<xsl:value-of select="$scriptfile"/></xsl:attribute>
                 </ant>
                 <basename>
                     <xsl:attribute name="property"><xsl:value-of select="$subproj"/>.su.name</xsl:attribute>

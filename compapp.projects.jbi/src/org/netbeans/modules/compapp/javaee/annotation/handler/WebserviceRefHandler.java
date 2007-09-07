@@ -54,7 +54,7 @@ public class WebserviceRefHandler implements AnnotationHandler {
         return ANNO_WEB_SERVICE_REF ;
     }
     
-    public void handle(JarClassFileLoader cl, ClassFile theClass) {
+    public void handle(ClassFileLoader cl, ClassFile theClass) {
         Collection<Variable> fields = theClass.getVariables();
         ClassFile typeClass = null;
         Annotation anno = null;
@@ -71,7 +71,7 @@ public class WebserviceRefHandler implements AnnotationHandler {
         }
     }
     
-    public void processWebserviceClient(JarClassFileLoader cl, ClassFile theClass){
+    public void processWebserviceClient(ClassFileLoader cl, ClassFile theClass){
         Annotation annoWsc = theClass.getAnnotation(ClassName.getClassName(ANNO_WEBSERVICE_CLIENT));
         Annotation annoWep =  null;
         if (annoWsc != null){

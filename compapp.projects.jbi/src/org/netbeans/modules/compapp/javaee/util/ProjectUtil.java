@@ -24,6 +24,7 @@ package org.netbeans.modules.compapp.javaee.util;
  * Created on October 18, 2006, 12:13 AM
  */
 
+import java.io.Closeable;
 import org.netbeans.modules.compapp.javaee.codegen.model.JavaEEProject;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.zip.ZipFile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -429,4 +431,25 @@ public class ProjectUtil {
         Properties prop = readProperties(javaEEConfigFile);
         return prop;
     }
+    
+    public static void close(Closeable clb){
+        if (clb != null){
+            try {
+                clb.close();
+            } catch (Exception ex){
+                //Ignore
+            }
+        }
+    }
+    
+    public static void close(ZipFile zip){
+        if (zip != null){
+            try {
+                zip.close();
+            } catch (Exception ex){
+                //Ignore
+            }
+        }
+    }
+
 }

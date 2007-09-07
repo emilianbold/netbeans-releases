@@ -58,7 +58,7 @@ public class WebServiceHandler implements AnnotationHandler{
         return ANNO_WEB_SERVICE;
     }
     
-    public void handle(JarClassFileLoader cl, ClassFile theClass) {
+    public void handle(ClassFileLoader cl, ClassFile theClass) {
         ClassName cnWs = ClassName.getClassName(ANNO_WEB_SERVICE);
         Annotation annoWs = theClass.getAnnotation(cnWs);
         Properties prop = new Properties();
@@ -169,7 +169,7 @@ public class WebServiceHandler implements AnnotationHandler{
         return sb.toString();
     }
     
-    private QName getPortType(JarClassFileLoader cl, Collection<ClassName> interfaces){
+    private QName getPortType(ClassFileLoader cl, Collection<ClassName> interfaces){
         QName ret = null;
         for (ClassName intfc: interfaces){
             try {

@@ -17,27 +17,17 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * JavaEEProject.java
- *
- * Created on October 6, 2006, 3:06 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 
 package org.netbeans.modules.compapp.javaee.codegen.model;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  *
  * @author gpatil
- */
+ **/
 public interface JavaEEProject {
     public enum ProjectType {EJB, WEB, ENT};
     

@@ -68,6 +68,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
 import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.compapp.javaee.annotation.handler.ClassFileLoader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -85,8 +86,10 @@ public class AbstractProject implements JavaEEProject{
     protected boolean deployThruCA = true;
     protected String resourceFolder = null;
     
-    private static final String SU_NAME = "javaee_su.jar";  //NOI18N
-    private static final String JBI_XML_ENTRY = "META-INF/jbi.xml"; //NOI18N
+    protected static final String SU_NAME = "javaee_su.jar";  //NOI18N
+    protected static final String JBI_XML_ENTRY = "META-INF/jbi.xml"; //NOI18N
+    protected static final String JBI_XML = "jbi.xml"; //NOI18N
+
     private static final String JBI_DEFAULT_NS = "http://java.sun.com/xml/ns/jbi"; //NOI18N
     private static final String XML_VERSION = "1.0" ; //NOI18N
     private static final String JBI_VERSION = "1.0" ; //NOI18N
@@ -96,7 +99,7 @@ public class AbstractProject implements JavaEEProject{
     private static final String ELEM_JBI = "jbi" ;     //NOI18N
     
     // resources related
-    private static final String RES_XML_ENTRY = "META-INF/sun-resources.xml"; //NOI18N
+    protected static final String RES_XML_ENTRY = "META-INF/sun-resources.xml"; //NOI18N
 
     // 06/04/07, JavaEE SE endpoint mapping
     private static final String MAPPING_PREFIX = "javaee_" ;     //NOI18N
@@ -111,6 +114,10 @@ public class AbstractProject implements JavaEEProject{
     
     public AbstractProject(String nJarPath) {
         this.jarPath = nJarPath;
+        init();
+    }
+
+    protected AbstractProject() {
         init();
     }
     
@@ -195,7 +202,7 @@ public class AbstractProject implements JavaEEProject{
         return ret.toString();
     }
 
-    private void createFolderIfNotExists(String dir){
+    protected void createFolderIfNotExists(String dir){
         File flDir = new File(dir);     
         flDir.mkdirs();
     }
@@ -249,7 +256,8 @@ public class AbstractProject implements JavaEEProject{
                 FileOutputStream jfos = null;
                 try {
                     createFolderIfNotExists(additionalJbiFileDir);
-                    File file = new File(additionalJbiFileDir + File.separator + "jbi.xml"); //NOI18N
+                    File file = new File(additionalJbiFileDir 
+                        + File.separator + JBI_XML); 
                     jfos = new FileOutputStream(file); 
                     writeJBIXMLUsingDOM(epts, excludeEpts, jfos);                
                     jfos.flush();
@@ -386,7 +394,7 @@ public class AbstractProject implements JavaEEProject{
         }
     }
 
-    protected void handleAnnotations(JarClassFileLoader cl, JarEntry je){
+    protected void handleAnnotations(ClassFileLoader cl, JarEntry je){
         try {
             ClassFile classFile = cl.getClassFileUsingJarEntry(je);
             Iterator itr = this.hanlders.iterator();
@@ -416,7 +424,7 @@ public class AbstractProject implements JavaEEProject{
         this.hanlders.add(wsc);
     }
     
-    private void writeJBIXMLUsingDOM(List<Endpoint> epts, Set<Endpoint> excludedEpts, OutputStream os)
+    protected void writeJBIXMLUsingDOM(List<Endpoint> epts, Set<Endpoint> excludedEpts, OutputStream os)
     throws IOException {
         try {
             Map<String, String> ns = getNamespacePrefixes(epts);
@@ -655,12 +663,12 @@ public class AbstractProject implements JavaEEProject{
         return ret;
     }
     
-    private String scanForResources() throws Exception {
+    protected String scanForResources() throws Exception {
         // return SunResourcesUtil.scanForSunResources(this.p);
         return SunResourcesUtil.scanForSunResources(this.resourceFolder);
     }
     
-    private void writeResourcesFile(String xmlContent, OutputStream os) throws IOException {
+    protected void writeResourcesFile(String xmlContent, OutputStream os) throws IOException {
         PrintWriter out = new PrintWriter(os);
         out.print(xmlContent);
         out.flush();

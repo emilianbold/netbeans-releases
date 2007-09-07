@@ -132,51 +132,51 @@ public class Endpoint {
 
     public String toString(){
         StringBuffer sb = new StringBuffer();
-        sb.append("EndPoint(");
+        sb.append("EndPoint("); //NOI18N
         sb.append(this.ept);
-        sb.append("):service:");
+        sb.append("):service:");//NOI18N
         sb.append(this.serviceName);
-        sb.append(":port:");
+        sb.append(":port:");//NOI18N
         sb.append(this.endPointName);
-        sb.append(":portType:");
+        sb.append(":portType:");//NOI18N
         sb.append(this.interfaceName);
         return sb.toString();
     }
     
     public String toEndpointConfigXML(String indent){
         if (indent == null){
-            indent = "";
+            indent = ""; 
         }
         
         String newlineIndent = "\n" + indent;
         
         StringBuffer sb = new StringBuffer();
         sb.append(indent);
-        sb.append("<endpoint ");
+        sb.append("<endpoint ");//NOI18N
         sb.append(newlineIndent);        
-        sb.append("  endpointType=\"");
+        sb.append("  endpointType=\"");//NOI18N
         sb.append(this.ept);
-        sb.append("\"");  
+        sb.append("\"");  //NOI18N
         sb.append(newlineIndent);
-        sb.append("  portName=\""); 
+        sb.append("  portName=\""); //NOI18N
         sb.append(this.endPointName);
-        sb.append("\"");          
+        sb.append("\"");          //NOI18N
         sb.append(newlineIndent);
-        sb.append("  portTypeLocalName=\"");
+        sb.append("  portTypeLocalName=\"");//NOI18N
         sb.append(this.interfaceName.getLocalPart());
-        sb.append("\"");          
+        sb.append("\"");          //NOI18N
         sb.append(newlineIndent);
-        sb.append("  portTypeNamespace=\"");
+        sb.append("  portTypeNamespace=\"");//NOI18N
         sb.append(this.interfaceName.getNamespaceURI());
-        sb.append("\"");          
+        sb.append("\"");          //NOI18N
         sb.append(newlineIndent);        
-        sb.append("  serviceLocalName=\"");
+        sb.append("  serviceLocalName=\"");//NOI18N
         sb.append(this.serviceName.getLocalPart());
-        sb.append("\"");          
+        sb.append("\"");          //NOI18N
         sb.append(newlineIndent);        
-        sb.append("  serviceNamespace=\"");
+        sb.append("  serviceNamespace=\"");//NOI18N
         sb.append(this.serviceName.getNamespaceURI());
-        sb.append("\"/>\n");
+        sb.append("\"/>\n");//NOI18N
         return sb.toString();
     }
     
