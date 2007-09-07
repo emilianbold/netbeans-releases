@@ -62,8 +62,6 @@ import org.openide.util.Utilities;
  * @author Nathan Fiedler
  */
 public class GraphView extends JPanel {
-    
-
     /** Manages the state of the widgets and corresponding objects. */
     private PartnerScene scene;
     /** The component model. */
@@ -119,10 +117,10 @@ public class GraphView extends JPanel {
         scene.addChild(contentWidget);
         scene.addSceneListener (new Scene.SceneListener() {
             public void sceneRepaint () {
-            	//do nothing
+                //do nothing
             }
             public void sceneValidating () {
-            	//do nothing
+                //do nothing
             }
             public void sceneValidated () {
                 int width = panel.getViewport().getWidth();
@@ -144,21 +142,22 @@ public class GraphView extends JPanel {
         add(panel, BorderLayout.CENTER);
         
         addHierarchyBoundsListener(new HierarchyBoundsAdapter() {
-		
-			@Override
-			public void ancestorResized(HierarchyEvent e) {
-				super.ancestorResized(e);
-				if (e.getID() == HierarchyEvent.ANCESTOR_RESIZED) {
-					int width = panel.getViewport().getWidth();
-	                if (width <= scene.getBounds().width) {
-	                    contentWidget.setMinimumSize(new Dimension(width, 0));
-	                    contentWidget.getScene().validate();
-	                }
-				}
-			}
-		
-		});
+        
+            @Override
+            public void ancestorResized(HierarchyEvent e) {
+                super.ancestorResized(e);
+                if (e.getID() == HierarchyEvent.ANCESTOR_RESIZED) {
+                    int width = panel.getViewport().getWidth();
+                    if (width <= scene.getBounds().width) {
+                        contentWidget.setMinimumSize(new Dimension(width, 0));
+                        contentWidget.getScene().validate();
+                    }
+                }
+            }
+        });
 
+        // vlv: print
+        getContent().putClientProperty(java.awt.print.Printable.class, "");
     }
 
     /**
@@ -275,10 +274,10 @@ public class GraphView extends JPanel {
      * @param  comp  model component to show.
      */
     public void showComponent(Component comp) {
-    	// Make the widget visible and select it (our select provider
-    	// will make the widget visible within the scroll pane).
-    	// Reset whatever the current selection is first.
-    	scene.userSelectionSuggested(Collections.singleton(comp), false);
+        // Make the widget visible and select it (our select provider
+        // will make the widget visible within the scroll pane).
+        // Reset whatever the current selection is first.
+        scene.userSelectionSuggested(Collections.singleton(comp), false);
     }
 
     /**

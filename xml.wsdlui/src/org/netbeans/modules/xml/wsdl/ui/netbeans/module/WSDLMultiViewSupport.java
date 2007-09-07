@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.EventQueue;
@@ -48,7 +47,6 @@ import org.openide.windows.WindowManager;
  * @author Nathan Fiedler
  */
 public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie {
-        //PrintProviderCookie {
     /** The data object */
     private WSDLDataObject dobj;
     /** Set of components that are shown in the Partner (design) view. */
@@ -203,34 +201,6 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie {
             }
         }
     }
-
-//    public PrintProvider getPrintProvider() {
-//        TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
-//        MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
-//
-//        if (mvh == null) {
-//            return null;
-//        }
-//
-//        MultiViewPerspective mvp = mvh.getSelectedPerspective();
-//        if (mvp.preferredID().equals(WSDLTreeViewMultiViewDesc.PREFERRED_ID)) {
-//            return null;
-//        } else if (mvp.preferredID().equals(WSDLDesignMultiViewDesc.PREFERRED_ID)) {
-//            Lookup lookup = tc.getLookup();
-//            DataObject dataObject = lookup.lookup(DataObject.class);
-//            if (dataObject == this.dobj) {
-//                PrintProviderCookie cookie = lookup.lookup(
-//                        PrintProviderCookie.class);
-//                // Avoid looping forever by ensuring we find a provider that
-//                // is not ourselves.
-//                if (cookie != null && cookie != this) {
-//                    return cookie.getPrintProvider();
-//                }
-//            }
-//        }
-//        
-//        return null;
-//    }
 
     /**
      * Finds the preferredID of active multiview element. If activated

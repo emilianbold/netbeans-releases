@@ -16,16 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * WSDLDesignMultiViewElement.java
- *
- * Created on 2006/08/15, 20:43
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.BorderLayout;
@@ -143,8 +133,6 @@ public class WSDLDesignMultiViewElement extends TopComponent
                     wsdlDataObject,
                     // The Show Cookie in lookup to show the component
                     showCookie,
-                    // Provides the PrintProvider for printing
-                    //new DesignViewPrintProvider(),
                     // Component palette for the partner view.
                     WSDLPaletteFactory.getPalette(),
             }),
@@ -286,8 +274,8 @@ public class WSDLDesignMultiViewElement extends TopComponent
                 graphComponent.addToolbarActions(mToolbar);
 
                 // vlv: print
-/*                mToolbar.addSeparator();
-                mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());*/
+//              mToolbar.addSeparator();
+//              mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());
 
                 mToolbar.addSeparator();
                 mToolbar.add(new ValidateAction(model));
@@ -312,7 +300,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
 
     @Override
     public HelpCtx getHelpCtx() {
-    return new HelpCtx(WSDLDesignMultiViewDesc.class);
+      return new HelpCtx(WSDLDesignMultiViewDesc.class);
     }
 
     @Override
@@ -346,27 +334,4 @@ public class WSDLDesignMultiViewElement extends TopComponent
         out.writeBoolean(graphComponent.isCollaborationsShowing());
         out.writeBoolean(graphComponent.isMessagesShowing());
     }
-
-    /**
-     * Provides the PrintProvider which allows us to print the design view
-     * to a printer using the Print API.
-     */
-    /*private class DesignViewPrintProvider implements PrintProviderCookie {
-
-        public PrintProvider getPrintProvider() {
-            return new PrintProvider.Component() {
-                public String getName() {
-                    return wsdlDataObject.getName();
-                }
-
-                public Date getLastModifiedDate() {
-                    return wsdlDataObject.getPrimaryFile().lastModified();
-                }
-
-                public JComponent getComponent() {
-                    return graphComponent.getContent();
-                }
-            };
-        }
-    }*/
 }
