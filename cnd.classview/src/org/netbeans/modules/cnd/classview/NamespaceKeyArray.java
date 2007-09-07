@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.classview;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
@@ -84,43 +83,47 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
     }
     
     protected java.util.Map<PersistentKey,SortedName> getMembers() {
-        CsmNamespace namespace = getNamespace();
         java.util.Map<PersistentKey,SortedName> res = new HashMap<PersistentKey,SortedName>();
-        if (namespace != null){
-            for( Iterator/*<CsmNamespace>*/ iter = namespace.getNestedNamespaces().iterator(); iter.hasNext(); ) {
-                CsmNamespace ns = (CsmNamespace)iter.next();
-                PersistentKey key = PersistentKey.createKey(ns);
-                if (key != null) {
-                    res.put(key, getSortedName(ns));
-                }
-            }
-            Collection/*<CsmDeclaration>*/ decl = namespace.getDeclarations();
-            if (decl != null) {
-                for( Iterator/*<CsmDeclaration>*/ iter = decl.iterator(); iter.hasNext(); ) {
-                    CsmDeclaration d = (CsmDeclaration) iter.next();
-                    if (d != null && d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION){
-                        CsmFunctionDefinition def = (CsmFunctionDefinition) d;
-                        CsmFunction func = def.getDeclaration();
-                        if (func != null){
-                            d = func;
-                        }
+        try {
+            CsmNamespace namespace = getNamespace();
+            if (namespace != null) {
+                for (CsmNamespace ns : namespace.getNestedNamespaces()) {
+                    PersistentKey key = PersistentKey.createKey(ns);
+                    if (key != null) {
+                        res.put(key, getSortedName(ns));
                     }
-                    if (CsmKindUtilities.isOffsetable(d)) {
-                        if (canCreateNode((CsmOffsetableDeclaration) d)){
-                            PersistentKey key = PersistentKey.createKey(d);
-                            if (key != null) {
-                                res.put(key, getSortedName((CsmOffsetableDeclaration) d));
+                }
+                Collection<CsmOffsetableDeclaration> decl = namespace.getDeclarations();
+                if (decl != null) {
+                    for (CsmDeclaration d : decl) {
+                        if (d != null && d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
+                            CsmFunctionDefinition def = (CsmFunctionDefinition) d;
+                            CsmFunction func = def.getDeclaration();
+                            if (func != null) {
+                                d = func;
+                            }
+                        }
+                        if (CsmKindUtilities.isOffsetable(d)) {
+                            if (canCreateNode((CsmOffsetableDeclaration) d)) {
+                                PersistentKey key = PersistentKey.createKey(d);
+                                if (key != null) {
+                                    res.put(key, getSortedName((CsmOffsetableDeclaration) d));
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        if (isRootNamespase && !getProject().isStable(null)){
-            PersistentKey key = PersistentKey.createKey(getProject());
-            if (key != null) {
-                res.put(key, new SortedName(0,"",0)); // NOI18N
+            if (isRootNamespase && !getProject().isStable(null)) {
+                PersistentKey key = PersistentKey.createKey(getProject());
+                if (key != null) {
+                    res.put(key, new SortedName(0, "", 0)); // NOI18N
+                }
             }
+        } catch (AssertionError ex){
+            ex.printStackTrace();
+        } catch (Exception ex){
+            ex.printStackTrace();
         }
         return res;
     }
@@ -221,22 +224,27 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         return (CsmNamespace) nsId.getObject();
     }
     
-    protected Node createNode(PersistentKey key){
+    protected Node createNode(PersistentKey key) {
         Node node = null;
         ChildrenUpdater updater = getUpdater();
         if (updater != null) {
-            Object o = key.getObject();
-            if (CsmKindUtilities.isNamespace((CsmObject) o)){
-                CsmNamespace ns = (CsmNamespace) o;
-                node = new NamespaceNode(ns,
-                        new NamespaceKeyArray(updater,ns));
-            } else if (o instanceof CsmProject){ // NOI18N
-                node = CVUtil.createLoadingNode();
-            } else {
-                CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) o;
-                if (decl != null && canCreateNode(decl)){
-                    node = createNode(decl);
+            try {
+                Object o = key.getObject();
+                if (CsmKindUtilities.isNamespace((CsmObject) o)) {
+                    CsmNamespace ns = (CsmNamespace) o;
+                    node = new NamespaceNode(ns, new NamespaceKeyArray(updater, ns));
+                } else if (o instanceof CsmProject) {
+                    node = CVUtil.createLoadingNode();
+                } else {
+                    CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) o;
+                    if (decl != null && canCreateNode(decl)) {
+                        node = createNode(decl);
+                    }
                 }
+            } catch (AssertionError ex){
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
         return node;

@@ -102,16 +102,22 @@ public class ChildrenUpdater {
         }
         for (Map.Entry<CsmProject,SmartChangeEvent.Storage> entry : e.getChangedProjects().entrySet()){
             CsmProject project = entry.getKey();
-            if (map.containsKey(project) && project.isValid()) {
-                synchronized (getLock(project)) {
-                    SmartChangeEvent.Storage storage = entry.getValue();
-                    update(project, storage);
+            try {
+                if (map.containsKey(project) && project.isValid()) {
+                    synchronized (getLock(project)) {
+                        SmartChangeEvent.Storage storage = entry.getValue();
+                        update(project, storage);
+                    }
                 }
+            } catch (AssertionError ex){
+                ex.printStackTrace();
+            } catch (Exception ex){
+                ex.printStackTrace();
             }
         }
     }
     
-    public void update(CsmProject project, SmartChangeEvent.Storage e){
+    private void update(CsmProject project, SmartChangeEvent.Storage e){
         Set<UpdatebleHost> toFlush = new HashSet<UpdatebleHost>();
         for(CsmNamespace ns : e.getNewNamespaces()){
             UpdatebleHost keys = findHost(project, ns);

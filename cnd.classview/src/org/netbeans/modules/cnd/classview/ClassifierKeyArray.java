@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.classview;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
@@ -74,15 +73,21 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
         return true;
     }
     
-    protected java.util.Map<PersistentKey,SortedName> getMembers() {
-        CsmCompoundClassifier classifier = getClassifier();
-        java.util.Map<PersistentKey,SortedName> res = new HashMap<PersistentKey,SortedName>();
-        if (classifier != null){
-            if (CsmKindUtilities.isClass(classifier)){
-                initClass((CsmClass)classifier, res);
-            } else if (CsmKindUtilities.isEnum(classifier)){
-                initEnum((CsmEnum)classifier, res);
+    protected java.util.Map<PersistentKey, SortedName> getMembers() {
+        java.util.Map<PersistentKey, SortedName> res = new HashMap<PersistentKey, SortedName>();
+        try {
+            CsmCompoundClassifier classifier = getClassifier();
+            if (classifier != null) {
+                if (CsmKindUtilities.isClass(classifier)) {
+                    initClass((CsmClass) classifier, res);
+                } else if (CsmKindUtilities.isEnum(classifier)) {
+                    initEnum((CsmEnum) classifier, res);
+                }
             }
+        } catch (AssertionError ex){
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return res;
     }
@@ -103,8 +108,7 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
     }
     
     private void initEnum(CsmEnum en, java.util.Map<PersistentKey, SortedName> res){
-        for (Iterator iter = en.getEnumerators().iterator(); iter.hasNext();) {
-            CsmEnumerator val = (CsmEnumerator) iter.next();
+        for (CsmEnumerator val : en.getEnumerators()) {
             PersistentKey key = PersistentKey.createKey(val);
             if (key != null) {
                 res.put(key, new SortedName(0,val.getName(),0));
@@ -135,36 +139,40 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
         return getProject().findNamespace(nsId);
     }
     
-    protected Node createNode(PersistentKey key){
+    protected Node createNode(PersistentKey key) {
         ChildrenUpdater updater = getUpdater();
         Node node = null;
         if (updater != null) {
-            CsmOffsetableDeclaration member = findDeclaration(key);
-            if (member != null){
-                if( CsmKindUtilities.isClass(member) ) {
-                    node = new ClassNode((CsmClass) member,
-                            new ClassifierKeyArray(updater, (CsmClass) member));
-                } else if( CsmKindUtilities.isEnum(member) ) {
-                    node = new EnumNode((CsmEnum) member,
-                            new ClassifierKeyArray(updater, (CsmEnum) member));
-                } else if( CsmKindUtilities.isEnumerator(member) ) {
-                    node = new EnumeratorNode((CsmEnumerator) member);
-                } else if( CsmKindUtilities.isFriendClass(member) ) {
-                    node = new FriendClassNode((CsmFriendClass) member);
-                } else if( CsmKindUtilities.isFriendMethod(member) ) {
-                    node = new FriendFunctionNode((CsmFriendFunction) member);
-                } else if( CsmKindUtilities.isClassMember(member) ) {
-                    node = new MemberNode((CsmMember) member);
-                } else if( CsmKindUtilities.isFunction(member) ) {
-                    if (traceEvents){
-                        System.out.println("It should be member:"+member.getUniqueName()); // NOI18N
-                    }
-                    node = new GlobalFuncNode((CsmFunction) member);
-                } else {
-                    if (traceEvents){
-                        System.out.println("It should be member:"+member.getUniqueName()); // NOI18N
+            try {
+                CsmOffsetableDeclaration member = findDeclaration(key);
+                if (member != null) {
+                    if (CsmKindUtilities.isClass(member)) {
+                        node = new ClassNode((CsmClass) member, new ClassifierKeyArray(updater, (CsmClass) member));
+                    } else if (CsmKindUtilities.isEnum(member)) {
+                        node = new EnumNode((CsmEnum) member, new ClassifierKeyArray(updater, (CsmEnum) member));
+                    } else if (CsmKindUtilities.isEnumerator(member)) {
+                        node = new EnumeratorNode((CsmEnumerator) member);
+                    } else if (CsmKindUtilities.isFriendClass(member)) {
+                        node = new FriendClassNode((CsmFriendClass) member);
+                    } else if (CsmKindUtilities.isFriendMethod(member)) {
+                        node = new FriendFunctionNode((CsmFriendFunction) member);
+                    } else if (CsmKindUtilities.isClassMember(member)) {
+                        node = new MemberNode((CsmMember) member);
+                    } else if (CsmKindUtilities.isFunction(member)) {
+                        if (traceEvents) {
+                            System.out.println("It should be member:" + member.getUniqueName()); // NOI18N
+                        }
+                        node = new GlobalFuncNode((CsmFunction) member);
+                    } else {
+                        if (traceEvents) {
+                            System.out.println("It should be member:" + member.getUniqueName()); // NOI18N
+                        }
                     }
                 }
+            } catch (AssertionError ex){
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
         return node;
