@@ -168,8 +168,11 @@ public class SwitchProjectAction extends NodeAction {
 	running = true;
 	model.enqueue(new Runnable() {
 	    public void run() {
-		performAction(getNativeProjects(getActivatedNodes()));
-		running = false;
+                try {
+                    performAction(getNativeProjects(getActivatedNodes()));
+                } finally {
+                    running = false;
+                }
 	    }
 	}, "Switching code model ON/OFF"); //NOI18N
     }
