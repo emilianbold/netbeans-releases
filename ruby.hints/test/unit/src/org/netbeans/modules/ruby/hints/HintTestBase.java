@@ -328,6 +328,11 @@ public abstract class HintTestBase extends RubyTestBase {
     }
 
     private Fix findApplicableFix(ComputedHints r, String text) {
+        boolean substringMatch = true;
+        if (text.endsWith("\n")) {
+            text = text.substring(0, text.length()-1);
+            substringMatch = false;
+        }
         int caretOffset = r.caretOffset;
         for (ErrorDescription desc : r.hints) {
             int start = desc.getRange().getBegin().getOffset();
@@ -340,7 +345,8 @@ public abstract class HintTestBase extends RubyTestBase {
                 assertNotNull(list);
                 for (Fix fix : list.getFixes()) {
                     if (text == null ||
-                            fix.getText().indexOf(text) != -1) {
+                            (substringMatch && fix.getText().indexOf(text) != -1) ||
+                            (!substringMatch && fix.getText().equals(text))) {
                         return fix;
                     }
                 }
