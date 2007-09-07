@@ -542,16 +542,20 @@ public final class MainWindow extends JFrame {
     private Rectangle restoreBounds;
     private int restoreExtendedState = JFrame.NORMAL;
     private boolean isSwitchingFullScreenMode = false;
+    private boolean isUndecorated = true;
+    private int windowDecorationStyle = JRootPane.FRAME;
+
     
     public void setFullScreenMode( boolean fullScreenMode ) {
         if( isFullScreenMode == fullScreenMode || isSwitchingFullScreenMode ) {
             return;
         }
         isSwitchingFullScreenMode = true;
-        final TopComponent activatedTc = WindowManager.getDefault().getRegistry().getActivated();
         if( !isFullScreenMode ) {
             restoreExtendedState = getExtendedState();
             restoreBounds = getBounds();
+            isUndecorated = isUndecorated();
+            windowDecorationStyle = getRootPane().getWindowDecorationStyle();
         }
         isFullScreenMode = fullScreenMode;
         if( Utilities.isWindows() )
@@ -561,7 +565,9 @@ public final class MainWindow extends JFrame {
         
         dispose();
         
-        setUndecorated( isFullScreenMode );
+        setUndecorated( isFullScreenMode || isUndecorated );
+        // Added to support Custom Look and Feel with Decorations
+        getRootPane().setWindowDecorationStyle( isFullScreenMode ? JRootPane.NONE : windowDecorationStyle );
 
         final String toolbarConfigName = ToolbarPool.getDefault().getConfiguration();
         if( null != toolbarConfigName ) {
