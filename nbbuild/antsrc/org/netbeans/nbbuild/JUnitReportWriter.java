@@ -67,6 +67,7 @@ public class JUnitReportWriter {
             int failures = 0;
             testsuite.setAttribute("errors", "0");
             testsuite.setAttribute("time", "0.0");
+            testsuite.setAttribute("name", task.getClass().getName()); // http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
             for (Map.Entry<String,String> entry : pseudoTests.entrySet()) {
                 Element testcase = reportDoc.createElement("testcase");
                 testsuite.appendChild(testcase);
