@@ -56,7 +56,10 @@ public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvi
     private boolean isJaxWsLibraryOnRuntimeClasspath(FileObject targetSource){
         ClassPath classPath = ClassPath.getClassPath(targetSource,ClassPath.EXECUTE);
         if (classPath != null) {
-            if (classPath.findResource("javax/xml/ws/Service.class")!=null) return true;
+            if (classPath.findResource("javax/xml/ws/Service.class")!=null  &&
+                    classPath.findResource("javax/xml/rpc/Service.class") == null){
+                return true;
+            }
         }
         return false;
     }
