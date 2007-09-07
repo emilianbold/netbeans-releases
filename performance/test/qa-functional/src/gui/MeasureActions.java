@@ -88,6 +88,8 @@ public class MeasureActions  {
         //TODO    suite.addTest(new OpenProject("testOpenJavaLibraryProject", "Open Java Library project"));
         //TODO    suite.addTest(new OpenProject("testOpenWebApplicationProject", "Open Web Application project"));
         //TODO    suite.addTest(new OpenProject("testOpenJavaProjectWithExistingSources", "Open Java Project with Existing sources"));
+
+        suite.addTest(new AddToFavorites("testAddJavaFile", "Add to Favorites Java file"));
         
         suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
         suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
@@ -99,7 +101,6 @@ public class MeasureActions  {
         suite.addTest(new CreateNBProject("testCreateModuleProject", "Create Module Project"));
         suite.addTest(new CreateNBProject("testCreateModuleSuiteProject", "Create Module Suite Project"));
         
-        suite.addTest(new AddToFavorites("testAddJavaFile", "Add to Favorites Java file"));
         
 //TODO 6.0 still causes a lot of failures in the following tests        suite.addTest(new DeleteFolder("testDeleteFolderWith50JavaFiles", "Delete folder with 50 java files"));
 //TODO 6.0 still causes a lot of failures in the following tests        suite.addTest(new DeleteFolder("testDeleteFolderWith100JavaFiles", "Delete folder with 100 java files"));
