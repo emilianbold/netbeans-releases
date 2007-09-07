@@ -24,6 +24,8 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -61,6 +63,7 @@ class DragOperation {
     private enum Op { PICK_AND_PLOP_FROM_PALETTE, INTER_MENU_DRAG, NO_MENUBAR };
     private Op op = Op.PICK_AND_PLOP_FROM_PALETTE;
     private JMenuItem payloadComponent;
+    private List<JMenuItem> payloadComponents;
     private PaletteItem currentItem;
     
     public DragOperation(MenuEditLayer menuEditLayer) {
@@ -74,6 +77,26 @@ class DragOperation {
         p("starting an inner menu drag for: " + item + " at " + pt);
         started = true;
         
+        
+        //josh: intial support for dragging multiple items
+        //in the future we should use the payloadComponents variable
+        //for dragging components instead of the payloadComponent variable.
+        List<RADComponent> rads = menuEditLayer.getSelectedRADComponents();
+        
+        payloadComponents = new ArrayList<JMenuItem>();
+        if(rads.size() > 1) {
+            for(RADComponent rad : rads) {
+                Object comp = menuEditLayer.formDesigner.getComponent(rad);
+                if(comp instanceof JMenuItem) {
+                    payloadComponents.add((JMenuItem)comp);
+                } else {
+                    fastEnd();
+                    return;
+                }
+            }
+        } else {
+            payloadComponents.add(item);
+        }
         
         dragComponent = (JMenuItem) createDragFeedbackComponent(item, null);
         dragComponent.setSize(dragComponent.getPreferredSize());
@@ -311,7 +334,7 @@ class DragOperation {
             Point pt2 = SwingUtilities.convertPoint(menuEditLayer.glassLayer, pt, menu);
             
             // if dragging a jmenu onto a toplevel jmenu
-            if(menu.getParent() instanceof JMenuBar && payloadComponent instanceof JMenu) {
+            if(menu.getParent() instanceof JMenuBar && isOnlyJMenus(payloadComponents)) { //payloadComponent instanceof JMenu) {
                 p("dropping into a toplevel menu");
                 if(DropTargetLayer.isMenuLeftEdge(pt2, menu)) {
                     p("doing a left drop");
@@ -439,6 +462,14 @@ class DragOperation {
         
         menuEditLayer.formDesigner.toggleSelectionMode();
         
+    }
+    
+    private boolean isOnlyJMenus(List<JMenuItem> items) {
+        for(JMenuItem item : items) {
+            if(item instanceof JMenu) continue;
+            return false;
+        }
+        return true;
     }
     
     private boolean isMenuPayload(MetaComponentCreator creator) {
