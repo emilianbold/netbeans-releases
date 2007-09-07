@@ -98,7 +98,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
 //        SQL_TYPE_VARBINARY,
 //        SQL_TYPE_LONGVARBINARY,
 //        SQL_TYPE_BLOB,
-//        SQL_TYPE_CLOB,
+        SQL_TYPE_CLOB,
 //        "ARRAY",
 //        "REF",
 //        "STRUCT",
