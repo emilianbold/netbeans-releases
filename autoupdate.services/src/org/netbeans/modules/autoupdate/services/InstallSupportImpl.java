@@ -306,7 +306,7 @@ public class InstallSupportImpl {
                         
                         // XXX: should run in single Thread
                         Thread th = org.netbeans.updater.UpdaterFrame.runFromIDE(
-                                getDownloadedFiles ().toArray(new File [0]),
+                                getDownloadedFiles (),
                                 new RefreshModulesListener (progress),
                                 NbBundle.getBranding(), false);
                         

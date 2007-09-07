@@ -78,7 +78,6 @@ public final class UpdateTracking {
     private LinkedHashMap<File, Module> installedModules = new LinkedHashMap<File, Module> ();
 
     private boolean pError = false;
-    private boolean fromUser = false;
     private final File directory;
     private final File trackingFile;
     private String origin = NBM_ORIGIN;
@@ -100,7 +99,6 @@ public final class UpdateTracking {
     //
     
     /** Loads update tracking for given location 
-     * @param fromuser use netbeans.user or netbeans.home
      * @return the tracking
      */
     static UpdateTracking getTracking( boolean fromuser ) {        
@@ -147,14 +145,6 @@ public final class UpdateTracking {
      * @return the tracking for that cluster
      */    
     public static UpdateTracking getTracking (File path, boolean createIfDoesNotExists) {
-        try {
-            path = path.getCanonicalFile ();
-        } catch (java.io.IOException ex) {
-            IllegalStateException ill = new IllegalStateException (ex.getMessage ());
-            ill.initCause (ex);
-            throw ill;
-        }
-     
         synchronized (trackings) {
             UpdateTracking track = trackings.get (path);
             if (track == null) {
@@ -187,14 +177,6 @@ public final class UpdateTracking {
      * @return the additional information for that cluster
      */    
     public static UpdateTracking.AdditionalInfo getAdditionalInformation (File path) {
-        try {
-            path = path.getCanonicalFile ();
-        } catch (java.io.IOException ex) {
-            IllegalStateException ill = new IllegalStateException (ex.getMessage ());
-            ill.initCause (ex);
-            throw ill;
-        }
-     
         synchronized (infos) {
             UpdateTracking.AdditionalInfo additionalInfo = infos.get (path);
             if (additionalInfo == null) {
@@ -308,12 +290,12 @@ public final class UpdateTracking {
 
         org.w3c.dom.Element element = document.getDocumentElement();
         if ((element != null) && element.getTagName().equals(ELEMENT_MODULES)) {
-            scanElement_installed_modules(element, fromUser);
+            scanElement_installed_modules(element);
         }            
     }    
     
     /** Scan through org.w3c.dom.Element named installed_modules. */
-    void scanElement_installed_modules(org.w3c.dom.Element element, boolean fromuser) { // <installed_modules>
+    void scanElement_installed_modules(org.w3c.dom.Element element) { // <installed_modules>
         // element.getValue();
         org.w3c.dom.NodeList nodes = element.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -330,8 +312,8 @@ public final class UpdateTracking {
     }
     
     /** Scan through org.w3c.dom.Element named module. */
-    Module scanElement_module(org.w3c.dom.Element element, boolean fromuser) { // <module>
-        Module module = new Module( fromuser );
+    Module scanElement_module(org.w3c.dom.Element element) { // <module>
+        Module module = new Module ();
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
@@ -409,7 +391,7 @@ public final class UpdateTracking {
         version.addFile (file );
     }
     
-    Module readModuleTracking( boolean fromuser, String codename, boolean create ) {
+    Module readModuleTracking (String codename, boolean create ) {
         new File(directory, TRACKING_FILE_NAME).mkdirs();
         File file = new File (
             new File(directory, TRACKING_FILE_NAME), 
@@ -426,12 +408,12 @@ public final class UpdateTracking {
         
         if ( ! file.exists() ) {
             if ( create )
-                return new Module( codename, file, fromuser );
+                return new Module( codename, file);
             else
                 return null;
         }
 
-        return readModuleFromFile( file, codename, fromuser, create );
+        return readModuleFromFile( file, codename, create );
     }
     
     Version createVersion(String specversion) {
@@ -440,7 +422,7 @@ public final class UpdateTracking {
         return ver;
     }
     
-    private Module readModuleFromFile( File file, String codename, boolean fromuser, boolean create ) {
+    private Module readModuleFromFile( File file, String codename, boolean create ) {
         
         /** org.w3c.dom.Document document */
         org.w3c.dom.Document document;
@@ -459,7 +441,7 @@ public final class UpdateTracking {
         }
         catch ( java.io.IOException e ) {
             if ( create )
-                return new Module( codename, file, fromuser );
+                return new Module (codename, file);
             else
                 return null;
         }
@@ -467,13 +449,13 @@ public final class UpdateTracking {
         org.w3c.dom.Element element = document.getDocumentElement();
         if ((element != null) && element.getTagName().equals(ELEMENT_MODULE)) {
             
-            Module m = scanElement_module(element, fromuser);
+            Module m = scanElement_module (element);
             m.setFile( file );
             installedModules.put (file, m);
             return m;
         }
         if ( create )
-            return new Module( codename, file, fromuser );
+            return new Module (codename, file);
         else
             return null;
     }
@@ -484,26 +466,6 @@ public final class UpdateTracking {
         if ( pos > -1 )
             trackingName = trackingName.substring( 0, pos );
         return trackingName.replace( '.', '-' );       // NOI18N
-    }
-    
-    public static void convertOldFormat(File oldfile, String path, boolean fromUserDir) {
-        new File( path + FILE_SEPARATOR + TRACKING_FILE_NAME ).mkdirs();
-        UpdateTracking track = getTracking( fromUserDir );
-        for (Module mod: track.installedModules.values ()) {
-            File newfile = new File( path + FILE_SEPARATOR + TRACKING_FILE_NAME + FILE_SEPARATOR
-                    + getTrackingName( mod.getCodenamebase() ) + XML_EXT );
-            mod.setFile( newfile );
-            mod.write();
-        }
-        oldfile.delete();
-    }
-
-    public String getL10NSpecificationVersion(String codenamebase, boolean fromUserDir, String jarpath) {
-        Module module = readModuleTracking( fromUserDir, codenamebase, false );
-        if ( module == null )
-            return null;
-        
-        return module.getL10NSpecificationVersion( jarpath );
     }
     
     void deleteUnusedFiles() {
@@ -549,7 +511,7 @@ public final class UpdateTracking {
                            
         for ( int i = 0; i < files.length; i++ ) {
             if (!installedModules.containsKey (files[i])) {
-                readModuleFromFile( files[i], null, fromUser, true );
+                readModuleFromFile( files[i], null, true );
             }
                 
         }
@@ -565,19 +527,12 @@ public final class UpdateTracking {
         
         private File file = null;
         
-        private boolean fromUser = true;
-        
         public Module() {
         }
         
-        public Module(boolean fromUser) {
-            this.fromUser = fromUser;
-        }
-        
-        public Module(String codenamebase, File file, boolean fromUser) {
+        public Module(String codenamebase, File file) {
             this.codenamebase = codenamebase;
             this.file = file;
-            this.fromUser = fromUser;
         }
         
         private Version lastVersion = null;
@@ -609,14 +564,6 @@ public final class UpdateTracking {
          */
         void setVersions(List<Version> versions) {
             this.versions = versions;
-        }
-        
-        boolean isFromUser() {
-            return fromUser;
-        }
-        
-        void setFromUser(boolean fromUser) {
-            this.fromUser = fromUser;
         }
         
         private Version getNewOrLastVersion() {

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,10 +28,14 @@ import java.util.jar.*;
 /** Class used by autoupdate module for the work with module files and
  * for installing / uninstalling modules
  *
- * @author  Petr Hrebejk, Ales Kemr
+ * @author  Petr Hrebejk, Ales Kemr, Jiri Rechtacek
  * @version
  */
 public final class ModuleUpdater extends Thread {
+    
+    public ModuleUpdater (Collection<File> forInstall) {
+        this.forInstall = forInstall;
+    }
 
     /** Platform dependent file name separator */
     private static final String FILE_SEPARATOR = System.getProperty ("file.separator");
@@ -39,9 +43,10 @@ public final class ModuleUpdater extends Thread {
 
     /** Relative name of update directory */
     private static final String UPDATE_DIR = "update"; // NOI18N
+    private static final String DOWNLOAD_DIR_NAME = "download"; // NOI18N
 
     /** Relative name of directory where the .NBM files are downloaded */
-    static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
+    static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + DOWNLOAD_DIR_NAME; // NOI18N
 
     /** Relative name of backup directory */
     private static final String BACKUP_DIR = UPDATE_DIR + FILE_SEPARATOR + "backup"; // NOI18N
@@ -71,10 +76,9 @@ public final class ModuleUpdater extends Thread {
     public static final char QUOTE = '\"';
     
     /** files that are supposed to be installed (when running inside the ide) */
-    private Set<File> installOnly;
-    /** found files in various cluster/update/download folders */
-    private Set<File> installFiles;
-    
+    private Collection<File> forInstall;
+    private Map<File, Collection<File>> files2clustersForInstall;
+
     /** Should the thread stop */
     private volatile boolean stop = false;
 
@@ -83,8 +87,6 @@ public final class ModuleUpdater extends Thread {
     /** Total length of unpacked files */
     private long totalLength;
 
-    private static boolean fromInstall = false;
-    
     /** Creates new ModuleUpdater */
     @Override
     public void run() {
@@ -92,20 +94,7 @@ public final class ModuleUpdater extends Thread {
 
             checkStop();
 
-            installFiles = new HashSet<File> ();
-            for (File cluster : UpdateTracking.clusters (true)) {
-                installFiles.addAll (getModulesToInstall (cluster));
-                if (! UpdaterFrame.isFromIDE ()) {
-                    deleteInstall_Later (cluster);
-                }
-            }
-
-            if (installOnly != null) {
-                // keep only those that we really wish to install
-                installFiles.retainAll (installOnly);
-            }
-
-            if (installFiles.isEmpty ()) {
+            if (getClustersForInstall ().isEmpty ()) {
                 endRun();
             }
 
@@ -154,7 +143,7 @@ public final class ModuleUpdater extends Thread {
             while ( suspend );
 
         if ( stop ) {
-            if (UpdaterFrame.getUpdaterFrame().isFromIDE ()) {
+            if (UpdaterFrame.isFromIDE ()) {
                 UpdaterFrame.getUpdaterFrame().unpackingFinished();
             } else {
                 System.exit( 0 );
@@ -162,62 +151,102 @@ public final class ModuleUpdater extends Thread {
         }
     }
 
-    /** Can be used to restrict the set of NBM files that should be installed.
-     */
-    public void setInstallOnly (File[] files) {
-        installOnly = new HashSet<File> ();
-        for (int i = 0; i < files.length; i++) {
-            File f = files[i];
-            try {
-                f = f.getCanonicalFile ();
-            } catch (IOException ex) {
-                // ok, just use regular file
+    private void processFilesForInstall () {
+        // if installOnly are null then generate all NBMs around all clusters
+        if (forInstall == null) {
+            files2clustersForInstall = new HashMap<File, Collection<File>> ();
+            for (File cluster : UpdateTracking.clusters (true)) {
+                Collection<File> tmp = getModulesToInstall (cluster);
+                files2clustersForInstall.put (cluster, tmp);
+                // if ModuleUpdater runs 'offline' then delete install_later files
+                if (! UpdaterFrame.isFromIDE ()) {
+                    deleteInstall_Later (cluster);
+                }
             }
-            installOnly.add (f);
+        } else {
+            files2clustersForInstall = new HashMap<File, Collection<File>> ();
+            for (File nbm : forInstall) {
+                File cluster = getCluster (nbm);
+                if (files2clustersForInstall.get (cluster) == null) {
+                    files2clustersForInstall.put (cluster, new HashSet<File> ());
+                }
+                files2clustersForInstall.get (cluster).add (nbm);
+            }
         }
+    }
+    
+    private static File getCluster (File nbm) {
+        File cluster = null;
+        try {
+            // nbms are in <cluster>/update/download dir
+            // but try to check it
+            assert nbm.exists () : nbm + " for install exists.";
+            assert nbm.getParentFile () != null : nbm + " has parent.";
+            assert DOWNLOAD_DIR_NAME.equalsIgnoreCase (nbm.getParentFile ().getName ()) : nbm + " is in directory " + DOWNLOAD_DIR_NAME;
+            assert nbm.getParentFile ().getParentFile () != null : nbm.getParentFile () + " has parent.";
+            assert UPDATE_DIR.equalsIgnoreCase (nbm.getParentFile ().getParentFile ().getName ()) : nbm + " is in directory " + UPDATE_DIR;
+            assert nbm.getParentFile ().getParentFile ().getParentFile () != null : nbm.getParentFile ().getParentFile () + " has parent.";
+            
+            cluster = nbm.getParentFile ().getParentFile ().getParentFile ();
+        } catch (NullPointerException npe) {
+            System.out.println("Error: getCluster (" + nbm + ") throws " + npe);
+        }
+        return cluster;
+    }
+    
+    private Collection<File> getFilesForInstallInCluster (File cluster) {
+        if (files2clustersForInstall == null) {
+            processFilesForInstall ();
+        }
+        return files2clustersForInstall.get (cluster);
+    }
+
+    private Collection<File> getClustersForInstall () {
+        if (files2clustersForInstall == null) {
+            processFilesForInstall ();
+        }
+        return files2clustersForInstall.keySet ();
     }
 
     /** Determines size of unpacked modules */
-    private void totalLength() {
+    private void totalLength () {
         totalLength = 0L;
 
-        UpdaterFrame.setLabel( Localization.getBrandedString( "CTL_PreparingUnpack" ) );
-        UpdaterFrame.setProgressRange( 0, installFiles.size ());
+        UpdaterFrame.setLabel (Localization.getBrandedString ("CTL_PreparingUnpack"));
+        Collection<File> allFiles = new HashSet<File> ();
+        for (File c : getClustersForInstall ()) {
+            allFiles.addAll (getFilesForInstallInCluster (c));
+        }
+        UpdaterFrame.setProgressRange (0, allFiles.size ());
 
-        Iterator<File> it = installFiles.iterator ();
-        for( int i = 0; i < installFiles.size (); i++ ) {
+        int i = 1;
+        for (File f : allFiles) {
 
             JarFile jarFile = null;
 
             try {
-                UpdaterFrame.setProgressValue( i + 1 );
+                UpdaterFrame.setProgressValue (i ++);
+                jarFile = new JarFile (f);
+                Enumeration<JarEntry> entries = jarFile.entries ();
+                while (entries.hasMoreElements ()) {
+                    JarEntry entry = entries.nextElement ();
 
-                jarFile = new JarFile( it.next () );
-                Enumeration<JarEntry> entries = jarFile.entries();
-                while( entries.hasMoreElements() ) {
-                    JarEntry entry = entries.nextElement();
+                    checkStop ();
 
-                    checkStop();
-
-                    if ( ( entry.getName().startsWith( UPDATE_NETBEANS_DIR ) ||
-                            entry.getName().startsWith( ModuleUpdater.UPDATE_JAVA_EXT_DIR ) ||
-                            entry.getName().startsWith( UPDATE_MAIN_DIR) ) &&
-                            !entry.isDirectory() ) {
-                        totalLength += entry.getSize();
+                    if ((entry.getName ().startsWith (UPDATE_NETBEANS_DIR) || entry.getName ().startsWith (ModuleUpdater.UPDATE_JAVA_EXT_DIR) || entry.getName ().startsWith (UPDATE_MAIN_DIR)) && ! entry.isDirectory ()) {
+                        totalLength += entry.getSize ();
                     }
                 }
-            }
-            catch ( java.io.IOException e ) {
-                // Ignore non readable files
-            }
-            finally {
+            } catch (java.io.IOException e) {
+                System.out.println ("Error: Counting size of entries in " + f + " throws " + e);
+            } finally {
                 try {
-                    if ( jarFile != null )
-                        jarFile.close();
-                }
-                catch ( java.io.IOException e ) {
+                    if (jarFile != null) {
+                        jarFile.close ();
+                    }
+                } catch (java.io.IOException e) {
                     // We can't close the file do nothing
-                    // System.out.println( "Cant close : " + e ); // NOI18N
+                    System.out.println ("Error: Closing " + jarFile + " input stream throws " + e); // NOI18N
                 }
             }
         }
@@ -230,33 +259,21 @@ public final class ModuleUpdater extends Thread {
         long bytesRead = 0L;
         boolean hasMainClass;
 
-        // System.out.println("Total lengtg " + totalLength ); // NOI18N
-
         UpdaterFrame.setLabel( "" ); // NOI18N
         UpdaterFrame.setProgressRange( 0, totalLength );
-        
-        fromInstall = true;
         
         ArrayList<UpdateTracking> allTrackings = new ArrayList<UpdateTracking> ();
         Map<ModuleUpdate, UpdateTracking.Version> l10ns = 
                 new HashMap<ModuleUpdate, UpdateTracking.Version>();
         
-        for (File cluster : UpdateTracking.clusters (true)) {
-            Set<File> nbms = getModulesToInstall (cluster);
-            if (nbms.isEmpty ()) {
-                continue;
-            }
-            
+        for (File cluster : getClustersForInstall ()) {
             UpdateTracking tracking = UpdateTracking.getTracking (cluster, true);
             if (tracking == null) {
                 throw new RuntimeException ("No update_tracking file in cluster " + cluster);
             }
             allTrackings.add (tracking);
 
-            nbms.retainAll (installFiles);
-            
-            File[] nbmFiles = nbms.toArray (new File[0]);
-            for( int i = 0; i < nbmFiles.length; i++ ) {                        
+            for (File nbm : getFilesForInstallInCluster (cluster)) {
                 UpdateTracking.Version version;
                 UpdateTracking.Module modtrack;
                 
@@ -264,40 +281,40 @@ public final class ModuleUpdater extends Thread {
                 
                 ModuleUpdate mu = null;
                 try {
-                    mu = new ModuleUpdate( nbmFiles[i], fromInstall );
+                    mu = new ModuleUpdate (nbm);
                 } catch (RuntimeException re) {
-                    if (nbmFiles [i].exists ()) {
-                        if (! nbmFiles[i].delete ()) {
-                            System.out.println("Error: File " + nbmFiles [i] + " cannot be deleted. Propably file lock on the file."); // NOI18N
-                            assert false : "Error: File " + nbmFiles [i] + " cannot be deleted. Propably file lock on the file.";
-                            nbmFiles[i].deleteOnExit ();
+                    if (nbm.exists ()) {
+                        if (! nbm.delete ()) {
+                            System.out.println("Error: File " + nbm + " cannot be deleted. Propably file lock on the file."); // NOI18N
+                            assert false : "Error: File " + nbm + " cannot be deleted. Propably file lock on the file.";
+                            nbm.deleteOnExit ();
                         }
                     }
                     continue;
                 }
-                assert mu != null : "Module update is not null for file: " + nbmFiles[i]; // NOI18N
+                assert mu != null : "Module update is not null for file: " + nbm; // NOI18N
                 if ( mu.isL10n() ) {
                     modtrack = null;
                     version = tracking.createVersion( "0" ); // NOI18N
                     l10ns.put( mu, version );
                 } else {
-                    modtrack = tracking.readModuleTracking( ! fromInstall, mu.getCodenamebase(), true );
+                    modtrack = tracking.readModuleTracking (mu.getCodenamebase (), true);
                     // find origin for file
                     UpdateTracking.AdditionalInfo info = UpdateTracking.getAdditionalInformation (cluster);
-                    String origin = info != null && info.getSource (nbmFiles [i].getName ()) != null ?
-                        info.getSource (nbmFiles [i].getName ()) : UpdateTracking.UPDATER_ORIGIN;
+                    String origin = info != null && info.getSource (nbm.getName ()) != null ?
+                        info.getSource (nbm.getName ()) : UpdateTracking.UPDATER_ORIGIN;
                     version = modtrack.addNewVersion (mu.getSpecification_version (), origin);
                 }
                 // input streams should be released, but following is needed
                 //System.gc();
 
                 hasMainClass = false;
-                UpdaterFrame.setLabel( Localization.getBrandedString("CTL_UnpackingFile") + "  " + nbmFiles[i].getName() ); //NOI18N
+                UpdaterFrame.setLabel( Localization.getBrandedString("CTL_UnpackingFile") + "  " + nbm.getName() ); //NOI18N
                 UpdaterFrame.setProgressValue( bytesRead );
                 JarFile jarFile = null;
 
                 try {
-                    jarFile = new JarFile( nbmFiles[i] );
+                    jarFile = new JarFile (nbm);
                     Enumeration entries = jarFile.entries();
                     while( entries.hasMoreElements() ) {
                         JarEntry entry = (JarEntry) entries.nextElement();
@@ -362,9 +379,9 @@ public final class ModuleUpdater extends Thread {
                     }
                     //System.out.println("Dleting :" + nbmFiles[i].getName() + ":" + nbmFiles[i].delete() ); // NOI18N
 
-                    if (! nbmFiles[i].delete ()) {
-                        System.out.println("Error: Cannot delete " + nbmFiles [i]); // NOI18N
-                        nbmFiles [i].deleteOnExit ();
+                    if (! nbm.delete ()) {
+                        System.out.println("Error: Cannot delete " + nbm); // NOI18N
+                        nbm.deleteOnExit ();
                     }
                 }
                 if (! mu.isL10n ()) {
@@ -380,7 +397,6 @@ public final class ModuleUpdater extends Thread {
                 ModuleUpdate mod = entry.getKey();
                 UpdateTracking.Version version = entry.getValue();
                 UpdateTracking.Module modtrack = t.readModuleTracking( 
-                    ! mod.isFromInstall(), 
                     mod.getCodenamebase(), 
                     true 
                 );
@@ -847,11 +863,6 @@ public final class ModuleUpdater extends Thread {
         }
         
         File idir = new File (cluster, ModuleUpdater.DOWNLOAD_DIR);
-        try {
-            idir = idir.getCanonicalFile ();
-        } catch (IOException ioe) {
-            System.out.println("ERROR: " + ioe);
-        }
         File[] arr = idir.listFiles (new NbmFilter ());
         
         if (arr == null) {

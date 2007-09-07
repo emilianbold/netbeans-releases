@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,11 +47,9 @@ class ModuleUpdate extends Object {
     private boolean pError = false;
 
     private boolean l10n = false;
-    private boolean fromInstall = false;
     
     /** Creates new ModuleUpdate for downloaded .nbm file */
-    ModuleUpdate( File nbmFile, boolean fromInstall ) {
-        this.fromInstall = fromInstall;
+    ModuleUpdate (File nbmFile) {
         createFromDistribution( nbmFile );
     }
 
@@ -176,14 +174,6 @@ class ModuleUpdate extends Object {
      */
     public boolean isL10n() {
         return l10n;
-    }
-    
-    /** Getter for property fromInstall.
-     * @return Value of property fromInstall.
-     *
-     */
-    public boolean isFromInstall() {
-        return fromInstall;
     }
     
     class ErrorCatcher implements org.xml.sax.ErrorHandler {

@@ -25,6 +25,7 @@ import javax.swing.*;
 import java.io.*;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.Collection;
 
 
 import javax.swing.border.LineBorder;
@@ -201,17 +202,17 @@ public class UpdaterFrame extends javax.swing.JPanel {
             showSplash ();
         }
 
-        mu = new ModuleUpdater();
+        mu = new ModuleUpdater (null);
         mu.start();
 
     }
 
-    public static Thread runFromIDE (File[] files, PropertyChangeListener listener, String brandingToken, boolean showSplash) {
+    public static Thread runFromIDE (Collection<File> files, PropertyChangeListener listener, String brandingToken, boolean showSplash) {
         noSplash = ! showSplash;
         return runFromIDE (files, listener, brandingToken);
     }
 
-    public static Thread runFromIDE (File[] files, PropertyChangeListener listener, String brandingToken) {
+    public static Thread runFromIDE (Collection<File> files, PropertyChangeListener listener, String brandingToken) {
         fromIDE = true;        
         Localization.setBranding (brandingToken);
         panel = new UpdaterFrame ();
@@ -220,8 +221,7 @@ public class UpdaterFrame extends javax.swing.JPanel {
             showSplash();
         }
         
-        mu = new ModuleUpdater();
-        mu.setInstallOnly (files);
+        mu = new ModuleUpdater (files);
         mu.start();
         return mu;
     }
