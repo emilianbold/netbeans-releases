@@ -162,6 +162,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     
     public void removeNotify(){
         if (repaintingTask != null) repaintingTask.cancel();
+        if (changeTask != null) changeTask.cancel();
         getExplorerManager().removePropertyChangeListener(this);
         if (dataObject != null) dataObject.removePropertyChangeListener(this);
         super.removeNotify();
@@ -174,7 +175,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         if (manager == null) manager = new ExplorerManager();
         return manager;
     }
-    
+
     private void updateTree() {
         if( !wsdl ) {
             rootNode = ServiceNodeManager.getRootNode(configuration, checkedTreeView);
