@@ -18,12 +18,16 @@
 package org.netbeans.libs.freemarker;
 
 import freemarker.cache.TemplateLoader;
+import freemarker.core.Environment;
 import freemarker.template.Configuration;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -41,7 +45,8 @@ import org.openide.util.Exceptions;
  * @author Petr Zajac, adopted by Jaroslav Tulach
  */
 
-final class RsrcLoader extends Configuration implements TemplateLoader {
+final class RsrcLoader extends Configuration 
+implements TemplateLoader, TemplateExceptionHandler {
     private FileObject fo;
     private ScriptContext map;
     private Bindings engineScope;
@@ -51,6 +56,15 @@ final class RsrcLoader extends Configuration implements TemplateLoader {
         this.map = map;
         this.engineScope = map.getBindings(ScriptContext.ENGINE_SCOPE);
         setTemplateLoader(this);
+        setTemplateExceptionHandler(this);
+    }
+
+    public void handleTemplateException(TemplateException ex, Environment env, Writer w) throws TemplateException {
+        try {
+            w.append(ex.getLocalizedMessage());
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
     }
 
     private FileObject getFile(String name) {
@@ -138,4 +152,5 @@ final class RsrcLoader extends Configuration implements TemplateLoader {
             this.fo = fo;
         }
     } // end Wrap
+
 }

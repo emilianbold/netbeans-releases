@@ -141,6 +141,46 @@ public class ProcessorTest extends TestCase {
         String exp = "<html><h1>GPL</h1></html>";
         assertEquals(exp, w.toString());
     }
+
+    public void testMissingVariablesAreJustLogged() throws Exception {
+        FileObject template = FileUtil.createData(root, "Templates/Others/some.txt");
+        {
+            OutputStream os = template.getOutputStream();
+            String txt = "<html><h1>${title}</h1></html>";
+            os.write(txt.getBytes());
+            os.close();
+        }        
+        StringWriter w = new StringWriter();
+        
+        apply(template, w);
+        
+        if (!w.toString().matches("<html><h1>.*</h1></html>")) {
+            fail("should survive the missing variable:\n" + w.toString());
+        }
+        if (w.toString().indexOf("title") == -1) {
+            fail("There should be a note about title variable:\n" + w);
+        }
+    }
+
+    public void testMissingImportsAreJustLogged() throws Exception {
+        FileObject template = FileUtil.createData(root, "Templates/Others/some.txt");
+        {
+            OutputStream os = template.getOutputStream();
+            String txt = "<html><h1><#include \"*/Licenses/gpl.txt\"></h1></html>";
+            os.write(txt.getBytes());
+            os.close();
+        }        
+        StringWriter w = new StringWriter();
+        
+        apply(template, w);
+        
+        if (!w.toString().matches("<html><h1>.*</h1></html>")) {
+            fail("should survive the missing variable:\n" + w.toString());
+        }
+        if (w.toString().indexOf("gpl.txt") == -1) {
+            fail("There should be a note about gpl include:\n" + w);
+        }
+    }
     
     public void testCanHandleImport() throws Exception {
         Panel p = new Panel();
