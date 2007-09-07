@@ -22,12 +22,15 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -37,8 +40,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.ErrorManager;
+import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -50,6 +55,7 @@ import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -169,6 +175,11 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             setProjectFiles(project);
         }
 
+        @Override
+        public Action[] getActions(boolean context) {
+            return getAdditionalActions();
+        }
+
         public void annotationChanged(FileStatusEvent event) {
             if (task == null) {
                 task = RequestProcessor.getDefault().create(this);
@@ -206,6 +217,19 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             }
         }
         
+        private Action[] getAdditionalActions() {
+            
+            List<Action> actions = new ArrayList<Action>();
+            
+            actions.add(CommonProjectActions.setAsMainProjectAction());
+            actions.add(CommonProjectActions.closeProjectAction());
+            actions.add(null);
+            actions.add(SystemAction.get(FindAction.class));
+            
+            return actions.toArray(new Action[actions.size()]);
+            
+        }
+
     }
     
     public Node findPath(Node root, Object target) {
