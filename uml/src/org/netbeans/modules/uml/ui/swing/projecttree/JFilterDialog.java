@@ -478,32 +478,40 @@ public class JFilterDialog extends JCenterDialog implements IFilterDialog {
             
         }
         
-        public Dimension getPreferredSize() {
+        public Dimension getPreferredSize() 
+        {
             Dimension d_check = check.getPreferredSize();
             Dimension d_label = strLabel.getPreferredSize();
+            
             return new Dimension(
-                    d_check.width + d_label.width,
-                    (d_check.height < d_label.height
-                    ? d_label.height
-                    : d_check.height));
+                d_check.width + d_label.width, 
+                d_check.height < d_label.height 
+                    ? d_label.height : d_check.height);
         }
-        
-        public void doLayout() {
+
+        public void doLayout() 
+        {
             Dimension d_check = check.getPreferredSize();
             Dimension d_label = strLabel.getPreferredSize();
             int y_check = 0;
             int y_label = 0;
-            if (d_check.height < d_label.height) {
+            
+            if (d_check.height > d_label.height) 
+            {
                 y_check = (d_label.height - d_check.height) / 2;
-            } else {
+            }
+            
+            else 
+            {
                 y_label = (d_check.height - d_label.height) / 2;
             }
+            
             check.setLocation(0, y_check);
             check.setBounds(0, y_check, d_check.width, d_check.height);
             strLabel.setLocation(d_check.width, y_label);
             strLabel.setBounds(d_check.width, y_label, d_label.width, d_label.height);
         }
-        
+
         public void setBackground(Color color) {
             if (color instanceof ColorUIResource)
                 color = null;
