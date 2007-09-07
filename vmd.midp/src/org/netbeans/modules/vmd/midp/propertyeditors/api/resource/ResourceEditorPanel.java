@@ -320,7 +320,8 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
     }
 
     String getTextForPropertyValue() {
-        return (String) componentsList.getSelectedValue();
+        String str = (String) componentsList.getSelectedValue();
+        return str != null ? str : ""; // NOI18N
     }
 
     boolean wasAnyDesignComponentChanged() {
