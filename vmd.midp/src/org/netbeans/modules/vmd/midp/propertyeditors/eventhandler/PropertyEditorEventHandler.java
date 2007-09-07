@@ -63,7 +63,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     private WeakReference<DesignComponent> component;
     private boolean initialized;
 
-    @SuppressWarnings(value = "unchecked")
+    @SuppressWarnings(value = "unchecked") // NOI18N
     private PropertyEditorEventHandler() {
         Collection<PropertyEditorElementFactory> factories = Lookup.getDefault().lookup(new Lookup.Template(PropertyEditorElementFactory.class)).allInstances();
         Collection<PropertyEditorEventHandlerElement> elements = new ArrayList<PropertyEditorEventHandlerElement>(factories.size());

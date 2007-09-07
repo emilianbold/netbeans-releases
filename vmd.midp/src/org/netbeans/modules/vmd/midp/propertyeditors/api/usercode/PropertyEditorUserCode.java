@@ -56,13 +56,14 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
     public static final String USER_CODE_TEXT = NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_STRING_USER_CODE"); // NOI18N
     private static final Icon ICON_WARNING = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/warning.gif")); // NOI18N
     private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
-    
+
     private final CustomEditor customEditor;
     private JRadioButton userCodeRadioButton;
     private final JLabel messageLabel;
     private String userCodeLabel;
     private String userCode = ""; // NOI18N
     protected WeakReference<DesignComponent> component;
+    private boolean initialized;
 
     protected PropertyEditorUserCode(String userCodeLabel) {
         this.userCodeLabel = userCodeLabel;
@@ -97,18 +98,22 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
      */
     @Override
     public final Component getCustomEditor() {
-//        if (!customEditor.isShowing()) {
-            PropertyValue value = (PropertyValue) super.getValue();
-            if (isCurrentValueAUserCodeType()) {
-                customEditor.setUserCodeText(value.getUserCode());
-                customEditor.updateState(null);
-            } else {
-                customEditor.setUserCodeText(null);
-                customEditor.updateState(value);
-            }
-            customEditor.init();
-//        }
+        if (initialized) {
+            initCustomEditor();
+        }
         return customEditor;
+    }
+
+    private void initCustomEditor() {
+        PropertyValue value = (PropertyValue) super.getValue();
+        if (isCurrentValueAUserCodeType()) {
+            customEditor.setUserCodeText(value.getUserCode());
+            customEditor.updateState(null);
+        } else {
+            customEditor.setUserCodeText(null);
+            customEditor.updateState(value);
+        }
+        customEditor.initRetoucheStuff();
     }
 
     @Override
@@ -216,7 +221,6 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
 
         public void init(Collection<PropertyEditorElement> elements) {
             this.elements = elements;
-            initComponents();
         }
 
         private void initComponents() {
@@ -300,7 +304,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
             selectDefaultRadioButton();
         }
 
-        public void init() {
+        public void initRetoucheStuff() {
             if (component == null || component.get() == null) {
                 return;
             }
@@ -367,7 +371,17 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
             setNewValue();
         }
 
-        private void setNewValue() {
+         @Override
+        public void addNotify() {
+            if (!initialized) {
+                initComponents();
+                initCustomEditor();
+                initialized = true;
+            }
+            super.addNotify();
+        }
+
+         private void setNewValue() {
             userCode = userCodeEditorPane.getText();
         }
 
