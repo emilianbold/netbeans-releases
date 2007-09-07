@@ -96,7 +96,7 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                         }
                         
                         generateBean( beanFile, type );
-                        ph.progress( progress );
+                        //ph.progress( progress );
                     } catch( IOException e ) {
                         ErrorManager.getDefault().notify( e );
                     }
