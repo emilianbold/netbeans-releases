@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.openide.util.Cancellable;
 
 /**
  * Base class for CsmProject implementation
@@ -507,8 +508,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                 time = System.currentTimeMillis();
             }
             
-            if( ProjectBase.this.isProjectDisposed ) {
-                if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ProjevtBase.ensureFilesCreated interrupted");
+            if( disposing ) {
+                if( TraceFlags.TRACE_MODEL_STATE ) System.err.printf("filling parser queue interrupted for %s\n", getName());
                 return;
             }
             
@@ -539,6 +540,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator) {
         
         for( NativeFileItem nativeFileItem : items ) {
+            if( disposing ) {
+                if( TraceFlags.TRACE_MODEL_STATE ) System.err.printf("filling parser queue interrupted for %s\n", getName());
+                return;
+            }
             if (removedFiles.contains(nativeFileItem)){
                 continue;
             }
@@ -607,10 +612,15 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             Runnable r = new Runnable() {
                 public void run() {
                     onAddedToModelImpl(isRestored);
+                    synchronized( initializationTaskLock ) {
+                        initializationTask = null;
+                    }
                 };
             };
             String text = (status == Status.Initial) ? "Filling parser queue for " : "Validating files for ";	// NOI18N
-            CodeModelRequestProcessor.instance().post(r, text + getName());
+            synchronized( initializationTaskLock ) {
+                initializationTask = ModelImpl.instance().enqueueModelTask(r, text + getName());
+            }
         }
     }
     
@@ -629,12 +639,25 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
 //	System.err.printf("AWOKE...\n");
         
         ensureFilesCreated();
+        
+        if( disposing ) {
+            return;
+        }
+        
         ensureChangedFilesEnqueued();
+        
+        if( disposing ) {
+            return;
+        }
+        
         if( isRestored ) {
             ProgressSupport.instance().fireProjectLoaded(ProjectBase.this);
         }
+        
+        // TODO: investigate and remove!!!
         waitParseImpl();
-        if( isRestored ) {
+        
+        if( isRestored && ! disposing ) {
             // FIXUP for #109105 fix the reason instead!
             try {
                 checkForRemoved();
@@ -820,7 +843,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     public FileImpl onFileIncluded(ProjectBase base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
         try {
             disposeLock.readLock().lock();
-            if( isProjectDisposed ) {
+            if( disposing ) {
                 return null;
             }
             FileImpl csmFile = findFile(new File(file), FileImpl.HEADER_FILE, preprocHandler, false, null);
@@ -1113,21 +1136,22 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     public boolean isValid() {
-        return platformProject != null  && !isProjectDisposed;
+        return platformProject != null  && !disposing;
     }
     
     public void setDisposed() {
-        try {
-            disposeLock.writeLock().lock();
-            isProjectDisposed = true;
-        } finally {
-            disposeLock.writeLock().unlock();
+        disposing = true;
+        synchronized( initializationTaskLock ) {
+            if( initializationTask != null ) {
+                initializationTask.cancel();
+                initializationTask = null;
+            }
         }
         ParserQueue.instance().removeAll(this);
     }
     
-    public boolean isDisposed() {
-        return isProjectDisposed;
+    public boolean isDisposing() {
+        return disposing;
     }
     
     public void dispose() {
@@ -1135,41 +1159,56 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     public void dispose(final boolean cleanPersistent) {
+
+        long time = 0;
+        if( TraceFlags.TIMING ) {
+            System.err.printf("\n\nProject %s: disposing...\n", name);
+            time = System.currentTimeMillis();
+        }
+        
+        // just in case it wasn't called before (it's inexpensive)
+        setDisposed();
+        
         try {
+            
             disposeLock.writeLock().lock();
-            isProjectDisposed = true;
-        } finally {
+
+            /*
+             * if the repository is not used - clean all collections as we did before
+             * in the other case - just close the corresponding unit
+             * collections are not cleared to write the valid project content
+             */
+            if (!TraceFlags.USE_REPOSITORY){
+                disposeFiles();
+
+                // we have clear all collections
+                // to protect IDE against the code model client
+                // that stores the instance of the project
+                // and does not release it upon project closure
+                _clearNamespaces();
+                classifierContainer.clearClassifiers();
+                getDeclarationsSorage().clearDeclarations();
+                if (TraceFlags.USE_DEEP_REPARSING) {
+                    getGraph().clear();
+                }
+            } else {
+                ProjectSettingsValidator validator = new ProjectSettingsValidator(this);
+                validator.storeSettings();
+                RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
+            }
+
+            platformProject = null;
+            unresolved = null;
+            uid = null;
+        }
+        finally {
             disposeLock.writeLock().unlock();
         }
-        ParserQueue.instance().removeAll(this);
         
-        /*
-         * if the repository is not used - clean all collections as we did before
-         * in the other case - just close the corresponding unit
-         * collections are not cleared to write the valid project content
-         */
-        if (!TraceFlags.USE_REPOSITORY){
-            disposeFiles();
-            
-            // we have clear all collections
-            // to protect IDE against the code model client
-            // that stores the instance of the project
-            // and does not release it upon project closure
-            _clearNamespaces();
-            classifierContainer.clearClassifiers();
-            getDeclarationsSorage().clearDeclarations();
-            if (TraceFlags.USE_DEEP_REPARSING) {
-                getGraph().clear();
-            }
-        } else {
-            ProjectSettingsValidator validator = new ProjectSettingsValidator(this);
-            validator.storeSettings();
-            RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
-        }
-        
-        platformProject = null;
-        unresolved = null;
-        uid = null;
+        if (TraceFlags.TIMING) {
+            time = System.currentTimeMillis() - time;
+            System.err.printf("Project %s: disposing took %d ms\n", name, time);
+        }        
     }
     
     protected Set<String> getRequiredUnits() {
@@ -1271,16 +1310,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     public boolean isStable(CsmFile skipFile) {
-        if( isStableStatus() ) {
-//            if( ! hasChangedFiles(skipFile) ) {
+        if( status == Status.Ready && ! disposing ) {
             return ! ParserQueue.instance().hasFiles(this, (FileImpl)skipFile);
-//            }
         }
         return false;
-    }
-    
-    protected boolean isStableStatus() {
-        return status == Status.Ready;
     }
     
     public void onParseFinish() {
@@ -1294,7 +1327,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         try {
             disposeLock.readLock().lock();
             
-            if( ! isProjectDisposed ) {
+            if( ! disposing ) {
                 for (Iterator it = getAllFiles().iterator(); it.hasNext();) {
                     FileImpl file= (FileImpl) it.next();
                     file.fixFakeRegistrations();
@@ -1557,6 +1590,12 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     private transient Status status;
     
+    /** The task that is run in a request processor during project initialization */
+    private Cancellable initializationTask;
+    
+    /** The lock under which the initializationTask is set */
+    private Object initializationTaskLock = new Object();
+    
     private Object waitParseLock = new Object();
     
     private ModelImpl model;
@@ -1568,8 +1607,34 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     private final CsmUID<CsmNamespace> globalNamespaceUID;
     
     private Object platformProject;
-    private boolean isProjectDisposed;
-    //private Object disposeLock = new Object();
+    
+    /**
+     * Some notes concerning disposing and disposeLock fields. 
+     * 
+     * The purpose is not to perform some actions 
+     * (such as adding new files, continuing initialization, etc)
+     * when the project is going to be disposed.
+     * 
+     * The disposing field is changed only once, 
+     * from false to true (in setDispose() method)
+     * 
+     * When it is changed to true, no lock is aquired, BUT:
+     * it is guaranteed that events take place in the following order:
+     * 1) disposing is set to true
+     * 2) the disposeLock.writeLock() is locked after that
+     * and remains locked during the entire project closure.
+     * 
+     * Clients who need to check this, are obliged to
+     * act in the following sequence:
+     * 1) require disposeLock.readLock() 
+     * 2) check that the disposing field is still false
+     * 3) keep disposeLock.readLock() locked
+     * while performing critical actions
+     * (the actions that should not be done 
+     * when the project is being disposed)
+     * 
+     */
+    private boolean disposing;
     private ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     
     private String uniqueName = null; // lazy initialized

@@ -55,6 +55,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
         CsmModelAccessor.getModel().addModelListener(this);
 	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.ctor\n");
 	current = UpToDateStatus.UP_TO_DATE_DIRTY;
+        // it's more like a model client, so we use enqueue, not enqueueModelTask here
 	CsmModelAccessor.getModel().enqueue(new Runnable() {
 	    public void run() {
 		CsmFile file = getCsmFile(null);
@@ -153,6 +154,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
 	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.fileInvalidated %s\n", file);
         if (mightBeMine(file) ) {
             final CsmProject project = file.getProject();
+            // it's more like a model client, so we use enqueue, not enqueueModelTask here
 	    CsmModelAccessor.getModel().enqueue(new Runnable() {
 		public void run() {
 		    if (file.equals(getCsmFile(project))) {
@@ -167,6 +169,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
 	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.fileParsingStarted %s\n", file);
         if (mightBeMine(file) ) {
             final CsmProject project = file.getProject();
+            // it's more like a model client, so we use enqueue, not enqueueModelTask here
 	    CsmModelAccessor.getModel().enqueue(new Runnable() {
 		public void run() {
 		    if (file.equals(getCsmFile(project))) {
@@ -189,6 +192,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
 	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.fileParsingFinished %s\n", file);
         if (mightBeMine(file) ) {
             final CsmProject project = file.getProject();
+            // it's more like a model client, so we use enqueue, not enqueueModelTask here
 	    CsmModelAccessor.getModel().enqueue(new Runnable() {
 		public void run() {
 		    if (file.equals(getCsmFile(project))) {
@@ -226,6 +230,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     public void modelChanged(final CsmChangeEvent e) {
         if (uid != null) {
             if (mightBeMine(e.getRemovedFiles()) ) {
+                // it's more like a model client, so we use enqueue, not enqueueModelTask here
                 CsmModelAccessor.getModel().enqueue(new Runnable() {
                     public void run() {
                         modelChanged2(e);

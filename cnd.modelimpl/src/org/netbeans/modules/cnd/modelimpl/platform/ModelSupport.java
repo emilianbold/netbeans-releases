@@ -221,7 +221,7 @@ public class ModelSupport implements PropertyChangeListener {
         
         public void filesPropertiesChanged(final List<NativeFileItem> fileItems) {
 	    // FIXUP for #109425
-	    CsmModelAccessor.getModel().enqueue(new Runnable() {
+	    ModelImpl.instance().enqueueModelTask(new Runnable() {
 		public void run() {
 		    for (List<NativeFileItem> list : divideByProjects(fileItems)){
 			onProjectItemChanged(list);
@@ -233,7 +233,7 @@ public class ModelSupport implements PropertyChangeListener {
         
         public void filesPropertiesChanged() {
 	    // FIXUP for #109425
-	    CsmModelAccessor.getModel().enqueue(new Runnable() {
+	    ModelImpl.instance().enqueueModelTask(new Runnable() {
 		public void run() {
 		    for(NativeProject project : getNativeProjects()){
 			filesPropertiesChanged(project.getAllSourceFiles());

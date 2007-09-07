@@ -24,6 +24,7 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import javax.swing.Timer;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.api.*;
 import org.netbeans.modules.cnd.repository.spi.*;
@@ -166,7 +167,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
     }
     
     private void scheduleClosing(final String unitName,  final Set<String> requiredUnits) {
-	CsmModelAccessor.getModel().enqueue(new Runnable() {
+	ModelImpl.instance().enqueueModelTask(new Runnable() {
 	    public void run() {
 		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: closing implicitely opened unit%s\n", unitName);
 		RepositoryUtils.closeUnit(unitName, Collections.EMPTY_SET);

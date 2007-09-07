@@ -19,13 +19,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import java.util.EventObject;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CodeModelRequestProcessor;
-import org.openide.util.RequestProcessor;
 
 /**
  * See issue #76034 (When add a lot of source files into the project, then GUI hangs for long time)

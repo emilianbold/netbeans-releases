@@ -48,6 +48,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
+import org.openide.util.Cancellable;
+import org.openide.util.RequestProcessor;
 
 /**
  * CsmModel implementation
@@ -246,14 +248,15 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     
     private void _closeProject(final ProjectBase csmProject, final Object platformProjectKey) {
         if (SwingUtilities.isEventDispatchThread()) {
+            _closeProject2_pre(csmProject, platformProjectKey);
             Runnable task = new Runnable() {
                                 public void run() {
-                                    _closeProject2(csmProject, platformProjectKey);
+                                    _closeProject2(csmProject, platformProjectKey, !TraceFlags.PERSISTENT_REPOSITORY);
                                 }
                             };
-            this.enqueue(task, "Model: Closing Project "); // NOI18N
+            this.enqueueModelTask(task, "Closing Project "); // NOI18N
         } else {
-            _closeProject2(csmProject, platformProjectKey);
+            _closeProject2(csmProject, platformProjectKey, !TraceFlags.PERSISTENT_REPOSITORY);
         }           
     }
     
@@ -267,19 +270,23 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     
     private void _removeProject(final ProjectBase csmProject, final Object platformProjectKey) {
         if (SwingUtilities.isEventDispatchThread()) {
+            _closeProject2_pre(csmProject, platformProjectKey);
             Runnable task = new Runnable() {
                                 public void run() {
                                     _closeProject2(csmProject, platformProjectKey, true);
                                 }
                             };
-            this.enqueue(task, "Model: Closing Project and cleaning the repository"); // NOI18N
+            this.enqueueModelTask(task, "Closing Project and cleaning the repository"); // NOI18N
         } else {
             _closeProject2(csmProject, platformProjectKey, true);
         }        
     }
-    
-    private void _closeProject2(ProjectBase csmProject, Object platformProjectKey) {
-	_closeProject2(csmProject, platformProjectKey, !TraceFlags.PERSISTENT_REPOSITORY);
+
+    private void _closeProject2_pre(ProjectBase csmProject, Object platformProjectKey) {
+        ProjectBase prj = (csmProject == null) ? (ProjectBase) getProject(platformProjectKey) : csmProject;
+        if( prj != null ) {
+            prj.setDisposed();
+        }
     }
     
     private void _closeProject2(ProjectBase csmProject, Object platformProjectKey, boolean cleanRepository) {
@@ -415,14 +422,35 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         }
     }
     
+    // used only in a couple of functions below
+    private final String clientTaskPrefix = "Code Model Client Request"; // NOI18N
+    private static final String modelTaskPrefix = "Code Model Request Processor"; // NOI18N
+    
     public void enqueue(Runnable task, String name) {
-        CodeModelRequestProcessor.instance().post(task, name);
+        enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix + " :" + name);
     }
 
     public void enqueue(Runnable task) {
-        CodeModelRequestProcessor.instance().post(task);
+        enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix);
     }
 
+    public static ModelImpl instance() {
+        return (ModelImpl) CsmModelAccessor.getModel();
+    }
+    
+    public Cancellable enqueueModelTask(Runnable task, String name) {
+        return enqueue(modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
+    }
+    
+    private Cancellable enqueue(RequestProcessor processor, final Runnable task, final String taskName) {
+        return processor.post(new Runnable() {
+            public void run() {
+                Thread.currentThread().setName(taskName); // NOI18N
+                task.run();
+            }
+        });
+    }
+    
     public CsmFile findFile(String absPath){
         Collection/*<CsmProject>*/ projects = projects();
         for (Iterator it = projects.iterator(); it.hasNext();) {
@@ -685,7 +713,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     
     public boolean isProjectEnabled(NativeProject nativeProject) {
         ProjectBase project = (ProjectBase) findProject(nativeProject);
-        return (project != null) && (!project.isDisposed());
+        return (project != null) && (!project.isDisposing());
     }
 
     private void cleanModel() {
@@ -726,4 +754,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     //private double fatalThreshold = 0.99;
 
     private Set<Object> disabledProjects = new HashSet<Object>();
+    
+    private RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
 }
