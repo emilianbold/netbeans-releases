@@ -172,7 +172,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                             add(methodsPanel, BorderLayout.CENTER);
                             methodsPanel.setVisible(true);
                             m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
-                            m_overriders.setVisible(! modifiers.contains(Modifier.FINAL) || modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE));
+                            m_overriders.setVisible(! (modifiers.contains(Modifier.FINAL) || modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE)));
                             if (methodDeclaringSuperClass != null ) {
                                 m_isBaseClass.setVisible(true);
                                 m_isBaseClass.setSelected(true);
