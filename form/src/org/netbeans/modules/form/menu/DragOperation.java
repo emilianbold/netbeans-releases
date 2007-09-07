@@ -140,7 +140,9 @@ class DragOperation {
                 dragItem.setText(item.getText());
                 dragItem.setIcon(item.getIcon());
                 if(! (item instanceof JMenu)) {
-                    dragItem.setAccelerator(item.getAccelerator());
+                    if(!DropTargetLayer.isMetal()) {
+                        dragItem.setAccelerator(item.getAccelerator());
+                    }
                 }
             } else {
                 dragItem.setText("a new menu item");

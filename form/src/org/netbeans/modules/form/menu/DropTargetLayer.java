@@ -389,7 +389,14 @@ class DropTargetLayer extends JComponent {
     }
     
  
-    
+    static boolean isMetal() {
+        String laf = UIManager.getLookAndFeel().getName();
+        if(laf==null) return false;
+        if(laf.startsWith("Metal")) {
+            return true;
+        }
+        return false;
+    }
     private static boolean isWindows() {
         if(System.getProperty("os.name").startsWith("Windows")) {
             return true;
