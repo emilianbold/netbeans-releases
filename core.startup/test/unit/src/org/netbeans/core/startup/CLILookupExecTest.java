@@ -22,6 +22,8 @@ package org.netbeans.core.startup;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.CLIHandler;
 import org.netbeans.junit.NbTestCase;
 
@@ -30,13 +32,20 @@ import org.netbeans.junit.NbTestCase;
  */
 public class CLILookupExecTest extends NbTestCase {
     File home, cluster2, user;
+    static Logger LOG;
 
     public CLILookupExecTest(String name) {
         super(name);
     }
 
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
     protected void setUp() throws Exception {
         clearWorkDir();
+        LOG = Logger.getLogger("test." + getName());
 
         home = new File(getWorkDir(), "nb/cluster1");
         cluster2 = new File(getWorkDir(), "nb/cluster2");
@@ -59,8 +68,11 @@ public class CLILookupExecTest extends NbTestCase {
         createJAR(cluster2, "test-module-two", Two.class);
         createJAR(user, "test-module-user", User.class);
 
+        LOG.info("Calling main");
         org.netbeans.Main.main(new String[] { "--userdir", user.toString(), "--nosplash", "--one", "--two", "--three"});
+        LOG.info("finishInitialization");
         org.netbeans.Main.finishInitialization();
+        LOG.info("testing");
         
         assertEquals("Usage one", 0, One.usageCnt); assertEquals("CLI one", 1, One.cliCnt);
         assertEquals("Usage two", 0, Two.usageCnt); assertEquals("CLI two ", 1, Two.cliCnt);
@@ -93,11 +105,13 @@ public class CLILookupExecTest extends NbTestCase {
 
         protected int cli(CLIHandler.Args args) {
             assertArg(args.getArguments(), "--one");
+            LOG.info("one cli");
             cliCnt++;
             return 0;
         }
 
         protected void usage(PrintWriter w) {
+            LOG.info("one usage");
             usageCnt++;
         }
     }
@@ -111,11 +125,13 @@ public class CLILookupExecTest extends NbTestCase {
 
         protected int cli(CLIHandler.Args args) {
             assertArg(args.getArguments(), "--two");
+            LOG.info("two cli");
             cliCnt++;
             return 0;
         }
 
         protected void usage(PrintWriter w) {
+            LOG.info("two usage");
             usageCnt++;
         }
     }
@@ -129,12 +145,14 @@ public class CLILookupExecTest extends NbTestCase {
 
         protected int cli(CLIHandler.Args args) {
             assertArg(args.getArguments(), "--three");
+            LOG.info("user cli");
             cliCnt++;
             return 0;
         }
 
         protected void usage(PrintWriter w) {
             usageCnt++;
+            LOG.info("user usage");
         }
     }
 }
