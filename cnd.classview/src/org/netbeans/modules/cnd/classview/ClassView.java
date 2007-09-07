@@ -68,8 +68,9 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
     /*package local*/ void selectInClasses(final CsmOffsetableDeclaration decl) {
       	CsmModelAccessor.getModel().enqueue(new Runnable() {
 	    public void run() {
-		if (model != null) {
-                    Node node = model.findDeclaration(decl);
+                ClassViewModel currentModel = getModel();
+		if (currentModel != null) {
+                    Node node = currentModel.findDeclaration(decl);
                     if (node != null) {
                         try {
                             setUserActivity();
@@ -182,15 +183,17 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
             });
         }
         userActivity.restart();
-        if (model != null && !model.isUserActivity()) {
-            model.setUserActivity(true);
+        ClassViewModel currentModel = getModel();
+        if (currentModel != null && !currentModel.isUserActivity()) {
+            currentModel.setUserActivity(true);
             //System.out.println("Start user activity");
         }
     }
     
     private void stopViewModify(){
-        if (model != null) {
-            model.setUserActivity(false);
+        ClassViewModel currentModel = getModel();
+        if (currentModel != null) {
+            currentModel.setUserActivity(false);
         }
         //System.out.println("Stop user activity");
         if (userActivity != null) {
@@ -200,26 +203,27 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
     
     /*package local*/ void startup() {
         if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: startup()"); // NOI18N
-        if( model != null ) {
-            model.dispose();
+        ClassViewModel currentModel = getModel();
+        setModel(new ClassViewModel());
+        if( currentModel != null ) {
+            currentModel.dispose();
         }
         init();
-        model = new ClassViewModel();
-        //setupRootContext(CVUtil.createLoadingRoot());
         addRemoveViewListeners(true);
         if( CsmModelAccessor.getModel().projects().isEmpty() ) {
             setupRootContext(createEmptyRoot());
         } else {
-            setupRootContext(model.getRoot());
+            setupRootContext(getModel().getRoot());
         }
     }
     
     /*package local*/ void shutdown() {
         if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: shutdown()"); // NOI18N
         addRemoveViewListeners(false);
-        if( model != null ) {
-            model.dispose();
-            model = null;
+        ClassViewModel currentModel = getModel();
+        if( currentModel != null ) {
+            currentModel.dispose();
+            setModel(null);
         }
         stopViewModify();
         remove(view);
@@ -237,9 +241,10 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
         if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: projectOpened() "+project); // NOI18N
 //	CsmModelAccessor.getModel().enqueue(new Runnable() {
 //	    public void run() {
-		if (model != null) {
-		    model.openProject(project);
-		    setupRootContext(model.getRoot());
+                ClassViewModel currentModel = getModel();
+		if (currentModel != null) {
+		    currentModel.openProject(project);
+		    setupRootContext(currentModel.getRoot());
 		}
 //	    }
 //	}, "Class View: creating project node"); // NOI18N
@@ -247,9 +252,10 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
     
     /*package local*/ void projectClosed(CsmProject project) {
         if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: projectClosed() " + project); // NOI18N
-        if (model != null && !getExplorerManager().getRootContext().isLeaf()) {
-            model.closeProject(project);
-            RootNode root = model.getRoot();
+        ClassViewModel currentModel = getModel();
+        if (currentModel != null && !getExplorerManager().getRootContext().isLeaf()) {
+            currentModel.closeProject(project);
+            RootNode root = currentModel.getRoot();
             Children children = root.getChildren();
             if ((children instanceof ProjectsKeyArray) && ((ProjectsKeyArray) children).isEmpty()){
                 setupRootContext(createEmptyRoot());
@@ -263,8 +269,9 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
         if( TRACE_MODEL_CHANGE_EVENTS ) {
             new CsmTracer().dumpModelChangeEvent(e);
         }
-        if (model != null) {
-            model.scheduleUpdate(e);
+        ClassViewModel currentModel = getModel();
+        if (currentModel != null) {
+            currentModel.scheduleUpdate(e);
         }
     }
     
@@ -285,6 +292,14 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
             if (Diagnostic.DEBUG) Diagnostic.trace("ClassesV: setupRootContext() " + rc); // NOI18N
             getExplorerManager().setRootContext(rc);
         }
+    }
+
+    private ClassViewModel getModel() {
+        return model;
+    }
+
+    private void setModel(ClassViewModel model) {
+        this.model = model;
     }
     
     private class ViewMouseListener implements MouseListener, MouseMotionListener{
@@ -317,5 +332,4 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
             setUserActivity();
         }
     }
-    
 }
