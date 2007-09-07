@@ -94,6 +94,7 @@ public interface Project extends Lookup.Provider {
      * <li><a href="@org-openidex-util@/org/openidex/search/SearchInfo.html"><code>SearchInfo</code></a></li>
      * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/BinaryForSourceQueryImplementation.html"><code>BinaryForSourceQueryImplementation</code></a></li>
      * <li><a href="@org-netbeans-modules-project-ant@/org/netbeans/api/project/ant/AntBuildExtender.html"><code>AntBuildExtender</code></a></li>
+     * <li><a href="@org-openide-loaders@/org/openide/loaders/CreateFromTemplateAttributesProvider.html"><code>CreateFromTemplateAttributesProvider</code></a></li>
      * </ol>
      * <p>Typical implementation:</p>
      * <pre>
