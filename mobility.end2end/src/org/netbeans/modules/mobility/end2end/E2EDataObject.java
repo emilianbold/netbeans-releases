@@ -325,13 +325,13 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             
             registry.updateClassDataTree();
             final org.netbeans.modules.mobility.e2e.classdata.ClassData classData = registry.getClassData( className );
-            System.err.println(" - classdata = " + classData);
+//            System.err.println(" - classdata = " + classData);
             if( classData == null ) continue;
             
             final List<OperationData> methods = ccd.getOperations();
             final List<org.netbeans.modules.mobility.e2e.classdata.MethodData> methodsData = classData.getMethods();
             for( int j = 0; j < methods.size(); j++ ) {
-                System.err.println(" - method: " + methods.get( j ).getMethodName());
+//                System.err.println(" - method: " + methods.get( j ).getMethodName());
                 String methodName = null;
                 if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())) {
                     methodName = methods.get( j ).getMethodName();
@@ -349,7 +349,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         }
         mapping.setServletURL( Util.getServerURL( getServerProject(), getConfiguration()));
         
-        System.err.println(" - mapping :" + mapping.getServiceMappings().toString());
+//        System.err.println(" - mapping :" + mapping.getServiceMappings().toString());
         return mapping;
     }
     

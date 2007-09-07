@@ -84,7 +84,7 @@ class WSDLValidator {
     private void checkService( Service service ) {
         this.service = service;
         for( Port port : service.getPorts()) {
-            System.err.println("Checking port: " + port.getName());
+//            System.err.println("Checking port: " + port.getName());
             checkPort( port );
         }
     }
@@ -98,7 +98,7 @@ class WSDLValidator {
 //                    flags.add( SOAPConstants.ADDRESS );
 
                 Binding binding = port.getBinding();
-                System.err.println("Checking binding: " + binding.getName());
+//                System.err.println("Checking binding: " + binding.getName());
                 checkBinding( binding );
             }
         }
@@ -112,15 +112,15 @@ class WSDLValidator {
                 // Binding is SOAP
 //                flags.add( SOAPConstants.BINDING );
 
-                System.err.println(" binding - style = " + soapBinding.getStyle());
+//                System.err.println(" binding - style = " + soapBinding.getStyle());
 
                 for( BindingOperation bindingOperation : binding.getBindingOperations()) {
-                    System.err.println("Checking bindingOperation:" + bindingOperation.getName());
+//                    System.err.println("Checking bindingOperation:" + bindingOperation.getName());
                     checkBindingOperation( bindingOperation );
                 }
                 PortType portType = binding.getPortType();
                 for( Operation operation : portType.getOperations()) {
-                    System.err.println("Checking operation: " + operation.getName());
+//                    System.err.println("Checking operation: " + operation.getName());
                     checkOperation( operation );
                 }
             }
@@ -278,10 +278,10 @@ class WSDLValidator {
     }
     
     private void printMessages() {
-        System.err.println("Validation messages: " + result.size());
-        for( ValidationResult msg : result ) {
-            System.err.println(" - " + msg.getErrorLevel() + " " + msg.getMessage());
-        }
+//        System.err.println("Validation messages: " + result.size());
+//        for( ValidationResult msg : result ) {
+//            System.err.println(" - " + msg.getErrorLevel() + " " + msg.getMessage());
+//        }
     }
     
     

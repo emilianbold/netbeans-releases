@@ -111,7 +111,7 @@ public class ClassDataRegistry {
             }
         }
         if ( profileProvider == null ) {
-            System.err.println( "Cannot find profile - " + profileName );
+//            System.err.println( "Cannot find profile - " + profileName );
             return;
         }
     }

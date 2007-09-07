@@ -38,7 +38,7 @@ import org.netbeans.modules.mobility.javon.Traversable;
 public class GenericTypeSerializer implements JavonSerializer {
 
     public GenericTypeSerializer() {
-        System.err.println("Creating GenericTypeSerializer");
+//        System.err.println("Creating GenericTypeSerializer");
     }
 
     public String getName() {
@@ -46,10 +46,10 @@ public class GenericTypeSerializer implements JavonSerializer {
     }
 
     public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
-        System.err.println("~" + type.toString());
+//        System.err.println("~" + type.toString());
         if( type.getKind() == TypeKind.DECLARED ) {
             TypeElement clazz = (TypeElement)((DeclaredType) type).asElement();
-            System.err.println(" - declared type: " + clazz.getQualifiedName().toString());
+//            System.err.println(" - declared type: " + clazz.getQualifiedName().toString());
             if( "java.util.List".equals( clazz.getQualifiedName().toString())) {
                 List<? extends TypeMirror> typeParams = ((DeclaredType) type).getTypeArguments();
                 for( TypeMirror typeParam : typeParams ) {

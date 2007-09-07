@@ -286,14 +286,14 @@ public class WSDL2JavaImpl implements WSDL2Java {
             off.close();
         }        
         
-        System.err.println(" --- Used Types --- ");
+//        System.err.println(" --- Used Types --- ");
         usedTypeNames = new HashSet<QName>();
         for( QName typeName : usedTypes ) {
             usedTypeNames.addAll( traverseTypes( usedTypes, typeName ));
         }
         
         for( QName typeName : usedTypeNames ) {
-            System.err.println(" - " + typeName.getLocalPart());
+//            System.err.println(" - " + typeName.getLocalPart());
         }        
     }
     
@@ -384,11 +384,11 @@ public class WSDL2JavaImpl implements WSDL2Java {
         for( QName typeName : usedTypeNames ) {
             types.addAll( getUsedTypes( typeName ));
         }
-        System.err.println(" ---- Used complex types ---- ");
-        for( QName type : types ) {
-            System.err.println(" - " + type.toString());
-        }
-        System.err.println(" ----  ---- ");
+//        System.err.println(" ---- Used complex types ---- ");
+//        for( QName type : types ) {
+//            System.err.println(" - " + type.toString());
+//        }
+//        System.err.println(" ----  ---- ");
         
         for( QName typeName : types ) {
             Element element = definition.getSchemaHolder().getSchemaElement( typeName );
@@ -609,11 +609,11 @@ public class WSDL2JavaImpl implements WSDL2Java {
             off.close();
         }
 
-        System.err.println(" --- Array types --- ");
-        for( QName typeName : usedArrayTypeNames ) {
-            System.err.println(" - " + typeName.getLocalPart());
-        }
-        System.err.println(" --- --- ");
+//        System.err.println(" --- Array types --- ");
+//        for( QName typeName : usedArrayTypeNames ) {
+//            System.err.println(" - " + typeName.getLocalPart());
+//        }
+//        System.err.println(" --- --- ");
         if( configuration.getGenerateDataBinding()) {
             generateDataBindingArrays( usedArrayTypeNames );
         }
@@ -1480,7 +1480,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                     off.write( "Type.BYTE" );
                     maxOccurs = Element.UNBOUNDED;
                 } else {
-                    System.err.println("Error type");
+//                    System.err.println("Error type");
                 }
                 if( minOccurs != 1 || maxOccurs != 1 || e.isNillable()) {
                     off.write( ", " + minOccurs + ", " );

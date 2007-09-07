@@ -44,7 +44,7 @@ public class OutputFileFormatter {
     /** Creates a new instance of OutputFileFormatter */
     public OutputFileFormatter( FileObject fileObject ) throws Exception {
         
-        System.err.println(" >>> Generating file - " + fileObject.getPath());
+//        System.err.println(" >>> Generating file - " + fileObject.getPath());
         
         this.fileObject = fileObject;
         

@@ -81,7 +81,7 @@ public class JSR172ServicePanel extends SectionInnerPanel implements PropertyCha
         wsdlService = (WSDLService)configuration.getServices().get(0);
         final String url = wsdlService.getUrl();
         if(  url == null || url.equals( "" )) {
-            System.err.println("ERR_UrlIsNotValid");
+//            System.err.println("ERR_UrlIsNotValid");
             getSectionView().getErrorPanel().setError(
                     new Error( Error.TYPE_FATAL, Error.ERROR_MESSAGE,
                     NbBundle.getMessage( JSR172ServicePanel.class, "ERR_UrlIsNotValid" ), textUrl ));

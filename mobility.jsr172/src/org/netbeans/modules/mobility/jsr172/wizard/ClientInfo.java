@@ -1034,7 +1034,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             
         } catch( IOException e ) {
         } catch( Exception e ) {
-            System.err.println(" --- ----");
+//            System.err.println(" --- ----");
             e.printStackTrace();
         } finally {
             if( tempWSDL != null ) {

@@ -420,7 +420,7 @@ public class JavonMappingImpl implements JavonMapping {
         public Set<ClassData> getParameterTypes() {
             Set<ClassData> paramTypes = new HashSet<ClassData>();
             for( MethodData method : methods ) {
-                System.err.println(" - method = " + method.getName());
+//                System.err.println(" - method = " + method.getName());
                 for( MethodParameter param : method.getParameters()) {
                     ClassData cd = param.getType();
                     paramTypes.addAll( cd.getSerializer().getReferencesTypes( cd, paramTypes ));

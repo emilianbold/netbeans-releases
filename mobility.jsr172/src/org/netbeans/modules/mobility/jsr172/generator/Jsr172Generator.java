@@ -101,7 +101,7 @@ public class Jsr172Generator {
             final String configFileData = MessageFormat.format( CONFIG_FILE_BODY, new Object[]{ f.getAbsolutePath(), cd.getPackageName() } );
             
             final String wsdlUrl = f.toURI().toString();
-            System.err.println(" - WSDL url - " + wsdlUrl );
+//            System.err.println(" - WSDL url - " + wsdlUrl );
                                      
             WSDL2Java.Configuration config = new WSDL2Java.Configuration();
             config.setWSDLFileName( wsdlUrl );

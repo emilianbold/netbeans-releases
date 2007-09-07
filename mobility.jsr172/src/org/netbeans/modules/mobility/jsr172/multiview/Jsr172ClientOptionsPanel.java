@@ -108,7 +108,7 @@ public class Jsr172ClientOptionsPanel extends SectionInnerPanel {
         
         @SuppressWarnings("synthetic-access")
 		public void save() {
-            System.err.println(" - Saving Option Panel");
+//            System.err.println(" - Saving Option Panel");
             
             if( cldc10.getSelectedObjects() == null ) {
                 properties.setProperty( "cldc11", "true" );

@@ -189,7 +189,7 @@ public class ServerJavonTemplate extends JavonTemplate {
             }
         }
         if( serverProject != null ) {
-            System.err.println(" ~ " + mapping.getServletURL());
+//            System.err.println(" ~ " + mapping.getServletURL());
             Util.addServletToWebProject( serverProject, mapping );
         }
         
