@@ -217,7 +217,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
     private static MethodTree createDelegatingMethod(WorkingCopy wc, VariableElement delegate, ExecutableElement method, DeclaredType type) {
         TreeMaker make = wc.getTreeMaker();
         ExecutableType methodType = (ExecutableType)wc.getTypes().asMemberOf((DeclaredType)delegate.asType(), method);
-        Set<Modifier> mods = EnumSet.copyOf(method.getModifiers());        
+        Set<Modifier> mods = new java.util.HashSet<Modifier>(method.getModifiers());
         mods.remove(Modifier.ABSTRACT);
         
         List<VariableTree> params = new ArrayList<VariableTree>();
