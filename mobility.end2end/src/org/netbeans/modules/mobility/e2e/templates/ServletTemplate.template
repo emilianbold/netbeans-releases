@@ -3,11 +3,13 @@
  * This file is generated. Please do not change
  */
 <#assign packageName = mapping.getServerMapping().getPackageName()/>
+<#if packageName != "">
 package ${packageName};
 
 import ${mapping.getServerMapping().getPackageName()}.JavonGateways;
 import ${mapping.getServerMapping().getPackageName()}.InvocationAbstraction;
 import ${mapping.getServerMapping().getPackageName()}.Utility;
+</#if>
 import javax.servlet.http.*;
 import javax.servlet.*;
 import java.io.*;

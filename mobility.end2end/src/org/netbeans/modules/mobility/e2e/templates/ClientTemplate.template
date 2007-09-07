@@ -2,7 +2,9 @@
 /**
  * This file is generated. Please do not change
  */
+<#if mapping.getClientMapping().getPackageName() != "" >
 package ${mapping.getClientMapping().getPackageName()};
+</#if>
 
 import java.util.*;
 import java.io.*;

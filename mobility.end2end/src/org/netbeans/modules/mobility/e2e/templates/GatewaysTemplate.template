@@ -3,7 +3,9 @@
  * This file is generated. Please do not change
  */
 <#assign packageName = mapping.getServerMapping().getPackageName()/>
+<#if packageName != "">
 package ${packageName};
+</#if>
 
 import java.io.*;
 import javax.servlet.http.HttpSession;
@@ -19,7 +21,6 @@ public class JavonGateways {
     <#assign servicePackageName = service.getPackageName()/>
     <#assign serviceType = service.getType()/>
     <#assign className = service.getClassName()/>
-    <#assign classFQN = packageName + "." + className/>
     <#assign instanceTypeName = mapping.getProperty( "instance" )/>
     /**
      *  This class implements the application server connectivity specific to the needs.

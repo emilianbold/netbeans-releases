@@ -1,7 +1,9 @@
 /**
  *
  */
+<#if proxyClassPackage != "">
 package ${proxyClassPackage};
+</#if>
 
 import javax.xml.ws.WebServiceRef;
 import ${servicePackage}.*;

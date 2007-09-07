@@ -1,7 +1,10 @@
 /*
  *
  */
+<#if bean.getPackage() != "" >
 package ${bean.getPackage()};
+</#if>
+
 <#assign databinding = mapping.getProperty( "databinding" ) == "true"/>
 
 <#if databinding>

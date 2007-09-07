@@ -2,8 +2,9 @@
 /**
  * This file is generated. Please do not change
  */
-<#assign packageName = mapping.getServerMapping().getPackageName()/>
-package ${packageName};
+<#if mapping.getServerMapping().getPackageName() != "">
+package ${mapping.getServerMapping().getPackageName()};
+</#if>
 
 import java.io.*;
 import java.lang.reflect.*;

@@ -3,7 +3,9 @@
  * This file is generated. Please do not change
  */
 
+<#if mapping.getServerMapping().getPackageName() != "" >
 package ${mapping.getServerMapping().getPackageName()};
+</#if>
 
 import java.io.DataInput;
 import javax.servlet.http.HttpSession;
