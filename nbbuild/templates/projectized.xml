@@ -609,4 +609,32 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                        oldname="xtest.xml"
                        newpath="../../../nbbuild/templates/xtest.xml"/>
     </target>
+
+    <target name="sigtest-init" depends="build-init">
+        <property name="sigtest.basedir" location="nbproject/sigtests"/>
+        <mkdir dir="${sigtest.basedir}"/>
+        <property name="sigtest.file" location="${sigtest.basedir}/${code.name.base.dashes}.sig"/>
+        <property name="sigtest.public.packages" value="${public.packages}"/>
+        <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <property name="sigtest.jar" location="${nb_all}/nbbuild/external/sigtestdev.jar"/> 
+        <echo>Checking module: ${module.name}</echo>
+    </target>
+
+    <target name="gen-sigtest" depends="sigtest-init">
+        <sigtest fileName="${sigtest.file}"
+                 sigtestJar="${sigtest.jar}"
+                 classpath="${module.classpath}:${cluster}/${module.jar}:${java.home}/lib/rt.jar"
+                 additionalArgs="-static"
+                 action="Setup"
+                 packages="${sigtest.public.packages}"/>
+    </target>
+
+    <target name="check-sigtest" depends="sigtest-init">
+        <sigtest fileName="${sigtest.file}"
+                 sigtestJar="${sigtest.jar}"
+                 classpath="${module.classpath}:${cluster}/${module.jar}:${java.home}/lib/rt.jar"
+                 additionalArgs="-static"
+                 action="SignatureTest"
+                 packages="${sigtest.public.packages}"/>
+    </target>
 </project>

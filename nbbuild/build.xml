@@ -1682,6 +1682,30 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <ant dir="../visualweb/ravebuild" target="build-test-tools" inheritall="true"/>
       <ant dir="../visualweb/ravebuild" target="commit-validation" inheritall="false"/> 
   </target>
+
+  <target name="sigtests-init" depends="bootstrap">
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
+    <resolvelist name="modules.for.sigtests.list" list="${nb.clusters.list}"/>
+
+    <pathconvert property="modules.fullpath" >
+        <path>
+            <dirset dir="${nb_all}" includes="${modules.for.sigtests.list}" />
+        </path>
+        <mapper type="identity" />
+    </pathconvert>
+  </target>
+  
+  <target name="gen-sigtests" depends="sigtests-init">
+    <echo message="Generating signature files for ${cluster.config} modules"/>
+    
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}"/>
+  </target>
+
+  <target name="check-sigtests" depends="sigtests-init">
+    <echo message="Checking signature files for ${cluster.config} modules"/>
+    
+    <subant target="check-sigtest" buildpath="${modules.fullpath}"/>
+  </target>
   
   <target name="generate-uc-catalog.init">
     <mkdir dir="build/auclasses"/>
