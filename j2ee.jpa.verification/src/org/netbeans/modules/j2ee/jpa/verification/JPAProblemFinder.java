@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -111,23 +112,14 @@ public abstract class JPAProblemFinder {
                         }
                         
                         if (tree.getKind() == Tree.Kind.CLASS){
-                            long startTime = Calendar.getInstance().getTimeInMillis();
+                            
                             TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                             TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
                             
-                            context = findProblemContext(info, javaClass, metadata, false);
-                            JPARulesEngine rulesEngine = new JPARulesEngine();
-                            javaClass.accept(rulesEngine, context);
-                            problemsFound.addAll(rulesEngine.getProblemsFound());
+                            processClass(info, metadata, javaClass);
                             
-                            // signal locally errors found in the IdClass
-                            problemsFound.addAll(processIdClass(info, javaClass, metadata, context.getModelElement()));
-                            
-                            if (LOG.isLoggable(Level.FINE)){
-                                long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
-                                
-                                LOG.log(Level.FINE, "processed class {0} in {1} ms",
-                                        new Object[]{javaClass.getSimpleName(), timeElapsed});
+                            for (TypeElement innerClass : ElementFilter.typesIn(javaClass.getEnclosedElements())){
+                                processClass(info, metadata, innerClass);
                             }
                             
                             synchronized(cancellationLock){
@@ -143,6 +135,25 @@ public abstract class JPAProblemFinder {
             //TODO: should we really reset the errors if the task is cancelled?
             HintsController.setErrors(file, "JPA Verification", problemsFound); //NOI18N
             runningInstance = null;
+        }
+    }
+    
+    private void processClass(CompilationInfo info,
+            EntityMappingsMetadata metadata,
+            TypeElement javaClass) {
+        long startTime = Calendar.getInstance().getTimeInMillis();
+        context = findProblemContext(info, javaClass, metadata, false);
+        JPARulesEngine rulesEngine = new JPARulesEngine();
+        rulesEngine.visitTypeAsClass(javaClass, context);
+        problemsFound.addAll(rulesEngine.getProblemsFound());
+
+        // signal locally errors found in the IdClass
+        problemsFound.addAll(processIdClass(info, javaClass, metadata, context.getModelElement()));
+
+        if (LOG.isLoggable(Level.FINE)) {
+            long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
+
+            LOG.log(Level.FINE, "processed class {0} in {1} ms", new Object[]{javaClass.getSimpleName(), timeElapsed});
         }
     }
     
@@ -180,7 +191,7 @@ public abstract class JPAProblemFinder {
                     
                     context.setElementToAnnotate(treeToAnnotate);
                     JPARulesEngine rulesEngine = new JPARulesEngine();
-                    idClass.accept(rulesEngine, context);
+                    rulesEngine.visitTypeAsClass(javaClass, context);
                     return rulesEngine.getProblemsFound();
                 }
             }

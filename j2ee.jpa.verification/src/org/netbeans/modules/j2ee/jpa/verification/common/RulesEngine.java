@@ -31,16 +31,11 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public abstract class RulesEngine extends ElementKindVisitor6<Void, ProblemContext> {
+public abstract class RulesEngine {
     private ProblemContext ctx;
     private List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
     
-    @Override public Void visitTypeAsClass(TypeElement javaClass, ProblemContext ctx){
-        // visit all enclosed classes recursively
-        for (TypeElement enclosedClass : ElementFilter.typesIn(javaClass.getEnclosedElements())){
-            visitTypeAsClass(enclosedClass, ctx);
-        }
-        
+    public Void visitTypeAsClass(TypeElement javaClass, ProblemContext ctx){
         // apply class-level rules
         for (Rule<TypeElement> rule : getClassRules()){
             if (ctx.isCancelled()){
