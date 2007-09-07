@@ -155,7 +155,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 //    }
 
     public CsmObject getBaseMethod() {
-        return newElement;
+        return newElement == null ? origObject : newElement;
     }
     
     public void requestFocus() {
