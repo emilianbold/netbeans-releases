@@ -140,15 +140,20 @@ public class RealTypeSerializer implements JavonSerializer {
         String result = "";
         if( object != null ) result = object + " = ";
         if( floatClassData.equals( type )) {
-            return result + stream + ".readFloat()";
+            result += stream + ".readFloat()";
         } else if( FloatClassData.equals( type )) {
-            return result + toObject( floatClassData, stream + ".readFloat()" );
+            result += toObject( floatClassData, stream + ".readFloat()" );
         } else if ( doubleClassData.equals( type )) {
-            return result + stream + ".readDouble()";
+            result += stream + ".readDouble()";
         } else if( DoubleClassData.equals( type )) {
-            return result + toObject( doubleClassData, stream + ".readDouble()" );
+            result += toObject( doubleClassData, stream + ".readDouble()" );
         }
-        throw new IllegalArgumentException( "Invalid type: " + type.getName());        
+        if( "".equals( result ))
+            throw new IllegalArgumentException( "Invalid type: " + type.getName());
+        
+        if( object != null ) result += ";";
+        
+        return result;
     }
 
     public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
