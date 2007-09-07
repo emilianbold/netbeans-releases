@@ -3,4 +3,4 @@ ant -f nbbuild/build.xml cvs-clean || exit
 #ant -f nbbuild/build.xml checkout || exit
 ant -f nbbuild/build.xml build-nozip || exit
 ant -f xtest/build.xml || exit
-ant -f nbbuild/build.xml build-test-dist
+ant -f nbbuild/build.xml -Dtest.fail.on.error=false build-test-dist

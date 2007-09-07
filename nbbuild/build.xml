@@ -1652,7 +1652,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <mapper type="identity" />
       </pathconvert>
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
-      <subant buildpath="${modules.sorted}" target="build-all-tests" failonerror="${test.fail.on.error}"/>
+      <mkdir dir="build"/>
+      <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
+      <subant-junit buildpath="${modules.sorted}" target="build-all-tests" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
       <!-- copy templates -->
       <copy todir="${test.dist.dir}/unit"> 
              <fileset dir="templates/testdist">
