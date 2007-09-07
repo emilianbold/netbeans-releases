@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.FileNotFoundException;
+import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -84,6 +85,7 @@ import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -285,19 +287,38 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     private final class Info implements ProjectInformation {
         
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private WeakReference<String> cachedName = null;
         
         Info() {}
         
         void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
+            synchronized (pcs) {
+                cachedName = null;
+            }
         }
         
         public String getName() {
-            return BpelproProject.this.getName();
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
+//            return BpelproProject.this.getName();
         }
         
         public String getDisplayName() {
-            return BpelproProject.this.getName();
+              synchronized (pcs) {
+                if (cachedName != null) {
+                    String dn = cachedName.get();
+                    if (dn != null) {
+                        return dn;
+                    }
+                }
+            }
+            String dn = BpelproProject.this.getName();
+            synchronized (pcs) {
+                cachedName = new WeakReference<String>(dn);
+            }
+            return dn;
+            
+//          return BpelproProject.this.getName();
         }
         
         public Icon getIcon() {
