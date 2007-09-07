@@ -188,8 +188,15 @@ public class FormEditor {
         try {
             loadFormData();
         }
-        catch (PersistenceException ex) {
+        catch (PersistenceException ex) { // a fatal loading error happened
             logPersistenceError(ex, 0);
+            if (!formLoaded) { // loading failed - don't keep empty designer opened
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        getFormDataObject().getFormEditorSupport().selectJavaEditor();
+                    }
+                });
+            }
         }
 
         // clear status text
