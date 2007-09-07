@@ -52,10 +52,10 @@ public class ArraysTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(ArraysTest.class);
+        suite.addTestSuite(ArraysTest.class);
 //        suite.addTest(new ArraysTest("testConstantRename"));
-        suite.addTest(new ArraysTest("testDuplicateMethodWithArrReturn1"));
-        suite.addTest(new ArraysTest("testDuplicateMethodWithArrReturn2"));
+//        suite.addTest(new ArraysTest("testDuplicateMethodWithArrReturn1"));
+//        suite.addTest(new ArraysTest("testDuplicateMethodWithArrReturn2"));
         return suite;
     }
 
