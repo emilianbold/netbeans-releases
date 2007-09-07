@@ -449,11 +449,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     private void createProjectFilesIfNeed(NativeProject nativeProject) {
         
-        if( TraceFlags.DEBUG ) Diagnostic.trace("Using new NativeProject API"); // NOI18N
-        // first of all visit sources, then headers
-        
         if( TraceFlags.TIMING ) {
-            System.err.println("Getting files from project system");
+            System.err.printf("\n\nGetting files from project system for %s...\n", getName());
         }
         if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
             try {
@@ -483,8 +480,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         
         if( TraceFlags.TIMING ) {
             time = System.currentTimeMillis() - time;
-            System.err.println("Got files from project system. Time = " + time);
-            System.err.println("FILES COUNT:\nSource files:\t" + sources.size() + "\nHeader files:\t" + headers.size() + "\nTotal files:\t" + (sources.size() + headers.size()));
+            System.err.printf("Getting files from project system took  %d ms for %s\n", time, getName());
+            System.err.printf("FILES COUNT for %s:\nSource files:\t%d\nHeader files:\t%d\nTotal files:\t%d\n",
+                    getName(), sources.size(), headers.size(), sources.size() + headers.size());
+            time = System.currentTimeMillis();
         }
         if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
             try {
@@ -501,6 +500,12 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         
         try {
             disposeLock.readLock().lock();
+
+            if( TraceFlags.TIMING ) {
+                time = System.currentTimeMillis() - time;
+                System.err.printf("Waited on disposeLock: %d ms for %s\n", time, getName());
+                time = System.currentTimeMillis();
+            }
             
             if( ProjectBase.this.isProjectDisposed ) {
                 if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ProjevtBase.ensureFilesCreated interrupted");
@@ -519,6 +524,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             
         } finally {
             disposeLock.readLock().unlock();
+            if( TraceFlags.TIMING ) {
+                time = System.currentTimeMillis() - time;
+                System.err.printf("FILLING PARSER QUEUE took %d ms for %s\n", time, getName());
+            }
         }
         nativeProject.removeProjectItemsListener(projectItemListener);
         // in fact if visitor used for parsing => visitor will parse all included files
