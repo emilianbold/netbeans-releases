@@ -323,7 +323,7 @@ public class CasualDiff {
         // the reference is no longer needed.
         origClassName = null;
         printer.undent(old);
-        if (localPointer != -1) {
+        if (localPointer != -1 && localPointer < origText.length()) {
             if (origText.charAt(localPointer) == '}') {
                 // another stupid hack
                 printer.toLeftMargin();
