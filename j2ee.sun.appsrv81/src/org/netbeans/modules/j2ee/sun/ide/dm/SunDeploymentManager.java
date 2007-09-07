@@ -291,7 +291,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
       *
       *return true is this  deploymment manager needs a restart, because of changes in admin configuration
       */
-    public boolean isRestartNeeded(){
+    synchronized public boolean isRestartNeeded(){
         if (secureStatusHasBeenChecked==false){
             return false;
         }
@@ -592,7 +592,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         return innerDM.getSupportedLocales();
     }
     
-    public Target[] getTargets() throws IllegalStateException {
+    synchronized public Target[] getTargets() throws IllegalStateException {
         try {
             ThrowExceptionIfSuspended();
         } catch (Exception ex) {
@@ -1043,7 +1043,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     
     
-    public void  ThrowExceptionIfSuspended(){
+    synchronized public void  ThrowExceptionIfSuspended(){
         
         /* this is called before any remote call, so it's a good place to do this extra check about being secure of not For EE version
          ** and accordingly set the environment correctly */
@@ -1294,7 +1294,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     
     
-    public void  refreshDeploymentManager(){
+    synchronized public void  refreshDeploymentManager(){
         try{
             secureStatusHasBeenChecked=false;
             resetInnerDeploymentManager();
@@ -1313,7 +1313,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         return ServerLocationManager.getNetBeansAndServerClassLoader(getPlatformRoot());
     }
     
-    public void setUserName(String name) {
+    synchronized public void setUserName(String name) {
         mmm = null;
         secureStatusHasBeenChecked=false;
         String oldValue = userName;
@@ -1321,7 +1321,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         propertySupport.firePropertyChange("name", oldValue, userName);
     }
     
-    public void setPassword(String pw) {
+    synchronized public void setPassword(String pw) {
         mmm= null;
         secureStatusHasBeenChecked=false;
         String oldValue = password;
