@@ -206,7 +206,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 needSpace();
                 s = replace(s, UiUtils.PrintPart.TYPEPARAMETERS);
             }
-            print(tree.restype, tree.sym != null && tree.sym.type!=null ? tree.sym.type.getReturnType() : null);
+            print(tree.restype);
             s = replace(s, UiUtils.PrintPart.TYPE);
             out.clear();
             print(tree.name);
@@ -259,8 +259,7 @@ public final class VeryPretty extends JCTree.Visitor {
             s = replace(s, UiUtils.PrintPart.TYPEPARAMETERS);
             if (tree.extending != null) {
                 print(" extends ");
-                print(tree.extending, tree.sym != null
-                        ? types.supertype(tree.sym.type) : null);
+                print(tree.extending);
                 s = replace(s, UiUtils.PrintPart.EXTENDS);
             }
             if (tree.implementing.nonEmpty()) {
@@ -278,8 +277,7 @@ public final class VeryPretty extends JCTree.Visitor {
         s = replace(s, UiUtils.PrintPart.ANNOTATIONS);
 	printFlags(tree.mods.flags);
         s = replace(s, UiUtils.PrintPart.FLAGS);
-        Type type = tree.type != null ? tree.type : tree.vartype.type;
-	print(tree.vartype, type);
+	print(tree.vartype);
         s = replace(s, UiUtils.PrintPart.TYPE);
 	needSpace();
 	print(tree.name);
@@ -356,8 +354,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	    printTypeParameters(tree.typarams);
 	    if (tree.extending != null) {
                 wrap("extends ", cs.wrapExtendsImplementsKeyword());
-		print(tree.extending, tree.sym != null 
-                      ? types.supertype(tree.sym.type) : null);
+		print(tree.extending);
 	    }
 	    if (tree.implementing.nonEmpty()) {
                 wrap("implements ", cs.wrapExtendsImplementsKeyword());
@@ -468,7 +465,7 @@ public final class VeryPretty extends JCTree.Visitor {
                     printTypeParameters(tree.typarams);
                     needSpace();
                 }
-                print(tree.restype, tree.sym != null && tree.sym.type!=null ? tree.sym.type.getReturnType() : null);
+                print(tree.restype);
                 needSpace();
                 print(tree.name);
             }
@@ -506,7 +503,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 printExpr(((JCArrayTypeTree) tree.vartype).elemtype);
                 print("...");
             } else {
-                print(tree.vartype, null);
+                print(tree.vartype);
             }
         }
         needSpace();
@@ -974,7 +971,7 @@ public final class VeryPretty extends JCTree.Visitor {
             print(">");
         }
 	if (tree.encl == null)
-	    print(tree.clazz, tree.clazz.type);
+	    print(tree.clazz);
 	else if (tree.clazz.type != null)
 	    print(tree.clazz.type.tsym.name);
 	else
@@ -1142,7 +1139,7 @@ public final class VeryPretty extends JCTree.Visitor {
     @Override
     public void visitTypeCast(JCTypeCast tree) {
 	print(cs.spaceWithinTypeCastParens() ? "( " : "(");
-	print(tree.clazz, tree.clazz.type);
+	print(tree.clazz);
 	print(cs.spaceWithinTypeCastParens() ? " )" : ")");
         if (cs.spaceAfterTypeCast())
             needSpace();
@@ -1159,7 +1156,7 @@ public final class VeryPretty extends JCTree.Visitor {
     public void visitTypeTest(JCInstanceOf tree) {
 	printExpr(tree.expr, TreeInfo.ordPrec);
 	print(" instanceof ");
-	print(tree.clazz, tree.clazz.type);
+	print(tree.clazz);
     }
 
     @Override
@@ -1375,21 +1372,6 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(t.name);
     }
     
-    private void print(JCTree t, Type ty) {
-	if (ty == null || ty == Type.noType || (fromOffset >= 0 && toOffset >= 0)) {
-	    print(t);
-	} else {
-	    int arrCnt = 0;
-	    while (ty instanceof Type.ArrayType) {
-		ty = ((Type.ArrayType) ty).elemtype;
-		arrCnt++;
-	    }
-	    print(t);
-	    while (--arrCnt >= 0)
-		print("[]");
-	}
-    }
-
     private void printAnnotations(List<JCAnnotation> annotations) {
         while (annotations.nonEmpty()) {
 	    printNoParenExpr(annotations.head);
