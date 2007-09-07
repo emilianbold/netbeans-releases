@@ -32,8 +32,10 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.modules.ruby.rubyproject.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
@@ -50,12 +52,12 @@ import org.rubyforge.debugcommons.RubyDebuggerProxy;
 /**
  * @author Martin Krauskopf
  */
-public abstract class TestBase extends NbTestCase {
+public abstract class TestBase extends RubyTestBase {
 
     static {
         RubySession.TEST = true;
     }
-
+    
     private enum Engine { CLASSIC, RDEBUG_IDE }
     
     protected static boolean watchStepping = false;
@@ -75,7 +77,6 @@ public abstract class TestBase extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.setProperty("ruby.interpreter", TestBase.getFile("ruby.executable", true).getAbsolutePath());
         engines = new Stack<Engine>();
         engines.push(Engine.CLASSIC);
         if (isRDebugExecutableCorrectlySet()) {
@@ -83,7 +84,7 @@ public abstract class TestBase extends NbTestCase {
         }
         doCleanUp();
     }
-    
+
     private void doCleanUp() {
         for (RubyBreakpoint bp : RubyBreakpoint.getBreakpoints()) {
             RubyBreakpoint.removeBreakpoint(bp);
@@ -248,7 +249,7 @@ public abstract class TestBase extends NbTestCase {
                 assertTrue("classic-debug found in " + rubydebugDir, cd.isFile());
                 return cd;
             } else if (relativePath.equals("jruby-1.0.1")) {
-                return getDirectory("jrubyhome.dir", true);
+                return TestUtil.getXTestJRubyHome();
             } else {
                 return null;
             }
