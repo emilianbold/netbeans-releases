@@ -161,7 +161,7 @@ public class FormSettings {
     // resource management / internationalization
 
     // for compatibility
-    private static final String PROP_AUTO_I18N = "i18nAutoMode"; // NOI18N
+    static final String PROP_AUTO_I18N = "i18nAutoMode"; // NOI18N
 
     void setResourceAutoMode(int value) {
         settings.put(ResourceSupport.PROP_AUTO_RESOURCING, value);

@@ -2953,11 +2953,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
             // Form settings are stored in AuxValues of top-level container
             if ((comp == formModel.getTopRADComponent() && (name.startsWith(FORM_SETTINGS_PREFIX)))) {
                 String settingName = name.substring(FORM_SETTINGS_PREFIX.length());
-                formModel.getSettings().set(settingName, value);
-                // hack: if loading from updated 5.5 or early 6.0, the version
-                // might be 1.3 even if using auto i18n, which should be 1.4
-                if ("i18nAutoMode".equals(settingName) && Boolean.TRUE.equals(value)) { // NOI18N
+                FormSettings formSettings = formModel.getSettings();
+                formSettings.set(settingName, value);
+
+                if (FormSettings.PROP_AUTO_I18N.equals(settingName)
+                        && Boolean.TRUE.equals(value)) { // auto i18n set
+                    // if loading form from updated 5.5 or early 6.0,
+                    // the version might be just 1.3, but should be 1.4
                     formModel.raiseVersionLevel(FormModel.FormVersion.NB60_PRE, FormModel.FormVersion.NB60_PRE);
+                    // also keep auto resourcing in sync - if present but turned off
+                    Object autoResSetting = formSettings.get(ResourceSupport.PROP_AUTO_RESOURCING);
+                    if (autoResSetting instanceof Integer && ((Integer)autoResSetting).intValue() == ResourceSupport.AUTO_OFF) {
+                        formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
+                    }                    
                 }
             } else {
                 // we have a valid name / value pair
