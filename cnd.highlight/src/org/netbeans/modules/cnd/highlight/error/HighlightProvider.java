@@ -58,7 +58,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
     
     private static final HighlightProvider instance = new HighlightProvider();
     
-    private static final String threadName = "Up to date status provider thread"; //NOI18N
+    private static final String threadName = "Error highlighting provider thread"; //NOI18N
     
     public static HighlightProvider getInstance(){
         return instance;
