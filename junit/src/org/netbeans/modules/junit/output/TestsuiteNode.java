@@ -22,6 +22,7 @@ package org.netbeans.modules.junit.output;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -178,4 +179,7 @@ final class TestsuiteNode extends AbstractNode {
         return (report != null) && (report.failures + report.errors != 0);
     }
     
+    public SystemAction[] getActions(boolean context) {
+        return new SystemAction[0];
+    }
 }

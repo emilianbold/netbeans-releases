@@ -21,6 +21,7 @@ package org.netbeans.modules.junit.output;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -63,4 +64,7 @@ final class CallstackFrameNode extends AbstractNode {
         return new JumpAction(this, frameInfo);
     }
     
+    public SystemAction[] getActions(boolean context) {
+        return new SystemAction[0];
+    }
 }

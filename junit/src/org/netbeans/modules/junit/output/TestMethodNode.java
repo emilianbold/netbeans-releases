@@ -23,6 +23,7 @@ import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -125,4 +126,7 @@ final class TestMethodNode extends AbstractNode {
         return new JumpAction(this, callstackFrameInfo);
     }
     
+    public SystemAction[] getActions(boolean context) {
+        return new SystemAction[0];
+    }
 }

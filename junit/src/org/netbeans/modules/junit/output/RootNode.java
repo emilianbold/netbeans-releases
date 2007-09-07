@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -252,4 +253,7 @@ final class RootNode extends AbstractNode {
         }
     }
     
+    public SystemAction[] getActions(boolean context) {
+        return new SystemAction[0];
+    }
 }
