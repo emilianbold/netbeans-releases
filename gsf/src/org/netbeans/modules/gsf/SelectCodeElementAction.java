@@ -130,6 +130,10 @@ final class SelectCodeElementAction extends BaseAction {
         }
 
         public synchronized void selectPrevious() {
+            if (selIndex == -1) {
+                // Try to figure out the selected AST index based on the editor selection
+                selIndex = computeSelIndex(false);
+            }
             if (selIndex > 0) {
                 select(selectionInfos[--selIndex]);
             }
@@ -170,7 +174,6 @@ final class SelectCodeElementAction extends BaseAction {
         }
         
         private SelectionInfo[] initSelectionPath(JTextComponent target, CompilationController ci) {
-            List<SelectionInfo> positions = new ArrayList<SelectionInfo>();
             Language language = ci.getLanguage();
             if (language.getBracketCompletion() != null) {
                 List<OffsetRange> ranges = language.getBracketCompletion().findLogicalRanges(ci, target.getCaretPosition());
@@ -183,17 +186,40 @@ final class SelectCodeElementAction extends BaseAction {
             } else {
                 return new SelectionInfo[0];
             }
-//            SourcePositions sp = ci.getTrees().getSourcePositions();
-//            TreePath tp = ci.getTreeUtilities().pathFor(target.getCaretPosition());
-//            for (Tree tree: tp) {
-//                int startPos = (int)sp.getStartPosition(tp.getCompilationUnit(), tree);
-//                int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), tree);
-//                positions.add(new SelectionInfo(startPos, endPos));
-//            }
-//            return positions.toArray(new SelectionInfo[positions.size()]);
+        }
+        
+        private int computeSelIndex(boolean inner) {
+            Caret caret = target.getCaret();
+            if (selectionInfos != null && caret != null && caret.getDot() != caret.getMark()) {
+                int dot = caret.getDot();
+                int mark = caret.getMark();
+                int start = Math.min(dot,mark);
+                //int end = Math.max(dot,mark);
+                for (int i = 0; i < selectionInfos.length; i++) {
+                    if (selectionInfos[i].getStartOffset() == start) {
+                        // TODO - check end offset too
+                        return i;
+                    }
+                }
+                // No exact match - look at the editor selection and find the range
+                // that most closely surround the selection (if inner is true, go
+                // for the inner one, otherwise the outer)
+                for (int i = selectionInfos.length-2; i >= 0; i--) {
+                    if (selectionInfos[i].getStartOffset() > start &&
+                            selectionInfos[i+1].getStartOffset() < start) {
+                        return inner ? i : i-1;
+                    }
+                }
+            }
+            
+            return selIndex;
         }
 
         public void run() {
+            if (selIndex == -1) {
+                // Try to figure out the selected AST index based on the editor selection
+                selIndex = computeSelIndex(true);
+            }
             if (selIndex < selectionInfos.length - 1) {
                 select(selectionInfos[++selIndex]);
             }

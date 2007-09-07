@@ -89,6 +89,7 @@ import org.openide.util.Exceptions;
  *    line - e.g. def foo(a,b => it will insert the end BEFORE the closing paren!
  * @todo Pressing space in a comment beyond the textline limit should wrap text?
  *    http://ruby.netbeans.org/issues/show_bug.cgi?id=11553
+ * @todo Make ast-selection pick up =begin/=end documentation blocks
  *
  * @author Tor Norbye
  */
@@ -1615,6 +1616,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
         Iterator<Node> it = path.leafToRoot();
 
+        OffsetRange previous = OffsetRange.NONE;
         while (it.hasNext()) {
             Node node = it.next();
 
@@ -1627,8 +1629,9 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
             // The contains check should be unnecessary, but I end up getting
             // some weird positions for some JRuby AST nodes
-            if (range.containsInclusive(caretOffset)) {
+            if (range.containsInclusive(caretOffset) && !range.equals(previous)) {
                 ranges.add(range);
+                previous = range;
             }
         }
 
