@@ -53,7 +53,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
-
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.ui.PrintUI;
@@ -90,18 +89,17 @@ public class Preview extends PrintUI implements Percent.Listener {
   }
 
   /**{@inheritDoc}*/
-  public void doAction(PrintProvider.Page provider, boolean withPreview) {
-    assert provider != null : "Print Page Provider can't be null"; // NOI18N
+  public void print(PrintProvider provider, boolean withPreview) {
+    assert provider != null : "Print provider can't be null"; // NOI18N
 //out();
 //out("Do action");
-    myPrintPageProvider = provider;
-    createPapers();
+    myPrintProvider = provider;
 
     if (withPreview) {
       show();
     }
     else {
-      print();
+      print(true);
     }
   }
 
@@ -522,7 +520,7 @@ public class Preview extends PrintUI implements Percent.Listener {
   }
 
   private void createPapers() {
-    PrintPage [] pages = myPrintPageProvider.getPages(myOption);
+    PrintPage [] pages = myPrintProvider.getPages(myOption);
 //out("Create papers: " + pages.length);
     myPapers = null;
 
@@ -543,8 +541,16 @@ public class Preview extends PrintUI implements Percent.Listener {
         useColumn = true;
       }
     }
-    String name = myPrintPageProvider.getName();
-    Date modified = myPrintPageProvider.getLastModifiedDate();
+    String name = myPrintProvider.getName();
+    
+    if (name == null) {
+      name = ""; // NOI18N
+    }
+    Date modified = myPrintProvider.getLastModifiedDate();
+
+    if (modified == null) {
+      modified = new Date(System.currentTimeMillis());
+    }
     double scale = 1.0;
 
     if (myScale != null) {
@@ -562,8 +568,7 @@ public class Preview extends PrintUI implements Percent.Listener {
         name,
         modified,
         scale,
-        myOption,
-        isText()
+        myOption
       );
     }
   }
@@ -667,7 +672,7 @@ public class Preview extends PrintUI implements Percent.Listener {
   {
 //out("Closed");
     myPapers = null;
-    myPrintPageProvider = null;
+    myPrintProvider = null;
     myOption.setScale(myScale.getValue());
   }
 
@@ -692,7 +697,7 @@ public class Preview extends PrintUI implements Percent.Listener {
         i18n("LBL_Print_Button"), // NOI18N
         i18n("TLT_Print_Button")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          print();
+          print(false);
         }
       }
     );
@@ -729,18 +734,15 @@ public class Preview extends PrintUI implements Percent.Listener {
     return myToggle.isSelected();
   }
 
-  private void print() {
+  private void print(boolean doUpdate) {
+    if (doUpdate) {
+      createPapers();
+    }
     myPrinter.print(myPapers);
   }
 
   private void option() {
-    new Attribute(this, myOption, isText()).show();
-  }
-
-  private boolean isText() {
-    return
-      myPrintPageProvider instanceof PrintProvider.Text ||
-      myPrintPageProvider instanceof PrintProvider.Attributed;
+    new Attribute(this, myOption).show();
   }
 
   private int getPaperNumber(String text) {
@@ -800,6 +802,12 @@ public class Preview extends PrintUI implements Percent.Listener {
     private List<MouseWheelListener> myMouseWheelListeners;
   }
 
+  @Override
+  protected final String i18n(String key)
+  {
+    return i18n(Preview.class, key);
+  }
+
   private Paper [] myPapers;
   private JPanel myPaperPanel;
   
@@ -826,7 +834,7 @@ public class Preview extends PrintUI implements Percent.Listener {
   private KeyListener myKeyListener;
 
   private Printer myPrinter;
-  private PrintProvider.Page myPrintPageProvider;
+  private PrintProvider myPrintProvider;
 
   private static final int GAP_SIZE = 20;
   private static final int SCROLL_INCREMENT = 40;

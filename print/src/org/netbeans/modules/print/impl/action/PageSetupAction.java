@@ -21,6 +21,7 @@ package org.netbeans.modules.print.impl.action;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 import org.netbeans.modules.print.impl.ui.Option;
+
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**

@@ -55,20 +55,17 @@ import org.netbeans.modules.print.impl.util.Util;
 final class Attribute extends PrintUI
   implements FocusListener, Pattern.Listener, Percent.Listener
 {
-  Attribute(Preview preview, Option option, boolean isText) {
+  Attribute(Preview preview, Option option) {
     myPreview = preview;
     myOption = option;
-    myIsText = isText;
 
     myBorderColorValue = myOption.getBorderColor();
-
     myTextColorValue = myOption.getTextColor();
     myTextFontValue = myOption.getTextFont();
     myBackgroundColorValue = myOption.getBackgroundColor();
 
     myHeaderColorValue = myOption.getHeaderColor();
     myHeaderFontValue = myOption.getHeaderFont();
-
     myFooterColorValue = myOption.getFooterColor();
     myFooterFontValue = myOption.getFooterFont();
   }
@@ -282,7 +279,6 @@ final class Attribute extends PrintUI
     setHeaderPanel(panel, c);
     setFooterPanel(panel, c);
     setPatternPanel(panel, c);
-
 //  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.red));
 
     return panel;
@@ -609,18 +605,6 @@ final class Attribute extends PrintUI
     panel.add(myLineSpacing, c);
   }
 
-  private void setTextEnabled() {
-    myLineNumbers.setEnabled(myIsText);
-    myLineSpacing.setEnabled(myIsText);
-    myUseFont.setEnabled(myIsText);
-    myUseColor.setEnabled(myIsText);
-    myTextColor.setEnabled(myIsText);
-    myTextFont.setEnabled(myIsText);
-    myWrapLines.setEnabled(myIsText);
-    myBackgroundColor.setEnabled(myIsText);
-
-  }
-
   private JPanel getZoomPanel() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
@@ -693,7 +677,6 @@ final class Attribute extends PrintUI
     buttonF.setSelected(zoomFactor >= 0.0);
     buttonW.setSelected(zoomWidth > 0 && zoomFactor < 0.0);
     buttonH.setSelected(zoomHeight > 0 && zoomFactor < 0.0);
-
 //  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
 
     return panel;
@@ -837,9 +820,8 @@ final class Attribute extends PrintUI
   }
 
   private void updateControl() {
-    boolean hasBorder = myOption.hasBorder( !myIsText);
-    myBorder.setSelected(hasBorder);
-    myBorderColor.setEnabled(hasBorder);
+    myBorder.setSelected(myOption.hasBorder());
+    myBorderColor.setEnabled(myOption.hasBorder());
 
     myHeader.setSelected(myOption.hasHeader());
     myHeaderLeft.setText(myOption.getHeaderLeft());
@@ -865,8 +847,6 @@ final class Attribute extends PrintUI
     myWrapLines.setSelected(myOption.isWrapLines());
     myUseFont.setSelected(myOption.isUseFont());
     myUseColor.setSelected(myOption.isUseColor());
-
-    setTextEnabled();
   }
 
   @Override
@@ -930,7 +910,6 @@ final class Attribute extends PrintUI
 
   private Option myOption;
   private Preview myPreview;
-  private boolean myIsText;
   private DialogDescriptor myDescriptor;
 
   private static final int TEXT_WIDTH = 30;

@@ -30,6 +30,7 @@ import javax.swing.JComponent;
 
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.impl.util.Util;
+
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -66,8 +67,7 @@ final class Paper extends JComponent {
     String name,
     Date modified,
     double scale,
-    Option option,
-    boolean isText)
+    Option option)
   {
     myName = name;
     myLastModifiedDate = modified;
@@ -95,7 +95,7 @@ final class Paper extends JComponent {
     myFooterColor = option.getFooterColor();
     myFooterFont = option.getFooterFont();
 
-    myHasBorder = option.hasBorder( !isText);
+    myHasBorder = option.hasBorder();
     myBorderColor = option.getBorderColor();
     myIsPainting = true;
 

@@ -22,6 +22,7 @@
     <folder name="Actions">
         <folder name="File">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.print.impl.resources.Bundle"/>
+            
             <file name="org-netbeans-modules-print-impl-action-PageSetupAction.instance"/>
             <file name="org-netbeans-modules-print-impl-action-PrintAction.instance"/>
             <file name="org-netbeans-modules-print-impl-action-PreviewAction.instance"/>
