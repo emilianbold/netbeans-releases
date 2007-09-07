@@ -97,12 +97,14 @@ appdir
     <echo message="Executing pack200 in ${appdir}"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value='cd "${appdir}"; find . -name \*.jar -exec pack200 -J-Xmx256m -g {}.pack {} \;'/>
+      <!--arg value='cd "${appdir}"; find . -name "*.pack" -exec sh -c \'f=\`basename "{}"\` ; if [ "$f" != "jhall.jar" ] && [ "$f" != "derby.jar" ] && [ "$f" != "derbyclient.jar" ] ; then pack200 -J-Xmx256m -g {}.pack {} ; fi\' \;'/-->
+      <!--arg value='cd "${appdir}"; find . -name \*.jar -exec pack200 -J-Xmx256m -g {}.pack {} \;'/-->
+      <arg value='cd "${appdir}" ; sh ${basedir}/../pack200.sh'/>
     </exec>
-    <exec executable="sh" failonerror="yes">
+    <!--exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value='cd "${appdir}"; find . -name \*.jar -exec rm {} \;'/>
-    </exec>
+    </exec-->
     <mkdir dir="${basedir}/build/pkg"/>
     <delete dir="${basedir}/build/pkg/${appname}.pkg"/>
     <ant target="pre-build-pkg"/>
