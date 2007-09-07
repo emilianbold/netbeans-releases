@@ -65,6 +65,7 @@ public class CopyLibs extends Jar {
             File f = new File (pathElements[i]);
             if (f.isDirectory() || !f.canRead()) {
                 filesToCopy = null;
+                this.log(f.toString() + " is a directory or can't be read. Not copying the libraries.");
                 break;
             }
             else {
@@ -98,10 +99,13 @@ public class CopyLibs extends Jar {
             final File libFolder = new File (destFolder,LIB);
             if (!libFolder.exists()) {
                 libFolder.mkdir ();
+                this.log("Create lib folder " + libFolder.toString() + ".", Project.MSG_VERBOSE);
             }
             assert libFolder.canWrite();            
             FileUtils utils = FileUtils.newFileUtils();
+            this.log("Copy libraries to " + libFolder.toString() + ".");
             for (int i=0; i<filesToCopy.length; i++) {
+                this.log("Copy " + filesToCopy[i].getName() + " to " + libFolder + ".", Project.MSG_VERBOSE);
                 try {
                     File libFile = new File (libFolder,filesToCopy[i].getName());
                     utils.copyFile(filesToCopy[i],libFile);
@@ -109,6 +113,9 @@ public class CopyLibs extends Jar {
                     throw new BuildException (ioe);
                 }
             }
+        }
+        else {
+            this.log("Not copying the libraries.");
         }
         
     }
