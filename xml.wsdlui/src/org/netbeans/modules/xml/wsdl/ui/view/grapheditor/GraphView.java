@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor;
 
 import java.awt.BorderLayout;
@@ -76,11 +75,8 @@ public class GraphView extends JPanel {
     private MessagesWidget messagesWidget;
     /** That which contains the collaborations and messages widgets. */
     private Widget contentWidget;
-    
     private Widget middleWidget;
-    
     private JScrollPane panel;
-    
 
     /**
      * Creates a new instance of GraphView.
