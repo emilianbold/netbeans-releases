@@ -206,6 +206,8 @@ public class UMLProjectHelper
         if (mProject != null)
             return;
         
+	UMLProjectModule.checkInit();
+
         mADProduct = getProduct();
         
         if (mADProduct != null)

@@ -736,7 +736,11 @@ public class CoreProduct implements ICoreProduct
 	 */
 	public IConfigManager getConfigManager() 
 	{
-		return m_ConfigManager;
+	    if (m_ConfigManager == null) 
+	    {
+		initialize();
+	    }
+	    return m_ConfigManager;
 	}
 
 	/**

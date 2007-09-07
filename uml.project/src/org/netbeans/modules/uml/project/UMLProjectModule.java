@@ -53,7 +53,7 @@ import org.openide.windows.WindowManager;
  */
 public class UMLProjectModule extends ModuleInstall
 {
-    private static ADProjectTreeEngine mEngine = new ADProjectTreeEngine();
+    private static ADProjectTreeEngine mEngine = null;
 //	private static NetBeansUMLProjectTreeModel mModel = new NetBeansUMLProjectTreeModel();
     private static NetBeansUMLProjectTreeModel mModel = null;
     
@@ -72,39 +72,73 @@ public class UMLProjectModule extends ModuleInstall
      */
     public void restored()
     {
-        final IADProduct product = getProduct();
-        mModel = new NetBeansUMLProjectTreeModel();
+	lightInit();
+    }
+
+    private static void lightInit() 
+    {
+	if ( ! lightInitialized ) 
+	{ 
+	    synchronized(initLock) 
+	    {
+		if ( ! lightInitialized ) 
+		{ 
+		    final IADProduct product = getProduct();
+		    mModel = new NetBeansUMLProjectTreeModel();
         
-        if(product != null)
-        {
+		    if(product != null)
+		    {
 //         RequestProcessor.getDefault().post(new Runnable()
 //         {
 //             public void run()
-            {
-                IApplication app = product.initialize2(false);
+			{
                 
-                DispatchHelper helper = new DispatchHelper();
-                helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
-            }
+			    DispatchHelper helper = new DispatchHelper();
+			    helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
+			}
 //         });
             
-            //product.setDiagramManager(new UMLDiagramManager());
+			//product.setDiagramManager(new UMLDiagramManager());
             
-            // Put the user interface proxy
-            product.setProxyUserInterface(new UMLUserInterface());
-            product.setProjectManager(new UMLProductProjectManager());
+			// Put the user interface proxy
+			product.setProxyUserInterface(new UMLUserInterface());
+			product.setProjectManager(new UMLProductProjectManager());
             
-            // m_AcceleratorMgr = m_ADProduct.getAcceleratorManager();
-        }
-        else
-        {
-            DispatchHelper helper = new DispatchHelper();
-            helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
-        }
-        
-        mEngine.initialize(mModel);
-        
-        
+			// m_AcceleratorMgr = m_ADProduct.getAcceleratorManager();
+		    }
+		    else
+		    {
+			DispatchHelper helper = new DispatchHelper();
+			helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
+		    }        
+		}
+	    }
+	}
+    }
+
+    private static Object initLock = new Object();
+    private static boolean lightInitialized = false;
+    private static boolean initialized = false;
+ 
+    public static void checkInit() 
+    {
+	if ( ! initialized ) 
+	{ 
+	    synchronized(initLock) 
+	    {
+		if ( ! initialized ) 
+		{ 
+		    lightInit();
+		    IADProduct product = getProduct();
+		    IApplication app = product.initialize2(false);
+
+		    mEngine = new ADProjectTreeEngine();
+		    mEngine.initialize(mModel);
+
+		    initialized = true;
+		}
+	    }
+	}
     }
     
     /**
@@ -168,16 +202,19 @@ public class UMLProjectModule extends ModuleInstall
     
     public static ADProjectTreeEngine getProjectTreeEngine()
     {
+	checkInit();
         return mEngine;
     }
     
     public static NetBeansUMLProjectTreeModel getProjectTreeModel()
     {
+	checkInit();
         return mModel;
     }
     
     public static void addModelNode(UMLModelRootNode node, UMLProject project)
     {
+	checkInit();
         mModel.addModelRootNode(node, project);
     }
     
@@ -185,7 +222,7 @@ public class UMLProjectModule extends ModuleInstall
     //////////////////////////////////////////////////////////////////
     // Helper Methods
     
-    protected IADProduct getProduct()
+    protected static IADProduct getProduct()
     {
         IADProduct retVal = null;
         
