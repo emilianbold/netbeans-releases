@@ -29,6 +29,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -120,6 +121,7 @@ public final class OpenProjectList {
     private final PropertyChangeSupport pchSupport;
     
     private ProjectDeletionListener deleteListener = new ProjectDeletionListener();
+    private NbProjectDeletionListener nbprojectDeleteListener = new NbProjectDeletionListener();
     
     private PropertyChangeListener infoListener;
     
@@ -684,6 +686,8 @@ public final class OpenProjectList {
             addModuleInfo(p);
             
             p.getProjectDirectory().addFileChangeListener(deleteListener);
+            p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
+            
             recentProjectsChanged = recentProjects.remove(p);
         }
         logProjects("doOpenProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
@@ -812,7 +816,7 @@ public final class OpenProjectList {
     
     /** Maintains recent project list
      */    
-    private static class RecentProjectList {
+    private class RecentProjectList {
        
         private List<ProjectReference> recentProjects;
         private List<UnloadedProjectInformation> recentProjectsInfos;
@@ -886,6 +890,36 @@ public final class OpenProjectList {
             return false;
         }
         
+        public void refresh() {
+            assert recentProjects.size() == recentProjectsInfos.size();
+            boolean refresh = false;
+            int index = 0;
+            for (ProjectReference prjRef : recentProjects) {
+                URL url = prjRef.getURL();
+                FileObject fo = null;
+                try {
+                    fo = FileUtil.toFileObject(new File(url.toURI()));
+                } catch (URISyntaxException use) {
+                    //
+                }
+                if (fo == null) { // externally deleted project
+                    refresh = true;
+                    break;
+                } else if (fo.getFileObject("nbproject") == null || !fo.getFileObject("nbproject").isValid()) {
+                    fo.removeFileChangeListener(nbprojectDeleteListener);
+                    refresh = true;
+                    break;
+                }
+                index++;
+            }
+            if (refresh) {
+                recentProjects.remove(index);
+                recentProjectsInfos.remove(index);
+                pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
+                save();
+            }
+        }
+        
         public List<Project> getProjects() {
             List<Project> result = new ArrayList<Project>( recentProjects.size() );
             // Copy the list
@@ -942,6 +976,10 @@ public final class OpenProjectList {
             if (recentProjects.size() != recentProjectsInfos.size()) {
                 recentProjects.clear();
                 recentProjectsInfos.clear();
+            }
+            // register project delete listener to all open projects
+            for (Project p : openProjects) {
+                p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
             }
         }
         
@@ -1000,7 +1038,7 @@ public final class OpenProjectList {
             return recentProjectsInfos;
         }
         
-        private static class ProjectReference {
+        private class ProjectReference {
             
             private WeakReference<Project> projectReference;
             private URL projectURL;
@@ -1103,6 +1141,19 @@ public final class OpenProjectList {
             }
             return 0; // both null
             
+        }
+        
+    }
+    
+    private final class NbProjectDeletionListener extends FileChangeAdapter {
+        
+        public NbProjectDeletionListener() {}
+        
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            if (fe.getFile().getName().equals("nbproject")) {
+                recentProjects.refresh();
+            }
         }
         
     }
