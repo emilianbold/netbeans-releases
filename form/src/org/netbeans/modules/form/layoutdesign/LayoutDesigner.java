@@ -370,6 +370,7 @@ public class LayoutDesigner implements LayoutConstants {
                 draggable.add(compId);
             }
         }
+        if(draggable == null) draggable = Collections.emptyList();
         return draggable;
     }
 
