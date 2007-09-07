@@ -55,10 +55,6 @@ public class NotNode implements Expression {
         _cond.getReferencedColumns(comlumns);
     }
 
-    public void getQueryItems(Collection items) {
-        items.add(_cond);
-    }
-
     // Return the Where clause as a SQL string
     public String genText(QueryBuilderMetaData qbMD) {
         return " ( NOT " + _cond.genText(qbMD) + ") ";  // NOI18N

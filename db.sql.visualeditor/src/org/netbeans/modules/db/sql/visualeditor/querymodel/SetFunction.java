@@ -55,9 +55,6 @@ public class SetFunction extends ColumnItem implements UnaryExpression {
     public void getReferencedColumns(Collection columns) {
         columns.add(_argument);
     }
-    public void getQueryItems(Collection items) {
-        items.add(_argument);
-    }
 
     public String genText(QueryBuilderMetaData qbMD) {
         String funcType = null;

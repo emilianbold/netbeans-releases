@@ -126,13 +126,6 @@ public class JoinTableNode implements JoinTable {
             _condition.getReferencedColumns(columns);
     }
 
-    public void getQueryItems(Collection items) {
-        if (_condition != null) {
-            items.add(_table);
-            items.add(_condition);
-        }
-    }
-
     void renameTableSpec(String oldTableSpec, String corrName) {
         ((TableNode)this.getTable()).renameTableSpec(oldTableSpec, corrName);
 

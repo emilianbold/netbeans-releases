@@ -73,27 +73,6 @@ public final class SortSpecification implements QueryItem {
         _column.renameTableSpec(oldTableSpec, corrName);
     }
 
-    public void getQueryItems(Collection items) {
-        items.add(_column);
-    }
-
-//     public String getCorrName() {
-//      return _corrName;
-//     }
-
-//     public String getTableName() {
-//      return _tableName;
-//     }
-
-//     public String getColumnName() {
-//      return _columnName;
-//     }
-
-//     public String getTableSpec() {
-//      return (_corrName != null ?
-//              _corrName :
-//              _tableName);
-//     }
 }
 
 

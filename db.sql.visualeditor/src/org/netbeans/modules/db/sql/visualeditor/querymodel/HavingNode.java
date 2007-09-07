@@ -77,10 +77,6 @@ public class HavingNode implements Having {
         if (_condition != null)
             _condition.getReferencedColumns(columns);
     }
-
-    public void getQueryItems(Collection items) {
-        items.add(_condition);
-    }
 }
 
 

@@ -106,7 +106,6 @@ public class ColumnNode extends ColumnItem implements Column {
     }
 
     public void getReferencedColumns(Collection columns) {}
-    public void getQueryItems(Collection items) {}
 
     public boolean matches(String table, String column) {
         return (table.equals(getTableSpec()) && column.equals(getColumnName()));

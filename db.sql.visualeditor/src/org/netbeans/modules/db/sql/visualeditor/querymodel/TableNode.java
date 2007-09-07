@@ -158,5 +158,4 @@ public class TableNode implements Table {
     }
 
     public void getReferencedColumns(Collection columns) {}
-    public void getQueryItems(Collection items) {}
 }

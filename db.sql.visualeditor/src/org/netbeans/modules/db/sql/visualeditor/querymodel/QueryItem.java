@@ -34,10 +34,5 @@ public interface  QueryItem {
     // could be used by the editor to obtain info on all teh column used in a particular clause
     public void getReferencedColumns(Collection columns);
 
-    // fills the provided Collection with a list of all the items used in this specific item, but only one level
-    // So for instance on Query it would provide what the query is composed of (Select, From, Where, etc.)
-    // on Where it would provide the expression used
-    // on Column it would do nothing as that does not have any "nested" query item
-    public void getQueryItems(Collection items);
 }
 

@@ -196,5 +196,4 @@ public class FromNode implements From {
     }
 
     public void getReferencedColumns(Collection columns) {}
-    public void getQueryItems(Collection items) {}
 }

@@ -100,11 +100,6 @@ public class WhereNode implements Where {
             _cond.getReferencedColumns (columns);
     }
 
-    public void getQueryItems(Collection items) {
-        if (_cond != null)
-            items.add(_cond);
-    }
-
     // Return the Where clause as a SQL string
     public String genText(QueryBuilderMetaData qbMD) {
         if (_cond!=null)

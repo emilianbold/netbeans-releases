@@ -48,11 +48,6 @@ abstract class BooleanExpressionList implements ExpressionList {
         }
     }
 
-    public void getQueryItems(Collection items) {
-        if (_expressions != null)
-            items.addAll(_expressions);
-    }
-
     public int size() {
         if (_expressions != null)
             return _expressions.size();

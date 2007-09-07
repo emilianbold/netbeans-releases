@@ -73,11 +73,6 @@ public class GroupByNode implements GroupBy {
             columns.addAll(_columnList);
     }
 
-    public void getQueryItems(Collection items) {
-        if (_columnList != null)
-            items.addAll(_columnList);
-    }
-
     public void addColumn(Column col) {
         _columnList.add(col);
     }

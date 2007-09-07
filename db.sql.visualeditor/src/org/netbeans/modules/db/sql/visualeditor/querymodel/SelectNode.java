@@ -86,10 +86,6 @@ public class SelectNode implements Select {
             columns.add(((ColumnItem)_selectItemList.get(i)).getReferencedColumn());
     }
 
-    public void getQueryItems(Collection items) {
-        items.add(_selectItemList);
-    }
-
     public void addColumn(Column col) {
         _selectItemList.add(col);
     }

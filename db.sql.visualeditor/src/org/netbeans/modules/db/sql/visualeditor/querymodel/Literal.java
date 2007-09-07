@@ -61,7 +61,6 @@ public class Literal implements Value {
 
     //REVIEW: this should probably go away, and change Literal to not be a QueryItem?
     public void getReferencedColumns(Collection columns) {}
-    public void getQueryItems(Collection items) {}
     public Expression findExpression(String table1, String column1, String table2, String column2) {
         return null;
     }

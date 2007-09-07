@@ -85,11 +85,6 @@ public final class Predicate implements Expression {
         }
     }
 
-    public void getQueryItems(Collection items) {
-        items.add(_val1);
-        items.add(_val2);
-    }
-
     // Return the Where clause as a SQL string
     public String genText(QueryBuilderMetaData qbMD) {
         return _val1.genText(qbMD) + " " + _op + " " + _val2.genText(qbMD); // NOI18N

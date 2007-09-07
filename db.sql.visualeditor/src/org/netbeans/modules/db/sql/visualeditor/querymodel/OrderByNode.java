@@ -132,8 +132,4 @@ public class OrderByNode implements OrderBy {
         }
     }
 
-    public void getQueryItems(Collection items) {
-        if (_sortSpecificationList != null) 
-            items.addAll(_sortSpecificationList);
-    }
 }

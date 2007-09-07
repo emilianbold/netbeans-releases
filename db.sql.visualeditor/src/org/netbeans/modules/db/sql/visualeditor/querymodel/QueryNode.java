@@ -236,19 +236,6 @@ public class QueryNode implements Query {
         if (_orderBy!=null)
             _orderBy.getReferencedColumns(columns);
     }
-    
-    public void getQueryItems(Collection items) {
-        items.add(_from);
-        items.add(_select);
-        if (_where!=null)
-            items.add(_where);
-        if (_groupBy!=null)
-            items.add(_groupBy);
-        if (_having!=null)
-            items.add(_having);
-        if (_orderBy!=null)
-            items.add(_orderBy);
-    }
     //
     // private implementation
     //

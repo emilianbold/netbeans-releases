@@ -18,9 +18,6 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import java.util.Collection;
-import java.util.List;
-
 // A SELECT clause
 public interface Select extends QueryItem {
 }
