@@ -240,6 +240,11 @@ public class DataSourceResolver implements DataSourceInfoListener {
             topComponent.setCursor(null);
         }
     }
+    
+    public boolean isDatasourceCreationSupported(Project project) {
+        DesignTimeDataSourceService dataSourceService = Lookup.getDefault().lookup(DesignTimeDataSourceService.class);
+        return dataSourceService.isDatasourceCreationSupported(project);        
+    }
 
     public class WaitForModelingListener implements ModelSetsListener {
         

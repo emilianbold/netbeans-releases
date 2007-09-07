@@ -313,4 +313,9 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         }
         return true;
     }
+     
+    public boolean isDatasourceCreationSupported(Project project) {
+        J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+        return jmp.getConfigSupport().isDatasourceCreationSupported();
+    }
 }

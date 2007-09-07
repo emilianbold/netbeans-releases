@@ -56,4 +56,6 @@ public interface DesignTimeDataSourceService {
     public Set<RequestedJdbcResource> getBrokenDatasources(Project p);
     
     public boolean updateResourceReference(Project project, RequestedJdbcResource req);
+    
+    public boolean isDatasourceCreationSupported(Project project);
 }

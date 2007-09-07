@@ -151,6 +151,11 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             } else
                 dsName = dbConnection.getSchema() + "_" + databaseProductName;
             
+            // Check if target server supports data source creation.  If not then cancel drop
+            if (!DataSourceResolver.getInstance().isDatasourceCreationSupported(CurrentProject.getInstance().getProject())) {
+                cancel = true;
+            }
+            
             // ensure data source name is unique
             if (!DataSourceResolver.getInstance().isDataSourceUnique(CurrentProject.getInstance().getProject(), dsName, url)) {
                 dsName = getUniqueName(dsName);
