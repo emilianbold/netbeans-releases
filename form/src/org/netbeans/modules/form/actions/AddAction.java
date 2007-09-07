@@ -29,6 +29,9 @@ import org.openide.nodes.NodeAcceptor;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteMenuView;
 import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * Action allowing to choose a component from palette content and add it to
@@ -53,16 +56,15 @@ public class AddAction extends CallableSystemAction {
         return new HelpCtx(AddAction.class);
     }
 
+    @Override
     public boolean isEnabled() {
         Node[] nodes = getNodes();
         for (int i=0; i < nodes.length; i++) {
-            FormCookie formCookie =
-                (FormCookie) nodes[i].getCookie(FormCookie.class);
+            FormCookie formCookie = nodes[i].getCookie(FormCookie.class);
             if (formCookie == null)
                 return false;
 
-            RADComponentCookie radCookie =
-                (RADComponentCookie) nodes[i].getCookie(RADComponentCookie.class);
+            RADComponentCookie radCookie = nodes[i].getCookie(RADComponentCookie.class);
             if (radCookie != null
                   && !(radCookie.getRADComponent() instanceof ComponentContainer))
                 return false;
@@ -70,10 +72,12 @@ public class AddAction extends CallableSystemAction {
         return true;
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenuItem menu = new PaletteMenuView(
             new NodeAcceptor() {
@@ -81,10 +85,21 @@ public class AddAction extends CallableSystemAction {
                     if (nodes.length != 1)
                         return false;
 
-                    PaletteItem paletteItem =
-                        (PaletteItem) nodes[0].getCookie(PaletteItem.class);
+                    PaletteItem paletteItem = nodes[0].getCookie(PaletteItem.class);
                     if (paletteItem == null)
                         return false;
+                    String chooseBeanType = null;
+                    if (PaletteItem.TYPE_CHOOSE_BEAN.equals(paletteItem.getExplicitComponentType())) {
+                        NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
+                            FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
+                            FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
+                        DialogDisplayer.getDefault().notify(desc);
+                        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+                            chooseBeanType = desc.getInputText();
+                        } else {
+                            return false;
+                        }
+                    }
 
                     nodes = getNodes();
                     if (nodes.length == 0)
@@ -93,13 +108,11 @@ public class AddAction extends CallableSystemAction {
                     boolean added = false;
 
                     for (int i=0; i < nodes.length; i++) {
-                        FormCookie formCookie =
-                            (FormCookie) nodes[i].getCookie(FormCookie.class);
+                        FormCookie formCookie = nodes[i].getCookie(FormCookie.class);
                         if (formCookie == null)
                             continue;
 
-                        RADComponentCookie radCookie = (RADComponentCookie)
-                            nodes[i].getCookie(RADComponentCookie.class);
+                        RADComponentCookie radCookie = nodes[i].getCookie(RADComponentCookie.class);
                         RADComponent targetComponent;
                         if (radCookie != null) {
                             targetComponent = radCookie.getRADComponent();
@@ -108,11 +121,16 @@ public class AddAction extends CallableSystemAction {
                         }
                         else targetComponent = null;
 
-                        if (formCookie.getFormModel().getComponentCreator()
+                        FormModel formModel = formCookie.getFormModel();
+                        if (chooseBeanType != null) {
+                            paletteItem.setComponentClassSource(ClassPathUtils.getProjectClassSource(
+                                    FormEditor.getFormDataObject(formModel).getPrimaryFile(), chooseBeanType));
+                        }
+                        if (formModel.getComponentCreator()
                               .createComponent(paletteItem.getComponentClassSource(),
-                                               targetComponent,
-                                               null) != null)
+                                               targetComponent, null) != null) {
                             added = true;
+                        }
                     }
 
                     return added;
@@ -126,6 +144,7 @@ public class AddAction extends CallableSystemAction {
         return menu;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
