@@ -110,7 +110,8 @@ public class UMLProjectModule extends ModuleInstall
 		    {
 			DispatchHelper helper = new DispatchHelper();
 			helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
-		    }        
+		    }      
+		    lightInitialized = true;
 		}
 	    }
 	}
