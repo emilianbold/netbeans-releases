@@ -46,9 +46,12 @@ public class JarClassLoaderTest extends NbTestCase {
 
     /** directory full of JAR files to test */
     protected File jars;
+    /** directory full of testing roots */
+    protected File dirs;
 
     protected void setUp() throws Exception {
         jars = new File(JarClassLoaderTest.class.getResource("jars").getFile());
+        dirs = new File(JarClassLoaderTest.class.getResource("dirs").getFile());
     }
 
 
@@ -66,6 +69,7 @@ public class JarClassLoaderTest extends NbTestCase {
         assertURLsContent(jcl.getResources("resource.txt"), "content");
         assertURLsContent(jcl.getResources("/resource.txt"), "content");
     }
+
 
     public void testCanLoadFromDefaultPackageCached() throws Exception {
         final File jar = new File(jars, "default-package-resource-cached.jar");
@@ -97,6 +101,23 @@ public class JarClassLoaderTest extends NbTestCase {
         assertStreamContent(jcl.getResourceAsStream("/package/resource.txt"), "content");
         assertStreamContent(jcl.getResourceAsStream("resource.txt"), "content");
         assertStreamContent(jcl.getResourceAsStream("/resource.txt"), "content");
+
+        assertURLsContent(jcl.getResources("package/resource.txt"), "content");
+        assertURLsContent(jcl.getResources("/package/resource.txt"), "content");
+        assertURLsContent(jcl.getResources("resource.txt"), "content");
+        assertURLsContent(jcl.getResources("/resource.txt"), "content");
+    }
+
+    public void testCanLoadFromDefaultPackageDirs() throws Exception {
+        File dir = new File(dirs, "default-package-resource");
+        JarClassLoader jcl = new JarClassLoader(Collections.singletonList(dir), new ProxyClassLoader[0]);
+        
+        assertStreamContent(jcl.getResourceAsStream("package/resource.txt"), "content");
+        assertStreamContent(jcl.getResourceAsStream("/package/resource.txt"), "content");
+        assertStreamContent(jcl.getResourceAsStream("resource.txt"), "content");
+        assertStreamContent(jcl.getResourceAsStream("/resource.txt"), "content");
+        assertStreamContent(jcl.getResourceAsStream("META-INF/services/resource.txt"), "content");
+        assertStreamContent(jcl.getResourceAsStream("/META-INF/services/resource.txt"), "content");
 
         assertURLsContent(jcl.getResources("package/resource.txt"), "content");
         assertURLsContent(jcl.getResources("/package/resource.txt"), "content");

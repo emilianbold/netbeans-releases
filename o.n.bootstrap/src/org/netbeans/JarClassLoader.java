@@ -535,12 +535,22 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         private static void appendAllChildren(Set<String> known, StringBuffer save, File dir, String prefix) {
+            boolean populated = false;
             for (File f : dir.listFiles()) {
-                if (f.isDirectory()) { // XXX add only nonempty!
-                    String pkg = prefix.concat(f.getName());
-                    if (known.add(pkg)) save.append(pkg).append('.');
+                if (f.isDirectory()) {
                     appendAllChildren(known, save, f, prefix + f.getName() + '.');
+                } else {
+                    populated = true;
+                    if (prefix.startsWith("META-INF.")) {
+                       String res = prefix.substring(8).replace('.', '/').concat(f.getName());
+                       if (known.add(res)) save.append(res).append(',');
+                    }
                 }
+            }
+            if (populated) {
+                String pkg = prefix;
+                if (pkg.endsWith(".")) pkg = pkg.substring(0, pkg.length()-1);
+                if (known.add(pkg)) save.append(pkg).append(',');
             }
         }
     }
