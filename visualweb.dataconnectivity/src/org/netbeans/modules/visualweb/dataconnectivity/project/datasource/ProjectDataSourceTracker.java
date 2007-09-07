@@ -20,6 +20,8 @@ package org.netbeans.modules.visualweb.dataconnectivity.project.datasource;
 
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.ModelSet;
@@ -45,17 +47,21 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.naming.NamingException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
+import org.netbeans.api.project.ui.OpenProjects;
 
 import org.w3c.dom.Element;
 
@@ -84,7 +90,7 @@ public class ProjectDataSourceTracker{
     private HashMap<Project, DSTracker> trackers = new HashMap<Project, DSTracker>() ;
     
     protected ProjectTrackerContextListener insyncDataSourceListener = new ProjectTrackerContextListener() ;
-//    protected OpenProjectsListener openProjectsListener = new OpenProjectsListener();
+    protected OpenProjectsListener openProjectsListener = new OpenProjectsListener();
     
     /****
      * This class is meant to be a singleton service
@@ -96,7 +102,7 @@ public class ProjectDataSourceTracker{
         // TODO:  add listener to insync here for Project openings
         //    and closings.
         ModelSet.addModelSetsListener(insyncDataSourceListener) ;
-//        OpenProjects.getDefault().addPropertyChangeListener(openProjectsListener);
+        OpenProjects.getDefault().addPropertyChangeListener(openProjectsListener);
     }
     
     private static ProjectDataSourceTracker thisOne = new ProjectDataSourceTracker() ;
@@ -784,6 +790,25 @@ public class ProjectDataSourceTracker{
         }
     }    
   
+    public class OpenProjectsListener implements PropertyChangeListener {
+        
+        public void propertyChange(PropertyChangeEvent event) {
+            
+            // The list of open projects has changed; clean up any old projects we may be holding on to.
+            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(event.getPropertyName())) {
+                
+                List<Project> oldOpenProjectsList = Arrays.asList((Project[]) event.getOldValue());
+                List<Project> newOpenProjectsList = Arrays.asList((Project[]) event.getNewValue());
+                Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
+                closedProjectsSet.removeAll(newOpenProjectsList);
+                for (Project project : closedProjectsSet) {
+                    // Project has been closed; remove it and the DSTracker from the map.
+                    trackers.remove(project);
+                }
+            }
+        }
+    }
+
     private static final String LOGPREFIX = "PDST: " ; // NOI18N
     private static ErrorManager err = ErrorManager.getDefault().getInstance("rave.dbdatasource"); // NOI18N
     private static void logInfo(String msg) {
