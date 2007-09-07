@@ -83,6 +83,7 @@ public class XMLRefactoringTransaction implements Transaction {
     Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring;
     private boolean commited = false;
     private UndoManager genericChangeUndoManager;
+    Map<String, FileObject> targetModelRefs;
         
     
     
@@ -341,6 +342,7 @@ public class XMLRefactoringTransaction implements Transaction {
                    //we have a new file and new model source
                    //keep a reference since we need this do undo
                  this.movedTargetModelSource = Utilities.getModelSource(referencedFO, true); 
+                 updateCatalogForTarget(this.movedTargetModelSource);
                  refreshCatalogModel(referencedFO);
                }
            } else if (request instanceof SingleCopyRefactoring ){
@@ -410,7 +412,8 @@ public class XMLRefactoringTransaction implements Transaction {
                                          //if we have a fobj, we can now have two cases
                                          //the refactoring target model is being moved within the same project
                                          //or the target model is being moved to a different project
-                                        flag = SharedUtils.inSameProject(targetFolder, fobj);
+                                         if(fobj != null)
+                                             flag = SharedUtils.inSameProject(targetFolder, fobj);
                                      
                                     }
                                    if(fobj == null)
@@ -716,6 +719,7 @@ public class XMLRefactoringTransaction implements Transaction {
     
     private void updateTargetModelReferences(Model model, FileObject targetFolder)throws IOException {
         //before moving the targetFile, check if the targetFile has any external model references
+               targetModelRefs = new HashMap<String, FileObject>();
                Collection<Component> refs = new ArrayList<Component>();
                for(XMLRefactoringPlugin plugin:plugins){
                    refs.addAll(plugin.getExternalReferences(model));
@@ -756,7 +760,8 @@ public class XMLRefactoringTransaction implements Transaction {
                                if(flag){
                                    String newLocation = SharedUtils.getReferenceURI(targetFolder, fobj).toString();
                                    plugin.setModelReference(ref, newLocation);
-                                   
+                                   if(!SharedUtils.inSameProject(targetFolder, fobj ))
+                                       targetModelRefs.put(newLocation, fobj);
                                }else {
                                    String newLocation = fobj.getURL().toString();
                                    plugin.setModelReference(ref, newLocation);
@@ -776,6 +781,29 @@ public class XMLRefactoringTransaction implements Transaction {
                  
                }
 }
+    
+    private void updateCatalogForTarget(ModelSource target){
+           FileObject referencingFO = target.getLookup().lookup(FileObject.class);
+            ProjectCatalogSupport pcs = SharedUtils.getCatalogSupport(referencingFO);
+            if (pcs == null)return;
+            if(targetModelRefs == null || targetModelRefs.size() == 0)
+                return;
+            Set<String> keys = targetModelRefs.keySet();
+            for(String key:keys){
+                FileObject referencedFO = targetModelRefs.get(key);
+                if(referencedFO != null) {
+                    try {
+                        pcs.createCatalogEntry(referencingFO, referencedFO);
+                    }catch (CatalogModelException e){
+                        
+                    }catch (IOException e){
+                        //do nothing; will result in broken reference
+                    }
+                }
+            
+        }
+            
+    }
     
    class GeneralChangeExecutor  {
     private UndoableEditSupport ues;
