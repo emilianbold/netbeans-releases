@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.eventhandler;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
@@ -26,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.ListCellRenderer;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.CallPointEventHandlerCD;
@@ -73,13 +76,17 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
     }
 
     public String getTextForPropertyValue () {
-        return "";
+        return ""; // NOI18N
     }
     
     public void updateState(PropertyValue value) {
         if (value != null) {
             DesignComponent eventHandler = value.getComponent();
+            System.out.println("eventHandler.getType() = " + eventHandler.getType());
             if (eventHandler.getType().equals(CallPointEventHandlerCD.TYPEID) || eventHandler.getType().equals(MethodPointEventHandlerCD.TYPEID)) {
+                System.out.println("WTF?");
+                System.out.println("eventHandler.getType().equals(CallPointEventHandlerCD.TYPEID) = " + eventHandler.getType().equals(CallPointEventHandlerCD.TYPEID));
+                System.out.println("eventHandler.getType().equals(MethodPointEventHandlerCD.TYPEID) = " + eventHandler.getType().equals(MethodPointEventHandlerCD.TYPEID));
                 radioButton.setSelected(true);
             }
         }
@@ -105,6 +112,13 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
     public void setElementEnabled(boolean enabled) {
     }
 
+    public Collection<TypeID> getTypes() {
+        List<TypeID> list = new ArrayList<TypeID>(2);
+        list.add(CallPointEventHandlerCD.TYPEID);
+        list.add(MethodPointEventHandlerCD.TYPEID);
+        return list;
+    }
+    
     public static class CallElementFactory implements PropertyEditorElementFactory {
         public PropertyEditorEventHandlerElement createElement() {
             return new CallElement();
@@ -142,7 +156,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
     }// </editor-fold>//GEN-END:initComponents
 
     private void comboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxActionPerformed
-        radioButton.setSelected(true);
+        //radioButton.setSelected(true);
     }//GEN-LAST:event_comboBoxActionPerformed
     
     

@@ -19,8 +19,11 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.eventhandler;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.ListCellRenderer;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
@@ -140,6 +143,10 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
     }
     
     public void setElementEnabled(boolean enabled) {
+    }
+    
+   public Collection<TypeID> getTypes() {
+        return Collections.singleton(SwitchDisplayableEventHandlerCD.TYPEID);
     }
     
     public static class SwitchToDisplayableElementFactory implements PropertyEditorElementFactory {

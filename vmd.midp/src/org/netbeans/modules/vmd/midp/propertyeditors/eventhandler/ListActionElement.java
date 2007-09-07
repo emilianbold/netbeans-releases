@@ -19,11 +19,14 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.eventhandler;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.ListEventHandlerCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory;
@@ -88,6 +91,10 @@ public class ListActionElement implements PropertyEditorEventHandlerElement {
     }
     
     public void setElementEnabled(boolean enabled) {
+    }
+    
+   public Collection<TypeID> getTypes() {
+        return Collections.singleton(ListEventHandlerCD.TYPEID);
     }
     
     public static class ListActionElementFactory implements PropertyEditorElementFactory {

@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.element;
 
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
 
 /**
@@ -36,4 +38,5 @@ public interface PropertyEditorEventHandlerElement extends PropertyEditorElement
     void createEventHandler(DesignComponent eventSource);
     void updateModel(List<DesignComponent> components, int modelType);
     void setElementEnabled(boolean enabled);
+    Collection<TypeID> getTypes();
 }

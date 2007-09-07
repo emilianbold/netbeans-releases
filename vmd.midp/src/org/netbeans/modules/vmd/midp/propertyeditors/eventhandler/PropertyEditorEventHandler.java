@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -44,6 +45,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.points.CallPointCD;
 import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
+import org.netbeans.modules.vmd.midp.general.AcceptContextResolver;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory;
 import org.openide.awt.Mnemonics;
@@ -59,7 +61,9 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     private static final String DO_NOTHING = NbBundle.getMessage(PropertyEditorEventHandler.class, "LBL_NOTHING_ACTION"); // NOI18N
     private final CustomEditor customEditor;
     private WeakReference<DesignComponent> component;
+    private boolean initialized;
 
+    @SuppressWarnings(value = "unchecked")
     private PropertyEditorEventHandler() {
         Collection<PropertyEditorElementFactory> factories = Lookup.getDefault().lookup(new Lookup.Template(PropertyEditorElementFactory.class)).allInstances();
         Collection<PropertyEditorEventHandlerElement> elements = new ArrayList<PropertyEditorEventHandlerElement>(factories.size());
@@ -80,10 +84,16 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
             this.component = new WeakReference<DesignComponent>(component);
         }
     }
-    
+
     @Override
     public Component getCustomEditor() {
-//        if (component != null && component.get() != null && !customEditor.isShowing()) {
+        if (initialized) {
+            initCustomEditor();
+        }
+        return customEditor;
+    }
+
+    private void initCustomEditor() {
         if (component != null && component.get() != null) {
             final DesignComponent _component = component.get();
             _component.getDocument().getTransactionManager().readAccess(new Runnable() {
@@ -119,8 +129,6 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                 }
             });
         }
-
-        return customEditor;
     }
 
     @Override
@@ -156,7 +164,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
 
     @Override
     public boolean executeInsideWriteTransaction() {
-        if (component != null && component.get() != null) {
+        if (initialized && component != null && component.get() != null) {
             customEditor.createEventHandler(component.get());
         }
         return false;
@@ -167,22 +175,44 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         return true;
     }
 
-    private static class CustomEditor extends JPanel {
+    private class CustomEditor extends JPanel {
 
         private Collection<PropertyEditorEventHandlerElement> elements;
         private JRadioButton doNothingRadioButton;
 
         public CustomEditor(Collection<PropertyEditorEventHandlerElement> elements) {
             this.elements = elements;
-            initComponents(elements);
         }
 
         private void initComponents(Collection<PropertyEditorEventHandlerElement> elements) {
+            if (component == null || component.get() == null) {
+                return;
+            }
+
             setLayout(new GridBagLayout());
             ButtonGroup buttonGroup = new ButtonGroup();
             GridBagConstraints constraints = new GridBagConstraints();
             boolean wasSelected = false;
+
+            final DesignComponent _component = component.get();
             for (PropertyEditorEventHandlerElement element : elements) {
+                final Collection<TypeID> types = element.getTypes();
+                final boolean[] acceptable = new boolean[]{true};
+                _component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                    public void run() {
+                        for (TypeID typeID : types) {
+                            if (!AcceptContextResolver.resolveAcceptAllowance(_component, typeID)) {
+                                acceptable[0] = false;
+                                break;
+                            }
+                        }
+                    }
+                });
+                if (!acceptable[0]) {
+                    continue;
+                }
+
                 JRadioButton rb = element.getRadioButton();
                 if (element.isInitiallySelected()) {
                     rb.setSelected(true);
@@ -274,6 +304,16 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                     }
                 }
             }
+        }
+
+        @Override
+        public void addNotify() {
+            if (!initialized) {
+                initComponents(elements);
+                initCustomEditor();
+                initialized = true;
+            }
+            super.addNotify();
         }
     }
 }

@@ -129,6 +129,7 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
             return FlowDisplayableCommandPinOrderPresenter.CATEGORY_ID;
         }
 
+        @Override
         protected boolean canRename () {
             DesignComponent command = getCommandComponent (getComponent ());
             if (command == null)
@@ -137,18 +138,21 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
             return presenter.isEditable ();
         }
 
+        @Override
         protected String getRenameName () {
             DesignComponent command = getCommandComponent (getComponent ());
             InfoPresenter presenter = command.getPresenter (InfoPresenter.class);
             return presenter.getEditableName ();
         }
 
+        @Override
         protected void setRenameName (String name) {
             DesignComponent command = getCommandComponent (getComponent ());
             InfoPresenter presenter = command.getPresenter (InfoPresenter.class);
             presenter.setEditableName (name);
         }
 
+        @Override
         protected DesignEventFilter getEventFilter () {
             return super.getEventFilter ().addDescentFilter (getComponent (), PROP_COMMAND).addDescentFilter (getComponent (), PROP_DISPLAYABLE);
         }

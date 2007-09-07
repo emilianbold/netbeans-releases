@@ -19,9 +19,14 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.eventhandler;
 
+import java.util.Collection;
+import javax.swing.*;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.PointsCategoryCD;
@@ -31,9 +36,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEleme
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-
-import javax.swing.*;
-import java.util.List;
 
 /**
  *
@@ -84,7 +86,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
     }
     
     public String getTextForPropertyValue () {
-        return "";
+        return ""; // NOI18N
     }
     
     public void updateState(PropertyValue value) {
@@ -98,6 +100,10 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
     
     public void setElementEnabled(boolean enabled) {
         radioButton.setEnabled(enabled);
+    }
+    
+    public Collection<TypeID> getTypes() {
+        return Collections.emptyList();
     }
     
     public static class ExitMidletElementFactory implements PropertyEditorElementFactory {
