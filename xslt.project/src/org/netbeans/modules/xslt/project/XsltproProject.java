@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -56,6 +57,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -292,19 +294,38 @@ public class XsltproProject implements Project, AntProjectListener {
     private final class Info implements ProjectInformation {
         
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private WeakReference<String> cachedName = null;
         
         Info() {}
         
         void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
+            synchronized (pcs) {
+                cachedName = null;
+            }
         }
         
         public String getName() {
-            return XsltproProject.this.getName();
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
+//            return XsltproProject.this.getName();
         }
         
         public String getDisplayName() {
-            return XsltproProject.this.getName();
+            synchronized (pcs) {
+                if (cachedName != null) {
+                    String dn = cachedName.get();
+                    if (dn != null) {
+                        return dn;
+                    }
+                }
+            }
+            String dn = XsltproProject.this.getName();
+            synchronized (pcs) {
+                cachedName = new WeakReference<String>(dn);
+            }
+            return dn;
+            
+//            return XsltproProject.this.getName();
         }
         
         public Icon getIcon() {
