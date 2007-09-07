@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.websvc.partners.google
+OpenIDE-Module-Layer: org/netbeans/modules/websvc/partners/google/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/partners/google/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
