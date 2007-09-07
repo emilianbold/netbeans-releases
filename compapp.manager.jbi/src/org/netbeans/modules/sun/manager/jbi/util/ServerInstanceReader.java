@@ -45,7 +45,13 @@ import org.openide.filesystems.Repository;
  */
 public class ServerInstanceReader {
     
-    public static final String RELATIVE_FILE_PATH = "/config/J2EE/InstalledServers/.nbattrs"; // NOI18N
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    public static final String RELATIVE_FILE_PATH = 
+            FILE_SEPARATOR + "config" +  // NOI18N
+            FILE_SEPARATOR + "J2EE" +  // NOI18N
+            FILE_SEPARATOR + "InstalledServers" +  // NOI18N
+            FILE_SEPARATOR + ".nbattrs"; // NOI18N
+    
     private static final String NB_DEFAULT_ATTRS_DTD = "xml/entities/NetBeans/DTD_DefaultAttributes_1_0"; // NOI18N
     private static final String NB_DEFAULT_ATTRS_PUBLIC_ID = "-//NetBeans//DTD DefaultAttributes 1.0//EN"; // NOI18N
     
