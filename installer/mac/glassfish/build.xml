@@ -21,11 +21,11 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="glassfish" basedir="." default="build-pkg">
 
-  <property name="appname" value="glassfish-v2b58e"/>
+  <property name="appname" value="glassfish-v2b58f"/>
   <property name="appdir" value="build/app"/>
   <property name="zipname" value="glassfish-macosx.zip"/>
-  <property name="appversion" value="2b58c"/>
-  <property name="version" value="2b58c"/>
+  <property name="appversion" value="2b58f"/>
+  <property name="version" value="2b58f"/>
   <property name="exename" value=""/>
   <property name="icon" value=""/>
   <property name="pmproj" value="pkg/glassfish.pmproj"/>
