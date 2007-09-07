@@ -30,6 +30,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
@@ -123,18 +124,19 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
     private Transferable data;
     private ClipboardOwner dataOwner;
     
+    @Override
     public void setContents(Transferable contents, ClipboardOwner owner) {
         synchronized (this) {
             // XXX(-dstrupl) the following line might lead to a double converted
             // transferable. Can be fixed as Jesse describes in #32485
             if (log.isLoggable (Level.FINER)) {
                 log.log (Level.FINER, "setContents called with: "); // NOI18N
-                logFlavors (contents, Level.FINER);
+                logFlavors (contents, Level.FINER, log.isLoggable(Level.FINEST));
             }
             contents = convert(contents);
             if (log.isLoggable (Level.FINER)) {
                 log.log (Level.FINER, "After conversion:"); // NOI18N
-                logFlavors (contents, Level.FINER);
+                logFlavors (contents, Level.FINER, log.isLoggable(Level.FINEST));
             }
 
             if (slowSystemClipboard) {
@@ -151,6 +153,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
         fireClipboardChange();
     }
 
+    @Override
     public Transferable getContents(Object requestor) {
         Transferable prev;
 
@@ -176,7 +179,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
             synchronized (this) {
                 if (log.isLoggable (Level.FINE)) {
                     log.log (Level.FINE, "getContents by " + requestor); // NOI18N
-                    logFlavors (prev, Level.FINE);
+                    logFlavors (prev, Level.FINE, log.isLoggable(Level.FINEST));
                 }
                 if (prev == null)  // if system clipboard has no contents
                     return null;
@@ -184,7 +187,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
                 Transferable res = convert (prev);
                 if (log.isLoggable (Level.FINE)) {
                     log.log (Level.FINE, "getContents by " + requestor); // NOI18N
-                    logFlavors (res, Level.FINE);
+                    logFlavors (res, Level.FINE, log.isLoggable(Level.FINEST));
 
                     res = new LoggableTransferable (res);
                 }
@@ -202,23 +205,23 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
     }
 
     public void run() {
-        Transferable contents = null;
-        ClipboardOwner owner = null;
+        Transferable cnts = null;
+        ClipboardOwner ownr = null;
 
         synchronized (this) {
             if (data != null) {
-             contents = data;
-             owner = dataOwner;
+             cnts = data;
+             ownr = dataOwner;
             }
             data = null;
             dataOwner = null;
         }
-        if (contents != null) {
+        if (cnts != null) {
             if (log.isLoggable (Level.FINE)) {
                 log.log (Level.FINE, "systemClipboard updated:"); // NOI18N
-                logFlavors (contents, Level.FINE);
+                logFlavors (cnts, Level.FINE, log.isLoggable(Level.FINEST));
             }
-            systemClipboard.setContents(contents, owner);
+            systemClipboard.setContents(cnts, ownr);
             return;
         }
 
@@ -227,7 +230,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
             super.setContents(transferable, null);
             if (log.isLoggable (Level.FINE)) {
                 log.log (Level.FINE, "internal clipboard updated:"); // NOI18N
-                logFlavors (transferable, Level.FINE);
+                logFlavors (transferable, Level.FINE, log.isLoggable(Level.FINEST));
             }
             fireClipboardChange();
         }
@@ -254,14 +257,26 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
         }
     }
     
-    private void logFlavors (Transferable trans, Level level) {
+    private void logFlavors (Transferable trans, Level level, boolean content) {
         if (trans == null)
             log.log (level, "  no clipboard contents");
         else {
             java.awt.datatransfer.DataFlavor[] arr = trans.getTransferDataFlavors();
+            StringBuffer sb = new StringBuffer();
             for (int i = 0; i < arr.length; i++) {
-                log.log (level, "  " + i + " = " + arr[i]);
+                sb.append("  ").append(i).append(" = ").append(arr[i]);
+                if (content) {
+                    try {
+                        sb.append(" contains: ").append(trans.getTransferData(arr[i]));
+                    } catch (UnsupportedFlavorException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                sb.append("\n");
             }
+            log.log (level, sb.toString());
         }
     }
 
