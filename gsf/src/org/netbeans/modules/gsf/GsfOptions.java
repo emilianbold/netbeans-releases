@@ -76,9 +76,18 @@ public class GsfOptions extends BaseOptions {
      */
     public static final String CODE_FOLDING_COLLAPSE_INITIAL_COMMENT = "code-folding-collapse-initial-comment"; //NOI18N
 
-    public static final GsfOptions create(FileObject fo) {
-        String mimeType = fo.getParent().getPath().substring(8); //'Editors/'
-        return new GsfOptions(mimeType);
+    private static GsfOptions defaultInstance;
+    public static synchronized GsfOptions create(FileObject fo) {
+        // XXX HACK ALERT!  We need to have one options object per mime type,
+        // but BaseOptions (which we have to use because the editor requires it)
+        // asserts that it's a singleton. Thus we just have to use a shared
+        // instance. This means the mime type looked up can be wrong.
+        // This needs to get fixed better, probably by the editor dumping BaseOptions.
+        if (defaultInstance == null) {
+            String mimeType = fo.getParent().getPath().substring(8); //'Editors/'
+            defaultInstance = new GsfOptions(mimeType);
+        }
+        return defaultInstance;
     }
  
     /** Name of property. */
