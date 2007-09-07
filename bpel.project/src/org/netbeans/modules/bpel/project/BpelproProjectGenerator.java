@@ -18,13 +18,8 @@
  */
 package org.netbeans.modules.bpel.project;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 
 import org.openide.filesystems.FileObject;
@@ -42,8 +37,10 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.ErrorManager;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 import org.w3c.dom.Document;
@@ -72,43 +69,70 @@ public class BpelproProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name) throws IOException {
-        dir.mkdirs();
-        File rootF = dir;
+    public static AntProjectHelper createProject(File dir, final String name) throws IOException {
+        final FileObject fo = createProjectDir(dir);
+        final AntProjectHelper[] h = new AntProjectHelper[1];
 
+        fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                h[0] = setupProject(fo, name);
+                FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
+                createCatalogXml(h[0].getProjectDirectory());
+
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+
+                        public Void run() throws Exception {
+                            EditableProperties ep = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            ep.put(IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
+                            ep.setProperty(IcanproProjectProperties.META_INF, "${" + IcanproProjectProperties.SOURCE_ROOT + "}/" + DEFAULT_DOC_BASE_FOLDER); //NOI18N
+                            ep.setProperty(IcanproProjectProperties.SRC_DIR, "${" + IcanproProjectProperties.SOURCE_ROOT + "}"); //NOI18N
+                            ep.setProperty(IcanproProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
+                            h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+
+                            Project p = ProjectManager.getDefault().findProject(h[0].getProjectDirectory());
+                            ProjectManager.getDefault().saveProject(p);
+
+                            return null;
+                        }
+                    });
+                } catch (MutexException me) {
+                    ErrorManager.getDefault().notify(me);
+                }
+            }
+        });
+
+        return h[0];
+    }
+
+    private static FileObject createProjectDir(File dir) throws IOException {
+        FileObject dirFO;
+        if(!dir.exists()) {
+            //Refresh before mkdir not to depend on window focus
+            refreshFileSystem (dir);
+            dirFO = FileUtil.createFolder(dir);
+        } else {
+            dirFO = FileUtil.toFileObject(dir);
+        }
+
+        if (dirFO == null) {
+          throw new IOException("Can't create " + dir.getName());
+        }
+        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
+        assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir;
+        return dirFO;                        
+    }
+
+    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
+        File rootF = dir;
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
-        FileObject fo = FileUtil.toFileObject(rootF);
-        assert fo != null : "At least disk roots must be mounted! " + rootF;
-        fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject(dir);
-
-        // vlv # 113228
-        if (fo == null) {
-          throw new IOException("Can't create " + dir.getName());
-        }
-        assert fo.isFolder() : "Not really a dir: " + dir;
-        assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
-        AntProjectHelper h = setupProject(fo, name);
-        FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-        FileObject bpelasaRoot = srcRoot;
-
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.put(IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
-        ep.setProperty(IcanproProjectProperties.META_INF, "${"+IcanproProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
-        ep.setProperty(IcanproProjectProperties.SRC_DIR, "${"+IcanproProjectProperties.SOURCE_ROOT+"}"); //NOI18N
-        ep.setProperty(IcanproProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-
-        Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
-        ProjectManager.getDefault().saveProject(p);
-
-        createCatalogXml(h.getProjectDirectory());
-
-        return h;
+        FileObject dirFO = FileUtil.toFileObject(rootF);
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+        dirFO.getFileSystem().refresh(false);
     }
-
+    
     // vlv # 111020
     private static void createCatalogXml(FileObject project) {
       try {
