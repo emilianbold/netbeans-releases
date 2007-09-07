@@ -314,7 +314,13 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
     private void findTokenListWithIndex(int tokenListIndex) {
         if (complete || tokenListIndex < tokenLists.size())
             return;
-
+        // Force init of all the items
+        do {
+            findTokenListWithIndexImpl(tokenListIndex++);
+        } while (tokenLists.size() == tokenListIndex);
+    }
+    
+    private void findTokenListWithIndexImpl(int tokenListIndex) {
         while (explorers.size() > 0) {
             int explorerIndex = explorers.size() - 1;
             TokenListExplorer explorer = explorers.get(explorerIndex);

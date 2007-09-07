@@ -143,7 +143,7 @@ public final class TokenHierarchyUpdate {
             boolean hasChildren;
             if (change.languagePath().size() > 1) {
                 info = info(change.languagePath());
-                hasChildren = info.tokenListList().hasChildren();
+                hasChildren = (info != NO_INFO) ? info.tokenListList().hasChildren() : false;
             } else { // root-level
                 info = NO_INFO;
                 hasChildren = (eventInfo.tokenHierarchyOperation().maxTokenListListPathSize() > 0);
