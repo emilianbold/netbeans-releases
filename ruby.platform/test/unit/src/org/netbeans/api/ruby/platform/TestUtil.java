@@ -17,27 +17,30 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.ruby.rubyproject;
+package org.netbeans.api.ruby.platform;
 
 import java.io.File;
-import javax.swing.JTextArea;
-import org.jruby.Ruby;
-import org.jruby.RubyArray;
-import org.netbeans.api.ruby.platform.TestUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public final class IrbTopComponentTest extends RubyProjectTestBase {
+public final class TestUtil {
 
-    public IrbTopComponentTest(String testName) {
-        super(testName);
+    private TestUtil() {
     }
 
-    // sanity check to prevent regressions like issue #114387
-    public void testBasics() throws Exception {
-        final Ruby runtime = IrbTopComponent.getRuntime(new JTextArea());
-        File lib = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/1.8");
-        RubyArray loadPath = (RubyArray) runtime.getLoadService().getLoadPath();
-        loadPath.add(lib.getAbsolutePath());
-        runtime.evalScript("require 'irb'; require 'irb/completion'");
+    public static File getXTestJRubyHome() {
+        String destDir = System.getProperty("xtest.jruby.home");
+        if (destDir == null) {
+            throw new RuntimeException("xtest.jruby.home property has to be set when running within binary distribution " + destDir);
+        }
+        return new File(destDir);
     }
 
+    public static String getXTestJRubyHomePath() {
+        return getXTestJRubyHome().getAbsolutePath();
+    }
+    
+    public static FileObject getXTestJRubyHomeFO() {
+        return FileUtil.toFileObject(getXTestJRubyHome());
+    }
 }

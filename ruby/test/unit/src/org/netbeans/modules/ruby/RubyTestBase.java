@@ -42,6 +42,7 @@ import org.netbeans.api.gsf.ParseListener;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
@@ -51,7 +52,6 @@ import org.netbeans.spi.gsf.DefaultParseListener;
 import org.netbeans.spi.gsf.DefaultParserFile;
 import org.netbeans.spi.gsf.DefaultParserFile;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -66,7 +66,7 @@ public abstract class RubyTestBase extends NbTestCase {
 
     public RubyTestBase(String testName) {
         super(testName);
-        System.setProperty("ruby.interpreter", FileUtil.toFile(findJRuby().getFileObject("bin/jruby")).getAbsolutePath());
+        System.setProperty("ruby.interpreter", FileUtil.toFile(TestUtil.getXTestJRubyHomeFO().getFileObject("bin/jruby")).getAbsolutePath());
     }
 
     protected ParserResult parse(FileObject fileObject) {
@@ -115,36 +115,10 @@ public abstract class RubyTestBase extends NbTestCase {
         return root;
     }
 
-    protected FileObject findJRuby() {
-        File data = getDataDir();
-        File nbtree = data.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
-        assertNotNull(nbtree);
-        assertTrue(nbtree.exists());
-        if (!new File(nbtree, "nbbuild").exists()) {
-            nbtree = nbtree.getParentFile();
-        }
-        assertNotNull(nbtree);
-        assertTrue(nbtree.exists());
-        // TODO - use constants in RubyInstallation
-        File jruby = new File(nbtree, "nbbuild" + File.separator + "netbeans" + File.separator + "ruby1" + File.separator + "jruby-1.0.1");
-        assertTrue(jruby.exists());
-        try {
-            jruby = jruby.getCanonicalFile();
-        }
-        catch (Exception ex){
-            fail(ex.toString());
-        }
-        assertTrue(jruby.exists());
-        FileObject fo = FileUtil.toFileObject(jruby);
-        assertNotNull(fo);
-
-        return fo;
-    }
-
     // Locate as many Ruby files from the JRuby distribution as possible: libs, gems, etc.
     protected List<FileObject> findJRubyRubyFiles() {
         List<FileObject> l = new ArrayList<FileObject>();
-        addRubyFiles(l, findJRuby());
+        addRubyFiles(l, TestUtil.getXTestJRubyHomeFO());
 
         return l;
     }

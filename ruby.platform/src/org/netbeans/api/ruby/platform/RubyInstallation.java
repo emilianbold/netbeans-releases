@@ -341,8 +341,8 @@ public class RubyInstallation {
      * @return <tt>true</tt> if JRuby is set; <tt>false</tt> otherwise.
      */
     public boolean isJRubySet() {
-        String r = RubyInstallation.getInstance().getRuby();
-        return r != null ? RubyInstallation.isJRuby(r) : false;
+        String ruby = getRuby();
+        return ruby != null ? RubyInstallation.isJRuby(ruby) : false;
     }
 
     public static boolean isJRuby(final String pathToInterpreter) {

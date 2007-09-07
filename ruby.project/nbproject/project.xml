@@ -274,6 +274,7 @@
                         <code-name-base>org.netbeans.modules.ruby.platform</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openidex.util</code-name-base>
