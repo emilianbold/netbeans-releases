@@ -62,6 +62,7 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
     }
     
     public CsmReference findReference(Node activatedNode) {
+        assert activatedNode != null : "activatedNode must be not null";
         EditorCookie cookie = activatedNode.getCookie(EditorCookie.class);
         if (cookie != null) {
             JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(cookie);

@@ -48,7 +48,7 @@ public abstract class CsmReferenceResolver {
         if (defaultResolver != null) {
             return defaultResolver;
         }
-        defaultResolver = (CsmReferenceResolver) Lookup.getDefault().lookup(CsmReferenceResolver.class);
+        defaultResolver = Lookup.getDefault().lookup(CsmReferenceResolver.class);
         return defaultResolver == null ? EMPTY : defaultResolver;
     }
     
@@ -73,6 +73,7 @@ public abstract class CsmReferenceResolver {
      * default implementation of method based on Node
      */
     public CsmReference findReference(Node activatedNode) {
+        assert activatedNode != null : "activatedNode must be not null";
         EditorCookie c = activatedNode.getCookie(EditorCookie.class);
         if (c != null) {
             JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(c);
