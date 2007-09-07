@@ -212,10 +212,13 @@ public class NameResolver
                                         INamedElement newEle = establishPackagedType(proj, name, type);
                                         if(elems == null)
                                             elems = new ETArrayList <INamedElement>();
-                                        if (addToCollection(newEle, type))
-                                        {
+                                        // when creating unknown type, the default is DataType, which could 
+                                        // be different from the one specified here, why check type here??
+                                        // commented while fixing for #92596
+//                                        if (addToCollection(newEle, type))
+//                                        {
                                             elems.add(newEle);
-                                        }
+//                                        }
                                     }
                                 }
                             }

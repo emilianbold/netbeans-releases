@@ -2314,18 +2314,18 @@ public class DesignPatternManager implements IDesignPatternManager {
                                 INamedElement p1 = (INamedElement)pParticipant1;
                                 INamedElement p2 = (INamedElement)pParticipant2;
                                 INamespace pName = m_Details.getNamespace();
-                                IInterface pInter = (IInterface)p2;
-                                if (pInter != null) {
+//                                IInterface pInter = (IInterface)p2;
+//                                if (pInter != null) {
                                     ETPairT < IInterface, IDependency > argumentPair = pFactory.createImplementation(p1, p2, pName);
                                     IDependency pLink = argumentPair.getParamTwo();
                                     if (pLink != null) {
                                         pPropEle.setElement(pLink);
                                     }
-                                } else {
-                                    // if the supplier isn't an interface, we are not going
-                                    // to create this.
-                                    // hr = S_FALSE;
-                                }
+//                                } else {
+//                                    // if the supplier isn't an interface, we are not going
+//                                    // to create this.
+//                                    // hr = S_FALSE;
+//                                }
                             } else if (type.equals("Association")) {
                                 IClassifier p1 = (IClassifier)pParticipant1;
                                 IClassifier p2 = (IClassifier)pParticipant2;
@@ -4363,9 +4363,12 @@ public class DesignPatternManager implements IDesignPatternManager {
     }
     public IElement createElementInDetailsProject2(String name, String type) {
         IElement pNew = null;
+        String elementName = name;
         IProject pProject = m_Details.getProject();
         if (pProject != null) {
-            INamedElement pNewNamed = NameResolver.resolveFullyQualifiedNameByType(pProject, name, type);
+            if (name.indexOf("::")<0)
+                elementName = "::" + name;
+            INamedElement pNewNamed = NameResolver.resolveFullyQualifiedNameByType(pProject, elementName, type);
             if (pNewNamed != null) {
                 String id = pNewNamed.getXMIID();
                 m_AttrsOpsClonedMap.put(id, id);
