@@ -127,6 +127,8 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         
         servicesLabel.setLabelFor( checkedTreeView );
 
+        generateButton.setEnabled( false );
+
         getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_ServicesPanel" ));
         checkedTreeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
         
