@@ -21,7 +21,6 @@ package org.netbeans.modules.form;
 
 import java.awt.*;
 import java.beans.*;
-import java.lang.reflect.Method;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
@@ -43,8 +42,7 @@ public class BeanSupport
     // -----------------------------------------------------------------------------
     // Private variables
 
-    private static Map errorEmptyMap = new HashMap(3);
-    private static Map instancesCache = new HashMap(30);
+    private static Map<Class,Object> instancesCache = new HashMap<Class,Object>(30);
 
     // -----------------------------------------------------------------------------
     // Public methods
@@ -126,13 +124,13 @@ public class BeanSupport
     // -----------------------------------------------------------------------------
     // Private methods
 
-    static Reference imageCache;
+    static Reference<Map<String,Object>> imageCache;
 
     private static synchronized Image getIconForDefault(Class klass) {
-        Map icons;
-        if ((imageCache == null) || ((icons = (Map) imageCache.get()) == null)) {
+        Map<String,Object> icons;
+        if ((imageCache == null) || ((icons = imageCache.get()) == null)) {
             icons = createImageCache();
-            imageCache = new SoftReference(icons);
+            imageCache = new SoftReference<Map<String,Object>>(icons);
         }
         
         String name = klass.getName();
@@ -152,8 +150,8 @@ public class BeanSupport
         }
     }
 
-    private static Map createImageCache() {
-        Map map = new HashMap();
+    private static Map<String,Object> createImageCache() {
+        Map<String,Object> map = new HashMap<String,Object>();
         
         map.put("java.awt.Label", "/org/netbeans/modules/form/beaninfo/awt/label.gif"); // NOI18N
         map.put("java.awt.Button", "/org/netbeans/modules/form/beaninfo/awt/button.gif"); // NOI18N
@@ -173,9 +171,11 @@ public class BeanSupport
         map.put("java.awt.CheckboxMenuItem", "/org/netbeans/modules/form/resources/menuItemCheckbox.gif"); // NOI18N
         map.put("org.netbeans.modules.form.Separator", "/org/netbeans/modules/form/resources/menuSeparator.gif"); // NOI18N
 
-        map.put("java.applet.Applet", "/org/netbeans/modules/form/resources/applet.gif"); // NOI18N
-        map.put("java.awt.Dialog", "/org/netbeans/modules/form/resources/dialog.gif"); // NOI18N
-        map.put("java.awt.Frame", "/org/netbeans/modules/form/resources/frame.gif"); // NOI18N
+        map.put("java.applet.Applet", "/org/netbeans/modules/form/resources/palette/applet.gif"); // NOI18N
+        map.put("java.awt.Dialog", "/org/netbeans/modules/form/resources/palette/dialog_16.png"); // NOI18N
+        map.put("java.awt.Frame", "/org/netbeans/modules/form/resources/palette/frame_16.png"); // NOI18N
+
+        map.put("javax.swing.JApplet", "/org/netbeans/modules/form/resources/palette/applet.gif"); // NOI18N
 
         return map;
     }

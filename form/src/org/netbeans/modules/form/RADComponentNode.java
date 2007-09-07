@@ -43,6 +43,7 @@ import org.netbeans.modules.form.editors.TableCustomizer;
 import org.netbeans.modules.form.menu.AddSubItemAction;
 import org.netbeans.modules.form.menu.InsertMenuAction;
 import org.netbeans.modules.form.menu.MenuEditLayer;
+import org.netbeans.modules.form.palette.PaletteUtils;
 
 public class RADComponentNode extends FormNode
         implements RADComponentCookie, FormPropertyCookie {
@@ -55,6 +56,7 @@ public class RADComponentNode extends FormNode
     
     private RADComponent component;
     private boolean highlightDisplayName;
+    private Map<Integer,Image> img = new HashMap<Integer,Image>();
     
     public RADComponentNode(RADComponent component) {
         this(component instanceof ComponentContainer ?
@@ -91,21 +93,47 @@ public class RADComponentNode extends FormNode
         firePropertySetsChange(null, null);
     }
 
+    private static boolean iconsInitialized;
+    
     @Override
-    public Image getIcon(int iconType) {
-        // try to get a special icon
-        Image icon = BeanSupport.getBeanIcon(component.getBeanClass(), iconType);
+    public Image getIcon(final int iconType) {
+        Image icon = img.get(iconType);
         if (icon != null) return icon;
         
-        // get icon from BeanInfo
-        java.beans.BeanInfo bi = component.getBeanInfo();
-        if (bi != null) {
-            icon = bi.getIcon(iconType);
-            if (icon != null) return icon;
+        // try to get a special icon
+        icon = BeanSupport.getBeanIcon(component.getBeanClass(), iconType);
+        if (icon == null) {
+            if (!iconsInitialized) {
+                // getIconForClass invokes getNodes(true) which cannot be called in Mutex
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        Image icon = PaletteUtils.getIconForClass(component.getBeanClass().getName(), iconType, true);
+			iconsInitialized = true;
+                        if (icon != null) {
+                            img.put(iconType, icon);
+                            fireIconChange();
+                        }
+                    }
+                });
+            } else {
+                icon = PaletteUtils.getIconForClass(component.getBeanClass().getName(), iconType, false);
+            }
+
+            if (icon == null) {
+                // get icon from BeanInfo
+                java.beans.BeanInfo bi = component.getBeanInfo();
+                if (bi != null) {
+                    icon = bi.getIcon(iconType);
+                }
+
+                if (icon == null) {
+                    // use default icon
+                    icon = super.getIcon(iconType);
+                }
+            }
         }
-        
-        // use default icon
-        return super.getIcon(iconType);
+        img.put(iconType, icon);
+        return icon;
     }
 
     @Override

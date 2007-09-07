@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.form.palette;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -297,7 +298,7 @@ public final class PaletteUtils {
         } else {
             // This is not the node returned by getPaletteNode()!
             Node paletteNode = getPalette().getRoot().lookup(Node.class);
-            Node[] categories = getCategoryNodes(paletteNode, true, true, true);
+            Node[] categories = getCategoryNodes(paletteNode, true, true, true, true);
             for( int i=0; i<categories.length; i++ ) {
                 Node[] items = getItemNodes( categories[i], true );
                 for( int j=0; j<items.length; j++ ) {
@@ -310,12 +311,34 @@ public final class PaletteUtils {
         }
     }
     
+    public static Image getIconForClass(String className, int type, boolean optimalResult) {
+        Image img = null;
+        for (PaletteItem item : getAllItems(optimalResult)) {
+            if (PaletteItem.TYPE_CHOOSE_BEAN.equals(item.getExplicitComponentType())) {
+                continue;
+            }
+            if (className.equals(item.getComponentClassName())) {
+                Node node = item.getNode();
+                if (node != null) {
+                    img = node.getIcon(type);
+                } else {
+                    img = item.getIcon(type);
+                }
+            }
+        }
+        return img;
+    }
+    
     public static PaletteItem[] getAllItems() {
+        return getAllItems(true);
+    }
+    
+    public static PaletteItem[] getAllItems(boolean optimalResult) {
         HashSet<PaletteItem> uniqueItems = null;
         // collect valid items from all categories (including invisible)
-        Node[] categories = getCategoryNodes(getPaletteNode(), false, true, false);
+        Node[] categories = getCategoryNodes(getPaletteNode(), false, true, false, optimalResult);
         for( int i=0; i<categories.length; i++ ) {
-            Node[] items = getItemNodes( categories[i], true );
+            Node[] items = getItemNodes(categories[i], true, optimalResult);
             for( int j=0; j<items.length; j++ ) {
                 PaletteItem formItem = items[j].getLookup().lookup( PaletteItem.class );
                 if( null != formItem ) {
@@ -339,6 +362,10 @@ public final class PaletteUtils {
         return NbBundle.getBundle(PaletteUtils.class).getString(key);
     }
     
+    public static Node[] getItemNodes(Node categoryNode, boolean mustBeValid) {
+        return getItemNodes(categoryNode, mustBeValid, true);
+    }
+    
     /**
      * Get an array of Node for the given category.
      *
@@ -346,8 +373,8 @@ public final class PaletteUtils {
      * @param mustBeValid True if all the nodes returned must be valid palette items.
      * @return An array of Nodes for the given category.
      */
-    public static Node[] getItemNodes( Node categoryNode, boolean mustBeValid ) {
-        Node[] nodes = categoryNode.getChildren().getNodes( true );
+    private static Node[] getItemNodes(Node categoryNode, boolean mustBeValid, boolean optimalResult) {
+        Node[] nodes = categoryNode.getChildren().getNodes(optimalResult);
         if (!mustBeValid)
             return nodes;
 
@@ -384,7 +411,7 @@ public final class PaletteUtils {
      * @return An array of categories in the given palette.
      */
     public static Node[] getCategoryNodes(Node paletteNode, boolean mustBeVisible) {
-        return getCategoryNodes(paletteNode, mustBeVisible, mustBeVisible, true);
+        return getCategoryNodes(paletteNode, mustBeVisible, mustBeVisible, true, true);
     }
     
     /**
@@ -402,12 +429,13 @@ public final class PaletteUtils {
     private static Node[] getCategoryNodes(Node paletteNode,
                                            boolean mustBeVisible,
                                            boolean mustBeValid,
-                                           boolean mustBePaletteCategory)
+                                           boolean mustBePaletteCategory,
+                                           boolean optimalResult)
     {
         if (mustBeVisible)
             mustBeValid = mustBePaletteCategory = true;
 
-        Node[] nodes = paletteNode.getChildren().getNodes(true);
+        Node[] nodes = paletteNode.getChildren().getNodes(optimalResult);
 
         ClassPathFilter filter = mustBeValid ? getPaletteFilter() : null;
         java.util.List<Node> list = null; // don't create until needed
