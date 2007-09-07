@@ -260,7 +260,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                 initValue = access;
             }
 
-            text += param.getType().getSimpleName() + " " + param.getName() + " = " + initValue + ";"; //NOI18N
+            text += param.getTypeName() + " " + param.getName() + " = " + initValue + ";"; //NOI18N
         }
 
         return text;

@@ -16,10 +16,6 @@
  */
 package org.netbeans.modules.websvc.rest.codegen.model;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.rest.wizard.Util;
-import org.openide.util.Exceptions;
-
 /**
  *
  * @author Peter Liu
@@ -28,12 +24,18 @@ public class ParameterInfo {
 
     private String name;
     private Class type;
+    private String typeName;
     private Object defaultValue;
     private boolean isQueryParam;
 
     public ParameterInfo(String name, Class type) {
+        this(name, type, null);
+    }
+    
+    public ParameterInfo(String name, Class type, String typeName) {
         this.name = name;
         this.type = type;
+        this.typeName = typeName;
         this.defaultValue = null;
         this.isQueryParam = true;
     }
@@ -44,6 +46,13 @@ public class ParameterInfo {
 
     public Class getType() {
         return type;
+    }
+
+    public String getTypeName() {
+        if (typeName == null) {
+            return type.getName();
+        }
+        return typeName;
     }
 
     public void setDefaultValue(Object value) {

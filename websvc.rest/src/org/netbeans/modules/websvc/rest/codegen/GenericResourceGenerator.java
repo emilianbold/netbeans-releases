@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -160,7 +162,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
             );
             result.commit();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, "", ex);
         }
     }
     
@@ -477,7 +479,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         List<String> results = new ArrayList<String>();
         
         for (ParameterInfo param : params) {
-            results.add(param.getType().getName());
+            results.add(param.getTypeName());
         }
         
         return results.toArray(new String[results.size()]);

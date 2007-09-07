@@ -397,11 +397,15 @@ public class Util {
                     return ret;
                 }
                 ClassLoader cl = cp.getClassLoader(true);
+                ret = getGenericRawType(typeName, cl);
+                if (ret != null) {
+                    return ret;
+                }
                 if (cl != null) {
                     return cl.loadClass(typeName);
                 }
             } catch (ClassNotFoundException ex) {
-                //Logger.getLogger(RestComponentSetupPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                //Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
         return null; 
@@ -428,5 +432,19 @@ public class Util {
             primitiveTypes.put("short[]", Short[].class);
         }
         return primitiveTypes.get(typeName);
+    }
+    
+    public static Class getGenericRawType(String typeName, ClassLoader loader) {
+        int i = typeName.indexOf('<');
+        if (i < 1) {
+            return null;
+        }
+        String raw = typeName.substring(0, i);
+        try {
+            return loader.loadClass(raw);
+        } catch(ClassNotFoundException ex) {
+            Logger.global.log(Level.INFO, "", ex);
+            return null;
+        }
     }
 }
