@@ -174,11 +174,11 @@ public class ADProjectTreeEngine
    public final static String  ELEMENT_IMPORT_ELEMENT_TYPE = "ElementImport";
    public final static String  PACKAGE_IMPORT_ELEMENT_TYPE = "ElementImport";
 
-	private IProjectTreeModel   m_TreeModel      = null;
-	private DispatchHelper      m_DispatchHelper = new DispatchHelper();
+   private IProjectTreeModel   m_TreeModel      = null;
+   private DispatchHelper      m_DispatchHelper = new DispatchHelper();
    private static IProjectTreeBuilder m_TreeBuilder    = null;
 
-	private static FilteredItemManager m_FilteredItemManager = null;
+   private static FilteredItemManager m_FilteredItemManager = null;
 
    private int                 m_MovementRestrictionKind = MRK_DISALLOW;
 
@@ -223,15 +223,15 @@ public class ADProjectTreeEngine
    {
    	setTreeModel(model);
 
-		if (m_TreeBuilder == null)
-		{
-			m_TreeBuilder = new ProjectTreeBuilderImpl(model.getNodeFactory());
-			if (this instanceof IProjectTreeBuilderFilter)
-			{            
-				IProjectTreeBuilderFilter pFilter = (IProjectTreeBuilderFilter)this;
-				m_TreeBuilder.setProjectTreeBuilderFilter(pFilter);
-			}
-		}
+        if (m_TreeBuilder == null)
+        {
+                m_TreeBuilder = new ProjectTreeBuilderImpl(model.getNodeFactory());
+                if (this instanceof IProjectTreeBuilderFilter)
+                {            
+                        IProjectTreeBuilderFilter pFilter = (IProjectTreeBuilderFilter)this;
+                        m_TreeBuilder.setProjectTreeBuilderFilter(pFilter);
+                }
+        }
       initializeSinks();
       initializeByPreferences();
       initializeFillEditableAndDisplayList();
@@ -653,7 +653,7 @@ public class ADProjectTreeEngine
       {
          IElement element = iter.next();
 
-         ETList < ITreeItem > nodes = getTreeModel().findNodes(element);
+         ETList < ITreeItem > nodes = getTreeModel().findNodes(element); 
          affectedNodes.addAll(nodes);
          for (Iterator < ITreeItem > iterator = nodes.iterator(); iterator.hasNext();)
          {
@@ -664,30 +664,56 @@ public class ADProjectTreeEngine
                // and we shouldn't add any children.
                if( !(item instanceof ITreeRelElement) )
                {
+                  // Modified the logic to fix IZ=110809 and the root cause of 
+                  // bugster #6283081.
                   // We have a real tree element that may have children.  Lets
                   // make sure this guy has all the relevant children.  This
                   // is done by first calacuating what the children should be
-                  // then compare that with the children that we actually have.
-                  ITreeItem[] desiredChildren = retrieveChildItems(item);
-				  
-				  // since folder is always created with new UMLFolderNode, we 
-				  // have to construct the NB node for folder and add it to parent # 6283081
-				  for(int i=0; i<desiredChildren.length; i++)
-				  {
-					  if (desiredChildren[i] instanceof ITreeFolder)
-					  {
-						desiredChildren[i].sortChildren();  
-						getTreeModel().addItem(item,desiredChildren[i]);
-					  }
-				  } 
-                  if(verifyChildConsistency(paths, item, desiredChildren) == true)
+                  // then add them to the tree. 
+                  // - If a child item has already existed in the tree, addItem (parent, child)
+                  // does not add a duplicate item.
+                  // - if a child is a folder (of type ITreeFolder), search for the 
+                  // the same folder from the parent node and recalculate its children.
+                   
+                  ITreeItem childItem = null; 
+                  
+                  // build children nodes that shoud be under the 'item' node
+                  ITreeItem[] desiredChildren = retrieveChildItems(item); 
+                  
+                  for(int i=0; i<desiredChildren.length; i++)
                   {
-                     getTreeModel().sortChildren(item);
-                  }
-               }
+                      // add a child node to the tree (duplicate node is not added to tree)
+                      childItem = desiredChildren[i];
+                      addItem(item, childItem, "");
+                      
+                      // if a child is a folder, search for the same folder from 
+                      // the parent item, and recalcualte its children.
+                      if (childItem instanceof ITreeFolder)
+                      { 
+                            Enumeration<ITreeItem> kids = item.getNodeChildren();
+                            ITreeItem curChild = null;
+        
+                            while (kids.hasMoreElements())
+                            {
+                                curChild = kids.nextElement();
+                                if (curChild == childItem || curChild.equals(childItem))
+                                    curChild.sortChildren();
+                            }
+                      }
+                  } 
+                 
+                  // The new node is now added directly to the parent node, so no
+                  // need to compare the 'desiredChildren; with the actual children
+                  // from the parent item; hence commented out this block of code.
+                  
+//                  if(verifyChildConsistency(paths, item, desiredChildren) == true)
+//                  {
+//                     getTreeModel().sortChildren(item);
+//                  }
             }
          }
       }
+   }
    }
 
    /**
@@ -937,20 +963,20 @@ public class ADProjectTreeEngine
     * @return <code>true</code> if the name is in the paths, <code>false</code>
     *         if the name is not found.
     */
-   protected boolean findFolderName(String toFind, ETList < String > paths)
-   {
-      boolean retVal = false;
-      for (Iterator < String > iter = paths.iterator(); iter.hasNext();)
-      {
-         String value = iter.next();
-         if(value.indexOf(toFind) >= 0)
-         {
-            retVal = true;
-         }
-      }
+    protected boolean findFolderName(String toFind, ETList<String> paths)
+    {
+        boolean found = false;
+        if (paths != null) {
+            for (Iterator<String> iter = paths.iterator(); iter.hasNext() && !found;) {
+                String value = iter.next();
+                if (value.indexOf(toFind) >= 0) {
+                    found = true;
+                }
+            }
+        }
 
-      return retVal;
-   }
+        return found;
+    }
 
    /**
     * Pulls out all of the IElements in the collection of ITreeItems.  The
@@ -2499,7 +2525,7 @@ public class ADProjectTreeEngine
 
             String pattern = DefaultEngineResource.getString("IDS_NESTED_CLASS_WARNING");
             String title = DefaultEngineResource.getString("IDS_NESTED_CLASS_WARNING_TITLE");
-            String checkbox = DefaultEngineResource.getString("IDS_NESTED_CLASS_WARNING_CHECKBOX");;
+            String checkbox = DefaultEngineResource.getString("IDS_NESTED_CLASS_WARNING_CHECKBOX");
 
             Object[] params = {thisClassifier.getName(),
                               dropTargetClassifier.getName()};

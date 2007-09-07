@@ -25,7 +25,6 @@
  */
 package org.netbeans.modules.uml.ui.support.projecttreesupport;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -48,27 +47,17 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
-import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.Debug;
-import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
 import org.netbeans.modules.uml.core.support.umlutils.IDataFormatter;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinitionFactory;
 import org.netbeans.modules.uml.core.support.umlutils.PropertyDefinitionFactory;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-//import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeDiagramNode;
-//import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeFolderNode;
-import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeItemImpl;
-//import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeNode;
 import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeNodeFactory;
-//import org.netbeans.modules.uml.ui.controls.projecttree.TreeElementNode;
-//import org.netbeans.modules.uml.ui.controls.projecttree.TreeRelationshipNode;
-//import org.netbeans.modules.uml.ui.controls.projecttree.TreeWorkspaceNode;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
@@ -86,6 +75,8 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
    private ProjectTreeNodeFactory m_NodeFactory = null;
    
    private IProjectTreeBuilderFilter m_TreeFilter = null;
+   private static String DEPENDENCIES_GROUP = 
+           "Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency";
    
    public ProjectTreeBuilderImpl(ProjectTreeNodeFactory factory)
    {
@@ -236,10 +227,10 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
                   retVal = new ITreeItem[list.size()];                                            
                   for (int index = 0; index < list.size(); index++)
                   {
-                  	 ITreeItem ti = (ITreeItem)list.get(index);
+                  	 ITreeItem ti = list.get(index);
                   	 if (ti != null)
                   	 {
-                  	 	 ti.setParentItem(pFolder);
+                             ti.setParentItem(pFolder);
 	                     retVal[index] = ti;
                   	 }
                   }
@@ -438,6 +429,7 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
    protected void getPathsWhereElementTypeLives(IElement          element, 
                                                 ETList < String > paths)
    {
+       String query = null;
       if((paths != null) && (element != null))
       {
          try
@@ -448,13 +440,19 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
                IPropertyDefinitionFactory factory = getFactory();
                Document doc = factory.getXMLDocument();
                
-               String query = "//*[@type=\'" + typeName + "\']";
+               // special case where type is a comma separated list of types
+               if ( DEPENDENCIES_GROUP.indexOf(typeName) >= 0)
+               {
+                    query = "//*[@type=\'" + DEPENDENCIES_GROUP + "\']"; 
+               } else {
+                    query = "//*[@type=\'" + typeName + "\']";
+               }
                List domNodes = doc.selectNodes(query);
                
                for (Iterator iter = domNodes.iterator(); iter.hasNext();)
                {
                   Node curNode = (Node)iter.next();
-                  paths.add(getNodePath(curNode));
+                  //paths.add(getNodePath(curNode));
                   
                   if (curNode instanceof Element)
                   {
@@ -988,39 +986,64 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
 	  IPropertyDefinition subDef = null;
 	  if (pDef != null)
 	  {
-			String name = folder.getName();
-			subDef = pDef.getSubDefinition(name);
+                String name = folder.getName();
+                subDef = pDef.getSubDefinition(name);
 	  }
       // TODO: The reflection must be removed after the bindings are no longer used.
       try
       {
-         Class clazz = instance.getClass();
-         Method[] methods = clazz.getMethods();
-                  
-         Method countMethod = clazz.getMethod("getCount");     
-         if(countMethod != null)
+         IElement curElement = null;
+         if ( instance == null )
          {
-            
-            Object result = countMethod.invoke(instance);
-            if((result != null) && (result instanceof Integer))
-            {
-               Class[] paramType = {int.class};
-               Method itemMethod = instance.getClass().getMethod("item", paramType);
-               if(itemMethod != null)
-               {
-                  int count = ((Integer)result).intValue();
-                  retVal = new ITreeItem[count];
-                  for(int index = 0; index < count; index++)
-                  {
-                     Object[] params =  { new Integer(index) };
-                     IElement curElement = (IElement)itemMethod.invoke(instance, params);
-                     if(curElement != null)
-                     {
-                        retVal[index] = createChildTreeElement(folder, curElement, subDef);
-                     }
-                  }
-               }
-            }
+             return retVal;
+         }
+         
+         // Try not to use refletion if we know the instance is of type collection
+         if (instance instanceof List)
+         {   
+             Object obj = null;
+             List listItems = (List) instance;
+             int itemCount = listItems.size();
+             retVal = new ITreeItem[itemCount];
+             for (int i = 0; i < itemCount; i++)
+             {
+                 obj = listItems.get(i);
+                 if(obj != null && obj instanceof IElement)
+                 {
+                    curElement = (IElement) obj;
+                    retVal[i] = createChildTreeElement(folder, curElement, subDef);
+                 }
+             }
+         }
+         else 
+         {
+             Class clazz = instance.getClass();
+
+             Method countMethod = clazz.getMethod("getCount");     
+             if(countMethod != null)
+             {
+
+                Object result = countMethod.invoke(instance);
+                if((result != null) && (result instanceof Integer))
+                {
+                   Class[] paramType = {int.class};
+                   Method itemMethod = instance.getClass().getMethod("item", paramType);
+                   if(itemMethod != null)
+                   {
+                      int count = ((Integer)result).intValue();
+                      retVal = new ITreeItem[count];
+                      for(int index = 0; index < count; index++)
+                      {
+                         Object[] params =  { new Integer(index) };
+                         curElement = (IElement)itemMethod.invoke(instance, params);
+                         if(curElement != null)
+                         {
+                            retVal[index] = createChildTreeElement(folder, curElement, subDef);
+                         }
+                      }
+                   }
+                }
+             }
          }
       }
       catch (NumberFormatException e)
@@ -1070,7 +1093,6 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
             folder.setID(def.getID());
             
             folder.setName(def.getName());
-            ITreeFolder temp = folder;
             folder.setElement(pEle);
             folder.setDisplayName(def.getDisplayName(), false);
             folder.setSortPriority(getSortPriority(def.getName()));
@@ -1089,7 +1111,7 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
 
 
    protected void buildObjectItem(Object             pDisp, 
-								IPropertyDefinition  def,
+				IPropertyDefinition  def,
                                 Object             item, 
                                 List < ITreeItem > items)
    {
@@ -1183,7 +1205,7 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
    /**
     * Sets the parent information on a tree item.
     *
-	* @param pItem[in]		The tree item whose parent information needs to be set
+    * @param pItem[in]	The tree item whose parent information needs to be set
     * @param pDisp  The parent (in IDispatch form)
     */
    private void setTreeItemParent(ITreeItem pItem, Object pDisp)

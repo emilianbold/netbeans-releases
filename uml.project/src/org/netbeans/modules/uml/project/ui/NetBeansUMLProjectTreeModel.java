@@ -209,34 +209,38 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 		return retVal;
 	}
 	
-   /* (non-Javadoc)
+        /* (non-Javadoc)
 	* @see org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel#addItem(org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem, org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem)
 	*/
 	public void addItem(ITreeItem parent, ITreeItem node)
 	{
-		// since folder node is always created with a new UMLFolderNode
-		// we have to remove the old folder node before adding the new one #6283081
-		if (node instanceof ITreeFolder)
-		{
-			Enumeration<ITreeItem> kids = parent.getNodeChildren();
-			ITreeItem curChild = null;
-        
-			while (kids.hasMoreElements())
-			{
-				curChild = kids.nextElement();
-				if ((curChild instanceof ITreeFolder) && 
-					curChild.getType().equals(node.getType()))
-					parent.removeChild(curChild);
-			}
-		}
-        if (!alreadyHasChild(parent, node) && 
-            !(parent instanceof UMLRelationshipNode))
-        {
-    		parent.addChild(node);
-		
-        	if (!(node instanceof ITreeFolder))
-             	addNode(node);
-        }
+            // Commented out this block of code since it causes IZ=110809. 
+            // The root cause of # 6283081 is addressed in the updateTree() method
+            // of ADProjectTreeEngine.
+            
+//            // since folder node is always created with a new UMLFolderNode
+//            // we have to remove the old folder node before adding the new one #6283081
+//            if (node instanceof ITreeFolder)
+//            {
+//                    Enumeration<ITreeItem> kids = parent.getNodeChildren();
+//                    ITreeItem curChild = null;
+//
+//                    while (kids.hasMoreElements())
+//                    {
+//                            curChild = kids.nextElement();
+//                            if ((curChild instanceof ITreeFolder) && 
+//                                    curChild.getType().equals(node.getType()))
+//                                    parent.removeChild(curChild);
+//                    }
+//            }
+            if (!alreadyHasChild(parent, node) && 
+                !(parent instanceof UMLRelationshipNode))
+            {
+                    parent.addChild(node);
+
+                    if (!(node instanceof ITreeFolder))
+                    addNode(node);
+            }
 	}
 	
     
