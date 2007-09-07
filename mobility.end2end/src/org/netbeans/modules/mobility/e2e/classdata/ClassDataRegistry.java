@@ -401,7 +401,7 @@ public class ClassDataRegistry {
                 }
 
                 ClassData result=new ClassData(packageName, clazz.getSimpleName().toString(), false, fields, methods, serializer);
-                System.err.print( this.displayClassData( result ) );
+                //System.err.print( this.displayClassData( result ) );
                 return result;
             }
             return null;

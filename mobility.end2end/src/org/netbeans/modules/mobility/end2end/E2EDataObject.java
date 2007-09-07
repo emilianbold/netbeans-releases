@@ -237,7 +237,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             }
         }
         // TODO: fix 
-        System.err.println(" - classpathInfos: " + classpathInfos.size());
+//        System.err.println(" - classpathInfos: " + classpathInfos.size());
         final ClassDataRegistry registry = ClassDataRegistry.getRegistry( "default", classpathInfos );  
 //        final ClassDataRegistry registry =
 //                getClassDataRegistryFactory().create( classPath );
