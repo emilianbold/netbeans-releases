@@ -109,7 +109,7 @@ public class ServerJavonTemplate extends JavonTemplate {
             FileObject outputRoot = FileUtil.toFileObject( FileUtil.normalizeFile( new File( outputDirectoryName )));
             FileObject outputDir = outputRoot.getFileObject( mapping.getServerMapping().getPackageName().replace( '.', '/' ));
             if( outputDir == null ) {
-                outputDir = outputRoot.createFolder( mapping.getServerMapping().getPackageName().replace( '.', '/' ));
+                outputDir = FileUtil.createFolder(outputRoot, mapping.getServerMapping().getPackageName().replace( '.', '/' ));
             }
 
             FileObject outputFile = outputDir.getFileObject( outputFileName, "java" );
