@@ -22,11 +22,15 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -48,7 +52,10 @@ public class ArraysTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(ArraysTest.class);
+//        suite.addTestSuite(ArraysTest.class);
+//        suite.addTest(new ArraysTest("testConstantRename"));
+        suite.addTest(new ArraysTest("testDuplicateMethodWithArrReturn1"));
+        suite.addTest(new ArraysTest("testDuplicateMethodWithArrReturn2"));
         return suite;
     }
 
@@ -106,6 +113,142 @@ public class ArraysTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    /**
+     * #114400_1
+     */
+    public void testDuplicateMethodWithArrReturn1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A, B, C;\n" +
+            "    \n" +
+            "    public int[] enumMethod() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A, B, C;\n" +
+            "    \n" +
+            "    public int[] enumMethod() {\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "class Copy {\n" +
+            "\n" +
+            "    public int[] enumMethod() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ModifiersTree empty = make.Modifiers(Collections.<Modifier>emptySet());
+                
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(4);
+                MethodTree newMethod = make.Method(
+                        method.getModifiers(),
+                        method.getName(),
+                        method.getReturnType(),
+                        method.getTypeParameters(),
+                        method.getParameters(),
+                        method.getThrows(),
+                        method.getBody(),
+                        null
+                        );
+                ClassTree copy = make.Class(
+                        empty,
+                        "Copy",
+                        Collections.<TypeParameterTree>emptyList(),
+                        null,
+                        Collections.<Tree>emptyList(), 
+                        Collections.<Tree>singletonList(newMethod)
+                );
+                workingCopy.rewrite(cut, make.addCompUnitTypeDecl(cut, copy));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #114400_2
+     */
+    public void testDuplicateMethodWithArrReturn2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A, B, C;\n" +
+            "    \n" +
+            "    public int[] enumMethod() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A, B, C;\n" +
+            "    \n" +
+            "    public int[] enumMethod() {\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "class Copy {\n" +
+            "\n" +
+            "    public int[] enumMethod() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ModifiersTree empty = make.Modifiers(Collections.<Modifier>emptySet());
+                
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(4);
+                ClassTree copy = make.Class(
+                        empty,
+                        "Copy",
+                        Collections.<TypeParameterTree>emptyList(),
+                        null,
+                        Collections.<Tree>emptyList(), 
+                        Collections.<Tree>singletonList(method)
+                );
+                workingCopy.rewrite(cut, make.addCompUnitTypeDecl(cut, copy));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
