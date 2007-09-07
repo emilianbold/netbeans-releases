@@ -182,8 +182,11 @@ public class Merger implements IUMLParserEventsSink {
 	    stClassNode = oldClasses.get(0).getNode();
 	}	
 	
-	mergePackages(parsedNew.getPack(), parsedOld.getPack(), 
-		      stImportNode == null ? stClassNode : stImportNode);
+	if ( ! parsedNew.getPackageName().equals(parsedOld.getPackageName()) )
+	{
+	    mergePackages(parsedNew.getPack(), parsedOld.getPack(), 
+			  stImportNode == null ? stClassNode : stImportNode);
+	}
 
 	mergeImports(parsedNew.getImports(), parsedOld.getImports(), oldClasses.get(0));
 
@@ -223,6 +226,7 @@ public class Merger implements IUMLParserEventsSink {
 	    } 
 	} else {
 	    if (oldPack != null) {
+		
 		fileBuilder.replace(new ElementDescriptor(newPack), 
 				    new ElementDescriptor(oldPack));
 	    } else {

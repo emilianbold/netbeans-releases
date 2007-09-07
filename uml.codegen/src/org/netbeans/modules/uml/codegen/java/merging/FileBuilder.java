@@ -428,6 +428,10 @@ public class FileBuilder
 	    int c = br.read();
 	    long start = pnt;
 	    long nli = -1;
+	    if (pnt == 0) {
+		espace.append(System.getProperty("line.separator"));
+		nli = 0;
+	    }
 	    while(c > -1) {
 		if (pnt < m.newStart) {
 		    if (Character.isWhitespace((char)c)) {
