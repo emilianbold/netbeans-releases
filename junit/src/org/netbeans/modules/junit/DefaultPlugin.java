@@ -1429,7 +1429,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 }
             }
         }
-        ProjectManager.getDefault().mutex().writeAccess(
+        ProjectManager.mutex().writeAccess(
                 new LibrarySetModifier());
     }
 
