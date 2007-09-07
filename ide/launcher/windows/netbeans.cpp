@@ -128,7 +128,11 @@ int WINAPI
         ErrorExit("Undefined platform cluster!", NULL);
     }
 
-    sprintf(nbexec, "%s\\%s", topdir, platformDir);
+    if (!dirExists(platformDir)) {
+        sprintf(nbexec, "%s\\%s", topdir, platformDir);
+    } else {
+        strcpy(nbexec,platformDir);    
+    }
 
     if (!dirExists(nbexec)) {
         sprintf(msg, "Could not find platform cluster:\n\n%s", nbexec);
@@ -473,17 +477,26 @@ int readClusterFile(const char* path) {
 
         char *s = pc;
 
-	while (*pc != '\0' && *pc != '\t' && *pc != '\n' && *pc != '\r')
-	    pc++;
+        while (*pc != '\0' && *pc != '\t' && *pc != '\n' && *pc != '\r')
+            pc++;
 
-	*pc = '\0';
+        *pc = '\0';
 
-	if (!strncmp("platform", s, 8) && *platformDir == '\0') {
-	    strcpy(platformDir, s);
+        if (*platformDir == '\0') { // no platform found yet
+            char *platformStr = strrchr(s,'\\');
+            if (platformStr == NULL) {
+                platformStr = s;
+            } else {  // move over backslash
+                platformStr++;
+            }
+
+            if (!strncmp("platform", platformStr, 8)) { // strlen("platform") == 8 
+                strcpy(platformDir, s);
+            }
         }
         else {
-	    *dirs = strdup(s);
-	    dirs++;
+            *dirs = strdup(s);
+            dirs++;
         }
     }
     *dirs = NULL;
