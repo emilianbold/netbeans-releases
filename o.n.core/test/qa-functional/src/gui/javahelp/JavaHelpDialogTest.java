@@ -126,25 +126,6 @@ public class JavaHelpDialogTest extends JellyTestCase {
         //TBD
     }
     
-    public void testSearchInIndex(){
-        new HelpAction().perform();
-        helpWindow = new HelpOperator();
-        helpWindow.selectPageIndex();
-        helpWindow.indexFind("compile");
-        try{
-            Thread.sleep(5000);
-        }catch(Exception exc){
-            exc.printStackTrace(err);
-        }
-
-        JTreeOperator tree = helpWindow.treeIndex();
-        err.println("Selection path="+tree.getSelectionPath());
-        err.println("Selection count="+tree.getSelectionCount());
-
-        if(tree.getSelectionCount()<1)
-            fail("None founded text in the help, it isn't obvious");
-    }
-    
     public void testContextualSearch(){
         new HelpAction().perform();
         helpWindow = new HelpOperator();
@@ -166,11 +147,4 @@ public class JavaHelpDialogTest extends JellyTestCase {
             fail("None founded text in the help, it isn't obvious");
     }
     
-    
-    /** Test could be executed internaly in Forte without XTest
-     * @param args arguments from command line
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
 }
