@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.editors.multiview;
 
 import java.awt.BorderLayout;
@@ -495,7 +494,7 @@ public class DesignerMultiViewElement extends TopComponent
         add(scroll, BorderLayout.CENTER);
         add(myDesignView.getRightStripe(), BorderLayout.EAST);
 
-        // vlv
+        // vlv: find
         SearchManager manager = SearchManagerAccess.getManager();
 
         if (manager != null) {

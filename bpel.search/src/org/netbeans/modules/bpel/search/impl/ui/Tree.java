@@ -53,11 +53,9 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.openide.windows.WindowManager;
-
 import org.netbeans.modules.xml.search.api.SearchElement;
 import org.netbeans.modules.xml.search.api.SearchEvent;
 import org.netbeans.modules.xml.search.spi.SearchListener;
-
 import org.netbeans.modules.bpel.search.impl.util.Util;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
@@ -71,6 +69,11 @@ final class Tree extends JTree implements SearchListener {
   Tree() {
     super(new DefaultTreeModel(new DefaultMutableTreeNode()));
     myRoot = (DefaultMutableTreeNode) getModel().getRoot();
+
+    // vlv: print
+    String root = getModel().getRoot().toString();
+    String name = i18n(Tree.class, "LBL_Tree_Name", root); // NOI18N
+    putClientProperty(java.awt.print.Printable.class, name);
   }
 
   public void searchStarted(SearchEvent event) {
@@ -342,7 +345,7 @@ final class Tree extends JTree implements SearchListener {
   }
 
   private void updateSize() {
-    putClientProperty(Dimension.class.getName(), getMaximumSize());
+    putClientProperty(Dimension.class, getMaximumSize());
   }
 
   private void gotoSource(DefaultMutableTreeNode node) {

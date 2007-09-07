@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.design;
 
 import java.awt.Font;
@@ -86,7 +85,6 @@ import org.netbeans.modules.bpel.design.selection.FlowlinkTool;
 import org.netbeans.modules.bpel.design.selection.GhostSelection;
 import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
 import org.netbeans.modules.bpel.design.selection.PlaceHolderManager;
-//import org.netbeans.modules.soa.orch.design.selection.SelectionHandler;
 
 import org.netbeans.modules.bpel.design.layout.LayoutManager;
 import org.netbeans.modules.bpel.properties.PropertyNodeFactory;
@@ -128,31 +126,12 @@ public class DesignView extends JPanel implements
         Autoscroll, HelpCtx.Provider, ThumbScrollPane.Thumbnailable {
     
     public static double CORNER45 = Math.PI/4.0;
-    ////////////////////////////////////////////////////////////////////////////
-    ///////////////////////// Private Constants ////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    
-    
     private static final long serialVersionUID = 1;
-    
-    
-    
-    
-    
     private double zoom = 1;
-    
-    ////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////// instance  //////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    
     private Lookup lookup;
-    
     private LayoutManager layoutManager;
-    
     private ConnectionManager connectionManager;
-    
     private DropTarget dTarget;
-    
     private DiagramModel diagramModel;
     private EntitySelectionModel selectionModel;
     
@@ -167,7 +146,6 @@ public class DesignView extends JPanel implements
     private ErrorPanel errorPanel;
     
     private ZoomManager zoomManager;
-    
     private DecorationManager decorationManager;
     
     private SelectionDecorationProvider selectionDecorationProvider;
@@ -180,11 +158,8 @@ public class DesignView extends JPanel implements
     
     private SelectionBridge selectionBridge;
     private List mExternalTopComponentListeners = new ArrayList(4);
-    
     private NavigationTools navigationTools;
-    
     private RightStripe rightStripe;
-    
     private DesignViewMode designViewMode = DesignViewMode.DESIGN;
     
     public DesignView(Lookup lookup) {
@@ -204,9 +179,7 @@ public class DesignView extends JPanel implements
         diagramModel = new DiagramModel(this);
         
         selectionModel = new EntitySelectionModel(diagramModel);
-        
         mouseHandler = new MouseHandler(this);
-        
         dndHandler = new DnDHandler(this);
         
         ghost = new GhostSelection(this);
@@ -216,17 +189,11 @@ public class DesignView extends JPanel implements
         phSelectionModel = new PlaceHolderSelectionModel(placeHolderManager);
         
         nameEditor = new NameEditor(this);
-        
         selectionBridge = new SelectionBridge(this);
-        
         setFocusable(true);
-        
         registerActions();
-        
         errorPanel = new ErrorPanel(this);
-        
         decorationManager = new DecorationManager(this);
-
         loadDecorationProviders();
         
         reloadModel();
@@ -238,8 +205,11 @@ public class DesignView extends JPanel implements
         ToolTipManager.sharedInstance().registerComponent(this);
         setFocusCycleRoot(true);
         setFocusTraversalKeysEnabled(false);
+
+        // vlv: print
+        String name = getBPELModel().getProcess().getName() + ""; // NOI18N
+        putClientProperty(java.awt.print.Printable.class, name);
     }
-    
     
     public NavigationTools getNavigationTools() {
         return navigationTools;
@@ -249,12 +219,9 @@ public class DesignView extends JPanel implements
         return rightStripe;
     }
     
-    
     public void reloadModel() {
         
         if (getBPELModel().getState().equals(BpelModel.State.VALID)){
-            
-            
             BpelEntity selected = selectionModel.getSelected();
             
             Process process = getProcessModel();
@@ -275,11 +242,9 @@ public class DesignView extends JPanel implements
         }
     }
     
-    
     public void handleAllPatterns(PatternHandler handler) {
         handlePattern(getRootPattern(), handler);
     }
-    
     
     private void handlePattern(Pattern pattern, PatternHandler handler) {
         if (pattern == null) return;
@@ -707,8 +672,7 @@ public class DesignView extends JPanel implements
             int printHeight = (int) Math.round(dim.height
                     + 2 * LayoutManager.VMARGIN);
             
-            putClientProperty(Dimension.class.getName(),
-                    new Dimension(printWidth, printHeight));
+            putClientProperty(Dimension.class, new Dimension(printWidth, printHeight));
             
             getDecorationManager().repositionComponentsRecursive();
             
@@ -721,7 +685,6 @@ public class DesignView extends JPanel implements
             errorPanel.install();
         }
     }
-    
     
     private void setToolBarEnabled(final boolean enabled) {
         zoomManager.setEnabled(enabled);
@@ -740,7 +703,6 @@ public class DesignView extends JPanel implements
         }
     }
     
-    
     private void setToolBarEnabled(JComponent toolBar, boolean enabled) {
         if (toolBar == null) {
             return;
@@ -750,7 +712,6 @@ public class DesignView extends JPanel implements
             component.setEnabled(enabled);
         }
     }
-    
     
     private JComponent findToolBar() {
         for (Component c = getView().getParent(); c != null; 
@@ -1041,15 +1002,13 @@ public class DesignView extends JPanel implements
         }
     }
     
-    
     protected void paintChildren(Graphics g) {
         if (!ghost.isEmpty()) return;
         super.paintChildren(g);
     }
     
-    
     protected void printComponent(Graphics g) {
-        Dimension s = (Dimension) getClientProperty(Dimension.class.getName());
+        Dimension s = (Dimension) getClientProperty(Dimension.class);
         if (s == null) return;
         
         Color oldColor = g.getColor();
@@ -1065,9 +1024,7 @@ public class DesignView extends JPanel implements
         paintContent(g, 1, true);
     }
     
-    
     protected void printChildren(Graphics g) {}
-    
     
     private void paintPattern(Graphics2D g2, Graphics2D g2bw, Pattern pattern,
             FBounds clipBounds, boolean printMode) {

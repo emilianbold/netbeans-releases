@@ -32,8 +32,6 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.validation.ui.ValidationAnnotation;
@@ -74,20 +72,11 @@ import org.openide.windows.WindowManager;
  * @author Vitaly Bychkov
  */
 public class TMapDataEditorSupport extends DataEditorSupport  implements
-        OpenCookie, EditCookie, EditorCookie.Observable, PrintProviderCookie,
-        ShowCookie
+        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie
 {
     public TMapDataEditorSupport(TMapDataObject dObj) {
         super(dObj, new TMapEnv(dObj));
         setMIMEType(TMapDataLoader.MIME_TYPE);
-    }
-
-    /**
-     * Implements PrintProviderCookie interface {@inheritDoc}
-     */
-    public PrintProvider getPrintProvider() {
-        //TODO a
-        return null;
     }
 
     /** {@inheritDoc} */
@@ -97,7 +86,6 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
         syncModel();
         getDataObject().setModified(false);
     }
-
     
     /**
      * Sync Transform Map model with source.

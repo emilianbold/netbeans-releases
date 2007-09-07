@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.compapp.casaeditor;
 
 import org.openide.filesystems.FileObject;
@@ -33,8 +32,6 @@ import javax.swing.JComponent;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.MultiFileLoader;
@@ -42,7 +39,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- *
  * @author tli
  */
 public class CasaDataObject extends MultiDataObject {
@@ -70,7 +66,6 @@ public class CasaDataObject extends MultiDataObject {
         
         CookieSet set = getCookieSet();
         set.add(editorSupport);
-        getCookieSet().add(getPrintProviderCookie());
         getCookieSet().add(mBuildCookie);
     }
            
@@ -144,29 +139,10 @@ public class CasaDataObject extends MultiDataObject {
             }
         };
     }
-    
-    private PrintProviderCookie getPrintProviderCookie() {
-        return new PrintProviderCookie() {
-            public PrintProvider getPrintProvider() {
-                return new PrintProvider.Component() {
-                    public String getName() {
-                        return getEditorSupport().getDataObject().getName();
-                    }
-                    public Date getLastModifiedDate() {
-                        return getEditorSupport().getDataObject().getPrimaryFile().lastModified();
-                    }
-                    public JComponent getComponent() {
-                        return getEditorSupport().getScene().getView();
-                    }
-                };
-            }
-        };
-    }
-    
+
     public boolean isBuilding() {
         return mIsBuilding;
     }
-    
     
     private class JbiBuildCookie implements Node.Cookie, JbiBuildListener {
         public void buildStarted(JbiBuildTask task) {

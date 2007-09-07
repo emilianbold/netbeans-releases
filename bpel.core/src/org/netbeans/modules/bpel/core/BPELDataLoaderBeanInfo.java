@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.core;
 
 import java.awt.Image;
@@ -87,11 +86,11 @@ public class BPELDataLoaderBeanInfo extends SimpleBeanInfo {
         // So bypass UniFileLoader in the beaninfo search.
         try {
             PropertyDescriptor extensions = new PropertyDescriptor(
-				"extensions", BPELDataLoader.class, "getExtensions", null);// NOI18N
+                "extensions", BPELDataLoader.class, "getExtensions", null);// NOI18N
             extensions.setDisplayName(
-				NbBundle.getMessage(getClass(), "PROP_extensions"));
+                NbBundle.getMessage(getClass(), "PROP_extensions"));
             extensions.setShortDescription(
-				NbBundle.getMessage(getClass(), "HINT_extensions"));
+                NbBundle.getMessage(getClass(), "HINT_extensions"));
             extensions.setExpert(true);
             return new PropertyDescriptor[] {extensions};
         } catch (IntrospectionException ie) {
@@ -118,5 +117,4 @@ public class BPELDataLoaderBeanInfo extends SimpleBeanInfo {
             return null;
         }
     }
-
 }

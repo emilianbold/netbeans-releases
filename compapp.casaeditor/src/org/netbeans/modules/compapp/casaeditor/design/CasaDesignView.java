@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.compapp.casaeditor.design;
 
 import java.awt.Color;
@@ -32,13 +31,11 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.BuildAction;
-
 import org.netbeans.modules.print.api.PrintManagerAccess;
 
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Josh Sandusky
  */
 public class CasaDesignView {
@@ -83,7 +80,6 @@ public class CasaDesignView {
         }
     }
    
-    
     public void render() {
         // Render the model
         CasaWrapperModel model = mDataObject.getEditorSupport().getModel();
@@ -101,7 +97,6 @@ public class CasaDesignView {
     public JComponent getContent() {
         return mScene.getViewComponent();
     }
-
 
     private void initializeSceneForDesignView() {
         mScroller.addComponentListener(new ComponentAdapter() {

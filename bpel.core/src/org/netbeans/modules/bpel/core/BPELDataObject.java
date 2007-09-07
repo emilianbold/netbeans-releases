@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.core;
 
 import java.awt.Image;
@@ -138,10 +136,6 @@ public class BPELDataObject extends MultiDataObject {
         };
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    //////////////////////////// Lookup.Provider ///////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-
     public final Lookup getLookup() {
         if (myLookup.get() == null) {
             
@@ -151,7 +145,7 @@ public class BPELDataObject extends MultiDataObject {
             list.add(Lookups.fixed( new Object[]{
                     super.getLookup(), 
                     this ,
-                    // getEditorSupport() is needed for retrieving Editor Support as PrintProvider.
+                    // getEditorSupport() is needed for retrieving Editor Support.
                     // This lookup will be put into Design Nodes, so they will have the same lookup. 
                     getEditorSupport(),
                     // Model is needed by all design. Design is used lookup for accessing to model.
@@ -200,14 +194,6 @@ public class BPELDataObject extends MultiDataObject {
                     , conv));
             //
                     
-            //
-            // WARNING
-            // CANNOT add Lookups.singleton(getNodeDelegate()) or will stack
-            // overflow
-            // WARNING
-            //
-
-
             /* 
              * Services are used for push/pop SaveCookie in lookup. This allow to work
              * "Save" action on diagram.
@@ -224,13 +210,6 @@ public class BPELDataObject extends MultiDataObject {
         return myLookup.get();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    //            Node UI (see Decorating Subnodes) 
-    ////////////////////////////////////////////////////////////////////////////
-    
-    /**
-     * subclasses can override if necessary; FilterNode recommended instead
-     */
     protected Node createNodeDelegate() {
         return new BPELNode( this, getEditorSupport());
     }
@@ -322,4 +301,3 @@ public class BPELDataObject extends MultiDataObject {
         new AtomicReference<InstanceContent>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean( false );
 }
-

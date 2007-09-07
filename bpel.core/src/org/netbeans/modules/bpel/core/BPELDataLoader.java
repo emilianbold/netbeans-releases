@@ -16,12 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.core;
 
 import java.io.IOException;
-
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -31,8 +28,8 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
+
 /**
- *
  * @author ads
  */
 public class BPELDataLoader extends UniFileLoader {
@@ -62,7 +59,7 @@ public class BPELDataLoader extends UniFileLoader {
      */
     protected void initialize() {
         super.initialize();
-		getExtensions().addMimeType(BPELDataLoader.MIME_TYPE);
+        getExtensions().addMimeType(BPELDataLoader.MIME_TYPE);
     }
     
     /**
@@ -119,7 +116,7 @@ public class BPELDataLoader extends UniFileLoader {
     {       
         return new FileEntry(obj, secondaryFile);
     }
-	
+    
     /**
      * other modules can decorate with Special Actions
      * to see the default actions look in the layer.xml
@@ -127,5 +124,4 @@ public class BPELDataLoader extends UniFileLoader {
     @Override protected String actionsContext() {
             return ACTION_CONTEXT;
     }
-
 }

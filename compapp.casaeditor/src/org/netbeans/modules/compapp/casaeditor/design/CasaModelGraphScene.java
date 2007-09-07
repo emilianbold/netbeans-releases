@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.compapp.casaeditor.design;
 
 import java.awt.Color;
@@ -745,6 +744,8 @@ implements PropertyChangeListener {
                     }
                 }
             });
+            // vlv: print
+            getView().putClientProperty(java.awt.print.Printable.class, mDataObject.getName());
         }
         return getView();
     }

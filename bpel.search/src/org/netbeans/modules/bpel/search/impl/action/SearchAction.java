@@ -20,6 +20,7 @@ package org.netbeans.modules.bpel.search.impl.action;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.WindowManager;
+import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.ModelCookie;
@@ -82,7 +83,7 @@ public final class SearchAction extends NodeAction {
   }
 
   private static Object getView() {
-    Container container = WindowManager.getDefault().getRegistry().getActivated();
+    Container container = getActivateTopComponent();
     Object view = getTreeView(container, "  "); // NOI18N
 
     if (view != null) {
@@ -227,7 +228,7 @@ public final class SearchAction extends NodeAction {
 
   // -----------------------------------------------------------------------------------------
   public static final class Manager
-    extends org.netbeans.modules.print.ui.PrintUI.NodeAction
+    extends org.netbeans.modules.print.ui.PrintUI.IconAction
   {
     /**{@inheritDoc}*/
     public Manager() {
@@ -236,10 +237,25 @@ public final class SearchAction extends NodeAction {
         i18n(Manager.class, "TLT_Search_Action")); // NOI18N
     }
 
-    @Override     
-    protected void actionPerformed(Node node)
-    {
-      performAction(node);
+    /**{@inheritDoc}*/
+    public void actionPerformed(ActionEvent event) {
+      performAction(getActiveNode());
+    }
+
+    private Node getActiveNode() {
+//out();
+      TopComponent top = getActivateTopComponent();
+//out("top: " + top);
+      if (top == null) {
+        return null;
+      }
+      Node [] nodes = top.getActivatedNodes();
+//out("nodes: " + nodes);
+
+      if (nodes == null || nodes.length == 0) {
+        return null;
+      }
+      return nodes [0];
     }
   }
 

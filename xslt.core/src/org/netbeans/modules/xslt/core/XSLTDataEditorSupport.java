@@ -32,8 +32,6 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.validation.ui.ValidationAnnotation;
@@ -79,21 +77,12 @@ import org.openide.windows.WindowManager;
  * TODO add ValidateXMLCookie when becomes friend ...
  */
 public class XSLTDataEditorSupport extends DataEditorSupport implements
-        OpenCookie, EditCookie, EditorCookie.Observable, PrintProviderCookie,
-        ShowCookie
+        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie
 {
     
     public XSLTDataEditorSupport(XSLTDataObject dObj) {
         super(dObj, new XSLTEnv(dObj));
         setMIMEType(XSLTDataLoader.MIME_TYPE);
-    }
-
-    /**
-     * Implements PrintProviderCookie interface {@inheritDoc}
-     */
-    public PrintProvider getPrintProvider() {
-        //TODO a
-        return null;
     }
 
     /** {@inheritDoc} */
@@ -102,7 +91,6 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
         syncModel();
         getDataObject().setModified(false);
     }
-
     
     /**
      * Sync Xsl model with source.

@@ -22,9 +22,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -32,7 +29,6 @@ import javax.swing.JToolBar;
 
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
-
 import org.netbeans.modules.print.api.PrintManagerAccess;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 
@@ -42,7 +38,7 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.24
  */
-public final class View extends TopComponent implements FocusListener {
+public final class View extends TopComponent {
 
   /**{@inheritDoc}*/
   public View() {
@@ -53,29 +49,9 @@ public final class View extends TopComponent implements FocusListener {
 
   void show(Tree tree) {
     myTree = tree;
-    myModifiedDate = new Date(System.currentTimeMillis());
-    myTree.addFocusListener(this);
     createPanel();
     open();
     requestActive();
-    setActivatedNode();
-  }
-
-  /**{@inheritDoc}*/
-  public void focusGained(FocusEvent event) {
-    setActivatedNode();
-  }
-
-  /**{@inheritDoc}*/
-  public void focusLost(FocusEvent event) {
-    // setActivatedNodes(null);
-  }
-
-  private void setActivatedNode() {
-    String root = myTree.getModel().getRoot().toString();
-    String name = i18n(
-      View.class, "CTL_Search_Results_Print", root); // NOI18N
-    setActivatedNodes(new Node [] { new Node(myTree, name, myModifiedDate) });
   }
 
   private void createPanel() {
@@ -154,7 +130,7 @@ public final class View extends TopComponent implements FocusListener {
     setSize(button);
     toolBar.add(button);
 
-    // preview
+    // vlv: print
     button = createButton(PrintManagerAccess.getManager().getPreviewAction());
     setSize(button);
     toolBar.add(button);
@@ -208,7 +184,6 @@ public final class View extends TopComponent implements FocusListener {
   {
     super.componentClosed();
     myTree = null;
-    myModifiedDate = null;
   }
 
   @Override
@@ -218,8 +193,6 @@ public final class View extends TopComponent implements FocusListener {
   }
 
   private Tree myTree;
-  private Date myModifiedDate;
-
-  public static final String NAME = "search"; // NOI18N
   private static final Dimension IMAGE_BUTTON_SIZE = new Dimension(24, 24);
+  public static final String NAME = "search"; // NOI18N
 }

@@ -44,13 +44,9 @@ import org.netbeans.modules.bpel.core.multiview.BPELSourceMultiViewElementDesc;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
 import org.netbeans.modules.bpel.core.validation.BPELValidationController;
 import org.netbeans.modules.bpel.core.validation.SelectBpelElement;
-import org.netbeans.modules.bpel.editors.api.Diagram;
-import org.netbeans.modules.bpel.editors.api.DiagramManagerAccess;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.validation.ValidationOutputWindowController;
@@ -86,41 +82,11 @@ import org.openide.windows.WindowManager;
  * @author ads
  */
 public class BPELDataEditorSupport extends DataEditorSupport implements
-        OpenCookie, EditCookie, EditorCookie.Observable, PrintProviderCookie,
-        ShowCookie, ValidateXMLCookie
+        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, ValidateXMLCookie
 {
-
     public BPELDataEditorSupport( BPELDataObject obj ) {
         super(obj, new BPELEnv(obj));
         setMIMEType(BPELDataLoader.MIME_TYPE);
-    }
-
-    /**
-     * PrintProviderCookie interface {@inheritDoc}
-     */
-    public PrintProvider getPrintProvider() {
-        final Diagram diagram = DiagramManagerAccess.getManager().getDiagram(
-                getDataObject());
-
-        if (diagram == null) {
-            return null;
-        }
-        final BpelModel model = getBpelModel();
-
-        return new PrintProvider.Component() {
-
-            public JComponent getComponent() {
-                return diagram.getComponent();
-            }
-
-            public Date getLastModifiedDate() {
-                return getDataObject().getPrimaryFile().lastModified();
-            }
-
-            public String getName() {
-                return model.getProcess().getName();
-            }
-        };
     }
 
     public QuietUndoManager getUndoManager() {
@@ -669,9 +635,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
      * private class EditorPaneListener implements PropertyChangeListener {
      * public void propertyChange( PropertyChangeEvent evt ) { if
      * (TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() )) {
-     * System.out.println( "activated : "+ evt.getNewValue() ); if (
      * evt.getNewValue() instanceof Container ) { JEditorPane[] panes =
-     * getOpenedPanes() ; for (JEditorPane pane : panes) { System.out.println(
      * ((Container)evt.getNewValue()).isAncestorOf(pane)); } } } } }
      */
 
@@ -748,9 +712,6 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         return factory;
     }
 
-    /** Used for managing the prepareTask listener. */
     private transient Task prepareTask;
-    
     private ValidationAnnotation myAnnotation = new ValidationAnnotation();
-
 }

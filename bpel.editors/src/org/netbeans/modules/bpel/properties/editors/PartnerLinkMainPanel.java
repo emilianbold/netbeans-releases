@@ -602,7 +602,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         
         if (isWsdlWrapperSet) {
             WsdlWrapper wsdlWrapper =
-                    new WsdlWrapper(/*getSource().getParent()*/
+                    new WsdlWrapper(
                         ResolverUtility.getProjectSource(myEditor.getLookup()), 
                         myWsdlWrapperName.getText(), isCreate);
             WSDLModel wrapperModel = wsdlWrapper.getModel();
@@ -848,7 +848,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                 public boolean doFastValidation() {
                     // vlv
                     WsdlWrapper wrapper =
-                       new WsdlWrapper(/*getSource().getParent()*/
+                       new WsdlWrapper(
                         ResolverUtility.getProjectSource(myEditor.getLookup()), 
                         myWsdlWrapperName.getText(), false);
                        

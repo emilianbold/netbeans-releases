@@ -16,10 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.navigator;
-
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -41,15 +38,11 @@ import org.netbeans.modules.bpel.nodes.actions.GoToDiagrammAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToSourceAction;
 import org.netbeans.modules.bpel.nodes.validation.ValidationProxyListener;
 import org.netbeans.modules.soa.ui.ExtendedLookup;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.openide.util.HelpCtx;
 
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.nodes.navigator.NavigatorNodeFactory;
-
 
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -148,11 +141,7 @@ public class BpelNavigatorVisualPanel extends JPanel
             return;
         }
         myBpelModel = bpelModel;
-        myContextLookup = new ExtendedLookup(context, new PrintProviderCookie() {
-            public PrintProvider getPrintProvider() {
-                return new NavigatorPrintProvider();
-            }
-        });
+        myContextLookup = context;
         initValidation();
         showWaitMsg();
         Thread navThread = new Thread(new Runnable() {
@@ -190,15 +179,14 @@ public class BpelNavigatorVisualPanel extends JPanel
             myBpelModelLogicalBeanTree.removeListeners();
         }
 
+        myBpelModelLogicalBeanTree = new BpelModelLogicalBeanTree(
+                myExplorerManager,
+                myBpelModel,
+                getContextLookup());
 
+        final BeanTreeView treeView = myBpelModelLogicalBeanTree.getBeanTreeView();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                myBpelModelLogicalBeanTree = new BpelModelLogicalBeanTree(
-                    myExplorerManager,
-                    myBpelModel,
-                    getContextLookup());
-                BeanTreeView treeView = myBpelModelLogicalBeanTree.getBeanTreeView();
-
                 removeAll();
                 add(treeView);
                 revalidate();
@@ -284,24 +272,4 @@ public class BpelNavigatorVisualPanel extends JPanel
         
         return null;
     }
-    
-    private class NavigatorPrintProvider implements PrintProvider.Component {
-        
-        public JComponent getComponent() {
-            JTree tmpTree = getJTree();
-            return tmpTree != null
-                    ? tmpTree
-                    : BpelNavigatorVisualPanel.this;
-        }
-        
-        public String getName() {
-            return BpelNavigatorController.getNavigatorTC().getName();
-        }
-        
-        public Date getLastModifiedDate() {
-            return new Date();
-        }
-    }
-    
 }
-

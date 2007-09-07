@@ -28,8 +28,6 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeSelectionModel;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.netbeans.modules.soa.ui.ExtendedLookup;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
@@ -79,13 +77,7 @@ public class TMapLogicalPanel extends JPanel
             return;
         }
         myModel = model;
-        myContextLookup = new ExtendedLookup(contextLookup, 
-                new PrintProviderCookie() {
-            public PrintProvider getPrintProvider() {
-//                return new NavigatorPrintProvider();
-                return null;
-            }
-        });
+        myContextLookup = contextLookup;
         showWaitMsg();
         showNavTree();
         // switch navigator to the appropriate view
