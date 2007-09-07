@@ -48,6 +48,7 @@ import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
+import org.netbeans.modules.i18n.ResourceHolder;
 import org.netbeans.modules.i18n.SelectorUtils;
 
 import org.openide.loaders.DataObject;
@@ -290,17 +291,33 @@ final class ResourceWizardPanel extends JPanel {
     }//GEN-LAST:event_addAllButtonActionPerformed
 
     /** Helper method. Gets user selected resource. */
-    private DataObject selectResource() {
-        Project prj = null;
+    private DataObject selectResource() {        
         FileObject fo = null;
+        DataObject source = null;
         for (DataObject dobj : sourceMap.keySet()) {
-            fo = dobj.getPrimaryFile();
-            prj = FileOwnerQuery.getOwner(fo);
+            fo = dobj.getPrimaryFile();            
+            source = dobj;
         }
 
-	return SelectorUtils.selectBundle(prj, fo);
-    }
+        // Get i18n support for this source.
+        I18nSupport support = null;
+        try {
+            support = FactoryRegistry.getFactory(source.getClass()).create(source);
+        } catch(IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);            
+        }
     
+        ResourceHolder rh = support != null ? support.getResourceHolder() : null;
+        
+        DataObject template = null;
+        try {
+            template = rh != null ? rh.getTemplate(rh.getResourceClasses()[0]) : null;
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+            
+        return SelectorUtils.selectOrCreateBundle(fo, template);        
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addAllButton;
