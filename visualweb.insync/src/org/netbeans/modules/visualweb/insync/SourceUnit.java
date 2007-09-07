@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -51,12 +52,6 @@ import org.openide.text.NbDocument;
 import org.openide.cookies.SaveCookie;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
-import org.netbeans.modules.visualweb.insync.Unit.State;
-//NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
-
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileRenameEvent;
 
 /**
  * A partial Unit implementation that provides common functionality for all source-based Units.
@@ -74,6 +69,8 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
     protected Date lastModified;
     private FileChangeListener lastModifiedTracker;
 
+    private AtomicBoolean documentListenerAdded = new AtomicBoolean(false);
+    private AtomicBoolean undoableEditListenerAdded = new AtomicBoolean(false);
     //--------------------------------------------------------------------------------- Construction
 
     /**
@@ -104,8 +101,8 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
         styledDocument = ec.getDocument();  // get if open. Do not block
 
         if (styledDocument != null){
-            styledDocument.addDocumentListener(this);
-            styledDocument.addUndoableEditListener(this);
+            addDocumentListener();
+            addUndoableEditListener();
         }else{
 
             // Add listener to the File Object so that we can listen to the FileObject modification
@@ -176,8 +173,8 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
      */
     protected void releaseDocument() {
         if (styledDocument != null) {
-            styledDocument.removeDocumentListener(this);
-            styledDocument.removeUndoableEditListener(this);
+            removeDocumentListener();
+            removeUndoableEditListener();
             styledDocument = null;
             
             //need to tell the undo manager to clear events on the Undo/Redo stack
@@ -223,8 +220,8 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
                 // listening to the StyledDocument changes
                 fobj.removeFileChangeListener(this);
                 styledDocument = (StyledDocument) event.getNewValue();
-                styledDocument.addDocumentListener(this);
-                styledDocument.addUndoableEditListener(this);
+                addDocumentListener();
+                addUndoableEditListener();
             }
    
         } else if (EditorCookie.Observable.PROP_MODIFIED.equals(event.getPropertyName())) {
@@ -640,7 +637,7 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
             startFlush();
             try {
                 // Stop listening to doc while it is us doing the writing
-                styledDocument.removeDocumentListener(this);
+                removeDocumentListener();
                 
                 // Lock the document atomically
                 // !TN TODO: BaseDocument.replace() should do this automatically;
@@ -660,7 +657,7 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
                 });
             } finally {
                 // Start listening again
-                styledDocument.addDocumentListener(this);
+                addDocumentListener();
                 // Seems no op
                 endFlush(didReplace[0]);
             }
@@ -858,4 +855,29 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
         //nop
     }
     
+    // Methods to prevent repeated registration of listeners
+    private void addDocumentListener() {
+        if (styledDocument != null && documentListenerAdded.compareAndSet(false, true)) {
+            styledDocument.addDocumentListener(this);
+        }
+    }
+    
+    private void removeDocumentListener() {
+        if (styledDocument != null && documentListenerAdded.compareAndSet(true, false)) {
+            styledDocument.removeDocumentListener(this);
+        }
+    }
+    
+    private void addUndoableEditListener() {
+        if (styledDocument != null && undoableEditListenerAdded.compareAndSet(false, true)) {
+            styledDocument.addUndoableEditListener(this);
+        }
+    }
+    
+    private void removeUndoableEditListener() {
+        if (styledDocument != null && undoableEditListenerAdded.compareAndSet(true, false)) {
+            styledDocument.removeUndoableEditListener(this);
+        }
+    }
+
 }
