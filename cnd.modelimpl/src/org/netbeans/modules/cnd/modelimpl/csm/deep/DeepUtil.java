@@ -49,7 +49,8 @@ public class DeepUtil {
     }
 
     public static List<CsmScopeElement> merge(CsmCondition condition, CsmStatement statement1, CsmStatement statement2) {
-        List<CsmScopeElement> l = merge(condition.getDeclaration(),  statement1);
+        CsmVariable var = (condition == null) ? (CsmVariable) null : condition.getDeclaration();
+        List<CsmScopeElement> l = merge(var,  statement1);
         if( statement2 != null ) {
             l.add(statement2);
         }
