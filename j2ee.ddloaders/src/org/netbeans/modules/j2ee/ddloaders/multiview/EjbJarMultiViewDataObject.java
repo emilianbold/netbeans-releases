@@ -336,7 +336,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             if (newFileNames == null) {
                 fireEvent(null, resourceName, DDChangeEvent.EJB_DELETED);
             } else {
-                Ejb[] ejbs = getEjbJar().getEnterpriseBeans().getEjbs();
+                Ejb[] ejbs = nullSafeGetEjbs();
                 for (int i = 0; i < ejbs.length; i++) {
                     if (resourceName.equals(ejbs[i].getEjbClass())) {
                         synchronized (this) {
@@ -350,6 +350,19 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
                 }
             }
         }
+    }
+    
+    private Ejb[] nullSafeGetEjbs(){
+        EjbJar ejbJar = getEjbJar();
+        if (ejbJar == null){
+            return new Ejb[0];
+        }
+        EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+        if (enterpriseBeans == null){
+            return new Ejb[0];
+        }
+        Ejb[] result = enterpriseBeans.getEjbs();
+        return result != null ? result : new Ejb[0];
     }
     
     public void fileDataCreated(FileEvent fileEvent) {
