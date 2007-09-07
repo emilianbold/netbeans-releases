@@ -35,6 +35,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
@@ -82,6 +83,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
+import javax.xml.namespace.QName;
 import org.openide.cookies.EditCookie;
 
 /**
@@ -891,5 +893,21 @@ public class JaxWsUtils {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+    }
+    
+    public static String getSoapHandler(WsdlModel model) {
+        //TODO
+        return null;
+    }
+    
+    public static String createSoapHandler(WsdlModel model) {
+        //TODO
+        return null;
+    }
+    
+    public static Map<QName,String> getSoapHandlerParameterTypes(WsdlModel model) {
+        Map<QName,String> paramMap = new HashMap<QName,String>();
+        //TODO
+        return paramMap;
     }
 }
