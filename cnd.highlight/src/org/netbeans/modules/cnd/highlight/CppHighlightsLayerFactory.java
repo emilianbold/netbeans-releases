@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.highlight;
 
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.highlight.semantic.ifdef.*;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -29,15 +30,22 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
  * @author Sergey Grinev
  */
 public class CppHighlightsLayerFactory implements HighlightsLayerFactory {
+    
+    private static InactiveCodeHighlighter getInactiveCodeHighlighter(Document doc) {
+        InactiveCodeHighlighter ich = (InactiveCodeHighlighter)doc.getProperty(InactiveCodeHighlighter.class);
+        if (ich == null)
+        {
+            doc.putProperty(InactiveCodeHighlighter.class, ich = new InactiveCodeHighlighter(doc));
+        }
+        return ich;
+    }
     public HighlightsLayer[] createLayers(Context context) {
-        System.err.println("***** CppHighlightsLayerFactory is working");
-        InactiveCodeHighlighter h = new InactiveCodeHighlighter(context.getDocument());
         return new HighlightsLayer[] {
             HighlightsLayer.create(
                     InactiveCodeHighlighter.class.getName(), 
                     ZOrder.SYNTAX_RACK.forPosition(2000),
                     true,
-                    h.getHighlightsBag(context.getDocument()))
+                    getInactiveCodeHighlighter(context.getDocument()).getHighlightsBag())
             };
     }
 
