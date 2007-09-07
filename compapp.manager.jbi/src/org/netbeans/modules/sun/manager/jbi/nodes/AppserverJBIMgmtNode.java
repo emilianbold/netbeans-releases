@@ -40,6 +40,8 @@ import org.openide.util.NbBundle;
  */
 public abstract class AppserverJBIMgmtNode extends AbstractNode {
     
+    protected static final String GENERAL_SHEET_SET_NAME = "General"; // NOI18N
+    
     private static Logger logger;
     
     private NodeType nodeType;
@@ -104,7 +106,7 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
     protected Sheet createSheet() {
         Sheet sheet = new Sheet();
         
-        Sheet.Set sheetSet = createSheetSet("General", // NOI18N
+        Sheet.Set sheetSet = createSheetSet(GENERAL_SHEET_SET_NAME,
                 "LBL_GENERAL_PROPERTIES", // NOI18N
                 "DSC_GENERAL_PROPERTIES", // NOI18N
                 getSheetProperties());
@@ -151,9 +153,9 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
         Sheet.Set sheetSet = new Sheet.Set();
         sheetSet.setName(name);
         sheetSet.setDisplayName(
-                NbBundle.getMessage(this.getClass(), displayNameLabel)); // NOI18N
+                NbBundle.getMessage(AppserverJBIMgmtNode.class, displayNameLabel)); 
         sheetSet.setShortDescription(
-                NbBundle.getMessage(this.getClass(), descriptionLabel)); // NOI18N
+                NbBundle.getMessage(AppserverJBIMgmtNode.class, descriptionLabel)); 
         if (propertySupports != null) {
             sheetSet.put(propertySupports);
         }

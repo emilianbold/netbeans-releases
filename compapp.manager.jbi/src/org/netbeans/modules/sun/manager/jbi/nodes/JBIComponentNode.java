@@ -61,6 +61,10 @@ import org.openide.util.actions.SystemAction;
 public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         implements Refreshable, Startable, Stoppable, Shutdownable, Uninstallable {
     
+    private static final String IDENTIFICATION_SHEET_SET_NAME = "Identification"; // NOI18N
+    private static final String LOGGERS_SHEET_SET_NAME = "Loggers"; // NOI18N
+    private static final String CONFIGURATION_SHEET_SET_NAME = "Configuration"; // NOI18N
+    
     private boolean busy;
     
     private JBIComponentType compType;    
@@ -68,7 +72,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     // Cached component configuration schema
     private String configSchema;
     
-    private boolean hasConfigSchema = true;
+    // Whether the component's configuration schema has been checked or not. 
+    private boolean hasConfigSchemaBeenChecked;
     
     // This is not persistent across sessions.
     private static boolean confirmComponentUninstallation = true;
@@ -95,11 +100,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         
-        // Augment the general property sheet by adding Identification sheet
+        // 1. Augment the general property sheet by adding Identification sheet
         try {
             Map<Attribute, MBeanAttributeInfo> identificationPropertyMap = 
                         getIdentificationProperties();
-            Sheet.Set sheetSet = createSheetSet("Identification", // NOI18N
+            Sheet.Set sheetSet = createSheetSet(IDENTIFICATION_SHEET_SET_NAME,
                     "LBL_IDENTIFICATION_PROPERTIES", // NOI18N
                     "DSC_IDENTIFICATION_PROPERTIES", // NOI18N
                     identificationPropertyMap);
@@ -110,13 +115,26 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             e.printStackTrace();
         }
         
-        // Augment the general property sheet by adding Configuration sheet
-        try {
-            if (hasConfigSchema && configSchema == null) {
-                JBIComponentConfigurator configurator = getComponentConfigurator();
-                configSchema = configurator.getConfigurationSchema();                
-                if (configSchema == null) {
-                    hasConfigSchema = false;
+        // 2. Augment the general property sheet by adding Configuration sheet
+        try {            
+            // #114173 The configuration schema is only available when  
+            // the component is in started state.
+            boolean isStarted = false;
+            Sheet.Set generalSheetSet = sheet.get(GENERAL_SHEET_SET_NAME);
+            if (generalSheetSet != null) {
+                Property stateProperty = generalSheetSet.get("State"); // NOI18N
+                if (stateProperty != null) {
+                    String state = (String) stateProperty.getValue();
+                    if (state != null && state.equalsIgnoreCase("started")) { // NOI18N
+                        isStarted = true;
+                    }
+                }
+            }
+            if (isStarted) {
+                if (!hasConfigSchemaBeenChecked) {
+                    JBIComponentConfigurator configurator = getComponentConfigurator();
+                    configSchema = configurator.getConfigurationSchema();    
+                    hasConfigSchemaBeenChecked = true;
                 }
             }
                         
@@ -124,20 +142,33 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                         getConfigurationProperties();
             
             Sheet.Set sheetSet = null;
-            if (hasConfigSchema) {
+            if (configSchema != null) {
                 PropertySupport[] propertySupports = 
                         createPropertySupportArrayWithSchema(configPropertyMap);
-                sheetSet = createSheetSet("Configuration", // NOI18N
+                sheetSet = createSheetSet(CONFIGURATION_SHEET_SET_NAME,
                         "LBL_CONFIG_PROPERTIES", // NOI18N
                         "DSC_CONFIG_PROPERTIES", // NOI18N
                         propertySupports);    
             } else {                
-                sheetSet = createSheetSet("Configuration", // NOI18N            
+                sheetSet = createSheetSet(CONFIGURATION_SHEET_SET_NAME,          
                     "LBL_CONFIG_PROPERTIES", // NOI18N
                     "DSC_CONFIG_PROPERTIES", // NOI18N
                     configPropertyMap);                
             }
                     
+            if (sheetSet != null) {
+                sheet.put(sheetSet);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // 3. Augment the general property sheet by adding loggers sheet
+        try {
+            Sheet.Set sheetSet = createSheetSet(LOGGERS_SHEET_SET_NAME,
+                    "LBL_LOGGERS_PROPERTIES", // NOI18N
+                    "DSC_LOGGERS_PROPERTIES", // NOI18N
+                    getLoggerProperties());
             if (sheetSet != null) {
                 sheet.put(sheetSet);
             }
@@ -636,24 +667,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             };
         }
         
-        protected Sheet createSheet() {
-            Sheet sheet = super.createSheet();
-            
-            try {
-                Sheet.Set sheetSet = createSheetSet("Loggers", // NOI18N
-                        "LBL_LOGGERS_PROPERTIES", // NOI18N
-                        "DSC_LOGGERS_PROPERTIES", // NOI18N
-                        getLoggerProperties());
-                if (sheetSet != null) {
-                    sheet.put(sheetSet);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            
-            return sheet;
-        }
-        
         protected String uninstallComponent(
                 AdministrationService adminService, String componentName,
                 boolean force) {
@@ -718,25 +731,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 SystemAction.get(RefreshAction.class),
             };
         }        
-        
-        protected Sheet createSheet() {
-            Sheet sheet = super.createSheet();
-            
-            try {
-                Sheet.Set sheetSet = createSheetSet("Loggers", // NOI18N
-                        "LBL_LOGGERS_PROPERTIES", // NOI18N
-                        "DSC_LOGGERS_PROPERTIES", // NOI18N
-                        getLoggerProperties());
-                if (sheetSet != null) {
-                    sheet.put(sheetSet);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            
-            return sheet;
-        }
-        
+                
         protected String uninstallComponent(
                 AdministrationService adminService, String componentName,
                 boolean force) {
