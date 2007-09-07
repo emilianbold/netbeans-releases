@@ -171,7 +171,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     }
 
     private boolean isSearchFromBaseClass() {
-        return false;
+        return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
     }
 
     private boolean isSearchInComments() {

@@ -19,18 +19,14 @@
 
 package org.netbeans.modules.cnd.refactoring.ui;
 
-import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Dictionary;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -40,13 +36,11 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 
 /**
  * provides support for refactoring actions
  * 
- * @author Jan Becicka
  * @author Vladimir Voskresensky
  */
 public class RefactoringActionsProvider extends ActionsImplementationProvider {
@@ -54,147 +48,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     /** Creates a new instance of RefactoringActionsProvider */
     public RefactoringActionsProvider() {
     }
-    
-    @Override
-    public void doRename(final Lookup lookup) {
-//        Runnable task;
-//        EditorCookie ec = lookup.lookup(EditorCookie.class);
-//        final Dictionary dictionary = lookup.lookup(Dictionary.class);
-//        if (isFromEditor(ec)) {
-//            task = new TextComponentTask(ec) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, final CompilationInfo info) {
-//                    // If you're trying to rename a constructor, rename the enclosing class instead
-//                    return new RenameRefactoringUI(selectedElement, info);
-//                }
-//            };
-//        } else {
-//            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<RubyElementCtx> handles) {
-//                    String newName = getName(dictionary);
-//                    if (newName!=null) {
-//                        if (pkg[0]!= null)
-//                            return new RenameRefactoringUI(pkg[0], newName);
-//                        else
-//                            return new RenameRefactoringUI(selectedElements[0], newName, handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
-//                    }
-//                    else 
-//                        if (pkg[0]!= null)
-//                            return new RenameRefactoringUI(pkg[0]);
-//                        else
-//                            return new RenameRefactoringUI(selectedElements[0], handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
-//                }
-//            };
-//        }
-//        task.run();
-    }
-
-    /**
-     * returns true if exactly one refactorable file is selected
-     */
-    @Override
-    public boolean canRename(Lookup lookup) {
-//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-//        if (nodes.size() != 1) {
-//            return false;
-//        }
-//        Node n = nodes.iterator().next();
-//        DataObject dob = n.getCookie(DataObject.class);
-//        if (dob==null) {
-//            return false;
-//        }
-//        FileObject fo = dob.getPrimaryFile();
-//        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
-//            return true;
-//        }
-//        if ((dob instanceof DataFolder) && 
-//                RetoucheUtils.isFileInOpenProject(fo) && 
-//                RetoucheUtils.isOnSourceClasspath(fo) &&
-//                !RetoucheUtils.isClasspathRoot(fo))
-//            return true;
-        return false;
-    }
-    
-    @Override
-    public void doCopy(final Lookup lookup) {
-//        Runnable task;
-//        EditorCookie ec = lookup.lookup(EditorCookie.class);
-//        final Dictionary dictionary = lookup.lookup(Dictionary.class);
-////        if (isFromEditor(ec)) {
-////            return new TextComponentRunnable(ec) {
-////                @Override
-////                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-////                    Element selected = selectedElement.resolveElement(info);
-////                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-////                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
-////                        return new RenameRefactoringUI(f==null?info.getFileObject():f);
-////                    } else {
-////                        return new RenameRefactoringUI(selectedElement, info);
-////                    }
-////                }
-////            };
-////        } else {
-//            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<RubyElementCtx> handle) {
-//                    return new CopyClassRefactoringUI(selectedElements[0], getTarget(dictionary), getPaste(dictionary));
-//                }
-//            };
-////        }
-//        task.run();
-    }
-
-    /**
-     * returns true if exactly one refactorable file is selected
-     */
-    @Override
-    public boolean canCopy(Lookup lookup) {
-//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-//        if (nodes.size() != 1) {
-//            return false;
-//        }
-//        Node n = nodes.iterator().next();
-//        DataObject dob = n.getCookie(DataObject.class);
-//        if (dob==null) {
-//            return false;
-//        }
-//        
-//        Dictionary dict = lookup.lookup(Dictionary.class);
-//        FileObject fob = getTarget(dict);
-//        if (dict!=null && dict.get("target") != null && fob==null) { //NOI18N
-//            //unknown target
-//            return false;
-//        }
-//        if (fob != null) {
-//            if (!fob.isFolder())
-//                return false;
-//            FileObject fo = dob.getPrimaryFile();
-//            if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
-//                return true;
-//            }
-//
-//        } else {
-//            FileObject fo = dob.getPrimaryFile();
-//            if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
-//                return true;
-//            }
-//        }
-//
-        return false;
-    }    
-
+        
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        if (nodes.size() != 1) {
-            return false;
-        }
-        Node n = nodes.iterator().next();
-        DataObject dob = n.getCookie(DataObject.class);
-        if ((dob!=null) && (CsmUtilities.getCsmFile(dob, false) != null)/*RubyUtils.isRubyOrRhtmlFile(dob.getPrimaryFile())*/) {
+        CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
+        if (CsmRefactoringUtils.isSupportedReference(ctx)) {
             return true;
-        }
+        }        
         return false;
     }
 
@@ -205,235 +65,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec, lookup) {
                 @Override
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement/*RubyElementCtx selectedElement*/,int startOffset,int endOffset/*, CompilationInfo info*/) {
-                     return new WhereUsedQueryUI(selectedElement/*, info*/);
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement,int startOffset,int endOffset) {
+                     return new WhereUsedQueryUI(selectedElement);
                 }
             };
         } else {
             task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement/*RubyElementCtx selectedElement, CompilationInfo info*/) {
-                    return new WhereUsedQueryUI(selectedElement/*, info*/);
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    return new WhereUsedQueryUI(selectedElement);
                 }
             };
         }
         task.run();
-    }
-
-    /**
-     * returns true iff all selected file are refactorable java files
-     **/
-
-    @Override
-    public boolean canDelete(Lookup lookup) {
-        return false;
-//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-//        for (Node n:nodes) {
-//            DataObject dob = n.getCookie(DataObject.class);
-//            if (dob==null)
-//                return false;
-//            
-//            if (!RetoucheUtils.isRefactorable(dob.getPrimaryFile())) {
-//                return false;
-//            }
-//        }
-//        return !nodes.isEmpty();
-    }
-
-    @Override
-    public void doDelete(final Lookup lookup) {
-//        Runnable task;
-//        EditorCookie ec = lookup.lookup(EditorCookie.class);
-//        if (isFromEditor(ec)) {
-//            task = new TextComponentTask(ec) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-//                    Element selected = selectedElement.resolveElement(info);
-//                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-//                        return new SafeDeleteUI(new FileObject[]{info.getFileObject()}, Collections.singleton(selectedElement));
-//                    } else {
-//                        return new SafeDeleteUI(new RubyElementCtx[]{selectedElement}, info);
-//                    }
-//                }
-//            };
-//        } else {
-//            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<RubyElementCtx> handles) {
-//                    return new SafeDeleteUI(selectedElements, handles);
-//                }
-//                
-//            };
-//        }
-//        task.run();
-    }
-    
-    private FileObject getTarget(Dictionary dict) {
-        if (dict==null)
-            return null;
-        Node n = (Node) dict.get("target"); //NOI18N
-        if (n==null)
-            return null;
-        DataObject dob = n.getCookie(DataObject.class);
-        if (dob!=null)
-            return dob.getPrimaryFile();
-        return null;
-    }
-    
-    private PasteType getPaste(Dictionary dict) {
-        if (dict==null) 
-            return null;
-        Transferable orig = (Transferable) dict.get("transferable"); //NOI18N
-        if (orig==null)
-            return null;
-        Node n = (Node) dict.get("target");
-        if (n==null)
-            return null;
-        PasteType[] pt = n.getPasteTypes(orig);
-        if (pt.length==1) {
-            return null;
-        }
-        return pt[1];
-    }
-
-    static String getName(Dictionary dict) {
-        if (dict==null) 
-            return null;
-        return (String) dict.get("name"); //NOI18N
-    }
-    
-    /**
-     * returns true if there is at least one java file in the selection
-     * and all java files are refactorable
-     */
-    @Override
-    public boolean canMove(Lookup lookup) {
-//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-//        Dictionary dict = lookup.lookup(Dictionary.class);
-//        FileObject fo = getTarget(dict);
-//        if (fo != null) {
-//            if (!fo.isFolder())
-//                return false;
-//            //it is drag and drop
-//            Set<DataFolder> folders = new HashSet();
-//            boolean jdoFound = false;
-//            for (Node n:nodes) {
-//                DataObject dob = n.getCookie(DataObject.class);
-//                if (dob==null) {
-//                    return false;
-//                }
-//                if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
-//                    return false;
-//                }
-//                if (dob instanceof DataFolder) {
-//                    folders.add((DataFolder)dob);
-//                } else if (RetoucheUtils.isRubyOrRhtmlFile(dob.getPrimaryFile())) {
-//                    jdoFound = true;
-//                }
-//            }
-//            if (jdoFound)
-//                return true;
-//            for (DataFolder fold:folders) {
-//                for (Enumeration<DataObject> e = (fold).children(true); e.hasMoreElements();) {
-//                    if (RetoucheUtils.isRubyOrRhtmlFile(e.nextElement().getPrimaryFile())) {
-//                        return true;
-//                    }
-//                }
-//            }
-//            return false;
-//        } else {
-//            //regular invokation
-//            boolean result = false;
-//            for (Node n:nodes) {
-//                DataObject dob = n.getCookie(DataObject.class);
-//                if (dob==null) {
-//                    return false;
-//                }
-//                if (dob instanceof DataFolder) {
-//                    Object b = dict.get("DnD"); //NOI18N
-//                    return b==null?false: (Boolean) b;
-//                }
-//                if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
-//                    return false;
-//                }
-//                if (RetoucheUtils.isRubyOrRhtmlFile(dob.getPrimaryFile())) {
-//                    result = true;
-//                }
-//            }
-//            return result;
-//        }
-        return false;
-    }
-
-    @Override
-    public void doMove(final Lookup lookup) {
-//        Runnable task;
-//        EditorCookie ec = lookup.lookup(EditorCookie.class);
-//        final Dictionary dictionary = lookup.lookup(Dictionary.class);
-//        if (isFromEditor(ec)) {
-//            task = new TextComponentTask(ec) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-//
-//                    Element e = selectedElement.resolveElement(info);
-//                    if ((e.getKind().isClass() || e.getKind().isInterface()) &&
-//                            SourceUtils.getOutermostEnclosingTypeElement(e)==e) {
-//                        try {
-//                            FileObject fo = SourceUtils.getFile(e, info.getClasspathInfo());
-//                            if (fo!=null) {
-//                                DataObject d = DataObject.find(SourceUtils.getFile(e, info.getClasspathInfo()));
-//                                if (d.getName().equals(e.getSimpleName().toString())) {
-//                                    return new MoveClassUI(d);
-//                                }
-//                            }
-//                        } catch (DataObjectNotFoundException ex) {
-//                            throw (RuntimeException) new RuntimeException().initCause(ex);
-//                        }
-//                    }
-//                    if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-//                        try {
-//                            return new MoveClassUI(DataObject.find(info.getFileObject()));
-//                        } catch (DataObjectNotFoundException ex) {
-//                            throw (RuntimeException) new RuntimeException().initCause(ex);
-//                        }
-//                    } else {
-//                        try {
-//                            return new MoveClassUI(DataObject.find(info.getFileObject()));
-//                        } catch (DataObjectNotFoundException ex) {
-//                            throw (RuntimeException) new RuntimeException().initCause(ex);
-//                        }
-//                    }
-//                }
-//            };
-//        } else {
-//            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<RubyElementCtx> handles) {
-//                    PasteType paste = getPaste(dictionary);
-//                    FileObject tar=getTarget(dictionary);
-//                    if (selectedElements.length == 1) {
-//                        try {
-//                            return new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste, handles);
-//                        } catch (DataObjectNotFoundException ex) {
-//                            throw (RuntimeException) new RuntimeException().initCause(ex);
-//                        }
-//                    } else {
-//                        Set<FileObject> s = new HashSet<FileObject>();
-//                        s.addAll(Arrays.asList(selectedElements));
-//                        return new MoveClassesUI(s, tar, paste);
-//                    }
-//                }
-//                
-//            };
-//        }
-//        task.run();
-    }    
-
-    private static CsmReference findReference(Node activatedNode) {
-        return CsmReferenceResolver.getDefault().findReference(activatedNode);
-    }
-    
-    private static boolean isSupportedReference(CsmReference ref) {
-        return ref != null/* && !CsmKindUtilities.isInclude(ref.getOwner())*/;
     }
     
     public static abstract class TextComponentTask implements Runnable {
@@ -472,8 +115,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 //        }
         
         public final void run() {
-            CsmReference ctx = findReference(lookup.lookup(Node.class));
-            if (!isSupportedReference(ctx)) {
+            CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
+            if (!CsmRefactoringUtils.isSupportedReference(ctx)) {
                 return;
             }
             ui = createRefactoringUI(ctx, start, end);

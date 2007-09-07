@@ -19,30 +19,26 @@
 
 package org.netbeans.modules.cnd.refactoring.plugins;
 
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.*;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
- *
- * @author Jan Becicka
+ * Factory to support C/C++ refactorings
  * @author Vladimir Voskresensky
  */
 public class CsmRefactoringsFactory implements RefactoringPluginFactory {
    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         Lookup look = refactoring.getRefactoringSource();
-        FileObject file = look.lookup(FileObject.class);
-        NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
-//        RubyElementCtx handle = look.lookup(RubyElementCtx.class);
         if (refactoring instanceof WhereUsedQuery) {
-//            if (handle!=null) {
+            CsmReference ref = CsmRefactoringUtils.findReference(look);
+            if (CsmRefactoringUtils.isSupportedReference(ref)) {
                 return new CsmWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
-//            }
+            }
         }
         return null;
     }
-
 }
