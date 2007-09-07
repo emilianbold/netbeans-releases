@@ -19,6 +19,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import java.io.File;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -30,6 +31,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
@@ -51,9 +53,10 @@ public class MethodBodyTest extends GeneratorTest {
 //        suite.addTest(new MethodBodyTest("testAddFirstStatement"));
 //        suite.addTest(new MethodBodyTest("testAddBodyText"));
 //        suite.addTest(new MethodBodyTest("testAddVarDecl"));
+//        suite.addTest(new MethodBodyTest("testReplaceConstructorBody"));
         return suite;
     }
-    
+
     /**
      * Add first method body statement
      */
@@ -260,6 +263,45 @@ public class MethodBodyTest extends GeneratorTest {
                 workingCopy.rewrite(switchStatement, treeMaker.Switch(switchStatement.getExpression(), cases));
             }
             
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Replace constructor body, lhasik's test-case #111769
+     */
+    public void XtestReplaceConstructorBody() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "        super(1, \"Tester\");\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                TreeUtilities treeUtils = workingCopy.getTreeUtilities();
+                Tree newBlock = treeUtils.parseStatement("{ super(1, \"Tester\"); }", new SourcePositions[1]);
+                workingCopy.rewrite(method.getBody(), newBlock);
+            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

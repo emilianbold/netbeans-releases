@@ -53,6 +53,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new FieldGroupTest("testFieldGroupInBody7"));
 //        suite.addTest(new FieldGroupTest("testFieldGroupInBodyCast1"));
 //        suite.addTest(new FieldGroupTest("testFieldGroupInBodyCast2"));
+//        suite.addTest(new FieldGroupTest("test114571"));
         return suite;
     }
     
@@ -591,7 +592,6 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
-    
     public void testFieldGroupInBodyCast2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -631,7 +631,50 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 VariableTree vt = (VariableTree) block.getStatements().get(3);
                 ExpressionTree init = vt.getInitializer();
                 workingCopy.rewrite(init, make.TypeCast(make.Identifier("Widget"), init));
-            }            
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // test 114571
+    public void Xtest114571() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class MyOuterClass {\n" +
+            "    public MyOuterClass c = new MyOuterClass(), b= new MyOuterClass();\n" +
+            "}\n"
+            );
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class MOC {\n" +
+            "    public MOC c = new MOC(), b= new MOC();\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                
+                workingCopy.rewrite(clazz, make.setLabel(clazz, "MOC"));
+                
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                NewClassTree nct = (NewClassTree) var.getInitializer();
+                ExpressionTree ident = nct.getIdentifier();
+                workingCopy.rewrite(ident, make.setLabel(ident, "MOC"));
+                
+                var = (VariableTree) clazz.getMembers().get(2);
+                nct = (NewClassTree) var.getInitializer();
+                ident = nct.getIdentifier();
+                workingCopy.rewrite(ident, make.setLabel(ident, "MOC"));
+            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
