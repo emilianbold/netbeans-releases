@@ -42,6 +42,14 @@
                         </file>
                     </folder>
                 </folder>
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
+                            <attr name="position" intvalue="19400"/>
+                        </file>
+                    </folder>
+                </folder>
             </folder>
             <folder name="x-c">
                 <folder name="Popup">
@@ -57,6 +65,14 @@
                         <file name="org-netbeans-modules-cnd-navigation-hierarchy-ShowIncludeHierarchyAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-hierarchy-ShowIncludeHierarchyAction.instance"/>
                             <attr name="position" intvalue="1100"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
+                            <attr name="position" intvalue="19400"/>
                         </file>
                     </folder>
                 </folder>

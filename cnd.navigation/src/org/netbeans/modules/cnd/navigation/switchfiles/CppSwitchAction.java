@@ -315,8 +315,12 @@ public final class CppSwitchAction extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    @Override
-    protected boolean asynchronous() {
+    protected @Override boolean asynchronous() {
         return false;
     }
+    
+    public @Override String iconResource() {
+        return "org/netbeans/modules/cnd/navigation/resources/header_source_icon.png"; //NOI18N
+    }
+    
 }
