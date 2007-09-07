@@ -1295,7 +1295,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             if (parameter.getTreeUtilities().isSynthetic(constructor)) {
                                 List<StatementTree> nueStatements = new LinkedList<StatementTree>();
                                 ExpressionTree reference = make.Identifier(name);
-                                ModifiersTree constrMods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                                Element clazz = parameter.getTrees().getElement(pathToClass);
+                                ModifiersTree constrMods = clazz.getKind() != ElementKind.ENUM?make.Modifiers(EnumSet.of(Modifier.PUBLIC)):make.Modifiers(Collections.EMPTY_SET);
                                 
                                 nueStatements.add(make.ExpressionStatement(make.Assignment(reference, expressionCopy)));
                                 
