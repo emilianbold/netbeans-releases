@@ -26,10 +26,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeComparable;
 import org.netbeans.modules.uml.project.ui.ITreeItemExpandContext;
 import org.netbeans.modules.uml.project.ui.NetBeansUMLProjectTreeModel;
-// import org.netbeans.modules.uml.core.support.Debug;
+
 
 /**
  *
