@@ -31,27 +31,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="utilities unit test config">
 
-    <!-- Tests which should be run before commit to validate IDE. -->
-    <testbag testattribs="commit" executor="ide" name="Before Commit Validation">
-        <testset dir="unit/src">
-            <patternset>
-		<include name="**/ValidateLayer*Test.class" />
-            </patternset>
-        </testset>
-    </testbag>
-  
     <testbag testattribs="stable" executor="unit-executor" name="testbag_1">
         <testset dir="unit/src">
             <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="stable" executor="ide" name="testbag_2">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/modules/openfile/*.class"/>
-                <include name="org/netbeans/modules/search/types/*.class"/>
+                <include name="**/*Test.class" />
             </patternset>
         </testset>
     </testbag>
