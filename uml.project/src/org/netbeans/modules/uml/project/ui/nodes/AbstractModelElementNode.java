@@ -85,8 +85,6 @@ import org.openide.util.datatransfer.PasteType;
  */
 public abstract class AbstractModelElementNode extends AbstractNode
 {   
-    private boolean mIsInitalized = false;
-
     public final static String ELEMENT_TYPE_PROJECT = "Project"; // NOI18N
     public final static String ELEMENT_TYPE_PACKAGE = "Package"; // NOI18N
     public final static String ELEMENT_TYPE_CLASS = "Class"; // NOI18N
