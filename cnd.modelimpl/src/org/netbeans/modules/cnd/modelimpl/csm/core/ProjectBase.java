@@ -654,12 +654,13 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             ProgressSupport.instance().fireProjectLoaded(ProjectBase.this);
         }
         
-        // TODO: investigate and remove!!!
-        waitParseImpl();
-        
         if( isRestored && ! disposing ) {
             // FIXUP for #109105 fix the reason instead!
             try {
+                // TODO: refactor this - remove waiting here!
+                // It was introduced in version 1.2.2.27.2.94.4.41
+                // when validation was introduced
+                waitParseImpl();
                 checkForRemoved();
             } catch( Exception e ) {
                 e.printStackTrace(System.err);
