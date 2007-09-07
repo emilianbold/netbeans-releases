@@ -6,7 +6,7 @@
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
         xsi:schemaLocation='http://xml.netbeans.org/websvc/rest/component/1.0 
         org/netbeans/modules/websvc/rest/component/component.xsd'      
-        name="AdSense"
+        name="AdSenseForSearch"
         category="/Google"
         nameKey="AdSenseForSearch_Name"
         categoryKey="Google_Name"
