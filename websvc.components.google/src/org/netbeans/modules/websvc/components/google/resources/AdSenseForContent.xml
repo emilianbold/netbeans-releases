@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component
+        xmlns="http://xml.netbeans.org/websvc/rest/component/1.0"
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'    
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
+        xsi:schemaLocation='http://xml.netbeans.org/websvc/rest/component/1.0 
+        org/netbeans/modules/websvc/rest/component/component.xsd'      
+        name="AdSenseForContent"
+        category="/Google"
+        nameKey="AdSenseForContent_Name"
+        categoryKey="Google_Name"
+        bundle="org.netbeans.modules.websvc.components.google.Bundle">
+            
+    <description key="AdSenseForContent_Desc" 
+                 bundle="org.netbeans.modules.websvc.components.google.Bundle"/>
+        
+    <icons>
+        <icon url="org/netbeans/modules/websvc/components/google/resources/google16.png" size="16"/>
+        <icon url="org/netbeans/modules/websvc/components/google/resources/google32.png" size="32"/>
+    </icons>
+
+    <service name="AdSenseForContent">
+        <method name="generateAdCode" 
+                serviceName="AdSenseForContentServiceService" portName="AdSenseForContentService"
+                type="http://schemas.xmlsoap.org/wsdl/"
+                url="https://sandbox.google.com/api/adsense/v2/AdSenseForContentService?wsdl">
+            <!-- name value is wsdl:binding:/wsdl:operation[@name] -->
+            <!-- serviceName value is wsdl:service[@name] -->
+            <!-- portName value is wsdl:service/wsdl:port[@name] -->                               
+            <documentation>
+                Allows a developer to generate ad code snippets to include in a publisher's web pages to start serving and displaying contextual advertising. When an end-user clicks through an ad, Google credits a payment.
+            </documentation>
+        </method>
+    </service>
+
+</component>

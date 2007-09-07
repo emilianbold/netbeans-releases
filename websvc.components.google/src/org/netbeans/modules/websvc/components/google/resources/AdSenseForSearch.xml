@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component
+        xmlns="http://xml.netbeans.org/websvc/rest/component/1.0"
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'    
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
+        xsi:schemaLocation='http://xml.netbeans.org/websvc/rest/component/1.0 
+        org/netbeans/modules/websvc/rest/component/component.xsd'      
+        name="AdSense"
+        category="/Google"
+        nameKey="AdSenseForSearch_Name"
+        categoryKey="Google_Name"
+        bundle="org.netbeans.modules.websvc.compnents.google.Bundle">
+            
+    <description key="AdSense_Desc" 
+                 bundle="org.netbeans.modules.websvc.components.google.Bundle"/>
+        
+    <icons>
+        <icon url="org/netbeans/modules/websvc/components/google/resources/google16.png" size="16"/>
+        <icon url="org/netbeans/modules/websvc/components/google/resources/google32.png" size="32"/>
+    </icons>
+
+    <service name="AdSenseForSearch">
+        <method name="generateSearchBoxCode" 
+                serviceName="AdSenseForSearchServiceService" portName="AdSenseForSearchService"
+                type="http://schemas.xmlsoap.org/wsdl/"
+                url="https://sandbox.google.com/api/adsense/v2/AdSenseForSearchService?wsdl">
+            <!-- name value is wsdl:binding:/wsdl:operation[@name] -->
+            <!-- serviceName value is wsdl:service[@name] -->
+            <!-- portName value is wsdl:service/wsdl:port[@name] -->                               
+            <documentation>
+                Enables a developer to obtain a code snippet that adds the Google search box to a publisher's web page. The search can be a full web search or restricted to one of several domains. When an end user performs a search, ads are displayed.  When a user clicks through, Google credits a payment.
+            </documentation>
+        </method>
+    </service>
+</component>
