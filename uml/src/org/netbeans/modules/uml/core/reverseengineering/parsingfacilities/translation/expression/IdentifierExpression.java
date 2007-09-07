@@ -321,20 +321,23 @@ public class IdentifierExpression extends ExpressionStateHandler
       String curInstanceName = "";
       ETList<ITokenDescriptor> tokens = m_Identifier.getTokenList();
       
+      IREClass curType = pThisPtr;
       for(int index = 0; index < tokens.size(); index++)
       {
          ITokenDescriptor pDescriptor = tokens.get(index);
          if(pDescriptor != null)
          {
             String type = pDescriptor.getType();
+            
+            
             if(type != null && type.length() > 0 &&
             !"Scope Operator".equals(type))
             {
                String attrName = pDescriptor.getValue();
-               if(attrName.length() > 0)
-               {
-                  curInstanceName += attrName;
-               }
+            if(attrName.length() > 0)
+            {
+               curInstanceName += attrName;
+            }
                if("Identifier".equals(type))
                {
                   if(retVal != null)
@@ -345,7 +348,7 @@ public class IdentifierExpression extends ExpressionStateHandler
                         retVal = symbolTable.findInstance(curInstanceName);
                         if(retVal == null)
                         {
-                           retVal = searchForInstance(attrName, curInstanceName, pThisPtr, symbolTable, pClassLoader);
+                           retVal = searchForInstance(attrName, curInstanceName, curType, symbolTable, pClassLoader);
                            if(retVal == null)
                            {
                               // Basically create an Anonymous instance.  We are mostly in a referencing a
@@ -383,6 +386,14 @@ public class IdentifierExpression extends ExpressionStateHandler
                      EventExecutor.RefVariableDef data =
                      retVal.getReferenceInfo();
                      refData.push(data);
+                     
+                     if (retVal instanceof ObjectInstanceInformation)
+                     {
+                        ObjectInstanceInformation objInstance = 
+                            (ObjectInstanceInformation)retVal;
+                        curType = objInstance.getInstanceType();
+                     }
+                     
                   }
                }
                else if("Super Class Reference".equals(type))
@@ -391,6 +402,8 @@ public class IdentifierExpression extends ExpressionStateHandler
                }
             }
          }
+         
+         
       }
       EventExecutor.sendVariableReference(refData, pParentNode);
       return retVal;

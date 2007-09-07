@@ -73,6 +73,12 @@ public class ProjectClassLocator implements IProjectClassLocator
          for (int i=0; i<count; i++)
          {
             IProject proj = m_Projects.get(i);
+            
+            if((pack.length() > 0) && (className.indexOf("::") == -1))
+            {
+                className = pack + "::" + className;
+            }
+            
             ETList<IElement> foundElems = pLocator.findScopedElements(proj, className);
             if (foundElems != null)
             {

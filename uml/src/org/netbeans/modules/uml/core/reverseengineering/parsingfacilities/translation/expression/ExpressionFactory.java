@@ -26,10 +26,6 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression;
 
-import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.ArrayDeclartorExpression;
-import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.ArrayInitializerExpression;
-import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.BinaryExpression;
-import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.ConditionalExpression;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.ExpressionStateHandler;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.MethodVariableStateHandler;
 

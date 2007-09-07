@@ -161,7 +161,7 @@ public class OperationLocator extends LocatorEvaluator<MethodDeclaration>
         
         if(typeName != null && curtype.equals(typeName))
            retVal = true;
-        else if(checkIfObject(curtype))
+        else if(checkIfObject(curtype) && (inst.isPrimitive() == false))
            retVal = true;
         else if(typeName.equals("null") || typeName.equals("NULL"))
            retVal = true;
