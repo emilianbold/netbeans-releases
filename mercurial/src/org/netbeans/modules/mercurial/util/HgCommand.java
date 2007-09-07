@@ -792,7 +792,7 @@ public class HgCommand {
         for(File f: addFiles){
             if(f.isDirectory())
                 continue;
-            if(HgUtils.isIgnored(f) || SharabilityQuery.getSharability(f) == SharabilityQuery.NOT_SHARABLE){
+            if(HgUtils.isIgnored(f)){
                 Mercurial.LOG.log(Level.FINE, "doAdd(addFiles): Ignored File not added: {0}", new Object[] {f.getAbsolutePath()}); // NOI18N
                 continue;
             }
@@ -849,7 +849,7 @@ public class HgCommand {
         if (repository == null) return;
         if (file == null) return;
         if (file.isDirectory()) return;
-        if(HgUtils.isIgnored(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE){
+        if(HgUtils.isIgnored(file)){
             Mercurial.LOG.log(Level.FINE, "doAdd(): Ignored File not added: {0}", // NOI18N
                     new Object[] {file.getAbsolutePath()});
             return;
@@ -1276,7 +1276,7 @@ public class HgCommand {
         Map<File, FileInformation> files = getAllStatusWithFlags(repository, HG_STATUS_FLAG_UNKNOWN_CMD, false);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            if(HgUtils.isIgnored(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE)
+            if(HgUtils.isIgnored(file))
                 i.remove();
         }
         return files;
@@ -1392,8 +1392,13 @@ public class HgCommand {
             repositoryFiles.put(new File(filePath.toString()), info);
         }
         
-        Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list {2}", // NOI18N
-                new Object[] {repository.getAbsolutePath(), statusFlags, list} );
+        if (list.size() < 10) {
+            Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list {2}", // NOI18N
+                    new Object[] {repository.getAbsolutePath(), statusFlags, list} );
+        } else {
+            Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list has {2} elements", // NOI18N
+                    new Object[] {repository.getAbsolutePath(), statusFlags, list.size()} );
+        }
         return repositoryFiles;
     }
     

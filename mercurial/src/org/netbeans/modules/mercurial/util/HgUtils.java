@@ -28,8 +28,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -59,6 +62,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.SharabilityQuery;
 
 /**
  *
@@ -69,10 +73,9 @@ public class HgUtils {
     
     // IGNORE SUPPORT HG: following file patterns are added to {Hg repos}/.hgignore and Hg will ignore any files
     // that match these patterns, reporting "I"status for them // NOI18N
-    //private static final String [] HG_IGNORE_FILES = { "^nbproject/private$", "\.orig$"}; // NOI18N
     private static final String [] HG_IGNORE_FILES = { "^nbproject/private$", "\\.orig$"}; // NOI18N
     
-    private static final String HG_IGNORE_FILE = ".hgignore"; // NOI18N
+    private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
 
 
     /**
@@ -132,11 +135,21 @@ public class HgUtils {
      */
     public static boolean isIgnored(File file){
         if (file == null) return true;
+        String name = file.getName();
         
-        for(String name: HG_IGNORE_FILES){
-            if(file.getName().equals(name))
+        Set patterns = new HashSet(5);
+        addIgnorePatterns(patterns, Mercurial.getInstance().getTopmostManagedParent(file));
+
+        for (Iterator i = patterns.iterator(); i.hasNext();) {
+            Pattern pattern = (Pattern) i.next();
+            if (pattern.matcher(name).matches()) {
                 return true;
+            }
         }
+
+        if (FILENAME_HGIGNORE.equals(name)) return false;
+        int sharability = SharabilityQuery.getSharability(file);
+        if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
         return false;
     }
 
@@ -153,7 +166,7 @@ public class HgUtils {
         Mercurial hg = Mercurial.getInstance();
         File root = hg.getTopmostManagedParent(path);
         if( root == null) return;
-        File ignore = new File(root, HG_IGNORE_FILE);
+        File ignore = new File(root, FILENAME_HGIGNORE);
            
         try     {
             fileWriter = new BufferedWriter(
@@ -174,10 +187,32 @@ public class HgUtils {
         }
     }
 
-    private static LinkedList<String> readIgnoreEntries(File directory) throws IOException {
-        File hgIgnore = new File(directory, HG_IGNORE_FILE);
+    private static void addIgnorePatterns(Set patterns, File file) {
+        Set shPatterns;
+        try {
+            shPatterns = readIgnoreEntries(file);
+        } catch (IOException e) {
+            // ignore invalid entries
+            return;
+        }
+        for (Iterator i = shPatterns.iterator(); i.hasNext();) {
+            String shPattern = (String) i.next();
+            if ("!".equals(shPattern)) { // NOI18N
+                patterns.clear();
+            } else {
+                try {
+                    patterns.add(Pattern.compile(shPattern));
+                } catch (Exception e) {
+                    // unsupported pattern
+                }
+            }
+        }
+    }
 
-        LinkedList<String> entries = new LinkedList<String>();
+    private static Set<String> readIgnoreEntries(File directory) throws IOException {
+        File hgIgnore = new File(directory, FILENAME_HGIGNORE);
+
+        Set<String> entries = new HashSet<String>(5);
         if (!hgIgnore.canRead()) return entries;
 
         String s;
@@ -185,8 +220,7 @@ public class HgUtils {
         try {
             r = new BufferedReader(new FileReader(hgIgnore));
             while ((s = r.readLine()) != null) {
-                System.err.println("readIgnoreEntries: " + s); // NOI18N
-                entries.add(s.trim());
+                entries.addAll(Arrays.asList(s.trim().split(" ")));
             }
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
@@ -199,8 +233,8 @@ public class HgUtils {
         return name.replace(' ', '?');
     }
 
-    private static void writeIgnoreEntries(File directory, LinkedList entries) throws IOException {
-        File hgIgnore = new File(directory, HG_IGNORE_FILE);
+    private static void writeIgnoreEntries(File directory, Set entries) throws IOException {
+        File hgIgnore = new File(directory, FILENAME_HGIGNORE);
         FileObject fo = FileUtil.toFileObject(hgIgnore);
 
         if (entries.size() == 0) {
@@ -210,7 +244,7 @@ public class HgUtils {
 
         if (fo == null || !fo.isValid()) {
             fo = FileUtil.toFileObject(directory);
-            fo = fo.createData(HG_IGNORE_FILE);
+            fo = fo.createData(FILENAME_HGIGNORE);
         }
         FileLock lock = fo.lock();
         PrintWriter w = null;
@@ -233,10 +267,10 @@ public class HgUtils {
      * @param files an array of Files to be added
      */
     public static void addIgnored(File directory, File[] files) throws IOException {
-        LinkedList entries = readIgnoreEntries(directory);
+        Set entries = readIgnoreEntries(directory);
         for (File file: files) {
             String patterntoIgnore = computePatternToIgnore(directory, file);
-            entries.add(0, patterntoIgnore);
+            entries.add(patterntoIgnore);
         }
         writeIgnoreEntries(directory, entries);
     }
@@ -249,7 +283,7 @@ public class HgUtils {
      * @param files an array of Files to be removed
      */
     public static void removeIgnored(File directory, File[] files) throws IOException {
-        LinkedList entries = readIgnoreEntries(directory);
+        Set entries = readIgnoreEntries(directory);
         for (File file: files) {
             String patterntoIgnore = computePatternToIgnore(directory, file);
             entries.remove(patterntoIgnore);
