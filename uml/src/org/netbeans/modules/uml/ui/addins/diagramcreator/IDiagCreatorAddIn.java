@@ -27,6 +27,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
+import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 
 public interface IDiagCreatorAddIn
 {
@@ -49,6 +50,11 @@ public interface IDiagCreatorAddIn
 	 * Creates a diagram from the input elements
 	*/
 	public long guiCreateDiagramFromElements( ETList<IElement> pElements, IElement pParentElement, IProjectTreeControl pProjectTree );
+        
+        /**
+	 * Creates a diagram from the input elements
+	*/
+	public long guiCreateDiagramFromElements( ETList<IElement> pElements, IElement pParentElement, IProjectTreeModel pProjectTreeModel );
 
 	/**
 	 * Creates the specified diagram, and adds the input elements to the diagram.

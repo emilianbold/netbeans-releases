@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.uml.ui.addins.reguiaddin;
 
-//import java.awt.Cursor;
-//import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import javax.swing.SwingUtilities;
 
@@ -34,8 +31,6 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-//import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
-//import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
 import org.netbeans.modules.uml.core.reverseengineering.reintegration.IUMLParsingIntegrator;
 import org.netbeans.modules.uml.core.reverseengineering.reintegration.UMLParsingIntegrator;
 import org.netbeans.modules.uml.core.roundtripframework.codegeneration.CodeGenerator;
@@ -62,10 +57,9 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-//import org.netbeans.modules.uml.ui.swing.projecttree.JProjectTree;
-//import com.tomsawyer.graph.TSGraphObject;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 
 public class REGUIAddin extends Thread //implements IAddIn, IAddInButtonSupport, IViewActionDelegate
 {
@@ -801,12 +795,19 @@ public class REGUIAddin extends Thread //implements IAddIn, IAddInButtonSupport,
                                             // IElement pEle = elements.get(i);
                                             final IInteraction pInteraction = getLastInteraction(pEle);
                                             
-                                            final IProjectTreeControl pControl =
-                                                    ProductHelper.getProjectTree();
+                                            // Fixed 114922. 
+                                            // ProjectTreeControl seems to be obsolete.
+                                            // It's not initialized any where; hence always null.
+                                            // Use IProjectTreeModel instead.
+//                                            final IProjectTreeControl pControl =
+//                                                    ProductHelper.getProjectTree();
+                                            
+                                            final IProjectTreeModel treeModel = 
+                                                    ProductHelper.getProjectTreeModel();
                                             
                                             if (pInteraction != null) {                                                
                                                 diaCreator.guiCreateDiagramFromElements(
-                                                        elementsLocal, pInteraction, pControl);
+                                                        elementsLocal, pInteraction, treeModel);
                                             }
                                             
                                             

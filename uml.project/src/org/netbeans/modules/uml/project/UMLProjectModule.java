@@ -32,7 +32,6 @@ import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.CoreProductManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductManager;
 import org.netbeans.modules.uml.core.coreapplication.IProductDescriptor;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.ADProduct;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.IADProduct;
@@ -103,7 +102,7 @@ public class UMLProjectModule extends ModuleInstall
 			// Put the user interface proxy
 			product.setProxyUserInterface(new UMLUserInterface());
 			product.setProjectManager(new UMLProductProjectManager());
-            
+                        product.setProjectTreeModel(mModel);
 			// m_AcceleratorMgr = m_ADProduct.getAcceleratorManager();
 		    }
 		    else
