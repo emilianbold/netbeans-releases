@@ -24,9 +24,6 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.ContextProvider;
 
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-
-
 /** Cnd Debugger implementatoin of DebuggerEngineProvider */
 public class GdbEngineProvider extends DebuggerEngineProvider {
 

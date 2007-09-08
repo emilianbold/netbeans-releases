@@ -46,7 +46,7 @@ abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        checkEnabled(debugger.getState());
+           checkEnabled(debugger.getState()); 
     }
     
     protected abstract void checkEnabled(String debuggerState);
@@ -58,7 +58,7 @@ abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
         return super.isEnabled(action);
     }
     
-    GdbDebugger getDebuggerImpl() {
+    GdbDebugger getDebugger() {
         return debugger;
     }
     

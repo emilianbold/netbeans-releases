@@ -114,12 +114,12 @@ public class CallStackActionsProvider implements NodeActionsProvider {
 	if (k < 2) {
 	    return;
 	}
-	for (i = 0; i < k; i++) {
-	    if (stack.get(i).equals(frame)) {
-		if (i > 0) {
-		    ((CallStackFrame) stack.get(i - 1)).popFrame();
-		}
-		return;
+	for (i = 1; i < k; i++) {
+	    if (stack.get(i - 1).equals(frame)) {
+                return;
+            } else {
+                debugger.getGdbProxy().stack_select_frame(0);
+                debugger.getGdbProxy().exec_finish();
 	    }
 	}
     }

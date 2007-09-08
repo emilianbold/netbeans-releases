@@ -29,6 +29,7 @@ import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -38,11 +39,10 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
-import org.openide.util.HelpCtx.Provider;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
@@ -58,9 +58,9 @@ import org.openide.util.Utilities;
 //
 public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.Provider {
     
-    private ActionsPanel                actionsPanel; 
-    private LineBreakpoint              breakpoint;
-    private boolean                     createBreakpoint = false;
+    private ActionsPanel        actionsPanel; 
+    private LineBreakpoint      breakpoint;
+    private boolean             createBreakpoint = false;
     
     /** 
      * Creates new form LineBreakpointPanel
@@ -400,21 +400,14 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	if (path == null || path.length() == 0) {
 	    return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_File_Name_Spec"); // NOI18N
 	}
-	if (path.charAt(0) == '/' || path.charAt(0) == '\'') { // Can't rely on direction of slash on Windows
-	    file = new File(path);
-	    if (!file.exists()) {
-		return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_File_Name_Does_Not_Exist"); // NOI18N
-	    }
-	    // need a way to find the active GdbDebugger to do the following validation...
-//	} else {
-//	    if (debugger != null) {
-//		String rundir = debugger.getRunDirectory();
-//		file = new File(rundir, path);
-//		if (!file.exists()) {
-//		    return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_File_Name_Does_Not_Exist"); // NOI18N
-//		}
-//	    }
-	}
+        file = new File(path);
+        if (!file.isAbsolute()) {
+            file = new File(getRunDirectory(), path);
+        }
+        if (!file.exists()) {
+            return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_File_Name_Does_Not_Exist"); // NOI18N
+        }
+        breakpoint.setURL(file.getAbsolutePath());
 	
 	// Now validate the line number
         try {
@@ -436,6 +429,14 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	
 	// No validation for the (currently unsupported) condition
         return null;
+    }
+    
+    private String getRunDirectory() {
+        try {
+            return FileUtil.toFile(OpenProjects.getDefault().getMainProject().getProjectDirectory()).getAbsolutePath();
+        } catch (Exception ex) {
+            return ".";
+        }
     }
     
     

@@ -46,10 +46,10 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 public class BreakpointsEngineListener extends LazyActionsManagerListener 
 		implements PropertyChangeListener, DebuggerManagerListener {
     
-    private GdbDebugger	    debugger;
-    private Session                 session;
-    private BreakpointsReader       breakpointsReader;
-
+    private GdbDebugger         debugger;
+    private Session             session;
+    private BreakpointsReader   breakpointsReader;
+    private HashMap             breakpointToImpl = new HashMap();
 
     public BreakpointsEngineListener(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
@@ -63,7 +63,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
         DebuggerManager.getDebuggerManager().removeDebuggerListener(
 		    DebuggerManager.PROP_BREAKPOINTS, this);
         removeBreakpointImpls();
-	unvalidateBreakpoints();
+//	unvalidateBreakpoints();
     }
     
     public String[] getProperties() {
@@ -91,26 +91,6 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
         removeBreakpointImpl(breakpoint);
     }
     
-
-    public Breakpoint[] initBreakpoints() {return new Breakpoint[0];}
-    public void initWatches() {}
-    public void sessionAdded(Session session) {}
-    public void sessionRemoved(Session session) {}
-    public void watchAdded(Watch watch) {}
-    public void watchRemoved(Watch watch) {}
-    public void engineAdded(DebuggerEngine engine) {
-        System.err.println("BEL.engineAdded: "); // NOI18N
-    }
-    public void engineRemoved(DebuggerEngine engine) {
-        System.err.println("BEL.engineRemoved: "); // NOI18N
-    }
-
-
-    // helper methods ..........................................................
-    
-    private HashMap breakpointToImpl = new HashMap();
-    
-    
     private void createBreakpointImpls() {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
         int i, k = bs.length;
@@ -121,39 +101,9 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
 		    createBreakpointImpl(bs[i]);
 		}
 	    }
-	} else {
+	} else if (debugger.getState() == GdbDebugger.STATE_LOADING) {
 	    debugger.setRunning(); // set state to running because no breakoints to set
 	}
-    }
-    
-    private void removeBreakpointImpls() {
-        Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
-        int i, k = bs.length;
-        for (i = 0; i < k; i++) {
-	    if (bs[i] instanceof GdbBreakpoint) {
-		removeBreakpointImpl(bs [i]);
-	    }
-	}
-    }
-    
-    /**
-     *  Set breakpoint state to UNVALIDATED
-     */
-    private void unvalidateBreakpoints() {
-        Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
-        int i, k = bs.length;
-        for (i = 0; i < k; i++) {
-	    if (bs[i] instanceof GdbBreakpoint) {
-		((GdbBreakpoint) bs[i]).setState(GdbBreakpoint.UNVALIDATED);
-	    }
-	}
-    }
-    
-    public void fixBreakpointImpls() {
-        Iterator i = breakpointToImpl.values().iterator();
-        while (i.hasNext()) {
-            ((BreakpointImpl) i.next()).fixed();
-        }
     }
 
     private void createBreakpointImpl(Breakpoint b) {
@@ -168,6 +118,16 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
 			(FunctionBreakpoint) b, breakpointsReader, debugger, session));
         }
     }
+    
+    private void removeBreakpointImpls() {
+        Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
+        int i, k = bs.length;
+        for (i = 0; i < k; i++) {
+	    if (bs[i] instanceof GdbBreakpoint) {
+		removeBreakpointImpl(bs [i]);
+	    }
+	}
+    }
 
     private void removeBreakpointImpl(Breakpoint b) {
         BreakpointImpl impl = (BreakpointImpl) breakpointToImpl.get(b);
@@ -176,4 +136,35 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
             breakpointToImpl.remove(b);
 	}
     }
+    
+//    /**
+//     *  Set breakpoint state to UNVALIDATED
+//     */
+//    private void unvalidateBreakpoints() {
+//        Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
+//        int i, k = bs.length;
+//        for (i = 0; i < k; i++) {
+//	    if (bs[i] instanceof GdbBreakpoint) {
+//		((GdbBreakpoint) bs[i]).setState(GdbBreakpoint.UNVALIDATED);
+//	    }
+//	}
+//    }
+//    
+//    public void fixBreakpointImpls() {
+//        Iterator i = breakpointToImpl.values().iterator();
+//        while (i.hasNext()) {
+//            ((BreakpointImpl) i.next()).fixed();
+//        }
+//    }
+    
+    public Breakpoint[] initBreakpoints() {return new Breakpoint[0];}
+
+    // unused methods
+    public void initWatches() {}
+    public void sessionAdded(Session session) {}
+    public void sessionRemoved(Session session) {}
+    public void watchAdded(Watch watch) {}
+    public void watchRemoved(Watch watch) {}
+    public void engineAdded(DebuggerEngine engine) {}
+    public void engineRemoved(DebuggerEngine engine) {}
 }

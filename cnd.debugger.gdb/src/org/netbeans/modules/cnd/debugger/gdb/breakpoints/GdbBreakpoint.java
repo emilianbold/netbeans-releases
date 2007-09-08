@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,11 +28,13 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /*
  * Note: This class may need to become abstracto with a GdbBreakpoint and
@@ -44,113 +48,145 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  */
 public abstract class GdbBreakpoint extends Breakpoint {
     
-    // static ..................................................................
-    
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
     public static final String          PROP_HIDDEN = "hidden"; // NOI18N
     public static final String          PROP_PRINT_TEXT = "printText"; // NOI18N
     public static final String          PROP_BREAKPOINT_STATE = "breakpointState"; // NOI18N
+    public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
+    public static final String          PROP_URL = "url"; // NOI18N
+    public static final String          PROP_CONDITION = "condition"; // NOI18N
     
-    public static final int            MIN_GDB_ID = 2; // 1 is the temp bp at main...
-    
-    /* valid breakpoint states */
-    /** breakpoint is unvalidated by gdb (which may not be running) */
-    public static final int             UNVALIDATED = 0;
-    
-    /** Breakpoint has been sent to gdb for validation */
-    public static final int             VALIDATION_PENDING = 1;
-    
-    /** Gdb has validated this breakpoint and is currently running */
-    public static final int             VALIDATED = 2;
-    
-    /** Breakpoint is being deleted */
-    public static final int             DELETION_PENDING = 3;
-    
-    public  Object                      annotation = null;
+    private int                         lineNumber;
     private boolean                     enabled = true;
     private boolean                     hidden = false;
     private int                         suspend = 0; // Not fully implemented yet!
-    private int				breakpointNumber;
     private String                      printText;
     private HashSet                     breakpointListeners = new HashSet();
-    private int                         state = UNVALIDATED;
-    private static Map                  pending = Collections.synchronizedMap(new HashMap());
     private static Map                  bplist = Collections.synchronizedMap(new HashMap());
-    private GdbDebugger		debugger;
+    private GdbDebugger                 debugger;
     private Object			LOCK = new Object();
     private int				id = 0;
+    private String                      condition = ""; // NOI18N
+    private String                      url = "";       // NOI18N
+    private String                      path = "";      // NOI18N
     
     /**
-     *  Provide a unique ID for each requested breakpoint
-     */
-    protected void setID(int id) {
-	this.id = id;
-    }
-    
-    public int getID() {
-	return id;
-    }
-    
-    /**
-     *  Get the breakpoint associated with the gdb breakpoint number.
-     */
-    public static GdbBreakpoint get(String breakpointNumber) {
-        return (GdbBreakpoint) bplist.get(breakpointNumber);
-    }
-    
-    /**
-     *  Search all VALIDATION_PENDING breakpoints for a match. At the time this is called, we
-     *  have no way of knowing what type of a breakpoint we're looking for. So enough information
-     *  is passed to get any type.
+     * Gets number of line to stop on.
      *
-     *  @param id The unique ID of the breakpoint
-     *  @return The GdbBreakpoint represented by this ID
+     * @return line number to stop on
      */
-    public static GdbBreakpoint getPending(int id) {
-	return (GdbBreakpoint) pending.get(Integer.valueOf(id));
-    }
-    
-    public void setPending() {
-        setState(VALIDATION_PENDING);
-        pending.put(Integer.valueOf(id), this);
+    public int getLineNumber() {
+        return lineNumber;
     }
     
     /**
-     * Get the state of this breakpoint
+     * Sets number of line to stop on.
+     *
+     * @param ln a line number to stop on
      */
-    public int getState() {
-        return state;
-    }
-    
-    /** Set the state of this breakpoint */
-    public void setState(int state) {
-        if (state != this.state &&
-                (state == UNVALIDATED || state == VALIDATION_PENDING ||
-		 state == VALIDATED || state == DELETION_PENDING)) {
-            this.state = state;
-	    if (state == UNVALIDATED) {
-		breakpointNumber = -1;
-	    }
+    public void setLineNumber(int ln) {
+        int old;
+        synchronized (this) {
+            if (ln == lineNumber) {
+                return;
+            }
+            old = lineNumber;
+            lineNumber = ln;
         }
+        firePropertyChange(PROP_LINE_NUMBER, new Integer(old), new Integer(ln));
     }
     
-    public void setValidationResult(int id, String breakpointNumber) {
-	assert(id == getID());
-	
-	if (breakpointNumber != null) {
-	    this.breakpointNumber = Integer.parseInt(breakpointNumber);
-	    setState(VALIDATED);
-	    if (!isEnabled()) {
-		debugger.break_disable(this.breakpointNumber);
-	    }
-	} else {
-	    setState(UNVALIDATED);
-	}
-        bplist.put(breakpointNumber, this);
-        pending.remove(Integer.valueOf(id));
-	if (pending.size() == 0 && debugger.getState() == GdbDebugger.STATE_LOADING) {
-	    debugger.setRunning();
-	}
+    /**
+     *  Return a path based on this breakpoints URL. The path is not necessarily the
+     *  same as the URL with the "File:/" removed. This is because Windows often substitues
+     *  "%20" for spaces. It also puts a "/" before the drive specifier.
+     */
+    public String getPath() {
+        return path;
+    }
+    
+    /**
+     * Gets file name in URL format.
+     *
+     * @return file name in URL format or empty string
+     */
+    public String getURL() {
+        return url;
+    }
+    
+    /**
+     * Sets file name in URL format.
+     *
+     * @param file name
+     */
+    public void setURL(String url) {
+        String old;
+        synchronized (this) {
+            if (url == this.url || (url != null && this.url != null && url.equals(this.url))) {
+                return;
+            }
+            // The code below is a protection against "invalid" URL values.
+            url = url.replace(" ", "%20"); // NOI18N
+            if (!url.startsWith("file:/")) { // NOI18N
+                if (url.startsWith("/")) { // NOI18N
+                    url = "file:" + url; // NOI18N
+                } else {
+                    url = "file:/" + url; // NOI18N
+                }
+            }
+            
+            // Also set the path variable, based on the URL.
+            try {
+                assert(!(url == null && Boolean.getBoolean("gdb.assertions.enabled"))); // NOI18N
+                FileObject fo = URLMapper.findFileObject(new URL(url));
+                if (fo != null) {
+                    if (Utilities.isWindows()) {
+                        path = fo.getPath();
+                    } else {
+                        path = "/" + fo.getPath(); // NOI18N
+                    }
+                }
+            } catch (MalformedURLException mue) {
+                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
+                return;
+            } catch (Exception ex) {
+                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
+            }
+            old = this.url;
+            this.url = url;
+        }
+//        firePropertyChange(PROP_URL, old, url);
+    }
+    
+    /**
+     * Returns condition.
+     *
+     * @return cond a condition
+     */
+    public String getCondition() {
+        return condition;
+    }
+    
+    /**
+     * Sets condition.
+     *
+     * @param c a new condition
+     */
+    public void setCondition(String c) {
+        String old;
+        synchronized (this) {
+            if (c == null) {
+                c = ""; // NOI18N
+            }
+            c = c.trim();
+            if ((c == condition) ||
+                    ((c != null) && (condition != null) && condition.equals(c))) {
+                return;
+            }
+            old = condition;
+            condition = c;
+        }
+        firePropertyChange(PROP_CONDITION, old, c);
     }
     
     /**
@@ -197,10 +233,6 @@ public abstract class GdbBreakpoint extends Breakpoint {
         boolean old = hidden;
         hidden = h;
         firePropertyChange(PROP_HIDDEN, Boolean.valueOf(old), Boolean.valueOf(h));
-    }
-    
-    public int getBreakpointNumber() {
-	return breakpointNumber;
     }
     
     /**

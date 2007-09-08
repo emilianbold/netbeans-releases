@@ -46,24 +46,21 @@ public class BreakpointsReader implements Properties.Reader {
         // Read both LineBreakpoint and LineBreakpoint$LineBreakpointComparable
         if (typeID.equals(LineBreakpoint.class.getName()) ||
                         typeID.equals(LineBreakpoint.class.getName() + "$LineBreakpointComparable")) { // NOI18N
-            LineBreakpoint lb = LineBreakpoint.create(properties.getString(LineBreakpoint.PROP_URL, null),
-                        properties.getInt(LineBreakpoint.PROP_LINE_NUMBER, 1));
-            lb.setCondition(properties.getString(LineBreakpoint.PROP_CONDITION, "")); // NOI18N
+            LineBreakpoint lb = LineBreakpoint.create(properties.getString(GdbBreakpoint.PROP_URL, null),
+                        properties.getInt(GdbBreakpoint.PROP_LINE_NUMBER, 1));
             b = lb;
         }
         if (typeID.equals (FunctionBreakpoint.class.getName()) ||
                         typeID.equals(FunctionBreakpoint.class.getName() + "$FunctionBreakpointComparable")) { // NOI18N
-            FunctionBreakpoint fb = FunctionBreakpoint.create(""); // NOI18N
-            fb.setFunctionName(properties.getString(FunctionBreakpoint.PROP_FUNCTION_NAME, "")); // NOI18N
-            fb.setCondition(properties.getString (FunctionBreakpoint.PROP_CONDITION, "")); // NOI18N
+            FunctionBreakpoint fb = FunctionBreakpoint.create(properties.getString(FunctionBreakpoint.PROP_FUNCTION_NAME, "")); // NOI18N
             fb.setBreakpointType(properties.getInt(
                     FunctionBreakpoint.PROP_BREAKPOINT_TYPE, FunctionBreakpoint.TYPE_FUNCTION_ENTRY));
             b = fb;
         }
         
-        assert b != null: "Unknown breakpoint type: \"" + typeID + "\""; // NOI18N
-        b.setPrintText(properties.getString (GdbBreakpoint.PROP_PRINT_TEXT, "")); // NOI18N
-        b.setGroupName(properties.getString (GdbBreakpoint.PROP_GROUP_NAME, "")); // NOI18N
+        b.setCondition(properties.getString(GdbBreakpoint.PROP_CONDITION, "")); // NOI18N
+        b.setPrintText(properties.getString(GdbBreakpoint.PROP_PRINT_TEXT, "")); // NOI18N
+        b.setGroupName(properties.getString(GdbBreakpoint.PROP_GROUP_NAME, "")); // NOI18N
         
         if (properties.getBoolean(GdbBreakpoint.PROP_ENABLED, true)) {
             b.enable();
@@ -79,16 +76,15 @@ public class BreakpointsReader implements Properties.Reader {
         properties.setString(GdbBreakpoint.PROP_GROUP_NAME, b.getGroupName());
         properties.setInt(GdbBreakpoint.PROP_SUSPEND, b.getSuspend());
         properties.setBoolean(GdbBreakpoint.PROP_ENABLED, b.isEnabled());
+        properties.setString(GdbBreakpoint.PROP_CONDITION, b.getCondition());
         
         if (object instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) object;
-            properties.setString(LineBreakpoint.PROP_URL, lb.getURL());
-            properties.setInt(LineBreakpoint.PROP_LINE_NUMBER, lb.getLineNumber());
-            properties.setString(LineBreakpoint.PROP_CONDITION, lb.getCondition());
+            properties.setString(GdbBreakpoint.PROP_URL, lb.getURL());
+            properties.setInt(GdbBreakpoint.PROP_LINE_NUMBER, lb.getLineNumber());
         } else if (object instanceof FunctionBreakpoint) {
             FunctionBreakpoint fb = (FunctionBreakpoint) object;
             properties.setString(FunctionBreakpoint.PROP_FUNCTION_NAME, fb.getFunctionName());
-            properties.setString(FunctionBreakpoint.PROP_CONDITION, fb.getCondition());
             properties.setInt(FunctionBreakpoint.PROP_BREAKPOINT_TYPE, fb.getBreakpointType());
         }
     }

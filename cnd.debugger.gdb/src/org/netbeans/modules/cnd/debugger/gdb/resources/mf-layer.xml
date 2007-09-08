@@ -85,6 +85,14 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
+        
+        <folder name="AnnotationTypes">
+            <file name="FunctionBreakpoint.xml" url="FunctionBreakpoint.xml"/>
+            <file name="DisabledFunctionBreakpoint.xml" url="DisabledFunctionBreakpoint.xml"/>
+            <file name="CondFuncBreakpoint.xml" url="CondFuncBreakpoint.xml"/>
+            <file name="DisabledCondFuncBreakpoint.xml" url="DisabledCondFuncBreakpoint.xml"/>
+            <!-- <file name="PC_anyBP.xml" url="PC_anyBP.xml"/> -->
+        </folder>
     </folder>
     
     

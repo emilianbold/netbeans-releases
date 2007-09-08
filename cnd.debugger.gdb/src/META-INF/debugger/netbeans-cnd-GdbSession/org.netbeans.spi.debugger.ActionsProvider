@@ -5,3 +5,4 @@ org.netbeans.modules.cnd.debugger.gdb.actions.KillActionProvider
 org.netbeans.modules.cnd.debugger.gdb.actions.ToggleBreakpointActionProvider
 org.netbeans.modules.cnd.debugger.gdb.actions.MakeCalleeCurrentActionProvider
 org.netbeans.modules.cnd.debugger.gdb.actions.MakeCallerCurrentActionProvider
+org.netbeans.modules.cnd.debugger.gdb.actions.PopToHereActionProvider

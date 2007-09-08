@@ -23,19 +23,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.debugger.Breakpoint;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.DebuggerManager;
-
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
-import org.netbeans.modules.cnd.debugger.gdb.expr.ParseException;
-
 
 /**
  *
@@ -43,14 +41,23 @@ import org.netbeans.modules.cnd.debugger.gdb.expr.ParseException;
  */
 public abstract class BreakpointImpl implements PropertyChangeListener {
     
-    private static boolean verbose = System.getProperty("netbeans.debugger.breakpoints") != null;
+    
+    /* valid breakpoint states */
+    public static final String  BPSTATE_UNVALIDATED = "BpState_Unvalidated"; // NOI18N
+    public static final String  BPSTATE_VALIDATION_PENDING = "BpState_ValidationPending"; // NOI18N
+    public static final String  BPSTATE_VALIDATED = "BpState_Validated"; // NOI18N
+    public static final String  BPSTATE_DELETION_PENDING = "BpState_DeletionPending"; // NOI18N
 
-    private GdbDebugger     debugger;
+    private GdbDebugger         debugger;
+    private String              state;
+    private int                 breakpointNumber;
     private GdbBreakpoint       breakpoint;
     private BreakpointsReader   reader;
     private final Session       session;
     private List                requests = new ArrayList();
     private Expression          compiledCondition;
+    private static Map<String, BreakpointImpl> bplist = Collections.synchronizedMap(
+            new HashMap<String, BreakpointImpl>());
 
 
     protected BreakpointImpl(GdbBreakpoint breakpoint, BreakpointsReader reader,
@@ -59,6 +66,64 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         this.reader = reader;
         this.breakpoint = breakpoint;
         this.session = session;
+        this.state = BPSTATE_UNVALIDATED;
+        this.breakpointNumber = -1;
+    }
+    
+    public void completeValidation(int token, Map<String, String> map) {
+        if (map != null) {
+            String number = map.get("number"); // NOI18N
+            if (number != null) {
+                breakpointNumber = Integer.parseInt(number);
+                setState(BPSTATE_VALIDATED);
+                if (!breakpoint.isEnabled()) {
+                    debugger.break_disable(breakpointNumber);
+                }
+                if (this instanceof FunctionBreakpointImpl) {
+                    int lnum;
+                    try {
+                        breakpoint.setURL(map.get("fullname")); // NOI18N
+                        breakpoint.setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
+                    } catch (Exception ex) {
+                    }
+                }
+            } else {
+                setState(BPSTATE_UNVALIDATED);
+            }
+            bplist.put(number, this);
+        }
+    }
+    
+    /** Get the breakpoint associated with the gdb breakpoint number */
+    public static BreakpointImpl get(String breakpointNumber) {
+        return (BreakpointImpl) bplist.get(breakpointNumber);
+    }
+    
+    /**
+     * Get the state of this breakpoint
+     */
+    protected String getState() {
+        return state;
+    }
+    
+    /** Set the state of this breakpoint */
+    protected void setState(String state) {
+        if (state != this.state &&
+                    (state == BPSTATE_UNVALIDATED || state == BPSTATE_VALIDATION_PENDING ||
+                     state == BPSTATE_VALIDATED || state == BPSTATE_DELETION_PENDING)) {
+            this.state = state;
+	    if (state == BPSTATE_UNVALIDATED) {
+		setBreakpointNumber(-1);
+	    }
+        }
+    }
+    
+    public int getBreakpointNumber() {
+	return breakpointNumber;
+    }
+    
+    protected void setBreakpointNumber(int breakpointNumber) {
+        this.breakpointNumber = breakpointNumber;
     }
 
     /**
@@ -92,17 +157,17 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         if (Breakpoint.PROP_DISPOSED.equals(evt.getPropertyName())) {
             remove();
 	}
-	update();
+        if (!evt.getPropertyName().equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
+            update();
+        }
     }
 
-    //protected abstract void setRequests();
-    
     protected final void remove() {
         breakpoint.removePropertyChangeListener(this);
-	breakpoint.setState(GdbBreakpoint.DELETION_PENDING);
+	setState(BPSTATE_DELETION_PENDING);
     }
 
-    protected GdbBreakpoint getBreakpoint() {
+    public GdbBreakpoint getBreakpoint() {
         return breakpoint;
     }
 
@@ -192,29 +257,27 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 //
 //        return false; // do not resume
 //    }
-    
-    /**
-     * Evaluates given condition. Returns value of condition evaluation. 
-     * Returns true othervise (bad expression).
-     */
-    /*
-    private boolean evaluateConditionIn(String condExpr, Object frame) 
-                        throws ParseException, InvalidExpressionException {
-        // 1) compile expression
-        if (compiledCondition == null || !compiledCondition.getExpression().equals(condExpr)) {
-            compiledCondition = Expression.parse(condExpr, Expression.LANGUAGE_CPLUSPLUS);
-        }
-        
-        // 2) evaluate expression
-        // already synchronized (debugger.LOCK)
-        Boolean value = getDebugger().evaluateIn(compiledCondition, frame);
-        try {
-            return value.booleanValue();
-        } catch (ClassCastException e) {
-            throw new InvalidExpressionException(e);
-        }
-    }
-     */
+//    
+//    /**
+//     * Evaluates given condition. Returns value of condition evaluation. 
+//     * Returns true othervise (bad expression).
+//     */
+//    private boolean evaluateConditionIn(String condExpr, Object frame) 
+//                        throws ParseException, InvalidExpressionException {
+//        // 1) compile expression
+//        if (compiledCondition == null || !compiledCondition.getExpression().equals(condExpr)) {
+//            compiledCondition = Expression.parse(condExpr, Expression.LANGUAGE_CPLUSPLUS);
+//        }
+//        
+//        // 2) evaluate expression
+//        // already synchronized (debugger.LOCK)
+//        Boolean value = getDebugger().evaluateIn(compiledCondition, frame);
+//        try {
+//            return value.booleanValue();
+//        } catch (ClassCastException e) {
+//            throw new InvalidExpressionException(e);
+//        }
+//    }
     
     /**
      * Support method for simple patterns.

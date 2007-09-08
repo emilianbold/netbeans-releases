@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -137,14 +138,8 @@ public class EditorContextBridge {
 			url = "file:" + fo.getPath(); // NOI18N
 		    }
 		}
-//		System.err.println("ECB.annotate[Set]:     " + fullname + " [" + csf.getLineNumber() + ", " + annotationType + "]");
 		return getContext().annotate(url, csf.getLineNumber(), annotationType, null);
 	    }
-//	    else {
-//		System.err.println("ECB.annotate[Ignored]: " + fullname + " [" + csf.getLineNumber() + ", " + annotationType + "]");
-//	    }
-//        } else {
-//	    System.err.println("fullname:");
 	}
 	return null;
     }
@@ -298,36 +293,33 @@ public class EditorContextBridge {
         return LINE;
     }
 
-    public static Object annotate(LineBreakpoint b) {
+    public static Object annotate(GdbBreakpoint b) {
         String url = b.getURL();
         int lineNumber = b.getLineNumber();
         if (lineNumber < 1) {
             return null;
         }
         String condition = b.getCondition();
-        boolean isConditional = (condition != null) && !condition.trim().equals(""); // NOI18N
-        String annotationType = b.isEnabled() ?
-            (isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.BREAKPOINT_ANNOTATION_TYPE) :
-            (isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
-
-        return annotate(url, lineNumber, annotationType, null);
-    }
-
-    public static Object annotate(FunctionBreakpoint b) {
-        String url = b.getURL();
-        int lineNumber = b.getLineNumber();
-        if (lineNumber < 1) {
-            return null;
+        boolean isConditional = condition.trim().length() > 0;
+        boolean isFunctionBreakpoint = b instanceof FunctionBreakpoint;
+        String annotationType;
+        if (isFunctionBreakpoint) {
+            if (b.isEnabled()) {
+                annotationType = isConditional ? EditorContext.CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.FUNCTION_BREAKPOINT_ANNOTATION_TYPE;
+            } else {
+                annotationType =  isConditional ? EditorContext.DISABLED_CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.DISABLED_FUNCTION_BREAKPOINT_ANNOTATION_TYPE;
+            }
+        } else {
+            if (b.isEnabled()) {
+                annotationType = isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.BREAKPOINT_ANNOTATION_TYPE;
+            } else {
+                annotationType = isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE;
+            }
         }
-        String condition = b.getCondition();
-        boolean isConditional = (condition != null) && !condition.trim().equals(""); // NOI18N
-        String annotationType = b.isEnabled() ?
-            (isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.BREAKPOINT_ANNOTATION_TYPE) :
-            (isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
 
         return annotate(url, lineNumber, annotationType, null);
     }
@@ -341,10 +333,7 @@ public class EditorContextBridge {
         return original.replace(File.separatorChar, '/');
     }
     
-    
 
-    // innerclasses ............................................................
-    
     private static class CompoundContextProvider extends EditorContext {
 
         private EditorContext cp1, cp2;

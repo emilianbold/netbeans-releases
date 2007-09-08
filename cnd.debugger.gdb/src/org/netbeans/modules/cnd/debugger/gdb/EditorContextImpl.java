@@ -36,6 +36,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -56,6 +57,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerAnnotation;
+import org.netbeans.modules.cnd.loaders.CppEditorSupport.CppEditorComponent;
 
 /**
  *
@@ -269,28 +271,49 @@ public class EditorContextImpl extends EditorContext {
      */
     public String getCurrentURL() {
         synchronized (currentLock) {
-            if (currentURL == null) {
+            if (currentURL == null || currentURL.length() == 0) {
                 DataObject[] nodes = (DataObject[]) resDataObject.allInstances().toArray(new DataObject[0]);
 
-                currentURL = ""; // NOI18N
                 if (nodes.length != 1) {
-                    return currentURL;
-                }
-                
-                DataObject dobj = nodes[0];
-                if (dobj instanceof DataShadow) {
-                    dobj = ((DataShadow) dobj).getOriginal();
-                }
+                    currentURL = digForIt();
+                } else {
+                    DataObject dobj = nodes[0];
+                    if (dobj instanceof DataShadow) {
+                        dobj = ((DataShadow) dobj).getOriginal();
+                    }
 
-                try {
-                    currentURL = dobj.getPrimaryFile().getURL().toString();
-                } catch (FileStateInvalidException ex) {
-                    //noop
+                    try {
+                        currentURL = dobj.getPrimaryFile().getURL().toString();
+                    } catch (FileStateInvalidException ex) {
+                        currentURL = "";
+                    }
                 }
             }
 
             return currentURL;
         }
+    }
+    
+    /** Look in all open C/C++ files and find the one showing. Return its URL */
+    private String digForIt() {
+        TopComponent.Registry reg = TopComponent.getRegistry();
+        Iterator iter = reg.getOpened().iterator();
+        while (iter.hasNext()) {
+            Object o = iter.next();
+            if (o instanceof CppEditorComponent) {
+                CppEditorComponent cec = (CppEditorComponent) o;
+                if (cec.isShowing()) {
+                    String url;
+                    try {
+                        url = cec.getSupport().getDataObject().getPrimaryFile().getURL().toString();
+                    } catch (Exception ex) {
+                        continue;
+                    }
+                    return url;
+                }
+            }
+        }
+        return "";
     }
     
     /**

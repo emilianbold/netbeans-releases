@@ -32,26 +32,12 @@ import org.openide.util.Utilities;
  */
 public class FunctionBreakpoint extends GdbBreakpoint {
     
-    /** Property name constant */
-    public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
-    /** Property name constant */
-    public static final String          PROP_URL = "url"; // NOI18N
-    /** Property name constant. */
     public static final String          PROP_FUNCTION_NAME = "functionName"; // NOI18N
-    /** Property name constant */
-    public static final String          PROP_CONDITION = "condition"; // NOI18N
-    /** Property name constant. */
     public static final String          PROP_BREAKPOINT_TYPE = "breakpointType"; // NOI18N
-    /** Property name constant. */
     public static final int             TYPE_FUNCTION_ENTRY = 1;
-    /** Property name constant. */
     public static final int             TYPE_FUNCTION_EXIT = 2;
     
     private String                      function = "";  // NOI18N
-    private String                      condition = ""; // NOI18N
-    private String                      url = "";       // NOI18N
-    private String                      path = "";      // NOI18N
-    private int                         lineNumber;
     private int                         type;
     
     private FunctionBreakpoint() {
@@ -108,97 +94,7 @@ public class FunctionBreakpoint extends GdbBreakpoint {
             old = function;
             this.function = function;
         }
-        firePropertyChange(PROP_FUNCTION_NAME, old, function);
-    }
-    
-    /**
-     * Gets file name in URL format.
-     *
-     * @return file name in URL format or empty string
-     */
-    public String getURL() {
-        return url;
-    }
-    
-    /**
-     * Sets file name in URL format.
-     *
-     * @param file name
-     */
-    public void setURL(String url) {
-        String old;
-        synchronized (this) {
-            if ((url == this.url) ||
-                    ((url != null) && (this.url != null) && url.equals(this.url))) {
-                return;
-            }
-            // The code below is a temporary protection
-            // against "invalid" URL values.
-            url = url.replace(" ", "%20"); // NOI18N
-            if (!url.startsWith("file:/")) { // NOI18N
-                if (url.startsWith("/")) { // NOI18N
-                    url = "file:" + url; // NOI18N
-                } else {
-                    url = "file:/" + url; // NOI18N
-                }
-            }
-            
-            // Also set the path variable, based on the URL.
-            try {
-                assert(!(url == null && Boolean.getBoolean("gdb.assertions.enabled"))); // NOI18N
-                FileObject fo = URLMapper.findFileObject(new URL(url));
-                if (fo != null) {
-                    if (Utilities.isWindows()) {
-                        path = fo.getPath();
-                    } else {
-                        path = "/" + fo.getPath(); // NOI18N
-                    }
-                }
-            } catch (MalformedURLException mue) {
-                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
-                return;
-            } catch (Exception ex) {
-                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
-            }
-            old = this.url;
-            this.url = url;
-        }
-        firePropertyChange(PROP_URL, old, url);
-    }
-    
-    /**
-     *  Return a path based on this breakpoints URL. The path is not necessarily the
-     *  same as the URL with the "File:/" removed. This is because Windows often substitues
-     *  "%20" for spaces. It also puts a "/" before the drive specifier.
-     */
-    public String getPath() {
-        return path;
-    }
-    
-    /**
-     * Gets number of line to stop on.
-     *
-     * @return line number to stop on
-     */
-    public int getLineNumber() {
-        return lineNumber;
-    }
-    
-    /**
-     * Sets number of line to stop on.
-     *
-     * @param ln a line number to stop on
-     */
-    public void setLineNumber(int ln) {
-        int old;
-        synchronized (this) {
-            if (ln == lineNumber) {
-                return;
-            }
-            old = lineNumber;
-            lineNumber = ln;
-        }
-        firePropertyChange(PROP_LINE_NUMBER, new Integer(old), new Integer(ln));
+//        firePropertyChange(PROP_FUNCTION_NAME, old, function);
     }
     
     /**
@@ -218,37 +114,6 @@ public class FunctionBreakpoint extends GdbBreakpoint {
      */
     public int getBreakpointType() {
         return type;
-    }
-    
-    /**
-     * Returns condition.
-     *
-     * @return cond a condition
-     */
-    public String getCondition() {
-        return condition;
-    }
-    
-    /**
-     * Sets condition.
-     *
-     * @param c a new condition
-     */
-    public void setCondition(String c) {
-        String old;
-        synchronized (this) {
-            if (c == null) {
-                c = ""; // NOI18N
-            }
-            c = c.trim();
-            if ((c == condition) ||
-                    ((c != null) && (condition != null) && condition.equals(c))) {
-                return;
-            }
-            old = condition;
-            condition = c;
-        }
-        firePropertyChange(PROP_CONDITION, old, c);
     }
     
     /**

@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
  * Implementation of breakpoint on function.
@@ -49,18 +48,17 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
         if (getDebugger().getState() == GdbDebugger.STATE_RUNNING) {
             getDebugger().setSilentStop();
         }
-        if (breakpoint.getState() == GdbBreakpoint.UNVALIDATED) {
+        if (getState() == BPSTATE_UNVALIDATED) {
             functionName = breakpoint.getFunctionName();
             int token = getDebugger().getGdbProxy().break_insert(functionName);
-            breakpoint.setID(token);
-            breakpoint.setPending();
+            getDebugger().addPendingBreakpoint(token, this);
         } else {
-            if (breakpoint.getState() == GdbBreakpoint.DELETION_PENDING) {
-                getDebugger().getGdbProxy().break_delete(breakpoint.getBreakpointNumber());
+            if (getState() == BPSTATE_DELETION_PENDING) {
+                getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
             } else if (breakpoint.isEnabled()) {
-                getDebugger().getGdbProxy().break_enable(breakpoint.getBreakpointNumber());
+                getDebugger().getGdbProxy().break_enable(getBreakpointNumber());
             } else {
-                getDebugger().getGdbProxy().break_disable(breakpoint.getBreakpointNumber());
+                getDebugger().getGdbProxy().break_disable(getBreakpointNumber());
             }
         }
     }

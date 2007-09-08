@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
+import org.netbeans.spi.debugger.ui.Constants;
 
 /**
  * The variable type used in Gdb watches.
@@ -106,8 +107,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         } else if (ev.getPropertyName() == Watch.PROP_EXPRESSION) {
             setTypeInvalid();
             setValueInvalid();
-        } else if (ev.getPropertyName() == Watch.PROP_VALUE) {
-            System.err.println("");
         }
     }
     
@@ -116,11 +115,11 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     }
     
     public String getType() {
-        if (type == null) {
+        if (type == null || type.length() == 0) {
             synchronized (invalidType) {
                 if (invalidType[0]) {
                     try {
-                        invalidType.wait(10000);
+                        invalidType.wait(200);
                         expandChildrenFromValue(this);
                     } catch (InterruptedException ex) {
                         return "";
@@ -149,7 +148,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             synchronized (invalidValue) {
                 if (invalidValue[0]) {
                     try {
-                        invalidValue.wait(10000);
+                        invalidValue.wait(200);
                     } catch (InterruptedException ex) {
                         invalidValue[0] = false;
                         return "";

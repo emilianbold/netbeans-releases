@@ -270,9 +270,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
     public int getFieldsCount() {
         if (fields.length > 0) {
             return fields.length;
-        } else if ((type != null &&
-                    ((type.indexOf('[') != -1) || (type.indexOf("**") != -1 && isValidPointerAddress(value)))) ||
-                (value != null && value.charAt(0) == '{')) {
+        } else if (type != null && value != null &&
+                ((type.indexOf('[') != -1 || (type.indexOf("**") != -1 && isValidPointerAddress(value))) ||
+                value.charAt(0) == '{')) {
             return 5;
         } else {
             return 0;

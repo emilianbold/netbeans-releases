@@ -85,22 +85,22 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      * @param action an action which has been called
      */    
     public void runAction(final Object action) {
-        if (getDebuggerImpl() != null) {
-            synchronized (getDebuggerImpl().LOCK) {
+        if (getDebugger() != null) {
+            synchronized (getDebugger().LOCK) {
                 if (action == ActionsManager.ACTION_STEP_INTO) {
-                    getDebuggerImpl().stepInto();
+                    getDebugger().stepInto();
                     return;
                 }
                 if (action == ActionsManager.ACTION_STEP_OUT) {
-                    getDebuggerImpl().stepOut();
+                    getDebugger().stepOut();
                     return;
                 }
                 if (action == ActionsManager.ACTION_STEP_OVER) {
-                    getDebuggerImpl().stepOver();
+                    getDebugger().stepOver();
                     return;
                 }
                 if (action == ActionsManager.ACTION_CONTINUE) {
-                    getDebuggerImpl().resume();
+                    getDebugger().resume();
                     return;
                 }
             }
@@ -131,7 +131,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
     protected void checkEnabled(String debuggerState) {
         Iterator i = getActions().iterator();
         while (i.hasNext()) {
-            setEnabled(i.next(), debuggerState == getDebuggerImpl().STATE_STOPPED);
+            setEnabled(i.next(), debuggerState == getDebugger().STATE_STOPPED);
         }
     }
 }

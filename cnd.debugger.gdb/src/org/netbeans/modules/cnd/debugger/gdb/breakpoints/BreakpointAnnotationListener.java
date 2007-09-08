@@ -65,23 +65,22 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
      * Listens on breakpoint.
      */
     public void propertyChange(PropertyChangeEvent e) {
-        String propertyName = e.getPropertyName();
-        if (propertyName == null) return;
-        if (!listen) return;
-        if ( (!propertyName.equals(LineBreakpoint.PROP_CONDITION)) &&
-                (!propertyName.equals(LineBreakpoint.PROP_URL)) &&
-                (!propertyName.equals(LineBreakpoint.PROP_LINE_NUMBER)) &&
-                (!propertyName.equals(GdbBreakpoint.PROP_ENABLED))
-                ) return;
-        if (e.getSource() instanceof LineBreakpoint) {
-            LineBreakpoint lb = (LineBreakpoint) e.getSource();
-            annotate(lb);
-            return;
-        } 
-        if (e.getSource() instanceof FunctionBreakpoint) {
-            FunctionBreakpoint fb = (FunctionBreakpoint) e.getSource();
-            annotate(fb);
-            return;
+        if (listen) {
+            String propertyName = e.getPropertyName();
+            if ( (!propertyName.equals(LineBreakpoint.PROP_CONDITION)) &&
+                    (!propertyName.equals(LineBreakpoint.PROP_URL)) &&
+                    (!propertyName.equals(LineBreakpoint.PROP_LINE_NUMBER)) &&
+                    (!propertyName.equals(GdbBreakpoint.PROP_ENABLED))
+                    ) {
+                return;
+            }
+            if (e.getSource() instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) e.getSource();
+                annotate(lb);
+            }  else if (e.getSource() instanceof FunctionBreakpoint) {
+                FunctionBreakpoint fb = (FunctionBreakpoint) e.getSource();
+                annotate(fb);
+            }
         }
     }
     
@@ -91,13 +90,9 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
      * @param b breakpoint
      */
     public void breakpointAdded(Breakpoint b) {
-        if (b instanceof LineBreakpoint) {
-            ((LineBreakpoint) b).addPropertyChangeListener(this);
-            annotate((LineBreakpoint) b);
-        }
-        if (b instanceof FunctionBreakpoint) {
-            ((FunctionBreakpoint) b).addPropertyChangeListener(this);
-            // annotate((FunctionBreakpoint) b); // No line number yet.
+        b.addPropertyChangeListener(this);
+        if (b instanceof GdbBreakpoint) {
+            annotate((GdbBreakpoint) b);
         }
     }
     
@@ -107,22 +102,8 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
      * @param breakpoint
      */
     public void breakpointRemoved(Breakpoint b) {
-        if (b instanceof LineBreakpoint) {
-            ((LineBreakpoint) b).removePropertyChangeListener(this);
-            removeAnnotation((LineBreakpoint) b);
-        }
-        if (b instanceof FunctionBreakpoint) {
-            FunctionBreakpoint fb = (FunctionBreakpoint) b;
-            fb.removePropertyChangeListener(this);
-            removeAnnotation(fb);
-            int bpn = fb.getBreakpointNumber();
-            if (bpn > 0) {
-                GdbDebugger debugger = fb.getDebugger();
-                if ((debugger != null) && (debugger.getGdbProxy() != null)){
-                    debugger.getGdbProxy().break_delete(bpn);
-                }
-            }
-        }
+        b.removePropertyChangeListener(this);
+        removeAnnotation(b);
     }
     
     public GdbBreakpoint findBreakpoint(String url, int lineNumber) {
@@ -168,25 +149,35 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
         return null;
     }
     
-    
-    // helper methods ..........................................................
-    
-    private void annotate(LineBreakpoint b) {
+    private void annotate(GdbBreakpoint b) {
         // remove old annotation
         Object annotation = breakpointToAnnotation.get(b);
-        if (annotation != null)
+        if (annotation != null) {
             EditorContextBridge.getContext().removeAnnotation(annotation);
-        if (b.isHidden()) return;
-        
+        }
+        if (b.isHidden()) {
+            return;
+        }
+
+        // check line number (optimization)
+        int lineNumber = b.getLineNumber();
+        if (lineNumber < 1) {
+            return;
+        }
+
         // add new one
         annotation = EditorContextBridge.annotate(b);
-        if (annotation == null) return;
+        if (annotation == null) {
+            return;
+        }
         breakpointToAnnotation.put(b, annotation);
         
+        // update timestamp
         DebuggerEngine dm = DebuggerManager.getDebuggerManager().getCurrentEngine();
         Object timeStamp = null;
-        if (dm != null)
+        if (dm != null) {
             timeStamp = dm.lookupFirst(null, GdbDebugger.class);
+        }
         update(b, timeStamp);
     }
     
@@ -198,19 +189,13 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
         Iterator it = breakpointToAnnotation.keySet().iterator();
         while (it.hasNext()) {
             Object o = it.next();
-            if (o instanceof LineBreakpoint) {
-                LineBreakpoint lb = (LineBreakpoint) o;
-                update(lb, null);
-            }
-            // Ignore FunctionBreakpoint ?
-            if (o instanceof FunctionBreakpoint) {
-                FunctionBreakpoint fb = (FunctionBreakpoint) o;
-                update(fb, null);
+            if (o instanceof GdbBreakpoint) {
+                update((GdbBreakpoint) o, null);
             }
         }
     }
     
-    private void update(LineBreakpoint b, Object timeStamp) {
+    private void update(GdbBreakpoint b, Object timeStamp) {
         Object annotation = breakpointToAnnotation.get(b);
         int ln = EditorContextBridge.getContext().getLineNumber(annotation, timeStamp);
         listen = false;
@@ -218,53 +203,9 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
         listen = true;
     }
     
-    private void removeAnnotation(LineBreakpoint b) {
+    private void removeAnnotation(Breakpoint b) {
         Object annotation = breakpointToAnnotation.remove(b);
         if (annotation != null)
             EditorContextBridge.getContext().removeAnnotation(annotation);
-    }
-    
-    private void annotate(FunctionBreakpoint b) {
-        // remove old annotation
-        Object annotation = breakpointToAnnotation.get(b);
-        if (annotation != null)
-            EditorContextBridge.getContext().removeAnnotation(annotation);
-        if (b.isHidden()) return;
-
-        // check line number (optimization)
-        int lineNumber = b.getLineNumber();
-        if (lineNumber < 1) {
-            return;
-        }
-        
-        // add new one
-        annotation = EditorContextBridge.annotate(b);
-        if (annotation == null) return;
-        breakpointToAnnotation.put(b, annotation);
-        
-        // update timestamp
-        DebuggerEngine dm = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        Object timeStamp = null;
-        if (dm != null)
-            timeStamp = dm.lookupFirst(null, GdbDebugger.class);
-        update(b, timeStamp);
-    }
-    
-    private void update(FunctionBreakpoint b, Object timeStamp) {
-        Object annotation = breakpointToAnnotation.get(b);
-        int ln = EditorContextBridge.getContext().getLineNumber(annotation, timeStamp);
-        listen = false;
-        b.setLineNumber(ln);
-        listen = true;
-    }
-    
-    private void removeAnnotation(FunctionBreakpoint b) {
-        Object annotation = breakpointToAnnotation.remove(b);
-        if (annotation == null) {
-            annotation = b.annotation;
-        }
-        if (annotation != null) {
-            EditorContextBridge.getContext().removeAnnotation(annotation);
-        }
     }
 }

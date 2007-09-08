@@ -33,7 +33,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrameImpl;
+import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
@@ -130,7 +130,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         /*
          *`Temporary fix.
          * AbstractVariable cannot be casted to Field, so we use LocalVariableImpl
-         * to specify children (see getLocalVariables() in CallStackFrameImpl).
+         * to specify children (see getLocalVariables() in CallStackFrame).
          * The problem is that LocalVariableImpl does not have fields, so
          * this solution works only for 1-level structures.
          */
@@ -185,7 +185,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     
     private Object[] getLocalVariables(int from, int to) {
         synchronized (debugger.LOCK) {
-            CallStackFrameImpl callStackFrame = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
+            CallStackFrame callStackFrame = (CallStackFrame) debugger.getCurrentCallStackFrame();
             if (callStackFrame == null) {
                 return new String [] {"No current thread"}; // NOI18N
             }

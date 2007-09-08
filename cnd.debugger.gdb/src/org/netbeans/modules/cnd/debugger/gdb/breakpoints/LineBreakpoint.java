@@ -44,12 +44,6 @@ public class LineBreakpoint extends GdbBreakpoint {
     public static final String          PROP_URL = "url"; // NOI18N
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     
-    private final String                emptyString = ""; // NOI18N
-    private String                      url = emptyString;
-    private String                      path = emptyString;
-    private int                         lineNumber;
-    private String                      condition = emptyString;
-    
     /**
      * Creates a new breakpoint for given parameters.
      *
@@ -63,117 +57,6 @@ public class LineBreakpoint extends GdbBreakpoint {
         b.setLineNumber(lineNumber);
         return b;
     }
-
-    /**
-     * Gets name of class to stop on.
-     *
-     * @return name of class to stop on
-     */
-    public String getURL() {
-        return url;
-    }
-    
-    /**
-     * Sets name of class to stop on.
-     *
-     * @param url the URL of class to stop on
-     */
-    public void setURL(String url) {
-        String old;
-        synchronized (this) {
-            if ((url == this.url) ||
-		     ((url != null) && (this.url != null) && url.equals(this.url))) {
-		return;
-	    }
-            
-            // Also set the path variable, based on the URL.
-            try {
-                assert(!(url == null && Boolean.getBoolean("gdb.assertions.enabled"))); // NOI18N
-                FileObject fo = URLMapper.findFileObject(new URL(url));
-                if (fo != null) {
-		    if (Utilities.isWindows()) {
-			path = fo.getPath();
-		    } else {
-			path = "/" + fo.getPath(); // NOI18N
-		    }
-		}
-            } catch (MalformedURLException mue) {
-                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
-                return;
-            } catch (Exception ex) {
-                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
-            }
-            old = this.url;
-            this.url = url;
-        }
-        firePropertyChange(PROP_URL, old, url);
-    }
-    
-    /**
-     *  Return a path based on this breakpoints URL. The path is not necessarily the
-     *  same as the URL with the "File:/" removed. This is because Windows often substitues
-     *  "%20" for spaces. It also puts a "/" before the drive specifier.
-     */
-    public String getPath() {
-        return path;
-    }
-    
-    /**
-     * Gets number of line to stop on.
-     *
-     * @return line number to stop on
-     */
-    public int getLineNumber() {
-        return lineNumber;
-    }
-    
-    /**
-     * Sets number of line to stop on.
-     *
-     * @param ln a line number to stop on
-     */
-    public void setLineNumber(int ln) {
-        int old;
-        synchronized (this) {
-            if (ln == lineNumber) {
-		return;
-	    }
-            old = lineNumber;
-            lineNumber = ln;
-        }
-        firePropertyChange(PROP_LINE_NUMBER, new Integer(old), new Integer(ln));
-    }
-    
-    /**
-     * Returns condition.
-     *
-     * @return cond a condition
-     */
-    public String getCondition() {
-        return condition;
-    }
-    
-    /**
-     * Sets condition.
-     *
-     * @param c a new condition
-     */
-    public void setCondition(String c) {
-        String old;
-        synchronized (this) {
-            if (c == null) {
-		c = emptyString;
-	    }
-            c = c.trim();
-            if ((c == condition) ||
-                 ((c != null) && (condition != null) && condition.equals(c))) {
-		return;
-	    }
-            old = condition;
-            condition = c;
-        }
-        firePropertyChange(PROP_CONDITION, old, c);
-    }
     
     /**
      * Returns a string representation of this object.
@@ -181,7 +64,7 @@ public class LineBreakpoint extends GdbBreakpoint {
      * @return  a string representation of the object
      */
     public String toString() {
-        return "LineBreakpoint " + url + " : " + lineNumber; // NOI18N
+        return "LineBreakpoint " + getURL() + " : " + getLineNumber(); // NOI18N
     }
     
     private static class LineBreakpointComparable extends LineBreakpoint implements Comparable {
@@ -193,11 +76,11 @@ public class LineBreakpoint extends GdbBreakpoint {
             if (o instanceof LineBreakpointComparable) {
                 LineBreakpoint lbthis = this;
                 LineBreakpoint lb = (LineBreakpoint) o;
-                int uc = lbthis.url.compareTo(lb.url);
+                int uc = lbthis.getURL().compareTo(lb.getURL());
                 if (uc != 0) {
                     return uc;
                 } else {
-                    return lbthis.lineNumber - lb.lineNumber;
+                    return lbthis.getLineNumber() - lb.getLineNumber();
                 }
             } else {
                 return -1;
