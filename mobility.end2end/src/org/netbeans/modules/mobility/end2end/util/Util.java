@@ -69,7 +69,7 @@ import org.openide.windows.WindowManager;
  * @author suchys
  */
 public final class Util {
-    
+
     private Util() {
         //to avoid instantiation
     } 
@@ -178,47 +178,62 @@ public final class Util {
         /* mark Servlet */
         try{
             boolean servlet = false;
-            boolean mapped = false;
             
             String servletName = mapping.getServerMapping().getClassName();
+            String packageName = mapping.getServerMapping().getPackageName();
+            String servletClassFQN = packageName.length() != 0 ? packageName + '.' + servletName : servletName;
             FileObject fo = null;
             final WebModuleProvider provider = project.getLookup().lookup( WebModuleProvider.class );
             final WebModule wm = provider.findWebModule(project.getProjectDirectory());
             final WebApp webApp = DDProvider.getDefault().getDDRootCopy(fo = wm.getDeploymentDescriptor());
             final Servlet[] servlets = webApp.getServlet();
             for (int i = 0; i < servlets.length; i++){
-                if( servlets[i].getServletName().equals( servletName )) {
+                if( servlets[i].getServletClass().equals( servletClassFQN )) {
                     servlet = true; //already contains
                 }
             }
             
             if( !servlet ){
+                servletName = findFreeName(servletName, webApp);
                 final Servlet newServlet = (Servlet) webApp.createBean( "Servlet" ); //NOI18N
                 newServlet.setServletName( servletName );
-                newServlet.setServletClass( mapping.getServerMapping().getPackageName() + "." + mapping.getServerMapping().getClassName());
+                newServlet.setServletClass( servletClassFQN );
                 newServlet.setDescription( NbBundle.getMessage( Util.class, "TXT_servletElementDescription" ));
-                newServlet.setDisplayName( "Javon service for : " + mapping.getClientMapping().getClassName()); // NOI18N
+                newServlet.setDisplayName( "Javon service for : " +servletClassFQN ); // NOI18N
                 webApp.addServlet(newServlet);
-            }
-            
-            final ServletMapping[] servletsMapping = webApp.getServletMapping();
-            for (int i = 0; i < servletsMapping.length; i++){
-                if (servletsMapping[i].getServletName().equals( servletName )){
-                    mapped = true; //already contains
-                }
-            }
-            if( !mapped ){
+
                 final ServletMapping newServletMapping = (ServletMapping) webApp.createBean( "ServletMapping" ); //NOI18N
                 newServletMapping.setServletName( servletName );
                 newServletMapping.setUrlPattern( "/servlet/" + mapping.getServerMapping().getPackageName() + "." + mapping.getServerMapping().getClassName()); //NOI18N
                 webApp.addServletMapping( newServletMapping );
             }
-            if( !servlet || !mapped ) {
+            
+
+            if( !servlet ) {
                 webApp.write(fo);
             }
         }catch (Exception ex){
             ErrorManager.getDefault().notify(ex);
         }
+    }
+    
+    private static String findFreeName(String servletName, WebApp webApp) {
+        int nameIndex = 0;
+        final Servlet[] servlets = webApp.getServlet();
+        for (int i = 0; i < servlets.length; i++){
+            if( !servlets[i].getServletName().equals( servletName )) {
+                break;
+            }
+            servletName = servletName + (++nameIndex);
+        }
+        final ServletMapping[] servletsMapping = webApp.getServletMapping();
+        for (int i = 0; i < servletsMapping.length; i++){
+            if (!servletsMapping[i].getServletName().equals( servletName )){
+                break;
+            }
+            servletName = servletName + (++nameIndex);
+        }
+        return servletName;
     }
     
 //    public static JavaClass resolveWebServiceClass( final FileObject projectFolder, final String fqn ) {
