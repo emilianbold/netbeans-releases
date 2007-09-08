@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.EntityResolver;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
@@ -54,6 +55,8 @@ public class ServerInstanceReader {
     
     private static final String NB_DEFAULT_ATTRS_DTD = "xml/entities/NetBeans/DTD_DefaultAttributes_1_0"; // NOI18N
     private static final String NB_DEFAULT_ATTRS_PUBLIC_ID = "-//NetBeans//DTD DefaultAttributes 1.0//EN"; // NOI18N
+    
+    private static final String LOCAL_NB_DEFAULT_ATTRS_DTD = "NetBeansDefaultAttrs_1_0.dtd";
     
     private List<ServerInstance> instances;
     private String fileName;
@@ -88,6 +91,9 @@ public class ServerInstanceReader {
                             FileObject file = Repository.getDefault().getDefaultFileSystem().findResource(NB_DEFAULT_ATTRS_DTD);
                             if (file != null) {
                                 return new InputSource(file.getInputStream());
+                            } else { // command line support for offline ATS
+                                URL url = getClass().getResource(LOCAL_NB_DEFAULT_ATTRS_DTD);
+                                return new InputSource(url.openStream());
                             }
                         }
                         
