@@ -36,7 +36,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableEleme
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.roundtripframework.codegeneration.ICodeGeneration;
 import org.netbeans.modules.uml.core.roundtripframework.codegeneration.IParseInformationCache;
-import org.netbeans.modules.uml.core.support.umlmessagingcore.IMessengerEventsSink;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
@@ -56,7 +55,6 @@ import org.netbeans.modules.uml.ui.products.ad.diagramlisteners.IDiagramBackupCl
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.QuestionResponse;
-import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
 import org.netbeans.modules.uml.ui.support.applicationmanager.AcceleratorManager;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IAcceleratorManager;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IPresentationResourceMgr;
@@ -78,9 +76,9 @@ import org.netbeans.modules.uml.ui.support.messaging.IMessenger;
 import org.netbeans.modules.uml.ui.support.messaging.Messenger;
 import org.netbeans.modules.uml.ui.support.messaging.ProgressDialogNoUI;
 import org.netbeans.modules.uml.core.scm.ISCMEventDispatcher;
-import org.netbeans.modules.uml.core.scm.ISCMEventsSink;
 import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import org.netbeans.modules.uml.core.scm.SCMObjectCreator;
+import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import org.netbeans.modules.uml.ui.swing.propertyeditor.IPropertyEditor;
@@ -93,7 +91,10 @@ import org.openide.ErrorManager;
 public class ADProduct extends CoreProduct implements IADProduct
 {
     /// This is the project tree
-    private IProjectTreeControl m_ProjectTree = null;
+    private IProjectTreeControl m_ProjectTree = null; 
+    
+    // This is the project tree model. Can be used in place of m_ProjectTree
+    private IProjectTreeModel mProjectTreeModel;
     
     /// This is the design center tree
     private IProjectTreeControl m_DesignCenterTree = null;
@@ -291,6 +292,26 @@ public class ADProduct extends CoreProduct implements IADProduct
             m_ProjectTree = null;
         }
         m_ProjectTree = newVal;
+    }
+    
+     /**
+     * Returns the project tree model 
+     *
+     * @param pVal[out]
+     */
+    public IProjectTreeModel getProjectTreeModel()
+    {
+        return mProjectTreeModel;
+    }
+    
+    /**
+     * Sets the project tree model
+     *
+     * @param newVal[in]
+     */
+    public void setProjectTreeModel(IProjectTreeModel newTreeModel)
+    {
+        mProjectTreeModel = newTreeModel;
     }
     
     /**

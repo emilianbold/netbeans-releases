@@ -21,8 +21,6 @@
 package org.netbeans.modules.uml.ui.support.applicationmanager;
 
 import org.netbeans.modules.uml.core.IApplication;
-//import org.netbeans.modules.uml.core.addinframework.IAddIn;
-//import org.netbeans.modules.uml.core.addinframework.IAddInManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -30,6 +28,7 @@ import org.netbeans.modules.uml.ui.support.messaging.IProgressDialog;
 import org.netbeans.modules.uml.ui.support.messaging.IMessenger;
 import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
+import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.netbeans.modules.uml.ui.swing.propertyeditor.IPropertyEditor;
 
 public interface IProduct extends ICoreProduct
@@ -54,6 +53,18 @@ public interface IProduct extends ICoreProduct
 	*/
 	public void setProjectTree( IProjectTreeControl value );
 
+        /**
+	 * Get uml project tree Model
+	*/
+        public IProjectTreeModel getProjectTreeModel();
+   
+    
+        /**
+        * Set uml project tree model
+        */
+        public void setProjectTreeModel(IProjectTreeModel newTreeModel);
+   
+    
 	/**
 	 * Get/Set the uml project tree
 	*/

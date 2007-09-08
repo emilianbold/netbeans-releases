@@ -28,13 +28,9 @@ import java.awt.Frame;
 import java.util.Vector;
 
 import org.netbeans.modules.uml.core.IApplication;
-//import org.netbeans.modules.uml.core.addinframework.IAddIn;
-//import org.netbeans.modules.uml.core.addinframework.IAddInManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.IMessageService;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
@@ -57,6 +53,7 @@ import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import org.netbeans.modules.uml.ui.swing.propertyeditor.IPropertyEditor;
 import org.netbeans.modules.uml.ui.addins.diagramcreator.IDiagCreatorAddIn;
 import org.netbeans.modules.uml.ui.addins.diagramcreator.DiagCreatorAddIn;
+import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.openide.util.NbPreferences;
 
 /**
@@ -236,6 +233,16 @@ public class ProductHelper
 		if (prod != null)
 		{
 			return prod.getProjectTree();
+		}
+		return null;
+	}
+        
+        public static IProjectTreeModel getProjectTreeModel()
+	{
+		IProduct prod = getProduct();
+		if (prod != null)
+		{
+                    return prod.getProjectTreeModel();
 		}
 		return null;
 	}
