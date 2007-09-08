@@ -1117,14 +1117,14 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
     public IETSize calculateOptimumSize(IDrawInfo pDrawInfo, boolean bAt100Pct)
     {
         IETSize retVal = super.calculateOptimumSize(pDrawInfo, true);
-        
+        	
         if( retVal != null )
         {
             // Fix J1794:  Because we handle sizing differently in Java, we need to
             //             ensure the minimum width of the lifeline is maintained here.
             final int width = Math.max( LIFELINE_MIN_WIDTH, retVal.getWidth() );
             retVal.setWidth( width + (2 * getBorderThickness()));
-            
+
             if( ! bAt100Pct )
             {
                 TSTransform transform = pDrawInfo != null ? pDrawInfo.getTSTransform() : getTransform();
@@ -1482,8 +1482,17 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
             IETSize optimumSize = calculateOptimumSize(info, false);
                        
             // disable automatic down-sizing #90587, but stretch lifeline when necessary 
+	    double minHeight = -1;
+	    TSTransform transform = ( info != null 
+				      ? info.getTSTransform() 
+				      : getTransform() );
+	    if( transform != null )
+            {
+		minHeight = transform.heightToDevice(nodeUI.getHeight());
+	    }
             resize(new ETSize((int)Math.max(optimumSize.getWidth(), minWidth),
-                    (int)Math.max(optimumSize.getHeight(), nodeUI.getHeight())) , true);
+                    (int)Math.max(optimumSize.getHeight(), minHeight)) , true);
+
         }
     }
     
