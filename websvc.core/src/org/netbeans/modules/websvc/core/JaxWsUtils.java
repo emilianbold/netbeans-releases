@@ -896,24 +896,44 @@ public class JaxWsUtils {
         }
     }
     
-    public boolean needsSoapHandler(WsdlModel model) {
-        //TODO
+    /**
+     * @param model the WSDL model the handler is for.
+     * @return true if the WSDL model operation parameters could be set in SOAP header
+     */
+    public static boolean needsSoapHandler(WsdlModel model) {
+        //TODO 
         return false;
     }
     
-    public static String getSoapHandler(WsdlModel model) {
-        //TODO
-        return null;
-    }
-    
-    public static String createSoapHandler(WsdlModel model) {
-        //TODO
-        return null;
-    }
-    
+    /**
+     * Retrieve map of SOAP header element QName and its java type name.
+     * @param model the WSDL model the handler is for.
+     * @return map of SOAP header element QName and its java type name.
+     */
     public static Map<QName,String> getSoapHandlerParameterTypes(WsdlModel model) {
         Map<QName,String> paramMap = new HashMap<QName,String>();
         //TODO
         return paramMap;
+    }
+    
+    /**
+     * Retrieve SOAP handler for given WSDL model.
+     * @param model the WSDL model the handler is for.
+     * @return the hanlder or null if none exist.
+     */
+    public static FileObject getSoapHandler(WsdlModel model) {
+        //TODO
+        return null;
+    }
+    
+    /**
+     * Create SOAP handler for given WSDL model.
+     * @param destdir destination directory.
+     * @param model the WSDL model the handler is for.
+     * @param soapHeaderValues values for SOAP header elements.
+     */
+    public static FileObject createSoapHandler(FileObject dest, WsdlModel model, Map<QName,Object> soapHeaderValues) {
+        //TODO
+        return null;
     }
 }
