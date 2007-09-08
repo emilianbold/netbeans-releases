@@ -165,13 +165,14 @@ public class JaxwsOperationInfo {
     }
     
     public void setupSoapHandler(FileObject destdir) {
-        Map<QName,Object> initValues = new HashMap<QName,Object>();
-        for (ParameterInfo info : getSoapHandlerParameters()) {
-            if (info.getDefaultValue() != null) {
-                initValues.put(info.getQName(), info.getDefaultValue());
+        if (JaxWsUtils.needsSoapHandler(getWsdlModel()) &&
+            JaxWsUtils.getSoapHandler(getWsdlModel()) == null) {
+            Map<QName,Object> initValues = new HashMap<QName,Object>();
+            for (ParameterInfo info : getSoapHandlerParameters()) {
+                if (info.getDefaultValue() != null) {
+                    initValues.put(info.getQName(), info.getDefaultValue());
+                }
             }
-        }
-        if (JaxWsUtils.getSoapHandler(getWsdlModel()) == null) {
             JaxWsUtils.createSoapHandler(destdir, getWsdlModel(), initValues);
         }
     }
