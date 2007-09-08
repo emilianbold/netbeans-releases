@@ -23,7 +23,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.RubyTestBase;
 import java.util.Map;
 import org.netbeans.api.gsf.CompilationInfo;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +34,7 @@ import javax.swing.text.Document;
 import org.jruby.ast.Node;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.NbTestCase;
@@ -80,7 +80,7 @@ public abstract class HintTestBase extends RubyTestBase {
     };
     
     protected List<FileObject> getBigSourceFiles() {
-        FileObject jruby = findJRuby();
+        FileObject jruby = TestUtil.getXTestJRubyHomeFO();
         
         List<FileObject> files = new ArrayList<FileObject>();
         for (String relative : JRUBY_BIG_FILES) {
