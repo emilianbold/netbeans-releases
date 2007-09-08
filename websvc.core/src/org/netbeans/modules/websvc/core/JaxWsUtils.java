@@ -84,6 +84,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.openide.cookies.EditCookie;
 
 /**
@@ -893,6 +894,11 @@ public class JaxWsUtils {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+    }
+    
+    public boolean needsSoapHandler(WsdlModel model) {
+        //TODO
+        return false;
     }
     
     public static String getSoapHandler(WsdlModel model) {
