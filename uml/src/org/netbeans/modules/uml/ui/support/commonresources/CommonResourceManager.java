@@ -43,6 +43,7 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.metamodel.structure.IComponent;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 /**
@@ -656,7 +657,9 @@ public class CommonResourceManager implements ICommonResourceManager
 
             // IPartFacade ISA IClass, and part facade's already have the right
             // searchStr, so don't let those into this else-if
-            else if (pDisp instanceof IClass && !(pDisp instanceof IPartFacade))
+            else if (pDisp instanceof IClass 
+                && !(pDisp instanceof IPartFacade)
+                && !(pDisp instanceof IComponent))
             {
                 searchStr = "Class"; // NOI18N
                 ETList stereotypes = ((IClassifier)pDisp).getAppliedStereotypesAsString();
