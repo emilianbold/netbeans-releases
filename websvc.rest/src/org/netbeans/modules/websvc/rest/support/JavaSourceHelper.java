@@ -749,12 +749,9 @@ public class JavaSourceHelper {
             List<? extends AnnotationMirror> anmirs = method.getAnnotationMirrors();
 
             AnnotationMirror mirrorHttpMethod = findAnnotation(anmirs, Constants.HTTP_METHOD_ANNOTATION);
-            if (mirrorHttpMethod == null) {
-                throw new RuntimeException();
-            }
             if (annotationHasAttributeValue(mirrorHttpMethod, HttpMethodType.GET.name())) {
                 TypeMirror tm = method.getReturnType();
-                if (tm.getKind() == TypeKind.DECLARED) {
+                if (tm != null && tm.getKind() == TypeKind.DECLARED) {
                     TypeElement returnType = (TypeElement) ((DeclaredType) tm).asElement();
                     if (returnType.getSimpleName().toString().endsWith(defaultSuffix)) {
                         return returnType;
