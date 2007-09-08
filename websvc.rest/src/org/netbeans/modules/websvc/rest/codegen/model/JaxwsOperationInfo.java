@@ -22,10 +22,14 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
@@ -37,6 +41,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.wizard.Util;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -158,12 +163,27 @@ public class JaxwsOperationInfo {
             support.addServiceClient(serviceName, wsdlUrl, packageName, true);
         }
     }
+    
+    public void setupSoapHandler(FileObject destdir) {
+        Map<QName,Object> initValues = new HashMap<QName,Object>();
+        for (ParameterInfo info : getSoapHandlerParameters()) {
+            if (info.getDefaultValue() != null) {
+                initValues.put(info.getQName(), info.getDefaultValue());
+            }
+        }
+        if (JaxWsUtils.getSoapHandler(getWsdlModel()) == null) {
+            JaxWsUtils.createSoapHandler(destdir, getWsdlModel(), initValues);
+        }
+    }
 
+    private WsdlModel wsdlModel = null;
     private WsdlModel getWsdlModel() {
-        WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(getWsdlLocation());
-        wsdlModeler.setPackageName(packageName);
-
-        return wsdlModeler.getAndWaitForWsdlModel();
+        if (wsdlModel == null) {
+            WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(getWsdlLocation());
+            wsdlModeler.setPackageName(packageName);
+            wsdlModel = wsdlModeler.getAndWaitForWsdlModel();
+        }
+        return wsdlModel;
     }
 
     public static WsdlOperation findOperationByName(WsdlPort port, String name) {
@@ -281,5 +301,23 @@ public class JaxwsOperationInfo {
         }
 
         return types.toArray(new Class[types.size()]);
+    }
+    
+    private List<ParameterInfo> soapHandlerParams;
+    public List<ParameterInfo> getSoapHandlerParameters() {
+        if (soapHandlerParams == null) {
+            soapHandlerParams = new ArrayList<ParameterInfo>();
+
+            if (JaxWsUtils.needsSoapHandler(getWsdlModel())) {
+                Map<QName,String> params = JaxWsUtils.getSoapHandlerParameterTypes(getWsdlModel());
+                for (Map.Entry<QName,String> entry : params.entrySet()) {
+                    Class type = Util.getType(project, entry.getValue());
+                    ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());
+                    info.setIsQueryParam(false);
+                    soapHandlerParams.add(info);
+                }
+            }
+        }
+        return soapHandlerParams;
     }
 }

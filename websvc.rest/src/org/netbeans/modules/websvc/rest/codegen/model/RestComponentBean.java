@@ -17,6 +17,7 @@
 package org.netbeans.modules.websvc.rest.codegen.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
@@ -49,6 +50,10 @@ public abstract class RestComponentBean extends GenericResourceBean {
         }
 
         return inputParams;
+    }
+    
+    public List<ParameterInfo> getStaticParameters() {
+        return Collections.emptyList();
     }
 
     protected abstract List<ParameterInfo> initInputParameters();

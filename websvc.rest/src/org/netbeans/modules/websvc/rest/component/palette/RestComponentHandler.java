@@ -27,6 +27,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.rest.codegen.WsdlComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.RestComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WadlComponentGenerator;
+import org.netbeans.modules.websvc.rest.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.RestComponentBean;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.modules.websvc.rest.wizard.ProgressDialog;
@@ -85,12 +86,16 @@ public class RestComponentHandler implements ActiveEditorDrop {
                     }
                 
                     RestComponentBean bean = codegen.getBean();
-                    
+                    boolean wrapperResourceExists = codegen.wrapperResourceExists();
+                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getStaticParameters());
+                    if (! wrapperResourceExists) {
+                        allParams.addAll(bean.getInputParameters());
+                    }
                     RestComponentSetupPanel panel = new RestComponentSetupPanel(
                             codegen.getSubresourceLocatorUriTemplate(),
                             bean.getQualifiedClassName(), 
-                            bean.getInputParameters(),
-                            codegen.wrapperResourceExists());
+                            allParams,
+                            wrapperResourceExists);
 
                     DialogDescriptor desc = new DialogDescriptor(panel, 
                             NbBundle.getMessage(RestComponentHandler.class,
@@ -100,7 +105,6 @@ public class RestComponentHandler implements ActiveEditorDrop {
                     if (response.equals(NotifyDescriptor.YES_OPTION)) {
                         codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
                         codegen.setSubresourceLocatorName(panel.getMethodName());
-                        bean.setInputParameters(panel.getInputParameters());
                     } else {
                         // cancel
                         return;

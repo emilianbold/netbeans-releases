@@ -71,10 +71,6 @@ public class RestComponentSetupPanel extends javax.swing.JPanel {
         return resourceNameTF.getText().trim();
     }
 
-    public List<ParameterInfo> getInputParameters() {
-        return inputParams;
-    }
-
     private class ParamTable extends JTable {
 
         @Override

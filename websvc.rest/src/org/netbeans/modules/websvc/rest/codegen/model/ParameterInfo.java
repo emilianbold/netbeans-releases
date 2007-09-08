@@ -16,6 +16,8 @@
  */
 package org.netbeans.modules.websvc.rest.codegen.model;
 
+import javax.xml.namespace.QName;
+
 /**
  *
  * @author Peter Liu
@@ -27,9 +29,15 @@ public class ParameterInfo {
     private String typeName;
     private Object defaultValue;
     private boolean isQueryParam;
+    private QName qname;
 
     public ParameterInfo(String name, Class type) {
         this(name, type, null);
+    }
+    
+    public ParameterInfo(QName qname, Class type, String typeName) {
+        this(qname.getLocalPart(), type, typeName);
+        this.qname = qname;
     }
     
     public ParameterInfo(String name, Class type, String typeName) {
@@ -42,6 +50,13 @@ public class ParameterInfo {
 
     public String getName() {
         return name;
+    }
+    
+    public QName getQName() {
+        if (qname == null) {
+            qname = new QName(name);
+        }
+        return qname;
     }
 
     public Class getType() {

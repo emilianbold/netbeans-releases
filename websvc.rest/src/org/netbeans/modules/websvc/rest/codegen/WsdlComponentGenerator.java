@@ -29,11 +29,14 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -45,6 +48,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.rest.codegen.model.WsdlResourceBean;
 import org.netbeans.modules.websvc.rest.codegen.model.JaxwsOperationInfo;
+import org.netbeans.modules.websvc.rest.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.rest.component.palette.RestComponentData;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -69,6 +73,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
     protected void preGenerate() {
         for (JaxwsOperationInfo info : ((WsdlResourceBean) bean).getOperationInfos()) {
             info.setupWebServiceClient();
+            info.setupSoapHandler(destDir);
         }
     }
 
