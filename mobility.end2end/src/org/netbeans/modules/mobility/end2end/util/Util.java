@@ -204,7 +204,7 @@ public final class Util {
 
                 final ServletMapping newServletMapping = (ServletMapping) webApp.createBean( "ServletMapping" ); //NOI18N
                 newServletMapping.setServletName( servletName );
-                newServletMapping.setUrlPattern( "/servlet/" + mapping.getServerMapping().getPackageName() + "." + mapping.getServerMapping().getClassName()); //NOI18N
+                newServletMapping.setUrlPattern( "/servlet/" + servletClassFQN); //NOI18N
                 webApp.addServletMapping( newServletMapping );
             }
             
