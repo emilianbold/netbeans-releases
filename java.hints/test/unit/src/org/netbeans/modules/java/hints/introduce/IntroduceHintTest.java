@@ -34,10 +34,9 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.hints.Utilities;
+import org.netbeans.modules.java.hints.TestUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDescriptor;
@@ -713,7 +712,7 @@ public class IntroduceHintTest extends NbTestCase {
         
         FileObject data = FileUtil.createData(sourceRoot, "test/Test.java");
         
-        TestUtilities.copyStringToFile(FileUtil.toFile(data), code);
+        org.netbeans.api.java.source.TestUtilities.copyStringToFile(FileUtil.toFile(data), code);
         
         data.refresh();
         
@@ -772,7 +771,7 @@ public class IntroduceHintTest extends NbTestCase {
     private void performFixTest(String code, String golden, DialogDisplayer dd, int numFixes, int useFix) throws Exception {
         int[] span = new int[2];
         
-        code = Utilities.detectOffsets(code, span);
+        code = TestUtilities.detectOffsets(code, span);
         
         performFixTest(code, span[0], span[1], golden, dd, numFixes, useFix);
     }
