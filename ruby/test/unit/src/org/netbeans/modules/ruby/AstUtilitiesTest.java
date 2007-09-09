@@ -8,6 +8,7 @@
 package org.netbeans.modules.ruby;
 
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
 
 /**
@@ -35,5 +36,21 @@ public class AstUtilitiesTest extends RubyTestBase {
         Node node = AstUtilities.findBySignature(root, "Ape#test_sorting(coll)");
         assertNotNull(node);
         assertEquals("test_sorting", ((INameNode)node).getName());
+    }
+
+    public void testFindbySignatureInstance() throws Exception {
+        Node root = getRootNode("testfiles/ape.rb");
+        Node node = AstUtilities.findBySignature(root, "Ape#@dialogs");
+        assertNotNull(node);
+        assertEquals(node.nodeId, NodeTypes.INSTASGNNODE);
+        assertEquals("@dialogs", ((INameNode)node).getName());
+    }
+
+    public void testFindbySignatureClassVar() throws Exception {
+        Node root = getRootNode("testfiles/ape.rb");
+        Node node = AstUtilities.findBySignature(root, "Ape#@@debugging");
+        assertNotNull(node);
+        assertEquals(node.nodeId, NodeTypes.CLASSVARASGNNODE);
+        assertEquals("@@debugging", ((INameNode)node).getName());
     }
 }

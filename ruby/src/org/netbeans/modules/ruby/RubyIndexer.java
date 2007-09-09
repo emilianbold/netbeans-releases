@@ -63,6 +63,7 @@ import org.openide.util.Exceptions;
  * @todo Do I index anything outside of module or classnodes? How do these get deleted?
  * @todo Index migration and model files specially to extract database information that
  *   I can use to build dynamic model object attributes
+ * @todo Index require_gem separately?
  *
  * @author Tor Norbye
  */

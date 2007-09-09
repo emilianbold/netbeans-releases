@@ -51,6 +51,7 @@ import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
@@ -825,10 +826,31 @@ public class AstUtilities {
     }
 
     private static Node findBySignature(Node node, String signature, String name) {
-        boolean lookingForMethod = (Character.isLowerCase(name.charAt(0)));
+        switch (node.nodeId) {
+        case NodeTypes.INSTASGNNODE:
+            if (name.charAt(0) == '@') {
+                String n = ((INameNode)node).getName();
+                //if (name.regionMatches(1, n, 0, n.length())) {
+                if (name.equals(n)) {
+                    return node;
+                }
+            }
+            break;
+        case NodeTypes.CLASSVARDECLNODE:
+        case NodeTypes.CLASSVARASGNNODE:
+            if (name.startsWith("@@")) {
+                String n = ((INameNode)node).getName();
+                //if (name.regionMatches(2, n, 0, n.length())) {
+                if (name.equals(n)) {
+                    return node;
+                }
+            }
+            break;
 
-        if (lookingForMethod) {
-            if ((node instanceof MethodDefNode) && name.equals(AstUtilities.getDefName(node))) {
+        case NodeTypes.DEFNNODE:
+        case NodeTypes.DEFSNODE:
+            boolean lookingForMethod = (Character.isLowerCase(name.charAt(0)));
+            if (lookingForMethod && name.equals(AstUtilities.getDefName(node))) {
                 // See if the parameter list matches
                 // XXX TODO
                 List<String> parameters = getDefArgs((MethodDefNode)node, false);
@@ -868,14 +890,29 @@ public class AstUtilities {
                     }
                 }
             }
-        } else if ((node instanceof ModuleNode || node instanceof ClassNode)) {
-            Colon3Node c3n = ((IScopingNode)node).getCPath();
+            break;
+            
+        case NodeTypes.CLASSNODE:
+        case NodeTypes.MODULENODE: {
+                Colon3Node c3n = ((IScopingNode)node).getCPath();
 
-            if (c3n instanceof Colon2Node) {
-                String fqn = getFqn((Colon2Node)c3n);
+                if (c3n instanceof Colon2Node) {
+                    String fqn = getFqn((Colon2Node)c3n);
 
-                if (fqn.startsWith(name) && signature.startsWith(fqn.substring(name.length()))) {
-                    signature = signature.substring(fqn.substring(name.length()).length());
+                    if (fqn.startsWith(name) && signature.startsWith(fqn.substring(name.length()))) {
+                        signature = signature.substring(fqn.substring(name.length()).length());
+                        name = getNextSigComponent(signature);
+
+                        if (name.length() == 0) {
+                            // The signature points to a class (or module) - just return it
+                            return node;
+                        }
+
+                        int index = signature.indexOf(name);
+                        assert index != -1;
+                        signature = signature.substring(index + name.length());
+                    }
+                } else if (name.equals(AstUtilities.getClassOrModuleName(((IScopingNode)node)))) {
                     name = getNextSigComponent(signature);
 
                     if (name.length() == 0) {
@@ -887,19 +924,9 @@ public class AstUtilities {
                     assert index != -1;
                     signature = signature.substring(index + name.length());
                 }
-            } else if (name.equals(AstUtilities.getClassOrModuleName(((IScopingNode)node)))) {
-                name = getNextSigComponent(signature);
-
-                if (name.length() == 0) {
-                    // The signature points to a class (or module) - just return it
-                    return node;
-                }
-
-                int index = signature.indexOf(name);
-                assert index != -1;
-                signature = signature.substring(index + name.length());
-            }
-        } else if (node instanceof SClassNode) {
+            break;
+        }
+        case NodeTypes.SCLASSNODE:
             Node receiver = ((SClassNode)node).getReceiverNode();
             String rn = null;
 
@@ -924,8 +951,8 @@ public class AstUtilities {
                     signature = signature.substring(index + name.length());
                 }
             }
+            break;
         }
-
         @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 

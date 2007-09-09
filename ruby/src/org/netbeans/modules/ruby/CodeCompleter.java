@@ -34,6 +34,7 @@ import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -41,12 +42,10 @@ import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.CallNode;
 import org.jruby.ast.ClassNode;
-import org.jruby.ast.ClassVarDeclNode;
 import org.jruby.ast.ConstDeclNode;
 import org.jruby.ast.DAsgnNode;
 import org.jruby.ast.FCallNode;
 import org.jruby.ast.GlobalAsgnNode;
-import org.jruby.ast.InstAsgnNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.MethodDefNode;
@@ -62,6 +61,7 @@ import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.HtmlFormatter;
+import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.api.gsf.Index.*;
 import org.netbeans.api.gsf.Modifier;
 import org.netbeans.api.gsf.NameKind;
@@ -136,10 +136,16 @@ import org.openide.util.Exceptions;
  * @todo Require-completion should handle ruby gems; it should provide the "preferred" (entry-point) files for
  *    all the ruby gems, and it should hide all the files that are inside the gem
  * @todo Rakefiles files should inherit Rakefile context
+ * @todo See http://blog.diegodoval.com/2007/09/ruby_on_os_x_some_useful_links.html
+ * @todo Documentation completion in a rdoc should preview that rdoc section
+ * @todo Make a dedicated completion item which I return on documentation completion if I want  to
+ *    complete the CURRENT element; it basically just wraps the desired comment so we can pull it
+ *    out in the document() method
  *
  * @author Tor Norbye
  */
 public class CodeCompleter implements Completable {
+    /** Another good logical parameter would be SINGLE_WHITESPACE which would insert a whitespace separator IF NEEDED */
     /** Live code template parameter: require the given file, if not already done so */
     private static final String KEY_REQUIRE = "require"; // NOI18N
 
@@ -1368,7 +1374,7 @@ public class CodeCompleter implements Completable {
         if (completeStrings(proposals, request)) {
             return proposals;
         }
-
+        
         // Fields
         // This is a bit stupid at the moment, not looking at the current typing context etc.
         Node root = AstUtilities.getRoot(info);
@@ -1427,15 +1433,25 @@ public class CodeCompleter implements Completable {
             }
 
             if ((prefix.length() == 0) || (first == '@') || showSymbols) {
-                Node clz = AstUtilities.findClass(path);
+                String fqn = AstUtilities.getFqnName(path);
 
-                if (clz != null) {
-                    @SuppressWarnings("unchecked")
-                    List<Node> list = clz.childNodes();
+                if ((fqn == null) || (fqn.length() == 0)) {
+                    fqn = "Object"; // NOI18N
+                }
 
-                    for (Node child : list) {
-                        addFields(child, fields);
+                // TODO - if fqn has multiple ::'s, try various combinations? or is 
+                // add inherited already doing that?
+                Set<IndexedField> f = index.getInheritedFields(fqn, prefix, kind);
+                for (IndexedField field : f) {
+                    FieldItem item = new FieldItem(field, anchor, request);
+
+                    item.setSmart(field.isSmart());
+
+                    if (showSymbols) {
+                        item.setSymbol(true);
                     }
+
+                    proposals.add(item);
                 }
             }
 
@@ -1494,7 +1510,7 @@ public class CodeCompleter implements Completable {
                     // Handle action view completion for RHTML and Markaby files
                     if (RubyUtils.isRhtmlFile(fileObject) || RubyUtils.isMarkabyFile(fileObject)) {
                         addActionViewMatches(inheritedMethods, fileObject, index, prefix, kind);
-                    }
+                                }
 
                     for (IndexedMethod method : inheritedMethods) {
                         // This should not be necessary - filtering happens in getInheritedMethods right?
@@ -1926,35 +1942,6 @@ public class CodeCompleter implements Completable {
             }
 
             addDynamic(child, variables);
-        }
-    }
-
-    private void addFields(Node node, Map<String, Node> fields) {
-        if (node instanceof InstAsgnNode) {
-            String name = ((INameNode)node).getName();
-
-            if (!fields.containsKey(name)) {
-                fields.put(name, node);
-            }
-        } else if (node instanceof ClassVarDeclNode) {
-            String name = ((INameNode)node).getName();
-
-            if (!fields.containsKey(name)) {
-                fields.put(name, node);
-            }
-        }
-
-        @SuppressWarnings("unchecked")
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            // Don't look in nested context
-            if (child instanceof ClassNode || child instanceof ModuleNode ||
-                    child instanceof SClassNode) {
-                continue;
-            }
-
-            addFields(child, fields);
         }
     }
 
@@ -2675,6 +2662,9 @@ public class CodeCompleter implements Completable {
             formatter.appendText(getName());
             formatter.name(kind, false);
 
+            // TODO - do local methods in bold?
+            // See http://www.javalobby.org/forums/thread.jspa?messageID=92170302&#92170302
+            
             Collection<String> parameters = ((MethodElement)element).getParameters();
 
             if ((parameters != null) && (parameters.size() > 0)) {
@@ -2718,11 +2708,10 @@ public class CodeCompleter implements Completable {
 
             if (in != null) {
                 formatter.appendText(in);
+                return formatter.getText();
             } else {
                 return null;
             }
-
-            return formatter.getText();
         }
 
         @Override
@@ -2930,20 +2919,48 @@ public class CodeCompleter implements Completable {
             super(element, anchorOffset, request);
         }
 
-        public String getRhsHtml() {
-            return null;
-        }
-
+        @Override
         public String getInsertPrefix() {
+            String name;
+            if (element.getModifiers().contains(Modifier.STATIC)) {
+                name = "@@" + getName();
+            } else {
+                name = "@" + getName();
+            }
             if (symbol) {
-                return ":" + getName();
+                name = ":" + name;
+            }
+            
+            return name;
+        }
+        
+        public String getRhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+
+            // Top level methods (defined on Object) : print
+            // the defining file instead
+            if (element instanceof IndexedField) {
+                IndexedField idx = (IndexedField)element;
+
+                // TODO - check if top level?
+                //if (me.isTopLevel() && me instanceof IndexedMethod) {
+                //IndexedMethod im = (IndexedMethod)element;
+                //if (im.isTopLevel() && im.getRequire() != null) {
+                //    formatter.appendText(im.getRequire());
+                //
+                //    return formatter.getText();
+                //}
+                //}
+
+                String in = idx.getIn();
+                if (in != null) {
+                    formatter.appendText(in);
+                    return formatter.getText();
+                }
             }
 
-            if (element.getModifiers().contains(Modifier.STATIC)) {
-                return "@@" + getName();
-            } else {
-                return "@" + getName();
-            }
+            return null;
         }
     }
     

@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.api.gsf.Index;
+import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.api.gsf.Index.*;
 import org.netbeans.api.gsf.Modifier;
 import org.netbeans.api.gsf.NameKind;
@@ -407,6 +408,43 @@ public final class RubyIndex {
         return m;
     }
 
+    private IndexedField createField(String signature, SearchResult map, boolean isInstance) {
+        String clz = map.getValue(RubyIndexer.FIELD_CLASS_NAME);
+        String module = map.getValue(RubyIndexer.FIELD_IN);
+
+        if (clz == null) {
+            // Module method?
+            clz = module;
+        } else if ((module != null) && (module.length() > 0)) {
+            clz = module + "::" + clz;
+        }
+
+        String fileUrl = map.getValue(RubyIndexer.FIELD_FILENAME);
+        String fqn = map.getValue(RubyIndexer.FIELD_FQN_NAME);
+        String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
+
+        int attributeIndex = signature.indexOf(':');
+        Set<Modifier> modifiers;
+        String attributes = null;
+
+        if (attributeIndex != -1) {
+            modifiers = RubyIndexer.getModifiersFromString(signature, attributeIndex);
+
+            if (signature.length() > attributeIndex+1) {
+                attributes = signature.substring(attributeIndex+1, signature.length());
+            }
+
+            signature = signature.substring(0, attributeIndex);
+        } else {
+            modifiers = Collections.emptySet();
+        }
+
+        IndexedField m =
+            IndexedField.create(this, signature, fqn, clz, fileUrl, require, modifiers, attributes);
+
+        return m;
+    }
+    
     private IndexedClass createClass(String fqn, String clz, SearchResult map) {
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
@@ -823,41 +861,6 @@ public final class RubyIndex {
                     }
                 }
             }
-
-//            String[] fields = map.getValues(RubyIndexer.FIELD_FIELD_NAME);
-//
-//            if (fields != null) {
-//                for (String field : fields) {
-//                    // Skip weird methods like "[]" etc. in completion lists... TODO Think harder about this
-//                    if ((prefix.length() == 0) && !Character.isLowerCase(field.charAt(0))) {
-//                        continue;
-//                    }
-//
-//                    // Prevent duplicates when method is redefined
-//                    if (!seenSignatures.contains(field)) {
-//                        if (field.startsWith(prefix)) {
-//                            if (kind == NameKind.EXACT_NAME) {
-//                                // Ensure that the method is not longer than the prefix
-//                                if ((field.length() > prefix.length()) &&
-//                                        (field.charAt(prefix.length()) != '(') &&
-//                                        (field.charAt(prefix.length()) != ':')) {
-//                                    continue;
-//                                }
-//                            } else {
-//                                // REGEXP, CAMELCASE filtering etc. not supported here
-//                                assert (kind == NameKind.PREFIX) ||
-//                                (kind == NameKind.CASE_INSENSITIVE_PREFIX);
-//                            }
-//
-//                            seenSignatures.add(field);
-//
-//                            IndexedField f = createField(field, map);
-//                            f.setSmart(!haveRedirected);
-//                            methods.add(f);
-//                        }
-//                    }
-//                }
-//            }
         }
         
         if (classFqn.equals(OBJECT)) {
@@ -901,19 +904,223 @@ public final class RubyIndex {
         return foundIt;
     }
 
+    public Set<IndexedField> getInheritedFields(String classFqn, String prefix, NameKind kind) {
+        boolean haveRedirected = false;
+
+        if ((classFqn == null) || classFqn.equals(OBJECT)) {
+            // Redirect inheritance tree to Class to pick up methods in Class and Module
+            classFqn = CLASS;
+            haveRedirected = true;
+        } else if (MODULE.equals(classFqn) || CLASS.equals(classFqn)) {
+            haveRedirected = true;
+        }
+
+        //String field = RubyIndexer.FIELD_FQN_NAME;
+        Set<IndexedField> members = new HashSet<IndexedField>();
+        Set<String> scannedClasses = new HashSet<String>();
+        Set<String> seenSignatures = new HashSet<String>();
+
+        boolean instanceVars = true;
+        if (prefix == null) {
+            prefix = "";
+        } else if (prefix.startsWith("@@")) {
+            instanceVars = false;
+            prefix = prefix.substring(2);
+        } else if (prefix.startsWith("@")) {
+            prefix = prefix.substring(1);
+        }
+
+        addFieldsFromClass(prefix, kind, classFqn, members, seenSignatures, scannedClasses,
+            haveRedirected, instanceVars);
+
+        return members;
+    }
+
+    /** Return whether the specific class referenced (classFqn) was found or not. This is
+     * not the same as returning whether any classes were added since it may add
+     * additional methods from parents (Object/Class).
+     */
+    private boolean addFieldsFromClass(String prefix, NameKind kind, String classFqn,
+        Set<IndexedField> methods, Set<String> seenSignatures, Set<String> scannedClasses,
+        boolean haveRedirected, boolean instanceVars) {
+        // Prevent problems with circular includes or redundant includes
+        if (scannedClasses.contains(classFqn)) {
+            return false;
+        }
+
+        scannedClasses.add(classFqn);
+
+        String searchField = RubyIndexer.FIELD_FQN_NAME;
+
+        Set<SearchResult> result = new HashSet<SearchResult>();
+
+        search(searchField, classFqn, NameKind.EXACT_NAME, result);
+
+        boolean foundIt = result.size() > 0;
+
+        // If this is a bogus class entry (no search rsults) don't continue
+        if (!foundIt) {
+            return foundIt;
+        }
+
+        String extendsClass = null;
+
+        String classIn = null;
+        int fqnIndex = classFqn.lastIndexOf("::"); // NOI18N
+
+        if (fqnIndex != -1) {
+            classIn = classFqn.substring(0, fqnIndex);
+        }
+
+        for (SearchResult map : result) {
+            assert map != null;
+
+            if (extendsClass == null) {
+                extendsClass = map.getValue(RubyIndexer.FIELD_EXTENDS_NAME);
+            }
+
+            String includes = map.getValue(RubyIndexer.FIELD_INCLUDES);
+
+            if (includes != null) {
+                String[] in = includes.split(",");
+
+                // I have Util::BacktraceFilter and Assertions, which are both
+                // relative to ::,Test,Test::Unit
+                for (String include : in) {
+                    // Try both with and without a package qualifier
+                    boolean isQualified = false;
+
+                    if (classIn != null) {
+                        isQualified = addFieldsFromClass(prefix, kind, classIn + "::" + include,
+                                methods, seenSignatures, scannedClasses, haveRedirected, instanceVars);
+                    }
+
+                    if (!isQualified) {
+                        addFieldsFromClass(prefix, kind, include, methods, seenSignatures,
+                            scannedClasses, haveRedirected, instanceVars);
+                    }
+                }
+            }
+
+            String extendWith = map.getValue(RubyIndexer.FIELD_EXTEND_WITH);
+
+            if (extendWith != null) {
+                // Try both with and without a package qualifier
+                boolean isQualified = false;
+
+                if (classIn != null) {
+                    isQualified = addFieldsFromClass(prefix, kind, classIn + "::" + extendWith,
+                            methods, seenSignatures, scannedClasses, haveRedirected, instanceVars);
+                }
+
+                if (!isQualified) {
+                    addFieldsFromClass(prefix, kind, extendWith, methods, seenSignatures,
+                        scannedClasses, haveRedirected, instanceVars);
+                }
+            }
+            
+
+            String[] fields = map.getValues(RubyIndexer.FIELD_FIELD_NAME);
+
+            if (fields != null) {
+                for (String field : fields) {
+                    // Skip weird methods like "[]" etc. in completion lists... TODO Think harder about this
+                    if ((prefix.length() == 0) && !Character.isLowerCase(field.charAt(0))) {
+                        continue;
+                    }
+
+                    // Prevent duplicates when method is redefined
+                    if (!seenSignatures.contains(field)) {
+                        // See if we need instancevars or classvars
+                        boolean isInstance = true;
+                        int signatureIndex = field.indexOf(':');
+                        if (signatureIndex != -1 && field.indexOf('s', signatureIndex+1) != -1) {
+                            isInstance = false;
+                        }
+                        if (isInstance != instanceVars) {
+                            continue;
+                        }
+                        
+                        if (field.startsWith(prefix)) {
+                            if (kind == NameKind.EXACT_NAME) {
+                                // Ensure that the method is not longer than the prefix
+                                if ((field.length() > prefix.length()) &&
+                                        (field.charAt(prefix.length()) != '(') &&
+                                        (field.charAt(prefix.length()) != ':')) {
+                                    continue;
+                                }
+                            } else {
+                                // REGEXP, CAMELCASE filtering etc. not supported here
+                                assert (kind == NameKind.PREFIX) ||
+                                (kind == NameKind.CASE_INSENSITIVE_PREFIX);
+                            }
+
+                            seenSignatures.add(field);
+
+                            IndexedField f = createField(field, map, isInstance);
+                            f.setSmart(!haveRedirected);
+                            methods.add(f);
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (classFqn.equals(OBJECT)) {
+            return foundIt;
+        }
+
+        if (extendsClass == null) {
+            if (haveRedirected) {
+                addFieldsFromClass(prefix, kind, OBJECT, methods, seenSignatures, scannedClasses,
+                    true, instanceVars);
+            } else {
+                // Rather than inheriting directly from object,
+                // let's go via Class (and Module) up to Object
+                addFieldsFromClass(prefix, kind, CLASS, methods, seenSignatures, scannedClasses,
+                    true, instanceVars);
+            }
+        } else {
+            // We're not sure we have a fully qualified path, so try some different candidates
+            if (!addFieldsFromClass(prefix, kind, extendsClass, methods, seenSignatures,
+                        scannedClasses, haveRedirected, instanceVars)) {
+                // Search by classIn 
+                String fqn = classIn;
+
+                while (fqn != null) {
+                    if (addFieldsFromClass(prefix, kind, fqn + "::" + extendsClass, methods,
+                                seenSignatures, scannedClasses, haveRedirected, instanceVars)) {
+                        break;
+                    }
+
+                    int f = fqn.lastIndexOf("::"); // NOI18N
+
+                    if (f == -1) {
+                        break;
+                    } else {
+                        fqn = fqn.substring(0, f);
+                    }
+                }
+            }
+        }
+
+        return foundIt;
+    }
+    
+    
     /** Return all the method or class definitions for the given FQN that are documented. */
     public Set<?extends IndexedElement> getDocumented(final String fqn) {
         assert (fqn != null) && (fqn.length() > 0);
 
-        int index = fqn.indexOf('#');
+        int hashIndex = fqn.indexOf('#');
 
-        if (index == -1) {
+        if (hashIndex == -1) {
             // Looking for a class or a module
             return getDocumentedClasses(fqn);
         } else {
             // Looking for a method
-            String clz = fqn.substring(0, index);
-            String method = fqn.substring(index + 1);
+            String clz = fqn.substring(0, hashIndex);
+            String method = fqn.substring(hashIndex + 1);
 
             return getDocumentedMethods(clz, method);
         }

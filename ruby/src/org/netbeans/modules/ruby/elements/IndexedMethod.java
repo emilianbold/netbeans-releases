@@ -40,6 +40,7 @@ import org.netbeans.modules.ruby.RubyIndex;
  * @author Tor Norbye
  */
 public final class IndexedMethod extends IndexedElement implements MethodElement {
+    protected final String signature;
     private String[] args;
     private String name;
     private List<String> parameters;
@@ -48,7 +49,8 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
 
     private IndexedMethod(String signature, RubyIndex index, String fileUrl, String fqn,
         String clz, String require, Set<Modifier> modifiers, String attributes) {
-        super(signature, index, fileUrl, fqn, clz, require, modifiers, attributes);
+        super(index, fileUrl, fqn, clz, require, modifiers, attributes);
+        this.signature = signature;
     }
 
     public static IndexedMethod create(RubyIndex index, String signature, String fqn, String clz,
@@ -74,12 +76,12 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
 
     public String getName() {
         if (name == null) {
-            int index = signature.indexOf('(');
+            int parenIndex = signature.indexOf('(');
 
-            if (index == -1) {
+            if (parenIndex == -1) {
                 name = signature;
             } else {
-                name = signature.substring(0, index);
+                name = signature.substring(0, parenIndex);
             }
         }
 
@@ -158,7 +160,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     public void setSmart(boolean smart) {
         this.smart = smart;
     }
-    
+
     public boolean isAttribute() {
         return attribute;
     }

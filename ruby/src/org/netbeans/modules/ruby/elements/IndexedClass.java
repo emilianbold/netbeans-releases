@@ -35,20 +35,21 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     boolean isModule;
     private String in;
 
-    protected IndexedClass(String signature, RubyIndex index, String fileUrl, String fqn,
+    protected IndexedClass(RubyIndex index, String fileUrl, String fqn,
         String clz, String require, boolean isModule, Set<Modifier> modifiers, String attributes) {
-        super(signature, index, fileUrl, fqn, clz, require, modifiers, attributes);
+        super(index, fileUrl, fqn, clz, require, modifiers, attributes);
         this.isModule = isModule;
     }
 
     public static IndexedClass create(RubyIndex index, String clz, String fqn, String fileUrl,
         String require, boolean isModule, Set<Modifier> modifiers, String attributes) {
         IndexedClass c =
-            new IndexedClass(fqn, index, fileUrl, fqn, clz, require, isModule, modifiers, attributes);
+            new IndexedClass(index, fileUrl, fqn, clz, require, isModule, modifiers, attributes);
 
         return c;
     }
 
+    @Override
     public String getIn() {
         if (in == null) {
             if (fqn.endsWith("::" + clz)) {

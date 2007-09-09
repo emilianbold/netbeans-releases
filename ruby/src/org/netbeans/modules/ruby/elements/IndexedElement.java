@@ -37,7 +37,6 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public abstract class IndexedElement extends RubyElement {
-    protected final String signature;
     protected String fileUrl;
     protected final String clz;
     protected final String fqn;
@@ -49,9 +48,8 @@ public abstract class IndexedElement extends RubyElement {
     private Document document;
     private FileObject fileObject;
 
-    protected IndexedElement(String signature, RubyIndex index, String fileUrl, String fqn,
+    protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
         String clz, String require, Set<Modifier> modifiers, String attributes) {
-        this.signature = signature;
         this.index = index;
         this.fileUrl = fileUrl;
         this.fqn = fqn;
@@ -62,9 +60,7 @@ public abstract class IndexedElement extends RubyElement {
         this.clz = clz;
     }
 
-    public String getSignature() {
-        return signature;
-    }
+    public abstract String getSignature();
 
     public final String getFileUrl() {
         return fileUrl;

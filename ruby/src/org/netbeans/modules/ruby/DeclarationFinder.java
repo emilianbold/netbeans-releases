@@ -71,6 +71,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
+import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -351,10 +352,12 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 return fix(findDynamic(info, block, name), info);
             } else if (closest instanceof InstVarNode) {
                 // A field variable read
-                return fix(findInstance(info, root, ((INameNode)closest).getName()), info);
+                String name = ((INameNode)closest).getName();
+                return findInstanceFromIndex(info, name, path, index);
             } else if (closest instanceof ClassVarNode) {
                 // A class variable read
-                return fix(findClassVar(info, root, ((ClassVarNode)closest).getName()), info);
+                String name = ((INameNode)closest).getName();
+                return findInstanceFromIndex(info, name, path, index);
             } else if (closest instanceof GlobalVarNode) {
                 // A global variable read
                 String name = ((GlobalVarNode)closest).getName(); // GlobalVarNode does not implement INameNode
@@ -1766,6 +1769,27 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         return DeclarationLocation.NONE;
     }
 
+    private DeclarationLocation findInstanceFromIndex(CompilationInfo info, String name, AstPath path, RubyIndex index) {
+        String fqn = AstUtilities.getFqnName(path);
+
+        // TODO - if fqn has multiple ::'s, try various combinations? or is 
+        // add inherited already doing that?
+        Set<IndexedField> f = index.getInheritedFields(fqn, name, NameKind.EXACT_NAME);
+        for (IndexedField field : f) {
+            // How do we choose one?
+            // For now, just pick the first one
+            
+            Node node = AstUtilities.getForeignNode(field, null);
+
+            if (node != null) {
+                return new DeclarationLocation(field.getFile().getFileObject(),
+                    node.getPosition().getStartOffset());
+            }
+        }
+
+        return DeclarationLocation.NONE;
+    }
+    
     private DeclarationLocation findGlobal(CompilationInfo info, Node node, String name) {
         if (node instanceof GlobalAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
