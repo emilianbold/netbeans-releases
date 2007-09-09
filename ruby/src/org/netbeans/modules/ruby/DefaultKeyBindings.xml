@@ -21,6 +21,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <!-- TODO: The java version of this file contains a comment that there is another
 copy of this file in ide/applemenu. Check whether I need to do something there!
+
+See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action names
+
 -->
 <bindings>
     <bind actionName="goto-declaration" key="D-B"/>
@@ -33,4 +36,5 @@ copy of this file in ide/applemenu. Check whether I need to do something there!
     <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="ruby-goto-test" key="DS-T"/>
     <bind actionName="ruby-reflow-paragraph" key="DS-P"/>
+    <bind actionName="run-focused-spec" key="OS-F6"/>
 </bindings>

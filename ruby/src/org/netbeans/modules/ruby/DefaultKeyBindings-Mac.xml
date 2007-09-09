@@ -21,6 +21,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <!-- 
     IMPORTANT:  This file modifies keybindings from DefaultKeyBindings.xml to make them work in Mac OS.
+
+    Check http://docs.info.apple.com/article.html?artnum=75459 for conflicts
 -->
 
 <bindings>
@@ -32,4 +34,5 @@ Microsystems, Inc. All Rights Reserved.
     <bind key="OS-DOWN" remove="true"/>
     <bind key="DOS-DOWN" actionName="select-element-previous"/>
     -->
+    <bind key="AS-F6" actionName="run-focused-spec"/>
 </bindings>
