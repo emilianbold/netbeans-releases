@@ -37,6 +37,7 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDescriptor;
@@ -403,6 +404,33 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 2);
     }
     
+    public void testIntroduceFieldFix114350() throws Exception {
+        performFixTest("package test; public class Test {\n" +
+                       "    public Test() {\n" +
+                       "        super();\n" +
+                       "        System.out.println(\"ctor\");\n" +
+                       "    }\n" +
+                       "    public void method() {\n" +
+                       "        String s = |\"const\"|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { private String name; public Test() { super(); name = \"const\"; System.out.println(\"ctor\"); } public void method() { String s = name; } } ",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       3, 2);
+    }
+
+    public void testIntroduceFieldFix114360() throws Exception {
+        performFixTest("package test; public enum Test {\n" +
+                       "    A;\n" +
+                       "    public void method() {\n" +
+                       "        String s = |\"const\"|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public enum Test { A; private String name; Test() { name = \"const\"; } public void method() { String s = name; } } ",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       3, 2);
+    }
+    
     public void testCorrectMethodSelection1() throws Exception {
         performStatementSelectionVerificationTest("package test; public class Test {public void test() {int i = 3;}}", 105 - 52, 115 - 52, true, new int[] {0, 0});
     }
@@ -739,6 +767,14 @@ public class IntroduceHintTest extends NbTestCase {
     
     private void performFixTest(String code, int start, int end, String golden, DialogDisplayer dd) throws Exception {
         performFixTest(code, start, end, golden, dd, 1, 0);
+    }
+    
+    private void performFixTest(String code, String golden, DialogDisplayer dd, int numFixes, int useFix) throws Exception {
+        int[] span = new int[2];
+        
+        code = Utilities.detectOffsets(code, span);
+        
+        performFixTest(code, span[0], span[1], golden, dd, numFixes, useFix);
     }
     
     private void performFixTest(String code, int start, int end, String golden, DialogDisplayer dd, int numFixes, int useFix) throws Exception {
