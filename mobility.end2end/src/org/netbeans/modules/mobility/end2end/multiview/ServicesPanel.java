@@ -187,9 +187,10 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
             final JAXWSClientView a = JAXWSClientView.getJAXWSClientView();
             rootNode = a.createJAXWSClientView( serverProject );
             for( Node nn : rootNode.getChildren().getNodes()) {
-                if( nn.getName().equals( service.getName()))
+                if( nn.getName().equals( service.getName())){
                     rootNode = nn;
                     break;
+                }
             }
             if (rootNode.getChildren().getNodesCount() == 0){
                 repaintingTask.schedule( 500 );
@@ -220,7 +221,6 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                     for( Node portNode : serviceNode.getChildren().getNodes()) {
                         boolean portValid = false;
                         WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
-                        if (port == null || !portNode.getName().equals( port.getName())) continue;
                         org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
                         HashSet<String> methodIDs = new HashSet();
                         if (cd != null) {

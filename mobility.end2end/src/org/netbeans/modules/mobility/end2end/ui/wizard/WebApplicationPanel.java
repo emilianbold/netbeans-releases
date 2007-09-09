@@ -1256,28 +1256,17 @@ final public class WebApplicationPanel extends JPanel
                     wsdlService = (WSDLService)os;
                 }
                 if( gui.getSelectedService() != null ) {
-//                    final String serviceName = gui.getSelectedService();
                     final Client client = gui.getSelectedService();
-                    wsdlService = new WSDLService();
-                    wsdlService.setName( client.getName());
-                    wsdlService.setFile( client.getLocalWsdlFile());
-                    wsdlService.setUrl( client.getWsdlUrl());
-                    final List<AbstractService> services = new ArrayList<AbstractService>();
-                    services.add( wsdlService );
-                    configuration.setServices( services );
+                    if (wsdlService == null || (!gui.getSelectedService().getName().equals(wsdlService.getName()))) {
+                        wsdlService = new WSDLService();
+                        wsdlService.setName( client.getName());
+                        wsdlService.setFile( client.getLocalWsdlFile());
+                        wsdlService.setUrl( client.getWsdlUrl());
+                        final List<AbstractService> services = new ArrayList<AbstractService>();
+                        services.add( wsdlService );
+                        configuration.setServices( services );
+                    }
                 }
-//                if (gui.getSelectedService() != null){
-//                    final DataObject doj = gui.getSelectedService();
-//                    if ( wsdlService == null ||
-//                            ( wsdlService.getFile() != null && !wsdlService.getFile().equals(doj.getPrimaryFile().getNameExt()))){
-//                        wsdlService = new WSDLService();
-//                        wsdlService.setName( doj.getName() );
-//                        wsdlService.setFile( doj.getPrimaryFile().getNameExt() );
-//                        final List<AbstractService> services = new ArrayList<AbstractService>();
-//                        services.add(wsdlService);
-//                        configuration.setServices(services);
-//                    }
-//                }
             } else {
                 configuration.setServiceType(Configuration.CLASS_TYPE);
                 final List<AbstractService> services = new ArrayList<AbstractService>();
