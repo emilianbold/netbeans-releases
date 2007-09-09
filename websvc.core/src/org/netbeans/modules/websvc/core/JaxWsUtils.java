@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -84,15 +85,30 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 
 /**
  *
  * @author mkuchtiak
  */
 public class JaxWsUtils {
-    
+    public static final String HANDLER_TEMPLATE = "Templates/WebServices/MessageHandler.java"; //NOI18N
     private static int projectType;
     
     protected static final int JSE_PROJECT_TYPE = 0;
@@ -901,7 +917,7 @@ public class JaxWsUtils {
      * @return true if the WSDL model operation parameters could be set in SOAP header
      */
     public static boolean needsSoapHandler(WsdlModel model) {
-        //TODO 
+        //TODO
         return false;
     }
     
@@ -911,8 +927,66 @@ public class JaxWsUtils {
      * @return map of SOAP header element QName and its java type name.
      */
     public static Map<QName,String> getSoapHandlerParameterTypes(WsdlModel model) {
+        return null;
+    }
+    
+    
+    public static Map<QName,String> getSoapHandlerParameterTypes(PortType portType) {
         Map<QName,String> paramMap = new HashMap<QName,String>();
-        //TODO
+        
+        Definitions definitions = portType.getModel().getDefinitions();
+        Collection<Binding> bindings = definitions.getBindings();
+        Binding binding = null;
+        for(Binding b : bindings){
+            NamedComponentReference<PortType> portTypeRef = b.getType();
+            if(portTypeRef.get().equals(portType)){
+                binding = b;
+                break;
+            }
+        }
+        if(binding != null){
+            //Determine if it is a SOAP binding
+            List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
+            if(soapBindings.size() > 0){ //we can assume that this is the only SOAP binding
+                Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
+                for(BindingOperation bOp : bindingOperations){
+                    BindingInput bindingInput = bOp.getBindingInput();
+                    Collection<SOAPHeader> headers = bindingInput.getExtensibilityElements(SOAPHeader.class);
+                    for(SOAPHeader header : headers){
+                        NamedComponentReference<Message> messageRef = header.getMessage();
+                        Message message = messageRef.get();
+                        String partName = header.getPart();
+                        Collection<Message> messages = definitions.getMessages();
+                        for(Message m : messages){
+                            if(m.equals(message)){
+                                Collection<Part> parts = m.getParts();
+                                for(Part part : parts){
+                                    if(part.getName().equals(partName)){
+                                        NamedComponentReference<GlobalElement> elementRef = part.getElement();
+                                        if(elementRef != null){
+                                            QName qname = elementRef.getQName();
+                                            if(!paramMap.containsKey(qname)){
+                                                paramMap.put(qname, "");
+                                            }
+                                        } else{
+                                            NamedComponentReference<GlobalType> typeRef = part.getType();
+                                            if(typeRef != null){
+                                                QName qname = typeRef.getQName();
+                                                if(!paramMap.containsKey(qname)){
+                                                    paramMap.put(qname, "");
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
         return paramMap;
     }
     
@@ -926,6 +1000,16 @@ public class JaxWsUtils {
         return null;
     }
     
+    
+    public static FileObject createSoapHandler(FileObject dest, PortType portType, Map<QName,Object> soapHeaderValues) 
+    throws IOException{
+        String handlerName = portType.getName() + "_handler.java";
+        DataObject dataObj = createDataObjectFromTemplate(HANDLER_TEMPLATE, dest, handlerName);
+        
+        //TODO Generate code for initializing the header values.
+        return dataObj.getPrimaryFile();
+    }
+    
     /**
      * Create SOAP handler for given WSDL model.
      * @param destdir destination directory.
@@ -933,7 +1017,21 @@ public class JaxWsUtils {
      * @param soapHeaderValues values for SOAP header elements.
      */
     public static FileObject createSoapHandler(FileObject dest, WsdlModel model, Map<QName,Object> soapHeaderValues) {
-        //TODO
         return null;
+ 
+    }
+    
+    public static DataObject createDataObjectFromTemplate(String template,
+            FileObject targetFolder, String targetName) throws IOException {
+        assert template != null;
+        assert targetFolder != null;
+        assert targetName != null && targetName.trim().length() > 0;
+        
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject templateFO = defaultFS.findResource(template);
+        DataObject templateDO = DataObject.find(templateFO);
+        DataFolder dataFolder = DataFolder.findFolder(targetFolder);
+        
+        return templateDO.createFromTemplate(dataFolder, targetName);
     }
 }
