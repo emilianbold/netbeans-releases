@@ -156,7 +156,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         } else if( charClassData.equals( type )) { 
             return "char";
         } else if( CharClassData.equals( type )) {
-            return "Char";
+            return "Character";
         } else if( intClassData.equals( type )) {
             return "int";
         } else if( IntClassData.equals( type )) {
@@ -183,7 +183,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         } else if( byteClassData.equals( type )) {
             return "new Byte(" + variable + ")";
         } else if( charClassData.equals( type )) {
-            return "new Char(" + variable + ")";
+            return "new Character(" + variable + ")";
         } else if( intClassData.equals( type )) {
             return "new Integer(" + variable + ")";
         } else if( longClassData.equals( type )) {
@@ -199,7 +199,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         } else if( ByteClassData.equals( type )) {
             return "(Byte)" + variable;
         } else if( CharClassData.equals( type )) {
-            return "(Char)" + variable;
+            return "(Character)" + variable;
         } else if( IntClassData.equals( type )) {
             return "(Integer)" + variable;
         } else if( LongClassData.equals( type )) {
@@ -216,7 +216,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         } else if( byteClassData.equals( type )) {
             return "((Byte)" + object + ").byteValue()";
         } else if( charClassData.equals( type )) {
-            return "((Char)" + object + ").charValue()";
+            return "((Character)" + object + ").charValue()";
         } else if( intClassData.equals( type )) {
             return "((Integer)" + object + ").intValue()";
         } else if( longClassData.equals( type )) {
@@ -232,7 +232,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         } else if( ByteClassData.equals( type )) {
             return "(Byte)" + object;
         } else if( CharClassData.equals( type )) {
-            return "(Char)" + object;
+            return "(Character)" + object;
         } else if( IntClassData.equals( type )) {
             return "(Integer)" + object;
         } else if( LongClassData.equals( type )) {
