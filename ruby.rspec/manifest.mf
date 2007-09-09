@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.ruby.rspec/1
+OpenIDE-Module-Layer: org/netbeans/modules/ruby/rspec/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ruby/rspec/Bundle.properties
+OpenIDE-Module-Specification-Version: 0.83.0
+AutoUpdate-Show-In-Client: true
+

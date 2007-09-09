@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codetemplates PUBLIC "-//NetBeans//DTD Editor Code Templates settings 1.0//EN" "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+<codetemplates>
+  <codetemplate contexts="rspec" abbreviation="aft" descriptionId="ct_aft" uuid="1201777F-3AC4-4B2A-9A46-C215F891B07A">
+    <code>
+<![CDATA[after(${1 default=":each"}) do
+  ${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="annot" descriptionId="ct_annot" uuid="D5E64C38-9CBC-4825-9A66-5718DA91AAD6">
+    <code>
+<![CDATA[any_number_of_times]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="anr" descriptionId="ct_anr" uuid="65B85B0D-26FC-4A08-8D6A-7BF00AA787FC">
+    <code>
+<![CDATA[and_raise(${1 default="exception"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="anra" descriptionId="ct_anra" uuid="804A1B15-0756-438F-892F-2B72BE4490F0">
+    <code>
+<![CDATA[and_return(${1 default="value"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="anrb" descriptionId="ct_anrb" uuid="C57E9EFD-3FE7-40ED-832E-DD812D1FB769">
+    <code>
+<![CDATA[and_return { ${tabStop1 default=""} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="ant" descriptionId="ct_ant" uuid="2CC293EE-496A-4B66-928C-332DDCBEE884">
+    <code>
+<![CDATA[and_throw(${1 default="sym"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="any" descriptionId="ct_any" uuid="ED3A9BE5-8695-44FF-9B6B-A7FF4C13727C">
+    <code>
+<![CDATA[and_yield(${1 default="values"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="atl" descriptionId="ct_atl" uuid="F2FDA911-B713-4788-81BF-EF33E9A4FB26">
+    <code>
+<![CDATA[at_least(${1 default="n"}).times]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="atm" descriptionId="ct_atm" uuid="9A891C8D-4285-4C7D-BA03-6CA50A89F9C0">
+    <code>
+<![CDATA[at_most(${1 default="n"}).times]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="bef" descriptionId="ct_bef" uuid="7D960FC5-4859-4328-A06B-73A3CF6763E0">
+    <code>
+<![CDATA[before(${1 default=":each"}) do
+  ${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="conn" descriptionId="ct_conn" uuid="57374EB7-6CCE-4281-97A7-289905315351">
+    <code>
+<![CDATA[controller_name :${1 default="controller"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="des" descriptionId="ct_des" uuid="34CBBD13-CE8E-4601-9968-C2CB0D771CA5">
+    <code>
+<![CDATA[describe "${1 default="description"}" do
+  it "should ${2 default="description"}" do
+    ${cursor}
+  end
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="desc" descriptionId="ct_desc" uuid="FC8C2948-3653-41B3-965A-5D0B7C64CB41">
+    <code>
+<![CDATA[require File.dirname(__FILE__) + '/../spec_helper'
+
+describe ${1 default="controller"} do
+  ${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="desrc" descriptionId="ct_desrc" uuid="0ED99C84-1F7B-471E-BB88-B59C5D08FA6B">
+    <code>
+<![CDATA[describe ${1 default="controller"}, "${2 default="GET|POST|PUT|DELETE"} ${3 default="/some/path"}${4 default=" with some parameters"}" do
+  ${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="dest" descriptionId="ct_dest" uuid="2ED94046-DAF7-4C91-8D98-771513BB3804">
+    <code>
+<![CDATA[describe ${1 default="Type"} do
+  it "should ${2 default="description"}" do
+    ${cursor}
+  end
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="dests" descriptionId="ct_dests" uuid="ACFE21E0-902B-45C4-BF54-D137718FF61C">
+    <code>
+<![CDATA[describe ${1 default="Type"}, "${2 default="description"}" do
+  it "should ${3 default="description"}" do
+    ${cursor}
+  end
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="ex" descriptionId="ct_ex" uuid="1A3662E4-DB9D-4F29-8E42-984755A419FA">
+    <code>
+<![CDATA[exactly(${1 default="n"}).times]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="it" descriptionId="ct_it" uuid="AD51AA2B-09C9-40DE-9720-2FD43C967FA9">
+    <code>
+<![CDATA[it "${2 default="should" }${1 default="description"}" ${3 default="do
+  $0
+end"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="mat" descriptionId="ct_mat" uuid="55BF6C99-B4C4-4772-B7DC-0A18407E429C">
+    <code>
+<![CDATA[class ${1 default="ReverseTo"}
+  def initialize(${tabStop3 default=""})
+    @${tabStop3 default=""} = ${tabStop3 default=""}
+  end
+
+  def matches?(actual)
+    @actual = actual
+    # Satisfy expectation here. Return false or raise an error if it's not met.
+    ${0 default="@actual.reverse.should == @$3"}
+    true
+  end
+
+  def failure_message
+    "expected #{@actual.inspect} to ${tabStop2 default=""} #{@${tabStop3 default=""}.inspect}, but it didn't"
+  end
+
+  def negative_failure_message
+    "expected #{@actual.inspect} not to ${tabStop2 default=""} #{@${tabStop3 default=""}.inspect}, but it did"
+  end
+end
+
+def ${2 default="reverse_to"}(${3 default="expected"})
+  ${tabStop1 default=""}.new(${tabStop3 default=""})
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="moc" descriptionId="ct_moc" uuid="AA3D9F87-FE8F-4808-A732-F368CCB9DED6">
+    <code>
+<![CDATA[${1 default="var"} = mock("${2 default="mock_name"}"${3 default=", :null_object => true"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="on" descriptionId="ct_on" uuid="695ECDF3-FEFC-4702-AF71-641E64017907">
+    <code>
+<![CDATA[once]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="resh" descriptionId="ct_resh" uuid="DAD2B74D-2105-42B0-9FC5-466F3B3D0DB7">
+    <code>
+<![CDATA[require File.dirname(__FILE__) + '/../spec_helper']]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="sh=" descriptionId="ct_shequal" uuid="AF99B458-D589-414D-87C7-8FACD2EF9FD5">
+    <code>
+<![CDATA[${1 default="target"}.should == ${2 default="value"}
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shb" descriptionId="ct_shb" uuid="F401AA03-A119-4965-8677-BDAAE8312F13">
+    <code>
+<![CDATA[${1 default="target"}.should be(${2 default="result"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shbc" descriptionId="ct_shbc" uuid="5A203680-6F32-482F-A6A3-50CB7EE99E0E">
+    <code>
+<![CDATA[${1 default="target"}.should be_close(${2 default="result"}, ${3 default="tolerance"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shbio" descriptionId="ct_shbio" uuid="8C5B6597-E115-4569-AE58-EF04042B21CD">
+    <code>
+<![CDATA[${1 default="target"}.should be_instance_of(${2 default="klass"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shbko" descriptionId="ct_shbko" uuid="29BF3286-6D33-418D-9BD5-79BAB0797FE4">
+    <code>
+<![CDATA[${1 default="target"}.should be_a_kind_of(${2 default="klass"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shbr" descriptionId="ct_shbr" uuid="E4DA45B3-736F-40DF-8344-25A79E073730">
+    <code>
+<![CDATA[response.should be_redirect
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shbs" descriptionId="ct_shbs" uuid="0A118507-983C-4441-8B00-73AF7E931FC5">
+    <code>
+<![CDATA[response.should be_success
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="she" descriptionId="ct_she" uuid="0F03467B-16F7-4764-99C6-B7F123E95E5C">
+    <code>
+<![CDATA[${1 default="target"}.should eql(${2 default="value"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shh" descriptionId="ct_shh" uuid="42B1F497-2BAF-425D-9829-57E35456E7FE">
+    <code>
+<![CDATA[${1 default="target"}.should have(${2 default="num"}).${3 default="things"}
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shhal" descriptionId="ct_shhal" uuid="8A4F8C8E-B347-4D18-9203-247256874C47">
+    <code>
+<![CDATA[${1 default="target"}.should have_at_least(${2 default="num"}).${3 default="things"}
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shham" descriptionId="ct_shham" uuid="1BE271C6-3310-46A8-83E1-88C45BBE27AC">
+    <code>
+<![CDATA[${1 default="target"}.should have_at_most(${2 default="num"}).${3 default="things"}
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shhr" descriptionId="ct_shhr" uuid="9605BD4A-93E5-4D57-99FB-D8844D40F183">
+    <code>
+<![CDATA[${1 default="target"}.should have(${2 default="x"}).records
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shkof" descriptionId="ct_shkof" uuid="96C5A0CC-08D9-4DCE-B127-78370964E64E">
+    <code>
+<![CDATA[${1 default="target"}.should_not be_a_kind_of(${2 default="klass"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shm" descriptionId="ct_shm" uuid="0BD5A07E-5FB3-44A3-991F-ABA04BA632D7">
+    <code>
+<![CDATA[${1 default="target"}.should =~ /${2 default="regexp"}/
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shn=" descriptionId="ct_shnequal" uuid="3A699BC3-3E17-4CFD-844C-2285F971379C">
+    <code>
+<![CDATA[${1 default="target"}.should_not == ${2 default="value"}
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnb" descriptionId="ct_shnb" uuid="BD1CBF13-3A1F-49AB-8B3A-25967B437FD7">
+    <code>
+<![CDATA[${1 default="target"}.should_not be(${2 default="result"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnbc" descriptionId="ct_shnbc" uuid="259BCEC6-878E-411F-A6B7-69B038B75CE1">
+    <code>
+<![CDATA[${1 default="target"}.should_not be_close(${2 default="result"}, ${3 default="tolerance"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnbr" descriptionId="ct_shnbr" uuid="E79DAF3F-8960-47C1-A34C-3D0E4B0AF926">
+    <code>
+<![CDATA[response.should_not be_redirect
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnbs" descriptionId="ct_shnbs" uuid="8303E848-4F07-4D3C-98FA-19DA4676812E">
+    <code>
+<![CDATA[response.should_not be_success
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shne" descriptionId="ct_shne" uuid="04BED613-C9EF-4E41-82D7-9958BBDBE0E3">
+    <code>
+<![CDATA[${1 default="target"}.should_not eql(${2 default="value"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnm" descriptionId="ct_shnm" uuid="7563CED5-5FD8-454C-972C-AC240D549E8B">
+    <code>
+<![CDATA[${1 default="target"}.should_not =~ /${2 default="regexp"}/
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnp" descriptionId="ct_shnp" uuid="1D0BB312-A029-4A43-A024-EF6C03506CEC">
+    <code>
+<![CDATA[${1 default="target"}.should_not ${2 default="be_"}${3:predicate} ${tabStop4 default=""}
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnr" descriptionId="ct_shnr" uuid="4CBCCACF-D6DA-49A6-9A8E-EC2F9CD15E94">
+    <code>
+<![CDATA[${1 default="mock"}.should_not_receive(:${2 default="message"})${tabStop3 default=""}
+${cursor}
+]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnre" descriptionId="ct_shnre" uuid="D6B8DA1B-D07A-4C1E-A27B-59C502104BEA">
+    <code>
+<![CDATA[lambda { ${tabStop1 default=""} }.should_not raise_error(${2 default="error"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnrt" descriptionId="ct_shnrt" uuid="E352E5F0-C83B-4C36-AC72-7BFC4F58DBF0">
+    <code>
+<![CDATA[${1 default="target"}.should_not respond_to(:${2 default="sym"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shns" descriptionId="ct_shns" uuid="E573AF3E-F301-4105-ACA3-C9913431E6ED">
+    <code>
+<![CDATA[${1 default="target"}.should_not satisfy { |obj| ${tabStop2 default=""} }
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shnt" descriptionId="ct_shnt" uuid="EF7CD2D2-68BC-425B-9C49-7E3597EFE804">
+    <code>
+<![CDATA[lambda { ${tabStop1 default=""} }.should_not throw_symbol(:${2 default="symbol"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shp" descriptionId="ct_shp" uuid="FCFC8C47-F477-4674-BFDD-2E0B8D475CE0">
+    <code>
+<![CDATA[${1 default="target"}.should ${2 default="be_"}${3:predicate} ${tabStop4 default=""}
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shr" descriptionId="ct_shr" uuid="0A7E08E5-4756-49BA-B015-FB3A4D11EA45">
+    <code>
+<![CDATA[${1 default="mock"}.should_receive(:${2 default="message"})${tabStop3 default=""}
+${cursor}
+]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shre" descriptionId="ct_shre" uuid="813263F0-A2C0-465F-A617-69ECBAF8F7DD">
+    <code>
+<![CDATA[lambda { ${tabStop1 default=""} }.should raise_error(${2 default="error"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shrt" descriptionId="ct_shrt" uuid="96F0A193-32F1-4A75-9093-5D20E36593EC">
+    <code>
+<![CDATA[response.should redirect_to(${1 default="url"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="shs" descriptionId="ct_shs" uuid="3FF9AC90-799D-4BFD-8203-58199A1AD429">
+    <code>
+<![CDATA[${1 default="target"}.should satisfy { |obj| ${tabStop2 default=""} }
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="sht" descriptionId="ct_sht" uuid="C41E8AD6-00F5-44E7-9809-F79666FE79F0">
+    <code>
+<![CDATA[lambda { ${tabStop1 default=""} }.should throw_symbol(:${2 default="symbol"})
+${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="st" descriptionId="ct_st" uuid="73A67D49-CA5B-4B8A-9B62-003506276CDD">
+    <code>
+<![CDATA[Story "${1 default="title"}", %{
+  As a${2 default="role"}
+  I want ${3 default="feature"}
+  So that ${4 default="value"}  
+} do
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="tw" descriptionId="ct_tw" uuid="85E6D1EE-74A4-4B4A-8A00-942B788FF599">
+    <code>
+<![CDATA[twice]]>
+    </code>
+  </codetemplate>
+  <codetemplate contexts="rspec" abbreviation="wia" descriptionId="ct_wia" uuid="3F3E8066-8C1A-40D1-85C7-9DC18C6A34BA">
+    <code>
+<![CDATA[with(${1 default="args"})
+${cursor}
+]]>
+    </code>
+  </codetemplate>
+</codetemplates>
