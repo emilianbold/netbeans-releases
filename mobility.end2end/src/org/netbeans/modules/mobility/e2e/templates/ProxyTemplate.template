@@ -13,7 +13,7 @@ import ${servicePackage}.*;
  */
 public class ${proxyClassName} {
 
-    public ${service.getType()} service;
+    public ${service} service;
 
 <#list methods as method>
     public ${method.getReturnType().getName()} ${method.getName()}(<#rt>
@@ -38,9 +38,9 @@ public class ${proxyClassName} {
     }
 </#list>
 
-    public ${service.getType()} getService(){
+    public ${service} getService(){
         if (service == null){
-            service = new ${service.getType()}();
+            service = new ${service}();
         }
         return service;
     }

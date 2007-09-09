@@ -143,13 +143,17 @@ public class ProxyGenerator {
             ClassDataRegistry registry = ClassDataRegistry.getRegistry( ClassDataRegistry.DEFAULT_PROFILE, classpaths );
             
             String servicePackage = null;
+            String serviceClassName = null;
             String portClassName = null;
             String portGetterName = null;
             List<MethodData> methodList = new ArrayList<MethodData>();
-            for( Node serviceNode : rootNode.getChildren().getNodes()) {                
+            for( Node serviceNode : rootNode.getChildren().getNodes()) {       
+                WsdlService service = serviceNode.getLookup().lookup(WsdlService.class);
+                if (service == null) break;
                 for( Node portNode : serviceNode.getChildren().getNodes()) {
                     WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
                     if( wsdlPort == null ) break;
+                    serviceClassName = service.getJavaName();
                     portGetterName = wsdlPort.getPortGetter();
                     portClassName = wsdlPort.getJavaName();
                     String nnn = wsdlPort.getJavaName();
@@ -178,7 +182,7 @@ public class ProxyGenerator {
             bind.put( "proxyClassPackage", sc.getClassDescriptor().getPackageName());
             bind.put( "proxyClassName", proxyClassName );
             bind.put( "servicePackage", servicePackage );
-            bind.put( "service", wsdlService );
+            bind.put( "service", serviceClassName );
             
             bind.put( "methods", methodList );
             bind.put( "portGetterName", portGetterName );
