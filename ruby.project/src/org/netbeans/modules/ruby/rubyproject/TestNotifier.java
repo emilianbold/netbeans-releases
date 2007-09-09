@@ -42,6 +42,9 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class TestNotifier extends OutputRecognizer implements Runnable {
+    /** Most recent message shown in the editor */
+    private static String mostRecentMessage;
+    
     /** Should we accumulate scores? */
     private boolean accumulate;
     /** Should we only post errors in the editor footer if there are failures? */
@@ -70,6 +73,20 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     public TestNotifier(boolean accumulate, boolean showSuccesses) {
         this.accumulate = accumulate;
         this.showSuccesses = showSuccesses;
+
+        // Possibly clear editor from previous error message (#115073)
+        if (mostRecentMessage != null) {
+            JTextComponent pane = EditorRegistry.lastFocusedComponent();
+            if (pane != null) {
+                if (pane.isShowing()) {
+                    String text = Utilities.getStatusText(pane);
+                    if (mostRecentMessage.equals(text)) {
+                        Utilities.clearStatusText(pane);
+                    }
+                }
+            }
+            mostRecentMessage = null;
+        }
     }
     
     /** Turn off notification? */
@@ -141,11 +158,6 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     }
     
     public void run() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(this);
-            return;
-        }
-
         String summary = getSummary();
         String message;
         if (isError()) {
@@ -156,6 +168,7 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         JTextComponent pane = EditorRegistry.lastFocusedComponent();
         if (pane != null) {
             if (pane.isShowing()) {
+                mostRecentMessage = message;
                 if (isError()) {
                     org.netbeans.editor.Utilities.setStatusBoldText(pane, message);
                 } else {
