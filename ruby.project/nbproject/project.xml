@@ -470,6 +470,7 @@
                 <friend>org.netbeans.modules.ruby.refactoring</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.javaint</friend>
+                <friend>org.netbeans.modules.ruby.rspec</friend>
                 <package>org.netbeans.modules.ruby.rubyproject</package>
                 <package>org.netbeans.modules.ruby.rubyproject.api</package>
                 <package>org.netbeans.modules.ruby.rubyproject.execution</package>

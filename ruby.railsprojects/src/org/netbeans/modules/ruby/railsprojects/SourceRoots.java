@@ -94,9 +94,10 @@ public final class SourceRoots {
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener (WeakListeners.propertyChange(this.listener,this.evaluator));
         this.helper.getRakeProjectHelper().addRakeProjectListener (WeakListeners.create(RakeProjectListener.class, this.listener,this.helper));
-        if (helper != null && helper.getRakeProjectHelper() != null) {
-            showRSpec = new RSpecSupport(helper.getRakeProjectHelper().getProjectDirectory(), null).isRSpecInstalled();
-        }
+        //if (helper != null && helper.getRakeProjectHelper() != null) {
+        //    showRSpec = new RSpecSupport(/*helper.getRakeProjectHelper().getProjectDirectory(),*/ null).isRSpecInstalled();
+        //}
+        showRSpec = true;
     }
     
     private String getNodeDescription(String key) {

@@ -410,11 +410,10 @@ public class RubyActionProvider implements ActionProvider {
                 return;
             }
             
-            RSpecSupport rspec = new RSpecSupport(project.getProjectDirectory(), project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+            RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                rspec.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
                 rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
                         COMMAND_DEBUG_SINGLE.equals(command));
                 return;
@@ -580,9 +579,8 @@ public class RubyActionProvider implements ActionProvider {
             
             boolean isDebug = COMMAND_DEBUG_TEST_SINGLE.equals(command);
 
-            RSpecSupport rspec = new RSpecSupport(project.getProjectDirectory(), project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+            RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
-                rspec.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
                 rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
                        isDebug);
                 return;

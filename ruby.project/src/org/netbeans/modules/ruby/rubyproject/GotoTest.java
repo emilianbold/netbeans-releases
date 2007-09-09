@@ -39,6 +39,8 @@ import org.netbeans.api.gsf.Index.SearchScope;
 import org.netbeans.api.gsf.NameKind;
 import org.netbeans.api.gsf.SourceModel;
 import org.netbeans.api.gsf.SourceModelFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -115,8 +117,8 @@ public class GotoTest extends AbstractAction implements EditorAction {
     }
 
     private boolean isRSpecInstalled(FileObject projectDir) {
-        // null charset: Don't need it to detemrine whether rspec is installed
-        return new RSpecSupport(projectDir, null).isRSpecInstalled();
+        Project project = FileOwnerQuery.getOwner(projectDir);
+        return new RSpecSupport(project).isRSpecInstalled();
     }
 
     private boolean isRailsInstalled() {

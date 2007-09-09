@@ -21,11 +21,13 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.project.Project;
 
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
+import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -43,18 +45,10 @@ public class RSpecSupport {
     private static final String SPEC_OPTS = "spec/spec.opts"; // NOI18N
     private static final String NETBEANS_SPEC_OPTS = SPEC_OPTS + ".netbeans"; // NOI18N
     private static final String RSPEC_GEM_NAME = "rspec"; // NOI18N
-    private FileObject projectDir;
-    private String charsetName;
-    private String classPath;
+    private final Project project;
 
-    public RSpecSupport(FileObject projectDir, String charsetName) {
-        this.projectDir = projectDir;
-        this.charsetName = charsetName;
-    }
-    
-    /** Extra class path to be used in case the execution process is a VM */
-    public void setClassPath(String classPath) {
-        this.classPath = classPath;
+    public RSpecSupport(Project project) {
+        this.project = project;
     }
     
     public boolean isRSpecInstalled() {
@@ -66,15 +60,18 @@ public class RSpecSupport {
         }
 
         // Rails plugin
-        if ((projectDir != null) && (projectDir.getFileObject(PLUGIN_SPEC_PATH) != null)) { // NOI18N
+        if (project != null) {
+            FileObject projectDir = project.getProjectDirectory();
+            if ((projectDir != null) && (projectDir.getFileObject(PLUGIN_SPEC_PATH) != null)) { // NOI18N
 
-            return true;
+                return true;
+            }
         }
 
         return false;
     }
 
-    public boolean isSpecFile(FileObject fo) {
+    public static boolean isSpecFile(FileObject fo) {
         if (!fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             return false;
         }
@@ -107,11 +104,14 @@ public class RSpecSupport {
         }
 
         // Rails plugin
-        if (projectDir != null) {
-            FileObject rspec = projectDir.getFileObject(PLUGIN_SPEC_PATH); // NOI18N
+        if (project != null) {
+            FileObject projectDir = project.getProjectDirectory();
+            if (projectDir != null) {
+                FileObject rspec = projectDir.getFileObject(PLUGIN_SPEC_PATH); // NOI18N
 
-            if (rspec != null) {
-                return FileUtil.toFile(rspec).getAbsolutePath();
+                if (rspec != null) {
+                    return FileUtil.toFile(rspec).getAbsolutePath();
+                }
             }
         }
 
@@ -127,6 +127,23 @@ public class RSpecSupport {
      */
     public void runRSpec(File pwd, FileObject specFile, String displayName,
         FileLocator fileLocator, boolean warn, boolean debug, String... parameters) {
+        runRSpec(pwd, specFile, -1, displayName, fileLocator, warn, debug, parameters);
+    }
+
+    /**
+     * Run rspec on the given specfile.
+     * (If you pass null as the directory, the project directory will be used, and if not set,
+     * the directory containing the spec file.)
+     * @param lineNumber if not -1, run the spec at the given line
+     * @param warn If true, produce popups if Ruby or RSpec are not configured
+     *  correctly.
+     */
+    public void runRSpec(File pwd, FileObject specFile, int lineNumber, String displayName,
+        FileLocator fileLocator, boolean warn, boolean debug, String... parameters) {
+        FileObject projectDir = null;
+        if (project != null) {
+            projectDir = project.getProjectDirectory();
+        }
         if (pwd == null) {
             FileObject pfo = (projectDir != null) ? projectDir : specFile.getParent();
             pwd = FileUtil.toFile(pfo);
@@ -162,6 +179,11 @@ public class RSpecSupport {
                 additionalArgs.add(FileUtil.toFile(specOpts).getAbsolutePath());
             }
         }
+        
+        if (lineNumber != -1) {
+            additionalArgs.add("--line");
+            additionalArgs.add(Integer.toString(lineNumber));
+        }
 
         if ((parameters != null) && (parameters.length > 0)) {
             for (String parameter : parameters) {
@@ -171,6 +193,17 @@ public class RSpecSupport {
 
         additionalArgs.add(FileUtil.toFile(specFile).getAbsolutePath());
 
+        String charsetName = null;
+        String classPath = null;
+        
+        if (project != null) {
+            PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
+            if (evaluator != null) {
+                charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
+                classPath = evaluator.getProperty(SharedRubyProjectProperties.JAVAC_CLASSPATH);
+            }
+        }
+        
         desc = new ExecutionDescriptor(displayName, pwd, spec).additionalArgs(additionalArgs.toArray(
                     new String[additionalArgs.size()])); // NOI18N
 
