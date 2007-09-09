@@ -134,14 +134,13 @@ public class RulesManager {
             List<AstRule> nueRules = new LinkedList<AstRule>();
             
             for (AstRule r : e.getValue()) {
-                if (!r.appliesTo(info)) {
-                    continue;
-                }
-
                 Preferences p = getPreferences(r, null);
                 
                 if (p == null) {
                     if (!onLine) {
+                        if (!r.appliesTo(info)) {
+                            continue;
+                        }
                         nueRules.add(r);
                     }
                     continue;
@@ -149,10 +148,16 @@ public class RulesManager {
                 
                 if (getSeverity(r) == HintSeverity.CURRENT_LINE_WARNING) {
                     if (onLine) {
+                        if (!r.appliesTo(info)) {
+                            continue;
+                        }
                         nueRules.add(r);
                     }
                 } else {
                     if (!onLine) {
+                        if (!r.appliesTo(info)) {
+                            continue;
+                        }
                         nueRules.add(r);
                     }
                 }
