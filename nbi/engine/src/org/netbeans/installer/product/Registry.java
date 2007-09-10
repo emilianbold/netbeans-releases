@@ -1155,7 +1155,8 @@ public class Registry {
                     dependency.getUid(),
                     targetPlatform));
         }
-        ErrorManager.notifyCritical("unknown dependency type");
+        ErrorManager.notifyCritical(ResourceUtils.getString(Registry.class, 
+                ERROR_UNKNOWN_DEPENDENCY_KEY, dependency.getClass().toString()));
         
         // the only way for us to reach this spot is to get to 'default:' in the
         // switch, but ErrorManager.notifyCritical() will cause a System.exit(),
@@ -1789,4 +1790,7 @@ public class Registry {
             "R.error.cannot.load.registry";//NOI18N
     private static final String ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY =
             "R.error.parser.not.support.schemas";//NOI18N
+    private static final String ERROR_UNKNOWN_DEPENDENCY_KEY =
+            "R.error.unknown.dependency";//NOI18N
+    
 }
