@@ -55,6 +55,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport;
@@ -69,6 +70,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
         
 
 /**
@@ -384,6 +388,35 @@ public class CsmUtilities {
         return dob;
     }
     
+    public static PositionBounds createPositionBounds(CsmOffsetable csmObj) {
+        if (csmObj == null) {
+            return null;
+        }
+        CloneableEditorSupport ces = findCloneableEditorSupport(csmObj.getContainingFile());
+        if (ces != null) {
+            PositionRef beg = ces.createPositionRef(csmObj.getStartOffset(), Position.Bias.Forward);
+            PositionRef end = ces.createPositionRef(csmObj.getEndOffset(), Position.Bias.Backward);
+            return new PositionBounds(beg, end);
+        }
+        return null;
+    }
+    
+    public static CloneableEditorSupport findCloneableEditorSupport(CsmFile csmFile) {
+        DataObject dob = getDataObject(csmFile);
+        return findCloneableEditorSupport(dob);
+    }
+    
+    public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
+        Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+        if (obj instanceof CloneableEditorSupport) {
+            return (CloneableEditorSupport)obj;
+        }
+        obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+        if (obj instanceof CloneableEditorSupport) {
+            return (CloneableEditorSupport)obj;
+        }
+        return null;
+    }    
     //====================================
 
     public static CsmFile findHeaderFile(CsmFile file) {
