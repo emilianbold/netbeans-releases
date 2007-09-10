@@ -29,7 +29,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 
 import org.netbeans.modules.sql.framework.model.SQLCondition;
-import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.graph.ICommand;
@@ -37,12 +36,8 @@ import org.netbeans.modules.sql.framework.ui.graph.impl.GradientBrush;
 import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoBrush;
-import org.netbeans.modules.etl.ui.property.SourceTableNode;
-import org.netbeans.modules.etl.ui.property.TargetTableNode;
-import org.netbeans.modules.sql.framework.model.SourceTable;
-import org.netbeans.modules.sql.framework.model.impl.TargetTableImpl;
-import org.openide.nodes.Node;
-import org.openide.windows.WindowManager;
+
+
 
 /**
  * @author Ritesh Adval
