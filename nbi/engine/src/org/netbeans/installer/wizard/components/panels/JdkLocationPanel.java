@@ -253,13 +253,13 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             return jdkLocations.get(0);
         }
         
-        return new File("");
+        return new File(StringUtils.EMPTY_STRING);
     }
     
     public String validateLocation(final String path) {
         final File file = new File(path);
         
-        if (path.equals("")) {
+        if (path.equals(StringUtils.EMPTY_STRING)) {
             return StringUtils.format(
                     getProperty(ERROR_NULL_PROPERTY));
         }
