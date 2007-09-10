@@ -97,6 +97,13 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     public void setData(ElementJavadoc doc) {
+        setData(doc, true);
+    }
+    
+    private void setData(ElementJavadoc doc, boolean clearHistory) {
+        if ( doc == null || clearHistory ) {
+            history = new ArrayList<ElementJavadoc>(5);
+        }
         setDocumentation(doc);
         if( null != doc )
             addToHistory(doc);
@@ -405,7 +412,7 @@ public class DocumentationScrollPane extends JScrollPane {
                 final String desc = e.getDescription();
                 if (desc != null) {
                     ElementJavadoc doc = currentDocumentation.resolveLink(desc);
-                    setData(doc);
+                    setData(doc, false);
                 }                    
             }
         }

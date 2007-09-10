@@ -59,7 +59,7 @@ public class ElementJavadoc {
     }
 
     private ClasspathInfo cpInfo;
-    private Doc doc;
+    //private Doc doc;
     private String content = null;
     private Hashtable<String, ElementHandle<? extends Element>> links = new Hashtable<String, ElementHandle<? extends Element>>();
     private int linkCounter = 0;
@@ -176,7 +176,7 @@ public class ElementJavadoc {
     private ElementJavadoc(CompilationInfo compilationInfo, Element element, URL url) {
         ElementUtilities eu = compilationInfo.getElementUtilities();
         this.cpInfo = compilationInfo.getClasspathInfo();
-        this.doc = eu.javaDocFor(element);
+        Doc doc = eu.javaDocFor(element);
         if (element != null) {
             final FileObject fo = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
             if (fo != null) {
@@ -193,7 +193,7 @@ public class ElementJavadoc {
                 docURL = SourceUtils.getJavadoc(element, cpInfo);
             }
         }
-        this.content = prepareContent(eu);
+        this.content = prepareContent(eu, doc);
     }
     
     private ElementJavadoc(URL url) {
@@ -204,7 +204,7 @@ public class ElementJavadoc {
 
     // Private section ---------------------------------------------------------
     
-    private String prepareContent(ElementUtilities eu) {
+    private String prepareContent(ElementUtilities eu, Doc doc) {
         StringBuilder sb = new StringBuilder();
         if (doc != null) {
             if (doc instanceof ProgramElementDoc) {
