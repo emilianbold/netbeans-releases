@@ -19,57 +19,37 @@
 package org.netbeans.modules.visualweb.insync;
 
 
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
-import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.DesignContext;
-import com.sun.rave.designtime.DesignEvent;
-import com.sun.rave.designtime.DesignProperty;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
-
-import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
-import org.netbeans.modules.visualweb.insync.faces.Entities;
-import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
-import org.netbeans.modules.visualweb.insync.live.LiveUnit;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.insync.InSyncService;
 import org.netbeans.modules.visualweb.api.insync.JsfJspDataObjectMarker;
-import com.sun.rave.designtime.DesignProject;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
+import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.faces.ElAttrUpdater;
-//NB6.0 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
+import org.netbeans.modules.visualweb.insync.faces.Entities;
+import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.insync.jsf.SourceMonitor;
+import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupVisitor;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.openide.text.Line;
-import org.openide.util.NbBundle;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputEvent;
-import org.openide.windows.OutputListener;
-import org.openide.windows.OutputWriter;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
+
+import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.DesignContext;
+import com.sun.rave.designtime.DesignEvent;
+import com.sun.rave.designtime.DesignProject;
+import com.sun.rave.designtime.DesignProperty;
+import com.sun.rave.designtime.markup.MarkupDesignBean;
+import com.sun.rave.designtime.markup.MarkupMouseRegion;
 
 /**
  * This class provides a concrete implementation of InSyncService.
@@ -192,7 +172,9 @@ public class InSyncServiceProvider extends InSyncService {
 
         if (facesModel != null) {
             SourceMonitor sm = SourceMonitor.getSourceMonitorForFacesModel(facesModel);
-            sm.activated();
+            if (sm != null) { 
+                sm.activated();
+            }
         }
     }
 
@@ -205,7 +187,9 @@ public class InSyncServiceProvider extends InSyncService {
 
         if (facesModel != null) {
             SourceMonitor sm = SourceMonitor.getSourceMonitorForFacesModel(facesModel);
-            sm.hidden();
+            if (sm != null) { 
+                sm.hidden();
+            }
         }
     }
 
@@ -218,7 +202,9 @@ public class InSyncServiceProvider extends InSyncService {
 
         if (facesModel != null) {
             SourceMonitor sm = SourceMonitor.getSourceMonitorForFacesModel(facesModel);
-            sm.shown();
+            if (sm != null) { 
+                sm.shown();
+            }
         }
     }
 
