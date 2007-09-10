@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -52,7 +53,7 @@ public abstract class ProjectTemplate {
 
     public abstract void instantiateFile(Project project, Node node, FileObject folder, String j2eeLevel, String pageName) throws IOException;
 
-    protected FileObject instantiateFileTemplate(FileObject folder, String name, String templateName) throws IOException {
+    protected FileObject instantiateFileTemplate(FileObject folder, String name, String templateName, Map<String, String> parameters) throws IOException {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject FO = fs.findResource(templateName);
         if (FO == null) {
@@ -76,7 +77,11 @@ public abstract class ProjectTemplate {
             name = name.substring(0, name.lastIndexOf(ext) - 1);
         DataObject newDO = null;
         try {
-            newDO = template.createFromTemplate(folderDataObj, name);
+            if (parameters != null) {
+                newDO = template.createFromTemplate(folderDataObj, name, parameters);
+            } else {
+                newDO = template.createFromTemplate(folderDataObj, name);
+            }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
         }

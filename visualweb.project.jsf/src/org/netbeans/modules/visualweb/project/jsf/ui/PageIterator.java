@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.List;
+import java.util.HashMap;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
@@ -186,7 +187,7 @@ public class PageIterator implements TemplateWizard.Iterator {
 
         // Java EE 5 / JSF 1.2 project needs different template
         if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
-            String name = "Templates/Jsf12Apps/" + template.getName() + "." + template.getExt();
+            String name = "Templates/Jsf12Apps/" + template.getNameExt(); // NOI18N
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(name);
             if (fo != null) {
                 template = fo;
@@ -235,7 +236,26 @@ public class PageIterator implements TemplateWizard.Iterator {
                 // Default name.
                 obj = dTemplate.createFromTemplate(df);
             } else {
-                obj = dTemplate.createFromTemplate(df, targetName);
+                if ("Page.jsp".equals(template.getNameExt())) { // NOI18N
+                    HashMap<String, String> templateParameters = new HashMap<String, String>();
+                    FileObject webDocbase = JsfProjectUtils.getDocumentRoot(project);
+                    String folder;
+                    if (dir == webDocbase) {
+                        folder = "";
+                    } else {
+                        folder = FileUtil.getRelativePath(webDocbase, dir);
+                        if (folder == null) {
+                            folder = "";
+                        } else {
+                            folder = folder.replace('/', '$') + "$";
+                        }
+                    }
+                    templateParameters.put("folder", folder); //NOI18N
+
+                    obj = dTemplate.createFromTemplate(df, targetName, templateParameters);
+                } else {
+                    obj = dTemplate.createFromTemplate(df, targetName);
+                }
             }
         } catch(org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException jsfe) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(

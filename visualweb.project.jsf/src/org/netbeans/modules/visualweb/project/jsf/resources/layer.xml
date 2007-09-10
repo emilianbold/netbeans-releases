@@ -64,6 +64,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="Page.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
@@ -79,6 +80,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="PageFragment.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/PageFragment.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
@@ -141,6 +143,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="rave-page_1.5"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="Page.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/Page.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
@@ -156,6 +159,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="rave-page_1.5"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="PageFragment.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/PageFragment.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
