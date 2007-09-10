@@ -1167,9 +1167,9 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         fldPartnerRole.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/properties/editors/Bundle").getString("ACSD_INP_PartnerRole"));
 
         lblNewPLTypeName1.setLabelFor(myWsdlWrapperName);
-        lblNewPLTypeName1.setText("Create in Fil&e:");
+        lblNewPLTypeName1.setText(org.openide.util.NbBundle.getMessage(PartnerLinkMainPanel.class, "LBL_Create_In_File")); // NOI18N
 
-        myBrowseButton.setText("&Browse");
+        myBrowseButton.setText(org.openide.util.NbBundle.getMessage(PartnerLinkMainPanel.class, "LBL_Browse")); // NOI18N
         myBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseWsdlFile(evt);
