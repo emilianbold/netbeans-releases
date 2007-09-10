@@ -54,6 +54,7 @@ public class MethodBodyTest extends GeneratorTest {
 //        suite.addTest(new MethodBodyTest("testAddBodyText"));
 //        suite.addTest(new MethodBodyTest("testAddVarDecl"));
 //        suite.addTest(new MethodBodyTest("testReplaceConstructorBody"));
+//        suite.addTest(new MethodBodyTest("testSwitchStatement"));
         return suite;
     }
 
@@ -215,7 +216,7 @@ public class MethodBodyTest extends GeneratorTest {
     /**
      * diff switch statement
      */
-    public void XtestSwitchStatement() throws Exception {
+    public void testSwitchStatement() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package personal;\n" +

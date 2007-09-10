@@ -736,6 +736,12 @@ public class CasualDiff {
             while (tokenSequence.moveNext() && JavaTokenId.COLON != tokenSequence.token().id()) ;
             copyTo(localPointer, localPointer = tokenSequence.offset());
         }
+        // todo (#pf): hot-fix of #113313, think about correct matching later
+        if (oldT.pat == null && newT.pat != null) {
+            printer.print(newT);
+            printer.newline();
+            return bounds[1];
+        }
         PositionEstimator est = EstimatorFactory.statements(
                 oldT.getStatements(),
                 newT.getStatements(),
