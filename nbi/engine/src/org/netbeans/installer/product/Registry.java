@@ -975,8 +975,9 @@ public class Registry {
                 // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        "The current parser - " + factory.getClass() + " - does not support schemas.",
-                        e);
+                        ResourceUtils.getString(Registry.class, 
+                        ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY, 
+                        factory.getClass()), e);
             }
             factory.setNamespaceAware(true);
             
