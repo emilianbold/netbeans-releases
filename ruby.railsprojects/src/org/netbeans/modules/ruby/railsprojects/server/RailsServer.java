@@ -66,19 +66,17 @@ import org.openide.NotifyDescriptor;
  * 
  * @author Tor Norbye, Pavel Buzek
  */
-public class RailsServer {
+public final class RailsServer {
     
-    private static final int MONGREL = 1;
-    private static final int LIGHTTPD = 2;
-    private static final int WEBRICK = 3;
-    
+    enum ServerType { MONGREL, LIGHTTPD, WEBRICK; }
+
     enum ServerStatus { NOT_STARTED, STARTING, RUNNING; }
 
     /** Set of currently active - in use; ports. */
     private static final Set<Integer> IN_USE_PORTS = new HashSet<Integer>();;
 
     private ServerStatus status = ServerStatus.NOT_STARTED;
-    private int serverId;
+    private ServerType serverType;
     
     /** True if server failed to start due to port conflict. */
     private boolean portConflict;
@@ -107,7 +105,7 @@ public class RailsServer {
             if (status == ServerStatus.STARTING) {
                 return;
             } else if (status == ServerStatus.RUNNING) {
-                if (serverId == MONGREL) {
+                if (serverType == ServerType.MONGREL) {
                     // isPortInUse doesn't work for Mongrel
                     return;
                 }
@@ -154,15 +152,15 @@ public class RailsServer {
         }
         String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
-        serverId = getServer();
-        String displayName = getServerTabName(serverId, projectName, port);
+        serverType = getServerType();
+        String displayName = getServerTabName(serverType, projectName, port);
         String serverPath = "script" + File.separator + "server"; // NOI18N
         ExecutionDescriptor desc = new ExecutionDescriptor(displayName, dir, serverPath);
         desc.additionalArgs("--port", Integer.toString(port)); // NOI18N
         desc.postBuild(finishedAction);
         desc.classPath(classPath);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new RailsServerRecognizer(getStartedMessage(serverId)));
+        desc.addOutputRecognizer(new RailsServerRecognizer(getStartedMessage(serverType)));
         desc.frontWindow(false);
         desc.debug(debug);
         desc.fastDebugRequired(debug);
@@ -174,48 +172,47 @@ public class RailsServer {
         new RubyExecution(desc, charsetName).run();
     }
     
-    private static String getServerTabName(int serverId, String projectName, int port) {
-        switch (serverId) {
-        case MONGREL: return NbBundle.getMessage(RailsServer.class, "MongrelTab", projectName, Integer.toString(port));
-        case LIGHTTPD: return NbBundle.getMessage(RailsServer.class, "LighttpdTab", projectName, Integer.toString(port));
-        case WEBRICK: 
-        default:
-            return NbBundle.getMessage(RailsServer.class, "WEBrickTab", projectName, Integer.toString(port));
+    private static String getServerTabName(ServerType serverType, String projectName, int port) {
+        switch (serverType) {
+            case MONGREL: return NbBundle.getMessage(RailsServer.class, "MongrelTab", projectName, Integer.toString(port));
+            case LIGHTTPD: return NbBundle.getMessage(RailsServer.class, "LighttpdTab", projectName, Integer.toString(port));
+            case WEBRICK: 
+            default:
+                return NbBundle.getMessage(RailsServer.class, "WEBrickTab", projectName, Integer.toString(port));
         }
     }
     
-    private static String getStartedMessage(int serverId) {
-        switch (serverId) {
-        case MONGREL: return "** Mongrel available at "; // NOI18N
-        //case LIGHTTPD: return "=> Rails application starting on ";
-        case WEBRICK: 
-        default:
-            return "=> Rails application started on "; // NOI18N
+    private static String getStartedMessage(ServerType serverType) {
+        switch (serverType) {
+            case MONGREL: return "** Mongrel available at "; // NOI18N
+            //case LIGHTTPD: return "=> Rails application starting on ";
+            case WEBRICK: 
+            default:
+                return "=> Rails application started on "; // NOI18N
         }
         
     }
 
     static String getServerName() {
-        int id = getServer();
-        switch (id) {
-        case MONGREL: return NbBundle.getMessage(RailsServer.class, "Mongrel");
-        case LIGHTTPD: return NbBundle.getMessage(RailsServer.class, "Lighttpd");
-        case WEBRICK: 
-        default:
-            return NbBundle.getMessage(RailsServer.class, "WEBrick");
+        switch (getServerType()) {
+            case MONGREL: return NbBundle.getMessage(RailsServer.class, "Mongrel");
+            case LIGHTTPD: return NbBundle.getMessage(RailsServer.class, "Lighttpd");
+            case WEBRICK: 
+            default:
+                return NbBundle.getMessage(RailsServer.class, "WEBrick");
         }
     }
     
     /** Figure out which server we're using */
-    private static int getServer() {
+    private static ServerType getServerType() {
         RubyInstallation install = RubyInstallation.getInstance();
         
         if (install.getVersion("mongrel") != null) { // NOI18N
-            return MONGREL;
+            return ServerType.MONGREL;
         } else if (install.getVersion("lighttpd") != null) { // NOI18N
-            return LIGHTTPD;
+            return ServerType.LIGHTTPD;
         } else {
-            return WEBRICK;
+            return ServerType.WEBRICK;
         }
     }
     
