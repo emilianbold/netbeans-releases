@@ -44,7 +44,6 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 
-import org.netbeans.modules.form.editors2.FontEditor;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutsupport.delegates.*;
 import org.netbeans.modules.form.codestructure.*;
@@ -167,20 +166,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private FormModel formModel;
 
-    private List nonfatalErrors;
+    private List<Throwable> nonfatalErrors;
 
     // name of the menu bar component loaded as AUX value of the top component
     private String mainMenuBarName;
 
     // maps of properties that cannot be loaded before component is added to
     // parent container, or container is filled with sub-components
-    private Map<RADComponent, java.util.List> parentDependentProperties;
-    private Map<RADComponent, java.util.List> childrenDependentProperties;
+    private Map<RADComponent, java.util.List<Object>> parentDependentProperties;
+    private Map<RADComponent, java.util.List<Object>> childrenDependentProperties;
 
     // map of loaded components (not necessarily added to FormModel yet)
-    private Map loadedComponents;
+    private Map<String,RADComponent> loadedComponents;
 
-    private List bindingProperties; // <property, name of source, name of target, MetaBinding, node>
+    private List<Object> bindingProperties; // <property, name of source, name of target, MetaBinding, node>
     private ConnectedProperties connectedProperties;
 
     // XML persistence of code structure
@@ -488,7 +487,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // compatibility hack for loading form's menu bar, part 3
         if (mainMenuBarName != null) {
-            RADComponent menuBar = (RADComponent) getComponentsMap().get(mainMenuBarName);
+            RADComponent menuBar = getComponentsMap().get(mainMenuBarName);
             if (menuBar != null && menuBar.getParentComponent() == null
                     && topComp instanceof RADVisualFormContainer) {
                 formModel.removeComponentImpl(menuBar, false);
@@ -637,7 +636,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                 findSubNode(node, XML_NON_VISUAL_COMPONENTS);
         org.w3c.dom.NodeList childNodes = nonVisualsNode == null ? null :
                                           nonVisualsNode.getChildNodes();
-        ArrayList list = new ArrayList();
+        List<RADComponent> list = new ArrayList<RADComponent>();
 
         if (childNodes != null) {
             for (int i = 0; i < childNodes.getLength(); i++) {
@@ -924,7 +923,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         childNodes = subCompsNode != null ?
                      subCompsNode.getChildNodes() : null;
         if (childNodes != null) {
-            ArrayList list = new ArrayList();
+            List<RADComponent> list = new ArrayList<RADComponent>();
             for (int i=0, n=childNodes.getLength(); i < n; i++) {
                 org.w3c.dom.Node componentNode = childNodes.item(i);
                 if (componentNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
@@ -957,7 +956,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             if (convIndex == LAYOUT_NATURAL) {
                 LayoutModel layoutModel = formModel.getLayoutModel();
-                Map<String, String> nameToIdMap = new HashMap();
+                Map<String, String> nameToIdMap = new HashMap<String, String>();
                 for (int i=0; i<childComponents.length; i++) {
                     RADComponent comp = childComponents[i];
                     nameToIdMap.put(comp.getName(), comp.getId());
@@ -1657,14 +1656,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return -1; // unknown layout
 
         org.w3c.dom.Node[] propNodes = findSubNodes(layoutNode, XML_PROPERTY);
-        List propertyNames = null;
-        List propertyValues = null;
-        List propertyEditors = null;
+        List<String> propertyNames = null;
+        List<Object> propertyValues = null;
+        List<Object> propertyEditors = null;
 
         if (propNodes != null && propNodes.length > 0) {
-            propertyNames = new ArrayList(propNodes.length);
-            propertyValues = new ArrayList(propNodes.length);
-            propertyEditors = new ArrayList(propNodes.length);
+            propertyNames = new ArrayList<String>(propNodes.length);
+            propertyValues = new ArrayList<Object>(propNodes.length);
+            propertyEditors = new ArrayList<Object>(propNodes.length);
 
             for (int i=0; i < propNodes.length; i++) {
                 node = propNodes[i];
@@ -1928,7 +1927,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                                value.toString() : "null"); // NOI18N
     }
 
-    private static int findName(String name, List names) {
+    private static int findName(String name, List<String> names) {
         return names != null ? names.indexOf(name) : -1;
     }
 
@@ -2131,17 +2130,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	// hack for properties that can't be set until all children 
         // are added to the container
 	if (metacomp != null) {
-            List propList = null;
+            List<Object> propList = null;
             if (FormUtils.isMarkedParentDependentProperty(property)) {
 		if (parentDependentProperties != null) {
 		    propList = parentDependentProperties.get(metacomp);
 		}
 		else {
-		    parentDependentProperties = new HashMap();
+		    parentDependentProperties = new HashMap<RADComponent, java.util.List<Object>>();
 		    propList = null;
 		}
 		if (propList == null) {
-		    propList = new LinkedList();
+		    propList = new LinkedList<Object>();
 		    parentDependentProperties.put(metacomp, propList);
 		}
 		propList.add(property);
@@ -2152,11 +2151,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
 		    propList = childrenDependentProperties.get(metacomp);
 		}
 		else {
-		    childrenDependentProperties = new HashMap();
+		    childrenDependentProperties = new HashMap<RADComponent, java.util.List<Object>>();
 		    propList = null;
 		}
 		if (propList == null) {
-		    propList = new LinkedList();
+		    propList = new LinkedList<Object>();
 		    childrenDependentProperties.put(metacomp, propList);
 		}
 		propList.add(property);
@@ -2561,7 +2560,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 value.setBindImmediately(Boolean.parseBoolean(immediatelyTxt));
             }
             
-            if (bindingProperties == null) bindingProperties = new LinkedList();
+            if (bindingProperties == null) bindingProperties = new LinkedList<Object>();
             bindingProperties.add(property);
             bindingProperties.add(source);
             bindingProperties.add(target);
@@ -3284,7 +3283,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (layoutSupport == null) {
 //            raiseFormatVersion(NB42_VERSION);
             RADVisualComponent[] subComponents = container.getSubComponents();
-            Map idToNameMap = new HashMap();
+            Map<String,String> idToNameMap = new HashMap<String,String>();
             for (int i=0; i<subComponents.length; i++) {
                 RADVisualComponent comp = subComponents[i];
                 idToNameMap.put(comp.getId(), comp.getName());
@@ -4111,8 +4110,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     
     private void saveBinding(BindingProperty prop, StringBuffer buf, String indent) {        
         String propName = prop.getName();
-        assert (prop.getValue() instanceof MetaBinding);
-        MetaBinding binding = (MetaBinding)prop.getValue();
+        MetaBinding binding = prop.getValue();
         buf.append(indent);
         if (binding.hasSubBindings() || !binding.getParameters().isEmpty()
                 || binding.isIncompletePathValueSpecified() || binding.isNullValueSpecified()
@@ -4955,7 +4953,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         Class[] paramTypes;
                         StringTokenizer paramTokens =
                             new StringTokenizer(node.getNodeValue(), ", "); // NOI18N
-                        List typeList = new ArrayList();
+                        List<Class> typeList = new ArrayList<Class>();
                         try {
                             while (paramTokens.hasMoreTokens()) {
                                 typeList.add(getClassFromString(
@@ -4991,7 +4989,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
                         RADComponent comp = name.equals(".") ? // NOI18N
                                 formModel.getTopRADComponent() :
-                                (RADComponent) getComponentsMap().get(name);
+                                getComponentsMap().get(name);
                         if (comp == null)
                             return null; // no such component error
 
@@ -5154,7 +5152,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     private CodeExpression[] loadParameters(org.w3c.dom.Node node) {
-        List paramList = new ArrayList();
+        List<CodeExpression> paramList = new ArrayList<CodeExpression>();
         org.w3c.dom.NodeList childNodes = node.getChildNodes();
         if (childNodes != null) {
             for (int i=0, n=childNodes.getLength(); i < n; i++) {
@@ -5206,7 +5204,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         Class[] paramTypes;
         StringTokenizer paramTokens =
             new StringTokenizer(node.getNodeValue(), ", "); // NOI18N
-        List typeList = new ArrayList();
+        List<Class> typeList = new ArrayList<Class>();
         try {
             while (paramTokens.hasMoreTokens()) {
                 typeList.add(getClassFromString(
@@ -5281,9 +5279,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return savedVariables;
     }
 
-    private Map getComponentsMap() {
+    private Map<String,RADComponent> getComponentsMap() {
         if (loadedComponents == null)
-            loadedComponents = new HashMap(50);
+            loadedComponents = new HashMap<String,RADComponent>(50);
         return loadedComponents;
     }
 
@@ -5654,6 +5652,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             super(is);
         }
 
+        @Override
         protected Class resolveClass(ObjectStreamClass streamCls)
             throws IOException, ClassNotFoundException
         {
@@ -5734,7 +5733,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.NamedNodeMap attributes = valueNode.getAttributes();
 
         if (attributes != null) {
-            ArrayList attribList = new ArrayList(attributes.getLength());
+            List<org.w3c.dom.Node> attribList = new ArrayList<org.w3c.dom.Node>(attributes.getLength());
             for (int i = 0; i < attributes.getLength(); i++) {
                 attribList.add(attributes.item(i));
             }
@@ -5742,10 +5741,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             // sort the attributes by attribute name
             // probably not necessary, but there is no guarantee that
             // the order of attributes will remain the same in DOM
-            Collections.sort(attribList, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    org.w3c.dom.Node n1 =(org.w3c.dom.Node)o1;
-                    org.w3c.dom.Node n2 =(org.w3c.dom.Node)o2;
+            Collections.sort(attribList, new Comparator<org.w3c.dom.Node>() {
+                public int compare(org.w3c.dom.Node n1, org.w3c.dom.Node n2) {
                     return n1.getNodeName().compareTo(n2.getNodeName());
                 }
             }
@@ -5838,7 +5835,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (children == null)
             return new org.w3c.dom.Node[0];
 
-        ArrayList nodeList = new ArrayList();
+        List<org.w3c.dom.Node> nodeList = new ArrayList<org.w3c.dom.Node>();
 
         for (int i=0,n=children.getLength(); i < n; i++) {
             org.w3c.dom.Node subnode = children.item(i);
@@ -5868,7 +5865,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     {
         String nodeName = node.getNodeName();
 
-        List path = new ArrayList();
+        List<String> path = new ArrayList<String>();
         boolean leaf = true;
         boolean layout = false;
         boolean layoutConstr = false;
@@ -6082,6 +6079,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 this.tostring = getKey(beanName, property.getName());
                 this.auxiliaryValue = auxiliaryValue;
             }            
+            @Override
             public boolean equals(Object obj) {
                 if(!(obj instanceof ConnectedProperty)) return false;
                 if(this == obj) return true;
@@ -6089,6 +6087,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 return beanName.equals(cp.beanName) && 
                        property.equals(cp.property);
             }
+            @Override
             public int hashCode() {            
                 return tostring.hashCode();
             }            
@@ -6133,11 +6132,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 sb.append("]"); // NOI18N
                 return sb.toString();
             }            
+            @Override
             public String toString() {
                 return tostring;
             }       
         }                
-        private Map properties = new HashMap();      
+        private Map<String,ConnectedProperty> properties = new HashMap<String,ConnectedProperty>();      
         public void put(Property property, 
                         RADConnectionPropertyEditor.RADConnectionDesignValue value,
                         String beanName,
@@ -6147,7 +6147,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             properties.put(cp.getKey(), cp);
         }     
         private ConnectedProperty get(String key) {
-            return (ConnectedProperty) properties.get(key);
+            return properties.get(key);
         }           
         public void setValues() { 
             Collection sorted = sort();
@@ -6162,16 +6162,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
             }
         }
-        private Collection sort() {                                           
-            List sortedValues = null;
+        private Collection<ConnectedProperty> sort() {                                           
+            List<ConnectedProperty> sortedValues = null;
             try {
                 sortedValues = Utilities.topologicalSort(properties.values(), getEdges());                                                            
             } catch (TopologicalSortException tse) {
                 Set[] sets = tse.topologicalSets();                
-                sortedValues = new ArrayList();
+                sortedValues = new ArrayList<ConnectedProperty>();
                 for (int i = 0; i < sets.length; i++) {
                     for (Iterator it = sets[i].iterator(); it.hasNext();) {
-                        sortedValues.add(it.next());
+                        sortedValues.add((ConnectedProperty)it.next());
                     }
                 }    
             }
@@ -6183,13 +6183,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             // on the unsorted values
             return properties.values();
         } 
-        private Map getEdges() {
-            Map edges = new HashMap();
+        private Map<ConnectedProperty,List<ConnectedProperty>> getEdges() {
+            Map<ConnectedProperty,List<ConnectedProperty>> edges = new HashMap<ConnectedProperty,List<ConnectedProperty>>();
             for (Iterator it = properties.values().iterator(); it.hasNext();) {
                 ConnectedProperty target = (ConnectedProperty) it.next();                                
                 ConnectedProperty source = get(target.getSourceKey());
                 if(source!=null) {
-                    List l = new ArrayList();                    
+                    List<ConnectedProperty> l = new ArrayList<ConnectedProperty>();
                     l.add(source);
                     edges.put(target, l);
                 } 
