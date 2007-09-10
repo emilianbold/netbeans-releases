@@ -128,7 +128,7 @@ public class MessageEdgeDrawEngine extends ETEdgeDrawEngine implements IMessageE
    {
        //kris richards - issue 113794 - getting default value from pref
        m_ShowMessageType = 
-               NbPreferences.forModule(MessageEdgeDrawEngine.class).getInt("UML_SQD_DEFAULT_MSG", IShowMessageType.SMT_UNKNOWN);
+               NbPreferences.forModule(MessageEdgeDrawEngine.class).getInt("UML_SQD_DEFAULT_MSG", IShowMessageType.SMT_NONE);
    }
 
    public String getElementType()
