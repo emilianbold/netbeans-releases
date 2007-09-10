@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.ruby.rubyproject;
@@ -36,8 +36,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -57,7 +59,6 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
-import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
@@ -145,6 +146,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
         BufferedReader reader = new BufferedReader(is);
         List<RakeTarget> targets = new ArrayList<RakeTarget>(40);
         Map<String, RakeTarget> map = new HashMap<String, RakeTarget>(50);
+        Set<String> processedTargets = new HashSet<String>();
 
         while (true) {
             String line = reader.readLine();
@@ -174,6 +176,9 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
             }
 
             String target = line.substring(start, end);
+            if (!processedTargets.add(target)) {
+                continue;
+            }
             String description = null;
             int descIndex = line.indexOf('#', end);
 
@@ -400,10 +405,18 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
 
         // Install the given gem
         String rakeCmd = RubyInstallation.getInstance().getRake();
-        List<String> argList = new ArrayList<String>();
 
         File cmd = new File(RubyInstallation.getInstance().getRuby());
+        
+        StringBuffer sb = new StringBuffer();
+        sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-T"));
+        sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-P"));
+        return sb.toString();
+    }
+    
+    private static String hiddenRakeRunner(File cmd, String rakeCmd, File pwd, String rakeArg) {
 
+        List<String> argList = new ArrayList<String>();
         if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) {
             argList.add(cmd.getPath());
         }
@@ -413,7 +426,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
         argList.addAll(RubyExecution.getRubyArgs(rubyHome, cmdName));
 
         argList.add(rakeCmd);
-        argList.add("-T");
+        argList.add(rakeArg);
 
         String[] args = argList.toArray(new String[argList.size()]);
         ProcessBuilder pb = new ProcessBuilder(args);
