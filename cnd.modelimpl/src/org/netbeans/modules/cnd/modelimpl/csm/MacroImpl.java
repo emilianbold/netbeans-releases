@@ -67,11 +67,6 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
      */
     private final List<String> params;
     
-    /** Creates new instance of MacroImpl based on existed macro and specified container */
-    public MacroImpl(CsmMacro macro, CsmFile containingFile) {
-        this(macro.getName(), macro.getParameters(), ""/*macro.getBody()*/, containingFile, macro);
-    }
-    
     /** Creates new instance of MacroImpl based on macro information and specified position */
     public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmOffsetable macroPos) {
         this(macroName, macroParams, macroBody, null, macroPos);
@@ -86,7 +81,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         this.system = false;
         this.body = macroBody;
         if (macroParams != null) {
-            this.params = Collections.<String>unmodifiableList(macroParams);
+            this.params = Collections.unmodifiableList(macroParams);
         } else {
             this.params = null;
         }
@@ -99,7 +94,6 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     public String getBody() {
         throw new UnsupportedOperationException("getBody() was switched off due to performance reasons"); // NOI18N
         // see APTParseFileWalker.createMacro() for details.
-        // dont' forget to fix  MacroImpl(CsmMacro, CsmFile) body if you revert this
         
         //return body;
     }
