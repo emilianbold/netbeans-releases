@@ -33,7 +33,7 @@ public class UMLMeasureActions  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
              
-        suite.addTest(new OpenUMLProject("measureTime", "Open UML Project"));
+
         suite.addTest(new OpenUMLDiagram("measureTime", "Open UML Diagram"));
         suite.addTest(new ScrollExpandedProject("measureTime", "Scroll Expanded Project"));
         suite.addTest(new SelectingMultipleNodes("measureTime", "Selecting Multiple Nodes"));
@@ -43,7 +43,7 @@ public class UMLMeasureActions  {
         suite.addTest(new GenerateDependencyDiagram("measureTime", "Generate Dependency Diagram"));
 
         suite.addTest(new ReverseEngineering("measureTime", "Reverse Engineering"));
-
+        suite.addTest(new OpenUMLProject("measureTime", "Open UML Project"));
 /* Stability issues, will be enabled later...
         suite.addTest(new GenerateModelReport("measureTime", "Generate Model Report"));
         suite.addTest(new CodeGenerationFromUMLProject("measureTime", "Code Generation From UML Project"));
