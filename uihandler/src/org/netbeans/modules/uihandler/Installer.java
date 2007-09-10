@@ -75,6 +75,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.uihandler.LogRecords;
@@ -116,6 +117,7 @@ public class Installer extends ModuleInstall implements Runnable {
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
+    public static RequestProcessor RP_OPT = null; 
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
     private static int logsSize;
@@ -664,7 +666,8 @@ public class Installer extends ModuleInstall implements Runnable {
         protected ReportPanel reportPanel;
         private URL url;
         private boolean dialogCreated;
-        private boolean checkingResult;
+        private boolean checkingResult, refresh = false;
+        protected boolean errorPage = false;
         
         public Submit(String msg) {
             this.msg = msg;
@@ -693,7 +696,7 @@ public class Installer extends ModuleInstall implements Runnable {
             } else {
                 dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
             }
-            
+
             exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
             
             String defaultURI = NbBundle.getMessage(Installer.class, msg);
@@ -706,7 +709,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 okToExit = true;
                 return;
             }
-            
+
             synchronized (this) {
                 RP_UI.post(this);
                 while (!dialogCreated) {
@@ -720,7 +723,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             
             LOG.log(Level.FINE, "doShow, dialog has been created"); // NOI18N
-            
+
             for (;;) {
                 try {
                     if (url == null) {
@@ -762,20 +765,23 @@ public class Installer extends ModuleInstall implements Runnable {
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, url.toExternalForm(), ex);
                 }
-                break;
-            }
-            
-            LOG.log(Level.FINE, "doShow, assignInternalURL = {0}", url);
-            assignInternalURL(url);
-            
-            synchronized (this) {
-                while (dialogCreated) {
-                    try {
-                        wait();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+                LOG.log(Level.FINE, "doShow, assignInternalURL = {0}", url);
+                assignInternalURL(url);
+                refresh = false;
+                synchronized (this) {
+                    while (dialogCreated && !refresh) {
+                        try {
+                            wait();
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
+                if (refresh){
+                    url=null;
+                    continue;
+                }
+                break;
             }
             LOG.log(Level.FINE, "doShow, dialogCreated, exiting");
         }
@@ -813,8 +819,7 @@ public class Installer extends ModuleInstall implements Runnable {
         private void catchConnectionProblem(Exception exception){
             LOG.log(Level.INFO, url.toExternalForm(), exception);
             url = getUnknownHostExceptionURL();
-            report = false;
-            msg = null;
+            errorPage = true;
         }
         private URL getUnknownHostExceptionURL() {
             try {
@@ -899,6 +904,27 @@ public class Installer extends ModuleInstall implements Runnable {
                 return ;
             }
             
+            if (Button.PROXY.isCommand(e.getActionCommand())){
+                if (RP_OPT == null){
+                    RP_OPT = new RequestProcessor("UI Gestures - Show Options");
+                }
+                //show Tools/Options dialog
+                RP_OPT.post(new Runnable() {
+                    public void run() {
+                        OptionsDisplayer.getDefault().open("General"); // NOI18N
+                    }
+                });
+            }
+            
+            if (Button.REFRESH.isCommand(e.getActionCommand())){
+                refresh = true;
+                errorPage = false;
+                synchronized(this){
+                    notifyAll();
+                }
+                return;
+            }
+            
             if (Button.VIEW_DATA.isCommand(e.getActionCommand())) { // NOI18N
                 if (viewData() && (e.getSource() instanceof AbstractButton)) {
                     AbstractButton abut = (AbstractButton)e.getSource();
@@ -949,7 +975,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
             });
-            checking.waitFinished(3000);
+            checking.waitFinished(10000);
             return checkingResult;
         }
         
@@ -1050,7 +1076,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 LOG.log(Level.SEVERE, ex.getMessage(), ex);
             }
             
-            Dimension dim = new Dimension(450, 50);
+            Dimension dim = new Dimension(450, 350);
             browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
             browser.setPreferredSize(dim);
             browser.setEditable(false); 
@@ -1192,7 +1218,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (abut != null) {
                     rptr = (String) abut.getClientProperty("alt");
                 }
-                if ("reportDialog".equals(rptr)) {
+                if ("reportDialog".equals(rptr)&&!errorPage) {
                     dd.setMessage(reportPanel);
                 }
             }
@@ -1261,7 +1287,9 @@ public class Installer extends ModuleInstall implements Runnable {
         VIEW_DATA("view-data"),
         REDIRECT("redirect"),
         AUTO_SUBMIT("auto-submit"),
-        SUBMIT("submit");
+        SUBMIT("submit"),
+        REFRESH("refresh"),
+        PROXY("proxy");
         
         private final String name;
         Button(String name) {
