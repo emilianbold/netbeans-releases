@@ -36,7 +36,7 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class MapElementToDrawEngine extends Hashtable< IElement, IPresentationElement >
+public class MapElementToDrawEngine extends Hashtable< String, IPresentationElement >
 {
    protected final String m_strElementType;
    
@@ -60,7 +60,7 @@ public class MapElementToDrawEngine extends Hashtable< IElement, IPresentationEl
    {
       IDrawEngine engine = null;
       
-      IPresentationElement pe = (IPresentationElement)get( element );
+      IPresentationElement pe = (IPresentationElement)get( element.getXMIID() );
       if( pe != null )
       {
          engine = TypeConversions.getDrawEngine( pe );
@@ -86,7 +86,7 @@ public class MapElementToDrawEngine extends Hashtable< IElement, IPresentationEl
                IElement firstElement = pe.getFirstSubject();
                if( firstElement != null )
                {
-                  put( firstElement, pe );
+                  put( firstElement.getXMIID(), pe );
                }
             }
          }
