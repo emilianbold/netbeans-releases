@@ -345,23 +345,23 @@ public class Registry {
                 throw new InitializationException(
                         ResourceUtils.getString(Registry.class,
                         ERROR_CANNOT_CREATE_CACHE_DIR_KEY,
-                        localDirectory ));
+                        localProductCache ));
             }
         } else if (localProductCache.isFile()) {
             throw new InitializationException(
                     ResourceUtils.getString(Registry.class,
                     ERROR_CACHE_IS_FILE_KEY,
-                    localDirectory ));
+                    localProductCache ));
         } else if (!localProductCache.canRead()) {            
             throw new InitializationException(
                     ResourceUtils.getString(Registry.class,
                     ERROR_CANNOT_READ_CACHE_KEY,
-                    localDirectory ));
+                    localProductCache ));
         } else if (!localProductCache.canWrite()) {
             throw new InitializationException(
                     ResourceUtils.getString(Registry.class,
                     ERROR_CANNOT_WRITE_CACHE_KEY,
-                    localDirectory ));
+                    localProductCache ));
         }
         LogManager.logUnindent("... " + localProductCache);
         
