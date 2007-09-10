@@ -307,7 +307,10 @@ Microsystems, Inc. All Rights Reserved.
             </filterchain>
         </copy>
         <echo>Your JNLP file is generated at ${jnlp.dest.dir}/master.jnlp</echo>
-        <copy file="branding.jnlp" tofile="${jnlp.dest.dir}/branding.jnlp">
+        <!-- The following line will not fail if the branding.jnlp
+             is not present, e.g. when the main file was generated using
+             harness from 5.x days. -->
+        <copy file="branding.jnlp" tofile="${jnlp.dest.dir}/branding.jnlp" failonerror="false">
             <filterchain>
                 <replacestring from="$${jnlp.branding.jars}" to="${jnlp.branding.jars}"/>
                 <replacestring from="$${app.name}" to="${app.name}"/>
