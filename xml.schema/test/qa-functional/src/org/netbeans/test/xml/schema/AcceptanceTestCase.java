@@ -22,6 +22,7 @@ package org.netbeans.test.xml.schema;
 import java.awt.Point;
 import java.util.zip.CRC32;
 import javax.swing.tree.TreePath;
+import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -66,8 +67,8 @@ public class AcceptanceTestCase extends JellyTestCase {
         super(arg0);
     }
     
-    public static junit.framework.TestSuite suite() {
-        junit.framework.TestSuite testSuite = new junit.framework.TestSuite("Acceptance suite");
+    public static TestSuite suite() {
+        TestSuite testSuite = new TestSuite(AcceptanceTestCase.class.getName());
         
         for (String strMethodName : m_aTestMethods) {
             testSuite.addTest(new AcceptanceTestCase(strMethodName));
