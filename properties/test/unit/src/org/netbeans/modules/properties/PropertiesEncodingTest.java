@@ -42,9 +42,9 @@ public class PropertiesEncodingTest extends NbTestCase {
         compare(encoder.encodeCharForTests((char) 0x5c),    /* backslash */
                 new byte[] {'\\'});
         compare(encoder.encodeCharForTests((char) 0x09),    /* tab */
-                new byte[] {'\\', 't'});
+                new byte[] {0x09});
         compare(encoder.encodeCharForTests((char) 0x0c),    /* FF */
-                new byte[] {'\\', 'f'});
+                new byte[] {0x0c});
         compare(encoder.encodeCharForTests((char) 0x0a),    /* NL */
                 new byte[] {0x0a});
         compare(encoder.encodeCharForTests((char) 0x0d),    /* CR */
@@ -144,6 +144,10 @@ public class PropertiesEncodingTest extends NbTestCase {
                 new byte[] {'\\', '\\'});
         compare(encoder.encodeStringForTests("\\t"),
                 new byte[] {'\\', 't'});
+        compare(encoder.encodeStringForTests("key\t=value"),
+                new byte[] {'k', 'e', 'y', '\t', '=', 'v', 'a', 'l', 'u', 'e'});
+        compare(encoder.encodeStringForTests("key=\tvalue"),
+                new byte[] {'k', 'e', 'y', '=', '\t', 'v', 'a', 'l', 'u', 'e'});
     }
     
     public void testDecodingOfSingleChar() throws CharacterCodingException {
@@ -163,10 +167,38 @@ public class PropertiesEncodingTest extends NbTestCase {
                 new char[] {(char) 0x00});
         compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', '1'}),
                 new char[] {(char) 0x01});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', '2'}),
+                new char[] {(char) 0x02});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', '3'}),
+                new char[] {(char) 0x03});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', '4'}),
+                new char[] {(char) 0x04});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', '5'}),
+                new char[] {(char) 0x05});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', '6'}),
+                new char[] {(char) 0x06});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', '7'}),
+                new char[] {(char) 0x07});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', '8'}),
+                new char[] {(char) 0x08});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', '9'}),
+                new char[] {'\\', 'u', '0', '0', '0', '9'}); //see issue #111530
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', 'a'}),
+                new char[] {'\n'});
         compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', 'b'}),
                 new char[] {(char) 0x0b});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', 'c'}),
+                new char[] {'\\', 'u', '0', '0', '0', 'c'}); //see issue #111530
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', 'd'}),
+                new char[] {'\r'});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', 'e'}),
+                new char[] {(char) 0x0e});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '0', 'f'}),
+                new char[] {(char) 0x0f});
         compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '1', '9'}),
                 new char[] {(char) 0x19});
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '0', '0', '2', '0'}),
+                new char[] {'\\', 'u', '0', '0', '2', '0'}); //see issue #111530
         compare(decoder.decodeBytesForTests(new byte[] {' '}),
                 new char[] {(char) 0x20});
         compare(decoder.decodeBytesForTests(new byte[] {'!'}),

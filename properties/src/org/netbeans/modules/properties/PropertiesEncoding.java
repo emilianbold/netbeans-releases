@@ -262,8 +262,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
         
         private static final byte zeroByte = (byte) '0';
-        private static final String backslashChars = "\t\f\r";          //NOI18N
-        private static final byte[] backslashCharsRepl = {'t','f','r'};
         private static final byte[] hexadecimalChars
                 = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
         
@@ -273,11 +271,13 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             
             int index;
             
-            if ((c == '\r') || (c == '\n')) {
+            if ((c == '\r') || (c == '\n') || (c == '\t') || (c == '\f')) {
+                /*
+                 * Do not translate Space, Tab and FF characters
+                 * escape sequences - such translation might change semantics,
+                 * which is not desirable (see issue #111530).
+                 */
                 outBuf[outBufPos++] = (byte) c;
-            } else if ((index = backslashChars.indexOf(c)) >= 0) {
-                outBuf[outBufPos++] = (byte) '\\';
-                outBuf[outBufPos++] = backslashCharsRepl[index];
             } else if ((c < '\u0020') || (c > '\u007e')) {
                 outBuf[outBufPos++] = (byte) '\\';
                 outBuf[outBufPos++] = (byte) 'u';
@@ -335,8 +335,8 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
         
         private static final float avgCharsPerByte = 1.00f;
-        private static final float maxCharsPerByte = 5.00f;
-        private static final int maxCharsPerByteInt = 5;
+        private static final float maxCharsPerByte = 6.00f;
+        private static final int maxCharsPerByteInt = 6;
         /*
          * Five chars are written to the output when a malformed unicode
          * sequence is detected. Unicode sequences are six bytes long;
@@ -364,8 +364,8 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         private int unicodeBytesRead;
         private int unicodeValue;
         
-        /** used when flushing a malformed unicode sequence to the out buffer */
-        private char[] unicodeValueChars = new char[3];
+        /** used when flushing a unicode sequence to the out buffer */
+        private char[] unicodeValueChars = new char[4];
         
         PropCharsetDecoder(Charset charset) {
             super(charset, avgCharsPerByte, maxCharsPerByte);
@@ -465,15 +465,8 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                     if (log.isLoggable(Level.FINEST)) {
                         log.finest("    - " + unicodeBytesRead + " unicode value bytes pending");
                     }
-                    outBuf[outBufPos++] = '\\';
-                    outBuf[outBufPos++] = 'u';
-                    
                     assert (unicodeBytesRead >= 0) && (unicodeBytesRead < 4);
-                    for (int i = 0; i < unicodeBytesRead; i++) {
-                        outBuf[outBufPos++] = unicodeValueChars[i];
-                    }
-                    unicodeBytesRead = 0;
-                    unicodeValue = 0;
+                    flushUnicodeSequence();
                     break;
                 default:
                     assert false;
@@ -665,7 +658,22 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                         assert index <= 15;
                         unicodeValue = (unicodeValue << 4) | index;
                         if (++unicodeBytesRead == 4) {
-                            outBuf[outBufPos++] = (char) unicodeValue;
+                            if ((unicodeValue == 0x20)
+                                    || (unicodeValue == 0x09)
+                                    || (unicodeValue == 0x0c)) {
+                                unicodeValueChars[3] = bChar;
+                                /*
+                                 * Do not translate sequences \\u0020 (Space),
+                                 * \\u0009 (Tab) and \\u000c (Form-feed).
+                                 * Changing form of these unicode sequences
+                                 * to one-character form might change
+                                 * semantics, which is not desirable
+                                 * (see issue #111530).
+                                 */
+                                flushUnicodeSequence();
+                            } else {
+                                outBuf[outBufPos++] = (char) unicodeValue;
+                            }
                             state = State.INITIAL;
                         } else {
                             unicodeValueChars[unicodeBytesRead - 1] = bChar;
@@ -676,11 +684,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                         /*
                          * send the malformed unicode sequence to the output
                          */
-                        outBuf[outBufPos++] = '\\';
-                        outBuf[outBufPos++] = 'u';
-                        for (int i = 0; i < unicodeBytesRead; i++) {
-                            outBuf[outBufPos++] = unicodeValueChars[i];
-                        }
+                        flushUnicodeSequence();
                         state = State.INITIAL;
                     }
                     if (state != State.UNICODE) {
@@ -697,6 +701,22 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             }
             
             return outBufPos - oldPos;
+        }
+
+        /**
+         * Writes the buffered Unicode sequence (possible incomplete)
+         * to the output buffer ({@link #outBuf}).
+         * It also resets fields {@link #unicodeBytesRead}
+         * and {@link #unicodeValue} to {@code 0}.
+         */
+        private void flushUnicodeSequence() {
+            outBuf[outBufPos++] = '\\';
+            outBuf[outBufPos++] = 'u';
+            for (int i = 0; i < unicodeBytesRead; i++) {
+                outBuf[outBufPos++] = unicodeValueChars[i];
+            }
+            unicodeBytesRead = 0;
+            unicodeValue = 0;
         }
         
         private static char[] hexavalue(byte b) {
