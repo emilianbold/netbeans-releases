@@ -21,6 +21,11 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.openide.filesystems.FileObject;
@@ -146,7 +151,16 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         }
         return result.values();
     }        
-
+    
+    protected final CsmFile getCsmFile(CsmObject csmObject) {
+        if (CsmKindUtilities.isFile(csmObject)) {
+            return ((CsmFile)csmObject);
+        } else if (CsmKindUtilities.isOffsetable(csmObject)) {
+            return ((CsmOffsetable)csmObject).getContainingFile();
+        }
+        return null;
+    }  
+    
 //    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) {
 //        currentTask = task;
 //        Collection<ModificationResult> results = new LinkedList<ModificationResult>();

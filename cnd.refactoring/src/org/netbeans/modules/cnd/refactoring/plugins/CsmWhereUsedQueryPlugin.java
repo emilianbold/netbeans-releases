@@ -18,33 +18,40 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
+import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.util.NbBundle;
 
 /**
- * Actual implementation of Find Usages query search for Ruby
+ * Actual implementation of Find Usages query search for C/C++
  * 
  * @todo Perform index lookups to determine the set of files to be checked!
- * @todo Scan comments!
- * @todo Do more prechecks of the elements we're trying to find usages for
  * 
- * @author  Jan Becicka
- * @author Tor Norbye
+ * @author Vladimir Voskresensky
  */
 public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     private WhereUsedQuery refactoring;
 //    private RubyElementCtx searchHandle;
 //    private Set<IndexedClass> subclasses;
+    private final CsmObject startReferenceObject;
     private String targetName;
     
     /** Creates a new instance of WhereUsedQuery */
     public CsmWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
         this.refactoring = refactoring;
 //        this.searchHandle = refactoring.getRefactoringSource().lookup(RubyElementCtx.class);
+        startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
         targetName = "";//searchHandle.getSimpleName();
     }
     
@@ -130,7 +137,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     //@Override
     public Problem prepare(final RefactoringElementsBag elements) {
 //        Set<FileObject> a = getRelevantFiles(searchHandle);
-//        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStart(ProgressEvent.START, 100);
+        CsmObject referencedObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
+        processQuery(referencedObject, elements);
 //        processFiles(a, new FindTask(elements));
         fireProgressListenerStop();
         return null;
@@ -176,6 +185,28 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
 
     private boolean isSearchInComments() {
         return refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS);
+    }
+
+    private void processQuery(final CsmObject csmObject, final RefactoringElementsBag elements) {
+        if (isFindUsages()) {
+            CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
+            CsmFile file = super.getCsmFile(startReferenceObject);
+            if (file != null) {
+                Collection<CsmReference> refs;
+                if (file.getProject() != null) {
+                    refs = xRef.getReferences(csmObject, file.getProject(), true);
+                } else {
+                    refs = xRef.getReferences(csmObject, file, true);
+                }
+                refs = TraceXRef.sortRefs(refs);
+                CsmObject[] decDef = TraceXRef.getDefinitionDeclaration(csmObject);
+                CsmObject decl = decDef[0];
+                CsmObject def = decDef[1];                
+                for (CsmReference csmReference : refs) {
+                    elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, decl, def));
+                }
+            }
+        }
     }
     
 //    private class FindTask implements CancellableTask<WorkingCopy> {

@@ -69,6 +69,11 @@ public class WhereUsedQueryUI implements RefactoringUI {
         // handle parameters defined in panel
         assert panel != null;
         query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+        if (panel.getReferencedObject() == null) {
+            query.setRefactoringSource(Lookup.EMPTY);
+        } else {
+            query.setRefactoringSource(Lookups.singleton(panel.getReferencedObject()));
+        }
         if (panel.isVirtualMethod()) {
             setForMethod();
             return query.checkParameters();
