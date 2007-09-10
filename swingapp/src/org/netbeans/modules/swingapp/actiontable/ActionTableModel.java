@@ -88,7 +88,7 @@ public class ActionTableModel extends AbstractTableModel {
             return act.getClassname();
         }
         if (columnIndex == METHOD_COLUMN) {
-            return act.getId() + "()";
+            return act.getMethodName() + "()";
         }
         if (columnIndex == ICON_COLUMN) {
             int iconCount = 0;
