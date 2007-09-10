@@ -360,15 +360,18 @@ function download(option) {
     	file_name += option + "-";
     }
 
-    //if ((platform != "macosx-x86") && (platform != "macosx-ppc")) {
+    if ((platform != "macosx-x86") && (platform != "macosx-ppc")) {
     	file_name += platform;
-    //}
+    } else {
+	file_name += "macosx";
+    }
+
 
     if (platform == "windows") {
         file_name += ".exe";
     } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
-        file_name += ".tgz";
-	//file_name += ".dmg";
+        //file_name += ".tgz";
+	file_name += ".dmg";
     } else {
         file_name += ".sh";
     }
