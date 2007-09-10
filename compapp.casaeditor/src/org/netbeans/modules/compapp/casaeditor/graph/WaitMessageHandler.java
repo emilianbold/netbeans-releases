@@ -50,6 +50,7 @@ public class WaitMessageHandler {
     }
     
     public static void addToScene(CasaModelGraphScene scene, JbiBuildTask task) {
+        // This is already in the EDT.
         if (getBuildMessageWidget(scene) == null) {
             WaitMessageWidget messageWidget = new WaitMessageWidget(
                     scene,
@@ -64,12 +65,17 @@ public class WaitMessageHandler {
         } 
     }
     
-    public static void removeFromScene(CasaModelGraphScene scene) {
-        Widget messageWidget = getBuildMessageWidget(scene);
-        if (messageWidget != null) {
-            scene.getDragLayer().removeChild(messageWidget);
-            scene.validate();
-        }
+    public static void removeFromScene(final CasaModelGraphScene scene) {
+        // Make sure it is in the EDT.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Widget messageWidget = getBuildMessageWidget(scene);
+                if (messageWidget != null) {
+                    scene.getDragLayer().removeChild(messageWidget);
+                    scene.validate();
+                }
+            }
+        });
     }
     
     private static class WaitMessageWidget extends LabelWidget {
