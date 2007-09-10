@@ -108,7 +108,7 @@ public final class ImageCD extends ComponentDescriptor {
 
         @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
-            section.getWriter ().write ("0, 0"); // NOI18N
+            section.getWriter ().write ("1, 1"); // NOI18N
         }
 
         @Override
