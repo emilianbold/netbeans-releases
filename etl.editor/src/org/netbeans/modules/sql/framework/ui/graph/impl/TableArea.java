@@ -169,7 +169,7 @@ public class TableArea extends CanvasArea implements IGraphInterface, ICanvasInt
         topLeftCornerRect.setResizable(false);
         topLeftCornerRect.set4ResizeHandles(false);
         topLeftCornerRect.setPen(JGoPen.makeStockPen(Color.lightGray));
-        topLeftCornerRect.setBrush(JGoBrush.makeStockBrush(new Color(254, 253, 235)));
+        topLeftCornerRect.setBrush(JGoBrush.makeStockBrush(new Color(221, 235, 246)));
         addObjectAtHead(topLeftCornerRect);
 
         topRightCornerRect = new JGoRectangle();
@@ -177,7 +177,7 @@ public class TableArea extends CanvasArea implements IGraphInterface, ICanvasInt
         topRightCornerRect.setResizable(false);
         topRightCornerRect.set4ResizeHandles(false);
         topRightCornerRect.setPen(JGoPen.makeStockPen(Color.lightGray));
-        topRightCornerRect.setBrush(JGoBrush.makeStockBrush(new Color(254, 253, 235)));
+        topRightCornerRect.setBrush(JGoBrush.makeStockBrush(new Color(221, 235, 246)));//(254,253,235)
         addObjectAtHead(topRightCornerRect);
 
         rect = new JGoRectangle();
@@ -387,7 +387,7 @@ public class TableArea extends CanvasArea implements IGraphInterface, ICanvasInt
             column = (ColumnArea) columnAreas.get(col);
         }
         if (column == null) {
-            column = new ColumnArea();
+            column = new ColumnArea(getTableType());
 
             columnAreas.add(col, column);
             this.addObjectAtTail(column);
@@ -414,7 +414,7 @@ public class TableArea extends CanvasArea implements IGraphInterface, ICanvasInt
             column = (ColumnArea) columnAreas.get(col);
         }
         if (column == null) {
-            column = new ColumnArea();
+            column = new ColumnArea(getTableType());
 
             columnAreas.add(col, column);
             this.addObjectAtTail(column);

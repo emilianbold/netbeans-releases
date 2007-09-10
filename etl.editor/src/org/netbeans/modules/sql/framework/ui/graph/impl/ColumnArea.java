@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -46,46 +46,56 @@ public class ColumnArea extends CanvasArea {
     private JGoRectangle columnRect;
     private int vSpacing = 1;
     private JGoPen linePen = JGoPen.makeStockPen(Color.WHITE);
-
+    
     // Constants for first, last visible row
     private int firstVisibleRow = 0;
     private int lastVisibleRow = 0;
-
+    
     private int preferredWidth = -1;
-
+    
+    private int tableType = -1;
+    
     private int textAlignment = JGoText.ALIGN_CENTER;
-
-    /** Creates a new instance of ColumnArea. */
-    public ColumnArea() {
+    
+    /** Creates a new instance of ColumnArea.
+     * @param tableType
+     */
+    public ColumnArea(int tableType) {
         super();
         cells = new ArrayList();
-
+        
         columnRect = new JGoRectangle();
         columnRect.setSelectable(false);
         columnRect.setPen(JGoPen.makeStockPen(Color.WHITE));
-        columnRect.setBrush(JGoBrush.makeStockBrush(IHighlightConfigurator.DEFAULT_BASIC_COLOR));
+        this.tableType = tableType;
+        //columnRect.setBrush(JGoBrush.makeStockBrush(IHighlightConfigurator.DEFAULT_BASIC_COLOR));
+        if(tableType == TableConstants.OUTPUT_TABLE || tableType == TableConstants.NO_PORT_TABLE){
+            columnRect.setBrush(JGoBrush.makeStockBrush(IHighlightConfigurator.DEFAULT_TARGET_COLOR));
+        }else{
+            columnRect.setBrush(JGoBrush.makeStockBrush(IHighlightConfigurator.DEFAULT_BASIC_COLOR));
+        }
         addObjectAtHead(columnRect);
-
+        
         this.setSelectable(false);
         this.setResizable(false);
         this.setGrabChildSelection(false);
-
+        
         //set the insets around column
         this.insets = TableConstants.COLUMN_INSETS;
     }
-
+    
     /**
      * Gets the bounding graph rectangle.
-     * 
+     *
      * @return graph rectangle
      */
     public JGoObject getRect() {
         return columnRect;
     }
-
+    
     /**
      * Gets the number of rows in this column area.
-     * 
+     *
      * @return number of rows in this column
      */
     public int getRowCount() {
@@ -94,10 +104,10 @@ public class ColumnArea extends CanvasArea {
         }
         return cells.size();
     }
-
+    
     /**
      * Adds a new cell in the column area with the given display name.
-     * 
+     *
      * @param row row in which to add a new cell
      * @param val value for the cell at <code>row</code>
      * @param toolTip tool tip to display for the cell
@@ -111,10 +121,10 @@ public class ColumnArea extends CanvasArea {
         cell.setToolTipText(toolTip);
         add(row, cell);
     }
-
+    
     /**
      * Adds a new cell in the column area, using the given SQLDBColumn as a data object
-     * 
+     *
      * @param row row in which to add a new cell
      * @param data SQLDBColumn containing data for the cell at <code>row</code>
      * @param toolTip tool tip to display for the cell
@@ -130,16 +140,20 @@ public class ColumnArea extends CanvasArea {
     private void add(int row, BasicCellArea cell) {
         cell.setTextAlignment(this.textAlignment);
         cell.setLocation(this.getLeft(), this.getTop() + this.getMaximumHeight());
-
+        
         cell.setLinePen(JGoPen.makeStockPen(Color.WHITE));
-        cell.setBrush(JGoBrush.makeStockBrush(IHighlightConfigurator.DEFAULT_BASIC_COLOR));
+        if(tableType == TableConstants.OUTPUT_TABLE || tableType == TableConstants.NO_PORT_TABLE){
+            cell.setBrush(JGoBrush.makeStockBrush(IHighlightConfigurator.DEFAULT_TARGET_COLOR));
+        }else{
+            cell.setBrush(JGoBrush.makeStockBrush(IHighlightConfigurator.DEFAULT_BASIC_COLOR));
+        } 
         cells.add(row, cell);
-        this.addObjectAtTail(cell); 
+        this.addObjectAtTail(cell);
     }
-
+    
     /**
      * Removes cell at given row.
-     * 
+     *
      * @param row row whose cell should be removed
      */
     public void removeItem(int row) {
@@ -150,10 +164,10 @@ public class ColumnArea extends CanvasArea {
         this.removeObject(cell);
         cells.remove(row);
     }
-
+    
     /**
      * Gets the cell at an index.
-     * 
+     *
      * @param row row to get cell from
      * @return cell area
      */
@@ -161,79 +175,79 @@ public class ColumnArea extends CanvasArea {
         if (row <= cells.size() - 1) {
             return (BasicCellArea) cells.get(row);
         }
-
+        
         return null;
     }
-
+    
     /**
      * Sets the flag if this area updates scrollbar of its parent.
-     * 
+     *
      * @param manageScrollBar boolean
      */
     public void setManageHorizontalScrollBar(boolean manageScrollBar) {
         //this.manageHScrollBar = manageScrollBar;
     }
-
+    
     /**
      * Sets the preferred width of this area.
-     * 
+     *
      * @param width preferred width
      */
     public void setPreferredWidth(int width) {
         this.preferredWidth = width;
     }
-
+    
     /**
      * Gets the preferred width of this area.
-     * 
+     *
      * @return preferred width
      */
     public int getPreferredWidth() {
         return preferredWidth;
     }
-
+    
     /**
      * Gets the index of first visible row index.
-     * 
+     *
      * @return index of first visible row index
      */
     public int getFirstVisibleRow() {
         return firstVisibleRow;
     }
-
+    
     /**
      * Sets the first visible row index.
-     * 
+     *
      * @param rowIdx first visible row index
      */
     public void setFirstVisibleRow(int rowIdx) {
         int oldIndex = firstVisibleRow;
-
+        
         if (rowIdx >= 0 && rowIdx <= getRowCount() && oldIndex != rowIdx) {
             firstVisibleRow = rowIdx;
             layoutChildren();
         }
     }
-
+    
     /**
      * Gets the index of last visible row in this area.
-     * 
+     *
      * @return last visible row index
      */
     public int getLastVisibleRow() {
         return lastVisibleRow;
     }
-
+    
     /**
      * Gets the maximum cell width of a cell in this area.
-     * 
+     *
      * @return maximum cell width
      */
     public int getMaximizeCellWidth() {
         Iterator it = cells.iterator();
         //this is the width of widest cell
         int w = 0;
-
+        
         while (it.hasNext()) {
             BasicCellArea cell = (BasicCellArea) it.next();
             //need to include the insets of cell also in the width
@@ -242,35 +256,35 @@ public class ColumnArea extends CanvasArea {
                 w = width;
             }
         }
-
+        
         return w;
     }
-
+    
     /**
      * Gets the maximum cell height of a cell in this area.
-     * 
+     *
      * @return maximum cell height
      */
     public int getMaximizeCellHeight() {
         Iterator it = cells.iterator();
         //this is the height of widest cell
         int h = 0;
-
+        
         while (it.hasNext()) {
             BasicCellArea cell = (BasicCellArea) it.next();
-
+            
             int height = cell.getHeight();
             if (height > h) {
                 h = height;
             }
         }
-
+        
         return h;
     }
-
+    
     /**
      * Gets the height of a cell at a given row index.
-     * 
+     *
      * @param row row
      * @return cell height
      */
@@ -280,13 +294,13 @@ public class ColumnArea extends CanvasArea {
             BasicCellArea cell = (BasicCellArea) cells.get(row);
             return cell.getHeight();
         }
-
+        
         return h;
     }
-
+    
     /**
      * Gets the height of all visible rows in this column.
-     * 
+     *
      * @return height of visible rows
      */
     public int getVisibleRowHeights() {
@@ -296,23 +310,23 @@ public class ColumnArea extends CanvasArea {
             rowHeights += getCellHeight(i) + getVerticalSpacing();
         }
         rowHeights += insets.top + insets.bottom - getVerticalSpacing();
-
+        
         return rowHeights;
     }
-
+    
     /**
      * Gets maximum height of this area.
-     * 
+     *
      * @return maximum height
      */
     public int getMaximumHeight() {
         Iterator it = cells.iterator();
         //this is the height of widest cell
         int h = 0;
-
+        
         while (it.hasNext()) {
             BasicCellArea cell = (BasicCellArea) it.next();
-
+            
             int height = cell.getHeight();
             h += height + vSpacing;
         }
@@ -320,60 +334,60 @@ public class ColumnArea extends CanvasArea {
         h += insets.top + insets.bottom - vSpacing;
         return h;
     }
-
+    
     /**
      * Gets minimum height of this area.
-     * 
+     *
      * @return minimum height
      */
     public int getMinimumHeight() {
         // show at least one cell
         return getMaximumHeight();
     }
-
+    
     /**
      * Gets the maximum width of this area.
-     * 
+     *
      * @return maximum width
      */
     public int getMaximumWidth() {
         return getMaximizeCellWidth() + insets.left + insets.right;
     }
-
+    
     /**
      * Gets the minimum width of this area.
-     * 
+     *
      * @return minimum width
      */
     public int getMinimumWidth() {
         int minWidth = getInsets().left + getInsets().right;
-
+        
         //account for ... in each cell of this column
         minWidth += 20;
         return minWidth;
     }
-
+    
     /**
      * Calculates the minimum size for the columnRect, as determined by the maximum item
      * size plus insets.
-     * 
+     *
      * @return min size
      */
     public Dimension getMinimumRectSize() {
         int maxW = getMaximizeCellWidth();
         int maxH = getMaximizeCellHeight();
-
+        
         // now account for insets on all sides
         Insets insets1 = getInsets();
-
+        
         int minw = maxW + insets1.left + insets1.right;
         int minh = maxH + insets1.top + insets1.bottom;
         return new Dimension(minw, minh);
     }
-
+    
     /**
      * Gets the minimum size of this area.
-     * 
+     *
      * @return minimum size
      */
     public Dimension getMinimumSize() {
@@ -381,19 +395,19 @@ public class ColumnArea extends CanvasArea {
         Dimension minRect = getMinimumRectSize();
         return minRect;
     }
-
+    
     /**
      * Gets the vertical spacing between cells in this column area.
-     * 
+     *
      * @return vertical spacing
      */
     public int getVerticalSpacing() {
         return vSpacing;
     }
-
+    
     /**
      * Sets the vertical spacing between cells in this column area.
-     * 
+     *
      * @param newspace new space
      */
     public void setVerticalSpacing(int newspace) {
@@ -403,19 +417,19 @@ public class ColumnArea extends CanvasArea {
             layoutChildren();
         }
     }
-
+    
     /**
      * Gets the line pen.
-     * 
+     *
      * @return line pen
      */
     public JGoPen getLinePen() {
         return linePen;
     }
-
+    
     /**
      * Sets the line pen for border.
-     * 
+     *
      * @param pen pen
      */
     public void setLinePen(JGoPen pen) {
@@ -425,16 +439,16 @@ public class ColumnArea extends CanvasArea {
             layoutChildren();
         }
     }
-
+    
     /**
      * Paints this area.
-     * 
+     *
      * @param g Graphics2D
      * @param view view
      */
     public void paint(Graphics2D g, JGoView view) {
         super.paint(g, view);
-
+        
         int penwidth = 0;
         if (getLinePen() != null) {
             penwidth = getLinePen().getWidth();
@@ -447,19 +461,19 @@ public class ColumnArea extends CanvasArea {
             return; // not yet initialized
         }
         Insets insets1 = getInsets();
-
+        
         int rectleft = r.getLeft();
         int recttop = r.getTop();
         int rectwidth = r.getWidth();
         int rectheight = r.getHeight();
-
+        
         int top = recttop + insets1.top;
         int height = rectheight - insets1.top - insets1.bottom;
-
+        
         int limit = 0;
-
+        
         limit = height;
-
+        
         int s = 0; // height/width of visible items so far
         for (int i = getFirstVisibleRow(); i < getLastVisibleRow(); i++) {
             BasicCellArea cell = (BasicCellArea) cells.get(i);
@@ -471,13 +485,13 @@ public class ColumnArea extends CanvasArea {
             }
             s += sep;
         }
-
+        
     }
-
+    
     /**
      * Overrides parent to handle the changes in the geometry of this area. We will lay
      * out all the cell again.
-     * 
+     *
      * @param prevRect previous rectangle bounds
      */
     protected void geometryChange(Rectangle prevRect) {
@@ -488,16 +502,16 @@ public class ColumnArea extends CanvasArea {
                 Rectangle thisRect = getBoundingRect();
                 getRect().setBoundingRect(thisRect);
             }
-
+            
             // then we can lay out all the other parts
             layoutChildren();
-
+            
         } else {
             super.geometryChange(prevRect);
         }
-
+        
     }
-
+    
     /**
      * Lays out all of this children of this column area.
      */
@@ -506,57 +520,57 @@ public class ColumnArea extends CanvasArea {
         if (r == null) {
             return;
         } // not yet initialized
-
+        
         //get the bounding rectangle of this column area
         int x = r.getLeft() + insets.left;
         int y = r.getTop() + insets.top;
         int width = r.getWidth() - insets.left - insets.right;
         int height = r.getHeight() - insets.top - insets.bottom;
-
+        
         // remember last visible row index
         lastVisibleRow = getFirstVisibleRow();
-
+        
         int cellWidth = width;
-
+        
         // calculate the top of next cell
         int nextCellDeltaTop = 0;
-
+        
         Iterator it = cells.iterator();
-
+        
         // row count
         int cnt = 0;
-
+        
         while (it.hasNext()) {
             BasicCellArea cell = (BasicCellArea) it.next();
-
+            
             if (cnt < getFirstVisibleRow()) {
                 cell.setVisible(false);
-
+                
                 cnt++;
                 continue;
             }
-
+            
             //if cell is going out of the height of this area then we
             //mark it invisible
             if (nextCellDeltaTop + cell.getHeight() > height) {
                 cell.setVisible(false);
-
+                
             } else {
                 cell.setVisible(true);
                 lastVisibleRow = cnt;
                 cell.setBoundingRect(x, y + nextCellDeltaTop, cellWidth, cell.getHeight());
             }
-
+            
             //calcualte the top for next cell
             nextCellDeltaTop += cell.getHeight() + getVerticalSpacing();
-
+            
             cnt++;
         }
     }
-
+    
     /**
      * Sets the alignment of text in this column area to the given characteristic.
-     * 
+     *
      * @param align desired alignment characteristic; one of
      *        <UL>
      *        <LI>JGoText.ALIGN_LEFT

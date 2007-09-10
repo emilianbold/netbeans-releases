@@ -29,12 +29,13 @@ import com.nwoods.jgo.JGoBrush;
  * @version $Revision$
  */
 public interface IHighlightConfigurator {
-    public static final Color DEFAULT_BASIC_COLOR = new Color(214, 235, 255); // light
+    public static final Color DEFAULT_BASIC_COLOR = new Color(214,235,255); // (214, 235, 255)light
+    
+    public static final Color DEFAULT_TARGET_COLOR =  new Color (236, 217, 217);//(219,207,219);//Color.darkGray;
                                                                                 // gray
-
     public static final Color DEFAULT_EDIT_COLOR = Color.WHITE;
 
-    public static final Color DEFAULT_HOVER_COLOR = new Color(254, 254, 244); // light
+    public static final Color DEFAULT_HOVER_COLOR = new Color(254, 254, 244); // light(254,254,244)
                                                                                 // beige
 
     public void setHoverBrush(JGoBrush newBrush);
