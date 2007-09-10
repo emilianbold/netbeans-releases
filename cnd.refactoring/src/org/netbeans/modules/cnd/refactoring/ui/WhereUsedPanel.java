@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -26,10 +27,26 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.openide.awt.Mnemonics;
 
 
 /**
@@ -42,7 +59,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private transient CsmObject refObject;
 
     private enum ElementKind {
-        UNKNOWN, FUNCTION, CLASSIFIER, METHOD, VARIABLE, MACRO, FIELD, NAMESPACE
+        UNKNOWN, FUNCTION, CLASS, STRUCT, UNION, ENUM, TYPEDEF, METHOD, VARIABLE, MACRO, FIELD, NAMESPACE, FILE
     
     }
     private ElementKind kind = ElementKind.UNKNOWN;
@@ -60,10 +77,10 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private boolean initialized = false;
-    private String methodDeclaringSuperClass = null;
-    private String methodDeclaringClass = null;
+    private CsmClass methodDeclaringSuperClass = null;
+    private CsmClass methodDeclaringClass = null;
 
-    String getMethodDeclaringClass() {
+    CsmClass getMethodDeclaringClass() {
         return isMethodFromBaseClass() ? methodDeclaringSuperClass : methodDeclaringClass;
     }
 
@@ -74,41 +91,71 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         }
         initFields();
 
-        final String labelText = this.name;
-//        String _isBaseClassText = null;
-//        if (isFunLike()) {
-//            if (element.getElement() != null) {
-//                modif = element.getElement().getModifiers();
-//            }
-//            String methodName = element.getName();
-//            String className = getClassName(element);
-//            String displayClassName = RubyIndex.UNKNOWN_CLASS.equals(className) ? "&lt;Unknown&gt;" : className;
-//            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_MethodUsages", methodName, displayClassName);
-//
-//            methodDeclaringClass = className;
-//
-//            IndexedMethod method = RetoucheUtils.getOverridingMethod(element, info);
-//            if (method != null) {
-//                _isBaseClassText = new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(new Object[]{methodDeclaringSuperClass = method.getIn()});
-//                newElement = new RubyElementCtx(method, info);
-//            }
-//        } else if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.MODULE) {
-//            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ClassUsages", element.getName()); // NOI18N
+        final String labelText;
+        String _isBaseClassText = null;
+        boolean _needVirtualMethodPanel = false;
+        boolean _needClassPanel = false;
+        if (CsmKindUtilities.isMethod(refObject)) {
+            CsmVisibility vis = ((CsmMember)refObject).getVisibility();
+            String functionDisplayName = ((CsmMethod)refObject).getSignature();
+            methodDeclaringClass = ((CsmMember)refObject).getContainingClass();
+            String displayClassName = methodDeclaringClass.getName();
+            labelText = getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N
+            if (((CsmMethod)refObject).isVirtual()) {
+                methodDeclaringSuperClass = getVirtualMethodDeclaringParentClass((CsmMethod)refObject);
+                _isBaseClassText = getString("LBL_UsagesOfBaseClass", methodDeclaringSuperClass.getName());
+                _needVirtualMethodPanel = true;
+            }
+        } else if (CsmKindUtilities.isFunction(refObject)) {
+            String functionFQN = ((CsmFunction)refObject).getSignature();
+            labelText = getString("DSC_FunctionUsages", functionFQN); // NOI18N
+        } else if (CsmKindUtilities.isClass(refObject)) {
+            CsmDeclaration.Kind classKind = ((CsmDeclaration)refObject).getKind();
+            String key;
+            if (classKind == CsmDeclaration.Kind.STRUCT) {
+                key = "DSC_StructUsages"; // NOI18N
+            } else if (classKind == CsmDeclaration.Kind.UNION) {
+                key = "DSC_UnionUsages"; // NOI18N
+            } else {
+                key = "DSC_ClassUsages"; // NOI18N
+            }
+            labelText = getString(key, ((CsmClassifier)refObject).getQualifiedName());
+            _needClassPanel = true;
+        } else if (CsmKindUtilities.isTypedef(refObject)) {
+            String tdName = ((CsmTypedef)refObject).getQualifiedName();
+            labelText = getString("DSC_TypedefUsages", tdName); // NOI18N
+        } else if (CsmKindUtilities.isEnum(refObject)) {
+            labelText = getString("DSC_EnumUsages", ((CsmEnum)refObject).getQualifiedName()); // NOI18N
+        } else if (CsmKindUtilities.isEnumerator(refObject)) {
+            CsmEnumerator enmtr = ((CsmEnumerator)refObject);
+            labelText = getString("DSC_EnumeratorUsages", enmtr.getName(), enmtr.getEnumeration().getName()); // NOI18N
+        } else if (CsmKindUtilities.isField(refObject)) {
+            String fieldName = ((CsmField)refObject).getName();
+            String displayClassName = ((CsmField)refObject).getContainingClass().getName();
+            labelText = getString("DSC_FieldUsages", fieldName, displayClassName); // NOI18N
+        } else if (CsmKindUtilities.isVariable(refObject)) {
+            String varName = ((CsmVariable)refObject).getName();
+            labelText = getString("DSC_VariableUsages", varName); // NOI18N
+        } else if (CsmKindUtilities.isFile(refObject)) {
+            String fileName = ((CsmFile)refObject).getName();
+            labelText = getString("DSC_FileUsages", fileName); // NOI18N
+        } else if (CsmKindUtilities.isNamespace(refObject)) {
+            String nsName = ((CsmNamespace)refObject).getQualifiedName();
+            labelText = getString("DSC_NamespaceUsages", nsName); // NOI18N
 //        } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
 //            String methodName = element.getName();
 //            String className = getClassName(element);
-//            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ConstructorUsages", methodName, className); // NOI18N
-//        } else if (element.getKind() == ElementKind.FIELD) {
-//            String fieldName = element.getName();
-//            String className = getClassName(element);
-//            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_FieldUsages", fieldName, className); // NOI18N
-//        } else {
-//            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_VariableUsages", element.getName()); // NOI18N
-//        }
-//
-//        final Set<Modifier> modifiers = modif;
-//        final String isBaseClassText = _isBaseClassText;
+//            labelText = getFormattedString("DSC_ConstructorUsages", methodName, className); // NOI18N
+        } else if (CsmKindUtilities.isQualified(refObject)) {
+            labelText = ((CsmQualifiedNamedElement)refObject).getQualifiedName();
+        } else {
+            labelText = this.name;
+        }
 
+//        final Set<Modifier> modifiers = modif;
+        final String isBaseClassText = _isBaseClassText;
+        final boolean showMethodPanel = _needVirtualMethodPanel;
+        final boolean showClassPanel = _needClassPanel;
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -116,8 +163,26 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 remove(methodsPanel);
                 // WARNING for now since this feature is not ready yet
                 //label.setText(labelText);
-                String combinedLabelText = "<html><b><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font><br><br>" + labelText + "</html>";
+                String combinedLabelText = "<html><b><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font></b><br><br>" + labelText + "</html>";
                 label.setText(combinedLabelText);
+                if (showMethodPanel) {
+                    add(methodsPanel, BorderLayout.CENTER);
+                    methodsPanel.setVisible(true);
+                    Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
+//                    if (methodDeclaringSuperClass != null) {
+//                        m_overriders.setVisible(true);
+//                        m_isBaseClass.setVisible(true);
+//                        m_isBaseClass.setSelected(true);
+//                        Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
+//                    } else {
+//                        m_overriders.setVisible(false);
+//                        m_isBaseClass.setVisible(false);
+//                        m_isBaseClass.setSelected(false);
+//                    }                    
+                } else if (showClassPanel) {
+                    add(classesPanel, BorderLayout.CENTER);
+                    classesPanel.setVisible(true);   
+                } else {
 //                if (element.getKind() == ElementKind.METHOD) {
 //                    add(methodsPanel, BorderLayout.CENTER);
 //                    methodsPanel.setVisible(true);
@@ -142,7 +207,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 //                    m_usages.setVisible(false);
 //                    c_usages.setVisible(false);
 //                    c_directOnly.setVisible(false);
-//                }
+                }
                 validate();
             }
         });
@@ -156,10 +221,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     public CsmObject getBaseMethod() {
         return newElement == null ? origObject : newElement;
-    }
-    
-    public void requestFocus() {
-        super.requestFocus();
     }
 
     /** This method is called from within the constructor to
@@ -212,7 +273,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.weighty = 1.0;
         methodsPanel.add(jPanel1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(m_overriders, "null");
+        org.openide.awt.Mnemonics.setLocalizedText(m_overriders, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindOverridingMethods")); // NOI18N
         m_overriders.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 m_overridersActionPerformed(evt);
@@ -224,10 +285,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_overriders, gridBagConstraints);
+        m_overriders.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindOverridingMethods")); // NOI18N
         m_overriders.getAccessibleContext().setAccessibleDescription("null");
 
         m_usages.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(m_usages, "null");
+        org.openide.awt.Mnemonics.setLocalizedText(m_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
         m_usages.setMargin(new java.awt.Insets(10, 2, 2, 2));
         m_usages.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -240,6 +302,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_usages, gridBagConstraints);
+        m_usages.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
         m_usages.getAccessibleContext().setAccessibleDescription("null");
 
         add(methodsPanel, java.awt.BorderLayout.CENTER);
@@ -379,42 +442,18 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return this;
     }
     
-    /*package*/ boolean isFunction() {
-        return kind == ElementKind.FUNCTION;
+    /*package*/ boolean isVirtualMethod() {
+        return CsmKindUtilities.isMethod(refObject) && ((CsmMethod)refObject).isVirtual();
     }
     
     /*package*/ boolean isClass() {
-        return kind == ElementKind.CLASSIFIER;
-    }
-    
-    /*package*/ boolean isMethod() {
-        return kind == ElementKind.METHOD;
-    }
-    
-    /*package*/ boolean isMacro() {
-        return kind == ElementKind.MACRO;
-    }
-    
-    /*package*/ boolean isVariable() {
-        return kind == ElementKind.VARIABLE;
-    }    
-
-    /*package*/ boolean isField() {
-        return kind == ElementKind.FIELD;
-    }    
-
-    /*package*/ boolean isNamespace() {
-        return kind == ElementKind.NAMESPACE;
-    }    
-
-    /*package*/ boolean isFunLike() {
-        return kind == ElementKind.FUNCTION || kind == ElementKind.METHOD;
+        return CsmKindUtilities.isClass(refObject);
     }
     
     private void initFields() {
         this.refObject = getReferencedElement(origObject);
         this.name = getSearchElementName(refObject, this.name);
-        this.kind = getKind(refObject);
+        System.err.println("initFields: refObject=" + refObject + "\n");
     }
     
     private CsmObject getReferencedElement(CsmObject csmObject) {
@@ -435,33 +474,21 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         }
         return objName;
     }   
-    
-    private ElementKind getKind(CsmObject csmObj) {
-        if (CsmKindUtilities.isClassifier(csmObj)) {
-            return ElementKind.CLASSIFIER;
-        } else if (CsmKindUtilities.isMacro(csmObj)) {
-            return ElementKind.MACRO;
-        } else if (CsmKindUtilities.isMethod(csmObj)) {
-            return ElementKind.METHOD;
-        } else if (CsmKindUtilities.isFunction(csmObj)) {
-            return ElementKind.FUNCTION;
-        } else if (CsmKindUtilities.isNamespace(csmObj)) {
-            return ElementKind.NAMESPACE;
-        } else if (CsmKindUtilities.isField(csmObj)) {
-            return ElementKind.FIELD;
-        } else if (CsmKindUtilities.isVariable(csmObj)) {
-            return ElementKind.VARIABLE;
-        } else {
-            System.err.println("Unhandled name for object " + csmObj);
-            return ElementKind.UNKNOWN;
-        }
+
+    private CsmClass getVirtualMethodDeclaringParentClass(CsmMethod csmMethod) {
+        return csmMethod.getContainingClass();
     }
-    
+
     private String getString(String key) {
         return NbBundle.getBundle(WhereUsedPanel.class).getString(key);
     }
     
-    private String getFormattedString(String key, String value) {
+    private String getString(String key, String value) {
         return NbBundle.getMessage(WhereUsedPanel.class, key, value);
     }    
+    
+    private String getString(String key, String value1, String value2) {
+        return NbBundle.getMessage(WhereUsedPanel.class, key, value1, value2);
+    }    
+    
 }

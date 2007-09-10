@@ -74,7 +74,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         // handle parameters defined in panel
         assert panel != null;
         query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
-        if (panel.isFunction()) {
+        if (panel.isVirtualMethod()) {
             setForMethod();
             return query.checkParameters();
         } else if (panel.isClass()) {
@@ -106,7 +106,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
     
     public Problem checkParameters() {
         assert panel != null;
-        if (panel.isFunction()) {
+        if (panel.isVirtualMethod()) {
             setForMethod();
             return query.fastCheckParameters();
         } else if (panel.isClass()) {
