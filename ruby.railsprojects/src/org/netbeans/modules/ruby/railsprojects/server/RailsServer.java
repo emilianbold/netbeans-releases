@@ -63,7 +63,7 @@ import org.openide.NotifyDescriptor;
  * all begin to work.
  * 
  * @todo When launching under JRuby, also pass in -Djruby.thread.pooling=true to the VM
- * @todo Rewrite the webrick error message which says to press Ctrl-C to cancel the process;
+ * @todo Rewrite the WEBrick error message which says to press Ctrl-C to cancel the process;
  *   tell the user to use the Stop button in the margin instead (somebody on nbusers asked about this)
  * 
  * @author Tor Norbye, Pavel Buzek
@@ -251,18 +251,14 @@ public final class RailsServer {
         DialogDisplayer.getDefault().notify(nd);
     }
 
-    /** Starts the server if not running and shows url.
-     * @param relativeUrl the resulting url will be for example: http://localhost:3001/{relativeUrl}
+    /**
+     * Starts the server if not running and shows url.
+     * @param relativeUrl the resulting url will be for example: http://localhost:{port}/{relativeUrl}
      */
     public void showUrl(final String relativeUrl) {
         synchronized (RailsServer.this) {
             if (!switchToDebugMode && status == ServerStatus.RUNNING && isPortInUse(port)) {
-                try {
-                    URL url = new URL("http://localhost:" + port + "/" + relativeUrl); // NOI18N
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                } catch (MalformedURLException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
+                RailsServer.showURL(relativeUrl, port);
                 return;
             }
         }
@@ -285,101 +281,36 @@ public final class RailsServer {
         handle.switchToIndeterminate();
 
         RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        // Try connecting repeatedly, up to 20 seconds, then bail
-                        for (int i = 0; i < 20; i++) {
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException ie) {
-                                // Don't worry about it
-                            }
-
-                            synchronized (RailsServer.this) {
-                                if (status == ServerStatus.RUNNING) {
-                                    try {
-                                        URL url = new URL("http://localhost:" + port + "/" + relativeUrl); // NOI18N
-                                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                                    } catch (MalformedURLException ex) {
-                                        ErrorManager.getDefault().notify(ex);
-                                    }
-
-                                    return;
-                                }
-
-                                if (status == ServerStatus.NOT_STARTED) {
-                                    // Server startup somehow failed...
-                                    break;
-                                }
-                            }
-
-                            /* My attempts to do URLConnections didn't pan out.... so just do a simple
-                             * listener based scheme instead based on parsing build output with the
-                             * OutputRecognizer
-                                URLConnection connection = url.openConnection();
-                                connection.setConnectTimeout(1000); // 1 second
-
-                                if (connection instanceof HttpURLConnection) {
-                                    HttpURLConnection c = (HttpURLConnection)connection;
-                                    c.setRequestMethod("POST");
-                                    c.setFollowRedirects(true);
-
-                                    // Try connecting repeatedly, up to 20 seconds, then bail
-                                    synchronized (WebrickServer.this) {
-                                        if (status == ServerStatus.NOT_STARTED) {
-                                            // Server startup somehow failed...
-                                            break;
-                                        }
-                                    }
-
-                                    try {
-                                        c.connect();
-                                        StatusDisplayer.getDefault()
-                                                       .setStatusText("Connect attempt #" + i +
-                                            " status was " + c.getResponseCode() + " : " +
-                                            c.getResponseMessage() + " : " +
-                                            c.getHeaderFields().toString());
-
-                                        if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                                            synchronized (WebrickServer.this) {
-                                                status = ServerStatus.RUNNING;
-                                            }
-
-                                            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-
-                                            return;
-                                        }
-
-                                        // Disconnect?
-                                        //c.disconnect();
-                                        try {
-                                            Thread.currentThread().sleep(1000);
-                                        } catch (InterruptedException ie) {
-                                            ; // Don't worry about it
-                                        }
-                                    } catch (ConnectException ce) {
-                                        // wait 1 second and try again
-                                        try {
-                                            Thread.currentThread().sleep(1000);
-                                        } catch (InterruptedException ie) {
-                                            ; // Don't worry about it
-                                        }
-                                    }
-                                }
-                            */
+            public void run() {
+                try {
+                    // Try connecting repeatedly, up to 20 seconds, then bail
+                    for (int i = 0; i < 20; i++) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ie) {
+                            // Don't worry about it
                         }
 
-                        StatusDisplayer.getDefault()
-                                       .setStatusText(NbBundle.getMessage(RailsServer.class,
-                                "NoServerFound", "http://localhost:" + port + "/" + relativeUrl));
+                        synchronized (RailsServer.this) {
+                            if (status == ServerStatus.RUNNING) {
+                                RailsServer.showURL(relativeUrl, port);
+                                return;
+                            }
 
-                        //} catch (IOException ioe) {
-                        //    ErrorManager.getDefault().notify(ioe);
-                    } finally {
-                        handle.finish();
+                            if (status == ServerStatus.NOT_STARTED) {
+                                // Server startup somehow failed...
+                                break;
+                            }
+                        }
                     }
+
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RailsServer.class,
+                                "NoServerFound", "http://localhost:" + port + "/" + relativeUrl));
+                } finally {
+                    handle.finish();
                 }
-            });
+            }
+        });
     }
 
     /** Return true if there is an HTTP response from the port on localhost.
@@ -421,8 +352,18 @@ public final class RailsServer {
             return false;
         }
     }
-    
+
+    private static void showURL(String relativeUrl, int port) {
+        try {
+            URL url = new URL("http://localhost:" + port + "/" + relativeUrl); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+
     private class RailsServerRecognizer extends OutputRecognizer {
+
         private String startedMessage;
         
         RailsServerRecognizer(String startedMessage) {
