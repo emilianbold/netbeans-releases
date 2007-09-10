@@ -64,6 +64,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     /** Generated serialized version UID. */
     static final long serialVersionUID =-843810329041244483L;
     
+    private Element.ItemElem lastSelectedBundleKey;
+    private int lastSelectedColumn;
     
     /** Creates new form BundleEditPanel */
     public BundleEditPanel(final PropertiesDataObject obj, PropertiesTableModel propTableModel) {
@@ -165,6 +167,31 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     private void updateSelection() {
         int row = table.getSelectedRow();
         int column = table.getSelectedColumn();
+        
+        if (row == -1) {
+            final Element.ItemElem ex = lastSelectedBundleKey;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (ex == null) return; 
+                    String [] keys = obj.getBundleStructure().getKeys();
+                    int idx;
+                    for (idx = 0; idx < keys.length; idx++) {
+                        String key = keys[idx];
+                        if (key.equals(ex.getKey())) {
+                            break;
+                        }
+                    }
+                    if (idx < keys.length) {
+                        table.requestFocusInWindow();
+                        Rectangle rect = table.getCellRect(idx, 0, true);
+                        table.scrollRectToVisible(rect);
+                        table.changeSelection(idx, lastSelectedColumn, false, false);
+                    }
+                }
+            });
+        }
+        
+        lastSelectedColumn = column;
         BundleStructure structure = obj.getBundleStructure();
         removeButton.setEnabled((row >= 0) && (!structure.isReadOnly()));
         String value;
@@ -172,9 +199,11 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         if (column == -1) {
             value = ""; // NOI18N
             comment = ""; // NOI18N
+            lastSelectedBundleKey = null;
         } else if (column == 0) {
             Element.ItemElem elem = structure.getItem(0, row);
             value = structure.keyAt(row);
+            lastSelectedBundleKey = elem;
             comment = (elem != null) ? elem.getComment() : "";          //NOI18N
         } else {
             Element.ItemElem elem = structure.getItem(column-1, row);
@@ -185,6 +214,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                 value = "";                                             //NOI18N
                 comment = "";                                           //NOI18N
             }
+            lastSelectedBundleKey = elem;
         }
         textValue.getDocument().removeDocumentListener(listener);
         textComment.getDocument().removeDocumentListener(listener);
