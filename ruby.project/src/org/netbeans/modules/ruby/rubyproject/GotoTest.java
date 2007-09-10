@@ -117,7 +117,10 @@ public class GotoTest extends AbstractAction implements EditorAction {
     }
 
     private boolean isRSpecInstalled(FileObject projectDir) {
-        Project project = FileOwnerQuery.getOwner(projectDir);
+        Project project = null;
+        if (projectDir != null) {
+            project = FileOwnerQuery.getOwner(projectDir);
+        }
         return new RSpecSupport(project).isRSpecInstalled();
     }
 
