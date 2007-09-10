@@ -146,6 +146,7 @@ class LineTranslations {
             return currentLineNumber;
         } else {
             Line.Set lineSet = getLineSet (url, timeStamp);
+            if (lineSet == null) return currentLineNumber;
             //System.err.println("  lineSet = "+lineSet+"date = "+lineSet.getDate());
             try {
                 //Line line = lineSet.getCurrent(currentLineNumber);
