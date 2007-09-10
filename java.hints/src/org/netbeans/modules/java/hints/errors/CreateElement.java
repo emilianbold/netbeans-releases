@@ -94,6 +94,11 @@ public final class CreateElement implements ErrorRule<Void> {
             return Collections.<Fix>emptyList();
         }
         
+        if (info.getElements().getTypeElement("java.lang.Object") == null) { // NOI18N
+            // broken java platform
+            return Collections.<Fix>emptyList();
+        }
+        
         TreePath parent = null;
         TreePath firstClass = null;
         TreePath firstMethod = null;

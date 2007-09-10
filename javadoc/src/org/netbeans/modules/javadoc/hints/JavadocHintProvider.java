@@ -27,6 +27,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -71,6 +72,11 @@ public final class JavadocHintProvider extends AbstractHint {
     public List<ErrorDescription> run(CompilationInfo javac, TreePath path) {
         if (Boolean.FALSE.equals(AccessibilityQuery.isPubliclyAccessible(javac.getFileObject().getParent()))) {
             return null;
+        }
+        
+        if (javac.getElements().getTypeElement("java.lang.Object") == null) { // NOI18N
+            // broken java platform
+            return Collections.<ErrorDescription>emptyList();
         }
         
         HintSeverity hintSeverity = getSeverity();
