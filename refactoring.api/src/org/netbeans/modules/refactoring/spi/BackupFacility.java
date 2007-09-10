@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -203,8 +205,8 @@ public abstract class BackupFacility {
                 backup.createNewFile();
                 copy(f,backup);
             }
-            copy(entry.file,f);
-            FileUtil.toFileObject(f).refresh(true);
+            FileObject fileObj = FileUtil.toFileObject(f);
+            copy(entry.file,fileObj);
             entry.file.delete();
             if (backup.exists()) {
                 entry.file = backup;
@@ -240,11 +242,21 @@ public abstract class BackupFacility {
         private void copy(File a, File b) throws IOException {
             FileInputStream fs = new FileInputStream(a);
             FileOutputStream fo = new FileOutputStream(b);
+            copy(fs, fo);
+        }
+        
+        private void copy(File a, FileObject b) throws IOException {
+            FileInputStream fs = new FileInputStream(a);
+            OutputStream fo = b.getOutputStream();
+            copy(fs, fo);
+        }
+
+        private void copy(InputStream is, OutputStream os) throws IOException {
             try {
-                FileUtil.copy(fs, fo);
+                FileUtil.copy(is, os);
             } finally {
-                fs.close();
-                fo.close();
+                is.close();
+                os.close();
             }
         }
         
