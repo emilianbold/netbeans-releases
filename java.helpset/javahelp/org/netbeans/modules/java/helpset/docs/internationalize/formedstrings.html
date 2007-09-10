@@ -21,20 +21,19 @@ to replace a GUI component's hard-coded text with internationalized strings.</p>
     the Files or Projects window.</li>
   <li>Select the appropriate GUI component in the Inspector window.</li>
   <li>In the Properties window, select the property that you want to internationalize 
-    (for example, the text property of <tt>jLabel</tt>). Click the ellipsis (...) 
-    button to open the property editor.</li>
-  <li>Select Resource Bundle from the Select Mode combo box. 
-    <p>The property editor switches to resource bundle mode. If a resource bundle 
-      already exists for the source, the <tt>.properties</tt> file into which the 
-      internationalized strings will be saved is displayed in the Bundle Name field.</li>
-        
-  <li>To choose a different <tt>.properties </tt>file, click Browse. Alternatively, 
-      you can click New to create a new properties file in which to save the internationalized 
-      strings. The <tt>.properties</tt> suffix is added to the file name you specify. 
-  </li>
-  <li> Click Format if you want to change the method used to generate the internationalized 
-    string.</li>
-  <li>Click Arguments if you want to add arguments to the method call. You can 
+  (for example, the <tt>text</tt> property of <tt>jLabel</tt>). </li>
+  <li>Select Resource Bundle from the drop-down list at the top of the dialog box. 
+    <p>The property editor switches to resource bundle mode.</p>
+<p>    If a resource bundle 
+    already exists for the source, the <tt>.properties</tt> file into which the 
+  internationalized strings will be saved is displayed in the Bundle Name field.</p></li>
+  <li>If no <tt>.properties</tt> file is listed in the Bundle Name field, click the ellipsis (...) 
+    button next to the field to open the Select Resource Bundle dialog box. 
+In the dialog box, specify an existing <tt>.properties</tt> file or 
+create a new file. Click OK to return to the property editor.</li>
+  <li>If you want to change the method used to generate the internationalized 
+    string, click the Format button.</li>
+  <li>If you want to add arguments to the method call, click Arguments . You can 
     add arguments to the method call only if you use the <tt>java.text.MessageFormat</tt> 
     or <tt>org.openide.util.NbBundle.getMessage</tt> formats.</li>
   <li>Type in values for the Key and Value properties and click OK.</li>
