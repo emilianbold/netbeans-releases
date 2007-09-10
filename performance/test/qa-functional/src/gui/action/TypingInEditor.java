@@ -42,10 +42,10 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     private EditorOperator editorOperator;
     
     private int fontSize, caretBlinkRate;
-    private String fileName;
-    private int caretPositionX, caretPositionY;
+    protected String fileName;
+    protected int caretPositionX, caretPositionY;
     
-    private Class kitClass,optionsClass;
+    protected Class kitClass,optionsClass;
     
     Node fileToBeOpened;
     
