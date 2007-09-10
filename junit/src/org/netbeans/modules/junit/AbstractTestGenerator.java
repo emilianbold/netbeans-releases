@@ -49,6 +49,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -317,7 +318,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                                            srcMethods,
                                                            workingCopy);
         return composeNewTestClass(workingCopy, name, testMethods);
-    }
+        }
 
     /**
      */
@@ -909,10 +910,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
                 statements.add(methodCallStmt);
             } else {
-                ExpressionTree retTypeTree = retTypeKind.isPrimitive()
-                        ? maker.Identifier(retType.toString())
-                        : maker.QualIdent(
-                                workingCopy.getTypes().asElement(retType));
+                Tree retTypeTree = createTypeTree(retType, workingCopy, maker);
 
                 VariableTree expectedValue = maker.Variable(
                         maker.Modifiers(NO_MODIFIERS),
@@ -970,6 +968,66 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         }
 
         return maker.Block(statements, false);
+    }
+
+    /**
+     * Create a tree representing the given type.
+     * <p>
+     * The current implementation of this method is a compromise
+     * between the expected correctness of the generated code and
+     * the current limitation of method
+     * {@link TreeMaker#ParameterizedType} which requires that its second
+     * argument must be a {@code List} of {@link ExpressionTree}s
+     * (see bug #115176): If the given type mirror represents a parameterized
+     * type and any of the type parameters is also parameterized, then
+     * the returned tree corresponds to erasure of the given type mirror.
+     * 
+     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=115176">bug115176</a>
+     */
+    private Tree createTypeTree(final TypeMirror typeMirror,
+                                final WorkingCopy workingCopy,
+                                final TreeMaker maker) {
+        final TypeKind typeKind = typeMirror.getKind();
+
+        if (typeKind == TypeKind.VOID) {
+            return maker.Identifier("void");                            //NOI18N
+        }
+
+        if (typeKind.isPrimitive()) {
+            return maker.Identifier(typeMirror.toString());
+        }
+
+        final Types types = workingCopy.getTypes();
+        Tree result = maker.QualIdent(types.asElement(typeMirror));
+        if (typeKind == TypeKind.DECLARED) {
+            DeclaredType declType = (DeclaredType) typeMirror;
+            List<? extends TypeMirror> typeArgs = declType.getTypeArguments();
+            if (!typeArgs.isEmpty()) {
+                List<ExpressionTree> typeArgTrees
+                        = new ArrayList<ExpressionTree>(typeArgs.size());
+
+                boolean parameterizedParamTypeFound = false;
+                for (TypeMirror typeArg : typeArgs) {
+                    assert typeArg.getKind() == TypeKind.DECLARED;
+                    DeclaredType declParamType = (DeclaredType) typeArg;
+                    if (!declParamType.getTypeArguments().isEmpty()) {
+                        parameterizedParamTypeFound = true;
+                        /*
+                         * It is not possible to handle type parameters
+                         * of type parameters (bug #115176).
+                         */
+                        break;
+                    }
+                    typeArgTrees.add(maker.QualIdent(types.asElement(typeArg)));
+                }
+                if (!parameterizedParamTypeFound) {
+                    result = maker.ParameterizedType(result, typeArgTrees);
+                }
+                /* else: keep the current result without type parameters */
+            }
+        }
+
+        return result;
     }
 
     /**
