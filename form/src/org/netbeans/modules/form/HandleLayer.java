@@ -912,6 +912,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 if (retVal) {
                     draggedComponent = null;
                     draggingEnded = true;
+                    repaint();
                 } else {
                     done = false;
                 }
