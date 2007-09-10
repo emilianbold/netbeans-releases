@@ -36,8 +36,9 @@ import org.openide.awt.Mnemonics;
  * @author joshua.marinacci@sun.com
  */
 public class ProxyAction implements Action, ResourceValue, Serializable {
-    private String id; // TODO bring back the method name and distinguish it from
-                       // the action name (start using the 'name' annotation attr)
+    private String id; //this is the name of the action if the name attribute
+    //is specified, otherwise it is the method name
+    private String methodName; // this is always the method name
     private String classname;
     private Map<String,Object> values = new HashMap<String,Object>();
     private boolean enabled = true;
@@ -56,14 +57,15 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
             = { "block", "enabledProperty", "name", "selectedProperty" }; // NOI18N
 
     /** Creates a new instance of ProxyAction */
-    public ProxyAction(String className, String id) {
+    public ProxyAction(String className, String id, String methodName) {
         this.classname = className;
         this.id = id;
         this.blockingType = BlockingType.NONE;
+        this.methodName = methodName;
     }
     
     ProxyAction() {
-        this("","");
+        this("","","");
     }
 
     ProxyAction(ProxyAction copy) {
@@ -76,6 +78,7 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
         enabledName = copy.enabledName;
         selectedName = copy.selectedName;
         resourceMap = copy.resourceMap;
+        methodName = copy.methodName;
     }
     
     public void loadFromResourceMap() {
@@ -163,8 +166,16 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
         return id;
     }
     
+    public String getMethodName() {
+        return methodName;
+    }
+    
     public void setId(String id) {
         this.id = id;
+    }
+    
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
     }
     
     public String getClassname() {
@@ -262,8 +273,11 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
 
     boolean isAnnotationAttributeSet(String attrName) {
         if ("name".equals(attrName)) { // NOI18N
+            //only if id != methodname has the name attribute been used
+            if(!(id.equals(methodName))) {
+                return true;
+            }
             return false;
-            // TBD we don't distinguish id (action name) from method name yet
         }
         Object value = getAnnotationAttributeValue(attrName);
         if (value instanceof BlockingType) {
@@ -290,8 +304,7 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
         } else if ("enabledProperty".equals(attrName)) { // NOI18N
             return getEnabledName();
         } else if ("name".equals(attrName)) { // NOI18N
-            return null;
-            // TBD we don't distinguish id (action name) from method name yet
+            return id;
         } else if ("selectedProperty".equals(attrName)) { // NOI18N
             return getSelectedName();
         }

@@ -78,7 +78,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     private ProxyAction newAction = null;
     private ProxyAction globalAction = null;
     private boolean globalMode = false;
-    private ProxyAction NEW_ACTION = new ProxyAction("-newaction-","-id-"); // NOI18N
+    private ProxyAction NEW_ACTION = new ProxyAction("-newaction-","-id-","-methodname-"); // NOI18N
     private FileObject selectedSourceFile;
     private AcceleratorKeyListener acceleratorListener;
     
@@ -319,7 +319,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         } else {
             sig.append(" void"); // NOI18N
         }
-        sig.append(" " + act.getId()); // NOI18N
+        sig.append(" " + act.getMethodName()); // NOI18N
         sig.append("()"); // NOI18N
         
         if(act == null) {

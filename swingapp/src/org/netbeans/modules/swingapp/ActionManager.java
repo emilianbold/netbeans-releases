@@ -301,7 +301,7 @@ public class ActionManager {
     void jumpToActionSource(ProxyAction action) {
         FileObject sourceFile = getFileForClass(action.getClassname());
         try {
-            Integer result = (Integer) new ActionMethodTask(sourceFile, action.getId()) {
+            Integer result = (Integer) new ActionMethodTask(sourceFile, action.getMethodName()) {
                 Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     return (int) controller.getTrees().getSourcePositions().getStartPosition(
                             controller.getCompilationUnit(), methodTree);
@@ -366,7 +366,7 @@ public class ActionManager {
      * @return true if the method was successfuly created or already existed
      */
     boolean createActionMethod(final ProxyAction action) {
-        if (isExistingMethod(action.getClassname(), action.getId())) {
+        if (isExistingMethod(action.getClassname(), action.getMethodName())) {
             return true;
         }
 
@@ -409,7 +409,7 @@ public class ActionManager {
             buf.append(indent);
             buf.append("public "); // NOI18N
             buf.append(taskName != null ? "org.jdesktop.application.Task " : "void "); // NOI18N
-            buf.append(action.getId());
+            buf.append(action.getMethodName());
             buf.append("() {\n"); // NOI18N
             buf.append(indent).append(indent);
             if (taskName != null) {
@@ -754,7 +754,7 @@ public class ActionManager {
                                 TreePath classTPath = trees.getPath(cut, classT);
                                 TypeElement classEl = (TypeElement) trees.getElement(classTPath);
                                 for (ExecutableElement el : ElementFilter.methodsIn(classEl.getEnclosedElements())) {
-                                    if (el.getSimpleName().toString().equals(action.getId())
+                                    if (el.getSimpleName().toString().equals(action.getMethodName())
                                             && el.getModifiers().contains(Modifier.PUBLIC)) {
                                         // method name matches, now check the annotation
                                         MethodTree method = trees.getTree(el);
@@ -860,7 +860,7 @@ public class ActionManager {
 
             // generate Task impl class if does not already exist
             if (newTaskName != null) {
-                Integer methodEndPosition = (Integer) new ActionMethodTask(sourceFile, action.getId()) {
+                Integer methodEndPosition = (Integer) new ActionMethodTask(sourceFile, action.getMethodName()) {
                     Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), methodTree);
@@ -1023,7 +1023,7 @@ public class ActionManager {
     }
 
     private static int[] getAnnotationPositions(ProxyAction action, FileObject sourceFile) throws IOException {
-        return (int[]) new ActionMethodTask(sourceFile, action.getId()) {
+        return (int[]) new ActionMethodTask(sourceFile, action.getMethodName()) {
             Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                 CompilationUnitTree cut = controller.getCompilationUnit();
                 Trees trees = controller.getTrees();
@@ -1273,7 +1273,13 @@ public class ActionManager {
                             if (el.getModifiers().contains(Modifier.PUBLIC)) {
                                 org.jdesktop.application.Action ann = el.getAnnotation(org.jdesktop.application.Action.class);
                                 if (ann != null) {
+                                    String name = el.getSimpleName().toString();
+                                    //the annotation can override the name
+                                    if(ann.name() != null && !"".equals(ann.name())) {
+                                        name = ann.name();
+                                    }
                                     ProxyAction action = new ProxyAction(cls.getQualifiedName().toString(),
+                                            name,
                                             el.getSimpleName().toString());
                                     initActionFromAnnotation(action, el, ann);
                                     if (list == null) {
@@ -1328,7 +1334,7 @@ public class ActionManager {
     
     static void initActionFromSource(final ProxyAction action, FileObject sourceFile) {
         try {
-            new ActionMethodTask(sourceFile, action.getId()) {
+            new ActionMethodTask(sourceFile, action.getMethodName()) {
                 Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     org.jdesktop.application.Action ann = methodElement.getAnnotation(org.jdesktop.application.Action.class);
                     if (ann != null) {

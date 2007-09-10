@@ -349,7 +349,9 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             FileObject srcFile = getSourceFile();
             String className = elem.getAttribute("class"); // NOI18N
             String id = elem.getAttribute("id"); // NOI18N
-            ProxyAction action = new ProxyAction(className, id);
+            String methodName = elem.getAttribute("methodName");
+            if(methodName == null) methodName = id;
+            ProxyAction action = new ProxyAction(className, id, methodName);
             boolean appWide = !className.endsWith(srcFile.getName())
                     || (className.length() != srcFile.getName().length()
                     && className.charAt(className.length() - srcFile.getName().length() - 1) != '.');
@@ -364,6 +366,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         Element elem = doc.createElement("action"); // NOI18N
         elem.setAttribute("id",action.getId()); // NOI18N
         elem.setAttribute("class",action.getClassname()); // NOI18N
+        elem.setAttribute("methodName",action.getMethodName());
         return elem;
     }
     
