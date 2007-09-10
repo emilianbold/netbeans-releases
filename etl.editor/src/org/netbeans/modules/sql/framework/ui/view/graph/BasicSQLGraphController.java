@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -219,10 +219,10 @@ public class BasicSQLGraphController implements IGraphController {
                         SQLDBModel model = null;
                         if(isSource) {
                             model = SQLModelObjectFactory.getInstance()
-                            .createDBModel(SQLConstants.SOURCE_DBMODEL);
+                                    .createDBModel(SQLConstants.SOURCE_DBMODEL);
                         } else {
                             model = SQLModelObjectFactory.getInstance()
-                            .createDBModel(SQLConstants.TARGET_DBMODEL);
+                                    .createDBModel(SQLConstants.TARGET_DBMODEL);
                         }
                         model.setModelName(dbConn.getDisplayName());
                         model.setConnectionDefinition(def);
@@ -633,40 +633,40 @@ public class BasicSQLGraphController implements IGraphController {
         }
         
         switch (destObj.isInputCompatible(destParam1, input)) {
-            case SQLConstants.TYPE_CHECK_INCOMPATIBLE:
-                try {
-                    msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERR_type_check_incompatible");
-                } catch (MissingResourceException e) {
-                    msg = "Incompatible source and target datatypes.";
-                }
-                
-                NotifyDescriptor.Message m = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-                
-                DialogDisplayer.getDefault().notify(m);
-                return false;
-                
-            case SQLConstants.TYPE_CHECK_DOWNCAST_WARNING:
-                try {
-                    msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERR_type_check_downcast");
-                } catch (MissingResourceException e) {
-                    msg = "Connecting these datatypes may result in a loss of " + "precision or data truncation in the target.  Continue?";
-                }
-                
-                String title = null;
-                try {
-                    title = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_dlg_type_check_confirm");
-                } catch (MissingResourceException e) {
-                    title = "Datatype conversion";
-                }
-                
-                NotifyDescriptor.Confirmation d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.OK_CANCEL_OPTION,
-                        NotifyDescriptor.QUESTION_MESSAGE);
-                
-                return (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION);
-                
-            case SQLConstants.TYPE_CHECK_COMPATIBLE:
-            default:
-                return true;
+        case SQLConstants.TYPE_CHECK_INCOMPATIBLE:
+            try {
+                msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERR_type_check_incompatible");
+            } catch (MissingResourceException e) {
+                msg = "Incompatible source and target datatypes.";
+            }
+            
+            NotifyDescriptor.Message m = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            
+            DialogDisplayer.getDefault().notify(m);
+            return false;
+            
+        case SQLConstants.TYPE_CHECK_DOWNCAST_WARNING:
+            try {
+                msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERR_type_check_downcast");
+            } catch (MissingResourceException e) {
+                msg = "Connecting these datatypes may result in a loss of " + "precision or data truncation in the target.  Continue?";
+            }
+            
+            String title = null;
+            try {
+                title = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_dlg_type_check_confirm");
+            } catch (MissingResourceException e) {
+                title = "Datatype conversion";
+            }
+            
+            NotifyDescriptor.Confirmation d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE);
+            
+            return (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION);
+            
+        case SQLConstants.TYPE_CHECK_COMPATIBLE:
+        default:
+            return true;
         }
     }
     
@@ -742,82 +742,89 @@ public class BasicSQLGraphController implements IGraphController {
             sqlObj.setDisplayName(xmlInfo.getName());
             
             GUIInfo guiInfo = sqlObj.getGUIInfo();
-            guiInfo.setX(dropLocation.x);
-            guiInfo.setY(dropLocation.y);
+            
+            if(dropLocation.x == 0 && dropLocation.y == 0){
+                guiInfo.setX(guiInfo.getX());
+                guiInfo.setY(guiInfo.getY());
+            }else{
+                guiInfo.setX(dropLocation.x);
+                guiInfo.setY(dropLocation.y);
+            }
+            
             
             // do special processing for following objects
             switch (sqlObj.getObjectType()) {
-                case SQLConstants.CAST_OPERATOR:
-                    CastAsDialog castDlg = new CastAsDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(
-                            BasicSQLGraphController.class, "TITLE_new_castas"), true);
-                    castDlg.show();
-                    if (castDlg.isCanceled()) {
-                        return;
-                    }
-                    
-                    SQLCastOperator castOp = (SQLCastOperator) sqlObj;
-                    castOp.setOperatorXmlInfo(xmlInfo);
-                    
-                    castOp.setJdbcType(castDlg.getJdbcType());
-                    
-                    int precision = castDlg.getPrecision();
-                    castOp.setPrecision(precision);
-                    
-                    int scale = castDlg.getScale();
-                    castOp.setScale(scale);
-                    
-                    break;
-                    
-                case SQLConstants.CUSTOM_OPERATOR:
-                    CustomOperatorPane customOptPane = new CustomOperatorPane(new ArrayList());
-                    String title = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_user_function");
-                    DialogDescriptor dlgDesc = new DialogDescriptor(customOptPane, title, true, NotifyDescriptor.OK_CANCEL_OPTION,
-                            NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-                    Dialog customOptDialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
-                    customOptDialog.setVisible(true);
-                    if (NotifyDescriptor.CANCEL_OPTION == dlgDesc.getValue()) {
-                        return;
-                    }
-                    List inputArgs = customOptPane.getArgList();
-                    SQLOperatorArg retType = customOptPane.getReturnType();
-                    CustomOperatorNode customOptNode = new CustomOperatorNode(xmlInfo, inputArgs, retType);
-                    SQLCustomOperatorImpl custOp = (SQLCustomOperatorImpl) sqlObj;
-                    custOp.setOperatorXmlInfo(customOptNode);
-                    custOp.setCustomOperatorName(customOptPane.getFunctionName());
-                    custOp.getOperatorDefinition().setArgList(inputArgs);
-                    custOp.initializeInputs(inputArgs.size());
-                    break;
-                    
-                    
-                case SQLConstants.VISIBLE_PREDICATE:
-                    ((SQLPredicate) sqlObj).setOperatorXmlInfo(xmlInfo);
-                    // fall through to set XML info (using common SQLOperator interface)
-                    
-                case SQLConstants.GENERIC_OPERATOR:
-                case SQLConstants.DATE_ARITHMETIC_OPERATOR:
-                    // for operator we need to set the type of operator
-                    // ((SQLGenericOperator) sqlObj).setOperatorType(xmlInfo.getName());
-                    ((SQLOperator) sqlObj).setOperatorXmlInfo(xmlInfo);
-                    sqlObj.setDisplayName(xmlInfo.getDisplayName());
-                    break;
-                    
-                case SQLConstants.VISIBLE_LITERAL:
-                    LiteralDialog dlg = new LiteralDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(
-                            BasicSQLGraphController.class, "TITLE_new_literal"), true);
-                    dlg.show();
-                    
-                    // OK button is not pressed so return
-                    if (dlg.isCanceled()) {
-                        return;
-                    }
-                    
-                    String value = dlg.getLiteral();
-                    VisibleSQLLiteral lit = (VisibleSQLLiteral) sqlObj;
-                    lit.setJdbcType(dlg.getType());
-                    lit.setValue(value);
-                    lit.setDisplayName(xmlInfo.getDisplayName());
-                    
-                    break;
+            case SQLConstants.CAST_OPERATOR:
+                CastAsDialog castDlg = new CastAsDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(
+                        BasicSQLGraphController.class, "TITLE_new_castas"), true);
+                castDlg.show();
+                if (castDlg.isCanceled()) {
+                    return;
+                }
+                
+                SQLCastOperator castOp = (SQLCastOperator) sqlObj;
+                castOp.setOperatorXmlInfo(xmlInfo);
+                
+                castOp.setJdbcType(castDlg.getJdbcType());
+                
+                int precision = castDlg.getPrecision();
+                castOp.setPrecision(precision);
+                
+                int scale = castDlg.getScale();
+                castOp.setScale(scale);
+                
+                break;
+                
+            case SQLConstants.CUSTOM_OPERATOR:
+                CustomOperatorPane customOptPane = new CustomOperatorPane(new ArrayList());
+                String title = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_user_function");
+                DialogDescriptor dlgDesc = new DialogDescriptor(customOptPane, title, true, NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                Dialog customOptDialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
+                customOptDialog.setVisible(true);
+                if (NotifyDescriptor.CANCEL_OPTION == dlgDesc.getValue()) {
+                    return;
+                }
+                List inputArgs = customOptPane.getArgList();
+                SQLOperatorArg retType = customOptPane.getReturnType();
+                CustomOperatorNode customOptNode = new CustomOperatorNode(xmlInfo, inputArgs, retType);
+                SQLCustomOperatorImpl custOp = (SQLCustomOperatorImpl) sqlObj;
+                custOp.setOperatorXmlInfo(customOptNode);
+                custOp.setCustomOperatorName(customOptPane.getFunctionName());
+                custOp.getOperatorDefinition().setArgList(inputArgs);
+                custOp.initializeInputs(inputArgs.size());
+                break;
+                
+                
+            case SQLConstants.VISIBLE_PREDICATE:
+                ((SQLPredicate) sqlObj).setOperatorXmlInfo(xmlInfo);
+                // fall through to set XML info (using common SQLOperator interface)
+                
+            case SQLConstants.GENERIC_OPERATOR:
+            case SQLConstants.DATE_ARITHMETIC_OPERATOR:
+                // for operator we need to set the type of operator
+                // ((SQLGenericOperator) sqlObj).setOperatorType(xmlInfo.getName());
+                ((SQLOperator) sqlObj).setOperatorXmlInfo(xmlInfo);
+                sqlObj.setDisplayName(xmlInfo.getDisplayName());
+                break;
+                
+            case SQLConstants.VISIBLE_LITERAL:
+                LiteralDialog dlg = new LiteralDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(
+                        BasicSQLGraphController.class, "TITLE_new_literal"), true);
+                dlg.show();
+                
+                // OK button is not pressed so return
+                if (dlg.isCanceled()) {
+                    return;
+                }
+                
+                String value = dlg.getLiteral();
+                VisibleSQLLiteral lit = (VisibleSQLLiteral) sqlObj;
+                lit.setJdbcType(dlg.getType());
+                lit.setValue(value);
+                lit.setDisplayName(xmlInfo.getDisplayName());
+                
+                break;
             }
             
             // now add the object
@@ -969,13 +976,13 @@ public class BasicSQLGraphController implements IGraphController {
         
         public void setSelectedType(int type) {
             switch (type) {
-                case SQLConstants.TARGET_TABLE:
-                    bg.setSelected(target.getModel(), true);
-                    break;
-                    
-                case SQLConstants.SOURCE_TABLE:
-                default:
-                    bg.setSelected(source.getModel(), true);
+            case SQLConstants.TARGET_TABLE:
+                bg.setSelected(target.getModel(), true);
+                break;
+                
+            case SQLConstants.SOURCE_TABLE:
+            default:
+                bg.setSelected(source.getModel(), true);
             }
         }
         
@@ -987,22 +994,22 @@ public class BasicSQLGraphController implements IGraphController {
             super.addNotify();
             
             switch (getSelectedType()) {
-                case SQLConstants.TARGET_TABLE:
-                    target.requestFocusInWindow();
-                    break;
-                    
-                case SQLConstants.SOURCE_TABLE:
-                default:
-                    source.requestFocusInWindow();
-                    break;
+            case SQLConstants.TARGET_TABLE:
+                target.requestFocusInWindow();
+                break;
+                
+            case SQLConstants.SOURCE_TABLE:
+            default:
+                source.requestFocusInWindow();
+                break;
             }
         }
     }
     
     protected boolean isEditAllowed() {
-        if (viewC != null) {
+      /*  if (viewC != null) {
             return viewC.canEdit();
-        }
+        }*/
         
         return true;
     }
@@ -1019,7 +1026,7 @@ public class BasicSQLGraphController implements IGraphController {
     private void updateActions(SQLUIModel model) {
         try{
             ETLDataObject etlDataObject = DataObjectProvider.getProvider()
-            .getActiveDataObject();
+                    .getActiveDataObject();
             if(model.isDirty()){
                 ETLEditorSupport editor = etlDataObject.getETLEditorSupport();
                 editor.synchDocument();

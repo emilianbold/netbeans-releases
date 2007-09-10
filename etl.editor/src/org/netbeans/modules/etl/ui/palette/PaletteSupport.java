@@ -16,8 +16,10 @@
 
 package org.netbeans.modules.etl.ui.palette;
 
+import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -48,6 +50,8 @@ public class PaletteSupport {
     
     private static PaletteController controller;
     
+    private static IGraphView graphView;
+    
     private static ETLCollaborationTopComponent topComp;
     
     public PaletteSupport(ETLCollaborationTopComponent tc) {
@@ -66,7 +70,7 @@ public class PaletteSupport {
             public void propertyChange(PropertyChangeEvent evt) {
                 if(PaletteController.PROP_SELECTED_ITEM.equals(evt.getPropertyName())){
                     Lookup selItem = controller.getSelectedItem();
-                    IGraphView graphView = topComp.getGraphView();
+                    graphView = topComp.getGraphView();
                     if(null != selItem ){
                         Node selNode = selItem.lookup(Node.class);
                         if(null != selNode ){
@@ -117,7 +121,52 @@ public class PaletteSupport {
          * @return 
          */
         public Action getPreferredAction(Lookup lookup){
-            return null;
+           return  new PreferredAction(lookup);
+        }
+    }
+    
+    
+    public static class PreferredAction implements Action{
+        
+        private IOperatorXmlInfo opXmlInfo = null;
+        
+        public PreferredAction(Lookup lookup){            
+            Node node = lookup.lookup(Node.class);            
+            if ( null != node){
+               opXmlInfo = OperatorXmlInfoModel.getInstance("ETLOperators").findOperatorXmlInfo(node.getName());
+               graphView.setXMLInfo(opXmlInfo);
+            }   
+        }
+
+        public Object getValue(String key) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void putValue(String key, Object value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setEnabled(boolean b) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isEnabled() {
+            return true;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");               
+    }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void actionPerformed(ActionEvent e) {  
+            Point viewCoord = new Point();
+             if (graphView.getGraphController() != null) {                  
+                    graphView.getGraphController().handleNodeAdded(opXmlInfo, viewCoord);
+                }
         }
     }
     
