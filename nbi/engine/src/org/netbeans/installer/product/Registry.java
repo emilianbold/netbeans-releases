@@ -342,14 +342,26 @@ public class Registry {
         }
         if (!localProductCache.exists()) {
             if (!localProductCache.mkdirs()) {
-                throw new InitializationException("Cannot create local product cache directory: " + localDirectory);
+                throw new InitializationException(
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_CANNOT_CREATE_CACHE_DIR_KEY,
+                        localDirectory ));
             }
         } else if (localProductCache.isFile()) {
-            throw new InitializationException("Local product cache directory exists and is a file: " + localDirectory);
-        } else if (!localProductCache.canRead()) {
-            throw new InitializationException("Cannot read local product cache directory - not enought permissions");
+            throw new InitializationException(
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_CACHE_IS_FILE_KEY,
+                    localDirectory ));
+        } else if (!localProductCache.canRead()) {            
+            throw new InitializationException(
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_CANNOT_READ_CACHE_KEY,
+                    localDirectory ));
         } else if (!localProductCache.canWrite()) {
-            throw new InitializationException("Cannot write to local product cache directory - not enought permissions");
+            throw new InitializationException(
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_CANNOT_WRITE_CACHE_KEY,
+                    localDirectory ));
         }
         LogManager.logUnindent("... " + localProductCache);
         
@@ -366,17 +378,29 @@ public class Registry {
                 FileUtils.copyFile(
                         FileProxy.getInstance().getFile(localRegistryStubUri),
                         localRegistryFile);
-            } catch (DownloadException e) {
-                throw new InitializationException("Cannot create local registry", e);
+            } catch (DownloadException e) {                
+                throw new InitializationException(
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_CANNOT_CREATE_REGISTRY_KEY), e);
             } catch (IOException e) {
-                throw new InitializationException("Cannot create local registry", e);
+                throw new InitializationException(
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_CANNOT_CREATE_REGISTRY_KEY), e);
             }
-        } else if (localRegistryFile.isDirectory()) {
-            throw new InitializationException("Local registry is a directory!");
+        } else if (localRegistryFile.isDirectory()) {            
+            throw new InitializationException(
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_REGISTRY_IS_DIRECTORY_KEY, localRegistryFile));
         } else if (!localRegistryFile.canRead()) {
-            throw new InitializationException("Cannot read local registry - not enough permissions");
+            throw new InitializationException(
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_CANNOT_READ_CACHE_KEY,
+                    localRegistryFile ));
         } else if (!localRegistryFile.canWrite()) {
-            throw new InitializationException("Cannot write to local registry - not enough permissions");
+            throw new InitializationException(
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_CANNOT_WRITE_REGISTRY_KEY,
+                    localRegistryFile ));
         }
         LogManager.log("    ... " + localRegistryFile);
         
@@ -406,7 +430,7 @@ public class Registry {
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("    initializing remote product registries uris");
         if (System.getProperty(REMOTE_PRODUCT_REGISTRIES_PROPERTY) != null) {
-            for (String remoteRegistryURI: System.getProperty(REMOTE_PRODUCT_REGISTRIES_PROPERTY).split("\n")) {
+            for (String remoteRegistryURI: System.getProperty(REMOTE_PRODUCT_REGISTRIES_PROPERTY).split(StringUtils.LF)) {
                 remoteRegistryUris.add(remoteRegistryURI);
             }
         }
@@ -431,10 +455,15 @@ public class Registry {
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("    initializing target platform");
         if (System.getProperty(TARGET_PLATFORM_PROPERTY) != null) {
+            final String platformString = System.getProperty(TARGET_PLATFORM_PROPERTY);
             try {
-                targetPlatform = StringUtils.parsePlatform(System.getProperty(TARGET_PLATFORM_PROPERTY));
+                targetPlatform = StringUtils.parsePlatform(platformString);
             } catch (ParseException e) {
-                throw new InitializationException("Cannot parse platform", e);
+                 throw new InitializationException(
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_CANNOT_PARSE_PLATFORM_KEY,
+                    platformString), e);
+                
             }
         }
         LogManager.log("    ... " + targetPlatform);
@@ -858,10 +887,14 @@ public class Registry {
             validateInstallations();
             
             progress.setPercentage(Progress.COMPLETE);
-        } catch (ParseException e) {
-            throw new InitializationException("Cannot load registry", e);
+        } catch (ParseException e) {            
+            throw new InitializationException(
+                    ResourceUtils.getString(Registry.class, 
+                    ERROR_CANNOT_LOAD_REGISTRY_KEY), e);
         } catch (XMLException e) {
-            throw new InitializationException("Cannot load registry", e);
+            throw new InitializationException(
+                    ResourceUtils.getString(Registry.class, 
+                    ERROR_CANNOT_LOAD_REGISTRY_KEY), e);
         }
     }
     
@@ -951,16 +984,16 @@ public class Registry {
             
             return builder.parse(registryFile);
         } catch (DownloadException e) {
-            throw new XMLException(ResourceUtils.getString(Registry.class, 
+            throw new XMLException(ResourceUtils.getString(Registry.class,
                     ERROR_REGISTRY_DOCUMENT_LOADING), e);
         } catch (ParserConfigurationException e) {
-            throw new XMLException(ResourceUtils.getString(Registry.class, 
+            throw new XMLException(ResourceUtils.getString(Registry.class,
                     ERROR_REGISTRY_DOCUMENT_LOADING), e);
         } catch (SAXException e) {
-            throw new XMLException(ResourceUtils.getString(Registry.class, 
+            throw new XMLException(ResourceUtils.getString(Registry.class,
                     ERROR_REGISTRY_DOCUMENT_LOADING), e);
         } catch (IOException e) {
-            throw new XMLException(ResourceUtils.getString(Registry.class, 
+            throw new XMLException(ResourceUtils.getString(Registry.class,
                     ERROR_REGISTRY_DOCUMENT_LOADING), e);
         }
     }
@@ -1342,8 +1375,9 @@ public class Registry {
                 // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        "The current parser - " + factory.getClass() + " - does not support schemas.",
-                        e);
+                        ResourceUtils.getString(Registry.class, 
+                        ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY, 
+                        factory.getClass()), e);
             }
             factory.setNamespaceAware(true);
             
@@ -1465,8 +1499,9 @@ public class Registry {
                 // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        "The current parser - " + factory.getClass() + " - does not support schemas.",
-                        e);
+                        ResourceUtils.getString(Registry.class, 
+                        ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY, 
+                        factory.getClass()), e);
             }
             factory.setNamespaceAware(true);
             
@@ -1731,4 +1766,26 @@ public class Registry {
             "R.error.registry.finalization";//NOI18N
     private static final String ERROR_REGISTRY_DOCUMENT_LOADING =
             "R.error.registry.document.loading";//NOI18N
+    private static final String ERROR_CANNOT_CREATE_CACHE_DIR_KEY =
+            "R.error.cannot.create.cache.directory";//NOI18N
+    private static final String ERROR_CACHE_IS_FILE_KEY =
+            "R.error.cache.is.file";//NOI18N
+    private static final String ERROR_CANNOT_READ_CACHE_KEY =
+            "R.error.cannot.read.cache";//NOI18N
+    private static final String ERROR_CANNOT_WRITE_CACHE_KEY =
+            "R.error.cannot.write.cache";//NOI18N
+    private static final String ERROR_CANNOT_CREATE_REGISTRY_KEY =
+            "R.error.cannot.create.registry";//NOI18N
+    private static final String ERROR_REGISTRY_IS_DIRECTORY_KEY = 
+            "R.error.registry.is.dir";//NOI18N
+    private static final String ERROR_CANNOT_READ_REGISTRY_KEY =
+            "R.error.cannot.read.registry";//NOI18N
+    private static final String ERROR_CANNOT_WRITE_REGISTRY_KEY =
+            "R.error.cannot.write.registry";//NOI18N
+    private static final String ERROR_CANNOT_PARSE_PLATFORM_KEY =
+            "R.error.cannot.parse.platform";//NOI18N
+    private static final String ERROR_CANNOT_LOAD_REGISTRY_KEY = 
+            "R.error.cannot.load.registry";//NOI18N
+    private static final String ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY =
+            "R.error.parser.not.support.schemas";//NOI18N
 }
