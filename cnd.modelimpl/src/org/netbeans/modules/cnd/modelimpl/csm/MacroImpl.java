@@ -69,7 +69,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     
     /** Creates new instance of MacroImpl based on existed macro and specified container */
     public MacroImpl(CsmMacro macro, CsmFile containingFile) {
-        this(macro.getName(), macro.getParameters(), macro.getBody(), containingFile, macro);
+        this(macro.getName(), macro.getParameters(), ""/*macro.getBody()*/, containingFile, macro);
     }
     
     /** Creates new instance of MacroImpl based on macro information and specified position */
@@ -77,7 +77,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         this(macroName, macroParams, macroBody, null, macroPos);
     }
     
-    public MacroImpl(String macroName, List/*<String>*/ macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
+    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
         super(containingFile, macroPos);
         assert(macroName != null);
         assert(macroName.length() > 0);
@@ -86,7 +86,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         this.system = false;
         this.body = macroBody;
         if (macroParams != null) {
-            this.params = Collections.unmodifiableList(macroParams);
+            this.params = Collections.<String>unmodifiableList(macroParams);
         } else {
             this.params = null;
         }
@@ -97,7 +97,11 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     }
     
     public String getBody() {
-        return body;
+        throw new UnsupportedOperationException("getBody() was switched off due to performance reasons"); // NOI18N
+        // see APTParseFileWalker.createMacro() for details.
+        // dont' forget to fix  MacroImpl(CsmMacro, CsmFile) body if you revert this
+        
+        //return body;
     }
     
     public boolean isSystem() {
@@ -108,7 +112,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         return name;
     }
 
-    public String toString() {
+    public @Override String toString() {
         StringBuilder retValue = new StringBuilder();
         retValue.append("#define '"); // NOI18N
         retValue.append(getName());
@@ -133,7 +137,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         return retValue.toString();
     }   
     
-    public boolean equals(Object obj) {
+    public @Override boolean equals(Object obj) {
         boolean retValue;
         if (obj == null || !(obj instanceof CsmMacro)) {
             retValue = false;
@@ -150,14 +154,14 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
                 (one.getName().compareTo(other.getName()) == 0);
     }
     
-    public int hashCode() {
+    public @Override int hashCode() {
         int retValue = 17;
         retValue = 31*retValue + getStartOffset();
         retValue = 31*retValue + getName().hashCode();
         return retValue;
     }    
 
-    public void write(DataOutput output) throws IOException {
+    public @Override void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         output.writeUTF(this.name);
