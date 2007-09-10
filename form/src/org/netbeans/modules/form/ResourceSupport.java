@@ -963,8 +963,7 @@ public class ResourceSupport {
     }
 
     private static boolean isAutoNamedProperty(FormProperty prop) {
-        return prop.isChanged()
-                && "name".equals(prop.getName()) // NOI18N
+        return "name".equals(prop.getName()) // NOI18N
                 && prop instanceof RADProperty
                 && getNameProperty(((RADProperty)prop).getRADComponent()) == prop
                 && getResourceSupport(prop).isAutoName();
