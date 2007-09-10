@@ -30,6 +30,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
@@ -44,6 +45,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.project.ProjectInformation;
@@ -88,15 +90,22 @@ public final class RailsServer {
     private int port = -1;
     
     private RailsProject project;
+    private RubyExecution execution;
     private File dir;
     private boolean debug;
+    private boolean switchToDebugMode;
+    
+    private Semaphore debugSemaphore;
 
     public RailsServer(RailsProject project) {
         this.project = project;
         dir = FileUtil.toFile(project.getProjectDirectory());
     }
     
-    public void setDebug(boolean debug) {
+    public synchronized void setDebug(boolean debug) {
+        if (status == ServerStatus.RUNNING && !this.debug && debug) {
+            switchToDebugMode = true;
+        }
         this.debug = debug;
     }
     
@@ -105,14 +114,26 @@ public final class RailsServer {
             if (status == ServerStatus.STARTING) {
                 return;
             } else if (status == ServerStatus.RUNNING) {
-                if (serverType == ServerType.MONGREL) {
+                if (switchToDebugMode) {
+                    assert debugSemaphore == null : "startSemaphor supposed to be null";
+                    debugSemaphore = new Semaphore(0);
+                    switchToDebugMode = false;
+                } else if (serverType == ServerType.MONGREL) {
                     // isPortInUse doesn't work for Mongrel
                     return;
-                }
-                if (isPortInUse(port)) {
+                } else if (isPortInUse(port)) {
                     // Simply assume it is still the same server running
                     return;
                 }
+            }
+        }
+        if (debugSemaphore != null) {
+            try {
+                execution.kill();
+                debugSemaphore.acquire();
+                debugSemaphore = null;
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -126,6 +147,11 @@ public final class RailsServer {
                         if (portConflict) {
                             // Failed to start due to port conflict - notify user.
                             notifyPortConflict();
+                        }
+                        if (debugSemaphore != null) {
+                            debugSemaphore.release();
+                        } else {
+                            debug = false;
                         }
                     }
                 }
@@ -169,7 +195,8 @@ public final class RailsServer {
         desc.showSuspended(true);
         String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
         IN_USE_PORTS.add(port);
-        new RubyExecution(desc, charsetName).run();
+        execution = new RubyExecution(desc, charsetName);
+        execution.run();
     }
     
     private static String getServerTabName(ServerType serverType, String projectName, int port) {
@@ -227,9 +254,9 @@ public final class RailsServer {
     /** Starts the server if not running and shows url.
      * @param relativeUrl the resulting url will be for example: http://localhost:3001/{relativeUrl}
      */
-    public synchronized void showUrl(final String relativeUrl) {
+    public void showUrl(final String relativeUrl) {
         synchronized (RailsServer.this) {
-            if (status == ServerStatus.RUNNING && isPortInUse(port)) {
+            if (!switchToDebugMode && status == ServerStatus.RUNNING && isPortInUse(port)) {
                 try {
                     URL url = new URL("http://localhost:" + port + "/" + relativeUrl); // NOI18N
                     HtmlBrowser.URLDisplayer.getDefault().showURL(url);
@@ -238,9 +265,8 @@ public final class RailsServer {
                 }
                 return;
             }
-
-            ensureRunning();
         }
+        ensureRunning();
 
         String displayName = NbBundle.getMessage(RailsServer.class, "ServerStartup");
         final ProgressHandle handle =
