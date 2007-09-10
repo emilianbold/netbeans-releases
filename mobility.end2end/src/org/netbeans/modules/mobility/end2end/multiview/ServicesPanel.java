@@ -214,8 +214,17 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 List<ClasspathInfo> classpaths = Collections.singletonList( ClasspathInfo.create( generatedClientFO ));
                 // Get the registry for all available classes
                 ClassDataRegistry registry = ClassDataRegistry.getRegistry( ClassDataRegistry.DEFAULT_PROFILE, classpaths );
-                PortData port = null;
-                if( ports != null && ports.size() > 0 ) port = (PortData)ports.get( 0 ); // Only one port allowed
+                final PortData port = ( ports != null && ports.size() > 0 ) ? (PortData)ports.get( 0 ) : null; // Only one port allowed
+                rootNode = new FilterNode(rootNode, new FilterNode.Children(rootNode) {
+                    protected Node[] createNodes(Node serviceNode) {
+                        return new Node[] { new FilterNode(serviceNode, new FilterNode.Children(serviceNode) {
+                            protected Node[] createNodes(Node portNode) {
+                                WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
+                                return (wsdlPort != null && (port == null || portNode.getName().equals(port.getName()))) ? super.createNodes(portNode) : null;
+                            }
+                        })};
+                    }
+                });
                 for( Node serviceNode : rootNode.getChildren().getNodes()) {
                     boolean serviceValid = false;
                     for( Node portNode : serviceNode.getChildren().getNodes()) {
@@ -234,13 +243,17 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                         }
                         for( Node operationNode : portNode.getChildren().getNodes()) {
                             WsdlOperation wsdlOperation = operationNode.getLookup().lookup( WsdlOperation.class );
-                            StringBuffer operationId = new StringBuffer(wsdlOperation.getJavaName());
-                            for (WsdlParameter par : wsdlOperation.getParameters()) {
-                                String pt = par.getTypeName();
-                                int i = pt.indexOf('<'); //cutting off any generics from the ID
-                                operationId.append(',').append(i > 0 ? pt.substring(0, i) : pt);
+                            boolean operationValid = false;
+                            StringBuffer operationId = new StringBuffer();
+                            if (wsdlOperation != null) {
+                                operationId.append(wsdlOperation.getJavaName());
+                                for (WsdlParameter par : wsdlOperation.getParameters()) {
+                                    String pt = par.getTypeName();
+                                    int i = pt.indexOf('<'); //cutting off any generics from the ID
+                                    operationId.append(',').append(i > 0 ? pt.substring(0, i) : pt);
+                                }
+                                operationValid = methodIDs.contains(operationId.toString());
                             }
-                            boolean operationValid = methodIDs.contains(operationId.toString());
                             operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, operationValid);
                             if (operationValid && cd != null) operationNode.setValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE, selectedIDs.contains(cd.getFullyQualifiedName()+'.'+operationId.toString()) ? MultiStateCheckBox.State.SELECTED : MultiStateCheckBox.State.UNSELECTED);
                             portValid = portValid || operationValid;
