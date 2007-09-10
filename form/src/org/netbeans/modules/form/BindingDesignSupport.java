@@ -37,6 +37,7 @@ import javax.lang.model.type.TypeKind;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.JComboBox;
+import javax.swing.JSlider;
 import javax.swing.text.JTextComponent;
 import org.jdesktop.beansbinding.*;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
@@ -174,6 +175,9 @@ public class BindingDesignSupport {
             // add elements descriptor
             BindingDescriptor desc = new BindingDescriptor("elements", List.class); // NOI18N
             descs[0].add(0, desc);
+        } else if (JSlider.class.isAssignableFrom(beanClass)) {
+            // get rid of value_... descriptor
+            descs[0] = filterDescriptors(descs[0], "value_"); // NOI18N
         }
         return descs;
     }
@@ -186,6 +190,19 @@ public class BindingDesignSupport {
             }
         }
         return filtered;
+    }
+
+    private List<PropertyDescriptor> getSpecialBindingDescriptors(Class clazz) {
+        List<PropertyDescriptor> descs = BeanAdapterFactory.getAdapterPropertyDescriptors(clazz);
+        if (JComboBox.class.isAssignableFrom(clazz)) {
+            try {
+                PropertyDescriptor desc = new PropertyDescriptor("selectedItem", JComboBox.class); // NOI18N
+                descs.add(desc);
+            } catch (Exception ex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+            }
+        }
+        return descs;
     }
 
     private List<BindingDescriptor>[] getBindingDescriptors(TypeHelper type, BeanDescriptor beanDescriptor) {
@@ -203,7 +220,7 @@ public class BindingDesignSupport {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             pds = new PropertyDescriptor[0];
         }
-        List<PropertyDescriptor> specialPds = BeanAdapterFactory.getAdapterPropertyDescriptors(beanClass);
+        List<PropertyDescriptor> specialPds = getSpecialBindingDescriptors(beanClass);
         Map<String,PropertyDescriptor> pathToDesc = new HashMap<String,PropertyDescriptor>();
         for (PropertyDescriptor pd : pds) {
             pathToDesc.put(pd.getName(), pd);
@@ -850,6 +867,14 @@ public class BindingDesignSupport {
             if (JList.class.isAssignableFrom(targetClass)
                 || JTable.class.isAssignableFrom(targetClass)
                 || JComboBox.class.isAssignableFrom(targetClass)) {
+                String value = bindingDef.getParameter(MetaBinding.IGNORE_ADJUSTING_PARAMETER);
+                if ("Y".equals(value)) { // NOI18N
+                    targetPath += "_IGNORE_ADJUSTING"; // NOI18N
+                }
+            }
+        } else if ("value".equals(targetPath)) { // NOI18N
+            Class<?> targetClass = bindingDef.getTarget().getBeanClass();
+            if (JSlider.class.isAssignableFrom(targetClass)) {
                 String value = bindingDef.getParameter(MetaBinding.IGNORE_ADJUSTING_PARAMETER);
                 if ("Y".equals(value)) { // NOI18N
                     targetPath += "_IGNORE_ADJUSTING"; // NOI18N

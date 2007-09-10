@@ -199,8 +199,9 @@ public class BindingCustomizer extends JPanel {
     private boolean showIgnoreAdjusting() {
         String path = bindingDescriptor.getPath();
         Class<?> beanClass = bindingComponent.getBeanClass();
-        return ("selectedElement".equals(path) || "selectedElements".equals(path))  // NOI18N
-            && (JList.class.isAssignableFrom(beanClass) || JTable.class.isAssignableFrom(beanClass) || JComboBox.class.isAssignableFrom(beanClass));
+        return ("value".equals(path) && JSlider.class.isAssignableFrom(beanClass)) || // NOI18N
+            (("selectedElement".equals(path) || "selectedElements".equals(path))  // NOI18N
+            && (JList.class.isAssignableFrom(beanClass) || JTable.class.isAssignableFrom(beanClass) || JComboBox.class.isAssignableFrom(beanClass)));
     }
 
     private boolean showImportData() {

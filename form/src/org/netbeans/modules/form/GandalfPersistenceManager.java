@@ -2496,13 +2496,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             // find the property in the metacomponent
             String propName = nameNode.getNodeValue();
-            BindingProperty [] props = metacomp.getAllBindingProperties();
-            BindingProperty property = null;
-            for (int j=0; j < props.length; j++) {
-                if (props[j].getName().equals(propName)) {
-                    property = props[j];
-                    break;
-                }
+            BindingProperty property = metacomp.getBindingProperty(propName);
+            
+            // Backward compatibility with NB 6.0 Beta 1
+            boolean ignoreAdjusting = false;
+            if ((property == null) && "value_IGNORE_ADJUSTING".equals(propName)
+                    && javax.swing.JSlider.class.isAssignableFrom(metacomp.getBeanClass())) { // NOI18N
+                property = metacomp.getBindingProperty("value"); // NOI18N
+                ignoreAdjusting = true;
             }
 
             if (property == null) {
@@ -2542,7 +2543,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             String sourcePath = (sourcePathNode == null) ? null : sourcePathNode.getNodeValue();
             String target = targetNode.getNodeValue();
             String targetPath = (targetPathNode == null) ? null : targetPathNode.getNodeValue();
+            if (ignoreAdjusting) {
+                targetPath = targetPath.substring(0, targetPath.length() - "_IGNORE_ADJUSTING".length()); // NOI18N
+            }
             MetaBinding value = new MetaBinding(null, sourcePath, null, targetPath);
+            if (ignoreAdjusting) {
+                value.setParameter(MetaBinding.IGNORE_ADJUSTING_PARAMETER, "Y"); // NOI18N
+            }
 
             if (updateStrategyNode != null) {
                 String updateStrategyTxt = updateStrategyNode.getNodeValue();
