@@ -50,6 +50,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.WeakHashMap;
 import org.netbeans.modules.mobility.e2e.classdata.MethodParameter;
 import org.netbeans.modules.mobility.end2end.classdata.OperationData;
 import org.netbeans.modules.mobility.end2end.ui.treeview.MethodCheckedTreeBeanView;
@@ -74,9 +75,22 @@ public class ServiceNodeManager {
     static final String METHOD_ICON = "org/netbeans/spi/java/project/support/ui/packageBadge.gif"; //NIOI18N
     public final static String NODE_VALIDITY_ATTRIBUTE = "isValid"; //NOI18N
     public final static String NODE_SELECTION_ATTRIBUTE = "isSelected"; //NOI18N
+    private static final WeakHashMap<MethodCheckedTreeBeanView, ProjectChildren> oldNodes = 
+        new WeakHashMap<MethodCheckedTreeBeanView, ProjectChildren>();
 
     public static Node getRootNode(Configuration cfg, MethodCheckedTreeBeanView tree) {
-        return new AbstractNode(new ProjectChildren(cfg, tree));
+        synchronized( oldNodes ) {
+            ProjectChildren ch = oldNodes.get( tree );
+            if( ch != null ) {
+                ch.removeNotify();
+            }            
+        }    
+        
+        ProjectChildren ch = new ProjectChildren(cfg, tree);
+        synchronized( oldNodes ) {
+            oldNodes.put( tree, ch );
+        }
+        return new AbstractNode( ch );
     }
 
     private static String getActiveProfile() {
@@ -112,6 +126,7 @@ public class ServiceNodeManager {
             synchronized (hookedListeners) {
                 removeListeners();
             }
+            refreshTask.cancel();
         }
 
         private void removeListeners() {
