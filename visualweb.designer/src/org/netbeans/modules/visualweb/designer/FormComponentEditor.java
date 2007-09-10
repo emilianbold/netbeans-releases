@@ -459,13 +459,20 @@ class FormComponentEditor extends InlineEditor {
 
         if (oldTextEditor instanceof JTextField) {
             ((JTextField)oldTextEditor).removeActionListener(handler);
-        } else if (inlineTextEditor instanceof JTextArea) {
-            ((JTextArea)inlineTextEditor).getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(
-                    KeyEvent.VK_ENTER, 0));
-            ((JTextArea)inlineTextEditor).getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(
-                    KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK));
-            ((JTextArea)inlineTextEditor).getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(
-                    KeyEvent.VK_ENTER, InputEvent.CTRL_MASK));
+        // #114965 The inlineTextEditor field is null, use oldTextEditor.
+//        } else if (inlineTextEditor instanceof JTextArea) {
+//            ((JTextArea)inlineTextEditor).getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(
+//                    KeyEvent.VK_ENTER, 0));
+//            ((JTextArea)inlineTextEditor).getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(
+//                    KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK));
+//           ((JTextArea)inlineTextEditor).getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(
+//                    KeyEvent.VK_ENTER, InputEvent.CTRL_MASK));
+//        }
+        } else if (oldTextEditor instanceof JTextArea) {
+            JTextArea textArea = (JTextArea)oldTextEditor;
+            textArea.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+            textArea.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK));
+            textArea.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_MASK));
         }
 
         // XXX #6475780 Possible NPE.
