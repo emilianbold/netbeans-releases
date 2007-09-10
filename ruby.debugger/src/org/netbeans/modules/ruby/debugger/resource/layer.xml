@@ -71,12 +71,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         
-        
-        <folder name="AnnotationTypes">
-            <file name="CurrentPCLinePart.xml" url="CurrentPCLinePart.xml"/>
-            <file name="CurrentPC2.xml" url="CurrentPC2.xml"/>
-            <file name="CurrentPC2LinePart.xml" url="CurrentPC2LinePart.xml"/>
-        </folder>
     </folder>
 
     <!-- Ruby Projects module will put the panel into Ruby advanced options -->
