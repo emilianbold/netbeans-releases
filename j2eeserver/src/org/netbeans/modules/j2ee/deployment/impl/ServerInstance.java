@@ -22,6 +22,10 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -463,15 +467,14 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 
                 targs = getDeploymentManager().getTargets();
             } catch(IllegalStateException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
-            if(targs == null) {
+            if (targs == null) {
                 targs = new Target[0];
             }
             
             tmpTargets = new HashMap();
             for (int i = 0; i < targs.length; i++) {
-                //System.out.println("getTargetMap: targ["+i+"]="+targs[i]);
                 tmpTargets.put(targs[i].getName(), new ServerTarget(this, targs[i]));
             }
             synchronized (this) {
@@ -774,45 +777,50 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * AND threads are suspended (e.g. debugger stopped on breakpoint)
      */
     public boolean isSuspended() {
-        
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        
+
         Target target = _retrieveTarget(null);
         ServerDebugInfo sdi = getServerDebugInfo(target);
         if (sdi == null) {
-            Logger.getLogger("global").log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
+            LOGGER.log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
             return false; // give user a chance to start server even if we don't know whether she will success
         }
-        
+
         for (int i = 0; i < sessions.length; i++) {
             Session s = sessions[i];
-            if (s == null) continue;
+            if (s == null) {
+                continue;
+            }
             Object o = s.lookupFirst(null, AttachingDICookie.class);
-            if (o == null) continue;
-            AttachingDICookie attCookie = (AttachingDICookie)o;
+            if (o == null) {
+                continue;
+            }
+
+            AttachingDICookie attCookie = (AttachingDICookie) o;
             if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
                 String shmem = attCookie.getSharedMemoryName();
-                if (shmem == null) continue;
+                if (shmem == null) {
+                    continue;
+                }
                 if (shmem.equalsIgnoreCase(sdi.getShmemName())) {
                     Object d = s.lookupFirst(null, JPDADebugger.class);
                     if (d != null) {
-                        JPDADebugger jpda = (JPDADebugger)d;
+                        JPDADebugger jpda = (JPDADebugger) d;
                         if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
                             return true;
                         }
                     }
                 }
             } else {
-                String host = stripHostName(attCookie.getHostName());
-                if (host == null) continue;
-                if (host.equalsIgnoreCase(stripHostName(sdi.getHost()))) {
-                    if (attCookie.getPortNumber() == sdi.getPort()) {
-                        Object d = s.lookupFirst(null, JPDADebugger.class);
-                        if (d != null) {
-                            JPDADebugger jpda = (JPDADebugger)d;
-                            if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
-                                return true;
-                            }
+                String host = attCookie.getHostName();
+                if (host != null && isSameHost(host, sdi.getHost())
+                        && attCookie.getPortNumber() == sdi.getPort()) {
+                    
+                    Object d = s.lookupFirst(null, JPDADebugger.class);
+                    if (d != null) {
+                        JPDADebugger jpda = (JPDADebugger) d;
+                        if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
+                            return true;
                         }
                     }
                 }
@@ -820,7 +828,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         }
         return false;
     }
-    
+
     /**
      * Can be this server started in the debug mode? Currently the only case when
      * the server cannot be started in the debugged is when the admin server is
@@ -1355,9 +1363,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
                                     s.kill();
                                 }
                             } else {
-                                String host = stripHostName(attCookie.getHostName());
-                                if (host != null && host.equalsIgnoreCase(stripHostName(sdi.getHost())) 
-                                    && attCookie.getPortNumber() == sdi.getPort()) {
+                                String host = attCookie.getHostName();
+                                if (host != null && isSameHost(host, sdi.getHost())
+                                        && attCookie.getPortNumber() == sdi.getPort()) {
                                     s.kill();
                                 }
                             }
@@ -1591,16 +1599,84 @@ public class ServerInstance implements Node.Cookie, Comparable {
         }
         return getDisplayName().compareTo(((ServerInstance)other).getDisplayName());
     }
-    
-    /** Take for example myhost.xyz.org and return myhost */
-    private String stripHostName(String host) {
-        if (host == null) {
-            return null;
+
+    /**
+     * Tests whether two hostnames points to the same machine. If the method
+     * returns <code>true</code> the hostnames are equivalent. If the method
+     * returns <code>false</code> the equivalency could not be proven.
+     *
+     * @param firstName the first hostname to compare, <code>null</code> implies
+     *             localhost
+     * @param secondName the second hostname to compare, <code>null</code> implies
+     *             localhost
+     * @return <code>true</code> if given hostnames are equivalent,
+     *             <code>false</code> if they are not or can't determine
+     */
+    // TODO make this some general purpose method (j2ee server common?)
+    private boolean isSameHost(String firstName, String secondName) {
+        if (firstName != null && firstName.equals(secondName)) {
+            return true;
         }
-        int idx = host.indexOf('.');
-        return idx != -1 ? host.substring(0, idx) : host;
+
+        // check the well known localhost equality
+        if (("127.0.0.1".equals(firstName) || "localhost".equals(firstName)) // NOI18N
+                && ("127.0.0.1".equals(secondName) || "localhost".equals(secondName))) { // NOI18N
+            return true;
+        }
+
+        // check for both of them are localhost adresses
+        try {
+            InetAddress localhost = InetAddress.getLocalHost();
+            for (InetAddress firstAddress : InetAddress.getAllByName(firstName)) {
+                if (localhost.equals(firstAddress)
+                        || "127.0.0.1".equals(firstName) || "localhost".equals(firstName)) { // NOI18N
+
+                    for (InetAddress secondAddress : InetAddress.getAllByName(secondName)) {
+                        if (localhost.equals(secondAddress)
+                                || "127.0.0.1".equals(secondName) || "localhost".equals(secondName)) { // NOI18N
+                            return true;
+                        }
+                    }
+                    break;
+                }
+            }
+        } catch (UnknownHostException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+
+        // check that they are the same adresses or canonical names
+        try {
+            for (InetAddress firstAddress : InetAddress.getAllByName(firstName)) {
+                for (InetAddress secondAddress : InetAddress.getAllByName(secondName)) {
+                    if (firstAddress.equals(secondAddress)
+                            || firstAddress.getCanonicalHostName().equals(secondAddress.getCanonicalHostName())) {
+                        return true;
+                    }
+                }
+            }
+        } catch (UnknownHostException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+
+        // check that they both have same local interface
+        try {
+            NetworkInterface firstInterface = NetworkInterface.getByInetAddress(
+                    InetAddress.getByName(firstName));
+            NetworkInterface secondInterface = NetworkInterface.getByInetAddress(
+                    InetAddress.getByName(secondName));
+
+            if (firstInterface != null && firstInterface.equals(secondInterface)) {
+                return true;
+            }
+        } catch (SocketException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (UnknownHostException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+
+        return false;
     }
-    
+
     /** DebugStatusListener listens to debugger state changes and calls refresh() 
      *  if needed. If the debugger stops at a breakpoint, the server status will
      *  thus change to suspended, etc. */
@@ -1612,12 +1688,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 Target target = _retrieveTarget(null);
                 ServerDebugInfo sdi = getServerDebugInfo(target);
                 if (sdi == null) {
-                    Logger.getLogger("global").log(Level.INFO, "DebuggerInfo cannot be found for: " + ServerInstance.this);
+                    LOGGER.log(Level.INFO, "DebuggerInfo cannot be found for: " + ServerInstance.this);
                     return; // give it up
                 }
                 AttachingDICookie attCookie = (AttachingDICookie)session.lookupFirst(null, AttachingDICookie.class);
                 if (attCookie == null) {
-                    Logger.getLogger("global").log(Level.INFO, "AttachingDICookie cannot be found for: " + ServerInstance.this);
+                    LOGGER.log(Level.INFO, "AttachingDICookie cannot be found for: " + ServerInstance.this);
                     return; // give it up
                 }
                 if (ServerDebugInfo.TRANSPORT_SHMEM.equals(sdi.getTransport())) {
@@ -1626,11 +1702,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
                         registerListener(session);
                     }
                 } else {
-                    String host = stripHostName(attCookie.getHostName());                    
-                    if (host != null && host.equalsIgnoreCase(stripHostName(sdi.getHost()))) {
-                        if (attCookie.getPortNumber() == sdi.getPort()) {
-                            registerListener(session);
-                        }
+                    String host = attCookie.getHostName();
+                    if (host != null && isSameHost(host, sdi.getHost())
+                            && attCookie.getPortNumber() == sdi.getPort()) {
+                        registerListener(session);
                     }
                 }
             }
