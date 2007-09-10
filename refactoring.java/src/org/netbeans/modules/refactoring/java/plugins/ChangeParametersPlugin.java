@@ -299,6 +299,12 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_MethodsInAnnotationsNotSupported"));
             return preCheckProblem;
         }
+        
+        for (ExecutableElement e : RetoucheUtils.getOverridenMethods((ExecutableElement) el, info)) {
+            if (RetoucheUtils.isFromLibrary(e, info.getClasspathInfo())) { //NOI18N
+                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_CannnotRefactorLibrary", el));
+            }
+        }
                     
 //                    Collection overridesMethod = null;
 //                    Collection overridenMethod = null;
