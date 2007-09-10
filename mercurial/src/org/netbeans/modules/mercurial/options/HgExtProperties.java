@@ -119,7 +119,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
     protected void initPropertyNameCbx() {
         List<String> lstName = new ArrayList<String>(8);
 
-        ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector(lstName));
+        ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector<String>(lstName));
         panel.getComboName().setModel(comboModel);
         panel.getComboName().getEditor().setItem(""); // NOI18N
     }

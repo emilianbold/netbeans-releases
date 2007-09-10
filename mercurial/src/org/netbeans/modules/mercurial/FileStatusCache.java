@@ -231,6 +231,7 @@ public class FileStatusCache {
      * @param file file to check
      * @return give file's status or null if the file's status is not in cache
      */
+    @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     FileInformation getCachedStatus(File file) {
         file = file.getParentFile();
         if (file == null) return FileStatusCache.FILE_INFORMATION_NOTMANAGED_DIRECTORY;
@@ -460,7 +461,7 @@ public class FileStatusCache {
     }
     
     // --- Private methods ---------------------------------------------------
-    
+    @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     private Map<File, FileInformation> getScannedFiles(File dir) {
         Map<File, FileInformation> files;
         

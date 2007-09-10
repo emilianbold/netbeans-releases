@@ -91,7 +91,7 @@ public class RevertModificationsAction extends AbstractAction {
 
     public static void performRevert(File repository, String revStr, File[] files) {
         try {
-            List<File> revertFiles = new ArrayList();
+            List<File> revertFiles = new ArrayList<File>();
             for (File file : files) {
                 revertFiles.add(file);
             }

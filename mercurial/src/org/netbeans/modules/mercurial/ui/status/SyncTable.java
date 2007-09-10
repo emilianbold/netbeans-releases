@@ -241,6 +241,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
     private static class ColumnDescriptor extends ReadOnly {
         
+        @SuppressWarnings("unchecked")
         public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }

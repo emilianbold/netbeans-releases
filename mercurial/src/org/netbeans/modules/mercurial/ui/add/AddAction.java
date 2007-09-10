@@ -64,7 +64,7 @@ public class AddAction extends AbstractAction {
         FileStatusCache cache = hg.getFileStatusCache();        
         
         File root = hg.getTopmostManagedParent(files[0]);
-        List<File> addFiles = new ArrayList();
+        List<File> addFiles = new ArrayList<File>();
         
         for (File file : files) {
             if (!file.isDirectory() && (cache.getStatus(file).getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0){

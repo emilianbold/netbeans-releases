@@ -125,7 +125,7 @@ public class HgProperties implements ActionListener, DocumentListener {
         lstName.add(HGPROPNAME_DEFAULT_PUSH);
         lstName.add(HGPROPNAME_USERNAME);
 
-        ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector(lstName));
+        ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector<String>(lstName));
         panel.comboName.setModel(comboModel);
         panel.comboName.setSelectedIndex(0);
     }

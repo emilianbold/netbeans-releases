@@ -28,7 +28,8 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
  *
  * @author Petr Kuzel
  */
-final class AnnotationMarkProvider extends MarkProvider {
+ @SuppressWarnings("unchecked") // Get name clashes with Mark and AnnotationMark
+ final class AnnotationMarkProvider extends MarkProvider {
 
     private List<AnnotationMark> marks = Collections.emptyList();
 
@@ -38,7 +39,7 @@ final class AnnotationMarkProvider extends MarkProvider {
         firePropertyChange(PROP_MARKS, old, marks);
     }
 
-    public synchronized List/*<Mark>*/ getMarks() {
+   public synchronized List/*Mark*/ getMarks() {
         return marks;
     }    
 }

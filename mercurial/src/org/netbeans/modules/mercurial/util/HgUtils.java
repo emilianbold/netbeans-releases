@@ -137,7 +137,7 @@ public class HgUtils {
         if (file == null) return true;
         String name = file.getName();
         
-        Set patterns = new HashSet(5);
+        Set<Pattern> patterns = new HashSet<Pattern>(5);
         addIgnorePatterns(patterns, Mercurial.getInstance().getTopmostManagedParent(file));
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
@@ -187,8 +187,8 @@ public class HgUtils {
         }
     }
 
-    private static void addIgnorePatterns(Set patterns, File file) {
-        Set shPatterns;
+    private static void addIgnorePatterns(Set<Pattern> patterns, File file) {
+        Set<String> shPatterns;
         try {
             shPatterns = readIgnoreEntries(file);
         } catch (IOException e) {
@@ -267,7 +267,7 @@ public class HgUtils {
      * @param files an array of Files to be added
      */
     public static void addIgnored(File directory, File[] files) throws IOException {
-        Set entries = readIgnoreEntries(directory);
+        Set<String> entries = readIgnoreEntries(directory);
         for (File file: files) {
             String patterntoIgnore = computePatternToIgnore(directory, file);
             entries.add(patterntoIgnore);

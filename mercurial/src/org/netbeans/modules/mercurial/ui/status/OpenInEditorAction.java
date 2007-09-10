@@ -66,14 +66,18 @@ public class OpenInEditorAction extends AbstractAction {
     
     private final boolean openDataObjectByCookie(DataObject dataObject) {
         Node.Cookie cookie;
-        Class cookieClass;
-        if ((((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
-                            || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null))
-                || (cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
-                || (cookie = dataObject.getCookie(cookieClass = EditCookie.class)) != null
-                || (cookie = dataObject.getCookie(cookieClass = ViewCookie.class)) != null) {
-            return openByCookie(cookie, cookieClass);
-        }
+ 
+        if ((cookie = dataObject.getCookie(EditorCookie.Observable.class)) != null)
+            return openByCookie(cookie, EditorCookie.Observable.class);
+        if ((cookie = dataObject.getCookie(EditorCookie.class)) != null)
+            return openByCookie(cookie, EditorCookie.class);
+        if ((cookie = dataObject.getCookie(OpenCookie.class)) != null)
+            return openByCookie(cookie, OpenCookie.class);
+        if ((cookie = dataObject.getCookie(EditCookie.class)) != null)
+            return openByCookie(cookie, EditCookie.class);
+        if ((cookie = dataObject.getCookie(ViewCookie.class)) != null)
+            return openByCookie(cookie, ViewCookie.class);
+        
         return false;
     }
     

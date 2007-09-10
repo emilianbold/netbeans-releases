@@ -27,7 +27,7 @@ import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 // your code. You can copy-paste the code below wherever you need.
 public final class CloneWizardAction extends CallableSystemAction implements ChangeListener {
     
-    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     
     private static CloneWizardAction instance;
     private WizardDescriptor wizardDescriptor;
@@ -42,6 +42,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
 
     public void performAction() {
         wizardDescriptor = new WizardDescriptor(getPanels());
+
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(CloneWizardAction.class, "CTL_Clone")); // NOI18N
@@ -99,11 +100,11 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private WizardDescriptor.Panel[] getPanels() {
+    @SuppressWarnings("unchecked")
+    private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         if (panels == null) {
             cloneRepositoryWizardPanel = new CloneRepositoryWizardPanel();
-            panels = new WizardDescriptor.Panel[] {
-                
+            panels = new WizardDescriptor.Panel[] {                
                 cloneRepositoryWizardPanel, new CloneDestinationDirectoryWizardPanel()
             };
             panels[0].addChangeListener(this);

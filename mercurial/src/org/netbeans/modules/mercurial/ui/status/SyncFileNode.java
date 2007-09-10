@@ -98,6 +98,7 @@ public class SyncFileNode extends AbstractNode {
      * If a node represents primary file of a DataObject
      * it has respective DataObject cookies.
      */
+    @SuppressWarnings("unchecked") // Adding getCookie(Class<Cookie> klass) results in name clash
     public Cookie getCookie(Class klass) {
         FileObject fo = FileUtil.toFileObject(getFile());
         if (fo != null) {
@@ -148,7 +149,7 @@ public class SyncFileNode extends AbstractNode {
     }
 
     private abstract class SyncFileProperty extends org.openide.nodes.PropertySupport.ReadOnly {
-
+        @SuppressWarnings("unchecked")
         protected SyncFileProperty(String name, Class type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }

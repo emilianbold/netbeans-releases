@@ -212,7 +212,7 @@ public class HgCommand {
      */
     public static List<String> doUpdateAll(File repository, boolean bForce, String revision) throws HgException {
         if (repository == null ) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_UPDATE_ALL_CMD);
@@ -246,7 +246,7 @@ public class HgCommand {
      */
     public static List<String> doRollback(File repository) throws HgException {
         if (repository == null ) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_ROLLBACK_CMD);
@@ -266,7 +266,7 @@ public class HgCommand {
      * @return String
      */
     public static String getHgVersion() {
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_VERSION_CMD);
@@ -314,7 +314,7 @@ public class HgCommand {
      */
     public static List<String> doPull(File repository, String from) throws HgException {
         if (repository == null ) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_PULL_CMD);
@@ -341,7 +341,7 @@ public class HgCommand {
      */
     public static List<String> doUnbundle(File repository, File bundle) throws HgException {
         if (repository == null ) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_UNBUNDLE_CMD);
@@ -379,7 +379,7 @@ public class HgCommand {
      */
     public static List<String> doIncoming(File repository, String from, File bundle) throws HgException {
         if (repository == null ) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_INCOMING_CMD);
@@ -409,7 +409,7 @@ public class HgCommand {
      */
     public static List<String> doOutgoing(File repository, File to) throws HgException {
         if (repository == null ) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_OUTGOING_CMD);
@@ -432,7 +432,7 @@ public class HgCommand {
      */
     public static List<String> doPush(File repository, File to) throws HgException {
         if (repository == null || to == null ) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_PUSH_CMD);
@@ -476,7 +476,7 @@ public class HgCommand {
     public static Boolean hasHistory(File repository) {
         if (repository == null ) return false;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_LOG_CMD);
@@ -505,7 +505,7 @@ public class HgCommand {
     public static List<String> doLogAll(File repository) throws HgException {
         if (repository == null ) return null;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_VERBOSE_CMD);
@@ -530,7 +530,7 @@ public class HgCommand {
     public static List<String> doLog(File repository, File file) throws HgException {
         if (repository == null ) return null;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_LOG_CMD);
@@ -557,7 +557,7 @@ public class HgCommand {
         if (repository == null ) return null;
         if (files.isEmpty()) return null;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_VERBOSE_CMD);
@@ -604,7 +604,7 @@ public class HgCommand {
         if (repository == null) return;
         if (file == null) return;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_CAT_CMD);
@@ -635,7 +635,7 @@ public class HgCommand {
      */
     public static void doCreate(File root) throws HgException {
         if (root == null ) return;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
         
         command.add(getHgCommand());
         command.add(HG_CREATE_CMD);
@@ -670,7 +670,7 @@ public class HgCommand {
     public static List<String> doClone(String repository, String target) throws HgException {
         if (repository == null || target == null) return null;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_CLONE_CMD);
@@ -695,7 +695,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doCommit(File repository, List<File> commitFiles, String commitMessage)  throws HgException {
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_COMMIT_CMD);
@@ -751,7 +751,7 @@ public class HgCommand {
     public static void doRenameAfter(File repository, File sourceFile, File destFile)  throws HgException {
         if (repository == null) return;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_RENAME_CMD);
@@ -782,7 +782,7 @@ public class HgCommand {
     public static void doAdd(File repository, List<File> addFiles)  throws HgException {
         if (repository == null) return;
         if (addFiles.size() == 0) return;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_ADD_CMD);
@@ -816,7 +816,7 @@ public class HgCommand {
         if (repository == null) return;
         if (revertFiles.size() == 0) return;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_REVERT_CMD);
@@ -855,7 +855,7 @@ public class HgCommand {
             return;
         }
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_ADD_CMD);
@@ -878,7 +878,7 @@ public class HgCommand {
      */
     public static List<String> doAnnotate(File repository, File file) throws HgException {
         if (repository == null) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_ANNOTATE_CMD);
@@ -904,7 +904,7 @@ public class HgCommand {
      */
     public static List<String> getAllRevisionsForFile(File repository, File[] files) {
         if (repository == null) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_LOG_CMD);
@@ -917,7 +917,7 @@ public class HgCommand {
             }
         }
 
-        List<String> list = new ArrayList();
+        List<String> list = new ArrayList<String>();
         try {
             list = exec(command);
         } catch (HgException ex) {
@@ -962,7 +962,7 @@ public class HgCommand {
 
     private static File getPathDefault(File repository, String type) {
         if (repository == null) return null;
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_PATH_DEFAULT_CMD);
@@ -995,7 +995,7 @@ public class HgCommand {
     public static String getBranchName(File repository) throws HgException {
         if (repository == null) return null;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_BRANCH_CMD);
@@ -1020,7 +1020,7 @@ public class HgCommand {
     public static int getBranchRev(File repository) throws HgException {
         if (repository == null) return -1;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_BRANCH_REV_CMD);
@@ -1046,7 +1046,7 @@ public class HgCommand {
     public static String getBranchShortChangesetHash(File repository) throws HgException {
         if (repository == null) return null;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_BRANCH_REV_CMD);
@@ -1090,7 +1090,7 @@ public class HgCommand {
 
         if (repository == null) return null;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_HEADS_CMD);
@@ -1129,7 +1129,7 @@ public class HgCommand {
 
         if (repository == null) return null;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_LOG_CMD);
@@ -1291,7 +1291,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doRemove(File repository, File f)  throws HgException {
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_REMOVE_CMD);
@@ -1314,7 +1314,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doExport(File repository, String revStr, String outputFileName)  throws HgException {
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_EXPORT_CMD);
@@ -1337,7 +1337,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doImport(File repository, File patchFile)  throws HgException {
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_IMPORT_CMD);
@@ -1364,7 +1364,7 @@ public class HgCommand {
     private static Map<File, FileInformation> getDirStatusWithFlags(File repository, File dir, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
         if (repository == null) return null;
         
-        List<FileStatus> statusList = new ArrayList();
+        List<FileStatus> statusList = new ArrayList<FileStatus>();
         FileInformation info = null;
         List<String> list = doRepositoryDirStatusCmd(repository, dir, statusFlags);
         
@@ -1454,7 +1454,7 @@ public class HgCommand {
     private static List<String> doSingleStatusCmd(File repository, String cwd, String filename)  throws HgException{
         String statusLine = null;
         
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_STATUS_CMD);
@@ -1476,7 +1476,7 @@ public class HgCommand {
      * Gets hg status command output list for the specified status flags for a given repository and directory
      */
     private static List<String> doRepositoryDirStatusCmd(File repository, File dir, String statusFlags)  throws HgException{
-        List<String> command = new ArrayList();
+        List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_STATUS_CMD);

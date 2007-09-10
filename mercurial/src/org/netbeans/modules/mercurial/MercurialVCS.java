@@ -73,14 +73,14 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         Mercurial.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
-
+    @SuppressWarnings("unchecked") // Property Change event.getNewValue returning Object
     public void propertyChange(PropertyChangeEvent event) {
-        if (event.getPropertyName() == FileStatusCache.PROP_FILE_STATUS_CHANGED) {
+        if (event.getPropertyName().equals(FileStatusCache.PROP_FILE_STATUS_CHANGED)) {
             FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) event.getNewValue();
             fireStatusChanged(changedEvent.getFile());
-        } else if (event.getPropertyName() == Mercurial.PROP_ANNOTATIONS_CHANGED) {
+        } else if (event.getPropertyName().equals(Mercurial.PROP_ANNOTATIONS_CHANGED)) {
             fireAnnotationsChanged((Set<File>) event.getNewValue());
-        } else if (event.getPropertyName() == Mercurial.PROP_VERSIONED_FILES_CHANGED) {
+        } else if (event.getPropertyName().equals(Mercurial.PROP_VERSIONED_FILES_CHANGED)) {
             fireVersionedFilesChanged();
         }
     }
