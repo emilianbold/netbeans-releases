@@ -28,6 +28,8 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
@@ -49,6 +51,8 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -71,9 +75,11 @@ public class RailsServer {
     private static final int WEBRICK = 3;
     
     enum ServerStatus { NOT_STARTED, STARTING, RUNNING; }
-    
+
+    /** Set of currently active - in use; ports. */
+    private static final Set<Integer> IN_USE_PORTS = new HashSet<Integer>();;
+
     private ServerStatus status = ServerStatus.NOT_STARTED;
-    private boolean cancelled;
     private int serverId;
     private boolean portConflict;
     /** User chosen port */
@@ -160,7 +166,13 @@ public class RailsServer {
         //desc.showProgress(false); // http://ruby.netbeans.org/issues/show_bug.cgi?id=109261
         desc.showSuspended(true);
         String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
-        new RubyExecution(desc, charsetName).run();
+        IN_USE_PORTS.add(port);
+        Task serverTask = new RubyExecution(desc, charsetName).run();
+        serverTask.addTaskListener(new TaskListener() {
+            public void taskFinished(Task task) {
+                IN_USE_PORTS.remove(port);
+            }
+        });
     }
     
     private static String getServerTabName(int serverId, String projectName, int port) {
@@ -234,16 +246,10 @@ public class RailsServer {
             ensureRunning();
         }
 
-        cancelled = false;
-
         String displayName = NbBundle.getMessage(RailsServer.class, "ServerStartup");
         final ProgressHandle handle =
             ProgressHandleFactory.createHandle(displayName,new Cancellable() {
                     public boolean cancel() {
-                        synchronized (RailsServer.this) {
-                            cancelled = true;
-                        }
-
                         return true;
                     }
                 },
@@ -262,9 +268,9 @@ public class RailsServer {
                         // Try connecting repeatedly, up to 20 seconds, then bail
                         for (int i = 0; i < 20; i++) {
                             try {
-                                Thread.currentThread().sleep(1000);
+                                Thread.sleep(1000);
                             } catch (InterruptedException ie) {
-                                ; // Don't worry about it
+                                // Don't worry about it
                             }
 
                             synchronized (RailsServer.this) {
@@ -358,6 +364,9 @@ public class RailsServer {
      * Based on tomcatint\tomcat5\src\org.netbeans.modules.tomcat5.util.Utils.java.
      */
     public static boolean isPortInUse(int port) {
+        if (IN_USE_PORTS.contains(port)) {
+            return true;
+        }
         int timeout = 3000;
         Socket socket = new Socket();
         try {
@@ -418,7 +427,7 @@ public class RailsServer {
                 portConflict = true;
             }
 
-            if (line != outputLine) {
+            if (!line.equals(outputLine)) {
                 return new ActionText(new String[] { line }, null, null, null);
             }
 
