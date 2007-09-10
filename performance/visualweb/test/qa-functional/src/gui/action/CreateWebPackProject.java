@@ -153,7 +153,11 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         } catch (Exception ex) {
             log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
         }
-        VWPFootprintUtilities.deleteProject(project_name);
+        try {
+            VWPFootprintUtilities.deleteProject(project_name);
+        } catch(Exception ee) {
+            log("Exception during project deletion: "+ee.getMessage());
+        }
     }
     
     public static void main(java.lang.String[] args) {
