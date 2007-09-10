@@ -135,7 +135,13 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
                     // other axis are not supported with the wildcard
                 }
             } else {
-                // Ignore axis for a while
+                switch (getAxis()) {
+                case LocationStep.AXIS_ATTRIBUTE:
+                    sb.append("@"); // NOI18N
+                    break;
+                default: 
+                    // other axis are not supported yet
+                }
                 // 
                 sb.append(((StepNodeNameTest) nodeTest).getNodeName());
             }
