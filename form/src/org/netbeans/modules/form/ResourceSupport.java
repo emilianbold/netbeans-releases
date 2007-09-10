@@ -85,6 +85,15 @@ public class ResourceSupport {
     private static final int UNDEFINED_RESOURCE = 2; // key == COMPUTE_AUTO_KEY
     private static final int VALID_RESOURCE_VALUE = 4;
 
+    static final FormProperty.Filter COPIED_PROPERTY_FILTER = new FormProperty.Filter() {
+        public boolean accept(FormProperty property) {
+            // don't copy name property
+            return property.isChanged() && !isAutoNamedProperty(property);
+        }
+    };
+
+    // -----
+
     ResourceSupport(FormModel formModel) {
         this.formModel = formModel;
         formModel.addFormModelListener(new ModelListener());
@@ -946,15 +955,24 @@ public class ResourceSupport {
                 || (!isI18nAutoMode()
                     && (isResourceAutoMode()
                         || resourceService.projectUsesResources(getSourceFile()))
-                    && !isAutoNamedProperty(prop))))
+                    && !isAutoNamedProperty0(prop))))
         {
             return resourceService.createResourcePanel(prop.getValueType(), getSourceFile());
         }
         else return null;
     }
 
-    private boolean isAutoNamedProperty(FormProperty prop) {
-        return isAutoName() && prop instanceof RADProperty
+    private static boolean isAutoNamedProperty(FormProperty prop) {
+        return prop.isChanged()
+                && "name".equals(prop.getName()) // NOI18N
+                && prop instanceof RADProperty
+                && getNameProperty(((RADProperty)prop).getRADComponent()) == prop
+                && getResourceSupport(prop).isAutoName();
+    }
+
+    private boolean isAutoNamedProperty0(FormProperty prop) {
+        return isAutoName() && "name".equals(prop.getName()) // NOI18N
+                && prop instanceof RADProperty
                 && getNameProperty(((RADProperty)prop).getRADComponent()) == prop;
     }
 

@@ -616,7 +616,7 @@ public class MetaComponentCreator {
         java.util.List<String> namesList = new ArrayList<String>();
 
         Iterator it = sourceComp.getBeanPropertiesIterator(
-                                   FormProperty.CHANGED_PROPERTY_FILTER,
+                                   ResourceSupport.COPIED_PROPERTY_FILTER,
                                    false);
         while (it.hasNext()) {
             RADProperty prop = (RADProperty) it.next();
