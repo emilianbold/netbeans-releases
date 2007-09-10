@@ -24,6 +24,7 @@ package org.netbeans.modules.properties;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import org.openide.filesystems.FileObject;
 
 import org.openide.util.RequestProcessor.Task;
 
@@ -83,6 +84,14 @@ public class StructHandler {
             return null;
         }
         
+        FileObject fo = propFileEntry.getFile();
+        if(!fo.canRead()) {
+            // whatever happend - the file does not exist 
+            // so don't even try to parse it
+            // XXX may be a HACK. see issue #63321. This is supposed to be 
+            // rewriten after 6.0.
+            return null;
+        }
         PropertiesParser parser = new PropertiesParser(propFileEntry);
 
         try {
@@ -149,7 +158,7 @@ public class StructHandler {
             parsingTaskWRef = new WeakReference<Task>(
                 PropertiesRequestProcessor.getInstance().post(
                     new Runnable() {
-                        public void run() {
+                        public void run() {                       
                             reparseNowBlocking();
                         }
                     }
