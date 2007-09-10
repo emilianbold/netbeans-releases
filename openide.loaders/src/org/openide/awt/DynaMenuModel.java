@@ -122,7 +122,7 @@ class DynaMenuModel {
             curItem = iter.next();
             if (curItem == null) {
                 // null means separator
-                curItem = new JSeparator();
+                curItem = createSeparator();
             }
             m.add(curItem);
             boolean isSeparator = curItem instanceof JSeparator;
@@ -222,7 +222,7 @@ class DynaMenuModel {
                         //MACOSX whenever a property like enablement or visible is changed, need to remove and add.
                         // could be possibly split to work differetly on other platform..
                         parent.remove(i);
-                        JSeparator newOne = new JSeparator();
+                        JSeparator newOne = createSeparator();
                         newOne.setVisible(!wasSeparator);
                         parent.add(newOne, i);
                     }
@@ -241,7 +241,7 @@ class DynaMenuModel {
         JComponent[] toRet = new JComponent[arr.length];
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == null) {
-                toRet[i] = new JSeparator();
+                toRet[i] = createSeparator();
             } else {
                 toRet[i] = arr[i];
             }
@@ -303,5 +303,11 @@ class DynaMenuModel {
             return false;
         }
         
+    }
+    
+    private static JSeparator createSeparator() {
+        JMenu menu = new JMenu();
+        menu.addSeparator();
+        return (JSeparator)menu.getPopupMenu().getComponent(0);
     }
 }
