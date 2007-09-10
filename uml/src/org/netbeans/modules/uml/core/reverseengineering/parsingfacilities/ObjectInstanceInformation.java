@@ -195,6 +195,12 @@ public class ObjectInstanceInformation extends InstanceInformation
         else if (alwaysCreate)
             decl = new UnknownMethodDeclaration(methodName);
         
+        //check to see if a super class has been returned as the owner. If so,
+        //set the owner to be the m_InstantiateType
+        if (decl != null && m_InstantiatedType != null &&
+                (! decl.getOwner().getName().equals(m_InstantiatedType.getName())))
+            decl.setOwner(m_InstantiatedType) ;
+        
         if (decl != null && decl.getOperation() == null && !alwaysCreate)
             decl = null;
 
