@@ -73,7 +73,7 @@ public class HgUtils {
     
     // IGNORE SUPPORT HG: following file patterns are added to {Hg repos}/.hgignore and Hg will ignore any files
     // that match these patterns, reporting "I"status for them // NOI18N
-    private static final String [] HG_IGNORE_FILES = { "^nbproject/private$", "\\.orig$"}; // NOI18N
+    private static final String [] HG_IGNORE_FILES = { "\\.orig$"}; // NOI18N
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
 
@@ -372,13 +372,16 @@ itor tabs #66700).
      * @return File object of Project Directory
      */
     public static File getProjectFile(VCSContext context){
+        return getProjectFile(getProject(context));
+    }
+
+    public static Project getProject(VCSContext context){
         if (context == null) return null;
         Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
-        File root = null;
         for (Node node : nodes) {
             Node tmpNode = node;
-            Project project = (Project) tmpNode.getLookup().lookup(Project.class);
 
+            Project project = (Project) tmpNode.getLookup().lookup(Project.class);
             while (project == null) {
                 tmpNode = tmpNode.getParentNode();
                 if (tmpNode ==  null) {
@@ -389,14 +392,19 @@ itor tabs #66700).
                 project = (Project) tmpNode.getLookup().lookup(Project.class);
             } 
             if (project != null) {
-                FileObject fo = project.getProjectDirectory();
-                root = FileUtil.toFile(fo);
-                return root;
+                return project;
             }
         }
-        return root;
+        return null;
     }
     
+    public static File getProjectFile(Project project){
+        if (project == null) return null;
+
+        FileObject fo = project.getProjectDirectory();
+        return  FileUtil.toFile(fo);
+    }
+
     /**
      * Checks file location to see if it is part of mercurial metdata
      *
