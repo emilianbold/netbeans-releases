@@ -17,12 +17,10 @@
         security policy.</p>
         <p>You can set the following options:</p>        
         <ul>
-            <li><b>Optimize Transport of Binary Data (MTOM).</b> When you expand the MTOM section, 
-            you can select the MTOM checkbox.
+            <li><b>Optimize Transport of Binary Data (MTOM).</b> 
             The MTOM feature is disabled in JAX-WS by default. It can be enabled on the
-            client and server. Once enabled all the XML binary data, XML elements of type
-            xs:base64Binary and xs:hexBianry is optimally transmitted. Currently MTOM
-            works only with proxy port.
+            client and server. Once enabled, all the XML binary data, XML elements of type
+            xs:base64Binary and xs:hexBianry is optimally transmitted.
             <li><b>Reliable Message Delivery.</b> Specifies whether reliable messaging is enabled.
             <ul>
                 <li><b>Deliver Messages In Exact Order.</b> Specifies whether the Reliable Messaging protocol ensures that the
@@ -48,10 +46,10 @@
                     approaches.
                 </ul>
             </ul>
-            <li><b>Secure All Service Operations.</b> Specifies WSIT security
+            <li><b>Secure Service.</b> Specifies security
             for all of the operations of a web service.
             <ul>
-                <li><b>Secure All Service Operations.</b> Select one of the options from the list. Most of
+                <li><b>Security Mechanism.</b> Select one of the options from the list. Most of
                 the mechanisms are fully functional without further configuration,
                 however, if you’d like to customize the mechanism, click Configure
                 to specify the configuration for that mechanism.
@@ -60,17 +58,27 @@
                 dialog. If a security mechanism is
                 selected that requires this, select the buttons to configure keystore,
                 truststore, and validator options.
-                <li><b>Act As Secure Token Service (STS).</b>If you want to enable this web service to
-                act as an STS, select this option. An STS contains a set of interfaces
-                to be used for the issuance, exchange, and validation of security
-                tokens.
+                <li><b>Use Development Defaults.</b> Select this option
+                to import certificates into the GlassFish keystore and
+                truststore, so that they can be used immediately for 
+                development. Because the default certificates
+                are not in an appropriate format to be used in this
+                context, this import is done for you, so that
+                you do not need to do this manually yourself.
+                In addition to importing certificats, a default user is
+                created in the "file" realm, with username "wsitUser".
+                In a production environment, you will probably want to
+                provide your own certificates and user settings, however,
+                in a development environment you may find these defaults
+                useful.
             </ul>
             <li><b>Allow TCP Transport.</b> Specifies that the service supports
             TCP and works with both TCP and HTTP transport. TCP provides better
             performance when sending smaller messages. The performance
             enhancement is visible mostly in smaller messages because the overhead
             of sending messages over the HTTP protocol is eliminated.
-            <li><b>Allow Fast Infoset.</b> Specifies that Fast Infoset is used for faster parsing,
+            <li><b>Disable Fast Infoset.</b> Specifies that Fast Infoset is not used. Fast Infoset is
+            useful for faster parsing,
             faster serializing, and smaller document sizes when compared with
             equivalent XML documents.
         </ul>
