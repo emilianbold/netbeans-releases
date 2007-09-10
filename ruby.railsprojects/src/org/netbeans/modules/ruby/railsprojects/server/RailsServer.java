@@ -51,8 +51,6 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -81,11 +79,16 @@ public class RailsServer {
 
     private ServerStatus status = ServerStatus.NOT_STARTED;
     private int serverId;
+    
+    /** True if server failed to start due to port conflict. */
     private boolean portConflict;
+    
     /** User chosen port */
     private int originalPort;
+    
     /** Actual port in use (trying other ports for ones not in use) */
     private int port = -1;
+    
     private RailsProject project;
     private File dir;
     private boolean debug;
@@ -121,9 +124,10 @@ public class RailsServer {
                 public void run() {
                     synchronized (RailsServer.this) {
                         status = ServerStatus.NOT_STARTED;
+                        IN_USE_PORTS.remove(port);
                         if (portConflict) {
-                            // Port conflict - notify user.
-                            updatePort();
+                            // Failed to start due to port conflict - notify user.
+                            notifyPortConflict();
                         }
                     }
                 }
@@ -167,12 +171,7 @@ public class RailsServer {
         desc.showSuspended(true);
         String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
         IN_USE_PORTS.add(port);
-        Task serverTask = new RubyExecution(desc, charsetName).run();
-        serverTask.addTaskListener(new TaskListener() {
-            public void taskFinished(Task task) {
-                IN_USE_PORTS.remove(port);
-            }
-        });
+        new RubyExecution(desc, charsetName).run();
     }
     
     private static String getServerTabName(int serverId, String projectName, int port) {
@@ -220,7 +219,7 @@ public class RailsServer {
         }
     }
     
-    private void updatePort() {
+    private void notifyPortConflict() {
         String message = NbBundle.getMessage(RailsServer.class, "Conflict", Integer.toString(originalPort));
         NotifyDescriptor nd =
             new NotifyDescriptor.Message(message, 
