@@ -202,6 +202,11 @@ Microsystems, Inc. All Rights Reserved.
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages/>

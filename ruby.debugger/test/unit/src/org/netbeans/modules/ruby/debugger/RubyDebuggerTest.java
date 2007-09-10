@@ -43,7 +43,6 @@ public final class RubyDebuggerTest extends TestBase {
     
     @Override
     protected void setUp() throws Exception {
-        MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
         super.setUp();
         watchStepping = false;
         DebuggerPreferences.getInstance().setVerboseDebugger(VERBOSE);

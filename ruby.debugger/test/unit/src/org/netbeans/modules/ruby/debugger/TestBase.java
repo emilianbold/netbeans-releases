@@ -65,7 +65,6 @@ public abstract class TestBase extends RubyTestBase {
 
     protected TestBase(final String name, final boolean verbose) {
         super(name);
-        MockServices.setServices(IFL.class);
         if (verbose) {
             Util.LOGGER.setLevel(Level.ALL);
             Util.LOGGER.addHandler(new TestHandler(getName()));
@@ -102,6 +101,7 @@ public abstract class TestBase extends RubyTestBase {
     }
     
     protected Process startDebugging(final File f, final boolean waitForSuspension) throws RubyDebuggerException, IOException, InterruptedException {
+        MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
         ExecutionDescriptor desc = new ExecutionDescriptor(
                 f.getName(), f.getParentFile(), f.getAbsolutePath());
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(f.getParentFile())));
