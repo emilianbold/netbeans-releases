@@ -31,7 +31,7 @@ import gui.action.*;
 public class VWPMeasureActions  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-	suite.addTest(new CreateWebPackProject("testCreateWebPackProject","Create Visual Web Project"));
+	
 //TODO do Open project through UI	suite.addTest(new OpenWebPackProject("measureTime","Open Small Web Project"));
 //TODO do Open project through UI        suite.addTest(new OpenHugeWebPackProject("testOpenWebPackProject","Open Huge Web Project"));
         
@@ -61,6 +61,8 @@ public class VWPMeasureActions  {
         
         suite.addTest(new WebProjectDeployment("testDeploySmallProject","Deployment Small Project"));     
         suite.addTest(new WebProjectDeployment("testDeployLargeProject","Deployment Huge Project"));
+        
+        suite.addTest(new CreateWebPackProject("testCreateWebPackProject","Create Visual Web Project"));        
         
         return suite;
     }
