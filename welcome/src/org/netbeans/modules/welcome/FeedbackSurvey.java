@@ -17,6 +17,10 @@
 package org.netbeans.modules.welcome;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
@@ -25,6 +29,7 @@ import java.util.prefs.Preferences;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -41,7 +46,28 @@ final class FeedbackSurvey {
     public static void start() {
         final Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate"); // NOI18N
         String id = p.get ("ideIdentity", "unknown"); // NOI18N
-        long mem = Runtime.getRuntime().maxMemory();
+        long mem = -1L;
+        try {
+            OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+            // w/o dependency on Sun's JDK
+            // long freeMem = ((com.sun.management.OperatingSystemMXBean)osBean).getTotalPhysicalMemorySize();
+            Method m = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
+            m.setAccessible(true);
+            mem = (Long)m.invoke(osBean);
+        }
+        catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodError ex) {
+            Exceptions.printStackTrace(ex);
+        }
         String url = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_URL", id, mem);
         if (url.length() == 0) {
             return;
