@@ -32,12 +32,18 @@ import org.netbeans.modules.vmd.midp.components.categories.*;
 import org.netbeans.modules.vmd.midp.components.general.RootCD;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.palette.wizard.ComponentInstaller;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCode;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -45,63 +51,88 @@ import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 public class MidpDocumentSerializationController extends DocumentSerializationController {
 
     public static final String VERSION_1 = "1"; // NOI18N
+    private Collection<String> unresolved = new HashSet<String>();
 
-    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, final Collection<ComponentElement> componentElements, DocumentErrorHandler errorHandler) {
-        final DescriptorRegistry registry = loadingDocument.getDescriptorRegistry ();
-        final Collection<String> unresolved = new HashSet<String> ();
+    public void approveComponents(DataObjectContext context, DesignDocument loadingDocument, String documentVersion, final Collection<ComponentElement> componentElements, DocumentErrorHandler errorHandler) {
+        final DescriptorRegistry registry = loadingDocument.getDescriptorRegistry();
+
         registry.readAccess(new Runnable() {
-            public void run () {
+
+            public void run() {
                 for (ComponentElement element : componentElements) {
-                    String string = element.getTypeID ().getString ();
-                    if (MidpTypes.isValidFQNClassName (string))
-                        if (registry.getComponentDescriptor (new TypeID (TypeID.Kind.COMPONENT, string)) == null)
-                            unresolved.add (string);
+                    String string = element.getTypeID().getString();
+                    if (MidpTypes.isValidFQNClassName(string)) {
+                        if (registry.getComponentDescriptor(new TypeID(TypeID.Kind.COMPONENT, string)) == null) {
+                            unresolved.add(string);
+                        }
+                    }
                 }
             }
         });
-        if (! unresolved.isEmpty ()) {
-            Map<String,ComponentInstaller.Item> found = ComponentInstaller.search (ProjectUtils.getProject (context));
-            ArrayList<ComponentInstaller.Item> install = new ArrayList<ComponentInstaller.Item> ();
+        if (!unresolved.isEmpty()) {
+            Map<String, ComponentInstaller.Item> found = ComponentInstaller.search(ProjectUtils.getProject(context));
+            ArrayList<ComponentInstaller.Item> install = new ArrayList<ComponentInstaller.Item>();
             for (String s : unresolved) {
-                ComponentInstaller.Item item = found.get (s);
-                if (item != null)
-                    install.add (item);
+                ComponentInstaller.Item item = found.get(s);
+                if (item != null) {
+                    install.add(item);
+                }
             }
-            ComponentInstaller.install (found, install);
+            ComponentInstaller.install(found, install);
         }
     }
 
-    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements, DocumentErrorHandler errorHandler) {
-        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))
+    public void approveProperties(DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements, DocumentErrorHandler errorHandler) {
+        if (!MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(context.getProjectType()) || !VERSION_1.equals(documentVersion)) {
             return;
-        if (loadingDocument.getDescriptorRegistry ().isInHierarchy (ItemCD.TYPEID, component.getType ())) {
-            ArrayList<PropertyElement> elementsToRemove = new ArrayList<PropertyElement> ();
-            ArrayList<PropertyElement> elementsToAdd = new ArrayList<PropertyElement> ();
+        }
+        if (loadingDocument.getDescriptorRegistry().isInHierarchy(ItemCD.TYPEID, component.getType())) {
+            ArrayList<PropertyElement> elementsToRemove = new ArrayList<PropertyElement>();
+            ArrayList<PropertyElement> elementsToAdd = new ArrayList<PropertyElement>();
             for (PropertyElement propertyElement : propertyElements) {
-                if (ItemCD.PROP_OLD_ITEM_COMMAND_LISTENER.equals (propertyElement.getPropertyName ())) {
-                    elementsToRemove.add (propertyElement);
-                    elementsToAdd.add (PropertyElement.create (ItemCD.PROP_ITEM_COMMAND_LISTENER, propertyElement.getTypeID (), propertyElement.getSerialized ()));
+                if (ItemCD.PROP_OLD_ITEM_COMMAND_LISTENER.equals(propertyElement.getPropertyName())) {
+                    elementsToRemove.add(propertyElement);
+                    elementsToAdd.add(PropertyElement.create(ItemCD.PROP_ITEM_COMMAND_LISTENER, propertyElement.getTypeID(), propertyElement.getSerialized()));
                     break;
                 }
             }
-            propertyElements.removeAll (elementsToRemove);
-            propertyElements.addAll (elementsToAdd);
+            propertyElements.removeAll(elementsToRemove);
+            propertyElements.addAll(elementsToAdd);
+            for (PropertyElement pe : propertyElements) {
+                pe.getSerialized();
+            }
         }
     }
 
-    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DocumentErrorHandler errorHandler) {
-        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))
+    public void postValidateDocument(DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DocumentErrorHandler errorHandler) {
+        if (!MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(context.getProjectType()) || !VERSION_1.equals(documentVersion)) {
+            checkInstanceNames(DocumentSupport.gatherAllComponentsOfTypeID(loadingDocument.getRootComponent(), ClassCD.TYPEID), errorHandler);
             return;
-        DesignComponent rootComponent = loadingDocument.getRootComponent ();
-        if (rootComponent == null) {
-            rootComponent = loadingDocument.createComponent (RootCD.TYPEID);
-            loadingDocument.setRootComponent (rootComponent);
         }
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, CommandsCategoryCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, ControllersCategoryCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, DisplayablesCategoryCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, PointsCategoryCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, ResourcesCategoryCD.TYPEID);
+        DesignComponent rootComponent = loadingDocument.getRootComponent();
+        if (rootComponent == null) {
+            rootComponent = loadingDocument.createComponent(RootCD.TYPEID);
+            loadingDocument.setRootComponent(rootComponent);
+        }
+        MidpDocumentSupport.getCategoryComponent(loadingDocument, CommandsCategoryCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent(loadingDocument, ControllersCategoryCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent(loadingDocument, DisplayablesCategoryCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent(loadingDocument, PointsCategoryCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent(loadingDocument, ResourcesCategoryCD.TYPEID);
+        checkInstanceNames(rootComponent.getComponents(), errorHandler);
     }
 
+    private void checkInstanceNames(Collection<DesignComponent> components, DocumentErrorHandler errorHandler) {
+        for (DesignComponent component : components) {
+            PropertyDescriptor descriptor = component.getComponentDescriptor().getPropertyDescriptor(ClassCD.PROP_INSTANCE_NAME);
+            if (descriptor == null) {
+                return;
+            }
+            if (component.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue() == null) {
+                PropertyValue value = InstanceNameResolver.createFromSuggested(component, ClassCode.getSuggestedMainName(component.getType()));
+                component.writeProperty(ClassCD.PROP_INSTANCE_NAME, value);
+                errorHandler.addWarning(NbBundle.getMessage(MidpDocumentSerializationController.class, "MSG_null_instance_name_1") + " <STRONG>" + component + " </STRONG> " + NbBundle.getMessage(MidpDocumentSerializationController.class, "MSG_null_instance_name_2")   + " <STRONG>" + value.getPrimitiveValue() + "</STRONG>"); //NOI18N
+            }
+        }
+    }
 }

@@ -94,7 +94,9 @@ public class ClassSupport {
         PropertyValue value = component.readProperty (ClassCD.PROP_INSTANCE_NAME);
         if (value.getKind () == PropertyValue.Kind.VALUE && MidpTypes.TYPEID_JAVA_LANG_STRING.equals (value.getType ()))
             return (String) value.getPrimitiveValue ();
-        throw Debug.illegalState ("Invalid instance name ", value, "for component", component); // NOI18N
+        
+        Debug.warning("Invalid instance name ", value, "for component", component); // NOI18N
+        return null;
     }
 
 }

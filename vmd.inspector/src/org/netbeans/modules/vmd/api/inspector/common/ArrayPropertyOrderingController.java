@@ -22,7 +22,6 @@ package org.netbeans.modules.vmd.api.inspector.common;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -35,41 +34,43 @@ import org.netbeans.modules.vmd.api.model.TypeID;
  * @author Karol Harezlak
  */
 public class ArrayPropertyOrderingController implements InspectorOrderingController {
-    
+
     private String propertyName;
     private Integer order;
     private TypeID supportedTypeID;
-    
+
     public ArrayPropertyOrderingController(String propertyName, Integer order, TypeID supportedTypeID) {
         this.propertyName = propertyName;
         this.order = order;
         this.supportedTypeID = supportedTypeID;
     }
-    
-    public List<InspectorFolder> getOrdered(DesignComponent component,Collection<InspectorFolder> folders) { 
-         List<InspectorFolder> orderedList = new ArrayList<InspectorFolder>(folders.size());
-         List<PropertyValue> array = component.readProperty(propertyName).getArray();
-            for (PropertyValue value : array) {
-                DesignComponent itemsComponent = value.getComponent();
-                for (InspectorFolder f : folders)
-                    if (f.getComponentID().equals(itemsComponent.getComponentID())) {
-                        orderedList.add(f);
-                        break;
-                    }
+
+    public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders) {
+        List<InspectorFolder> orderedList = new ArrayList<InspectorFolder>(folders.size());  
+        List<PropertyValue> array = component.readProperty(propertyName).getArray();
+        if (array == null)
+            return orderedList;
+        for (PropertyValue value : array) {
+            DesignComponent itemsComponent = value.getComponent();
+            for (InspectorFolder f : folders) {
+                if (f.getComponentID().equals(itemsComponent.getComponentID())) {
+                    orderedList.add(f);
+                    break;
+                }
             }
-            
-            return orderedList ;
+        }
+
+        return orderedList;
     }
-    
+
     public Integer getOrder() {
         return order;
     }
-    
-    public boolean isTypeIDSupported(DesignDocument document, TypeID typeID) {        
-        if (document.getDescriptorRegistry().isInHierarchy(supportedTypeID, typeID))
+
+    public boolean isTypeIDSupported(DesignDocument document, TypeID typeID) {
+        if (document.getDescriptorRegistry().isInHierarchy(supportedTypeID, typeID)) {
             return true;
-        
+        }
         return false;
     }
-    
 }

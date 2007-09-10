@@ -50,7 +50,7 @@ public final class DocumentErrorHandler {
      * All reported issues are shown in report dialog window when document is loaded.
      * @param description of issue, non null String 
      */ 
-    public DocumentErrorHandler addWaring(String warning) {
+    public DocumentErrorHandler addWarning(String warning) {
          if (warning == null)
             throw new IllegalArgumentException();
         warnings.add(warning);

@@ -66,7 +66,7 @@ public class DocumentLoad {
 
         if (!DocumentSave.VERSION_VALUE_1.equals(getAttributeValue(rootNode, DocumentSave.VERSION_ATTR))) {
             Debug.warning("Invalid version of VisualDesign"); // NOI18N
-            errorHandler.addWaring(WRONG_VERSION_ERROR); // NOI18N
+            errorHandler.addWarning(WRONG_VERSION_ERROR); // NOI18N
             return false;
         }
 
@@ -105,6 +105,15 @@ public class DocumentLoad {
                 }
             }
         }
+        /*
+        for (ComponentElement element : componentElements) {
+            if (!checkComponentDescriptor(loadingDocument, element.getTypeID())) { 
+                componentElements.remove(element);
+                Debug.warning("Missing ComponentDescriptor in registry ", element.getTypeID()); // NOI18N
+                errorHandler.addWaring( DESCRIPTOR_MISSING_ERROR + " <STRONG>" + element.getTypeID().toString() + "</STRONG>"); // NOI18N)
+            }
+        }
+         */
         for (DocumentSerializationController controller : getDocumentSerializationControllers()) {
             controller.approveComponents(context, loadingDocument, documentVersion, componentElements, errorHandler);
             if (!errorHandler.getErrors().isEmpty()) {
@@ -148,7 +157,7 @@ public class DocumentLoad {
             loadingDocument.setPreferredComponentID(componentid);
             if (loadingDocument.getDescriptorRegistry().getComponentDescriptor(element.getTypeID()) == null) {
                 Debug.warning("Missing ComponentDescriptor in registry ", element.getTypeID()); // NOI18N
-                errorHandler.addError( DESCRIPTOR_MISSING_ERROR + " <STRONG>" + element.getTypeID().toString() + "</STRONG>"); // NOI18N)
+                errorHandler.addWarning( DESCRIPTOR_MISSING_ERROR + " <STRONG>" + element.getTypeID().toString() + "</STRONG>"); // NOI18N)
                 continue;
             }
             if (!errorHandler.getErrors().isEmpty()) {
@@ -202,17 +211,17 @@ public class DocumentLoad {
                 String propertyName = propertyElement.getPropertyName();
                 if (descriptor.getPropertyDescriptor(propertyName) == null) {
                     Debug.warning("Missing property descriptor", component, propertyName); // NOI18N
-                    errorHandler.addError( NbBundle.getMessage(DocumentLoad.class, "LBL_MissingProperty_Error") //NOI18N 
+                    errorHandler.addWarning( NbBundle.getMessage(DocumentLoad.class, "LBL_MissingProperty_Error") //NOI18N 
                                            + " <STRONG>" + component + " - " + propertyName + "</STRONG>"); // NOI18N
-                    return;
+                    continue;
                 }
                 PropertyValue value;
                 try {
                     value = PropertyValue.deserialize(propertyElement.getSerialized(), loadingDocument, propertyElement.getTypeID());
                 } catch (Exception e) {
                     Debug.warning("Error while deserializing property value", component, propertyName); // NOI18N
-                    errorHandler.addError(DESERIALIZATION_ERROR + " <STRONG>" + component + " " + propertyName + "</STRONG>"); //NOI18N
-                    return;
+                    errorHandler.addWarning(DESERIALIZATION_ERROR + " <STRONG>" + component + " " + propertyName + " " + propertyElement.getSerialized() +"</STRONG>"); //NOI18N
+                    value = PropertyValue.createNull();
                 }
                 component.writeProperty(propertyName, value);
             }
@@ -223,7 +232,14 @@ public class DocumentLoad {
             loadingDocument.setRootComponent(componentByUID);
         }
     }
-
+    /*
+    private static boolean checkComponentDescriptor(DesignDocument document, TypeID typeID) {
+        DescriptorRegistry dr = document.getDescriptorRegistry();
+        if (dr.getComponentDescriptor(typeID) == null)
+            return false;
+        return true;
+    }
+    */
     private static void collectStructure(Collection<ComponentElement> componentElements, Node node, long parent) {
         long componentid = Long.parseLong(getAttributeValue(node, DocumentSave.COMPONENTID_ATTR));
         TypeID typeid = TypeID.createFrom(getAttributeValue(node, DocumentSave.TYPEID_ATTR));
@@ -322,7 +338,7 @@ public class DocumentLoad {
                 }
 
                 public void warning(SAXParseException e) {
-                    errorHandler.addWaring(XML_ERROR + e.getMessage());
+                    errorHandler.addWarning(XML_ERROR + e.getMessage());
                 }
             }, null);
         } catch (SAXException e) {
@@ -364,4 +380,5 @@ public class DocumentLoad {
         }
         return getAttributeValue(rootNode, DocumentSave.PROP_PROJECT_TYPE);
     }
+
 }
