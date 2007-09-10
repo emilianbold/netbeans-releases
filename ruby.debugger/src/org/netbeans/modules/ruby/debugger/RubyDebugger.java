@@ -155,7 +155,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         return env;
     }
 
-    private static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
+    /** Package private for unit test. */
+    static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
         DebuggerPreferences prefs = DebuggerPreferences.getInstance();
         boolean jrubySet = RubyInstallation.getInstance().isJRubySet();
         
@@ -164,7 +165,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
                 && !Boolean.getBoolean("org.netbeans.modules.ruby.debugger.fast.not.required");
 
         // See issue #114183
-        if (prefs.isFirstTime()) {
+        if (!jrubySet && prefs.isFirstTime()) {
             prefs.setFirstTime(false);
             Util.offerToInstallFastDebugger();
         }

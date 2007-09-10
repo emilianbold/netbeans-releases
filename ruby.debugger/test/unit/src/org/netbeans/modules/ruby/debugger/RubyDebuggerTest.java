@@ -23,7 +23,9 @@ import java.io.File;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -41,9 +43,11 @@ public final class RubyDebuggerTest extends TestBase {
     
     @Override
     protected void setUp() throws Exception {
+        MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
         super.setUp();
         watchStepping = false;
         DebuggerPreferences.getInstance().setVerboseDebugger(VERBOSE);
+        clearWorkDir();
     }
     
     public void testBasics() throws Exception {
@@ -302,9 +306,16 @@ public final class RubyDebuggerTest extends TestBase {
             p.waitFor();
         }
     }
+    
+    public void testCheckAndTuneSettings() {
+        ExecutionDescriptor descriptor = new ExecutionDescriptor();
+        // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
+        assertTrue("default setting OK with JRuby", RubyDebugger.checkAndTuneSettings(descriptor));
+    }
 
     private DebuggerEngine getEngineManager() {
         return DebuggerManager.getDebuggerManager().getCurrentEngine();
     }
     
 }
+
