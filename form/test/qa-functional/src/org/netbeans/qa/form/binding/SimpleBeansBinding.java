@@ -97,8 +97,8 @@ public class SimpleBeansBinding extends ExtJellyTestCase {
         bindOp.ok();
 
         // check generated binding code
-        findInCode("bindingContext.addBinding(jLabel2, \"${text}\", jLabel1, \"text\");", designer);  // NOI18N
-        findInCode("bindingContext.bind();", designer);  // NOI18N
+        findInCode("createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, jLabel2, org.jdesktop.beansbinding.ELProperty.create(\"${text}\"), jLabel1, org.jdesktop.beansbinding.BeanProperty.create(\"text\"));", designer);  // NOI18N
+        findInCode("bindingGroup.bind();", designer);  // NOI18N
 
         // get values of text properties of jLabels and test them
         assertEquals(getTextValueOfLabel(inspector, jLabel1NodePath),

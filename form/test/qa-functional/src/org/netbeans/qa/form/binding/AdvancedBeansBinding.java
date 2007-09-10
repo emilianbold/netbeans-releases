@@ -138,8 +138,8 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         new JButtonOperator(bindOp,"OK").push();
 
         // test generated code
-        findInCode("binding.setNullSourceValue(\"" + nullMsg + "\");", designer); // NOI18N
-        findInCode("binding.setValueForIncompleteSourcePath(\"" + incompleteMsg + "\");", designer); // NOI18N
+        findInCode("binding.setSourceNullValue(\"" + nullMsg + "\");", designer); // NOI18N
+        findInCode("binding.setSourceUnreadableValue(\"" + incompleteMsg + "\");", designer); // NOI18N
        
         // invoke bind dialog again and check values
         actNode = new Node(inspector.treeComponents(), nullLabelPath);
