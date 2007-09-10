@@ -112,7 +112,7 @@ public class RenameComponentVariableTest extends ExtJellyTestCase {
         lines.add("myNewButtonActionPerformed(evt);"); // NOI18N
         
         // binding code with renamed button
-        lines.add("bindingContext.addBinding(myNewButton,"); // NOI18N
+        lines.add("Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, myNewButton,"); // NOI18N
         
         // initialization of renamed button inside
         lines.add("myNewButton = new javax.swing.JButton()"); // NOI18N
