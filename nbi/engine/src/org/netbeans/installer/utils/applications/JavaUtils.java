@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileProxy;
@@ -113,7 +114,7 @@ public class JavaUtils {
     }
     
     public static Version getVersion(File javaHome) {
-	final JavaInfo info = getInfo(javaHome);
+        final JavaInfo info = getInfo(javaHome);
         
         return (info == null) ? null : info.getVersion();
     }
@@ -157,7 +158,10 @@ public class JavaUtils {
             jdkInfo = JavaInfo.getInfo(results.getStdOut());
             
             if (jdkInfo != null) {
-                knownJdks.put(location, jdkInfo);
+                LogManager.log("... put jdk info to the Java map");
+                knownJdks.put(location, jdkInfo);                
+            } else {
+                LogManager.log("... can`t get jdkInfo from " + location);
             }
         } catch (IOException e) {
             ErrorManager.notifyError(ResourceUtils.getString(
@@ -316,6 +320,11 @@ public class JavaUtils {
                 vendor = lines[2]; // java.vendor
                 osName = lines[3]; // os.name
                 osArch = lines[4]; // os.arch
+                LogManager.log("... java.version    = " + javaVersion);
+                LogManager.log("... java.vm.version = " + javaVmVersion);
+                LogManager.log("... java.vendor     = " + vendor);
+                LogManager.log("... os.name         = " + osName);
+                LogManager.log("... os.arch         = " + osArch);
                 
                 String versionString;
                 
@@ -333,7 +342,7 @@ public class JavaUtils {
                         NON_FINAL_JVM_PATTERN).matcher(versionString);
                 if (nonFinalMatcher.find()) {
                     versionString = versionString.replaceAll(
-                            NON_FINAL_JVM_PATTERN, 
+                            NON_FINAL_JVM_PATTERN,
                             StringUtils.EMPTY_STRING);
                     
                     nonFinal = true;
@@ -354,10 +363,10 @@ public class JavaUtils {
                 // hack for BEA: 1.6.0-20061129 -> 1.6.0.0.20061129
                 if (vendor.indexOf("BEA") != -1) {
                     versionString = versionString.replaceAll(
-                            "([0-9]+\\.[0-9]+\\.[0-9])+-([0-9]+)", 
+                            "([0-9]+\\.[0-9]+\\.[0-9])+-([0-9]+)",
                             "$1.0.$2");
                 }
-                
+                LogManager.log("... version string : " + versionString);
                 // and create the version
                 final Matcher matcher = Pattern.
                         compile("[0-9][0-9_\\.\\-]+[0-9]").
@@ -371,6 +380,11 @@ public class JavaUtils {
                 // JavaInfo object
                 if (version != null) {
                     return new JavaInfo(version, vendor, nonFinal);
+                }
+            } else {
+                LogManager.log("... different lines number [" + lines.length + "]");
+                for(int j=0;j<lines.length;j++) {
+                    LogManager.log("... line [" + j + "] = [" + lines[j] + "]");
                 }
             }
             
@@ -392,7 +406,7 @@ public class JavaUtils {
         }
         
         public JavaInfo(Version version, String vendor, boolean nonFinal) {
-            this (version, vendor);
+            this(version, vendor);
             
             this.nonFinal = nonFinal;
         }
@@ -412,16 +426,16 @@ public class JavaUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String JDK_KEY = 
+    public static final String JDK_KEY =
             "SOFTWARE\\JavaSoft\\Java Development Kit"; // NOI18N
     
-    public static final String JAVAHOME_VALUE 
+    public static final String JAVAHOME_VALUE
             = "JavaHome"; // NOI18N
     
-    public static final String MICROVERSION_VALUE 
+    public static final String MICROVERSION_VALUE
             = "MicroVersion"; // NOI18N
     
-    public static final String CURRENT_VERSION_VALUE = 
+    public static final String CURRENT_VERSION_VALUE =
             "CurrentVersion"; // NOI18N
     
     public static final String TEST_JDK_RESOURCE =
@@ -430,21 +444,21 @@ public class JavaUtils {
     public static final String TEST_JDK_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX + TEST_JDK_RESOURCE;
     
-    public static final String TEST_JDK_CLASSNAME = 
+    public static final String TEST_JDK_CLASSNAME =
             "TestJDK"; // NOI18N
     
-    public static final int TEST_JDK_OUTPUT_PARAMETERS = 
+    public static final int TEST_JDK_OUTPUT_PARAMETERS =
             5; // java.version, java.vm.version, java.vendor, os.name, os.arch
     
-    public static final String NON_FINAL_JVM_PATTERN = 
+    public static final String NON_FINAL_JVM_PATTERN =
             "-(ea|rc[0-9]*|beta[0-9]*|preview[0-9]*|" + // NOI18N
             "dp[0-9]*|alpha[0-9]*|fcs)"; // NOI18N
     
-    public static final String ERROR_VERIFICATION_KEY = 
+    public static final String ERROR_VERIFICATION_KEY =
             "JU.error.verification";//NOI18N
-    public static final String ERROR_CANNOT_DELETE_KEY = 
+    public static final String ERROR_CANNOT_DELETE_KEY =
             "JU.error.cannot.delete";//NOI18N
-    public static final String ERROR_CANNOT_DOWNLOAD_TESTJDK_KEY = 
+    public static final String ERROR_CANNOT_DOWNLOAD_TESTJDK_KEY =
             "JU.error.cannot.download.testjdk";//NOI18N
     public static final String ERROR_CANNOT_CANONIZE_KEY=
             "JU.error.cannot.canonize";//NOI18N
