@@ -20,8 +20,6 @@ package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
 import javax.swing.JPanel;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JDialog;
 import javax.swing.JSplitPane;
 import javax.swing.JScrollPane;
 import javax.swing.JLabel;

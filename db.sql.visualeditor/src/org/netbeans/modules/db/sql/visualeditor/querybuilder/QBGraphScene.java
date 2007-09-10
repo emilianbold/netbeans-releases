@@ -31,10 +31,8 @@ import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import javax.swing.*;
 import java.awt.*;
 
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.ComponentWidget;
 import org.netbeans.api.visual.action.ActionFactory;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.layout.LayoutFactory;
 
@@ -58,6 +56,7 @@ public class QBGraphScene extends GraphScene {
     private Router 		router;
     
     public QBGraphScene(QueryBuilderGraphFrame qbGF) {
+        qbGF._firstTableInserted = false;
         mainLayer = new LayerWidget(this);
         connectionLayer = new LayerWidget(this);
         addChild(mainLayer);

@@ -136,7 +136,7 @@ public class QueryBuilderGraphFrame extends JPanel
     private JPopupMenu                  _tableTitlePopup;
     private AddTableDlg                 _addTableDlg = null;
     
-    private boolean                     _firstTableInserted = false;
+    boolean                             _firstTableInserted = false;
 //    private Point                       _location;
 
     private QBNodeComponent		_selectedNode;
@@ -553,7 +553,7 @@ public class QueryBuilderGraphFrame extends JPanel
     public void tableChanged(TableModelEvent e) {
         
         // if the graph is disabled, do not handle any events.
-        if ( _disableQBGF )
+            if ( _disableQBGF )
 	    return;
         
         // if the graph is being generated from model, do not handle events.
@@ -1437,27 +1437,27 @@ public class QueryBuilderGraphFrame extends JPanel
     // but explicitly empty it, or just create a new instance.  We favor explicit emptying,
     // except for the graph model
     // No longer used, since we just re-create the scene
-    synchronized void clearGraph() {
-        
-        Log.getLogger().entering("QueryBuilderGraphFrame", "clearGraph"); // NOI18N
-        // This is used in certain places
-        _firstTableInserted=false;
-        
-        // Clear the InputTableModel
-        _inputTableModel.setRowCount(0);
-        
-	// Clear the scene, by removing each component
-	Collection nodes = _scene.getNodes();
-	for (Object node : nodes) {
-	    System.out.println("Removing Node: " + node + ((QBNodeComponent)node).getNodeName());
-	    _scene.removeNodeWithEdges(node);
-	}
-// 	Collection edges = _scene.getEdges();
-// 	for (Object edge : edges) {
-// 	    _scene.removeEdge(edge);
-// 	    System.out.println("Removing Edge: " + edge);
-// 	}
-    }
+//    synchronized void clearGraph() {
+//        
+//        Log.getLogger().entering("QueryBuilderGraphFrame", "clearGraph"); // NOI18N
+//        // This is used in certain places
+//        _firstTableInserted=false;
+//        
+//        // Clear the InputTableModel
+//        _inputTableModel.setRowCount(0);
+//        
+//	// Clear the scene, by removing each component
+//	Collection nodes = _scene.getNodes();
+//	for (Object node : nodes) {
+//	    System.out.println("Removing Node: " + node + ((QBNodeComponent)node).getNodeName());
+//	    _scene.removeNodeWithEdges(node);
+//	}
+//// 	Collection edges = _scene.getEdges();
+//// 	for (Object edge : edges) {
+//// 	    _scene.removeEdge(edge);
+//// 	    System.out.println("Removing Edge: " + edge);
+//// 	}
+//    }
     
     
     // Generate the graph corresponding to the FROM clause.
