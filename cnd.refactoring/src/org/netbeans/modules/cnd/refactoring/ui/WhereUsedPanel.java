@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
+import java.util.Iterator;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
@@ -35,6 +36,7 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
@@ -58,13 +60,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private final transient CsmObject origObject;
     private transient CsmObject refObject;
 
-    private enum ElementKind {
-        UNKNOWN, FUNCTION, CLASS, STRUCT, UNION, ENUM, TYPEDEF, METHOD, VARIABLE, MACRO, FIELD, NAMESPACE, FILE
-    
-    }
-    private ElementKind kind = ElementKind.UNKNOWN;
-    
-    private CsmObject newElement;
     private final transient ChangeListener parent;
     private String name;
     /** Creates new form WhereUsedPanel */
@@ -79,8 +74,20 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private boolean initialized = false;
     private CsmClass methodDeclaringSuperClass = null;
     private CsmClass methodDeclaringClass = null;
+    private CsmMethod baseVirtualMethod;
 
-    CsmClass getMethodDeclaringClass() {
+    /*package*/ String getBaseMethodDescription() {
+        if (baseVirtualMethod != null) {
+            CsmVisibility vis = baseVirtualMethod.getVisibility();
+            String functionDisplayName = baseVirtualMethod.getSignature();
+            String displayClassName = methodDeclaringSuperClass.getName();
+            return getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N
+        } else {
+            return name;
+        }
+    }
+
+    /*package*/ CsmClass getMethodDeclaringClass() {
         return isMethodFromBaseClass() ? methodDeclaringSuperClass : methodDeclaringClass;
     }
 
@@ -102,8 +109,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             String displayClassName = methodDeclaringClass.getName();
             labelText = getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N
             if (((CsmMethod)refObject).isVirtual()) {
-                methodDeclaringSuperClass = getVirtualMethodDeclaringParentClass((CsmMethod)refObject);
-                _isBaseClassText = getString("LBL_UsagesOfBaseClass", methodDeclaringSuperClass.getName());
+                baseVirtualMethod = getOriginalVirtualMethod((CsmMethod)refObject);
+                methodDeclaringSuperClass = baseVirtualMethod.getContainingClass();
+                if (!refObject.equals(baseVirtualMethod)) {
+                    _isBaseClassText = getString("LBL_UsagesOfBaseClass", methodDeclaringSuperClass.getName());
+                }
                 _needVirtualMethodPanel = true;
             }
         } else if (CsmKindUtilities.isFunction(refObject)) {
@@ -146,12 +156,29 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 //            String methodName = element.getName();
 //            String className = getClassName(element);
 //            labelText = getFormattedString("DSC_ConstructorUsages", methodName, className); // NOI18N
+        } else if (CsmKindUtilities.isMacro(refObject)) {
+            StringBuilder macroName = new StringBuilder(((CsmMacro)refObject).getName());
+            if (((CsmMacro)refObject).getParameters() != null) {
+                macroName.append("("); // NOI18N
+                Iterator<String> params = ((CsmMacro)refObject).getParameters().iterator();
+                if (params.hasNext()) {
+                    macroName.append(params.next());
+                    while (params.hasNext()) {
+                        macroName.append(", ");
+                        macroName.append(params.next());
+                    }
+                }
+                macroName.append(")"); // NOI18N
+            }
+            labelText = getString("DSC_MacroUsages", macroName.toString()); // NOI18N
         } else if (CsmKindUtilities.isQualified(refObject)) {
             labelText = ((CsmQualifiedNamedElement)refObject).getQualifiedName();
         } else {
             labelText = this.name;
         }
 
+        this.name = labelText;
+        
 //        final Set<Modifier> modifiers = modif;
         final String isBaseClassText = _isBaseClassText;
         final boolean showMethodPanel = _needVirtualMethodPanel;
@@ -168,7 +195,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 if (showMethodPanel) {
                     add(methodsPanel, BorderLayout.CENTER);
                     methodsPanel.setVisible(true);
-                    Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
+                    if (isBaseClassText != null) {
+                        Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
+                        m_isBaseClass.setVisible(true);
+                        m_isBaseClass.setSelected(true);
+                    } else {
+                        m_isBaseClass.setVisible(false);
+                        m_isBaseClass.setSelected(false);
+                    }
 //                    if (methodDeclaringSuperClass != null) {
 //                        m_overriders.setVisible(true);
 //                        m_isBaseClass.setVisible(true);
@@ -215,14 +249,18 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         initialized = true;
     }
 
-//    public RubyElementCtx getBaseMethod() {
-//        return newElement;
-//    }
-
-    public CsmObject getBaseMethod() {
-        return newElement == null ? origObject : newElement;
+    /*package*/ CsmMethod getBaseMethod() {
+        return baseVirtualMethod;
     }
 
+    /*package*/ CsmObject getReferencedObject() {
+        return refObject;
+    }
+
+    /*package*/ String getDescription() {
+        return name;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -475,8 +513,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return objName;
     }   
 
-    private CsmClass getVirtualMethodDeclaringParentClass(CsmMethod csmMethod) {
-        return csmMethod.getContainingClass();
+    private CsmMethod getOriginalVirtualMethod(CsmMethod csmMethod) {
+        return csmMethod;
     }
 
     private String getString(String key) {

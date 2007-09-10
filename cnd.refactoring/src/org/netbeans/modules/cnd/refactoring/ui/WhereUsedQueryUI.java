@@ -30,6 +30,7 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -46,13 +47,6 @@ public class WhereUsedQueryUI implements RefactoringUI {
     public WhereUsedQueryUI(CsmObject csmObject) {
         this.query = new WhereUsedQuery(Lookups.singleton(csmObject));
         this.origObject = csmObject;
-//        this.query.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject));
-//        this.element = getElement(csmObject);
-//        if (this.element != null && this.element != csmObject) {
-//            this.query.getContext().add(this.element);
-//        }
-//        name = csmObject.getName();
-//        kind = csmObject.getKind();
         name = getSearchElementName(this.origObject);
     }
     
@@ -64,6 +58,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         // this method returns panel used for displaying config options
         // of refactoring/find usages
         // i.e. panel with checkboxes
+        // called from AWT
         if (panel == null) {
             panel = new WhereUsedPanel(name, origObject, parent);
         }
@@ -88,9 +83,17 @@ public class WhereUsedQueryUI implements RefactoringUI {
     private void setForMethod() {
         assert panel != null;
         if (panel.isMethodFromBaseClass()) {
-            query.setRefactoringSource(Lookups.singleton(panel.getBaseMethod()));
+            if (panel.getBaseMethod() == null) {
+                query.setRefactoringSource(Lookup.EMPTY);
+            } else {
+                query.setRefactoringSource(Lookups.singleton(panel.getBaseMethod()));
+            }            
         } else {
-            query.setRefactoringSource(Lookups.singleton(origObject));
+            if (panel.getReferencedObject() == null) {
+                query.setRefactoringSource(Lookup.EMPTY);
+            } else {
+                query.setRefactoringSource(Lookups.singleton(panel.getReferencedObject()));
+            }
         }
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
         query.putValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS,panel.isMethodFromBaseClass());
@@ -125,6 +128,28 @@ public class WhereUsedQueryUI implements RefactoringUI {
         // this method returns description displayed in Find Usages tab
         // i.e. "Usages of "name" (2 occurrences]"
         if (panel!=null) {
+            String description = panel.getDescription();
+            String key = "DSC_WhereUsed";
+            if (panel.isClass()) {
+                if (!panel.isClassFindUsages()) {
+                    if (panel.isClassSubTypesDirectOnly()) {
+                        key = "DSC_WhereUsedFindDirectSubTypes"; // NOI18N
+                    } else {
+                        key = "DSC_WhereUsedFindAllSubTypes"; // NOI18N
+                    }
+                }
+            } else if (panel.isVirtualMethod()) {
+                if (panel.isMethodFromBaseClass()) {
+                    description = panel.getBaseMethodDescription();
+                }
+                if (panel.isMethodOverriders()) {
+                    key = panel.isMethodFindUsages() ? 
+                        "DSC_WhereUsedUsagesAndMethodOverriders" : // NOI18N
+                        "DSC_WhereUsedMethodOverriders"; // NOI18N
+                }
+            }
+            description = description.replace("<html>", "").replace("</html>", ""); // NOI18N
+            return getString(key, description);
 //            if (CsmKindUtilities.isClass(origCsmObject)/*kind == ElementKind.MODULE || kind == ElementKind.CLASS*/) {
 //                if (!panel.isClassFindUsages())
 //                    if (!panel.isClassSubTypesDirectOnly()) {
@@ -153,19 +178,15 @@ public class WhereUsedQueryUI implements RefactoringUI {
 //                }
 //            }
         }
-        return getFormattedString("DSC_WhereUsed", name); // NOI18N
+        return getString("DSC_WhereUsed", name); // NOI18N
     }
     
-    private String getString(String key) {
-        return NbBundle.getBundle(WhereUsedQueryUI.class).getString(key);
-    }
-    
-    private String getFormattedString(String key, String value) {
+    private String getString(String key, String value) {
         return NbBundle.getMessage(WhereUsedQueryUI.class, key, value);
     }
 
     public String getName() {
-        return getFormattedString("LBL_WhereUsed", name); // NOI18N
+        return getString("LBL_WhereUsed", name); // NOI18N
     }
     
     public boolean hasParameters() {
