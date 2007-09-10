@@ -117,6 +117,7 @@ public class ConstructorGenerator implements CodeGenerator {
 
     public void invoke(JTextComponent component) {
         final List<ElementHandle<? extends Element>> fieldHandles;
+        final List<ElementHandle<? extends Element>> constrHandles;
         if (constructorDescription != null || fieldsDescription != null) {
             ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
             DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
@@ -124,11 +125,15 @@ public class ConstructorGenerator implements CodeGenerator {
             dialog.setVisible(true);
             if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue())
                 return;
-            if (constructorHandle == null)
-                constructorHandle = panel.getInheritedConstructor();
+            if (constructorHandle == null) {
+                constrHandles = panel.getInheritedConstructors();
+            } else {
+                constrHandles = null;
+            }
             fieldHandles = panel.getVariablesToInitialize();
         } else {
             fieldHandles = null;
+            constrHandles = null;
         }
         JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
@@ -146,7 +151,14 @@ public class ConstructorGenerator implements CodeGenerator {
                             for (ElementHandle<? extends Element> elementHandle : fieldHandles)
                                 variableElements.add((VariableElement)elementHandle.resolve(copy));
                         }
-                        GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, idx);
+                        if (constrHandles != null && !constrHandles.isEmpty()) {
+                            ArrayList<ExecutableElement> constrElements = new ArrayList<ExecutableElement>();
+                            for (ElementHandle<? extends Element> elementHandle : constrHandles)
+                                constrElements.add((ExecutableElement)elementHandle.resolve(copy));
+                            GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, idx);
+                        } else {
+                            GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, idx);
+                        }    
                     }
                 }).commit();
             } catch (IOException ex) {

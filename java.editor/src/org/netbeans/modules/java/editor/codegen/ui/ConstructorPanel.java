@@ -20,6 +20,7 @@
 package org.netbeans.modules.java.editor.codegen.ui;
 
 import java.awt.GridBagConstraints;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.swing.JLabel;
@@ -52,7 +53,7 @@ public class ConstructorPanel extends JPanel {
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
             add(constructorSelectorLabel, gridBagConstraints);
-            constructorSelector = new ElementSelectorPanel(constructorDescription, true);
+            constructorSelector = new ElementSelectorPanel(constructorDescription, false);
             gridBagConstraints.gridy = 1;
             gridBagConstraints.weightx = 0.5;
             gridBagConstraints.weighty = 1.0;
@@ -91,6 +92,12 @@ public class ConstructorPanel extends JPanel {
         return (handles.size() == 1 ? handles.get(0) : null );
     }
 
+    public List<ElementHandle<? extends Element>> getInheritedConstructors() {
+        if (constructorSelector == null)
+            return Collections.EMPTY_LIST;
+        return constructorSelector.getSelectedElements();
+    }
+    
     public List<ElementHandle<? extends Element>> getVariablesToInitialize() {
         if (fieldSelector == null)
             return null;

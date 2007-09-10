@@ -288,6 +288,32 @@ public class GeneratorUtils {
         wc.rewrite(path.getLeaf(), decl);
     }
     
+    public static void generateConstructors(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, List<? extends ExecutableElement> inheritedConstructors, int index) {
+        TreeMaker make = wc.getTreeMaker();
+        ClassTree clazz = (ClassTree)path.getLeaf();
+        ClassTree decl = clazz;
+        for (ExecutableElement inheritedConstructor : inheritedConstructors) {
+            List<VariableTree> parameters = new ArrayList<VariableTree>();
+            List<StatementTree> statements = new ArrayList<StatementTree>();
+            ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
+            if (!inheritedConstructor.getParameters().isEmpty()) {
+                List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
+                for (VariableElement ve : inheritedConstructor.getParameters()) {
+                    parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
+                    arguments.add(make.Identifier(ve.getSimpleName())); //NOI18N
+                }
+                statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments)));
+            }
+            for (VariableElement ve : initFields) {
+                parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
+                statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
+            }
+            BlockTree body = make.Block(statements, false);
+            decl = make.insertClassMember(decl, index, make.Method(make.Modifiers(EnumSet.of(wc.getTreeUtilities().isEnum(clazz) ? Modifier.PRIVATE : Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null)); //NOI18N
+        }
+        wc.rewrite(clazz, decl);
+    }
+    
     public static void generateGettersAndSetters(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> fields, int type, int index) {
         assert path.getLeaf().getKind() == Tree.Kind.CLASS;
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
