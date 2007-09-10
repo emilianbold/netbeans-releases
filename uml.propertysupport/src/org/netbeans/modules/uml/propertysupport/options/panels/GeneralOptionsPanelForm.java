@@ -66,14 +66,13 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
 
             
     //for Display Seq Diagram Messages
-    private final String SHOW_UNKNOWN = NbBundle.getMessage(GeneralOptionsPanelForm.class,"SMT_UNKNOWN");
     private final String SHOW_NOTHING = NbBundle.getMessage(GeneralOptionsPanelForm.class,"SMT_NOTHING");
     private final String SHOW_OPERATION = NbBundle.getMessage(GeneralOptionsPanelForm.class, "SMT_OPERATION");
     private final String SHOW_NAME = NbBundle.getMessage(GeneralOptionsPanelForm.class, "SMT_NAME");
             
-    private final String[] SQD_MSG = {SHOW_UNKNOWN, SHOW_NOTHING, SHOW_OPERATION, SHOW_NAME} ;
+    private final String[] SQD_MSG = { SHOW_NOTHING, SHOW_OPERATION, SHOW_NAME} ;
             
-    private final Integer[] mapped_SQD_MSG = {IShowMessageType.SMT_UNKNOWN, IShowMessageType.SMT_NONE, IShowMessageType.SMT_OPERATION, IShowMessageType.SMT_NAME};
+    private final Integer[] mapped_SQD_MSG = {IShowMessageType.SMT_NONE, IShowMessageType.SMT_OPERATION, IShowMessageType.SMT_NAME};
     
     private final String[] displayChoices = {ALWAYS, SELECTED, NEVER};
     private final String[] mappedChoices = {PSK_ALWAYS, PSK_SELECTED, PSK_NEVER};
@@ -156,7 +155,7 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         
         String autoResizeValue = prefs.get("UML_Automatically_Size_Elements", null);
         String displayCompartmentValue = prefs.get("UML_Display_Compartment_Titles", null);
-        Integer sqdMsgVal = prefs.getInt("UML_SQD_DEFAULT_MSG", IShowMessageType.SMT_UNKNOWN) ;
+        Integer sqdMsgVal = prefs.getInt("UML_SQD_DEFAULT_MSG", IShowMessageType.SMT_NONE) ;
 
         int autoResizeIndex = getMappedIndex(resizeMappedChoices, autoResizeValue);
         int compartmentIndex = getMappedIndex(mappedChoices, displayCompartmentValue);

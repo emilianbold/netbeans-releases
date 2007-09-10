@@ -129,10 +129,10 @@
                       <Component id="jButton1" alignment="1" pref="199" max="32767" attributes="0"/>
                       <Component id="askLayoutCB" alignment="0" pref="199" max="32767" attributes="0"/>
                       <Component id="reconnect" alignment="0" max="32767" attributes="0"/>
-                      <Component id="displayEmpty" alignment="0" pref="199" max="32767" attributes="0"/>
-                      <Component id="resizeCB" alignment="0" pref="199" max="32767" attributes="0"/>
-                      <Component id="showStereotype" alignment="0" pref="199" max="32767" attributes="0"/>
-                      <Component id="gradient" alignment="0" pref="199" max="32767" attributes="0"/>
+                      <Component id="displayEmpty" alignment="0" pref="248" max="32767" attributes="0"/>
+                      <Component id="resizeCB" alignment="0" pref="248" max="32767" attributes="0"/>
+                      <Component id="showStereotype" alignment="0" pref="248" max="32767" attributes="0"/>
+                      <Component id="gradient" alignment="0" pref="248" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -255,7 +255,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jLabel2" pref="180" max="32767" attributes="1"/>
+                      <Component id="jLabel2" pref="236" max="32767" attributes="1"/>
                       <Component id="jLabel6" max="32767" attributes="1"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="1"/>
                   </Group>
@@ -281,7 +281,7 @@
                       <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="displayCompartmentTitlesComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="9" max="32767" attributes="0"/>
+                  <EmptySpace pref="10" max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="seqDiagMsgCB" alignment="3" min="-2" max="-2" attributes="0"/>
