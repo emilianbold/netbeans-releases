@@ -113,7 +113,7 @@ public class TraceXRef extends TraceModel {
                 }
                 
                 ReferenceRepositoryImpl xRefRepository = new ReferenceRepositoryImpl();
-                CsmObject[] decDef = ReferenceRepositoryImpl.getDefinitionDeclaration(object);
+                CsmObject[] decDef = getDefinitionDeclaration(object);
                 CsmObject decl = decDef[0];
                 CsmObject def = decDef[1];                
                 Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), true);
@@ -137,6 +137,11 @@ public class TraceXRef extends TraceModel {
         }        
     }
 
+    public static CsmObject[] getDefinitionDeclaration(CsmObject target) {
+        CsmObject[] decDef = ReferenceRepositoryImpl.getDefinitionDeclaration(target);
+        return decDef;
+    }
+    
     @SuppressWarnings("deprecation")
     private static void setUp() {
         // this is the only way to init extension-based recognizer
