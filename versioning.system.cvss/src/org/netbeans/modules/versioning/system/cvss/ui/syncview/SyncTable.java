@@ -301,19 +301,19 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         
         item = menu.add(new OpenInEditorAction());
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
+        menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionString("CTL_PopupMenuItem_Diff"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(UpdateAction.class), actionString("CTL_PopupMenuItem_Update"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
+        menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(TagAction.class), actionString("CTL_PopupMenuItem_Tag"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(BranchAction.class), actionString("CTL_PopupMenuItem_Branch"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
+        menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
                                                ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ?
                                                actionString("CTL_PopupMenuItem_HideAnnotations") : // NOI18N
@@ -321,7 +321,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
+        menu.addSeparator();
         item = org.netbeans.modules.versioning.util.Utils.toMenuItem(new ExcludeFromCommitAction(files));
         menu.add(item);
 

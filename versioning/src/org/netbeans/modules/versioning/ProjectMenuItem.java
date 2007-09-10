@@ -79,7 +79,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                         }
                     }
                 }
-                vmenu.add(new JSeparator());
+                vmenu.addSeparator();
                 vmenu.add(createmenuItem(SystemAction.get(PatchAction.class)));
                 popups.add(vmenu);
             }
@@ -127,7 +127,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         int i = 0;
         for (Action action : actions) {
             if (action == null) {
-                items[i++] = new JSeparator();
+                items[i++] = Utils.createJSeparator();
             } else {
                 JMenuItem item = createmenuItem(action);
                 items[i++] = item;

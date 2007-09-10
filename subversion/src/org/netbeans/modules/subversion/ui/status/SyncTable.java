@@ -307,7 +307,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         
         item = menu.add(new OpenInEditorAction());
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
+        menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionString("CTL_PopupMenuItem_Diff"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(UpdateAction.class), actionString("CTL_PopupMenuItem_Update"))); // NOI18N
@@ -315,11 +315,11 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         
-        menu.add(new JSeparator());        
+        menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_ConflictResolved"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
                 
-        menu.add(new JSeparator());        
+        menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(BlameAction.class),
                                                ((BlameAction)SystemAction.get(BlameAction.class)).visible(null) ?
                                                actionString("CTL_PopupMenuItem_HideBlame") : // NOI18N
@@ -329,7 +329,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
 
-        menu.add(new JSeparator());                
+        menu.addSeparator();
         String label;
         ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
         if (exclude.getActionStatus(null) == exclude.INCLUDING) {

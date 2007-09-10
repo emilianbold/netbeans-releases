@@ -64,12 +64,12 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                 List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
                 items.addAll(systemItems);
             }
-            items.add(new JSeparator());
+            items.add(Utils.createJSeparator());
         } else if (vs.length > 1) {
             JMenuItem dummy = new JMenuItem("<multiple systems>");
             dummy.setEnabled(false);
             items.add(dummy);
-            items.add(new JSeparator());
+            items.add(Utils.createJSeparator());
         }
         
         Collections.sort(systems, new Comparator<VersioningSystem>() {
@@ -92,7 +92,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         }
         
         if (localHistory != null) {
-            items.add(new JSeparator());
+            items.add(Utils.createJSeparator());
             items.add(createVersioningSystemMenu(localHistory, ctx));
         }
 
@@ -130,7 +130,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         List<JComponent> items = new ArrayList<JComponent>(actions.length);
         for (Action action : actions) {
             if (action == null) {
-                items.add(new JSeparator());
+                items.add(Utils.createJSeparator());
             } else {
                 if (action instanceof DynamicMenuContent) {
                     DynamicMenuContent dmc = (DynamicMenuContent) action;

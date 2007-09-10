@@ -174,4 +174,10 @@ public class Utils {
     public static String getMenuLabel(VersioningSystem system) {
         return (String) system.getProperty(VersioningSystem.PROP_MENU_LABEL);
     }
+    
+    public static JSeparator createJSeparator() {
+        JMenu menu = new JMenu();
+        menu.addSeparator();
+        return (JSeparator)menu.getPopupMenu().getComponent(0);
+    }
 }

@@ -173,7 +173,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     for (int i = 0; i < actions.length; i++) {
                         Action action = actions[i];
                         if (action == null) {
-                            add(new JSeparator());    // workaround openide bug
+                            addSeparator();
                         } else {
                             JMenuItem item = Utils.toMenuItem(action);
                             add(item);

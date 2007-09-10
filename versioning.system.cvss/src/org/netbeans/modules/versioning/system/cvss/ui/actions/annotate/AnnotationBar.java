@@ -29,6 +29,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.log.*;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.*;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.util.*;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.lib.cvsclient.command.annotate.*;
 import org.netbeans.spi.diff.*;
 import org.openide.*;
@@ -434,7 +435,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 hideBar();
             }
         });
-        popupMenu.add(new JSeparator());
+        popupMenu.addSeparator();
         popupMenu.add(menu);
 
         // dynamic labels an dvisibility
