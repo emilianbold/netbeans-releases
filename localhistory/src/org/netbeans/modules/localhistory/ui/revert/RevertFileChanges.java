@@ -55,7 +55,7 @@ public class RevertFileChanges implements PropertyChangeListener {
         JButton cancelButton = new JButton(NbBundle.getMessage(this.getClass(), "CTL_Cancel"));
         cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(this.getClass(), "CTL_Cancel"));   
         
-        dialogDescriptor = new DialogDescriptor (view.getPanel(), NbBundle.getMessage(this.getClass(), "LBL_RevertToAction")); 
+        dialogDescriptor = new DialogDescriptor (view.getPanel(), NbBundle.getMessage(this.getClass(), "LBL_RevertToDialog")); 
         dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});                         
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));        
@@ -77,7 +77,7 @@ public class RevertFileChanges implements PropertyChangeListener {
 
     protected boolean show() {                
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
-        dialog.getAccessibleContext().setAccessibleDescription("LBL_RevertToAction"); 
+        dialog.getAccessibleContext().setAccessibleDescription("LBL_RevertToDialog"); 
         dialog.setVisible(true);                
                         
         return dialogDescriptor.getValue() == okButton;
