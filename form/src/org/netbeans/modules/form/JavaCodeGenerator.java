@@ -1630,13 +1630,12 @@ class JavaCodeGenerator extends CodeGenerator {
         String injectionCode = ResourceSupport.getInjectionCode(
                 metacomp, getComponentParameterString(metacomp, true));
         if (injectionCode != null) {
-            if (!injectionCode.endsWith("\n")) // NOI18N
+            if (!injectionCode.endsWith("\n")) { // NOI18N
                 injectionCode = injectionCode + "\n"; // NOI18N
-            if (codeData == null) {
-                initCodeWriter.write(injectionCode);
             }
-            else { // build code data for editing
-                String code = indentCode(injectionCode);
+            initCodeWriter.write(injectionCode);
+            if (codeData != null) { // build code data for editing
+                String code = indentCode(initCodeWriter.extractString());
                 codeData.addGuardedBlock(code);
             }
             return true;
