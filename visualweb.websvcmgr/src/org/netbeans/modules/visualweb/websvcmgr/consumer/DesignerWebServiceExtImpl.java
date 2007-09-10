@@ -228,7 +228,12 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 
                 // Create a temporary jar so the proxy jar is not locked (for further updates + deletions)
                 File tmpProxy = createTempCopy(proxyJar);
-                tmpProxy.deleteOnExit();
+                if (tmpProxy != null) {
+                    tmpProxy.deleteOnExit();
+                }else {
+                    tmpProxy = proxyJar;
+                }
+                
                 
                 URLClassLoader classLoader = new URLClassLoader(
                     Util.buildClasspath(tmpProxy, 
