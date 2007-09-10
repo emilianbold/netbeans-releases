@@ -126,7 +126,7 @@ public class WSDLModelTest extends NbTestCase {
         if (expectedValue!=null) assertEquals (expectedValue,realValue);
         assertEquals(3,numberOfEvents);
     }
-
+    /*
     public void testGarbageCollection() {
         System.out.println("Test 4 : Garbage Collection Test");
         try {Thread.sleep(100);} catch (InterruptedException ex) {}
@@ -143,7 +143,7 @@ public class WSDLModelTest extends NbTestCase {
             assertNull(urls[i]);
         }
     }
-    
+    */
     private void compareWsdl(WsdlModel model, int testNumber) {
         if (expectedValue!=null || realValue!=null) return;
         initLists();
