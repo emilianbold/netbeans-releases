@@ -50,7 +50,6 @@ public class UMLCoreModule extends ModuleInstall
       // netbeans user home.  The configuration manager will then use the
       // embarcadero.home-dir property to determine the configuration location.
 
-       instantiateDrawingLibrary();
        String nbuser = System.getProperty("netbeans.user"); // NOI18N
        if (nbuser!=null)
        {
@@ -58,19 +57,28 @@ public class UMLCoreModule extends ModuleInstall
        }
    }
    
-   
-   private void instantiateDrawingLibrary() {
+      
+   public static void instantiateDrawingLibrary() {
        try
         {            
-            org.netbeans.modules.uml.DrawingLibraryDecrypter decrypter = 
-					new org.netbeans.modules.uml.DrawingLibraryDecrypter("org.netbeans.modules.uml");
-            decrypter.myDecrypt(decrypter);            
+	    synchronized(dLock) 
+	    {
+		if (! libDecrypted) 
+		{
+		    org.netbeans.modules.uml.DrawingLibraryDecrypter decrypter = 
+			new org.netbeans.modules.uml.DrawingLibraryDecrypter("org.netbeans.modules.uml");
+		    decrypter.myDecrypt(decrypter); 
+		    libDecrypted = true;
+		}
+	    }           
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
    }
+   private static Object dLock = new Object();
+   private static boolean libDecrypted = false; 
    
    
    public void copyDotUmlIntoUserDir(String userdir) 

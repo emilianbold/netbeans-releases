@@ -139,6 +139,7 @@ import javax.swing.event.DocumentListener;
 import java.util.prefs.Preferences;
 import org.dom4j.Document;
 import org.dom4j.Node;
+import org.netbeans.modules.uml.UMLCoreModule;
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.common.ETSystem;
 import org.netbeans.modules.uml.common.generics.ETPairT;
@@ -547,6 +548,7 @@ public class ADDrawingAreaControl extends ApplicationView
    {
       m_PresentationTypesMgr = CreationFactoryHelper.getPresentationTypesMgr();
       
+      UMLCoreModule.instantiateDrawingLibrary();
       //invoke TS licensing system
       this.initializeTSLicense();
       
@@ -672,6 +674,8 @@ public class ADDrawingAreaControl extends ApplicationView
               e.printStackTrace();
           } 
    }
+
+   
    private void installLayoutServer()
    {
       try
