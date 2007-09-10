@@ -3,9 +3,12 @@
 ANT_OPTS='-Xmx512m -XX:MaxPermSize=128m'
 export ANT_OPTS
 
-if [ `ant -f nbbuild/build.xml -Dcluster.config=experimental print-cvs-modules | perl -ne 'print sort split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
+desired_modules=`ant -f nbbuild/build.xml -Dcluster.config=experimental print-cvs-modules | perl -ne 'print sort qw(jemmy jellytools testtools xtest), split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'`
+current_modules=`perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'`
+if [ "$desired_modules" \!= "$current_modules" ]
 then
     echo "Set of modules changed, getting fresh checkout..."
+    echo "(desired modules: $desired_modules; current modules: $current_modules)"
     rm -rf `ls | fgrep -v nbbuild`
     ant -f nbbuild/build.xml -Dcluster.config=experimental checkout cvs-clean || exit
 elif [ builds/`ls -1 ../builds | tail -2 | head -1` '!=' `readlink ../lastSuccessful` ]
