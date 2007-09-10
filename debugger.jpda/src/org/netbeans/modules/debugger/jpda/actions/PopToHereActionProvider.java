@@ -88,7 +88,7 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
         JPDAThread t;
         synchronized (getDebuggerImpl().LOCK) {
             if (debuggerState == getDebuggerImpl ().STATE_STOPPED) {
-		t = getDebuggerImpl ().getCurrentThread ();
+                t = getDebuggerImpl ().getCurrentThread ();
             } else {
                 t = null;
             }
