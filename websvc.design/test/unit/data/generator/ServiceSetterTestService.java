@@ -2,6 +2,6 @@ package generator;
 
 import javax.jws.WebService;
 
-@WebService
+@WebService()
 public class ServiceSetterTestService {  
 }
