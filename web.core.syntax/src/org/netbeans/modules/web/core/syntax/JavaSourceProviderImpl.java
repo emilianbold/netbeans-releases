@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -85,6 +87,12 @@ public class JavaSourceProviderImpl implements JavaSourceProvider {
         }
 
         public Reader filterReader(Reader r) {
+            //Workaround for issue #114951 - Can't close/saveall project: Error "Cannot get exclusive access"
+            try {
+                r.close();
+            }catch(IOException ioe) {
+                Logger.global.log(Level.WARNING, "Cannot close stream.", ioe);
+            }
             return new StringReader("class SimplifiedJSPServlet {}"); //NOI18N
         }
 
