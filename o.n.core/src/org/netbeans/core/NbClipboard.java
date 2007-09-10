@@ -158,21 +158,29 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
         Transferable prev;
 
         try {
+            log.log(Level.FINE, "getContents, slowSystemClipboard: {0}", slowSystemClipboard); // NOI18N
             if (slowSystemClipboard) {
                 // The purpose of lastWindowActivated+100 is to ignore calls
                 // which immediatelly follow WINDOW_ACTIVATED event.
                 // This is workaround of JDK bug described in issue 41098.
-                if (lastWindowActivated != 0 && lastWindowActivated+100 < System.currentTimeMillis()) {
+                long curr = System.currentTimeMillis();
+                if (lastWindowActivated != 0 && lastWindowActivated + 100 < curr) {
                     lastWindowActivated = 0;
                     
                     syncTask.schedule(0);
-                    syncTask.waitFinished (100);
+                    boolean finished = syncTask.waitFinished (100);
+                    log.log(Level.FINE, "after syncTask wait, finished {0}", finished); // NOI18N
+                } else {
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine("no wait, last: " + lastWindowActivated + " now: " + curr); // NOI18N
+                    }
                 }
                 
                 
                 prev = super.getContents (requestor);
             } else {
                 syncTask.waitFinished ();
+                log.log(Level.FINE, "after syncTask clipboard wait"); // NOI18N
                 prev = systemClipboard.getContents (requestor);
             }
 
@@ -208,6 +216,8 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
         Transferable cnts = null;
         ClipboardOwner ownr = null;
 
+        log.fine("Running update");
+
         synchronized (this) {
             if (data != null) {
              cnts = data;
@@ -217,11 +227,11 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
             dataOwner = null;
         }
         if (cnts != null) {
+            systemClipboard.setContents(cnts, ownr);
             if (log.isLoggable (Level.FINE)) {
                 log.log (Level.FINE, "systemClipboard updated:"); // NOI18N
                 logFlavors (cnts, Level.FINE, log.isLoggable(Level.FINEST));
             }
-            systemClipboard.setContents(cnts, ownr);
             return;
         }
 
