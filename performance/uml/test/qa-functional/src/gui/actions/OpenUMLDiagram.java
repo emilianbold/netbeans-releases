@@ -82,7 +82,7 @@ public class OpenUMLDiagram extends org.netbeans.performance.test.utilities.Perf
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
     }
    
 

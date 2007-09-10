@@ -83,7 +83,7 @@ public class GenerateDependencyDiagram extends org.netbeans.performance.test.uti
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
         new CloseAllDocumentsAction().performAPI();
     }
    

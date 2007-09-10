@@ -103,7 +103,7 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
     
     public void close(){
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        ProjectSupport.closeProject("jEdit-Model_"+ suffix);
+//        ProjectSupport.closeProject("jEdit-Model_"+ suffix);
  }
 
     protected void shutdown() {

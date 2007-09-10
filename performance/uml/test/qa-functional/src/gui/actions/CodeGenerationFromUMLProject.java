@@ -86,7 +86,7 @@ public class CodeGenerationFromUMLProject extends org.netbeans.performance.test.
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
     }
    
 

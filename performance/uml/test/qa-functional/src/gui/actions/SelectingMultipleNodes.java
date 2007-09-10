@@ -85,7 +85,7 @@ public class SelectingMultipleNodes extends org.netbeans.performance.test.utilit
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
         new CloseAllDocumentsAction().performAPI();
     }
    

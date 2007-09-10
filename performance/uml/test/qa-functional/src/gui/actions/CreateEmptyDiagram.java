@@ -93,7 +93,7 @@ public class CreateEmptyDiagram extends org.netbeans.performance.test.utilities.
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
         new EventTool().waitNoEvent(2000);
     }
 

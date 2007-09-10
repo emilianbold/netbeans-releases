@@ -85,7 +85,7 @@ public class GenerateModelReport extends org.netbeans.performance.test.utilities
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
     }
    
 

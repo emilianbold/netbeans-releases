@@ -110,7 +110,7 @@ public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performanc
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
         new CloseAllDocumentsAction().performAPI();
     }
    

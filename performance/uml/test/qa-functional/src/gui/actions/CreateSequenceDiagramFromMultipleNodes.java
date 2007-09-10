@@ -107,7 +107,7 @@ public class CreateSequenceDiagramFromMultipleNodes extends org.netbeans.perform
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
         new CloseAllDocumentsAction().performAPI();
     }
    

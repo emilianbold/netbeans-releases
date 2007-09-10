@@ -90,7 +90,7 @@ public class ScrollExpandedProject extends org.netbeans.performance.test.utiliti
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
         new CloseAllDocumentsAction().performAPI();
     }
    
