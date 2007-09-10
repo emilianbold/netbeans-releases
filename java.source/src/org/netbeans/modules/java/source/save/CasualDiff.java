@@ -1825,7 +1825,7 @@ public class CasualDiff {
             printer.print(makeAround[0].fixedText());
         }
         int oldIndex = 0;
-        for (int index = 0, j = 0; j < result.length; j++) {
+        for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
             switch (item.operation) {
                 case MODIFY: {
@@ -2005,10 +2005,7 @@ public class CasualDiff {
                 case MODIFY: {
                     int[] bounds = estimator.getPositions(i);
                     copyTo(localPointer, bounds[0], printer);
-                    VeryPretty oldPrinter = this.printer;
-                    this.printer = printer;
                     localPointer = diffTree(oldList.get(i), item.element, bounds);
-                    this.printer = oldPrinter;
                     ++i;
                     break;
                 }
