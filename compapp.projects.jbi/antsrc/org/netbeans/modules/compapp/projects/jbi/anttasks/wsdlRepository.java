@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.apache.tools.ant.BuildException;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.xml.wsdl.model.*;
@@ -333,23 +334,28 @@ public class wsdlRepository {
                 
                 // Collect services... (Serivce QName -> Service)
                 for (Service s : def.getServices()) {
-                    String skey = getQName(tns, s.getName());
-                    if (services.get(skey) != null) {
-                        System.out.println("Duplicate Service: " + skey);
+                    String sQName = getQName(tns, s.getName());
+                    if (services.get(sQName) != null) {
+                        System.out.println("Duplicate Service: " + sQName);
                     } else {
-                        services.put(skey, s);
+                        services.put(sQName, s);
                     }
 
-                    // Collect ports... (Port QName -> Port)
+                    // Collect ports... (ServiceQName + Port Name -> Port)
                     for (Port p : s.getPorts()) {
-                        String key = skey + "." + p.getName(); 
+                        String key = sQName + "." + p.getName(); 
                         if (ports.get(key) != null) {
                             System.out.println("Duplicate Port: " + key);
                         } else {
                             ports.put(key, p);
                             
-                            String ptkey = p.getBinding().get().getType().getQName().toString();
-                            PtConnection ptCon = connections.get(ptkey);
+                            Binding binding = p.getBinding().get();
+                            if (binding == null) {
+                                throw new BuildException(
+                                    "ERROR: Missing binding for WSDL port " + key);
+                            }
+                            String ptQName = binding.getType().getQName().toString();
+                            PtConnection ptCon = connections.get(ptQName);
                             if (ptCon != null) {
                                 ptCon.addPort(p);
                             }

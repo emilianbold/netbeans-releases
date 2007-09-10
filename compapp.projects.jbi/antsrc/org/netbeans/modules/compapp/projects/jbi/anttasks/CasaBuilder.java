@@ -1061,10 +1061,13 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                     QName serviceQName = new QName(tns, service.getName()); 
                     for (Port port : service.getPorts()) {
                         String portName = port.getName();
-                        QName interfaceQName = port.getBinding().get().getType().getQName();
-                        Endpoint endpoint = new Endpoint(portName, serviceQName, interfaceQName);
-                        if (!newWsdlEndpoints.contains(endpoint)) {
-                            newWsdlEndpoints.add(endpoint);
+                        Binding binding = port.getBinding().get();
+                        if (binding != null) { 
+                            QName interfaceQName = binding.getType().getQName();
+                            Endpoint endpoint = new Endpoint(portName, serviceQName, interfaceQName);
+                            if (!newWsdlEndpoints.contains(endpoint)) {
+                                newWsdlEndpoints.add(endpoint);
+                            }
                         }
                     }
                 }
