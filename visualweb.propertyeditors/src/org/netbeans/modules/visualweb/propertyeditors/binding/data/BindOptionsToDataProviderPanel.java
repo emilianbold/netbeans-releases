@@ -410,16 +410,29 @@ public class BindOptionsToDataProviderPanel extends DataBindingPanel implements 
     private void jbInit() throws Exception {
         
         valueList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        valueList.getAccessibleContext().setAccessibleName(bundle.getMessage("VALUE_FIELD_LIST_ACCESS_NAME"));
+        valueList.getAccessibleContext().setAccessibleDescription(bundle.getMessage("VALUE_FIELD_LIST_ACCESS_DESC"));
         displayList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        displayList.getAccessibleContext().setAccessibleName(bundle.getMessage("DISPLAY_FIELD_LIST_ACCESS_NAME"));
+        displayList.getAccessibleContext().setAccessibleDescription(bundle.getMessage("DISPLAY_FIELD_LIST_ACCESS_DESC"));
         noneText.setEditable(false);
         noneText.setFont(dpLabel.getFont());
         noneText.setBorder(UIManager.getBorder("TextField.border")); //NOI18N
         noneText.setText(bundle.getMessage("noDps")); //NOI18N
         
         valueListLabel.setText(bundle.getMessage("valField")); //NOI18N
-        displayListLabel.setText(bundle.getMessage("displayField")); //NOI18N
+        valueListLabel.setDisplayedMnemonic(bundle.getMessage("valFieldDisplayedMnemonic").charAt(0)); //NOI18N
+        valueListLabel.setLabelFor(valueList);        
+        displayListLabel.setText(bundle.getMessage("displayField")); //NOI18N        
+        displayListLabel.setDisplayedMnemonic(bundle.getMessage("displayFieldDisplayedMnemonic").charAt(0)); //NOI18N        
+        displayListLabel.setLabelFor(displayList);
         valueListScroll.setPreferredSize(new Dimension(200, 200));
         
+        dpLabel.setDisplayedMnemonic(bundle.getMessage("chooseDpToBindSimpleDisplayedMnemonic").charAt(0)); //NOI18N
+        dpLabel.setLabelFor(dpCombo);
+        
+        dpCombo.getAccessibleContext().setAccessibleName(bundle.getMessage("DP_COMBO_ACCESS_NAME"));
+        dpCombo.getAccessibleContext().setAccessibleDescription(bundle.getMessage("DP_COMBO_ACCESS_DESC"));
         dpCombo.setRenderer(new DPComboRenderer());
         
         this.setPreferredSize(new Dimension(400, 200));
