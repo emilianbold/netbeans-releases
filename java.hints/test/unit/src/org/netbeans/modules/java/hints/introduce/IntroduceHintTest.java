@@ -698,6 +698,21 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test {public static void t() {final int a = 0; name(); int b = a;} private static void name() { new Runnable() { private int i; public void run() { int a = i; } }; } }",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
+
+    public void testIntroduceMethodUselessLocalVariable() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        |int c = 0;\n" +
+                       "        \n" +
+                       "        c = 3;|\n" +
+                       "        \n" +
+                       "        System.err.println(c);\n" +
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static void main(String[] args) { int c = name(); System.err.println(c); } private static int name() { int c = 0; c = 3; return c; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
     
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
@@ -762,6 +777,14 @@ public class IntroduceHintTest extends NbTestCase {
         prepareTest(code);
         
         assertEquals(awaited, IntroduceHint.checkConstantExpression(info, IntroduceHint.validateSelection(info, start, end)));
+    }
+    
+    private void performFixTest(String code, String golden, DialogDisplayer dd) throws Exception {
+        int[] span = new int[2];
+        
+        code = TestUtilities.detectOffsets(code, span);
+        
+        performFixTest(code, span[0], span[1], golden, dd);
     }
     
     private void performFixTest(String code, int start, int end, String golden, DialogDisplayer dd) throws Exception {

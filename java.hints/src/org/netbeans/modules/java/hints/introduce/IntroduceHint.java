@@ -760,7 +760,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (phase == PHASE_INSIDE_SELECTION) {
                 Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getVariable()));
                 
-                if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
+                if (e != null && LOCAL_VARIABLES.contains(e.getKind()) && localVariables.contains(e)) {
                     selectionWrittenLocalVariables.add((VariableElement) e);
                 }
             }
