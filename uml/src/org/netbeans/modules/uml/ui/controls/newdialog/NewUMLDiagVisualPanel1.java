@@ -40,10 +40,10 @@ import org.dom4j.Document;
 
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.common.generics.ETPairT;
-import org.netbeans.modules.uml.core.UMLSettings;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
+import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
@@ -93,12 +93,14 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
 
         else
         {
-            defaultName = NewDialogUtilities.getDefaultDiagramName(
-                NewDialogUtilities.diagramNameToKind(
-                (String)diagramTypes.getSelectedValue()));
+            IProject project = null;
+            if (mDetails != null && mDetails.getNamespace() != null)
+                project = mDetails.getNamespace().getProject();
             
-//            defaultName = ((String)diagramTypes.getSelectedValue()) +
-//                " " + diagramCount; // NOI18N
+            defaultName = NewDialogUtilities.getDefaultDiagramName(
+                project, 
+                NewDialogUtilities.diagramNameToKind(
+                    (String)diagramTypes.getSelectedValue()));
         }
         
         diagName.setText(defaultName);

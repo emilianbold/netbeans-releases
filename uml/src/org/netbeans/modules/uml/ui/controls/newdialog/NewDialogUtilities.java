@@ -22,19 +22,16 @@
 package org.netbeans.modules.uml.ui.controls.newdialog;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
-import org.netbeans.modules.uml.core.UMLSettings;
+
 import org.netbeans.modules.uml.core.coreapplication.CoreProductManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductManager;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
@@ -57,8 +54,8 @@ import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
-import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
+
 import org.openide.util.NbBundle;
 
 /**
@@ -650,27 +647,33 @@ public class NewDialogUtilities
     }
     
     
-    public static String getDefaultDiagramName(int kind)
+    public static String getDefaultDiagramName(int kind) 
     {
-        return getDefaultDiagramBaseName(kind) + " " + getNextDiagramCounter(kind); // NOI18N
-        
-//        return getDefaultDiagramBaseName(kind) + " " + // NOI18N
-//            UMLSettings.getDefault().getNewDiagramCount();
+        return getDefaultDiagramName(null, kind);
     }
-     
-    public static int getNextDiagramCounter(int kind)
+
+    public static String getDefaultDiagramName(IProject project, int kind) {
+        return getDefaultDiagramBaseName(kind) + " " + 
+            getNextDiagramCounter(project, kind); // NOI18N
+    }
+
+    public static int getNextDiagramCounter(int kind) 
     {
-        if (getProject() == null)
-        {
-            // this means that a new project is being created
-            // so all diagrams are reset to 1
+        return getNextDiagramCounter(null, kind);
+    }
+
+    public static int getNextDiagramCounter(IProject project, int kind) 
+    {
+        if (project == null)
+            project = getProject();
+
+        if (project == null) 
             return 1;
-        }
         
         else
         {
-            ETList<IProxyDiagram> diagrams = ProxyDiagramManager.instance()
-                .getDiagramsInProject(getProject());
+            ETList<IProxyDiagram> diagrams = 
+                ProxyDiagramManager.instance().getDiagramsInProject(project);
 
             String baseName = getDefaultDiagramBaseName(kind);
             int baseLength = baseName.length();
