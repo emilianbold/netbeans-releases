@@ -20,6 +20,7 @@
 package org.netbeans.modules.form.project;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
@@ -46,7 +47,7 @@ class ProjectClassLoader extends ClassLoader {
     private ProjectClassLoader(ClassLoader projectClassLoaderDelegate, ClassPath sources) {
         this.projectClassLoaderDelegate = projectClassLoaderDelegate;
         this.sources = sources;
-        this.systemClassLoader = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+        this.systemClassLoader = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
     }
 
     static ClassLoader getUpToDateClassLoader(FileObject fileInProject, ClassLoader clSoFar) {
@@ -61,6 +62,7 @@ class ProjectClassLoader extends ClassLoader {
         return new ProjectClassLoader(actualCL, ClassPath.getClassPath(fileInProject, ClassPath.SOURCE));
     }
 
+    @Override
     protected Class findClass(String name) throws ClassNotFoundException {
         if (name.startsWith("org.apache.commons.logging.")) { // NOI18N HACK: Issue 50642
             try {
@@ -83,8 +85,9 @@ class ProjectClassLoader extends ClassLoader {
             String filename = name.replace('.', '/').concat(".class"); // NOI18N
             URL url = projectClassLoaderDelegate.getResource(filename);
             if (url != null) {
+                InputStream is = null;
                 try {
-                    InputStream is = url.openStream();
+                    is = url.openStream();
                     byte[] data = null;
                     int first;
                     int available = is.available();
@@ -124,6 +127,14 @@ class ProjectClassLoader extends ClassLoader {
                 }
                 catch (Exception ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException ioex) {
+                            // ignore
+                        }
+                    }
                 }
             }
         }
@@ -132,6 +143,7 @@ class ProjectClassLoader extends ClassLoader {
         return c;
     }
 
+    @Override
     protected URL findResource(String name) {
         FileObject fo = sources.findResource(name);
         if (fo != null) {

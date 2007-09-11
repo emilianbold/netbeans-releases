@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.form.project;
 import java.io.InputStream;
+import java.io.IOException;
 import java.net.URL;
 import org.openide.ErrorManager;
 
@@ -37,7 +38,7 @@ final class FormClassLoader extends ClassLoader {
     private ClassLoader projectClassLoader;
 
     FormClassLoader(ClassLoader projectClassLoader) {
-        this.systemClassLoader = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+        this.systemClassLoader = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
         this.projectClassLoader = projectClassLoader;
     }
 
@@ -45,6 +46,7 @@ final class FormClassLoader extends ClassLoader {
         return projectClassLoader;
     }
 
+    @Override
     protected Class findClass(String name) throws ClassNotFoundException {
         int type = ClassPathUtils.getClassLoadingType(name);
         if (type == ClassPathUtils.UNSPECIFIED_CLASS) {
@@ -62,8 +64,9 @@ final class FormClassLoader extends ClassLoader {
         if (url == null && projectClassLoader != null)
             url = projectClassLoader.getResource(filename);
         if (url != null) {
+            InputStream is = null;
             try {
-                InputStream is = url.openStream();
+                is = url.openStream();
                 byte[] data = null;
                 int first;
                 int available = is.available();
@@ -103,6 +106,14 @@ final class FormClassLoader extends ClassLoader {
             }
             catch (Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ioex) {
+                        // ignore
+                    }
+                }
             }
         }
         if (c == null)
@@ -111,6 +122,7 @@ final class FormClassLoader extends ClassLoader {
         return c;
     }
 
+    @Override
     public URL getResource(String name) {
         URL url = projectClassLoader != null ? projectClassLoader.getResource(name) : null;
         if (url == null)
