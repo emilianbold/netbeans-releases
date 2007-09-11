@@ -721,21 +721,29 @@ public class TestCreator {
             List<StatementTree> statements = new ArrayList<StatementTree>(8);
             boolean allStatic=true;
             
+            
+            int i=0;
             for (ExecutableElement srcAMethod : srcMethods)
             {
                 boolean isStatic = srcAMethod.getModifiers().contains(Modifier.STATIC);
                 allStatic&=isStatic;
+                i++;
                 
                 if (generateDefMethodBody) {
-                    StatementTree sout = generateSystemOutPrintln(
-                            maker,
-                            srcAMethod.getSimpleName().toString());
+                    
                     
                     List<VariableTree> paramVariables = generateParamVariables(
                             maker,
-                            srcAMethod);
+                            srcAMethod,
+                            i);
                     
-                    statements.add(sout);
+                    if (i==1) 
+                    {
+                        StatementTree sout = generateSystemOutPrintln(
+                            maker,
+                            srcAMethod.getSimpleName().toString());
+                        statements.add(sout);                        
+                    }
                     statements.addAll(paramVariables);
 
                     MethodInvocationTree methodCall = maker.MethodInvocation(
@@ -757,12 +765,12 @@ public class TestCreator {
 
                         VariableTree expectedValue = maker.Variable(
                                 maker.Modifiers(NO_MODIFIERS),
-                                EXP_RESULT_VAR_NAME,
+                                EXP_RESULT_VAR_NAME+'_'+i,
                                 retTypeTree,
                                 getDefaultValue(maker, retType));
                         VariableTree actualValue = maker.Variable(
                                 maker.Modifiers(NO_MODIFIERS),
-                                RESULT_VAR_NAME,
+                                RESULT_VAR_NAME+'_'+i,
                                 retTypeTree,
                                 methodCall);
 
@@ -835,7 +843,7 @@ public class TestCreator {
 
 
 
-        private List<VariableTree> generateParamVariables(TreeMaker maker, ExecutableElement srcMethod) {
+        private List<VariableTree> generateParamVariables(TreeMaker maker, ExecutableElement srcMethod, int i) {
 
             List<? extends VariableElement> params = srcMethod.getParameters();
 
@@ -853,7 +861,7 @@ public class TestCreator {
                 TypeMirror paramType = param.asType();
                 paramVariables.add(
                         maker.Variable(maker.Modifiers(noModifiers),
-                                varNames[index++],
+                                varNames[index++]+'_'+i,
                                 maker.Type(paramType),
                                 getDefaultValue(maker, paramType)));
             }
