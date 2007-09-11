@@ -545,9 +545,10 @@ public final class ProjectXMLManager {
                                 TestModuleDependency tmd = new TestModuleDependency(me, test, recursive, compile);
                                 if (!directTestDeps.add(tmd)) {
                                     //testdependency already exist
-                                    String msg = "Invalid project.xml, testdependency " + tmd.getModule().getCodeNameBase() + " is duplicated!";
+                                    String msg = "Invalid project.xml(" + project.getPathWithinNetBeansOrg() + 
+                                            "), testdependency " + tmd.getModule().getCodeNameBase() + 
+                                            " is duplicated!";
                                     Util.err.log(ErrorManager.WARNING, msg);
-                                    throw new IllegalStateException(msg);
                                 }
                             }
                         }

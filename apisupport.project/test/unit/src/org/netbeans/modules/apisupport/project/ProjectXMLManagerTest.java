@@ -558,32 +558,6 @@ public class ProjectXMLManagerTest extends TestBase {
     }
 
     
-    public void testInvalidProjectXMLWithDuplicateTestdeps() throws Exception{
-        String testDependenciesWithDupl = "\n" +
-                "<test-type>\n" +
-                "<name>unit</name>\n" +
-                "<test-dependency>\n" +
-                "<code-name-base>org.netbeans.core</code-name-base>\n" +
-                "</test-dependency>\n" +
-                "<test-dependency>\n" +
-                "<code-name-base>org.netbeans.core</code-name-base>\n" +
-                "<recursive/>" +
-                "</test-dependency>\n" +
-                "</test-type>\n";        
-        final NbModuleProject testingProject = generateTestingProject(testDependenciesWithDupl);
-        final ProjectXMLManager pxm = new ProjectXMLManager(testingProject);
-        ModuleList ml = ModuleList.getModuleList(testingProject.getProjectDirectoryFile());
-        try{
-            pxm.getTestDependencies(ml);
-            fail("project.xml is invalid, exception should be thrown");
-            
-        } catch (IllegalStateException ise){
-            //should be thrown
-        }
-    
-
-    }
-    
     public void testIssue92363FixAddDependencyWhereSomeIsAlreadyPresent() throws Exception{
         String testDependencies = "\n" +
                 "<test-type>\n" +
