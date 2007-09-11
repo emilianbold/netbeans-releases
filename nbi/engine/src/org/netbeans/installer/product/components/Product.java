@@ -26,11 +26,13 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.dependencies.Conflict;
 import org.netbeans.installer.product.dependencies.InstallAfter;
 import org.netbeans.installer.product.dependencies.Requirement;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.utils.helper.RemovalMode;
@@ -124,7 +126,8 @@ public final class Product extends RegistryNode {
             getLogic();
         } catch (InitializationException e) {
             throw new InstallationException(
-                    "Cannot load configuration logic", e);
+                    ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_INITIALIZE_PRODUCT_KEY, getDisplayName()), e);
         }
         
         totalProgress.addChild(
@@ -140,7 +143,8 @@ public final class Product extends RegistryNode {
         // cannot continue
         if (getInstallationLocation() == null) {
             throw new InstallationException(
-                    "Installation location property is not set");
+                    ResourceUtils.getString(Product.class,
+                    ERROR_INSTALLATION_LOCATION_NOT_SET_KEY, getDisplayName()));
         }
         
         // initialize the local cache directory
@@ -148,11 +152,13 @@ public final class Product extends RegistryNode {
         if (!cache.exists()) {
             if (!cache.mkdirs()) {
                 throw new InstallationException(
-                        "Cannot create the local cache directory for the product");
+                        ResourceUtils.getString(Product.class,
+                        ERROR_CANNOT_CREATE_PRODUCT_CACHE_DIR_KEY, cache, getDisplayName()));
             }
         } else if (!cache.isDirectory()) {
             throw new InstallationException(
-                    "The local cache directory for the product is not a directory");
+                    ResourceUtils.getString(Product.class,
+                    ERROR_CACHE_NOT_DIRECTORY_KEY, cache, getDisplayName()));
         }
         
         // initialize the files list
@@ -164,7 +170,8 @@ public final class Product extends RegistryNode {
         // extraction phase /////////////////////////////////////////////////////////
         installationPhase = InstallationPhase.EXTRACTION;
         
-        totalProgress.setTitle("Installing " + getDisplayName());
+        totalProgress.setTitle(StringUtils.format(
+                MESSAGE_INSTALLATION_STRING, getDisplayName()));
         
         final File contentsDir = new File(getInstallationLocation(), "Contents");
         final File macosDir = new File(contentsDir, "MacOS");
@@ -175,11 +182,11 @@ public final class Product extends RegistryNode {
         // product should be automatically wrapped, we first create the required
         // directories structure and then extract the product
         if (SystemUtils.isMacOS() && configurationLogic.wrapForMacOs()) {
-            setProperty(
-                    "application.location",
+            setProperty(APPLICATION_LOCATION_PROPERTY,
                     getInstallationLocation().getAbsolutePath());
             setInstallationLocation(new File(resourcesDir,
-                    getInstallationLocation().getName().replaceAll("\\.app$", "")));
+                    getInstallationLocation().getName().replaceAll("\\.app$",
+                    StringUtils.EMPTY_STRING)));
             
             final UnixNativeUtils utils =
                     (UnixNativeUtils) SystemUtils.getNativeUtils();
@@ -209,7 +216,9 @@ public final class Product extends RegistryNode {
                         executableName,
                         iconName)));
             } catch (IOException e) {
-                throw new InstallationException("Cannot wrap for MacOS", e);
+                throw new InstallationException(
+                        ResourceUtils.getString(Product.class,
+                        ERROR_CANNOT_WRAP_FOR_MACOS_KEY), e);
             }
         }
         
@@ -225,13 +234,17 @@ public final class Product extends RegistryNode {
             // get the uri of the current data file
             final URI dataUri = uri.getLocal();
             if (dataUri == null) {
-                throw new InstallationException("Installation data is not cached");
+                throw new InstallationException(
+                        ResourceUtils.getString(Product.class,
+                        ERROR_DATA_NOT_CACHED_KEY, getDisplayName()));
             }
             
             // convert it to a file and do some additional checks
             final File dataFile = new File(uri.getLocal());
             if (!dataFile.exists()) {
-                throw new InstallationException("Installation data is not cached");
+                throw new InstallationException(
+                        ResourceUtils.getString(Product.class,
+                        ERROR_DATA_NOT_CACHED_KEY, getDisplayName()));
             }
             
             // exract it and add the files to the installed files list
@@ -243,15 +256,20 @@ public final class Product extends RegistryNode {
             } catch (IOException e) {
                 if (e.getMessage().equals("Not enough space")) {
                     throw new InstallationException(
-                            "Cannot extract installation data -- not " +
-                            "enough disk space in the target directory.", 
-                            e);
+                            ResourceUtils.getString(Product.class,
+                            ERROR_NOT_ENOUGH_SPACE_KEY), e);
                 }
                 throw new InstallationException(
-                        "Cannot extract installation data", 
+                        ResourceUtils.getString(Product.class,
+                        ERROR_CANNOT_EXTRACT_DATA_KEY,
+                        getDisplayName()),
                         e);
             } catch (XMLException e) {
-                throw new InstallationException("Cannot extract installation data", e);
+                throw new InstallationException(
+                        ResourceUtils.getString(Product.class,
+                        ERROR_CANNOT_EXTRACT_DATA_KEY,
+                        getDisplayName()),
+                        e);
             }
             
             // finally remove the data file
@@ -259,12 +277,16 @@ public final class Product extends RegistryNode {
                 FileUtils.deleteFile(dataFile);
                 uri.setLocal(null);
             } catch (IOException e) {
-                throw new InstallationException("Cannot clear installation data cache", e);
+                throw new InstallationException(
+                        ResourceUtils.getString(Product.class,
+                        ERROR_CANNOT_CLEAR_DATA_CACHE_KEY,
+                        dataFile),
+                        e);
             }
         }
         
         // create legal/docs artifacts
-        progress.setDetail("Creating legal artifacts");
+        progress.setDetail(StringUtils.format(MESSAGE_LEGAL_ARTIFACTS_STRING));
         try {
             saveLegalArtifacts();
         } catch (IOException e) {
@@ -277,13 +299,14 @@ public final class Product extends RegistryNode {
         // custom configuration phase ///////////////////////////////////////////////
         installationPhase = InstallationPhase.CUSTOM_LOGIC;
         
-        totalProgress.setTitle("Configuring " + getDisplayName());
+        totalProgress.setTitle(StringUtils.format(
+                MESSAGE_CONFIGURATION_STRING, getDisplayName()));
         
         // run custom configuration logic
-        progress.setDetail("Running custom configuration logic");
+        progress.setDetail(StringUtils.format(MESSAGE_RUN_LOGIC_STRING));
         configurationLogic.install(logicProgress);
         logicProgress.setPercentage(Progress.COMPLETE);
-        progress.setDetail("");
+        progress.setDetail(StringUtils.EMPTY_STRING);
         
         // check for cancel status
         if (progress.isCanceled()) return;
@@ -294,21 +317,25 @@ public final class Product extends RegistryNode {
         // register the component in the system install manager
         if (configurationLogic.registerInSystem()) {
             try {
-                progress.setDetail("Registering in the system package manager");
+                progress.setDetail(StringUtils.format(MESSAGE_SYSTEM_REGISTRATION_STRING));
                 SystemUtils.addComponentToSystemInstallManager(getApplicationDescriptor());
             } catch (NativeException e) {
-                LogManager.log("Integration with the system package manager failed");
+                LogManager.log(ResourceUtils.getString(Product.class,
+                        ERROR_SYSTEM_INTEGRATION_FAILER_KEY,
+                        getDisplayName()));
                 LogManager.log(e);
                 addInstallationWarning(e);
             }
         }
         
         // save the installed files list
-        progress.setDetail("Saving installed files list");
+        progress.setDetail(StringUtils.format(MESSAGE_SAVE_INSTALL_FILES_LIST_STRING));
         try {
             installedFiles.saveXmlGz(getInstalledFilesList());
         } catch (XMLException e) {
-            throw new InstallationException("Cannot save installed files list", e);
+            throw new InstallationException(
+                    ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_SAVE_FILES_LIST_KEY), e);
         }
         
         installationPhase = InstallationPhase.COMPLETE;
@@ -329,7 +356,8 @@ public final class Product extends RegistryNode {
             getLogic();
         } catch (InitializationException e) {
             throw new UninstallationException(
-                    "Cannot load configuration logic", e);
+                    ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
         }
         
         int logicChunk = (int) (progress.getPercentage() * (
@@ -357,14 +385,17 @@ public final class Product extends RegistryNode {
                 try {
                     FileUtils.deleteFile(getInstalledFilesList());
                 } catch (IOException e) {
-                    ErrorManager.notifyWarning("Cannot delete installed files list", e);
+                    ErrorManager.notifyWarning(ResourceUtils.getString(Product.class,
+                            ERROR_CANNOT_DELETE_FILES_LIST_KEY), e);
                 }
                 
                 if (configurationLogic.registerInSystem()) {
                     try {
                         SystemUtils.removeComponentFromSystemInstallManager(getApplicationDescriptor());
                     } catch (NativeException e) {
-                        ErrorManager.notifyWarning("Cannot remove component from system registry", e);
+                        ErrorManager.notifyWarning(
+                                ResourceUtils.getString(Product.class,
+                                ERROR_CANNOT_REMOVE_FROM_SYSTEM_KEY, getDisplayName()), e);
                     }
                 }
                 
@@ -383,13 +414,15 @@ public final class Product extends RegistryNode {
                     
                     File file = entry.getFile();
                     
-                    eraseProgress.setDetail("Deleting " + file);
+                    eraseProgress.setDetail(StringUtils.format(MESSAGE_DELETE_STRING, file));
                     eraseProgress.setPercentage(Progress.COMPLETE * current / total);
                     
                     try {
                         FileUtils.deleteFile(file);
                     } catch (IOException e) {
-                        ErrorManager.notifyWarning("Cannot delete file", e);
+                        ErrorManager.notifyWarning(
+                                ResourceUtils.getString(Product.class,
+                                ERROR_CANNOT_DELETE_FILE_KEY), e);
                     }
                 }
                 
@@ -415,7 +448,8 @@ public final class Product extends RegistryNode {
             getLogic();
         } catch (InitializationException e) {
             throw new UninstallationException(
-                    "Cannot load configuration logic", e);
+                    ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
         }
         
         totalProgress.addChild(
@@ -431,19 +465,23 @@ public final class Product extends RegistryNode {
         try {
             installedFiles = new FilesList().loadXmlGz(getInstalledFilesList());
         } catch (XMLException e) {
-            throw new UninstallationException("Cannot get the files list", e);
+            throw new UninstallationException(
+                    ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_GET_FILES_LIST_KEY), e);
         }
         
         // custom logic phase ///////////////////////////////////////////////////////
-        progress.setTitle("Unconfiguring " + getDisplayName());
+        progress.setTitle(StringUtils.format(
+                MESSAGE_UNCONFIGURATION_STRING, getDisplayName()));
         
         // run custom unconfiguration logic
         configurationLogic.uninstall(logicProgress);
         logicProgress.setPercentage(Progress.COMPLETE);
-        progress.setDetail("");
+        progress.setDetail(StringUtils.EMPTY_STRING);
         
         // files deletion phase /////////////////////////////////////////////////////
-        progress.setTitle("Uninstalling " + getDisplayName());
+        progress.setTitle(StringUtils.format(
+                MESSAGE_UNINSTALLATION_STRING, getDisplayName()));
         
         // remove installation files
         if (configurationLogic.getRemovalMode() == RemovalMode.ALL) {
@@ -458,7 +496,8 @@ public final class Product extends RegistryNode {
                 FileUtils.deleteFile(startPoint, true, eraseProgress);
             } catch (IOException e) {
                 addUninstallationWarning(new UninstallationException(
-                        "Cannot delete the file",
+                        ResourceUtils.getString(Product.class,
+                        ERROR_CANNOT_DELETE_FILE_KEY),
                         e));
             }
         } else {
@@ -466,7 +505,8 @@ public final class Product extends RegistryNode {
                 FileUtils.deleteFiles(installedFiles, eraseProgress);
             } catch (IOException e) {
                 addUninstallationWarning(new UninstallationException(
-                        "Cannot delete the file",
+                        ResourceUtils.getString(Product.class,
+                        ERROR_CANNOT_DELETE_FILE_KEY),
                         e));
             }
         }
@@ -476,16 +516,21 @@ public final class Product extends RegistryNode {
             try {
                 SystemUtils.removeComponentFromSystemInstallManager(getApplicationDescriptor());
             } catch (NativeException e) {
-                addUninstallationWarning(new UninstallationException("Cannot remove component from the native install manager", e));
+                addUninstallationWarning(new UninstallationException(
+                        ResourceUtils.getString(Product.class,
+                        ERROR_CANNOT_REMOVE_FROM_SYSTEM_KEY,
+                        getDisplayName()), e));
             }
         }
         
-        progress.setDetail("");
+        progress.setDetail(StringUtils.EMPTY_STRING);
         // remove the files list
         try {
             FileUtils.deleteFile(getInstalledFilesList());
         } catch (IOException e) {
-            addUninstallationWarning(new UninstallationException("Cannot delete installed files list", e));
+            addUninstallationWarning(new UninstallationException(
+                    ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_DELETE_FILES_LIST_KEY), e));
         }
         
         progress.setPercentage(Progress.COMPLETE);
@@ -534,7 +579,9 @@ public final class Product extends RegistryNode {
         }
         
         if (!isLogicDownloaded()) {
-            throw new InitializationException("Configuration logic is not yet downloaded");
+            throw new InitializationException(
+                    ResourceUtils.getString(Product.class,
+                    ERROR_LOGIC_NOT_YET_DOWNLOADED_KEY, getDisplayName()));
         }
         
         try {
@@ -557,13 +604,17 @@ public final class Product extends RegistryNode {
             
             return configurationLogic;
         } catch (IOException e) {
-            throw new InitializationException("Cannot load configuration logic", e);
+            throw new InitializationException(ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
         } catch (ClassNotFoundException e) {
-            throw new InitializationException("Cannot load configuration logic", e);
+            throw new InitializationException(ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
         } catch (InstantiationException e) {
-            throw new InitializationException("Cannot load configuration logic", e);
+            throw new InitializationException(ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
         } catch (IllegalAccessException e) {
-            throw new InitializationException("Cannot load configuration logic", e);
+            throw new InitializationException(ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
         }
     }
     
@@ -608,7 +659,8 @@ public final class Product extends RegistryNode {
         try {
             return getLogic().getWizardComponents();
         } catch (InitializationException e) {
-            ErrorManager.notifyError("Cannot get component's wizard components", e);
+            ErrorManager.notifyError(ResourceUtils.getString(
+                    Product.class, ERROR_CANNOT_GET_WIZARD_COMPONENTS_KEY), e);
         }
         
         return null;
@@ -667,25 +719,25 @@ public final class Product extends RegistryNode {
     public List<Dependency> getDependencies(final DependencyType ... types) {
         Class [] classes = new Class[types.length];
         for(int i=0;i<types.length;i++) {
-           classes[i] = toDependencyClass(types[i]);
+            classes[i] = toDependencyClass(types[i]);
         }
         return getDependencies(classes);
     }
     
     @Deprecated
     private Class <? extends Dependency> toDependencyClass(DependencyType type) {
-         switch (type) {
-                case REQUIREMENT:
-                    return Requirement.class;
-                case CONFLICT :
-                    return Conflict.class; 
-                case INSTALL_AFTER:
-                    return InstallAfter.class; 
-                default :
-                    return null;
-            }
+        switch (type) {
+            case REQUIREMENT:
+                return Requirement.class;
+            case CONFLICT :
+                return Conflict.class;
+            case INSTALL_AFTER:
+                return InstallAfter.class;
+            default :
+                return null;
+        }
     }
-            
+    
     public List<Dependency> getDependencies(Class ... dependencyClasses) {
         final List<Dependency> filtered = new ArrayList<Dependency>();
         
@@ -767,7 +819,7 @@ public final class Product extends RegistryNode {
     
     // node <-> dom /////////////////////////////////////////////////////////////////
     protected String getTagName() {
-        return "product";
+        return PRODUCT_TAG_NAME;
     }
     
     public Element saveToDom(final Element element) throws FinalizationException {
@@ -775,23 +827,26 @@ public final class Product extends RegistryNode {
         
         final Document document = element.getOwnerDocument();
         
-        element.setAttribute("version", version.toString());
-        element.setAttribute("platforms", StringUtils.asString(supportedPlatforms, " "));
-        element.setAttribute("status", currentStatus.toString());
-        element.setAttribute("features", StringUtils.asString(features, " "));
+        element.setAttribute(VERSION_TAG_NAME, version.toString());
+        element.setAttribute(PLATFORMS_TAG_NAME,
+                StringUtils.asString(supportedPlatforms, StringUtils.SPACE));
+        element.setAttribute(STATUS_TAG_NAME, currentStatus.toString());
+        element.setAttribute(FEATURES_TAG_NAME,
+                StringUtils.asString(features, StringUtils.SPACE));
         
         element.appendChild(XMLUtils.saveExtendedUrisList(
                 logicUris,
-                document.createElement("configuration-logic")));
+                document.createElement(CONFIGURATION_LOGIC_TAG_NAME)));//NOI18N
         
         element.appendChild(XMLUtils.saveExtendedUrisList(
                 dataUris,
-                document.createElement("installation-data")));
+                document.createElement(INSTALLATION_DATA_TAG_NAME)));//NOI18N
         
         final Element systemRequirementsElement =
-                document.createElement("system-requirements");
+                document.createElement(SYSTEM_REQUIREMENTS_TAG_NAME);//NOI18N
         
-        final Element diskSpaceElement = document.createElement("disk-space");
+        final Element diskSpaceElement =
+                document.createElement(DISK_SPACE_TAG_NAME);//NOI18N
         diskSpaceElement.setTextContent(Long.toString(requiredDiskSpace));
         systemRequirementsElement.appendChild(diskSpaceElement);
         
@@ -800,7 +855,7 @@ public final class Product extends RegistryNode {
         if (dependencies.size() > 0) {
             element.appendChild(XMLUtils.saveDependencies(
                     dependencies,
-                    document.createElement("dependencies")));
+                    document.createElement(DEPENDENCIES_TAG_NAME)));//NOI18N
         }
         
         return element;
@@ -814,35 +869,39 @@ public final class Product extends RegistryNode {
         
         try {
             version =
-                    Version.getVersion(element.getAttribute("version"));
+                    Version.getVersion(element.getAttribute(VERSION_TAG_NAME));
             supportedPlatforms =
-                    StringUtils.parsePlatforms(element.getAttribute("platforms"));
+                    StringUtils.parsePlatforms(element.getAttribute(PLATFORMS_TAG_NAME));
             
             initialStatus =
-                    StringUtils.parseStatus(element.getAttribute("status"));
+                    StringUtils.parseStatus(element.getAttribute(STATUS_TAG_NAME));
             currentStatus =
                     initialStatus;
             
-            features = StringUtils.asList(element.getAttribute("features"), " ");
+            features = StringUtils.asList(element.getAttribute(FEATURES_TAG_NAME),
+                    StringUtils.SPACE);
             
             logicUris.addAll(XMLUtils.parseExtendedUrisList(XMLUtils.getChild(
-                    element,
-                    "configuration-logic")));
+                    element, CONFIGURATION_LOGIC_TAG_NAME)));
             
             dataUris.addAll(XMLUtils.parseExtendedUrisList(XMLUtils.getChild(
-                    element,
-                    "installation-data")));
+                    element, INSTALLATION_DATA_TAG_NAME)));
             
             requiredDiskSpace = Long.parseLong(XMLUtils.getChild(
                     element,
-                    "system-requirements/disk-space").getTextContent());
+                    SYSTEM_REQUIREMENTS_TAG_NAME + "/" + DISK_SPACE_TAG_NAME).
+                    getTextContent());
             
-            child = XMLUtils.getChild(element, "dependencies");
+            child = XMLUtils.getChild(element, DEPENDENCIES_TAG_NAME);
             if (child != null) {
                 dependencies.addAll(XMLUtils.parseDependencies(child));
             }
         } catch (ParseException e) {
-            throw new InitializationException("Could not load product", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Product.class,
+                    ERROR_CANNOT_LOAD_PRODUCT_KEY,
+                    getDisplayName()),
+                    e);
         }
         
         return this;
@@ -920,7 +979,7 @@ public final class Product extends RegistryNode {
         
         String installLocation = getInstallationLocation().getAbsolutePath();
         if (SystemUtils.isMacOS() && configurationLogic.wrapForMacOs()) {
-            final String applicationLocation = getProperty("application.location");
+            final String applicationLocation = getProperty(APPLICATION_LOCATION_PROPERTY);
             
             if (applicationLocation != null) {
                 installLocation = applicationLocation;
@@ -928,10 +987,10 @@ public final class Product extends RegistryNode {
         }
         
         final String[] modifyCommand = new String[] {
-            "--target", uid, version.toString()};
+            Installer.TARGET_ARG, uid, version.toString()};
         
         final String[] uninstallCommand = new String[] {
-            "--target", uid, version.toString(), "--force-uninstall"};
+            Installer.TARGET_ARG, uid, version.toString(), Installer.FORCE_UNINSTALL_ARG};
         
         if (configurationLogic.allowModifyMode()) {
             return new ApplicationDescriptor(
@@ -1053,5 +1112,95 @@ public final class Product extends RegistryNode {
             "Configuration-Logic-Class"; // NOI18N
     
     public static final String INFO_PLIST_STUB = FileUtils.INFO_PLIST_STUB;
-            
+    
+    private static final String APPLICATION_LOCATION_PROPERTY =
+            "application.location";
+    
+    private static final String VERSION_TAG_NAME =
+            "version";//NOI18N
+    private static final String PLATFORMS_TAG_NAME =
+            "platforms";//NOI18N
+    private static final String STATUS_TAG_NAME =
+            "status";//NOI18N
+    private static final String FEATURES_TAG_NAME =
+            "features";//NOI18N
+    private static final String CONFIGURATION_LOGIC_TAG_NAME =
+            "configuration-logic";//NOI18N
+    private static final String INSTALLATION_DATA_TAG_NAME =
+            "installation-data";//NOI18N
+    private static final String DEPENDENCIES_TAG_NAME =
+            "dependencies";//NOI18N
+    private static final String PRODUCT_TAG_NAME =
+            "product";//NOI18N
+    private static final String SYSTEM_REQUIREMENTS_TAG_NAME =
+            "system-requirements";//NOI18N
+    private static final String DISK_SPACE_TAG_NAME =
+            "disk-space";//NOI18N
+    
+    private static final String ERROR_CANNOT_INITIALIZE_PRODUCT_KEY =
+            "P.error.cannot.initialize.product";//NOI18N
+    private static final String ERROR_CANNOT_LOAD_LOGIC_KEY =
+            "P.error.cannot.load.logic";//NOI18N
+    private static final String ERROR_INSTALLATION_LOCATION_NOT_SET_KEY =
+            "P.error.installdir.not.set";//NOI18N
+    private static final String ERROR_CANNOT_CREATE_PRODUCT_CACHE_DIR_KEY =
+            "P.error.cannot.create.cache.dir";//NOI18N
+    private static final String ERROR_CACHE_NOT_DIRECTORY_KEY =
+            "P.error.local.cache.not.dir";//NOI18N
+    private static final String ERROR_CANNOT_LOAD_PRODUCT_KEY =
+            "P.error.cannot.load.product";//NOI18N
+    private static final String ERROR_LOGIC_NOT_YET_DOWNLOADED_KEY =
+            "P.error.logic.not.yet.downloaded";//NOI18N
+    private static final String ERROR_DATA_NOT_CACHED_KEY =
+            "P.error.installation.data.not.cached";//NOI18N
+    private static final String ERROR_CANNOT_EXTRACT_DATA_KEY =
+            "P.error.cannot.extract.data";//NOI18N
+    private static final String ERROR_CANNOT_SAVE_FILES_LIST_KEY =
+            "P.error.cannot.save.files.list";//NOI18N
+    private static final String ERROR_CANNOT_GET_WIZARD_COMPONENTS_KEY =
+            "P.error.cannot.get.wizard.components";//NOI18N
+    private static final String ERROR_CANNOT_WRAP_FOR_MACOS_KEY =
+            "P.error.cannot.wrap.for.macos";//NOI18N
+    private static final String ERROR_CANNOT_GET_FILES_LIST_KEY =
+            "P.error.cannot.get.files.list";//NOI18N
+    private static final String ERROR_CANNOT_DELETE_FILES_LIST_KEY =
+            "P.error.cannot.delete.files.list";//NOI18N
+    private static final String ERROR_CANNOT_DELETE_FILE_KEY =
+            "P.error.cannot.delete.file";//NOI18N
+    private static final String ERROR_CANNOT_REMOVE_FROM_SYSTEM_KEY =
+            "P.error.cannot.remove.from.system";//NOI18N
+    private static final String ERROR_NOT_ENOUGH_SPACE_KEY =
+            "P.error.not.enough.space";//NOI18N
+    private static final String ERROR_CANNOT_CLEAR_DATA_CACHE_KEY =
+            "P.error.cannot.clear.cache";//NOI18N
+    private static final String ERROR_SYSTEM_INTEGRATION_FAILER_KEY =
+            "P.error.system.integartion.failed";//NOI18N
+    
+    private static final String MESSAGE_INSTALLATION_STRING =
+            ResourceUtils.getString(Product.class,
+            "P.message.installation");//NOI18N
+    private static final String MESSAGE_UNINSTALLATION_STRING =
+            ResourceUtils.getString(Product.class,
+            "P.message.uninstallation");//NOI18N
+    private static final String MESSAGE_CONFIGURATION_STRING =
+            ResourceUtils.getString(Product.class,
+            "P.message.configuration");//NOI18N
+    private static final String MESSAGE_UNCONFIGURATION_STRING =
+            ResourceUtils.getString(Product.class,
+            "P.message.unconfiguration");//NOI18N
+    private static final String MESSAGE_LEGAL_ARTIFACTS_STRING =
+            ResourceUtils.getString(Product.class,
+            "P.message.legal.artifacts");//NOI18N
+    private static final String MESSAGE_RUN_LOGIC_STRING =
+            ResourceUtils.getString(Product.class,
+            "P.message.run.logic");//NOI18N
+    private static final String MESSAGE_SYSTEM_REGISTRATION_STRING =
+            ResourceUtils.getString(Product.class,
+            "P.message.system.registration");//NOI18N
+    private static final String MESSAGE_SAVE_INSTALL_FILES_LIST_STRING =
+            ResourceUtils.getString(Product.class,
+            "P.message.save.installation.files.list");//NOI18N
+    private static final String MESSAGE_DELETE_STRING =
+            ResourceUtils.getString(Product.class,
+            "P.message.delete");//NOI18N
 }
