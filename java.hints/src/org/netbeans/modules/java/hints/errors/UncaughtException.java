@@ -24,6 +24,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -42,6 +43,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Task;
@@ -112,7 +115,7 @@ public final class UncaughtException implements ErrorRule<Void> {
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         List<Fix> result = new ArrayList<Fix>();
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
-        List<? extends TypeMirror> uncauched = null;
+        List<? extends TypeMirror> uncought = null;
         boolean disableSurroundWithTryCatch = false;
         Element el;
         
@@ -145,21 +148,30 @@ public final class UncaughtException implements ErrorRule<Void> {
 		    }
 		    
                     if (el != null && EXECUTABLE_ELEMENTS.contains(el.getKind())) {
-                        uncauched = ((ExecutableElement) el).getThrownTypes();
+			TypeMirror uncaughtException;
+			if(leaf.getKind() == Kind.NEW_CLASS)
+			    uncaughtException = info.getTrees().getTypeMirror(new TreePath(path, ((NewClassTree) leaf).getIdentifier()));
+			else
+			    uncaughtException = info.getTrees().getTypeMirror(new TreePath(path, ((MethodInvocationTree) leaf).getMethodSelect()));
+			
+			if(uncaughtException != null && uncaughtException.getKind() == TypeKind.EXECUTABLE)
+			    uncought = ((ExecutableType) uncaughtException).getThrownTypes();
+			else
+			    uncought = ((ExecutableElement) el).getThrownTypes();
                     }
                     path = path.getParentPath();
                     break OUTTER;
                 case THROW:
                     TypeMirror uncaughtException = info.getTrees().getTypeMirror(new TreePath(path, ((ThrowTree) leaf).getExpression()));
-                    uncauched = Collections.singletonList(uncaughtException);
+                    uncought = Collections.singletonList(uncaughtException);
                     break OUTTER;
             }
             
             path = path.getParentPath();
         }
         
-        if (uncauched != null) {
-            uncauched = findUncauchedExceptions(info, path, uncauched);
+        if (uncought != null) {
+            uncought = findUncauchedExceptions(info, path, uncought);
             
             TreePath pathRec = path;
             
@@ -172,7 +184,7 @@ public final class UncaughtException implements ErrorRule<Void> {
             if (method != null) {
                 //if the method header is inside a guarded block, do nothing:
                 if (!org.netbeans.modules.java.hints.errors.Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) pathRec.getLeaf())) {
-                    for (TypeMirror tm : uncauched) {
+                    for (TypeMirror tm : uncought) {
                         if (tm.getKind() != TypeKind.ERROR) {
                             result.add(new AddThrowsClauseHintImpl(info.getJavaSource(), Utilities.getTypeName(tm, true).toString(), TypeMirrorHandle.create(tm), ElementHandle.create(method)));
                         }
@@ -180,10 +192,10 @@ public final class UncaughtException implements ErrorRule<Void> {
                 }
             }
             
-            if (!uncauched.isEmpty() && !disableSurroundWithTryCatch) {
+            if (!uncought.isEmpty() && !disableSurroundWithTryCatch) {
                 List<TypeMirrorHandle> thandles = new ArrayList<TypeMirrorHandle>();
                 
-                for (TypeMirror tm : uncauched) {
+                for (TypeMirror tm : uncought) {
                     if (tm.getKind() != TypeKind.ERROR)
                         thandles.add(TypeMirrorHandle.create(tm));
                 }

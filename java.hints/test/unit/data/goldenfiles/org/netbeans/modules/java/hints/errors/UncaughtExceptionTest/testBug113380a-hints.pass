@@ -1,0 +1,2 @@
+Add throws clause for java.lang.InstantiationException
+Surround with try-catch

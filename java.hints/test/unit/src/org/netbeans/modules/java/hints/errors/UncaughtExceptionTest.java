@@ -87,4 +87,15 @@ public class UncaughtExceptionTest extends HintsTestBase {
 	performTestDoNotPerform("Test", 24, 30);
     }
     
+    /**
+     * Offer proper exception types for generic parametrized methods
+     */ 
+    public void testBug113380a() throws Exception {
+	performTestDoNotPerform("TestBug113380", 13, 17);
+    }
+    
+    public void testBug113380b() throws Exception {
+	performTestDoNotPerform("TestBug113380", 14, 17);
+    }
+    
 }

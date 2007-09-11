@@ -1,0 +1,2 @@
+Add throws clause for java.lang.IllegalAccessException
+Surround with try-catch
