@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
@@ -122,7 +123,7 @@ public class JarLauncher extends CommonLauncher {
         List <String> commandList = new ArrayList <String>();
         commandList.add(JavaUtils.getExecutableW(javaLocation).getAbsolutePath());
         commandList.add("-cp");
-        String classpath = "";
+        String classpath = StringUtils.EMPTY_STRING;
         for(LauncherResource jar : jars) {
             switch(jar.getPathType()) {
                 case RELATIVE_JAVAHOME :

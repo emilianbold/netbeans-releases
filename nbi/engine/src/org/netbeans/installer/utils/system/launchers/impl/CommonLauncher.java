@@ -160,7 +160,8 @@ public abstract class CommonLauncher extends Launcher {
             }
         }
         if(jars.size()==0) {
-            throw new IOException("No bundled or external files");
+            throw new IOException(ResourceUtils.getString(
+                    CommonLauncher.class, ERROR_NO_JAR_FILES_KEY));
         }
     }
     
@@ -172,7 +173,8 @@ public abstract class CommonLauncher extends Launcher {
                 try {
                     is = file.getInputStream();
                     if(is == null) {
-                        throw new IOException("JVM file " + file.getPath() + " not found");
+                        throw new IOException(ResourceUtils.getString(
+                                CommonLauncher.class,ERROR_CANNOT_FIND_JVM_FILE_KEY, file.getPath()));
                     }
                 } finally {
                     if(is!=null) {
@@ -207,7 +209,8 @@ public abstract class CommonLauncher extends Launcher {
                     }
                 }
             }
-            throw new IOException("No specified main class among bundled files");
+            throw new IOException(ResourceUtils.getString(CommonLauncher.class, 
+                    ERROR_MAIN_CLASS_UNSPECIFIED_KEY));
         } else{
             for(LauncherResource file : jars) {
                 if(file.isBundled() && !file.isBasedOnResource() ) {
@@ -223,7 +226,8 @@ public abstract class CommonLauncher extends Launcher {
                 }
             }
             
-            throw new IOException("Can`t find class " + mainClass + " in bundled files and no external ones were specified");
+            throw new IOException(ResourceUtils.getString(CommonLauncher.class, 
+                    ERROR_CANNOT_FIND_CLASS_KEY, mainClass));
         }
     }
     private void checkTestJVMClass() throws IOException {
@@ -281,7 +285,7 @@ public abstract class CommonLauncher extends Launcher {
                 }
             }
             if(outputFile==null) {
-                String exString = "No bundled files - can`t get output file name";
+                String exString = ResourceUtils.getString(CommonLauncher.class, ERROR_CANNOT_GET_OUTPUT_NAME_KEY);
                 LogManager.log(exString);
                 throw new IOException(exString);
             }
@@ -335,4 +339,15 @@ public abstract class CommonLauncher extends Launcher {
         }
         return total;
     }
+    
+    private static final String ERROR_NO_JAR_FILES_KEY =
+            "CnL.error.no.jars";//NOI18N
+    private static final String ERROR_CANNOT_FIND_JVM_FILE_KEY =
+            "CnL.error.cannot.find.jvm.file";//NOI18N
+    private static final String ERROR_CANNOT_FIND_CLASS_KEY =
+            "CnL.error.cannot.find.class";//NOI18N
+    private static final String ERROR_MAIN_CLASS_UNSPECIFIED_KEY =
+            "CnL.error.main.class.unspecified";//NOI18N
+    private static final String ERROR_CANNOT_GET_OUTPUT_NAME_KEY =
+            "CnL.error.cannot.get.output.name";//NOI18N
 }

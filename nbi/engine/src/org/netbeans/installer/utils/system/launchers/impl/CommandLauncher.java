@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
@@ -52,6 +54,11 @@ public class CommandLauncher extends ShLauncher {
             "nbi.not.set.dock.icon";
     public static final String NOTSET_DOCK_NAME_PROPERTY = 
             "nbi.not.set.dock.name";
+            
+    public static final String XDOCK_ICON_PROPERTY_NAME = 
+            "-Xdock:icon";//NOI18N
+    public static final String XDOCK_NAME_PROPERTY_NAME = 
+            "-Xdock:name";//NOI18N
             
     
     private static final String [] JAVA_MACOSX_LOCATION = {
@@ -90,10 +97,10 @@ public class CommandLauncher extends ShLauncher {
         boolean setDockIcon = true;
         boolean setDockName = true;
         for(String s : jvmArguments) {
-            if(s.contains("-Xdock:name")) {
+            if(s.contains(XDOCK_NAME_PROPERTY_NAME)) {
                 setDockName = false;                
             }
-            if(s.contains("-Xdock:icon")) {
+            if(s.contains(XDOCK_ICON_PROPERTY_NAME)) {
                 setDockIcon = false;                
             }
         }
@@ -108,15 +115,19 @@ public class CommandLauncher extends ShLauncher {
             try {
                 iconFile = FileProxy.getInstance().getFile(uri);
                 LauncherResource iconResource = new LauncherResource (iconFile);
-                jvmArguments.add("-Xdock:icon=" + iconResource.getAbsolutePath());
+                jvmArguments.add(XDOCK_ICON_PROPERTY_NAME + StringUtils.EQUAL + iconResource.getAbsolutePath());
                 otherResources.add(iconResource);
             } catch (DownloadException e) {
-                ErrorManager.notify("Can`t get launcher icon from " + uri, e);
+                ErrorManager.notify(ResourceUtils.getString(
+                        CommandLauncher.class, ERROR_CANNOT_GET_ICON_KEY, uri), e);
             }            
         }
         if(setDockName && !Boolean.getBoolean(NOTSET_DOCK_NAME_PROPERTY)) {
-            jvmArguments.add("-Xdock:name=$P{" + 
-                    JAVA_APPLICATION_NAME_LAUNCHER_PROPERTY + "}");
+            jvmArguments.add(XDOCK_NAME_PROPERTY_NAME + StringUtils.EQUAL + 
+                    "$P{" + JAVA_APPLICATION_NAME_LAUNCHER_PROPERTY + "}");
         }        
     }
+    
+    private static final String ERROR_CANNOT_GET_ICON_KEY = 
+            "CdL.error.cannot.get.icon";//NOI18N
 }

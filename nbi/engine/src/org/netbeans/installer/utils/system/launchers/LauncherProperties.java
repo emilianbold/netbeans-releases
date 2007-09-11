@@ -40,8 +40,7 @@ import static org.netbeans.installer.utils.system.launchers.LauncherResource.Typ
  *
  * @author Dmitry Lipin
  */
-public class LauncherProperties implements Cloneable {
-    
+public class LauncherProperties implements Cloneable {    
     protected File stubFile;
     protected List<LauncherResource> jars;
     protected List<LauncherResource> jvms;
