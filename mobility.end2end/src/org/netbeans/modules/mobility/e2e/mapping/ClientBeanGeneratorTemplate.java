@@ -35,7 +35,10 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
+import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonMapping.Service;
 import org.netbeans.modules.mobility.javon.JavonSerializer;
@@ -96,6 +99,10 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                         }
                         
                         generateBean( beanFile, type );
+                        if ("true".equals(mapping.getProperty( "databinding" )) && beanFile != null){
+                            Project p = FileOwnerQuery.getOwner(beanFile);
+                            Util.registerDataBindingLibrary(p);
+                        }
                         //ph.progress( progress );
                     } catch( IOException e ) {
                         ErrorManager.getDefault().notify( e );
