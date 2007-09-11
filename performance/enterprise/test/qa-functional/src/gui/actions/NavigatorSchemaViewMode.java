@@ -49,7 +49,7 @@ public class NavigatorSchemaViewMode  extends org.netbeans.performance.test.util
     
     protected void initialize() {
         log(":: initialize");
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
         
         processNode = EPUtilities.getProcessFilesNode("SOATestProject");
         Node doc1 = new Node(processNode,"batch.xsd");

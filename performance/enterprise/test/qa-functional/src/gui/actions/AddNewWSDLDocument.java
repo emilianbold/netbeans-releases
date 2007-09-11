@@ -62,7 +62,7 @@ public class AddNewWSDLDocument extends org.netbeans.performance.test.utilities.
     
     public void initialize(){
         index=1;
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
     }
     
     public void prepare(){

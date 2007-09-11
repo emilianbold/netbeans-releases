@@ -58,7 +58,7 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
     }
     
     public void prepare(){
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
     }
     
     public ComponentOperator open(){

@@ -98,7 +98,7 @@ public class CreateCompositeApplication extends org.netbeans.performance.test.ut
     
     public void close(){
         ProjectSupport.closeProject(project_name);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+//        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static void main(java.lang.String[] args) {

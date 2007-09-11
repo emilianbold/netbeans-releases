@@ -62,7 +62,7 @@ public class AddNewXMLDocument extends org.netbeans.performance.test.utilities.P
     
     public void initialize(){
         index=1;
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
     }
     
     public void prepare(){

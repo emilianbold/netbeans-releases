@@ -77,7 +77,7 @@ public class SwitchToSchemaView  extends org.netbeans.performance.test.utilities
     
     @Override
     protected void shutdown() {
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
     }
 
     

@@ -69,7 +69,7 @@ public class DeployProject extends org.netbeans.performance.test.utilities.Perfo
         OutputTabOperator asot = oot.getOutputTab(asNode.getText()); // NOI18N
         asot.waitText("Application server startup complete"); // NOI18N
         
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
     }
     
     public void prepare() {

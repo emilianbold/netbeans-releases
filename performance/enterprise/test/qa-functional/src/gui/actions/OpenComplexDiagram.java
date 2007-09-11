@@ -54,7 +54,7 @@ public class OpenComplexDiagram extends org.netbeans.performance.test.utilities.
     
     public void initialize(){
         log(":: initialize");
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
     }
     
     public void prepare() {

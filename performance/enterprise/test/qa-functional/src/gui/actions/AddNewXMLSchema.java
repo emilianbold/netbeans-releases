@@ -62,7 +62,7 @@ public class AddNewXMLSchema extends org.netbeans.performance.test.utilities.Per
     
     public void initialize(){
         index=1;
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
     }
     
     public void prepare(){
