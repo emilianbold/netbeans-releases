@@ -673,6 +673,11 @@ FacesDndSupport.UpdateSuspender {
         if ((pendingEventType == TYPE_NONE) || suspendUpdates) {
             return;
         }
+        
+        // XXX #114813 The model could get destroyed inbetween.
+        if (!jsfForm.isModelValid()) {
+            return;
+        }
 
         MarkupDesignBean bean = pendingBean;
         pendingBean = null;
