@@ -793,10 +793,8 @@ public class HgCommand {
         for(File f: addFiles){
             if(f.isDirectory())
                 continue;
-            if(HgUtils.isIgnored(f)){
-                Mercurial.LOG.log(Level.FINE, "doAdd(addFiles): Ignored File not added: {0}", new Object[] {f.getAbsolutePath()}); // NOI18N
-                continue;
-            }
+            // We do not look for files to ignore as we should not here
+            // with a file to be ignored.
             command.add(f.getAbsolutePath());
         }
         List<String> list = exec(command);
@@ -850,11 +848,8 @@ public class HgCommand {
         if (repository == null) return;
         if (file == null) return;
         if (file.isDirectory()) return;
-        if(HgUtils.isIgnored(file)){
-            Mercurial.LOG.log(Level.FINE, "doAdd(): Ignored File not added: {0}", // NOI18N
-                    new Object[] {file.getAbsolutePath()});
-            return;
-        }
+        // We do not look for file to ignore as we should not here
+        // with a file to be ignored.
         
         List<String> command = new ArrayList<String>();
 
