@@ -213,7 +213,7 @@
 
 <!--CSH - Keymaps Options window page:-->
 <mapID target="netbeans.optionsDialog.keymaps" url="configure/options-shortcuts.html" />
-
+<mapID target="netbeans.optionsDialog.advanced.todo" url="configure/options_todo_settings.html" />
 
 
 
