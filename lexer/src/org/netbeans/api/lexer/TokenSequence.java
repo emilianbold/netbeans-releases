@@ -718,7 +718,7 @@ public final class TokenSequence<T extends TokenId> {
         if (tokenList.modCount() != this.modCount) {
             throw new ConcurrentModificationException(
                 "Caller uses token sequence which is no longer valid. Underlying token hierarchy" // NOI18N
-              + " has been modified: " + this.modCount + " != " + tokenList.modCount() // NOI18N
+              + " has been modified: modCount=" + this.modCount + " != upToDateModCount=" + tokenList.modCount() // NOI18N
             );
         }
     }
