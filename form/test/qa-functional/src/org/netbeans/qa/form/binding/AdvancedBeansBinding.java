@@ -28,9 +28,11 @@ import org.netbeans.jellytools.nodes.Node;
 import java.util.*;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.qa.form.BindDialogOperator;
 
 /**
@@ -58,10 +60,8 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testAlternateValues")); // NOI18N
-        
-        //TODO: convertors and validators test
-        //suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
-        //suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
+        suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
+//        suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
         return suite;
     }
     
@@ -177,7 +177,58 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
 
     /** Tests conversion */
     public void testConversion() {
-        fail("todo"); // NOI18N
+        String convertorName = "bool2FaceConverter";
+        
+        // open frame
+        openFile(FILENAME);
+        ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+        Node actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel9 [JLabel]"); // NOI18N
+        Action act = new ActionNoBlock(null, ACTION_PATH);
+        act.perform(actNode);
+        
+        // set Face2Bool converter from list
+        BindDialogOperator bindOp = new BindDialogOperator();
+        bindOp.selectAdvancedTab();
+        bindOp.selectConverter(convertorName);
+        bindOp.ok();
+        
+        // find code in source file
+        FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
+        findInCode("binding.setConverter(bool2FaceConverter);", designer);
+
+        
+        // open bind dialog again and check selected convertor
+        act.perform(actNode);
+        bindOp = new BindDialogOperator();
+        bindOp.selectAdvancedTab();
+        String selectedConvertor = bindOp.getSelectedConverter();
+        bindOp.ok();
+
+        // test convertor name
+        assertEquals(selectedConvertor, convertorName);
+        
+        
+//        actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel10 [JLabel]"); // NOI18N
+//        act = new ActionNoBlock(null, ACTION_PATH);
+//        act.perform(actNode);
+        
+// It does not work because of issue #115239
+//        // set Face2Bool converter using "..." button
+//        bindOp = new BindDialogOperator();
+//        bindOp.selectAdvancedTab();
+//        
+//        new JButtonOperator(bindOp.tbdPane(), 2).pushNoBlock();
+//        JDialogOperator dialog = new JDialogOperator("Converter");
+//        new JComboBoxOperator(dialog, 0).selectItem(2);
+//        
+//        JTextFieldOperator textOp = new JTextFieldOperator(dialog, 0);
+//        textOp.clearText();
+//        textOp.setText("new Bool2FaceConverter()");
+//        
+//        new JButtonOperator(dialog,"OK").push();
+//
+//        bindOp = new BindDialogOperator();
+//        bindOp.ok();
     }
     
     /** Select update mode for  jlabel */

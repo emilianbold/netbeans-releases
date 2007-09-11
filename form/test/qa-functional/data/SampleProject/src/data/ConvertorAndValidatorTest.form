@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Component class="data.Bool2FaceConverter" name="bool2FaceConverter">
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
   </Properties>
@@ -61,7 +65,14 @@
                       <Component id="jLabel7" alignment="0" pref="267" max="32767" attributes="1"/>
                   </Group>
               </Group>
-              <EmptySpace min="-2" pref="176" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
+                  <Component id="jCheckBox2" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -72,36 +83,44 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jButton1" alignment="3" max="32767" attributes="0"/>
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jCheckBox1" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jButton2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jButton3" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jButton4" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jButton5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jCheckBox2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jButton6" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jButton4" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jButton5" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jButton6" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="jLabel7" min="-2" pref="27" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jLabel8" min="-2" pref="27" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="jLabel10" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="jLabel7" min="-2" pref="27" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jLabel8" min="-2" pref="27" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -115,7 +134,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <BindingProperties>
-        <BindingProperty name="text" source="jLabel1" sourcePath="${text}" target="jLabel2" targetPath="text" updateStrategy="0" immediately="false"/>
+        <BindingProperty name="text" source="jLabel1" sourcePath="${text}" target="jLabel2" targetPath="text" updateStrategy="2" immediately="false"/>
       </BindingProperties>
     </Component>
     <Component class="javax.swing.JButton" name="jButton1">
@@ -135,7 +154,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel4">
       <BindingProperties>
-        <BindingProperty name="text" source="jLabel3" sourcePath="${text}" target="jLabel4" targetPath="text" updateStrategy="0" immediately="false"/>
+        <BindingProperty name="text" source="jLabel3" sourcePath="${text}" target="jLabel4" targetPath="text" updateStrategy="1" immediately="false"/>
       </BindingProperties>
     </Component>
     <Component class="javax.swing.JButton" name="jButton3">
@@ -180,7 +199,10 @@
         </Property>
       </Properties>
       <BindingProperties>
-        <BindingProperty name="text" source="Form" sourcePath="${iconImage}" target="jLabel7" targetPath="text" updateStrategy="0" immediately="false"/>
+        <BindingProperty name="text" source="Form" sourcePath="${iconImage}" target="jLabel7" targetPath="text" updateStrategy="0" immediately="false">
+          <Property name="nullValue" type="java.lang.String" value="null foo msg"/>
+          <Property name="incompletePathValue" type="java.lang.String" value="incomplete foo msg"/>
+        </BindingProperty>
       </BindingProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel8">
@@ -193,6 +215,27 @@
       </Properties>
       <BindingProperties>
         <BindingProperty name="text" source="Form" sourcePath="${iconImage.graphics.font.fontName}" target="jLabel8" targetPath="text" updateStrategy="0" immediately="false"/>
+      </BindingProperties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jCheckBox1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="jCheckBox1"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel9">
+      <BindingProperties>
+        <BindingProperty name="text" source="jCheckBox1" sourcePath="${selected}" target="jLabel9" targetPath="text" updateStrategy="0" immediately="false"/>
+      </BindingProperties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jCheckBox2">
+      <Properties>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" value="jCheckBox2"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel10">
+      <BindingProperties>
+        <BindingProperty name="text" source="jCheckBox2" sourcePath="${selected}" target="jLabel10" targetPath="text" updateStrategy="0" immediately="false"/>
       </BindingProperties>
     </Component>
   </SubComponents>

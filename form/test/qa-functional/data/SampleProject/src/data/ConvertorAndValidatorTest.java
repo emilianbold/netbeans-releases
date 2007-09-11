@@ -6,6 +6,7 @@
 
 package data;
 
+
 class MyObject {
     private String _myProp;
     
@@ -81,6 +82,7 @@ public class ConvertorAndValidatorTest extends javax.swing.JFrame {
     private void initComponents() {
         bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
+        bool2FaceConverter = new data.Bool2FaceConverter();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
@@ -95,12 +97,16 @@ public class ConvertorAndValidatorTest extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
+        jCheckBox1 = new javax.swing.JCheckBox();
+        jLabel9 = new javax.swing.JLabel();
+        jCheckBox2 = new javax.swing.JCheckBox();
+        jLabel10 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jLabel1.setText("jLabel1");
 
-        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, jLabel1, org.jdesktop.beansbinding.ELProperty.create("${text}"), jLabel2, org.jdesktop.beansbinding.BeanProperty.create("text"));
+        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_ONCE, jLabel1, org.jdesktop.beansbinding.ELProperty.create("${text}"), jLabel2, org.jdesktop.beansbinding.BeanProperty.create("text"));
         bindingGroup.addBinding(binding);
 
         jButton1.setText("Modify jLabel1 Text");
@@ -109,7 +115,7 @@ public class ConvertorAndValidatorTest extends javax.swing.JFrame {
 
         jLabel3.setText("jLabel3");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, jLabel3, org.jdesktop.beansbinding.ELProperty.create("${text}"), jLabel4, org.jdesktop.beansbinding.BeanProperty.create("text"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, jLabel3, org.jdesktop.beansbinding.ELProperty.create("${text}"), jLabel4, org.jdesktop.beansbinding.BeanProperty.create("text"));
         bindingGroup.addBinding(binding);
 
         jButton3.setText("Modify jLabel3 Text");
@@ -129,11 +135,24 @@ public class ConvertorAndValidatorTest extends javax.swing.JFrame {
         jLabel7.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, this, org.jdesktop.beansbinding.ELProperty.create("${iconImage}"), jLabel7, org.jdesktop.beansbinding.BeanProperty.create("text"));
+        binding.setSourceNullValue("null foo msg");
+        binding.setSourceUnreadableValue("incomplete foo msg");
         bindingGroup.addBinding(binding);
 
         jLabel8.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, this, org.jdesktop.beansbinding.ELProperty.create("${iconImage.graphics.font.fontName}"), jLabel8, org.jdesktop.beansbinding.BeanProperty.create("text"));
+        bindingGroup.addBinding(binding);
+
+        jCheckBox1.setText("jCheckBox1");
+
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, jCheckBox1, org.jdesktop.beansbinding.ELProperty.create("${selected}"), jLabel9, org.jdesktop.beansbinding.BeanProperty.create("text"));
+        bindingGroup.addBinding(binding);
+
+        jCheckBox2.setSelected(true);
+        jCheckBox2.setText("jCheckBox2");
+
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, jCheckBox2, org.jdesktop.beansbinding.ELProperty.create("${selected}"), jLabel10, org.jdesktop.beansbinding.BeanProperty.create("text"));
         bindingGroup.addBinding(binding);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -171,7 +190,13 @@ public class ConvertorAndValidatorTest extends javax.swing.JFrame {
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(jLabel6))
                         .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)))
-                .add(176, 176, 176))
+                .add(41, 41, 41)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jCheckBox1)
+                    .add(jLabel9)
+                    .add(jCheckBox2)
+                    .add(jLabel10))
+                .add(47, 47, 47))
         );
 
         layout.linkSize(new java.awt.Component[] {jButton1, jButton2, jButton3, jButton4, jButton5, jButton6}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -182,31 +207,37 @@ public class ConvertorAndValidatorTest extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButton1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jLabel1))
+                    .add(jLabel1)
+                    .add(jCheckBox1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButton2)
-                    .add(jLabel2))
+                    .add(jLabel2)
+                    .add(jLabel9))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButton3)
-                    .add(jLabel3))
+                    .add(jLabel3)
+                    .add(jCheckBox2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton4)
-                    .add(jLabel4))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton5)
-                    .add(jLabel5))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton6)
-                    .add(jLabel6))
-                .add(18, 18, 18)
-                .add(jLabel7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jButton4)
+                            .add(jLabel4))
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jButton5)
+                            .add(jLabel5))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jButton6)
+                            .add(jLabel6))
+                        .add(18, 18, 18)
+                        .add(jLabel7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel10))
                 .addContainerGap())
         );
 
@@ -254,15 +285,18 @@ private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {
         });
     }
     
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private data.Bool2FaceConverter bool2FaceConverter;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
+    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -270,6 +304,7 @@ private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
     

@@ -33,6 +33,7 @@ public class BindDialogOperator extends JDialogOperator {
     private JComboBoxOperator _cboBindSource;
     private JComboBoxOperator _cboBindExpression;
     private JComboBoxOperator _cboUpdateMode;
+    private JComboBoxOperator _cboConverter;    
     private JTextFieldOperator _txtBindExpression;
     private JCheckBoxOperator _chbNullValue;
     private JCheckBoxOperator _chbIncompletePathValue;    
@@ -85,6 +86,16 @@ public class BindDialogOperator extends JDialogOperator {
             _cboUpdateMode = new JComboBoxOperator(tbdPane(),0);
         }
         return _cboUpdateMode;
+    }
+    
+    /** Tries to find JComboBoxOperator in Advanced tab.
+     * @return JComboBoxOperator
+     */
+    private JComboBoxOperator cboConverter() {
+        if (_cboConverter ==null) {
+            _cboConverter = new JComboBoxOperator(tbdPane(),1);
+        }
+        return _cboConverter;
     }
     
     /** Tries to find JComboBoxOperator in this dialog.
@@ -256,7 +267,16 @@ public class BindDialogOperator extends JDialogOperator {
     public void selectReadOnceUpdateMode() {
         cboUpdateMode().selectItem(READ_ONCE_UPDATE_MODE);
     }
-    
+
+    /** selects converter from list */
+    public void selectConverter(String converterName) {
+        cboConverter().selectItem(converterName);        
+    }
+
+    /** gets selected converter */
+    public String getSelectedConverter() {
+        return cboConverter().getSelectedItem().toString();        
+    }
     
     /** gets selected binding source
      * @return String text
