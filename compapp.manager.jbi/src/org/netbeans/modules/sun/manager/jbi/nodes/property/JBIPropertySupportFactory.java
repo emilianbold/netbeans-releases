@@ -23,11 +23,11 @@ import java.beans.PropertyEditor;
 import java.util.logging.Level;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
+import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 import org.netbeans.modules.sun.manager.jbi.editors.EnvironmentVariablesEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.JBILogLevelEditor;
-import org.netbeans.modules.sun.manager.jbi.editors.PasswordEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.SimpleTabularDataEditor;
 import org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtNode;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
@@ -38,46 +38,7 @@ import org.openide.nodes.PropertySupport;
  * @author jqian
  */
 public class JBIPropertySupportFactory {
-    
-//    private static Logger logger;
-//    private static JBIPropertySupportFactory instance;
-//    private EnhancedPropertyEditorFactory editorFactory;
-    
-//    private static final String ARRAY_DELIM = " , "; // NOI18N
-//    
-//    /** Used in order to determine datatype map for editors **/
-//    static Map<String, Class> typeToClassesMap = new HashMap<String, Class>();
-//    
-//    static {
-//        typeToClassesMap.put("short", String.class); // NOI18N
-//        typeToClassesMap.put("long", String.class); // NOI18N
-//        typeToClassesMap.put("int", String.class); // NOI18N
-//        typeToClassesMap.put("boolean", String.class); // b/c of enhanced editor // NOI18N
-//        typeToClassesMap.put("float", String.class); // NOI18N
-//        typeToClassesMap.put("double", String.class); // NOI18N
-//        typeToClassesMap.put("byte", String.class); // NOI18N
-//        typeToClassesMap.put("char", String.class); // NOI18N
-//        typeToClassesMap.put(String[].class.getName(), String.class);
-//        typeToClassesMap.put(Boolean.class.getName(), String.class);
-//        typeToClassesMap.put(java.util.Map.class.getName(), String.class);
-//    };
-//
-//    private JBIPropertySupportFactory() {
-////        editorFactory = EnhancedPropertyEditorFactory.getInstance();
-//    }    
-//    
-//    /**
-//     * Returns the singleton instance of this factory.
-//     *
-//     * @return An instance of PropertySupportFactory.
-//     */
-//    public static JBIPropertySupportFactory getInstance() {
-//        if (instance == null) {
-//            instance = new JBIPropertySupportFactory();
-//        }
-//        return instance;
-//    }    
-    
+        
     /**
      * Returns the appropriate PropertySupport given the MBean Attribute and its
      * MBeanAttributeInfo.
@@ -91,6 +52,7 @@ public class JBIPropertySupportFactory {
      * 
      * @return a PropertySupport for the attribute
      */
+    @SuppressWarnings("unchecked")
     public static PropertySupport getPropertySupport(
             final AppserverJBIMgmtNode parent, 
             final Attribute attr,
@@ -98,156 +60,30 @@ public class JBIPropertySupportFactory {
         
         PropertySupport support = null;
         
-        if (info.getType().equals("java.util.logging.Level")) { // NOI18N    
+        Object attrValue = attr.getValue();
+        if (attrValue instanceof Boolean) {
+            support = new MyPropertySupport(parent, Boolean.class, attr, info); 
+        } else if (attrValue instanceof Integer) {
+            support = new MyPropertySupport(parent, Integer.class, attr, info);
+        } else if (attrValue instanceof Level) {  
             support = createLogLevelProperty((JBIComponentNode)parent, attr, info);
-        } else if (info.getType().equals("javax.management.openmbean.TabularData")) { // NOI18N
-            TabularDataSupport tabularDataSupport = 
-                    (TabularDataSupport) attr.getValue();
-            TabularType tabularType = tabularDataSupport.getTabularType();
+        } else if (attrValue instanceof TabularData) { 
+            TabularDataSupport tabularData = (TabularDataSupport) attrValue;
+            TabularType tabularType = tabularData.getTabularType();
             int columnCount = tabularType.getRowType().keySet().size();
             if (columnCount == 3) { // new typed environment variables
-                support = createEnvironmentVariablesProperty(
-                        (JBIComponentNode)parent, attr, info);
+                support = createTabularDataProperty(
+                        (JBIComponentNode)parent, attr, info, 
+                        EnvironmentVariablesEditor.class);
             } else {  // untyped environment variables (for backward compatibility)
                 support = createTabularDataProperty(
-                        (JBIComponentNode)parent, attr, info);
+                        (JBIComponentNode)parent, attr, info, 
+                        SimpleTabularDataEditor.class);
             }
-        } else {
-            if (info.isWritable()) {
-                support = createReadWritePropertySupport(parent, attr, info);
-            } else {
-                support = createReadOnlyPropertySupport(attr, info);
-            }
+        } else {  // default           
+            support = new MyPropertySupport(parent, String.class, attr, info);
         }
         return support;
-    }
-  
-    private static PropertySupport createReadOnlyPropertySupport(
-            final Attribute attr, final MBeanAttributeInfo info) {
-        
-        if (attr.getValue() instanceof Boolean) {
-            return new PropertySupport.ReadOnly<Boolean>(
-                    attr.getName(),
-                    Boolean.class, 
-                    info.getName(), 
-                    info.getDescription()) {
-
-                public Boolean getValue() {
-                    return (Boolean) attr.getValue();
-                }
-            };
-        } else {
-            return new PropertySupport.ReadOnly<String>(
-                    attr.getName(),
-                    String.class, //getClassFromStringType(info.getType()), 
-                    info.getName(), 
-                    info.getDescription()) {
-
-                public String getValue() {
-                    String v = (String) attr.getValue();
-                    return v == null ? "" : v; // NOI18N
-                }
-            };
-        }
-    }    
-  
-    private static PropertySupport createReadWritePropertySupport(
-            final AppserverJBIMgmtNode parent, final Attribute attr,
-            final MBeanAttributeInfo info) {
-        PropertySupport support = null;
-        if (attr.getValue() instanceof Boolean) {
-            support = getBooleanPropertySupport(parent, attr, info); 
-        } else if (attr.getValue() instanceof Integer) {
-            support = getReadWriteIntegerPropertySupport(parent, attr, info);
-        } else {                    
-            support = getReadWriteStringPropertySupport(parent, attr, info);
-        }
-        return support;
-    }    
-    
-    public static PropertySupport getBooleanPropertySupport(
-            final AppserverJBIMgmtNode parent,
-            final Attribute attr,
-            final MBeanAttributeInfo info) {
-         
-        return new PropertySupport.ReadWrite<Boolean>(
-                attr.getName(),
-                Boolean.class, 
-                info.getName(), 
-                info.getDescription()) {
-            
-            Attribute attribute = attr;
-            
-            public Boolean getValue() {
-                return (Boolean) attribute.getValue(); 
-            }
-            
-            public void setValue(Boolean val) {
-                attribute = updateAttribute(parent, getName(), val, attribute);
-            }
-        };
-    }
-        
-    private static PropertySupport getReadWriteStringPropertySupport(
-            final AppserverJBIMgmtNode parent, 
-            final Attribute attr,
-            final MBeanAttributeInfo info) {
-        
-        return new PropertySupport.ReadWrite<String>(
-                attr.getName(),
-                String.class, //getClassFromStringType(info.getType()), 
-                info.getName(), 
-                info.getDescription()) {
-            
-            Attribute attribute = attr;
-            
-            public String getValue() {
-                return (String) attribute.getValue();
-            }
-            
-            public void setValue(String obj) {
-                attribute = updateAttribute(parent, getName(), obj, attribute);
-            }
-        };
-    }
-    
-    private static PropertySupport getReadWriteIntegerPropertySupport(
-            final AppserverJBIMgmtNode parent, 
-            final Attribute attr,
-            final MBeanAttributeInfo info) {
-        
-        return new PropertySupport.ReadWrite<Integer>(
-                attr.getName(),
-                Integer.class, //getClassFromStringType(info.getType()), 
-                info.getName(), 
-                info.getDescription()) {
-            
-            Attribute attribute = attr;
-            
-            public Integer getValue() {
-                return (Integer) attribute.getValue();
-            }
-            
-            public void setValue(Integer obj) {
-                attribute = updateAttribute(parent, getName(), obj, attribute);
-            }
-        };
-    }
-    
-    private static PropertySupport createTabularDataProperty(
-            final JBIComponentNode parent,
-            final Attribute attr, 
-            final MBeanAttributeInfo info) {
-        return createTabularDataProperty(
-                parent, attr, info, SimpleTabularDataEditor.class);
-    }
-    
-    private static PropertySupport createEnvironmentVariablesProperty(
-            final JBIComponentNode parent,
-            final Attribute attr, 
-            final MBeanAttributeInfo info) {
-        return createTabularDataProperty(
-                parent, attr, info, EnvironmentVariablesEditor.class);
     }
     
     private static PropertySupport createTabularDataProperty(
@@ -256,21 +92,8 @@ public class JBIPropertySupportFactory {
             final MBeanAttributeInfo info, 
             final Class editorClass) {
 
-        return new PropertySupport.ReadWrite<TabularDataSupport>(
-                attr.getName(),
-                TabularDataSupport.class,
-                info.getName(),
-                info.getDescription()) {
-
-            Attribute attribute = attr;
-
-            public TabularDataSupport getValue() {
-                return (TabularDataSupport) attribute.getValue();
-            }
-
-            public void setValue(TabularDataSupport val){
-                attribute = updateAttribute(parent, getName(), val, attribute);
-            }
+        return new MyPropertySupport<TabularDataSupport>(
+                parent, TabularDataSupport.class, attr, info) {
 
             public PropertyEditor getPropertyEditor(){
                 try {
@@ -288,27 +111,13 @@ public class JBIPropertySupportFactory {
             final Attribute attr, 
             final MBeanAttributeInfo info) {
         
-        return new PropertySupport.ReadWrite<Level>(
-                info.getName(),
-                Level.class,
-                info.getName(),
-                info.getDescription()) {
-            
-            Attribute attribute = attr;
-            
-            public Level getValue() {
-                return (Level) attribute.getValue();
-            }
-            
+        return new MyPropertySupport<Level>(parent, Level.class, attr, info) {
+                      
             public void setValue(Level val){
-                Attribute updatedAttribute = null;
                 try {
-                    updatedAttribute = parent.setLoggerSheetProperty(attr.getName(), val);
+                    attribute = parent.setLoggerSheetProperty(attr.getName(), val);
                 } catch (RuntimeException rex) {
                     rex.printStackTrace();
-                }
-                if (updatedAttribute != null) {
-                    attribute = updatedAttribute;
                 }
             }
             
@@ -317,47 +126,34 @@ public class JBIPropertySupportFactory {
             }
         };
     }
+}                
     
-    public static PropertySupport createPasswordProperty(
-            final AppserverJBIMgmtNode parent,
-            final Attribute attr, 
-            final MBeanAttributeInfo info) {
-        
-        return new PropertySupport.ReadWrite<String>(
-                info.getName(),
-                String.class,
-                info.getName(),
-                info.getDescription()) {
-            
-            Attribute attribute = attr;
-            
-            public String getValue() {
-                return (String) attribute.getValue();
-            }
-            
-            public void setValue(String val){
-                attribute = updateAttribute(parent, getName(), val, attribute);
-            }
-            
-            public PropertyEditor getPropertyEditor(){
-                return new PasswordEditor();
-            }
-        };
+class MyPropertySupport<T> extends PropertySupport<T> {
+
+    private AppserverJBIMgmtNode parent;
+    protected Attribute attribute;
+
+    MyPropertySupport(AppserverJBIMgmtNode parent,                
+            Class<T> type, 
+            Attribute attr, 
+            MBeanAttributeInfo info) {
+        super(attr.getName(), type, info.getName(), info.getDescription(), 
+                info.isReadable(), info.isWritable());
+        this.attribute = attr;
+        this.parent = parent;
     }
-            
-    private static Attribute updateAttribute(AppserverJBIMgmtNode parent,
-            String attrName, Object attrValue, Attribute attribute){
-        Attribute updatedAttribute = null;
+
+
+    @SuppressWarnings(value = "unchecked")
+    public T getValue() {
+        return (T) attribute.getValue();
+    }
+
+    public void setValue(T attrValue) {
         try {
-            updatedAttribute = parent.setSheetProperty(attrName, attrValue);
+            attribute = parent.setSheetProperty(getName(), attrValue);
         } catch (RuntimeException rex) {
             rex.printStackTrace();
         }
-        
-        if (updatedAttribute != null) {
-            return updatedAttribute;
-        }
-        
-        return attribute;
-    }    
+    }
 }

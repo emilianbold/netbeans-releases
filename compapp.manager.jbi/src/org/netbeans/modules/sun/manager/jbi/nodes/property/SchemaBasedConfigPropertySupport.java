@@ -59,8 +59,18 @@ class SchemaBasedConfigPropertySupport<T>
     }
 
     @SuppressWarnings(value = "unchecked")
-    public T getValue() {
-        return (T) attr.getValue();
+    public T getValue() /*throws IllegalAccessException*/ {
+        if (info.isReadable()) {
+            return (T) attr.getValue();
+        } else {   
+            // Mostly used for password handling
+            // throw new IllegalAccessException("Cannod read from WriteOnly property"); // NOI18N 
+            if (info.getType().equals("java.lang.String")) { // NOI18N
+                return (T) "********"; // NOI18N
+            } else {
+                return null;
+            }
+        }
     }
 
     public void setValue(T val) {
