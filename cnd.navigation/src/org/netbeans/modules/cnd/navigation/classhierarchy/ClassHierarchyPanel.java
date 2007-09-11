@@ -182,6 +182,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             supertypeButton.setSelected(true);
         }
     }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return hierarchyPane.requestFocusInWindow();
+    }
     
     private synchronized void update(final CsmClass csmClass) {
         if (csmClass != null){
@@ -190,7 +196,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
                 Children.MUTEX.writeAccess(new Runnable(){
                     public void run() {
                         children.remove(children.getNodes());
-                        final Node node = new HierarchyNode(csmClass, new HierarchyModel(csmClass, subDirection));
+                        final Node node = new HierarchyNode(csmClass, new HierarchyModel(csmClass, subDirection), null);
                         children.add(new Node[]{node});
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {

@@ -82,9 +82,12 @@ public class IncludedChildren extends Children.Keys<CsmFile> {
     }
     
     private boolean checkRecursion(CsmFile file){
+        if (file.equals(object)) {
+            return true;
+        }
         IncludedChildren arr = parent;
         while (arr != null){
-            if (file == arr.object){
+            if (file.equals(arr.object)){
                 return true;
             }
             arr = arr.parent;

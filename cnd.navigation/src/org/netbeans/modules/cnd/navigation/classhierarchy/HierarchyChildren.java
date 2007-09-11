@@ -37,11 +37,13 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
     
     private CsmClass object;
     private HierarchyModel model;
+    private HierarchyChildren parent;
     private boolean isInited = false;
     
-    public HierarchyChildren(CsmClass object, HierarchyModel model) {
+    public HierarchyChildren(CsmClass object, HierarchyModel model, HierarchyChildren parent) {
         this.object = object;
         this.model = model;
+        this.parent = parent;
     }
     
     public void dispose(){
@@ -68,11 +70,29 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
         Node node = null;
         Set<CsmClass> set = model.getModel().get(cls);
         if (set == null || set.size() == 0) {
-            node = new HierarchyNode(cls, Children.LEAF);
+            node = new HierarchyNode(cls, Children.LEAF, false);
         } else {
-            node = new HierarchyNode(cls, model);
+            if (checkRecursion(cls)) {
+                node = new HierarchyNode(cls, Children.LEAF, true);
+            } else {
+                node = new HierarchyNode(cls, model, this);
+            }
         }
         return new Node[]{node};
+    }
+    
+    private boolean checkRecursion(CsmClass cls){
+        if (cls.equals(object)) {
+            return true;
+        }
+        HierarchyChildren arr = parent;
+        while (arr != null){
+            if (cls.equals(arr.object)){
+                return true;
+            }
+            arr = arr.parent;
+        }
+        return false;
     }
     
     @Override

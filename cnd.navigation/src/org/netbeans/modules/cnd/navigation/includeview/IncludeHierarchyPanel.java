@@ -1,7 +1,20 @@
 /*
- * IncludeHierarchyPanel.java
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * Created on August 31, 2007, 2:37 PM
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.cnd.navigation.includeview;
@@ -20,7 +33,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  as204739
+ * @author  Alexander Simon
  */
 public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Provider  {
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/includeview/resources/tree.png"; // NOI18N
@@ -274,7 +287,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             }
         }
     }//GEN-LAST:event_whoIsIncludedButtonActionPerformed
-        public void setFile(CsmFile file){
+    
+    public void setFile(CsmFile file){
         object = file.getUID();
         if (file.isHeaderFile()) {
             recursive = false;
@@ -287,6 +301,12 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         }
         updateButtons();
         update(file);
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return hierarchyPane.requestFocusInWindow();
     }
 
     private void updateButtons(){

@@ -29,19 +29,24 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
 
 /**
  * Hierarchy Tree node.
  */
 public class HierarchyNode extends AbstractCsmNode{
     private CsmClass object;
-    public HierarchyNode(CsmClass element, HierarchyModel model) {
-        this(element, new HierarchyChildren(element, model));
+    public HierarchyNode(CsmClass element, HierarchyModel model, HierarchyChildren parent) {
+        this(element, new HierarchyChildren(element, model, parent), false);
     }
-    
-    public HierarchyNode(CsmClass element, Children children) {
+
+    public HierarchyNode(CsmClass element, Children children, boolean recursion) {
         super(children);
-        setName(element.getName());
+        if (recursion) {
+            setName(element.getName()+" "+getString("CTL_Recuesion")); // NOI18N
+        } else {
+            setName(element.getName());
+        }
         object = element;
     }
     
@@ -61,5 +66,9 @@ public class HierarchyNode extends AbstractCsmNode{
             }
         }
         return super.getPreferredAction();
+    }
+
+    private String getString(String key) {
+        return NbBundle.getMessage(HierarchyNode.class, key);
     }
 }
