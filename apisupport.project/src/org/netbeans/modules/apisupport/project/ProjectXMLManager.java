@@ -527,7 +527,7 @@ public final class ProjectXMLManager {
                 if (testType == null) {
                     testType = TestModuleDependency.UNIT; // default variant
                 }
-                Set<TestModuleDependency> directTestDeps = new HashSet<TestModuleDependency>();
+                Set<TestModuleDependency> directTestDeps = new TreeSet<TestModuleDependency>();
                 for (Element depEl : Util.findSubElements(typeEl)) {
                     if (depEl.getTagName().equals(TEST_DEPENDENCY)) {
                         // parse test dep
@@ -542,7 +542,13 @@ public final class ProjectXMLManager {
                         if (cnb != null) {
                             ModuleEntry me = ml.getEntry(cnb);
                             if (me != null) {
-                                directTestDeps.add(new TestModuleDependency(me, test, recursive, compile));
+                                TestModuleDependency tmd = new TestModuleDependency(me, test, recursive, compile);
+                                if (!directTestDeps.add(tmd)) {
+                                    //testdependency already exist
+                                    String msg = "Invalid project.xml, testdependency " + tmd.getModule().getCodeNameBase() + " is duplicated!";
+                                    Util.err.log(ErrorManager.WARNING, msg);
+                                    throw new IllegalStateException(msg);
+                                }
                             }
                         }
                     }
