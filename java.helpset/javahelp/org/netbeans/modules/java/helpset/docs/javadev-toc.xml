@@ -50,7 +50,7 @@
     <tocitem text="Code Navigation: Quick Reference" target="editor.navigation"/>
     <tocitem text="Finding and Replacing Text" target="usersguide.files.search"/>
     <tocitem text="Regular Expressions For Finding and Replacing Text" target="usersguide.find_regexp"/>
-    
+    <tocitem text="Special Code Template Syntax" target="editor.template"/>
     </tocitem>
     <tocitem text="Refactoring Java Source">
     <tocitem text="About Refactoring Java Source" target="refactor.aboutRefactoring" /> 

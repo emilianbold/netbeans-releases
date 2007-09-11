@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Code Navigation: Quick Reference</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    
+    <body>
+        <h2>Special Code Template Syntax</h2>
+        
+        <p>You can use code templates to speed up the entry of commonly used 
+         sequences of reserved words and common code patterns. For example, 
+         if you enter <tt>forc</tt> and press the Tab key, it expands into the
+     following:</p>
+<pre>for (Iterator it = collection.iterator(); it.hasNext();) {
+       Object elem = (Object) it.next();
+} </pre>
+            
+            <p>When you create code templates, there are several constructs
+            that you can use to customize the way the code template behaves.
+            The most useful 
+            of these constructs are listed below. You can look at the default IDE code 
+        templates in the Options window, under the Tools menu, for examples.</p>
+        
+        <table border="1">
+            <tbody><tr>
+                    <th rowspan="1" colspan="1">
+                        <p class="TableHead">
+                        <a name="pgfId-1167035"></a>Code Template Syntax Construct</p>
+                        
+                    </th>
+                    <th rowspan="1" colspan="1">
+                        <p class="TableHead">
+                        <a name="pgfId-1167037"></a>Explanation</p>
+                    </th>
+                </tr>
+                <tr>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableTextCode">
+                        <a name="pgfId-1167039"></a>${cursor}</p>
+                    </td>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableText">
+                        <a name="pgfId-1167041"></a>Indicates where the insertion point should go after the code snippet has been added to your code.</p>
+                        
+                    </td>
+                </tr>
+                <tr>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableTextCode">
+                        <a name="pgfId-1167043"></a>${Identifier}</p>
+                    </td>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableText">
+                            <a name="pgfId-1167045"></a>Indicates an identifer that needs to be filled in when you use the code template. When you use this construct in a template definition, replace <em class="Filename-Command">
+                            Identifier</em>
+                        with the identifer name that you want to appear in the template.</p>
+                        
+                    </td>
+                </tr>
+                <tr>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableTextCode">
+                        <a name="pgfId-1167047"></a>index</p>
+                    </td>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableText">
+                            <a name="pgfId-1167049"></a>An attribute that you can use within a <em class="Filename-Command">
+                            ${Identifier}</em>
+                            segment to designate that an unused variable name should be generated in the code snippet. For example, you could use <em class="Filename-Command">
+                                
+                            ${ind index}</em>
+                        .</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableTextCode">
+                        <a name="pgfId-1167118"></a>type="FullyQualifiedType" editable="false"</p>
+                    </td>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableText">
+                            <a name="pgfId-1167124"></a>An attribute that you can use within a <em class="Filename-Command">
+                            ${Identifier}</em>
+                            
+                            segment to generate a class name. When you use the code template, an import statement for the class is also inserted into your code. For example, you could use <em class="Filename-Command">
+                            ${cce itype="java.lang.ClassCastException" editable="false"}</em>
+                            to have <em class="Filename-Command">
+                            ClassCastException</em>
+                            inserted into your code and make sure that the import statement is generated, if necessary. Specifying <em class="Filename-Command">
+                            editable="false"</em>
+                            ensures that <em class="Filename-Command">
+                                
+                            ClassCastException</em>
+                        is not selected for editing once the template is inserted into your code. </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableTextCode">
+                        <a name="pgfId-1167051"></a>instanceof="FullyQualifiedType"</p>
+                    </td>
+                    <td rowspan="1" colspan="1">
+                        <p class="TableText">
+                            <a name="pgfId-1167053"></a>An attribute that you can use within a <em class="Filename-Command">
+                                
+                            ${Identifier}</em>
+                            segment to designate the type that the identifier must represent an instance of. For example, you could use <em class="Filename-Command">
+                            ${collection instanceof="java.util.Collection"}</em>
+                            where collection is the default identifier in the template and <em class="Filename-Command">
+                            java.util.Collection</em>
+                        is the class of which the identifier must represent an instance.</p>
+                    </td>
+                </tr>
+                
+        </tbody></table>
+        
+        <hr>
+        
+        <small><a href="../credits.html">Legal Notices</a></small>
+    </body>
+</html>
