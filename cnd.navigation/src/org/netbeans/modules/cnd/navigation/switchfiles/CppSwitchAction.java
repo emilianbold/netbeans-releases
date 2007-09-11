@@ -20,6 +20,7 @@ package org.netbeans.modules.cnd.navigation.switchfiles;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.text.JTextComponent;
@@ -29,6 +30,7 @@ import org.netbeans.editor.JumpList;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
@@ -118,7 +120,7 @@ public final class CppSwitchAction extends CookieAction {
         String name = getName(source.getAbsolutePath());
         // first look at the list of includes
         for (CsmInclude h : source.getIncludes()) {
-            if (name.equals(h.getIncludeFile().getAbsolutePath())) {
+            if (h.getIncludeFile()!=null && name.equals(h.getIncludeFile().getAbsolutePath())) {
                 return h.getIncludeFile();
             }
         }
@@ -144,32 +146,23 @@ public final class CppSwitchAction extends CookieAction {
     }
 
     private CsmFile findSource(CsmFile header) {
-        List<CsmFile> namesakes = new ArrayList<CsmFile>();
         String name = getName(header.getAbsolutePath());
 
-        for (CsmFile f : header.getProject().getSourceFiles()) {
+        Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(header);
+        
+        for (CsmFile f : includers) {
             if (getName(f.getAbsolutePath()).equals(name)) {
-                for (CsmInclude h : f.getIncludes()) {
-                    if (h.getIncludeFile() == header) {
-                        // we found source file with the same name
-                        // as header and with dependency to it. Best shot.
-                        return f;
-                    }
-                }
-                namesakes.add(f);
+                // we found source file with the same name
+                // as header and with dependency to it. Best shot.
+                return f;
             }
         }
 
-        if (namesakes.size() > 0) {
-            // best namesake is one within same folder
-            String path = trimExtension(header.getAbsolutePath());
-            for (CsmFile f : namesakes) {
-                if (path.equals(trimExtension(f.getAbsolutePath()))) {
-                    return f;
-                }
+        // look for random namesake
+        for (CsmFile f : header.getProject().getSourceFiles()) {
+            if (getName(f.getAbsolutePath()).equals(name)) {
+                return f;
             }
-            // no clear winner
-            return namesakes.get(0);
         }
 
         return null;
