@@ -111,6 +111,7 @@ public class PositionModel {
             addElement(CssStyleData.NOT_SET);
             addElement("visible"); //NOI18N
             addElement("hidden"); //NOI18N
+            addElement("collapse"); //NOI18N
             addElement("inherit"); //NOI18N
         }
     }
