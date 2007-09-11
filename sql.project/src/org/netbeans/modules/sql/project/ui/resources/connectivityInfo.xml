@@ -22,6 +22,7 @@
     <connection>
       <database-url value='jdbc:derby://localhost:1527/sample'/>
 	  <jndi-name value=''/>	
+	  <transaction-required value=''/>	
     </connection>
 
 	
