@@ -223,9 +223,6 @@ public class LayerIndex extends Task {
                 } else {
                     files.put(path, cnb);
                 }
-                if (path.equals("org-netbeans-api-project-libraries/Libraries/rowset-ri.xml")) { // XXX #114661 diag
-                    log("Encountered rowset-ri.xml in " + jf.getName(), Project.MSG_WARN);
-                }                
             }
             @Override
             public void startElement(String uri, String localName, String qName,  Attributes attributes) throws SAXException {
