@@ -410,7 +410,8 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
         
         StringBuffer sb = new StringBuffer();
         sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-T"));
-        sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-P"));
+        // TODO: we are not able to parse complex Rakefile (e.g. rails'), using -P argument, yet
+        // sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-P"));
         return sb.toString();
     }
     
