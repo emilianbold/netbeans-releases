@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.soa.ui.axinodes;
 
-import java.awt.Color;
-import java.awt.ComponentOrientation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,8 +94,7 @@ public class AxiomUtils {
             return new Node[0];
         }
         //
-        NodeFactory nodeFactory =
-                (NodeFactory)lookup.lookup(NodeFactory.class);
+        NodeFactory nodeFactory = lookup.lookup(NodeFactory.class);
         assert nodeFactory != null : "Node factory has to be specified"; // NOI18N
         //
         ArrayList<Node> nodesList = new ArrayList<Node>();
@@ -130,72 +127,6 @@ public class AxiomUtils {
         //
         Node[] nodes = nodesList.toArray(new Node[nodesList.size()]);
         return nodes;
-    }
-    
-    /**
-     * TODO This calculator works wrong because of the
-     * axiComponent.getParentElement() method returns null if the component is
-     * the reference to a global element. So an incomplete XPath can be constructed.
-     * @deprecated
-     */
-    public static String calculateSimpleXPath(AXIComponent axiComponent) {
-        //
-        // Collects Path Items first
-        ArrayList<PathItem> path = new ArrayList<PathItem>();
-        while (axiComponent != null) {
-            String compName = null;
-            //
-            if (axiComponent instanceof Element) {
-                compName = ((Element)axiComponent).getName();
-            } else if (axiComponent instanceof Attribute) {
-                compName = ((Attribute)axiComponent).getName();
-            } else if (axiComponent instanceof AXIType) {
-                compName = ((AXIType)axiComponent).getName();
-            }
-            //
-            String namespace = isUnqualified(axiComponent) ?
-                "" : axiComponent.getTargetNamespace();
-            //
-            if (compName != null && compName.length() != 0) {
-                PathItem pathItem = new PathItem(axiComponent, namespace, compName, null);
-                path.add(pathItem);
-            } else {
-                path.clear();
-            }
-            //
-            axiComponent = axiComponent.getParentElement();
-        }
-        //
-        // Check namespaces.
-        // If namespace of a PathItem is the same as its parent has,
-        // then it doesn't necessary to show it.
-        // If a namespace is necessary, then try to obtain a prefix for it.
-//        ListIterator<PathItem> itr = path.listIterator();
-//        String prevItemNamespace = null;
-//        while (itr.hasNext()) {
-//            PathItem pathItem = itr.next();
-//            //
-//            if (prevItemNamespace != null) {
-//                if (prevItemNamespace.equals(pathItem.myNamespace)) {
-//                    pathItem.myNamespace = null;
-//                    continue;
-//                }
-//            }
-//            //
-////            pathItem.myNamespace;
-//            //
-//            prevItem = pathItem;
-//        }
-        //
-        //
-        StringBuffer result = new StringBuffer();
-        ListIterator<PathItem> itr = path.listIterator(path.size());
-        while (itr.hasPrevious()) {
-            PathItem pathItem = itr.previous();
-            result.append(XPATH_SEPARATOR).append(pathItem.myLocalName);
-        }
-        //
-        return result.toString();
     }
     
     /**
@@ -233,21 +164,32 @@ public class AxiomUtils {
         //
         return path;
     }
-    public static void processNode(final AXIComponent axiComponent, 
+    public static void processNode(AXIComponent axiComponent, 
             String predicate, final ArrayList<PathItem> path) {
         String compName = null;
+        boolean isGlobal = false;
         //
         if (axiComponent instanceof Element) {
-            compName = ((Element)axiComponent).getName();
+            Element element = (Element)axiComponent;
+            compName = element.getName();
+            if (element.isReference()) {
+                axiComponent = element.getReferent();
+                isGlobal = true;
+            }
         } else if (axiComponent instanceof Attribute) {
-            compName = ((Attribute)axiComponent).getName();
+            Attribute attr = (Attribute)axiComponent;
+            compName = attr.getName();
+            if (attr.isReference()) {
+                axiComponent = attr.getReferent();
+                isGlobal = true;
+            }
         } else if (axiComponent instanceof AXIType) {
             compName = ((AXIType)axiComponent).getName();
         }
         //
         if (compName != null && compName.length() != 0) {
-            String namespace = isUnqualified(axiComponent) ?
-                null : axiComponent.getTargetNamespace();
+           String namespace = isGlobal || !isUnqualified(axiComponent) ?
+                axiComponent.getTargetNamespace() : null;
             //
             PathItem pathItem = new PathItem(
                     axiComponent, namespace, compName, predicate);
@@ -537,6 +479,20 @@ public class AxiomUtils {
         //ltl bit paranoic tests to avoid NPEs.
         if (type == null) {
             return false;
+        }
+        
+        if (type instanceof Element) {
+            Element element = (Element)type;
+            if (element.isReference()) {
+                // referent is always global, so it has to be qualified 
+                return false;
+            }
+        } else if (type instanceof Attribute) {
+            Attribute attr = (Attribute)type;
+            if (attr.isReference()) {
+                // referent is always global, so it has to be qualified 
+                return false;
+            }
         }
         
         if (type.isGlobal()){
