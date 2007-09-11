@@ -572,7 +572,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
      * @return default help.
      */
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx("org.netbeans.modules.form.j2ee.wizard.DetailPanel");
     }
 
     private boolean defaultPreselect = true;
