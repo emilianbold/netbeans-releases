@@ -1381,6 +1381,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         public void actionPerformed(ActionEvent e) {
             ProxyAction action = getSelectedAction();
             IconEditor iconEditor = new IconEditor();
+            iconEditor.setExternalIconsAllowed(false);
             // if this is a dir, then use the application class instead
             if(sourceFile.isFolder()) {
                 sourceFile = ActionManager.getActionManager(sourceFile).getApplicationClassFile();

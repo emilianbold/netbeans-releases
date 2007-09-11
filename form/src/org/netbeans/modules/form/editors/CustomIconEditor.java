@@ -89,6 +89,9 @@ public class CustomIconEditor extends javax.swing.JPanel {
         fileCombo.setRenderer(new IconComboRenderer());
 
         setTransferHandler(new FileDropHandler());
+        if(!prEd.isExternalIconsAllowed()) {
+            browseExternalButton.setEnabled(false);
+        }
     }
 
     private static void setupBrowseButton(JButton button) {

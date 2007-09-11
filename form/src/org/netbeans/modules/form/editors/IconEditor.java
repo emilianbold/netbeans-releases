@@ -78,6 +78,7 @@ public class IconEditor extends PropertyEditorSupport
 
     //private FormModel formModel;
     private FileObject sourceFile;
+    private boolean externalIconsAllowed = true;
 
     public void setValue(Object value) {
         if (sameValue(value, getValue()))
@@ -218,6 +219,13 @@ public class IconEditor extends PropertyEditorSupport
     
     public void setSourceFile(FileObject sourceFile) {
         this.sourceFile = sourceFile;
+    }
+    
+    public void setExternalIconsAllowed(boolean externalIconsAllowed) {
+        this.externalIconsAllowed = externalIconsAllowed;
+    }
+    public boolean isExternalIconsAllowed() {
+        return this.externalIconsAllowed;
     }
 
     /**
