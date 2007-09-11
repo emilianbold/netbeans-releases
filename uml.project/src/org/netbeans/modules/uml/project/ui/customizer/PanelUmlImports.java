@@ -18,17 +18,21 @@
  */
 
 package org.netbeans.modules.uml.project.ui.customizer;
-import org.netbeans.modules.uml.project.UMLProject;
+
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+
 import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.netbeans.modules.uml.project.UMLProject;
+
 import org.openide.util.Utilities;
 
 
@@ -212,13 +216,13 @@ public class PanelUmlImports extends JPanel
    {
        protected void setValue(Object value)
        {
-           setText(value.toString());
-           
-           Icon image = ImageUtil.instance().getIcon("uml-project.png"); // NOI18N
-           
-           if (image != null)
+           if (value != null)
            {
-               setIcon(image);
+               setText(value.toString());
+               Icon image = ImageUtil.instance().getIcon("uml-project.png"); // NOI18N
+
+               if (image != null)
+                   setIcon(image);
            }
        }
    }
