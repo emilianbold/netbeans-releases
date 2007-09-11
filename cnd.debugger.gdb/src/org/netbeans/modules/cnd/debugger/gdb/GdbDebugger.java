@@ -633,11 +633,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             ; // do nothing (but don't print these expected messages)
         } else if (programPID == 0 && msg.startsWith("process ")) { // NOI18N (Unix method)
             int pos = msg.indexOf(' ', 8);
+            String text;
             if (pos > 0) {
-                try {
-                    programPID = Long.parseLong(msg.substring(8, pos));
-                } catch (NumberFormatException ex) {
-                }
+                text = msg.substring(8, pos);
+            } else {
+                text = msg.substring(8);
+            }
+            try {
+                programPID = Long.parseLong(text);
+            } catch (NumberFormatException ex) {
+                log.warning("Failed to get PID from \"info proc\""); // NOI18N
             }
         } else if (programPID == 0) {
             if (msg.startsWith("* 1 thread ")) { // NOI18N
@@ -646,6 +651,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     try {
                         programPID = Long.valueOf(msg.substring(11, pos));
                     } catch (NumberFormatException ex) {
+                log.warning("Failed to get PID from \"info threads\""); // NOI18N
                     }
                 }
             } else if (msg.startsWith("[Switching to process ")) { // NOI18N
@@ -1096,7 +1102,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @param signal The signal to send (as defined by "kill -l")
      */
     public void kill(int signal) {
-        kill(signal, programPID);
+        if (programPID > 0) { // Never send a kill if PID is 0
+            kill(signal, programPID);
+        }
     }
     
     /**
