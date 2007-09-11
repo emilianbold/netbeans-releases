@@ -23,6 +23,6 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../../nbbuild/templates/projectized.xml"/>
     <target name="common-init" depends="default.init">
 	<mkdir dir="build/external"/>
-	<unzip src="../external/woodstock-4.1.zip" dest="build/external"/>
+	<unzip src="external/woodstock-defaulttheme-4.1.zip" dest="build/external"/>
     </target>
 </project>
