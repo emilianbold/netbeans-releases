@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -1204,6 +1205,19 @@ public class HgCommand {
     }
     
     /**
+     * Returns the mercurial status for all files in a given  subdirectory of
+     * a repository
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param File dir of the subdirectoy of interest. 
+     * @return Map of files and status for all files in the specified subdirectory
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static Map<File, FileInformation> getAllStatus(File repository, File dir)  throws HgException{
+        return getDirStatusWithFlags(repository, dir, HG_STATUS_FLAG_ALL_CMD, true);
+    }
+    
+    /**
      * Returns the mercurial status for all files in a given repository
      *
      * @param File repository of the mercurial repository's root directory
@@ -1266,6 +1280,30 @@ public class HgCommand {
     }
     
     /**
+     * Returns the unknown files in a specified directory under a mercurial repository root
+     *
+     * @param File of the mercurial repository's root directory
+     * @param File of the directory whose files are required
+     * @return Map of files and status for all files under the repository root
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static Map<File, FileInformation> getUnknownStatus(File repository, File dir)  throws HgException{
+        Calendar start = Calendar.getInstance();
+        Map<File, FileInformation> files = getDirStatusWithFlags(repository, dir, HG_STATUS_FLAG_UNKNOWN_CMD, false);
+        Calendar end = Calendar.getInstance();
+        Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+        start = Calendar.getInstance();
+        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            if(HgUtils.isIgnored(file))
+                i.remove();
+        }
+        end = Calendar.getInstance();
+        Mercurial.LOG.log(Level.FINE, "looking for ignored files took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+        return files;
+    }
+
+    /**
      * Returns the unknown files under a mercurial repository root
      *
      * @param File repository of the mercurial repository's root directory
@@ -1273,13 +1311,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getAllUnknownStatus(File repository)  throws HgException{
-        Map<File, FileInformation> files = getAllStatusWithFlags(repository, HG_STATUS_FLAG_UNKNOWN_CMD, false);
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            if(HgUtils.isIgnored(file))
-                i.remove();
-        }
-        return files;
+        return getUnknownStatus(repository, null);
     }
     
     /**
