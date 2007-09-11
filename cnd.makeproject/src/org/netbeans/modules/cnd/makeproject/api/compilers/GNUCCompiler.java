@@ -27,7 +27,6 @@ import java.io.InputStreamReader;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -93,7 +92,7 @@ public class GNUCCompiler extends CCCCompiler {
     }
     
     @Override
-    public boolean setSystemIncludeDirectories(Platform platform, List values) {
+    public boolean setSystemIncludeDirectories(List values) {
         assert values != null;
         if (values.equals(systemIncludeDirectoriesList)) {
             return false;
@@ -103,7 +102,7 @@ public class GNUCCompiler extends CCCCompiler {
     }
     
     @Override
-    public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
+    public boolean setSystemPreprocessorSymbols(List values) {
         assert values != null;
         if (values.equals(systemPreprocessorSymbolsList)) {
             return false;
@@ -113,20 +112,20 @@ public class GNUCCompiler extends CCCCompiler {
     }
     
     @Override
-    public List getSystemPreprocessorSymbols(Platform platform) {
+    public List getSystemPreprocessorSymbols() {
         if (systemPreprocessorSymbolsList != null)
             return systemPreprocessorSymbolsList;
         
-        getSystemIncludesAndDefines(platform);
+        getSystemIncludesAndDefines();
         return systemPreprocessorSymbolsList;
     }
     
     @Override
-    public List getSystemIncludeDirectories(Platform platform) {
+    public List getSystemIncludeDirectories() {
         if (systemIncludeDirectoriesList != null)
             return systemIncludeDirectoriesList;
         
-        getSystemIncludesAndDefines(platform);
+        getSystemIncludesAndDefines();
         normalizePaths(systemIncludeDirectoriesList);
         return systemIncludeDirectoriesList;
     }
@@ -139,19 +138,19 @@ public class GNUCCompiler extends CCCCompiler {
             systemPreprocessorSymbolsList.saveList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
-    private void restoreSystemIncludesAndDefines(Platform platform) {
+    private void restoreSystemIncludesAndDefines() {
         systemIncludeDirectoriesList = PersistentList.restoreList(getClass().getName() + "." + "systemIncludeDirectoriesList"); // NOI18N
         systemPreprocessorSymbolsList = PersistentList.restoreList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
-    private void getSystemIncludesAndDefines(Platform platform) {
-        restoreSystemIncludesAndDefines(platform);
+    private void getSystemIncludesAndDefines() {
+        restoreSystemIncludesAndDefines();
         if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
-            getFreshSystemIncludesAndDefines(platform);
+            getFreshSystemIncludesAndDefines();
         }
     }
     
-    private void getFreshSystemIncludesAndDefines(Platform platform) {
+    private void getFreshSystemIncludesAndDefines() {
         systemIncludeDirectoriesList = new PersistentList();
         systemPreprocessorSymbolsList = new PersistentList();
         String path = getPath();
@@ -159,8 +158,8 @@ public class GNUCCompiler extends CCCCompiler {
             path = "gcc"; // NOI18N
         }
         try {
-            getSystemIncludesAndDefines(platform, path + compilerStderrCommand, false);
-            getSystemIncludesAndDefines(platform, path + compilerStdoutCommand, true);
+            getSystemIncludesAndDefines(path + compilerStderrCommand, false);
+            getSystemIncludesAndDefines(path + compilerStdoutCommand, true);
             // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
             if (!containsMacro(systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
                 systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
@@ -175,28 +174,13 @@ public class GNUCCompiler extends CCCCompiler {
     }
     
     @Override
-    public void resetSystemIncludesAndDefines(Platform platform) {
-        getFreshSystemIncludesAndDefines(platform);
+    public void resetSystemIncludesAndDefines() {
+        getFreshSystemIncludesAndDefines();
     }
     
     @Override
-    protected void parseCompilerOutput(Platform platform, InputStream is) {
+    protected void parseCompilerOutput(InputStream is) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        
-        // Hack to map include paths to CYGWIN location. FIXUP
-        String includePrefix = ""; // NOI18N
-        if (platform.getId() == Platform.PLATFORM_WINDOWS) {
-            if (new File("/usr/").exists())  // NOI18N
-                includePrefix = ""; // NOI18N
-            else if (new File("C:/cygwin").exists())  // NOI18N
-                includePrefix = "C:/cygwin"; // NOI18N
-            else if (new File("D:/cygwin").exists())  // NOI18N
-                includePrefix = "D:/cygwin"; // NOI18N
-            else if (new File("E:/cygwin").exists())  // NOI18N
-                includePrefix = "E:/cygwin"; // NOI18N
-            else if (new File("F:/cygwin").exists())  // NOI18N
-                includePrefix = "F:/cygwin"; // NOI18N
-        }
         
         try {
             String line;
@@ -213,9 +197,9 @@ public class GNUCCompiler extends CCCCompiler {
                 }
                 if (startIncludes) {
                     line = line.trim();
-                    systemIncludeDirectoriesList.add(includePrefix + line);
-                    if (includePrefix.length() > 0 && line.startsWith("/usr/lib")) // NOI18N
-                        systemIncludeDirectoriesList.add(includePrefix + line.substring(4));
+                    systemIncludeDirectoriesList.add(getIncludeFilePathPrefix() + line);
+                    if (getIncludeFilePathPrefix().length() > 0 && line.startsWith("/usr/lib")) // NOI18N
+                        systemIncludeDirectoriesList.add(getIncludeFilePathPrefix() + line.substring(4));
                     continue;
                 }
                 parseUserMacros(line, systemPreprocessorSymbolsList);

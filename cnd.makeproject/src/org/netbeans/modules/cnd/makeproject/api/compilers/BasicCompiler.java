@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.filesystems.FileUtil;
 
 public class BasicCompiler extends Tool {
@@ -50,25 +49,25 @@ public class BasicCompiler extends Tool {
         return ""; // NOI18N
     }
     
-    public List getSystemPreprocessorSymbols(Platform platform) {
+    public List getSystemPreprocessorSymbols() {
         return new Vector(); // NOI18N
     }
     
-    public List getSystemIncludeDirectories(Platform platform) {
+    public List getSystemIncludeDirectories() {
         return new Vector(); // NOI18N
     }
     
     /**
      * @return true if settings were really replaced by new one
      */
-    public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
+    public boolean setSystemPreprocessorSymbols(List values) {
         return false;
     }
     
     /**
      * @return true if settings were really replaced by new one
      */
-    public boolean setSystemIncludeDirectories(Platform platform, List values) {
+    public boolean setSystemIncludeDirectories(List values) {
         return false;
     }
     

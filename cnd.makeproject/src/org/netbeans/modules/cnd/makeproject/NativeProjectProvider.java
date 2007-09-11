@@ -496,11 +496,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
-            Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
             CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
             BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
             if (compiler != null) {
-                vec.addAll(compiler.getSystemIncludeDirectories(platform));
+                vec.addAll(compiler.getSystemIncludeDirectories());
             }
         }
         return vec;
@@ -519,7 +518,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
-            //Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
             ArrayList vec2 = new ArrayList();
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
@@ -544,11 +542,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
-            Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
             CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
             BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
             if (compiler != null) {
-                vec.addAll(compiler.getSystemPreprocessorSymbols(platform));
+                vec.addAll(compiler.getSystemPreprocessorSymbols());
             }
         }
         return vec;
@@ -565,7 +562,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public List<String> getUserMacroDefinitions() {
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        //Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsList());

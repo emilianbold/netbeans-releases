@@ -27,7 +27,6 @@ import java.io.InputStreamReader;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -123,7 +122,7 @@ public class SunCCompiler extends CCCCompiler {
     }
     
     @Override
-    public boolean setSystemIncludeDirectories(Platform platform, List values) {
+    public boolean setSystemIncludeDirectories(List values) {
         assert values != null;
         if (values.equals(systemIncludeDirectoriesList)) {
             return false;
@@ -133,7 +132,7 @@ public class SunCCompiler extends CCCCompiler {
     }
     
     @Override
-    public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
+    public boolean setSystemPreprocessorSymbols(List values) {
         assert values != null;
         if (values.equals(systemPreprocessorSymbolsList)) {
             return false;
@@ -143,20 +142,20 @@ public class SunCCompiler extends CCCCompiler {
     }
     
     @Override
-    public List getSystemPreprocessorSymbols(Platform platform) {
+    public List getSystemPreprocessorSymbols() {
         if (systemPreprocessorSymbolsList != null)
             return systemPreprocessorSymbolsList;
         
-        getSystemIncludesAndDefines(platform);
+        getSystemIncludesAndDefines();
         return systemPreprocessorSymbolsList;
     }
     
     @Override
-    public List getSystemIncludeDirectories(Platform platform) {
+    public List getSystemIncludeDirectories() {
         if (systemIncludeDirectoriesList != null)
             return systemIncludeDirectoriesList;
         
-        getSystemIncludesAndDefines(platform);
+        getSystemIncludesAndDefines();
         normalizePaths(systemIncludeDirectoriesList);
         return systemIncludeDirectoriesList;
     }
@@ -187,19 +186,19 @@ public class SunCCompiler extends CCCCompiler {
             systemPreprocessorSymbolsList.saveList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
-    private void restoreSystemIncludesAndDefines(Platform platform) {
+    private void restoreSystemIncludesAndDefines() {
         systemIncludeDirectoriesList = PersistentList.restoreList(getClass().getName() + "." + "systemIncludeDirectoriesList"); // NOI18N
         systemPreprocessorSymbolsList = PersistentList.restoreList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
-    private void getSystemIncludesAndDefines(Platform platform) {
-        restoreSystemIncludesAndDefines(platform);
+    private void getSystemIncludesAndDefines() {
+        restoreSystemIncludesAndDefines();
         if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
-            getFreshSystemIncludesAndDefines(platform);
+            getFreshSystemIncludesAndDefines();
         }
     }
     
-    private void getFreshSystemIncludesAndDefines(Platform platform) {
+    private void getFreshSystemIncludesAndDefines() {
         systemIncludeDirectoriesList = new PersistentList();
         systemPreprocessorSymbolsList = new PersistentList();
         String path = getPath();
@@ -207,7 +206,7 @@ public class SunCCompiler extends CCCCompiler {
             path = "cc"; // NOI18N
         }
         try {
-            getSystemIncludesAndDefines(platform, path + compilerStderrCommand, false);
+            getSystemIncludesAndDefines(path + compilerStderrCommand, false);
             systemIncludeDirectoriesList.add("/usr/include"); // NOI18N
             saveOK = true;
         } catch (IOException ioe) {
@@ -219,12 +218,12 @@ public class SunCCompiler extends CCCCompiler {
     }
     
     @Override
-    public void resetSystemIncludesAndDefines(Platform platform) {
-        getFreshSystemIncludesAndDefines(platform);
+    public void resetSystemIncludesAndDefines() {
+        getFreshSystemIncludesAndDefines();
     }
     
     @Override
-    protected void parseCompilerOutput(Platform platform, InputStream is) {
+    protected void parseCompilerOutput(InputStream is) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
             String line;

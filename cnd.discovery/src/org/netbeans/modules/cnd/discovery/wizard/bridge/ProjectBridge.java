@@ -49,8 +49,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.openide.util.Utilities;
 
@@ -367,7 +365,6 @@ public class ProjectBridge {
         if (systemIncludePaths == null) {
             systemIncludePaths = new ArrayList<String>();
             MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
-            Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
             CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
             BasicCompiler compiler;
             if (isCPP) {
@@ -375,7 +372,7 @@ public class ProjectBridge {
             } else {
                 compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
             }
-            for(Object o :compiler.getSystemIncludeDirectories(platform)){
+            for(Object o :compiler.getSystemIncludeDirectories()){
                 String path = (String)o;
                 systemIncludePaths.add(fixWindowsPath(path));
             }
@@ -415,7 +412,6 @@ public class ProjectBridge {
         if (systemMacroDefinitions == null) {
             systemMacroDefinitions = new HashMap<String,String>();
             MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
-            Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
             CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
             BasicCompiler compiler;
             if (isCPP) {
@@ -423,7 +419,7 @@ public class ProjectBridge {
             } else {
                 compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
             }
-            for(Object o :compiler.getSystemPreprocessorSymbols(platform)){
+            for(Object o :compiler.getSystemPreprocessorSymbols()){
                 String macro = (String)o;
                 int i = macro.indexOf('=');
                 if (i>0){

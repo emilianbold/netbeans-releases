@@ -28,8 +28,6 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.util.NbBundle;
 
 /**
@@ -38,7 +36,6 @@ import org.openide.util.NbBundle;
 public class PredefinedPanel extends javax.swing.JPanel {
     private IncludesPanel includesPanel;
     private DefinitionsPanel definitionsPanel;
-    private Platform platform;
     private CCCCompiler compiler;
     private ParserSettingsPanel parserSettingsPanel;
     
@@ -47,8 +44,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
         initComponents();
         this.compiler = compiler;
         this.parserSettingsPanel = parserSettingsPanel;
-        platform = Platforms.getPlatform(MakeOptions.getInstance().getPlatform());
-        updatePanels(platform);
+        updatePanels();
         
         resetButton.getAccessibleContext().setAccessibleDescription(getString("RESET_BUTTON_AD"));
     }
@@ -56,15 +52,15 @@ public class PredefinedPanel extends javax.swing.JPanel {
     private static final int INSETS = 0;
     private static final double WEIGTH = 0.1;
 
-    private void updatePanels(Platform platform) {
-        List includesList = compiler.getSystemIncludeDirectories(platform);
+    private void updatePanels() {
+        List includesList = compiler.getSystemIncludeDirectories();
         String[] includesAr = (String[])includesList.toArray(new String[includesList.size()]);
                 
         if (includesPanel != null) {
             includes.remove(includesPanel);
         }
         includes.add(includesPanel = new IncludesPanel(includesAr));
-        List definesList = compiler.getSystemPreprocessorSymbols(platform);
+        List definesList = compiler.getSystemPreprocessorSymbols();
         String[] definesAr = (String[])definesList.toArray(new String[definesList.size()]);
         
         if (definitionsPanel != null) {
@@ -76,16 +72,15 @@ public class PredefinedPanel extends javax.swing.JPanel {
     public boolean save() {
         boolean wasChanges = false;
         Vector includes = includesPanel.getListData();
-        wasChanges |= compiler.setSystemIncludeDirectories(platform, includes);
+        wasChanges |= compiler.setSystemIncludeDirectories(includes);
         Vector definitions = definitionsPanel.getListData();
-        wasChanges |= compiler.setSystemPreprocessorSymbols(platform, definitions);
+        wasChanges |= compiler.setSystemPreprocessorSymbols(definitions);
         return wasChanges;
     }
     
     public void update() {
         if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("update for PredefinedPanel " + compiler.getName());
-        platform = Platforms.getPlatform(MakeOptions.getInstance().getPlatform());
-        updatePanels(platform);
+        updatePanels();
     }
     
     /** This method is called from within the constructor to
@@ -149,8 +144,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
         String txt = getString("RESET_QUESTION"); // NOI18N
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("RESET_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-            compiler.resetSystemIncludesAndDefines(platform);
-            updatePanels(platform);
+            compiler.resetSystemIncludesAndDefines();
+            updatePanels();
             validate();
             repaint();
             parserSettingsPanel.fireFilesPropertiesChanged();

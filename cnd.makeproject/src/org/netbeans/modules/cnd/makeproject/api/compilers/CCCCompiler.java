@@ -24,9 +24,11 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 
 public class CCCCompiler extends BasicCompiler {
+    private String includeFilePrefix = null;
+    
     public CCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(flavor, kind, name, displayName, path);
     }
@@ -51,13 +53,13 @@ public class CCCCompiler extends BasicCompiler {
         return ""; // NOI18N
     }
     
-    protected void getSystemIncludesAndDefines(Platform platform, String command, boolean stdout) throws IOException {
+    protected void getSystemIncludesAndDefines(String command, boolean stdout) throws IOException {
             Process process;
             process = Runtime.getRuntime().exec(command + " " + "/dev/null"); // NOI18N
             if (stdout)
-                parseCompilerOutput(platform, process.getInputStream());
+                parseCompilerOutput(process.getInputStream());
             else
-                parseCompilerOutput(platform, process.getErrorStream());
+                parseCompilerOutput(process.getErrorStream());
         }
     
     // To be overridden
@@ -65,11 +67,11 @@ public class CCCCompiler extends BasicCompiler {
     }
     
     // To be overridden
-    public void resetSystemIncludesAndDefines(Platform platform) {
+    public void resetSystemIncludesAndDefines() {
     }
     
     // To be overridden
-    protected void parseCompilerOutput(Platform platform, InputStream is) {
+    protected void parseCompilerOutput(InputStream is) {
     }
     
     /**
@@ -109,6 +111,23 @@ public class CCCCompiler extends BasicCompiler {
                 break;
             }
         }
+    }
+
+    protected String getIncludeFilePathPrefix() {
+        if (includeFilePrefix == null) {
+            includeFilePrefix = ""; // NOI18N
+            if (getFlavor() == CompilerFlavor.Cygwin ||
+                    getFlavor() == CompilerFlavor.MinGW ||
+                    getFlavor() == CompilerFlavor.DJGPP ||
+                    getFlavor() == CompilerFlavor.Interix) {
+                int i = getPath().indexOf("\\bin"); // NOI18N
+                if (i > 0) {
+                    includeFilePrefix = getPath().substring(0, i);
+                    includeFilePrefix = FilePathAdaptor.normalize(includeFilePrefix);
+}
+            }
+        }
+        return includeFilePrefix;
     }
 
 }

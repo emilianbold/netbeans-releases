@@ -319,14 +319,13 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
             return vec;
-        Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from compiler
             if( compiler != null ) {
-                vec.addAll(compiler.getSystemIncludeDirectories(platform));
+                vec.addAll(compiler.getSystemIncludeDirectories());
             }
         }
         return vec;
@@ -338,7 +337,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
             return vec;
-        Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
@@ -370,14 +368,13 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
             return vec;
-        Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             if( compiler != null ) {
                 // Get macro definitions from compiler
-                vec.addAll(compiler.getSystemPreprocessorSymbols(platform));
+                vec.addAll(compiler.getSystemPreprocessorSymbols());
             }
         }
         return vec;
@@ -389,7 +386,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
             return vec;
-        Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
