@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
@@ -43,36 +42,35 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 class MultiViewModel {
     
     private MultiViewDescription currentEditor;
-    private Map nestedElements; //key=description, value null or multiviewelement
-    private Map nestedCallbacks; //key=element, value null or the MultiViewElementCallback that it's used by this element.
-    private Map nestedPerspectives; //key=description, value perspective
+    private Map<MultiViewDescription, MultiViewElement> nestedElements; //key=description, value null or multiviewelement
+    private Map<MultiViewElement, MultiViewElementCallback> nestedCallbacks; //key=element, value null or the MultiViewElementCallback that it's used by this element.
+    private Map<MultiViewDescription,MultiViewPerspective> nestedPerspectives; //key=description, value perspective
 //    private Map nestedPerspectiveComponents; //key=description, value mull or perspectiveComponent
     private MultiViewDescription[] descriptions;
     private ButtonGroup group;
-    private Collection shownElements;
-    private ArrayList listeners;
+    private Collection<MultiViewElement> shownElements;
+    private ArrayList<ElementSelectionListener> listeners;
     private ActionRequestObserverFactory observerFactory;
     
     MultiViewModel(MultiViewDescription[] descs, MultiViewDescription defaultDescr, 
                    MultiViewModel.ActionRequestObserverFactory factory) {
-        this(descs, defaultDescr, factory, Collections.EMPTY_MAP);
+        this(descs, defaultDescr, factory, Collections.<MultiViewDescription, MultiViewElement>emptyMap());
     }
     
     /**
      * constructor used at deserialization...
      */
     MultiViewModel(MultiViewDescription[] descs, MultiViewDescription defaultDescr, 
-                   MultiViewModel.ActionRequestObserverFactory factory, Map existingElements) {
+                   MultiViewModel.ActionRequestObserverFactory factory, Map<MultiViewDescription, MultiViewElement> existingElements) {
         observerFactory = factory;
-        nestedElements = new HashMap();
+        nestedElements = new HashMap<MultiViewDescription, MultiViewElement>();
 //        nestedPerspectiveComponents = new HashMap();
-        nestedPerspectives = new HashMap();
-        nestedCallbacks = new HashMap();
-        shownElements = new HashSet(descs.length + 3);
+        nestedPerspectives = new HashMap<MultiViewDescription,MultiViewPerspective>();
+        nestedCallbacks = new HashMap<MultiViewElement, MultiViewElementCallback>();
+        shownElements = new HashSet<MultiViewElement>(descs.length + 3);
         descriptions = descs;
-        this.group = group;
         for (int i = 0; i < descriptions.length; i++) {
-            MultiViewElement element = (MultiViewElement)existingElements.get(descriptions[i]);
+            MultiViewElement element = existingElements.get(descriptions[i]);
             nestedElements.put(descriptions[i], element);
             nestedPerspectives.put(descriptions[i], Accessor.DEFAULT.createPerspective(descriptions[i]));
             if (element != null) {
@@ -111,13 +109,12 @@ class MultiViewModel {
      * returns all elements that were so far created/instantiated.
      */
     synchronized Collection getCreatedElements() {
-       Collection col = new ArrayList(nestedElements.size());
-       Iterator it = nestedElements.entrySet().iterator();
-       while (it.hasNext()) {
-           Map.Entry entry = (Map.Entry)it.next();
+       Collection<MultiViewElement> col = new ArrayList<MultiViewElement>(nestedElements.size());
+       for (Map.Entry<MultiViewDescription, MultiViewElement> entry : nestedElements.entrySet()) {
            if (entry.getValue() != null) {
                col.add(entry.getValue());
            }
+           
        }
        return col;
     }
@@ -154,13 +151,13 @@ class MultiViewModel {
     MultiViewPerspective[] getPerspectives() {
         MultiViewPerspective[] toReturn = new MultiViewPerspective[descriptions.length];
         for (int i = 0; i < descriptions.length; i++) {
-            toReturn[i] = (MultiViewPerspective)nestedPerspectives.get(descriptions[i]);
+            toReturn[i] = nestedPerspectives.get(descriptions[i]);
         }
         return toReturn;
     }
     
     MultiViewPerspective getSelectedPerspective() {
-        return (MultiViewPerspective)nestedPerspectives.get(getActiveDescription());
+        return nestedPerspectives.get(getActiveDescription());
     }
     
 //    MultiViewPerspectiveComponent getMVComponentForDescription(MultiViewDescription desc) {
@@ -182,7 +179,7 @@ class MultiViewModel {
      * used primarily at deserialization time.
      */
      synchronized MultiViewElement getElementForDescription(MultiViewDescription description, boolean create) {
-        MultiViewElement element = (MultiViewElement)nestedElements.get(description);
+        MultiViewElement element = nestedElements.get(description);
         if (element == null && create) {
             element = description.createElement();
             MultiViewElementCallback call = observerFactory.createElementCallback(description);
@@ -195,13 +192,13 @@ class MultiViewModel {
     }
      
      synchronized MultiViewElementCallback getCallbackForElement(MultiViewElement elem) {
-         return (MultiViewElementCallback)nestedCallbacks.get(elem);
+         return nestedCallbacks.get(elem);
      }
     
     
     void addElementSelectionListener(ElementSelectionListener listener) {
         if (listeners == null) {
-            listeners = new ArrayList();
+            listeners = new ArrayList<ElementSelectionListener>();
         }
         synchronized (listeners) {
             listeners.add(listener);
@@ -210,7 +207,7 @@ class MultiViewModel {
     
     void removeElementSelectionListener(ElementSelectionListener listener) {
         if (listeners == null) {
-            listeners = new ArrayList();
+            listeners = new ArrayList<ElementSelectionListener>();
         }
         synchronized (listeners) {
             listeners.remove(listener);
@@ -220,9 +217,7 @@ class MultiViewModel {
     private void fireSelectionChanged(MultiViewDescription oldOne, MultiViewDescription newOne) {
         if (listeners != null) {
             synchronized (listeners) {
-                Iterator it = listeners.iterator(); 
-                while (it.hasNext()) {
-                    ElementSelectionListener list = (ElementSelectionListener)it.next();
+                for (ElementSelectionListener list : listeners) {
                     list.selectionChanged(oldOne, newOne);
                 }
             }
@@ -232,15 +227,14 @@ class MultiViewModel {
     void fireActivateCurrent() {
         if (listeners != null) {
             synchronized (listeners) {
-                Iterator it = listeners.iterator(); 
-                while (it.hasNext()) {
-                    ElementSelectionListener list = (ElementSelectionListener)it.next();
+                for (ElementSelectionListener list : listeners) {
                     list.selectionActivatedByButton();
                 }
             }
         }
     }
 
+    @Override
     public String toString() {
         return "current=" + currentEditor; // NOI18N
     }
@@ -268,6 +262,7 @@ class MultiViewModel {
     
     private class BtnGroup extends ButtonGroup {
         
+        @Override
         public void setSelected(ButtonModel m, boolean b) {
             super.setSelected(m, b);
             if (getSelection() instanceof TabsComponent.TabsButtonModel) {

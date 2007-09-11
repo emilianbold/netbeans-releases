@@ -21,7 +21,6 @@ package org.netbeans.core.multiview;
 
 import javax.swing.Action;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListeners;
 import java.beans.*;
 import java.util.*;
 import javax.swing.ActionMap;
@@ -29,7 +28,6 @@ import javax.swing.ActionMap;
 import org.openide.nodes.*;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -51,6 +49,7 @@ class MultiViewTopComponentLookup extends Lookup {
         initial.refreshLookup();
     }
     
+    @Override
     public Lookup.Item lookupItem(Lookup.Template template) {
         Lookup.Item retValue;
         if (template.getType() == ActionMap.class || (template.getId() != null && template.getId().equals("javax.swing.ActionMap"))) {
@@ -202,39 +201,48 @@ class MultiViewTopComponentLookup extends Lookup {
             map = original;
         }
         
+        @Override
         public void setParent(ActionMap map) {
             this.map.setParent(map);
         }
         
         
+        @Override
         public ActionMap getParent() {
             return map.getParent();
         }
         
+        @Override
         public void put(Object key, Action action) {
             map.put(key, action);
         }
         
+        @Override
         public Action get(Object key) {
             return map.get(key);
         }
         
+        @Override
         public void remove(Object key) {
             map.remove(key);
         }
         
+        @Override
         public void clear() {
             map.clear();
         }
         
+        @Override
         public Object[] keys() {
             return map.keys();
         }
         
+        @Override
         public int size() {
             return map.size();
         }
         
+        @Override
         public Object[] allKeys() {
             return map.allKeys();
         }

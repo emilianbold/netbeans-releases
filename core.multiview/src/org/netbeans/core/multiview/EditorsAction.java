@@ -77,19 +77,19 @@ public class EditorsAction extends AbstractAction
                     setEnabled(true);
                     MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
                     if (handler != null) {
-                        final WeakReference handlerRef = new WeakReference(handler);
+                        final WeakReference<MultiViewHandler> handlerRef = new WeakReference<MultiViewHandler>(handler);
                         ButtonGroup group = new ButtonGroup();
                         MultiViewPerspective[] pers = handler.getPerspectives();
                         for (int i = 0; i < pers.length; i++) {
                             MultiViewPerspective thisPers = pers[i];
-                            final WeakReference persRef = new WeakReference(thisPers);
+                            final WeakReference<MultiViewPerspective> persRef = new WeakReference<MultiViewPerspective>(thisPers);
                             
                             JRadioButtonMenuItem item = new JRadioButtonMenuItem(thisPers.getDisplayName());
                             item.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent event) {
                                     //#88626 prevent a memory leak
-                                    MultiViewHandler handler = (MultiViewHandler)handlerRef.get();
-                                    MultiViewPerspective thisPers = (MultiViewPerspective)persRef.get();
+                                    MultiViewHandler handler = handlerRef.get();
+                                    MultiViewPerspective thisPers = persRef.get();
                                     if (handler != null && thisPers != null) {
                                         handler.requestActive(thisPers);
                                     }

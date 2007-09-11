@@ -29,9 +29,6 @@ import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.KeyStroke;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.text.Keymap;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -50,12 +47,11 @@ class TabsComponent extends JPanel {
     private final static String TOOLBAR_MARKER = "MultiViewPanel"; //NOI18N
     
     MultiViewModel model;
-    private ActionListener listener;
     private MouseListener buttonMouseListener = null;
     private JComponent toolbarPanel;
     private JPanel componentPanel;
     private CardLayout cardLayout;
-    private Set alreadyAddedElements;
+    private Set<MultiViewElement> alreadyAddedElements;
     private JToolBar bar;
     
     private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
@@ -89,7 +85,7 @@ class TabsComponent extends JPanel {
         cardLayout = new CardLayout();
         componentPanel.setLayout(cardLayout);
         add(componentPanel, BorderLayout.CENTER);
-        alreadyAddedElements = new HashSet();
+        alreadyAddedElements = new HashSet<MultiViewElement>();
         
         MultiViewDescription[] descs = model.getDescriptions();
         MultiViewDescription def = model.getActiveDescription();
@@ -187,13 +183,9 @@ class TabsComponent extends JPanel {
             buttonMouseListener = new ButtonMouseListener();
         }
         button.addMouseListener (buttonMouseListener);
-        //
-        Font font = button.getFont();
-        FontMetrics fm = button.getFontMetrics(font);
-        int height = fm.getHeight();
 
         //HACK start - now find the global action shortcut
-        Keymap map = (Keymap)Lookup.getDefault().lookup(Keymap.class);
+        Keymap map = Lookup.getDefault().lookup(Keymap.class);
         KeyStroke stroke = null;
         KeyStroke stroke2 = null;
 //in tests map can be null, that's why the check..
@@ -301,8 +293,6 @@ class TabsComponent extends JPanel {
     
     
     private Border buttonBorder = null;
-    private boolean isMetal = false;
-    private boolean isWindows = false;
     private Border getButtonBorder() {
         if (buttonBorder == null) {
             //For some lf's, core will supply one
@@ -323,19 +313,19 @@ class TabsComponent extends JPanel {
         ActionMap map = bar.getActionMap();
         Action act = new TogglesGoEastAction();
         // JToolbar action name
-        map.put("navigateRight", act);
+        map.put("navigateRight", act);//NOI18N
         InputMap input = bar.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         
         act = new TogglesGoWestAction();
         // JToolbar action name
-        map.put("navigateLeft", act);
+        map.put("navigateLeft", act);//NOI18N
         
         act = new TogglesGoDownAction();
-        map.put("TogglesGoDown", act);
+        map.put("TogglesGoDown", act);//NOI18N
         // JToolbar action name
-        map.put("navigateUp", act);
+        map.put("navigateUp", act);//NOI18N
         KeyStroke stroke = KeyStroke.getKeyStroke("ESCAPE"); //NOI18N
-        input.put(stroke, "TogglesGoDown");
+        input.put(stroke, "TogglesGoDown");//NOI18N
     }
 
     
@@ -401,10 +391,12 @@ class TabsComponent extends JPanel {
     }
     
     class ButtonMouseListener extends MouseAdapter {
+        @Override
         public void mouseEntered(MouseEvent e) {
             AbstractButton b = (AbstractButton)e.getComponent();
             b.getModel().setRollover(true);
         }
+        @Override
         public void mouseExited(MouseEvent e) {
             AbstractButton b = (AbstractButton)e.getComponent();
             b.getModel().setRollover(false);
@@ -413,6 +405,7 @@ class TabsComponent extends JPanel {
         /** for user triggered clicks, do activate the current element..
             make it on mousePressed to be in synch with the topcpomponent activation code in the winsys impl #68505
          */
+        @Override
         public void mousePressed(MouseEvent e) {
             AbstractButton b = (AbstractButton)e.getComponent();
             MultiViewModel model = TabsComponent.this.model;
@@ -434,9 +427,10 @@ class TabsComponent extends JPanel {
             //toolbar is tall enough that the "glow" which paints
             //outside the combo box bounds doesn't make a mess painting
             //into other components
-            setName("editorToolbar");
+            setName("editorToolbar"); //NOI18N
         }
         
+        @Override
         public void setBorder (Border b) {
             if (!updating) {
                 return;
@@ -444,6 +438,7 @@ class TabsComponent extends JPanel {
             super.setBorder(b);
         }
         
+        @Override
         public void updateUI() {
             updating = true;
             try {
@@ -453,9 +448,10 @@ class TabsComponent extends JPanel {
             }
         }
         
+        @Override
         public String getUIClassID() {
-            return UIManager.get("Nb.Toolbar.ui") == null ?
-                super.getUIClassID() : "Nb.Toolbar.ui";
+            return UIManager.get("Nb.Toolbar.ui") == null ? //NOI18N
+                super.getUIClassID() : "Nb.Toolbar.ui"; //NOI18N
         }
     }
 }

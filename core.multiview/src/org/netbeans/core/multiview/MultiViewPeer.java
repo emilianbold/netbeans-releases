@@ -101,7 +101,7 @@ public final class MultiViewPeer  {
     }
     
     void setDeserializedMultiViewDescriptions(MultiViewDescription[] descriptions, 
-                                                      MultiViewDescription defaultDesc, Map existingElements) {
+                                                      MultiViewDescription defaultDesc, Map<MultiViewDescription, MultiViewElement> existingElements) {
         if (model != null) {
             model.removeElementSelectionListener(selListener);
         }
@@ -390,17 +390,17 @@ public final class MultiViewPeer  {
     * @param in the stream to deserialize from
     */
     void peerReadExternal (ObjectInput in) throws IOException, ClassNotFoundException {
-        ArrayList descList = new ArrayList();
-        HashMap map = new HashMap();
+        ArrayList<MultiViewDescription> descList = new ArrayList<MultiViewDescription>();
+        HashMap<MultiViewDescription, MultiViewElement> map = new HashMap<MultiViewDescription, MultiViewElement>();
         int current = 0;
         CloseOperationHandler close = null;
         while (true) {
             Object obj = in.readObject();
             if (obj instanceof MultiViewDescription) {
-                descList.add(obj);
+                descList.add((MultiViewDescription)obj);
             }
             else if (obj instanceof MultiViewElement) {
-                map.put(descList.get(descList.size() - 1), obj);
+                map.put(descList.get(descList.size() - 1), (MultiViewElement)obj);
             }
             else if (obj instanceof Integer)  {
                 Integer integ = (Integer)obj;
@@ -418,7 +418,7 @@ public final class MultiViewPeer  {
         setCloseOperationHandler(close);
         // now that we've read everything, we should set it correctly.
         MultiViewDescription[] descs = new MultiViewDescription[descList.size()];
-        descs = (MultiViewDescription[])descList.toArray(descs);
+        descs = descList.toArray(descs);
         MultiViewDescription currDesc = descs[current];
         setDeserializedMultiViewDescriptions(descs, currDesc, map);
     }    
@@ -619,6 +619,7 @@ public final class MultiViewPeer  {
     }
 
     
+    @Override
     public String toString() {
         return "[model=" + model + "]"; // NOI18N
     }

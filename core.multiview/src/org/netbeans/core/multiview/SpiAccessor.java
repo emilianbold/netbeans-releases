@@ -19,8 +19,6 @@
 
 package org.netbeans.core.multiview;
 
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 

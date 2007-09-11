@@ -77,31 +77,37 @@ public final class MultiViewTopComponent
     
     
     
+    @Override
     protected void componentClosed() {
         super.componentClosed();
         peer.peerComponentClosed();
     }
     
+    @Override
     protected void componentShowing() {
         super.componentShowing();
         peer.peerComponentShowing();
     }
     
+    @Override
     protected void componentHidden() {
         super.componentHidden();
         peer.peerComponentHidden();
     }
     
+    @Override
     protected void componentDeactivated() {
         super.componentDeactivated();
         peer.peerComponentDeactivated();
     }
     
+    @Override
     protected void componentActivated() {
         super.componentActivated();
         peer.peerComponentActivated();
     }
     
+    @Override
     protected void componentOpened() {
         super.componentOpened();
         peer.peerComponentOpened();
@@ -112,6 +118,7 @@ public final class MultiViewTopComponent
      * merge action for the topcomponent and the enclosed MultiViewElement..
      * 
      */
+    @Override
     public Action[] getActions() {
         //TEMP don't delegate to element's actions..
         Action[] superActions = super.getActions();
@@ -127,10 +134,12 @@ public final class MultiViewTopComponent
     /**
      * Delegates the value to the element descriptions.
      */
+    @Override
     public int getPersistenceType() {
         return peer.getPersistenceType();
     }  
     
+    @Override
     protected String preferredID() {
         return peer.preferredID();
     }
@@ -141,6 +150,7 @@ public final class MultiViewTopComponent
     * Subclasses wishing to store state must call the super method, then write to the stream.
     * @param out the stream to serialize to
     */
+    @Override
     public void writeExternal (ObjectOutput out) throws IOException {
         super.writeExternal(out);
         peer.peerWriteExternal(out);
@@ -150,6 +160,7 @@ public final class MultiViewTopComponent
     * Subclasses wishing to store state must call the super method, then read from the stream.
     * @param in the stream to deserialize from
     */
+    @Override
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         peer.peerReadExternal(in);
@@ -165,10 +176,12 @@ public final class MultiViewTopComponent
     }
     
     
+    @Override
     public HelpCtx getHelpCtx() {
         return peer.getHelpCtx();
     }
 
+    @Override
     public String toString() {
         return "MultiViewTopComponent[name=" + getDisplayName() + ", peer=" + peer + "]";   // NOI18N
     }
@@ -180,6 +193,7 @@ public final class MultiViewTopComponent
      *
      * @return undoable edit for this component
      */
+    @Override
     public UndoRedo getUndoRedo() {
         UndoRedo retValue;
         retValue = peer.peerGetUndoRedo();
@@ -193,6 +207,7 @@ public final class MultiViewTopComponent
      * This method is called when this <code>TopComponent</code> is about to close.
      * Delegates to CloseOperationHandler.
      */
+    @Override
     public boolean canClose() {
         return peer.canClose();
     }
@@ -200,6 +215,8 @@ public final class MultiViewTopComponent
     /**
      * delegate to the apppropriate active element's component
      */
+    @Override
+    @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow() {
         return peer.requestFocusInWindow();
     }
@@ -207,6 +224,8 @@ public final class MultiViewTopComponent
     /**
      * delegate to the apppropriate active element's component
      */
+    @SuppressWarnings("deprecation")
+    @Override
     public void requestFocus() {
         peer.requestFocus();
     }
