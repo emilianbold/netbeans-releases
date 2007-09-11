@@ -446,8 +446,14 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 resetProfiler();
                 return; //we failed to start the server.            }
             }
+            String userName = sunDm.getUserName();
+            if (null == userName || "".equals(userName.trim())) {
+                // the Windows .bat for asadmin gets cranky about a blank argument
+                // for the --user option.. which makes for a strange exit 
+                userName = "thisisunlikelytobearealadminusernameforanyrealdeployment";  // NOI18N
+            }
             String arrd[] = { asadminCmd, "start-domain",  "--debug="+debugString ,
-            "--user" , sunDm.getUserName(),//NOI18N
+            "--user" , userName,//NOI18N
             "--passwordfile",  passWordFile.getAbsolutePath() , //NOI18N
             "--domaindir", domainDir, domain //NOI18N
             };
@@ -612,22 +618,33 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     //
                     exitValue = process.waitFor();
                     
-                    if (exitValue == 0) {
+                    // Sometimes the exit value returned from waitFor doesn't 
+                    // match the return value if you use the adadmin command
+                    // from the command-line on Windows.  We get false success
+                    // readings.
+                    //
+                    // See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6573254
+                    if (exitValue == 0 && eos.size() < 1) {
 //                        if (hasCommandSucceeded()){
                             return 0;
 //                        } else {
 //                            return -1;
 //                        }
                     } else {
+                        // correct the bogus exit value... if it was bogus.
+                        exitValue = exitValue==0?-1:exitValue;
                         if (null != io)
                             io.getOut().println(oos.toString());
                     }
                 }
             } catch (InterruptedException ie) {
-                // TODO --
+                Logger.getLogger(StartSunServer.class.getName()).log(Level.FINER,
+                        null, ie);
             }
             
         } catch (IOException e) {
+            Logger.getLogger(StartSunServer.class.getName()).log(Level.FINER,null,
+                    e);
         }
         
         return exitValue;
