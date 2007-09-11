@@ -21,6 +21,7 @@ package org.netbeans.modules.websvc.manager.impl;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
+import org.openide.nodes.Node;
 
 /**
  * Basic consumer of web service manager.
@@ -43,23 +44,23 @@ public class CoreWebServiceManager implements WebServiceManagerExt {
     }
 
     public static final Action[] EMPTY_ACTIONS = new Action[0];
-    public Action[] getWebServicesRootActions() {
+    public Action[] getWebServicesRootActions(Node node) {
         return EMPTY_ACTIONS;
     }
 
-    public Action[] getGroupActions() {
+    public Action[] getGroupActions(Node node) {
         return EMPTY_ACTIONS;
     }
 
-    public Action[] getWebServiceActions() {
+    public Action[] getWebServiceActions(Node node) {
         return EMPTY_ACTIONS;
     }
 
-    public Action[] getPortActions() {
+    public Action[] getPortActions(Node node) {
         return EMPTY_ACTIONS;
     }
 
-    public Action[] getMethodActions() {
+    public Action[] getMethodActions(Node node) {
         return EMPTY_ACTIONS;
     }
 

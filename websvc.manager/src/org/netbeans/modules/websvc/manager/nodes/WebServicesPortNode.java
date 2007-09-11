@@ -23,7 +23,7 @@ import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.util.Collection;
 
-import org.netbeans.modules.websvc.manager.api.WebServiceManager;
+import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
 import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
@@ -97,7 +97,7 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         for (WebServiceManagerExt ext : ManagerUtil.getExtensions()) {
-            for (Action a : ext.getPortActions()) {
+            for (Action a : ext.getPortActions(this)) {
                 actions.add(a);
             }
         }
@@ -181,7 +181,7 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
         return true;
     }
     public boolean canCut() {
-        return true;
+        return false;
     }
     
     public Transferable clipboardCopy() throws IOException {

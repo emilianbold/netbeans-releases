@@ -39,6 +39,7 @@ public class WebServiceData {
     
     /** Web service URL (File) */
     private String wsdlUrl;
+    private String originalWsdl;
     private String catalog;
     
     /** Group ID to which this Web Service belogs */
@@ -73,15 +74,16 @@ public class WebServiceData {
     public WebServiceData() {
     }
     
-    public WebServiceData(String url, String packageName, String groupId) {
+    public WebServiceData(String url, String originalWsdl, String packageName, String groupId) {
         websvcId = WebServiceListModel.getInstance().getUniqueWebServiceId();
         wsdlUrl = url;
         this.packageName = packageName;
         this.groupId = groupId;
         this.compiled = false;
+        this.originalWsdl = originalWsdl;
     }
     
-    public WebServiceData(WsdlService service, String url, String packageName, String groupId){
+    public WebServiceData(WsdlService service, String url, String originalWsdl, String packageName, String groupId){
         websvcId = WebServiceListModel.getInstance().getUniqueWebServiceId();
         wsdlUrl = url;
         wsdlService = service;
@@ -89,6 +91,7 @@ public class WebServiceData {
         this.packageName = packageName;
         this.groupId = groupId;
         this.compiled = false;
+        this.originalWsdl = originalWsdl;
     }
     
     public void setWsdlService(WsdlService svc){
@@ -132,6 +135,14 @@ public class WebServiceData {
     public void setURL(String url) {
         setModelDirty();
         wsdlUrl = url;
+    }
+    
+    public String getOriginalWsdl() {
+        return originalWsdl;
+    }
+    
+    public void setOriginalWsdl(String originalWsdl) {
+        this.originalWsdl = originalWsdl;
     }
     
     public void setPackageName(String inPackageName){

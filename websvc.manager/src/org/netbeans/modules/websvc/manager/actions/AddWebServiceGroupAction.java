@@ -25,6 +25,9 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
 
 import org.netbeans.modules.websvc.manager.nodes.*;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
 /** Add a webservice group node to the root node
@@ -45,10 +48,27 @@ public class AddWebServiceGroupAction extends NodeAction {
     
     protected void performAction(Node[] nodes) {
         WebServiceListModel wsNodeModel = WebServiceListModel.getInstance();
-        String newName = NbBundle.getMessage(AddWebServiceGroupAction.class, "NEW_GROUP"); 
-        WebServiceGroup wsGroup =  new WebServiceGroup();
-        wsGroup.setName(newName);
-        wsNodeModel.addWebServiceGroup(wsGroup);
+        String defaultName = NbBundle.getMessage(AddWebServiceGroupAction.class, "NEW_GROUP"); 
+
+        
+        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
+                NbBundle.getMessage(AddWebServiceGroupAction.class, "CTL_GroupLabel"),
+                NbBundle.getMessage(AddWebServiceGroupAction.class, "CTL_GroupTitle"));
+        dlg.setInputText(defaultName);
+        if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
+            try {
+                String newName = dlg.getInputText().trim();
+                if (newName == null || newName.length() == 0) {
+                    newName = defaultName;
+                }
+                
+                WebServiceGroup wsGroup = new WebServiceGroup();
+                wsGroup.setName(newName);
+                wsNodeModel.addWebServiceGroup(wsGroup);                
+            } catch (IllegalArgumentException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
     }
     
     /** @return <code>false</code> to be performed in event dispatch thread */

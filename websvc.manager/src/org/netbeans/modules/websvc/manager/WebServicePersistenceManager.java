@@ -20,7 +20,7 @@
 
 package org.netbeans.modules.websvc.manager;
 
-import org.netbeans.modules.websvc.manager.api.WebServiceManager;
+import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
@@ -246,7 +246,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
                     newGroup.setName(groupName);
                     
                     for (String url : currentUrls) {
-                        WebServiceData wsData = new WebServiceData(url, DEFAULT_PACKAGE, newGroup.getId());
+                        WebServiceData wsData = new WebServiceData(url, url, DEFAULT_PACKAGE, newGroup.getId());
                         WebServiceListModel.getInstance().addWebService(wsData);
                         
                         newGroup.add(wsData.getId(), true);

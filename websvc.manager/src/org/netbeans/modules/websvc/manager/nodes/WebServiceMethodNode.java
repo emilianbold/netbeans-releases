@@ -142,7 +142,7 @@ public class WebServiceMethodNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         for (WebServiceManagerExt ext : ManagerUtil.getExtensions()) {
-            for (Action a : ext.getMethodActions()) {
+            for (Action a : ext.getMethodActions(this)) {
                 actions.add(a);
             }
         }
@@ -306,7 +306,7 @@ public class WebServiceMethodNode extends AbstractNode {
         return true;
     }
     public boolean canCut() {
-        return true;
+        return false;
     }
     
     public Transferable clipboardCopy() throws IOException {

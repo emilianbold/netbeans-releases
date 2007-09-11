@@ -50,8 +50,28 @@ public class ViewWSDLAction extends NodeAction {
     public ViewWSDLAction() {
     }
     
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
+    protected boolean enable(Node[] nodes) {
+        if(nodes != null &&
+        nodes.length != 0) {
+            for (int i = 0; i < nodes.length; i++) {
+                WebServiceNode wsNode = nodes[i].getCookie(WebServiceNode.class);
+                WebServicesPortNode portNode = nodes[i].getCookie(WebServicesPortNode.class);
+                
+                if (wsNode != null) {
+                    return wsNode.getWebServiceData().getURL() != null;
+                }else if (portNode != null) {
+                    return portNode.getWebServiceData().getURL() != null;
+                }else if (nodes[i] instanceof WebServiceNode) {
+                    return ((WebServiceNode)nodes[i]).getWebServiceData().getURL() != null;
+                }else if (nodes[i] instanceof WebServicesPortNode) {
+                    return ((WebServicesPortNode)nodes[i]).getWebServiceData().getURL() != null;
+                }
+            }
+            
+            return false;
+        } else {
+            return false;
+        }
     }
     
     public boolean asynchronous() {
@@ -91,6 +111,11 @@ public class ViewWSDLAction extends NodeAction {
                     }else {
                         wsData = ((WebServicesPortNode)node).getWebServiceData();
                     }
+                    
+                    if (wsData.getURL() == null || wsData.getURL().length() == 0) {
+                        continue;
+                    }
+                    
                     File wsdlFile = new File(wsData.getURL());
                     LocalFileSystem localFileSystem = null;
                     try {

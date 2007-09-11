@@ -45,21 +45,7 @@ import org.openide.filesystems.FileObject;
 public class WebServiceLibReferenceHelper {
     
     private static final String WEBSERVICE_CLIENTS_SUB_DIR = "webservice_clients"; // NOI18N
-    private static final String WEB_SERVICE_PREFIX = "Web Service - ";
-    private static final String WEB_SERVICE_JAXRPC_SUFFIX = "(JAX-RPC)";
-    private static final String WEB_SERVICE_JAXWS_SUFFIX = "(JAX-WS)";
     private static final AddLibrary DESIGN_RUNTIME_LIBRARY_ADD = new AddLibraryToProject();
-    
-    /**
-     * @return The library definition containing the web service support jar files
-     */
-    public static Library getWebServiceSupportLibDef(boolean isJ2EE_15) {
-        String libraryName = (isJ2EE_15) ? "jaxws21" : "jaxrpc16";
-        Library libDef = LibraryManager.getDefault().getLibrary(libraryName);
-        if( libDef == null )
-            ErrorManager.getDefault().getInstance( "org.netbeans.modules.websvc.manager.libraries.WebServiceLibReferenceHelper" ).log( ErrorManager.ERROR, "Can not find pre-defined web service support library: " + libraryName );
-        return libDef;
-    }
     
     /**
      * Adds the given jars to the project as archive references

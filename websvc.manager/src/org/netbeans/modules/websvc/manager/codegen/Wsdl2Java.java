@@ -27,7 +27,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.websvc.manager.api.WebServiceManager;
+import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -42,6 +42,7 @@ import java.net.InetSocketAddress;
 import java.net.ProxySelector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.util.NbBundle;
 
 
@@ -89,6 +90,7 @@ public class Wsdl2Java {
      */
     public boolean createProxyJars() {
         try {
+            boolean jaxRPCAvailable = ManagerUtil.isJAXRPCAvailable();
             String wsdlFileName = webServiceData.getURL();
             String serviceName = webServiceData.getName();
             
@@ -136,12 +138,20 @@ public class Wsdl2Java {
                 webServiceData.setJaxWsEnabled(true);
             }
             
-            boolean jaxRpcCreated = createJaxRpcProxyJars(properties);
+            boolean jaxRpcCreated = false;
+            if (jaxRPCAvailable) {
+                jaxRpcCreated = createJaxRpcProxyJars(properties);
+            }
+            
             if (!jaxRpcCreated) {
                 webServiceData.setJaxRpcEnabled(false);
-                String errorMessage = NbBundle.getMessage(Wsdl2Java.class, "CODEGEN_ERROR_JAXRPC");
-                NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                DialogDisplayer.getDefault().notify(d);                
+                
+                // Suppress the redundant error message if the JAX-RPC library is not available
+                if (!jaxRPCAvailable) {
+                    String errorMessage = NbBundle.getMessage(Wsdl2Java.class, "CODEGEN_ERROR_JAXRPC");
+                    NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+                    DialogDisplayer.getDefault().notify(d);
+                }
             }else {
                 webServiceData.setJaxRpcEnabled(true);
             }

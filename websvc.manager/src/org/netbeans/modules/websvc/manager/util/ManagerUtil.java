@@ -45,6 +45,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
@@ -63,6 +64,20 @@ public class ManagerUtil {
     public static final int BUFFER_SIZE = 4096;
     public static final String xsdNamespace = "xsd";
     final static public String WSDL_FILE_EXTENSION = "wsdl";
+
+    public static boolean isJAXRPCAvailable() {
+        return getWebServiceSupportLibDef(false) != null;
+    }
+
+    /**
+     * @return The library definition containing the web service support jar files, null if it does not exist
+     */
+    public static Library getWebServiceSupportLibDef(boolean isJ2EE_15) {
+        String libraryName = (isJ2EE_15) ? "jaxws21" : "jaxrpc16";
+        Library libDef = LibraryManager.getDefault().getLibrary(libraryName);
+
+        return libDef;
+    }
 
     public static Method getPropertyGetter(String type, String propName, ClassLoader loader) {
         try {
@@ -733,11 +748,11 @@ public class ManagerUtil {
      * Creates a classpath from a set of properties from the $userdir/build.properties file
      * 
      * @param srcPath
-     * @param libProperties
+     * @param isJaxWS true if the classpath should include the JAX-WS jars, false if JAX-RPC should be used
      * @return a URL array containing the classpath jars and directories
      * @throws java.io.IOException 
      */
-    public static List<URL> buildClasspath(File srcPath, String... libProperties) throws IOException {
+    public static List<URL> buildClasspath(File srcPath, boolean isJaxWS) throws IOException {
         // The classpath needs to be equivalent to (plus the ws client package root):
         // classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${libs.jsf12-support.classpath}"
         ArrayList<URL> urls = new ArrayList<URL>();
@@ -754,9 +769,8 @@ public class ManagerUtil {
         
         String pathSeparator = System.getProperty("path.separator");
         String longCP = properties.getProperty("libs.jsf12-support.classpath");
-        for (int i = 0; libProperties != null && i < libProperties.length; i++) {
-            longCP = properties.getProperty(libProperties[i]) + pathSeparator + longCP;
-        }
+        String libProperty = isJaxWS ? "libs.jaxws21.classpath" : "libs.jaxrpc16.classpath"; // NOI18N
+        longCP = properties.getProperty(libProperty) + pathSeparator + longCP;
         
         StringTokenizer st = new StringTokenizer(longCP, pathSeparator);
         

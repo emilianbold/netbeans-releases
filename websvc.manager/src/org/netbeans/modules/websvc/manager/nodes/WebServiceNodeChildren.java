@@ -18,7 +18,7 @@ package org.netbeans.modules.websvc.manager.nodes;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.websvc.manager.api.WebServiceManager;
+import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceDataEvent;
 import org.netbeans.modules.websvc.manager.model.WebServiceDataListener;
@@ -56,12 +56,7 @@ public class WebServiceNodeChildren extends Children.Keys<WsdlPort> implements W
     protected Node[] createNodes(WsdlPort key) {
         if (!wsData.isCompiled()) {
             // start the compilation
-            Runnable compile = new Runnable() {
-                public void run() {
-                    WebServiceManager.getInstance().compileWebService(wsData);
-                }
-            };
-            WebServiceManager.getInstance().getCompilationRequestProcessor().post(compile);
+            WebServiceManager.getInstance().compileWebService(wsData);
             
             AbstractNode waitNode = new AbstractNode(Children.LEAF);
             waitNode.setName(NbBundle.getMessage(WebServiceGroupNodeChildren.class, "NODE_LOAD_MSG"));

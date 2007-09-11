@@ -29,6 +29,11 @@ import org.openide.NotifyDescriptor;
 import org.openide.windows.*;
 import org.openide.ErrorManager;
 import java.io.IOException;
+import java.util.Set;
+import org.netbeans.modules.websvc.manager.WebServiceManager;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
+import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 
 import org.netbeans.modules.websvc.manager.nodes.*;
 
@@ -66,8 +71,6 @@ public class DeleteWebServiceGroupAction extends NodeAction {
     }
     
     protected void performAction(Node[] nodes) {
-        WebServiceGroupNode currentNode = null;
-        
         if(null != nodes && nodes.length > 0) {
             Node node = null;
             if(nodes[0] instanceof FilterNode){
@@ -76,7 +79,7 @@ public class DeleteWebServiceGroupAction extends NodeAction {
                 node = nodes[0];
             }
             if(node instanceof WebServiceGroupNode){
-                currentNode = (WebServiceGroupNode)node;
+                final WebServiceGroupNode currentNode = (WebServiceGroupNode)node;
                 String groupName = null;
                 if(null != currentNode) {
                     groupName = currentNode.getWebServiceGroup().getName();
@@ -85,22 +88,33 @@ public class DeleteWebServiceGroupAction extends NodeAction {
                 NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
                 Object response = DialogDisplayer.getDefault().notify(d);
                 
-                
                 if(null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
-                    
-                    try {
-                        currentNode.destroy();
-                    } catch(IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
+                    Runnable deleteTask = new Runnable() {
+                        public void run() {
+                            try {
+                                WebServiceGroup group = currentNode.getWebServiceGroup();
+                                Set<String> ids = group.getWebServiceIds();
+                                for (String id : ids) {
+                                    WebServiceData wsData = WebServiceListModel.getInstance().getWebService(id);
+                                    if (wsData != null) {
+                                        if (WebServiceManager.getInstance().isCompiling(wsData)) {
+                                            return;
+                                        }
+                                    }
+                                }
+                                
+                                currentNode.destroy();
+                            } catch (IOException ioe) {
+                                ErrorManager.getDefault().notify(ioe);
+                            }
+                        }
+                    };
+                    WebServiceManager.getInstance().getRequestProcessor().post(deleteTask);
                 }
             }
         } else {
             return;
         }
-        
-        
-        
     }
     
     protected boolean asynchronous() {

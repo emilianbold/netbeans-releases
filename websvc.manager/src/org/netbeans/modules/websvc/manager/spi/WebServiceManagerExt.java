@@ -22,6 +22,7 @@ package org.netbeans.modules.websvc.manager.spi;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.*;
+import org.openide.nodes.Node;
 
 public interface WebServiceManagerExt {
     
@@ -31,25 +32,25 @@ public interface WebServiceManagerExt {
     /**
      * @return list of consumer-specific actions for web service root node.
      */
-    public Action[] getWebServicesRootActions();
+    public Action[] getWebServicesRootActions(Node node);
 
     /**
      * @return list of consumer-specific actions for group nodes.
      */
-    public Action[] getGroupActions();
+    public Action[] getGroupActions(Node node);
 
     /**
      * @return list of consumer-specific actions for web service nodes.
      */
-    public Action[] getWebServiceActions();
+    public Action[] getWebServiceActions(Node node);
 
     /**
      * @return list of consumer-specific actions for port nodes.
      */
-    public Action[] getPortActions();
+    public Action[] getPortActions(Node node);
 
     /**
      * @return list of consumer-specific actions for method nodes.
      */
-    public Action[] getMethodActions();
+    public Action[] getMethodActions(Node node);
 }

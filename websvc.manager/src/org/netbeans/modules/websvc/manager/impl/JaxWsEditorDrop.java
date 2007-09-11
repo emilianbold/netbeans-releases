@@ -32,7 +32,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCodeGenerator;
-import org.netbeans.modules.websvc.manager.api.WebServiceManager;
+import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.Method;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
