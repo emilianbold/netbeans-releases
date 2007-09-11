@@ -349,7 +349,7 @@ public class JbiProjectProperties {
     /**
      * @deprecated Should no longer be used.
      */
-    public static final String JBI_COMPONENT_CONF_FILE = "org.netbeans.modules.compapp.jbiserver.component.conf.file"; // NOI18N
+    //public static final String JBI_COMPONENT_CONF_FILE = "org.netbeans.modules.compapp.jbiserver.component.conf.file"; // NOI18N
     
     /**
      * @deprecated Should no longer be used.
@@ -359,7 +359,7 @@ public class JbiProjectProperties {
     /**
      * @deprecated Should no longer be used.
      */
-    public static final String JBI_DEPLOYMENT_CONF_FILE = "org.netbeans.modules.compapp.jbiserver.deployment.conf.file"; // NOI18N
+    //public static final String JBI_DEPLOYMENT_CONF_FILE = "org.netbeans.modules.compapp.jbiserver.deployment.conf.file"; // NOI18N
     
     /**
      * @deprecated Should no longer be used.

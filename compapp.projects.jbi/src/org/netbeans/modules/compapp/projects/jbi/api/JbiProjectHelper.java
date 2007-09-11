@@ -36,6 +36,7 @@ public class JbiProjectHelper {
      * @param p 
      * @return 
      */
+    @SuppressWarnings("deprecation")
     public static String getJbiProjectName(Project p) {
         if (p == null) {
             return "";
@@ -56,6 +57,7 @@ public class JbiProjectHelper {
      * @param p 
      * @return 
      */
+    @SuppressWarnings("deprecation")
     public static String getServiceAssemblyDescription(Project p) {
         JbiProjectProperties props = ((JbiProject)p).getProjectProperties();
     
@@ -72,6 +74,7 @@ public class JbiProjectHelper {
      * @param p 
      * @return 
      */
+    @SuppressWarnings("deprecation")
     public static String getServiceUnitDescription(Project p) {
         JbiProjectProperties props = ((JbiProject)p).getProjectProperties();
     
@@ -88,6 +91,7 @@ public class JbiProjectHelper {
      * @param props 
      * @param name  
      */
+    @SuppressWarnings("deprecation")
     public static void setJbiProjectName(
             EditableProperties props, String name) {
         
@@ -105,6 +109,7 @@ public class JbiProjectHelper {
      * @param oldName old project name
      * @param newName new project name
      */
+    @SuppressWarnings("deprecation")
     public static void updateServiceAssemblyDescription(
             EditableProperties props,
             String oldName, String newName) {  

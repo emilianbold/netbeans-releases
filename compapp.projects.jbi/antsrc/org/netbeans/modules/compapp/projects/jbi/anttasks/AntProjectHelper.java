@@ -28,6 +28,7 @@ import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectPropert
  */
 public class AntProjectHelper {
 
+    @SuppressWarnings("deprecation")
     public static String getServiceAssemblyID(Project p) {        
         String saID = p.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
         if (saID == null) { // for backward compatibility until project is updated            
@@ -36,6 +37,7 @@ public class AntProjectHelper {
         return saID;
     }
     
+    @SuppressWarnings("deprecation")
     public static String getServiceAssemblyDescription(Project p) {    
         String saDescription = p.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION);
         if (saDescription == null) { // for backward compatibility until project is updated    
@@ -44,6 +46,7 @@ public class AntProjectHelper {
         return saDescription;
     }
     
+    @SuppressWarnings("deprecation")
     public static String getServiceUnitDescription(Project p) {    
         String saDescription = p.getProperty(JbiProjectProperties.SERVICE_UNIT_DESCRIPTION);
         if (saDescription == null) { // for backward compatibility until project is updated    

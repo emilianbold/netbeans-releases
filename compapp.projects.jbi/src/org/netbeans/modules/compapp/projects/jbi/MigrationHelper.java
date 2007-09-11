@@ -64,6 +64,7 @@ public class MigrationHelper {
     }
 
     // 6/29/07 IZ #101033
+    @SuppressWarnings("deprecation")
     public static void migrateCompAppProperties(String projDir, EditableProperties ep) {
 //        System.out.println("Migrating CompApp Properties:");
         String propFileLoc = projDir + File.separator + "nbproject" + 
@@ -110,7 +111,7 @@ public class MigrationHelper {
                             upgradeDeprecatedProperty(line, ep,
                             JbiProjectProperties.ASSEMBLY_UNIT_UUID, 
                             JbiProjectProperties.SERVICE_ASSEMBLY_ID)) {
-                        ;
+                        // NOP
                     } else if (removeDeprecatedProperty(line, ep, 
                             JbiProjectProperties.ASSEMBLY_UNIT_ALIAS) 
                             ||
