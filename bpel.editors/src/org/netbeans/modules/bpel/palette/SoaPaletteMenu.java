@@ -32,6 +32,7 @@ public class SoaPaletteMenu extends CallableSystemAction {
    * Creates a new palette menu.
    */
   public SoaPaletteMenu () {
+    putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     myName = NbBundle.getMessage(SoaPaletteMenu.class, "CTL_SoaPalette"); // NOI18N
   }
 
