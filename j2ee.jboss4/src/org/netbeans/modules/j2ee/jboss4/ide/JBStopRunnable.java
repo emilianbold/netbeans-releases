@@ -44,17 +44,16 @@ import org.openide.util.Utilities;
  * @author Libor Kotouc
  */
 class JBStopRunnable implements Runnable {
-
-    public static final boolean VERBOSE = 
-        System.getProperty ("netbeans.serverplugins.jboss4.logging") != null;
     
-    private final static String SHUTDOWN_SH = "/bin/shutdown.sh";//NOI18N
-    private final static String SHUTDOWN_BAT = "/bin/shutdown.bat";//NOI18N
-
-    private static int TIMEOUT = 300000;
+    private static final Logger LOGGER = Logger.getLogger(JBStopRunnable.class.getName());
     
-    private JBDeploymentManager dm;
-    private JBStartServer startServer;
+    private static final String SHUTDOWN_SH = "/bin/shutdown.sh"; // NOI18N
+    private static final String SHUTDOWN_BAT = "/bin/shutdown.bat"; // NOI18N
+
+    private static final int TIMEOUT = 300000;
+    
+    private final JBDeploymentManager dm;
+    private final JBStartServer startServer;
 
     JBStopRunnable(JBDeploymentManager dm, JBStartServer startServer) {
         this.dm = dm;
@@ -113,7 +112,7 @@ class JBStopRunnable implements Runnable {
             String envp[] = createEnvironment();
             stoppingProcess = pd.exec(null, envp, true, null);
         } catch (java.io.IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            LOGGER.log(Level.INFO, null, ioe);
 
             startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
                     NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_FAILED_PD", serverName, serverStopFileName)));//NOI18N
@@ -124,17 +123,15 @@ class JBStopRunnable implements Runnable {
         startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                 NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));
 
-        if (VERBOSE) {
-            System.out.println("JBStopRunnable: Entering the loop"); // NOI18N
-        }
+        LOGGER.log(Level.FINER, "Entering the loop"); // NOI18N
         
         int elapsed = 0;
         while (elapsed < TIMEOUT) {
             // check whether the stopping process did not fail
             try {
                 int processExitValue = stoppingProcess.exitValue();
-                if (VERBOSE) {
-                    System.out.println("JBStopRunnable: the stopping process has terminated with the exit value " + processExitValue); // NOI18N
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "The stopping process has terminated with the exit value " + processExitValue); // NOI18N
                 }
                 if (processExitValue != 0) {
                     // stopping process failed
@@ -148,17 +145,13 @@ class JBStopRunnable implements Runnable {
             if (startServer.isRunning()) {
                 startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                         NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
-                if (VERBOSE) {
-                    System.out.println("JBStopRunnable: STOPPING message fired"); // NOI18N
-                }
+                LOGGER.log(Level.FINER, "STOPPING message fired"); // NOI18N
                 try {
                     elapsed += 500;
                     Thread.sleep(500);
                 } catch (InterruptedException e) {}
             } else {
-                if (VERBOSE) {
-                    System.out.println("JBStopRunnable: JBoss has been stopped, going to stop the Log Writer thread");
-                }
+                LOGGER.log(Level.FINER, "JBoss has been stopped, going to stop the Log Writer thread");
                 final JBLogWriter logWriter = JBLogWriter.getInstance(ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR));
                 if (logWriter != null && logWriter.isRunning()) {
                     logWriter.waitForServerProcessFinished(10000);
@@ -167,9 +160,7 @@ class JBStopRunnable implements Runnable {
 
                 startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
                         NbBundle.getMessage(JBStopRunnable.class, "MSG_SERVER_STOPPED", serverName)));//NOI18N
-                if (VERBOSE) {
-                    System.out.println("JBStopRunnable: STOPPED message fired"); // NOI18N
-                }
+                LOGGER.log(Level.FINER, "STOPPED message fired"); // NOI18N
 
                 return;
             }
@@ -181,9 +172,7 @@ class JBStopRunnable implements Runnable {
             stoppingProcess.destroy();
         }
         
-        if (VERBOSE) {
-            System.out.println("JBStopRunnable: TIMEOUT EXPIRED"); // NOI18N
-        }
+        LOGGER.log(Level.FINER, "TIMEOUT expired"); // NOI18N
     }
 }
     

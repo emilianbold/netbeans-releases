@@ -62,9 +62,6 @@ public class OpenServerLogAction extends NodeAction {
             String instanceName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
             JBLogWriter logWriter = JBLogWriter.getInstance(instanceName);
             if (logWriter == null) {
-                if (JBLogWriter.VERBOSE) {
-                    System.out.println("CREATING LOG WRITER reading from the server.log file");                
-                }
                 logWriter = JBLogWriter.createInstance(io, instanceName);
                 String serverDir = dm.getInstanceProperties().getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
                 String logFileName = serverDir + File.separator + "log" + File.separator + "server.log" ; // NOI18N

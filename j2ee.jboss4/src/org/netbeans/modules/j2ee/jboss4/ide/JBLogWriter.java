@@ -44,8 +44,7 @@ import org.openide.windows.OutputWriter;
  */
 public final class JBLogWriter {
     
-    public static final boolean VERBOSE = 
-        System.getProperty ("netbeans.serverplugins.jboss4.logging") != null;
+    private static final Logger LOGGER = Logger.getLogger(JBLogWriter.class.getName());
     
     private final static int DELAY = 500;
     private static final int START_TIMEOUT = 900000;
@@ -77,7 +76,7 @@ public final class JBLogWriter {
     //output pane's writer
     private final OutputWriter out;
     //server output reader
-    volatile private BufferedReader reader;
+    private volatile BufferedReader reader;
     //server instance name
     private final String instanceName;
     //server process
@@ -87,14 +86,10 @@ public final class JBLogWriter {
     
     //the thread currently reading from the server output and writing into the output pane.
     //there is at most one thread for one JBLogWriter instance (i.e. for each server instance running)
-    Thread logWriterThread;
+    private LogThread logWriterThread;
     
     //stores the JBLogWriter instance for each server instance for which the server output has been shown
     private static HashMap<String, JBLogWriter> instances = new HashMap<String, JBLogWriter>();
-    
-    //the log writer sets the value to true to indicate that it is running
-    //it can be used to stop the log writer thread when it is set to false
-    private boolean read;
     
     //used to remember the last part of the output read from the server process
     //the part is used in the subsequent reading as the beginning of the line, see the issue #81951
@@ -106,7 +101,7 @@ public final class JBLogWriter {
         this.instanceName = instanceName;
     }
     
-    synchronized public static JBLogWriter createInstance(InputOutput io, String instanceName) {
+    public static synchronized JBLogWriter createInstance(InputOutput io, String instanceName) {
         JBLogWriter instance = getInstance(instanceName);
         if (instance == null) {
             instance = new JBLogWriter(io, instanceName);
@@ -115,7 +110,7 @@ public final class JBLogWriter {
         return instance;
     }
     
-    synchronized public static JBLogWriter getInstance(String instanceName) {
+    public static synchronized JBLogWriter getInstance(String instanceName) {
         return instances.get(instanceName);
     }
 
@@ -127,7 +122,7 @@ public final class JBLogWriter {
             this.logFile = logFile;
             this.reader = new BufferedReader(new FileReader(logFile));
         } catch (FileNotFoundException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            LOGGER.log(Level.INFO, null, ioe);
         }
         
         //start the logging thread
@@ -181,13 +176,10 @@ public final class JBLogWriter {
              * (either sucessfully or not)
              */
             private void checkStartProgress(String line) {
-
                 if (line.indexOf("Starting JBoss (MX MicroKernel)") > -1 || // JBoss 4.x message // NOI18N
                     line.indexOf("Starting JBoss (Microcontainer)") > -1)   // JBoss 5.0 message // NOI18N
                 {
-                    if (VERBOSE) {
-                        System.out.println("STARTING message fired"); // NOI18N
-                    }
+                    LOGGER.log(Level.FINER, "STARTING message fired"); // NOI18N
                     fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS")); // NOI18N
                 }
                 else 
@@ -195,9 +187,7 @@ public final class JBLogWriter {
                      line.indexOf("JBoss (Microcontainer)") > -1) &&    // JBoss 5.0 message    // NOI18N
                      line.indexOf("Started in") > -1)                                           // NOI18N
                 {
-                    if (VERBOSE) {
-                        System.out.println("STARTED message fired"); // NOI18N
-                    }
+                    LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
                     checkStartProgress = false;
                     actionStatus = JBStartServer.ACTION_STATUS.SUCCESS;
                     notifyStartupThread();
@@ -218,15 +208,11 @@ public final class JBLogWriter {
                 //the calling thread is blocked until the server startup has finished or START_TIMEOUT millis has elapsed
                 START_LOCK.wait(START_TIMEOUT);
                 if (System.currentTimeMillis() - start >= START_TIMEOUT) {
-                    if (VERBOSE) {
-                        System.out.println("Startup thread TIMEOUT EXPIRED");            
-                    }
+                    LOGGER.log(Level.FINER, "Startup thread TIMEOUT EXPIRED");
                     actionStatus = JBStartServer.ACTION_STATUS.UNKNOWN;
                 }
                 else {
-                    if (VERBOSE) {
-                        System.out.println("Startup thread NOTIFIED");            
-                    }
+                    LOGGER.log(Level.FINER, "Startup thread NOTIFIED");
                 }
             }
         } catch (InterruptedException ex) {
@@ -273,96 +259,19 @@ public final class JBLogWriter {
      *
      * The method is also responsible for the correct switching between the threads with different LOGGER_TYPE
      */
-    private void startWriter(final LineProcessor lineProcessor, final LOGGER_TYPE type) {
+    private synchronized void startWriter(LineProcessor lineProcessor, LOGGER_TYPE type) {
         
-        if (isRunning()) {
+        if (isRunning() || (logWriterThread != null && logWriterThread.isAlive())) {
             //logger reading the log file is not stopped when the server is stopped outside of the IDE
             logWriterThread.interrupt();
-            if (VERBOSE) {
-                System.out.println("************INTERRUPT thread " + logWriterThread.getId());            
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "INTERRUPT thread " + logWriterThread.getId());
             }
         }
         
         this.type = type;
         
-        logWriterThread = new Thread(THREAD_NAME) {
-            public void run() {
-                if (VERBOSE) {
-                    System.out.println("************START thread " + Thread.currentThread().getId());
-                }
-                read = true;
-                boolean interrupted = false;
-                long lastFileSize = -1;
-                boolean checkProfiler = (startServer != null && startServer.getMode() == JBStartServer.MODE.PROFILE);
-                while (read) {
-                    // if in profiling mode, server startup (incl. blocked for Profiler direct attach)
-                    // is checked by determining Profiler agent status using ProfilerSupport.getState()
-                    // STATE_INACTIVE means that Profiler agent failed to start, which also breaks server VM
-                    if (checkProfiler) {
-                        int state = ProfilerSupport.getState();
-                        if (state == ProfilerSupport.STATE_BLOCKING || 
-                            state == ProfilerSupport.STATE_RUNNING  ||
-                            state == ProfilerSupport.STATE_PROFILING) {
-                            fireStartProgressEvent(StateType.COMPLETED, createProgressMessage("MSG_PROFILED_SERVER_STARTED"));
-                            checkProfiler = false;
-                            notifyStartupThread();
-                        } 
-                        else 
-                        if (state == ProfilerSupport.STATE_INACTIVE) {
-                            fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_PROFILED_SERVER_FAILED"));
-                            process.destroy();
-                            notifyStartupThread();
-                            break;
-                        }
-                    }
-
-                    boolean ready = processInput(lineProcessor, type);
-                    if (type == LOGGER_TYPE.FILE) { 
-                        if (ready) { // some input was read, remember the file size
-                            lastFileSize = logFile.length();
-                        }
-                        // nothing was read, compare the current file size with the remembered one
-                        else if (lastFileSize != logFile.length()) {
-                            // file size has changed nevertheless there is nothing to read -> refresh needed
-                            if (VERBOSE) {
-                                System.out.println("!!!!!!!!!DIFFERENCE found");
-                            }
-                            refresh();
-                        }
-                    }
-                    else {
-                        try {
-                            process.exitValue();
-                            //reaching this line means that the process already exited
-                            break;
-                        }
-                        catch (IllegalThreadStateException itse) {
-                            //noop process has not exited yet
-                        }
-                    }
-                    try {
-                        Thread.sleep(DELAY); // give the server some time to write the output
-                    } catch (InterruptedException e) {
-                        interrupted = true;
-                        break;
-                    }
-                }
-                
-                //print the remaining message from the server process after it has stopped, see the issue #81951
-                lineProcessor.processLine(trailingLine);
-                
-                if (VERBOSE) {
-                    System.out.println("************FINISH thread " + Thread.currentThread().getId());
-                }
-                if (!interrupted) {
-                    //reset the read flag and remove instance from the map when the thread exiting is 'natural',
-                    //i.e. caused by a server process exiting or by calling stop() on the instance.
-                    //the thread interruption means that another thread is going to start execution
-                    read = false;
-                    instances.remove(instanceName);
-                }
-            }
-        };
+        logWriterThread = new LogThread(THREAD_NAME, lineProcessor);
         logWriterThread.start();
         
     }
@@ -370,12 +279,17 @@ public final class JBLogWriter {
     /**
      * Sets the read flag to false to announce running thread that is must stop running.
      */
-    void stop() {
-        read = false;
+    synchronized void stop() {
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "Stopping " + logWriterThread.getId());
+        }
+        if (logWriterThread != null) {
+            logWriterThread.finish();
+        }
     }
     
-    boolean isRunning(){
-        return read;
+    synchronized boolean isRunning() {
+        return logWriterThread != null && logWriterThread.isRunning();
     }
 
     /**
@@ -392,19 +306,17 @@ public final class JBLogWriter {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    LOGGER.log(Level.INFO, null, e);
                 }
             }
             try {
                 if (out != null) {
                     out.reset();
                 }
-                if (VERBOSE) {
-                    System.out.println("REFRESHING the output pane");            
-                }
+                LOGGER.log(Level.FINER, "REFRESHING the output pane");
                 reader = new BufferedReader(new FileReader(logFile));
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
         }
     }
@@ -432,7 +344,7 @@ public final class JBLogWriter {
                     }
                 }
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
             return ready;
         }
@@ -521,8 +433,8 @@ public final class JBLogWriter {
         Task t = new RequestProcessor(STOPPER_THREAD_NAME, 1, true).post(new Runnable() {
             public void run() {
                 try {
-                    if (VERBOSE) {
-                        System.out.println(STOPPER_THREAD_NAME + ": WAITING for the server process to stop");
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.log(Level.FINER, STOPPER_THREAD_NAME + ": WAITING for the server process to stop");
                     }
                     if (type == LOGGER_TYPE.PROCESS) {
                         process.waitFor();
@@ -532,6 +444,7 @@ public final class JBLogWriter {
                     }
                 } catch (InterruptedException ex) {
                     //noop
+                    
                 }
             }
         });
@@ -542,6 +455,104 @@ public final class JBLogWriter {
         }
         finally {
             t.cancel();
+        }
+    }
+    
+    private class LogThread extends Thread {
+
+        private final LineProcessor lineProcessor;
+
+        private volatile boolean read = true;
+
+        public LogThread(String name, LineProcessor lineProcessor) {
+            super(name);
+            this.lineProcessor = lineProcessor;
+        }
+
+        public boolean isRunning() {
+            return read;
+        }
+        
+        public void finish() {
+            read = false;
+        }
+        
+        public void run() {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "START thread " + Thread.currentThread().getId());
+            }
+            boolean interrupted = false;
+            long lastFileSize = -1;
+            boolean checkProfiler = startServer != null && startServer.getMode() == JBStartServer.MODE.PROFILE;
+            while (read) {
+                // if in profiling mode, server startup (incl. blocked for Profiler direct attach)
+                // is checked by determining Profiler agent status using ProfilerSupport.getState()
+                // STATE_INACTIVE means that Profiler agent failed to start, which also breaks server VM
+                if (checkProfiler) {
+                    int state = ProfilerSupport.getState();
+                    if (state == ProfilerSupport.STATE_BLOCKING || state == ProfilerSupport.STATE_RUNNING || state == ProfilerSupport.STATE_PROFILING) {
+                        fireStartProgressEvent(StateType.COMPLETED, createProgressMessage("MSG_PROFILED_SERVER_STARTED"));
+                        checkProfiler = false;
+                        notifyStartupThread();
+                    } else if (state == ProfilerSupport.STATE_INACTIVE) {
+                        fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_PROFILED_SERVER_FAILED"));
+                        process.destroy();
+                        notifyStartupThread();
+                        break;
+                    }
+                }
+
+                boolean ready = processInput(lineProcessor, type);
+                if (type == LOGGER_TYPE.FILE) {
+                    if (ready) {
+                        // some input was read, remember the file size
+                        lastFileSize = logFile.length();
+                    } else if (lastFileSize != logFile.length()) {
+                        // file size has changed nevertheless there is nothing to read -> refresh needed
+                        LOGGER.log(Level.FINER, "DIFFERENCE found");
+                        refresh();
+                    }
+                } else {
+                    try {
+                        process.exitValue();
+                        //reaching this line means that the process already exited
+                        break;
+                    } catch (IllegalThreadStateException itse) {
+                        //noop process has not exited yet
+                    }
+                }
+
+                try {
+                    LOGGER.log(Level.FINER, "ZZZZ thread " + +Thread.currentThread().getId());
+                    Thread.sleep(DELAY); // give the server some time to write the output
+                    LOGGER.log(Level.FINER, "FINISH thread " + +Thread.currentThread().getId());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                // logic rely on interrupted status - we must not miss it
+                if (Thread.currentThread().isInterrupted()) {
+                    LOGGER.log(Level.FINER, "INTERRUPTED thread " + +Thread.currentThread().getId());
+                    interrupted = true;
+                    break;
+                }
+            }
+
+            //print the remaining message from the server process after it has stopped, see the issue #81951
+            lineProcessor.processLine(trailingLine);
+
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "FINISH thread " + Thread.currentThread().getId());
+            }
+
+            // TODO is the another thread start only way the interrupted can occur ?
+            if (!interrupted) {
+                //reset the read flag and remove instance from the map when the thread exiting is 'natural',
+                //i.e. caused by a server process exiting or by calling stop() on the instance.
+                //the thread interruption means that another thread is going to start execution
+                read = false;
+                instances.remove(instanceName);
+            }
         }
     }
  

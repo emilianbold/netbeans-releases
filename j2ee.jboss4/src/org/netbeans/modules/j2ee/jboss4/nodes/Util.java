@@ -95,7 +95,7 @@ public class Util {
         return n;
     }
 
-    /*
+    /**
      * Checks if the Jboss installation has installed remote management package
      *
      * @return is remote management supported
@@ -129,7 +129,7 @@ public class Util {
         return true;
     }
 
-    /*
+    /**
      * Checks if the specified object is deployed in JBoss Application Server
      *
      * @return if specified object is deployed
@@ -155,7 +155,7 @@ public class Util {
         return false;
     }
 
-    /*
+    /**
      * It only returns string representation of the ModuleType (accorded to the JBoss JMX requirements)
      *
      * @return string representation of the ModuleType
@@ -171,7 +171,7 @@ public class Util {
         return "undefined";
     }
 
-    /*
+    /**
      * Returns MBean attribute which you can specify via method parameters
      *
      * @return MBean attribute
@@ -201,7 +201,7 @@ public class Util {
         return null;
     }
 
-    /*
+    /**
      * Parse web application's deployment descriptor and returns context root.
      * According to the jboss specification, if no context root specification exists,
      * the context root will be the base name of the WAR file.

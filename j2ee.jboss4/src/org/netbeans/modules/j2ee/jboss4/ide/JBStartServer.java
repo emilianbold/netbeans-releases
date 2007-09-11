@@ -187,7 +187,6 @@ public class JBStartServer extends StartServer implements ProgressObject{
         // this should prevent the thread from getting stuck if the server is in suspended state
         SafeTrueTest test = new SafeTrueTest() {
             public void run() {
-                ClassLoader oldLoader = null;
                 String checkingConfigName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
                 String checkingServerDir = null;
 
@@ -243,9 +242,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
             new RequestProcessor().post(test).waitFinished(timeout);
         } catch (InterruptedException ie) {
             // no op
-        } finally {
-            return test.result();
         }
+        return test.result();
     }
     
     public boolean isRunning() {
