@@ -1336,6 +1336,19 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     String getNewMethodName() {
         return methodField.getText();
     }
+    
+    private static String decodeIconPath(String path, ProxyAction action) {
+        if(path == null) return null;
+        if(path.startsWith("/")) { //absolute path
+            path = path.substring(1);
+        } else { // relative path
+            String dir = action.getResourceMap(). getResourcesDir();
+            if(dir != null && !path.startsWith(dir)) {
+                path =  dir + path;
+            }
+        }
+        return path;
+    }            
         
     private class DirtyDocumentListener implements DocumentListener {
         
@@ -1376,11 +1389,11 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             
             if(Action.SMALL_ICON.equals(iconKey)){
                 if (smallIconName != null) {
-                    iconEditor.setAsText(smallIconName);
+                    iconEditor.setAsText(decodeIconPath(smallIconName,action));
                 }
             } else {
                 if (largeIconName != null) {
-                    iconEditor.setAsText(largeIconName);
+                    iconEditor.setAsText(decodeIconPath(largeIconName,action));
                 }
             }
             DialogDescriptor dd = new DialogDescriptor(iconEditor.getCustomEditor(), NbBundle.getMessage(ActionPropertyEditorPanel.class, "CTL_SelectIcon_Title"));
@@ -1391,6 +1404,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
                 iconButton.setText(icon == null ? "..." : null);
                 action.putValue(iconKey, icon);
                 String iconName = nbIcon != null ? nbIcon.getName() : null;
+                if(iconName != null && !iconName.startsWith("/")) {
+                    iconName = "/"+iconName;
+                }
                 if(Action.SMALL_ICON.equals(iconKey)) {
                     smallIconName = iconName;
                 } else {
