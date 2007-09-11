@@ -2667,12 +2667,12 @@ public class ADDrawingAreaControl extends ApplicationView
       //adding listeners - JM
       TSEGraphManager graphManager = getGraphManager();
       TSEventManager graphEventManager = graphManager.getEventManager();
-      graphEventManager.addGraphChangeListener(graphManager, this.getActions());  
+      graphEventManager.addGraphChangeListener(graphManager, getActions());  
       graphEventManager.addGraphChangeListener(graphManager, trackBarModifyListener, TSGraphChangeEvent.ANY_DISCARDED ); 
       if (graphEventManager instanceof  TSEEventManager) 
       {
-          ((TSEEventManager)graphEventManager).addSelectionChangeListener(graphManager, this.getActions());      
-          ((TSEEventManager)graphEventManager).addViewportChangeListener(getGraphWindow(), this.getActions());
+          ((TSEEventManager)graphEventManager).addSelectionChangeListener(graphManager, getActions());      
+          ((TSEEventManager)graphEventManager).addViewportChangeListener(getGraphWindow(), getActions());
       }
       
       // specify the default state the graph window restores on reset
@@ -2729,8 +2729,8 @@ public class ADDrawingAreaControl extends ApplicationView
       
 //      getGraphWindow().setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
       
-      trackBarChangeListener = new ViewportChangeListener();            
-      ((TSEEventManager)(this.getGraphWindow().getGraphManager().getEventManager())).addViewportChangeListener(getGraphWindow(), trackBarChangeListener);
+      trackBarChangeListener = new ViewportChangeListener();      
+      ((TSEEventManager)graphEventManager).addViewportChangeListener(getGraphWindow(), trackBarChangeListener);
    }
    
    public void showNotImplementedMessage()
@@ -8115,14 +8115,23 @@ public class ADDrawingAreaControl extends ApplicationView
          
          revokeResourceManager();
          
+         // Fixed 113264.
+         // Remove trackBarChangeListener and trackBarModifyListener listeners form 
+         // the event sources. The event source (1st parameter) must be the same event 
+         // source used when adding these listerner (see initGraphWindow() ); otherwise,
+         // the listeners are till listerning to events even afer the garph has been destroyed.
+         TSEGraphManager graphManager = getGraphManager();
+         TSEventManager graphEventManager = graphManager.getEventManager();
          if (trackBarChangeListener != null)
          {
-            ((TSEEventManager)this.getGraphManager().getEventManager()).removeViewportChangeListener(this.getGraphWindow(), trackBarChangeListener);
+            ((TSEEventManager)graphEventManager).removeViewportChangeListener(getGraphWindow(), getActions());
+            ((TSEEventManager)graphEventManager).removeViewportChangeListener(getGraphWindow(), trackBarChangeListener);
          }
          
          if(trackBarModifyListener != null)
          {
-            ((TSEEventManager)this.getGraphManager().getEventManager()).removeGraphChangeListener(this.getGraphWindow(), trackBarModifyListener);
+            graphEventManager.removeGraphChangeListener(graphManager, getActions());
+            graphEventManager.removeGraphChangeListener(graphManager, trackBarModifyListener);
          }
          
          //m_GraphWindow.removeGraphChangeListener(getActions());

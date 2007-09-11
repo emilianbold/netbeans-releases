@@ -25,7 +25,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IGraphEventKind;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IPresentationElementToDeleteAction;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.ui.controls.drawingarea.UIDiagram;
 import org.netbeans.modules.uml.ui.support.SynchStateKindEnum;
@@ -35,7 +34,8 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.IEventManager;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ILabelManager;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-
+import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETBaseUI;
+import org.netbeans.modules.uml.ui.products.ad.viewfactory.IETGraphObjectUI;
 import com.tomsawyer.editor.TSENode;
 import com.tomsawyer.editor.TSEEdge;
 
@@ -113,7 +113,17 @@ public abstract class ProductGraphPresentation extends GraphPresentation impleme
 	 * @see org.netbeans.modules.uml.ui.support.applicationmanager.IProductGraphPresentation#getDiagram()
 	 */
 	public IDiagram getDiagram() {
-		return this.getUI() != null ? this.getUI().getDrawEngine().getDiagram() : null;
+                // getUI().getDrawEngine().getDiagram() goes through so many redundant method calls. 
+                // Modified to directly call the core methods for a faster return.
+            
+		//return this.getUI() != null ? this.getUI().getDrawEngine().getDiagram() : null;
+                IDiagram diagram = null;
+                IETGraphObjectUI nodeUI = this.getUI(); 
+                IDrawingAreaControl drawingControl = ETBaseUI.getDrawingArea(ETBaseUI.getGraphWindow(nodeUI));
+                if (drawingControl != null) {
+                    diagram = drawingControl.getDiagram();
+                }
+                return diagram;
 	}
 
 	/* (non-Javadoc)
