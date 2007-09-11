@@ -170,7 +170,14 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     }
 
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
-        assert selected != null : "Null passed as component to select";
+        // #100144 - correct null selection and log, probably some problem in
+        // winsys model consistency, but without reproduction no chance to find out
+        if (selected == null && tcs.length > 0) {
+            selected = tcs[0];
+            Logger.getLogger(TabbedAdapter.class.getName()).warning(
+                    "Selected component is null although open components are " +
+                    Arrays.asList(tcs));
+        }
         int sizeBefore = getModel().size();
 
         detachTooltipListeners(getModel().getTabs());
@@ -197,18 +204,16 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         //window system's model.  If it is just diagnostic logging, there
         //*will* be an exception later, it just won't contain any useful
         //information. See issue 39914 for what happens if it is deleted.
-        assert toSelect != -1 : "Tried to set a selected component that was " +
+        assert selected != null && toSelect != -1 : "Tried to set a selected component that was " +
             " not in the array of open components. ToSelect: " + selected + " ToSelectName=" + selected.getDisplayName() +
             " ToSelectClass=" + selected.getClass() + 
             " open components: " + Arrays.asList(tcs);
         
         getModel().setTabs(data);
         
-        
-        
         if (toSelect != -1) {
             getSelectionModel().setSelectedIndex(toSelect);
-        } else {
+        } else if (selected != null) {
             //Assertions are off
             Logger.getAnonymousLogger().warning("Tried to" +
             "set a selected component that was not in the array of open " +
