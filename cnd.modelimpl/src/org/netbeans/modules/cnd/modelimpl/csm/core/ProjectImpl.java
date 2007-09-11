@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -79,7 +78,7 @@ public final class ProjectImpl extends ProjectBase {
         ParserQueue.instance().addFirst(csmFile, state, true);
     }
     
-    public void onFileEditStart(FileBuffer buf, NativeFileItem nativeFile) {
+    public @Override void onFileEditStart(FileBuffer buf, NativeFileItem nativeFile) {
         if( !acceptNativeItem(nativeFile)) {
             return;
         }
@@ -98,7 +97,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
-    public void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
+    public @Override void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
         if( ! acceptNativeItem(nativeFile)) {
             return;
         }
@@ -227,7 +226,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
     
-    protected void ensureChangedFilesEnqueued() {
+    protected @Override void ensureChangedFilesEnqueued() {
         synchronized( editedFiles ) {
             super.ensureChangedFilesEnqueued();
             for( Iterator iter = editedFiles.iterator(); iter.hasNext(); ) {
@@ -240,7 +239,7 @@ public final class ProjectImpl extends ProjectBase {
         //N.B. don't clear list of editedFiles here.
     }
     
-    protected boolean hasChangedFiles(CsmFile skipFile) {
+    protected @Override boolean hasChangedFiles(CsmFile skipFile) {
         if (skipFile == null) {
             return false;
         }
@@ -256,9 +255,9 @@ public final class ProjectImpl extends ProjectBase {
     }
     
     
-    private Set/*<CsmFile>*/ editedFiles = new HashSet/*<CsmFile>*/();
+    private Set<CsmFile> editedFiles = new HashSet<CsmFile>();
     
-    public ProjectBase findFileProject(String absPath) {
+    public @Override ProjectBase findFileProject(String absPath) {
         ProjectBase retValue = super.findFileProject(absPath);
         // trick for tracemodel. We should accept all not registered files as well, till it is not system one.
         if (ParserThreadManager.instance().isStandalone()) {
@@ -274,7 +273,7 @@ public final class ProjectImpl extends ProjectBase {
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     
-    public void write(DataOutput aStream) throws IOException {
+    public @Override void write(DataOutput aStream) throws IOException {
         super.write(aStream);
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
 	// we don't need this since ProjectBase persists fqn 
