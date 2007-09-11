@@ -246,7 +246,11 @@ public class CompletionJListOperator extends JListOperator {
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();
         } else {
-            SwingUtilities.invokeLater(r);
+            try{
+                SwingUtilities.invokeAndWait(r);
+            }catch(Exception exc){
+                throw new JemmyException("INVOKATION FAILED", exc);
+            }
         }
     }
     
