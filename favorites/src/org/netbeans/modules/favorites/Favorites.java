@@ -42,6 +42,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.FilterNode;
+import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -51,7 +52,7 @@ import org.openide.util.Utilities;
  *
  * @author  Jaroslav Tulach
  */
-final class Favorites extends FilterNode {
+final class Favorites extends FilterNode implements Index {
     /** default node */
     private static Node node;
     /** node that represents root of filesystems */
@@ -62,22 +63,126 @@ final class Favorites extends FilterNode {
         super(node, new Chldrn (node, false));
     }
     
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> cl) {
+        if (cl == Index.class) {
+            return cl.cast(this);
+        } else {
+            return super.getCookie(cl);
+        }
+    }
+    
+    public int getNodesCount() {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            return ind.getNodesCount();
+        } else {
+            return 0;
+        }
+    }
+    
+    public Node[] getNodes() {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            return ind.getNodes();
+        } else {
+            return new Node [] {};
+        }        
+    }
+
+    public int indexOf(final Node node) {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            if (node instanceof Favorites.ProjectFilterNode) {
+                Favorites.ProjectFilterNode fn = (Favorites.ProjectFilterNode) node;
+                int i = ind.indexOf(fn.getOriginal());
+                return i;
+            } else {
+                int i = ind.indexOf(node);
+                return i;
+            }
+        } else {
+            return -1;
+        }                
+    }
+
+    public void reorder() {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            ind.reorder();
+        }
+    }
+
+    public void reorder(int[] perm) {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            ind.reorder(perm);
+        }
+    }
+
+    public void move(int x, int y) {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            ind.move(x,y);
+        }
+    }
+
+    public void exchange(int x, int y) {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            ind.exchange(x,y);
+        }
+    }
+
+    public void moveUp(int x) {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            ind.moveUp(x);
+        }
+    }
+
+    public void moveDown(int x) {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            ind.moveDown(x);
+        }
+    }
+
+    public void addChangeListener(final ChangeListener chl) {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            ind.addChangeListener(chl);
+        }
+    }
+
+    public void removeChangeListener(final ChangeListener chl) {
+        Index ind = getOriginal().getCookie(Index.class);
+        if (ind != null) {
+            ind.removeChangeListener(chl);
+        }
+    }
+    
+    @Override
     public Image getIcon (int type) {
         return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
     }
     
+    @Override
     public Image getOpenedIcon (int type) {
         return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
     }
     
+    @Override
     public boolean canCopy () {
         return false;
     }
     
+    @Override
     public boolean canCut () {
         return false;
     }
     
+    @Override
     public boolean canRename () {
         return false;
     }
@@ -123,7 +228,7 @@ final class Favorites extends FilterNode {
     /** Finds file for a given node 
      */
     static File fileForNode (Node n) {
-        DataObject obj = (DataObject)n.getCookie (DataObject.class);
+        DataObject obj = n.getCookie (DataObject.class);
         if (obj == null) return null;
         
         return FileUtil.toFile (
@@ -131,10 +236,12 @@ final class Favorites extends FilterNode {
         );
     }
 
+    @Override
     public Handle getHandle () {
         return new RootHandle ();
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {Actions.addOnFavoritesNode()};
     }
@@ -162,9 +269,10 @@ final class Favorites extends FilterNode {
             VisibilityQuery.getDefault().addChangeListener(weak);
         }
         
+        @Override
         protected Node[] createNodes(Node node) {
             if (hideHidden) {
-                DataObject obj = (DataObject)node.getCookie(DataObject.class);
+                DataObject obj = node.getCookie(DataObject.class);
                 if (obj != null && !VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile())) {
                     return null;
                 }
@@ -199,10 +307,11 @@ final class Favorites extends FilterNode {
             super (node, children);
         }
         
+        @Override
         public String getDisplayName () {
             //Change display name only for favorite nodes (links) under Favorites node.
             if (Favorites.getNode().equals(this.getParentNode())) {
-                DataShadow ds = (DataShadow) getCookie(DataShadow.class);
+                DataShadow ds = getCookie(DataShadow.class);
                 if (ds != null) {
                     String name = ds.getName();
                     String path = FileUtil.getFileDisplayName(ds.getOriginal().getPrimaryFile());
@@ -216,13 +325,20 @@ final class Favorites extends FilterNode {
         }
         
         // Must be overridden since getDisplayName is.
+        @Override
         public String getHtmlDisplayName() {
             return getOriginal().getHtmlDisplayName();
         }
         
+        @Override
+        protected Node getOriginal() {
+            return super.getOriginal();
+        }
+                
+        @Override
         public boolean canDestroy () {
             boolean canDestroy = super.canDestroy ();
-            DataShadow link = (DataShadow) getCookie (DataShadow.class);
+            DataShadow link = getCookie (DataShadow.class);
 
             // if the DO of this node can be destroyed and the original DO should be destroyed too
             // ask the original if it's allowed to delete it
@@ -233,9 +349,10 @@ final class Favorites extends FilterNode {
             return canDestroy;
         }
 
+        @Override
         public void destroy () throws IOException {
             if (canDestroy ()) {
-                DataShadow link = (DataShadow) getCookie (DataShadow.class);
+                DataShadow link = getCookie (DataShadow.class);
                 DataObject original = isDeleteOriginal (link) ? link.getOriginal () : null;
 
                 super.destroy ();
@@ -250,13 +367,14 @@ final class Favorites extends FilterNode {
             return false;
         }
         
+        @Override
         public Action[] getActions(boolean context) {
             Action[] arr;
             arr = super.getActions(context);
             
             //Find if given node is root
             boolean isRoot = false;
-            DataObject dataObject = (DataObject) getCookie(DataObject.class);
+            DataObject dataObject = getCookie(DataObject.class);
             if (dataObject != null) {
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
@@ -274,7 +392,7 @@ final class Favorites extends FilterNode {
                 return createActionsForRoot(arr);
             } else {
                 if (Favorites.getNode().equals(this.getParentNode())) {
-                    DataShadow ds = (DataShadow) getCookie(DataShadow.class);
+                    DataShadow ds = getCookie(DataShadow.class);
                     if (ds != null) {
                         if (ds.getOriginal().getPrimaryFile().isFolder()) {
                             return createActionsForFavoriteFolder(arr);
@@ -283,7 +401,7 @@ final class Favorites extends FilterNode {
                         }
                     }
                 } else {
-                    DataObject dObj = (DataObject) getCookie(DataObject.class);
+                    DataObject dObj = getCookie(DataObject.class);
                     if (dObj != null) {
                         if (dObj.getPrimaryFile().isFolder()) {
                             return createActionsForFolder(arr);
