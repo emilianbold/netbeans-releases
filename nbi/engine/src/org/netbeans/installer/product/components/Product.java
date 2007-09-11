@@ -357,7 +357,7 @@ public final class Product extends RegistryNode {
         } catch (InitializationException e) {
             throw new UninstallationException(
                     ResourceUtils.getString(Product.class,
-                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
+                    ERROR_CANNOT_INITIALIZE_PRODUCT_KEY, getDisplayName()), e);
         }
         
         int logicChunk = (int) (progress.getPercentage() * (
@@ -449,7 +449,7 @@ public final class Product extends RegistryNode {
         } catch (InitializationException e) {
             throw new UninstallationException(
                     ResourceUtils.getString(Product.class,
-                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
+                    ERROR_CANNOT_INITIALIZE_PRODUCT_KEY, getDisplayName()), e);
         }
         
         totalProgress.addChild(
