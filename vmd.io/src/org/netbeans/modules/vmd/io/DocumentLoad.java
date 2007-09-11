@@ -46,12 +46,12 @@ import org.openide.util.NbBundle;
  */
 // TODO - check for design and document version
 public class DocumentLoad {
-    
+
     private static final String XML_ERROR = NbBundle.getMessage(DocumentLoad.class, "MSG_BrokenXML_Error"); //NOI18N
     private static final String WRONG_VERSION_ERROR = NbBundle.getMessage(DocumentLoad.class, "MSG_Wrong_VMD_Version_Error"); //NOI18N
     private static final String DESERIALIZATION_ERROR = NbBundle.getMessage(DocumentLoad.class, "MSG_Deserialization_Error"); //NOI18N
     private static final String DESCRIPTOR_MISSING_ERROR = NbBundle.getMessage(DocumentLoad.class, "MSG_MissingDescriptor_Error"); //NOI18N
-    
+
     private static Collection<? extends DocumentSerializationController> getDocumentSerializationControllers() {
         return Lookup.getDefault().lookupAll(DocumentSerializationController.class);
     }
@@ -148,7 +148,7 @@ public class DocumentLoad {
             loadingDocument.setPreferredComponentID(componentid);
             if (loadingDocument.getDescriptorRegistry().getComponentDescriptor(element.getTypeID()) == null) {
                 Debug.warning("Missing ComponentDescriptor in registry ", element.getTypeID()); // NOI18N
-                errorHandler.addWarning( DESCRIPTOR_MISSING_ERROR +" " + element.getTypeID().toString()); // NOI18N)
+                errorHandler.addWarning(DESCRIPTOR_MISSING_ERROR + " " + element.getTypeID().toString()); // NOI18N)
                 continue;
             }
             if (!errorHandler.getErrors().isEmpty()) {
@@ -202,8 +202,7 @@ public class DocumentLoad {
                 String propertyName = propertyElement.getPropertyName();
                 if (propertyName == null || descriptor.getPropertyDescriptor(propertyName) == null) {
                     Debug.warning("Missing property descriptor", component, propertyName); // NOI18N
-                    errorHandler.addWarning( NbBundle.getMessage(DocumentLoad.class, "MSG_MissingProperty_Error") //NOI18N 
-                                           + " " + component + " - " + propertyName); // NOI18N
+                    errorHandler.addWarning(NbBundle.getMessage(DocumentLoad.class, "MSG_MissingProperty_Error") + " " + component + " - " + propertyName); // NOI18N
                     continue;
                 }
                 PropertyValue value;
@@ -223,19 +222,25 @@ public class DocumentLoad {
             loadingDocument.setRootComponent(componentByUID);
         }
     }
-    
+
     private static void collectStructure(Collection<ComponentElement> componentElements, Node node, long parent, DocumentErrorHandler errorHandler) {
         String id = getAttributeValue(node, DocumentSave.COMPONENTID_ATTR);
         if (id == null) {
-           StringBuffer sb = new StringBuffer();
-           for (int i=0 ; i < node.getAttributes().getLength() ;i++) {
-               sb.append(" "); //NOI18N
-               sb.append(node.getAttributes().item(i));
-           }
-           errorHandler.addError(NbBundle.getMessage(DocumentLoad.class, "MSG_Wrong_argument") + sb.toString()); //NOI18N
-           return;
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < node.getAttributes().getLength(); i++) {
+                sb.append(" "); //NOI18N
+                sb.append(node.getAttributes().item(i));
+            }
+            errorHandler.addError(NbBundle.getMessage(DocumentLoad.class, "MSG_Wrong_argument") + sb.toString()); //NOI18N
+            return;
         }
-        long componentid = Long.parseLong(id);
+        long componentid = -1;
+        try {
+            componentid = Long.parseLong(id);
+        } catch (NumberFormatException ex) {
+            errorHandler.addError(NbBundle.getMessage(DocumentLoad.class, "MSG_Wrong_argument_value") +" " + id);
+            return;
+        }
         TypeID typeid = TypeID.createFrom(getAttributeValue(node, DocumentSave.TYPEID_ATTR));
         componentElements.add(ComponentElement.create(parent, componentid, typeid, node));
 
@@ -374,5 +379,4 @@ public class DocumentLoad {
         }
         return getAttributeValue(rootNode, DocumentSave.PROP_PROJECT_TYPE);
     }
-
 }
