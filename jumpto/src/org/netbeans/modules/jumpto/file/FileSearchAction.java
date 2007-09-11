@@ -84,6 +84,8 @@ public class FileSearchAction extends AbstractAction {
         DialogDescriptor d = new DialogDescriptor(panel, title, true, buttons, openBtn, DialogDescriptor.DEFAULT_ALIGN, null, new DialogButtonListener(panel));
         d.setClosingOptions(new Object[] {openBtn, DialogDescriptor.CANCEL_OPTION});
         dialog = DialogDisplayer.getDefault().createDialog(d);
+        dialog.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FileSearchAction.class, "AN_FileSearchDialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FileSearchAction.class, "AD_FileSearchDialog"));
                 
         // Set size
         dialog.setPreferredSize( new Dimension(  FileSearchOptions.getWidth(),
