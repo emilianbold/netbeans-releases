@@ -33,6 +33,7 @@
 package org.netbeans.modules.sql.project.wsdl;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -52,6 +53,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -69,6 +71,7 @@ public class ActionImpl extends CallableSystemAction {
     private String mBaseDirectoryLocation;
     private String dbURL = "";
 	private String jndi_name = "";
+	private String transactionRequired = "";
     private static final String CONNECTION_FILE = "connectivityInfo.xml";
     private String engineFileName = "sqlse_engine.xml";
     private JFrame frame;
@@ -237,7 +240,7 @@ public class ActionImpl extends CallableSystemAction {
                     engineFileGen.addSQLDefinition(f.getName(), dbConn);
                 }
             }
-            engineFileGen.persistEngineFile(jndi_name);
+            engineFileGen.persistEngineFile(jndi_name,transactionRequired);
             
             //call generate wsdl in model.
             WSDLGenerator wsdlgen = new WSDLGenerator(conn,
@@ -257,6 +260,7 @@ public class ActionImpl extends CallableSystemAction {
             JBIFileWriter fw = new JBIFileWriter(mBuildDirectoryLocation + "/META-INF/jbi.xml",
                     mBuildDirectoryLocation + "/sqlmap.xml",mBuildDirectoryLocation);
             fw.writeJBI();
+            project.getProjectDirectory().refresh();
             JOptionPane.showMessageDialog(frame,
                     "WSDL Generated.",
                     "Information",
@@ -294,6 +298,18 @@ public class ActionImpl extends CallableSystemAction {
                         }
                     }
                 }
+				NodeList n5 = doc.getDocumentElement().getElementsByTagName("transaction-required");
+				if (n5 != null) {
+                    Node n = n5.item(0);
+                    if (n != null) {
+                        Node n6 = n.getAttributes().getNamedItem("value");
+                        if (n6 != null) {
+                            transactionRequired = n6.getNodeValue();
+                            //log("TransactionRequired value: " + transactionRequired);
+                        }
+                    }
+                }
+				
             } catch (SAXException e) {
                 //log(e.getLocalizedMessage());
             } catch (IOException e) {

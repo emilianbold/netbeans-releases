@@ -71,6 +71,7 @@ public class GenFiles extends CallableSystemAction {
     private String mBaseDirectoryLocation;
     private String dbURL = "";
 	private String jndi_name = "";
+	private String transactionRequired = "";
     private static final String CONNECTION_FILE = "connectivityInfo.xml";
     private String engineFileName = "sqlse_engine.xml";
     private JFrame frame;
@@ -249,7 +250,7 @@ public class GenFiles extends CallableSystemAction {
                     engineFileGen.addSQLDefinition(f.getName(), dbConn);
                 }
             }
-            engineFileGen.persistEngineFile(jndi_name);
+            engineFileGen.persistEngineFile(jndi_name,transactionRequired);
             
             //call generate wsdl in model.
             WSDLGenerator wsdlgen = new WSDLGenerator(conn,
@@ -306,6 +307,18 @@ public class GenFiles extends CallableSystemAction {
                         }
                     }
                 }
+				NodeList n5 = doc.getDocumentElement().getElementsByTagName("transaction-required");
+				if (n5 != null) {
+                    Node n = n5.item(0);
+                    if (n != null) {
+                        Node n6 = n.getAttributes().getNamedItem("value");
+                        if (n6 != null) {
+                            transactionRequired = n6.getNodeValue();
+                            //log("TransactionRequired value: " + transactionRequired);
+                        }
+                    }
+                }
+				
             } catch (SAXException e) {
                 //log(e.getLocalizedMessage());
             } catch (IOException e) {

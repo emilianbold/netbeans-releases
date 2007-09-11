@@ -71,7 +71,7 @@ public class SQLEngineFileGenerator {
         sqlDefinitionMap.put(sqlFileName, dbConn);
     }
 
-    public void persistEngineFile(String jndi_name) {
+    public void persistEngineFile(String jndi_name,String transactionRequired) {
         StringBuffer sb = new StringBuffer();
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         sb.append("<sqlengine name=\"" + projectName + "\">");
@@ -88,6 +88,7 @@ public class SQLEngineFileGenerator {
             sb.append("user=\"" + dbConn.getUser() + "\"" + "\t");
             sb.append("password=\"" + dbConn.getPassword() + "\"" + "\t");
 			sb.append("jndi_name=\"" + jndi_name + "\"" + "\t");
+			sb.append("transactionRequired=\"" + transactionRequired + "\"" + "\t");
             sb.append(">\n</connectiondef>");
             sb.append("\n</sqldef>");
         }
