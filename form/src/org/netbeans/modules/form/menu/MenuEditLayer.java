@@ -1129,6 +1129,7 @@ public class MenuEditLayer extends JPanel {
     // change the look of the component to reflect the fully edited state
     private void configureEditedComponent(JComponent c) {
         //p("configuring an edited component");
+        if(c == null) return;
         if(c.getForeground() == Color.LIGHT_GRAY) {
             c.setForeground(getNormalForeground(c));
         }
