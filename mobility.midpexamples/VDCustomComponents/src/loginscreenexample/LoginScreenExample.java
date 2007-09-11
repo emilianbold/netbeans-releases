@@ -39,16 +39,15 @@ import org.netbeans.microedition.util.SimpleCancellableTask;
 public class LoginScreenExample extends MIDlet implements CommandListener {
 
     private boolean midletPaused = false;
-    private boolean login = false;
     //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
-    private WaitScreen waitScreen;
-    private SplashScreen splashScreen;
+    private Command exitCommand;
+    private Ticker ticker;
+    private SimpleCancellableTask task;
     private LoginScreen loginScreen;
     private Alert alertSuccess;
+    private WaitScreen waitScreen;
     private Alert alertFailure;
-    private Command exitCommand;
-    private SimpleCancellableTask task;
-    private Ticker ticker;
+    private SplashScreen splashScreen;
     //</editor-fold>//GEN-END:|fields|0|
 
     /**
@@ -122,7 +121,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
             task = new SimpleCancellableTask();//GEN-BEGIN:|18-getter|1|18-execute
             task.setExecutable(new org.netbeans.microedition.util.Executable() {
                 public void execute() throws Exception {//GEN-END:|18-getter|1|18-execute
-                    
+                    login();
                 }//GEN-BEGIN:|18-getter|2|18-postInit
             });//GEN-END:|18-getter|2|18-postInit
             // write post-init user code here
@@ -254,7 +253,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
     public Alert getAlertFailure() {
         if (alertFailure == null) {//GEN-END:|37-getter|0|37-preInit
             // write pre-init user code here
-            alertFailure = new Alert("alert", "Error", null, null);//GEN-BEGIN:|37-getter|1|37-postInit
+            alertFailure = new Alert("alert", "Wrong username or password", null, null);//GEN-BEGIN:|37-getter|1|37-postInit
             alertFailure.setTimeout(Alert.FOREVER);//GEN-END:|37-getter|1|37-postInit
             // write post-init user code here
         }//GEN-BEGIN:|37-getter|2|
@@ -345,21 +344,19 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
     public void destroyApp(boolean unconditional) {
     }
 
-    private void login() throws IOException {
+    private void login() throws Exception {
         //#ifdef LoginScreenServletExample
 //#         //URL
 //#         String url = "http://localhost:8080/LoginScreenExample/" + "?username=" + getLoginScreen().getUsername() + "&password=" + getLoginScreen().getPassword();
         //#endif
-
-        //Clean up alertSuccess
-        getAlertSuccess().setString("");
 
         //#ifdef LoginScreenServletExample
 //#         //Connect to the server
 //#         HttpConnection hc = (HttpConnection) Connector.open(url);
 //#         //Authentication
 //#         if (hc.getResponseCode() == HttpConnection.HTTP_OK) {
-//#             login = true;
+//#             hc.close();
+//#             return;
 //#         }
 //#         //Closing time...
 //#         hc.close();
@@ -367,16 +364,12 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
         //#endif
 
         //#ifndef LoginScreenServletExample
+        //if the username/password starts with "test" then it's OK
         if(getLoginScreen().getUsername().startsWith("test") && getLoginScreen().getPassword().startsWith("test")) {
-            login = true;            
+            return;            
         }
         //#endif
-        
-        if (login) {
-            getAlertSuccess().setString("Login Succesfull");
-        } else {
-            getAlertSuccess().setString("Wrong Username or Password");
-        }
-        login = false;
+        //throw exception because the login didn't pass
+        throw new Exception("The login was not  successful");
     }
 }
