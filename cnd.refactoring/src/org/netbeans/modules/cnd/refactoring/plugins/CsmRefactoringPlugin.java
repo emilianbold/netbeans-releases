@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -160,6 +161,12 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         }
         return null;
     }  
+    
+    protected Collection<CsmFile> getRelevantFiles(CsmObject csmObject) {
+        CsmFile startFile = getCsmFile(csmObject);
+        CsmProject prj = startFile.getProject();
+        return prj.getAllFiles();
+    }
     
 //    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) {
 //        currentTask = task;

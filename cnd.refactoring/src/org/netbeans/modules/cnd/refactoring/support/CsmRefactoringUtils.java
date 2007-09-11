@@ -16,10 +16,24 @@
  */
 package org.netbeans.modules.cnd.refactoring.support;
 
+import java.awt.Color;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
+import org.netbeans.editor.TokenContextPath;
+import org.netbeans.editor.TokenID;
+import org.netbeans.editor.TokenProcessor;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -44,5 +58,111 @@ public class CsmRefactoringUtils {
         return ref != null;
     }    
     
+    public static String getHtml(int startLine, int endLine, final int stToken, final int endToken, BaseDocument doc) {
+        final StringBuffer buf = new StringBuffer();
+//        TokenHierarchy tokenH = TokenHierarchy.create(text, JavaTokenId.language());
+        String mime = (String) doc.getProperty("mimeType"); // NOI18N
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
+        SyntaxSupport sup = doc.getSyntaxSupport();
+        final FontColorSettings settings = lookup.lookup(FontColorSettings.class);
+//        TokenSequence tok = tokenH.tokenSequence();
+//        while (tok.moveNext()) {
+//            Token<JavaTokenId> token = (Token) tok.token();
+//            String category = token.id().primaryCategory();
+//            if (category == null) {
+//                category = "whitespace"; //NOI18N
+//            }
+//            AttributeSet set = settings.getTokenFontColors(category);
+//            String text = token.text().toString();
+//            buf.append(color(htmlize(text)), set));
+//        }
+        boolean cont = true;
+ 
+        
+        TokenProcessor tp = new TokenProcessor() {
+
+            private int bufferStartPos;
+            private char[] buffer;
+
+            public boolean token(TokenID tokenID, TokenContextPath tokenContextPath, int tokenBufferOffset, int tokenLength) {
+                String text = new String(buffer, tokenBufferOffset-bufferStartPos, tokenLength);
+                String category = tokenID.getCategory() == null ? tokenID.getName() : tokenID.getCategory().getName();
+                if (category == null) {
+                    category = "whitespace"; //NOI18N
+                } else {
+                    category = tokenContextPath.getNamePrefix() + category;
+                }
+                AttributeSet set = settings.getTokenFontColors(category);
+                if (tokenBufferOffset+bufferStartPos == stToken) {
+                    buf.append("<b>");
+                }
+                buf.append(color(htmlize(text), set));
+                if (tokenBufferOffset+bufferStartPos+tokenLength == endToken) {
+                    buf.append("</b>");
+                }
+                return true;
+            }
+
+            public int eot(int offset) {
+                return 0;
+            }
+
+            public void nextBuffer(char[] buffer, int offset, int len, int startPos, int preScan, boolean lastBuffer) {
+                this.buffer = buffer;
+                this.bufferStartPos = startPos - offset;
+            }
+
+        };  
+        while (cont) {
+            try {
+                sup.tokenizeText(tp, startLine, endLine, true);
+                cont = false;
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        return buf.toString();
+    }
+
+    public static String htmlize(String input) {
+        String temp = org.openide.util.Utilities.replaceString(input, "<", "&lt;"); // NOI18N
+        temp = org.openide.util.Utilities.replaceString(temp, ">", "&gt;"); // NOI18N
+        return temp;
+    }
     
+    private static String color(String string, AttributeSet set) {
+        if (set==null)
+            return string;
+        if (string.trim().length() == 0) {
+            return Utilities.replaceString(Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
+        } 
+        StringBuffer buf = new StringBuffer(string);
+        if (StyleConstants.isBold(set)) {
+            buf.insert(0,"<b>"); //NOI18N
+            buf.append("</b>"); //NOI18N
+        }
+        if (StyleConstants.isItalic(set)) {
+            buf.insert(0,"<i>"); //NOI18N
+            buf.append("</i>"); //NOI18N
+        }
+        if (StyleConstants.isStrikeThrough(set)) {
+            buf.insert(0,"<s>");
+            buf.append("</s>");
+        }
+        buf.insert(0,"<font color=" + getHTMLColor(StyleConstants.getForeground(set)) + ">"); //NOI18N
+        buf.append("</font>"); //NOI18N
+        return buf.toString();
+    }
+    
+    private static String getHTMLColor(Color c) {
+        String colorR = "0" + Integer.toHexString(c.getRed()); //NOI18N
+        colorR = colorR.substring(colorR.length() - 2); 
+        String colorG = "0" + Integer.toHexString(c.getGreen()); //NOI18N
+        colorG = colorG.substring(colorG.length() - 2);
+        String colorB = "0" + Integer.toHexString(c.getBlue()); //NOI18N
+        colorB = colorB.substring(colorB.length() - 2);
+        String html_color = "#" + colorR + colorG + colorB; //NOI18N
+        return html_color;
+    }    
 }
