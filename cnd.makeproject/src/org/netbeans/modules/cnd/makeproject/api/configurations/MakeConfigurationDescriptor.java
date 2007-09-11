@@ -648,12 +648,16 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
             if (!filter.accept(files[i]))
                 continue;
             if (files[i].isDirectory()) {
-                // FIXUP: is this the best way to deal with files under SCCS?
+                // FIXUP: is this the best way to deal with files under version control?
                 // Unfortunately the SCCS directory contains data files with the same
                 // suffixes as the the source files, and a simple file filter based on
                 // a file's suffix cannot see the difference between the source file and
                 // the data file. Only the source file should be added.
                 if (files[i].getName().equals("SCCS")) // NOI18N
+                    continue;
+                if (files[i].getName().equals(".hg")) // NOI18N
+                    continue;
+                if (files[i].getName().equals("CVS")) // NOI18N
                     continue;
                 Folder dirfolder = folder;
                 if (addSubFolders) {
