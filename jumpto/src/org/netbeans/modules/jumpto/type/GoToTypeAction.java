@@ -166,10 +166,17 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return;
         }
         
+        int wildcard = containsWildCard(text);
+        
+        if ( wildcard == 0 ) {
+            panel.setListPanelContent(NbBundle.getMessage(GoToTypeAction.class, "MSG_StartsWithWildcard"), false);
+            return;
+        }
+        
         if (isAllUpper(text)) {
             nameKind = SearchType.CAMEL_CASE;
         } 
-        else if (containsWildCard(text) != -1) {
+        else if (wildcard != -1) {
             if (Character.isJavaIdentifierStart(text.charAt(0))) {
                 nameKind = panel.isCaseSensitive() ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
             }
@@ -223,6 +230,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }        
         return -1;
     }
+    
+    
     
     
     /** Creates the dialog to show

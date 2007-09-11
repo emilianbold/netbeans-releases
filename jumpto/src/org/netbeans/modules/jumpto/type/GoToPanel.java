@@ -26,6 +26,8 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -44,6 +46,7 @@ import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -51,6 +54,8 @@ import org.openide.util.NbBundle;
  */
 public class GoToPanel extends javax.swing.JPanel {
             
+    private static Icon WAIT_ICON = new ImageIcon( Utilities.loadImage("org/netbeans/modules/jumpto/file/resources/wait.gif") ); // NOI18N
+        
     private static final int BRIGHTER_COLOR_COMPONENT = 10;
     private ContentProvider contentProvider;
     private boolean containsScrollPane;
@@ -107,14 +112,14 @@ public class GoToPanel extends javax.swing.JPanel {
                if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
                    matchesList.setModel(model);
                    matchesList.setSelectedIndex(0);
-                   setListPanelContent(null);
+                   setListPanelContent(null,false);
                    if ( time != -1 ) {
                        GoToTypeAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
                        time = -1;
                    }
                }
                else {
-                   setListPanelContent( NbBundle.getMessage(GoToPanel.class, "TXT_NoTypesFound") ); // NOI18N
+                   setListPanelContent( NbBundle.getMessage(GoToPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
                }
            }
        });
@@ -321,7 +326,7 @@ public class GoToPanel extends javax.swing.JPanel {
         return this.caseSensitive.isSelected();
     }
     
-    void setListPanelContent( String message ) {
+    void setListPanelContent( String message ,boolean waitIcon ) {
         
         if ( message == null && !containsScrollPane ) {
            listPanel.remove( messageLabel );
@@ -333,6 +338,7 @@ public class GoToPanel extends javax.swing.JPanel {
         else if ( message != null ) { 
            jTextFieldLocation.setText(""); 
            messageLabel.setText(message);
+           messageLabel.setIcon( waitIcon ? WAIT_ICON : null);
            if ( containsScrollPane ) {
                listPanel.remove( matchesScrollPane1 );
                listPanel.add( messageLabel );
@@ -369,7 +375,7 @@ public class GoToPanel extends javax.swing.JPanel {
         
         // Wrap around
         if ( "selectNextRow".equals(action) && 
-             matchesList.getSelectedIndex() == matchesList.getModel().getSize() -1 ) {
+            matchesList.getSelectedIndex() == matchesList.getModel().getSize() -1 ) {
             matchesList.setSelectedIndex(0);
             matchesList.ensureIndexIsVisible(0);
             return;
@@ -444,7 +450,7 @@ public class GoToPanel extends javax.swing.JPanel {
             dialog.time = System.currentTimeMillis();
             String text = dialog.getText();
             if ( dialog.oldText == null || dialog.oldText.trim().length() == 0 || !text.startsWith(dialog.oldText) ) {
-                dialog.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_Searching")); // NOI18N
+                dialog.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"),true); // NOI18N
             }
             dialog.oldText = text;
             dialog.contentProvider.setListModel(dialog,text);            
