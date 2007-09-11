@@ -119,8 +119,35 @@ public class ProjectOpTest extends NbTestCase {
         assertEquals("NbModuleProject", op.getProjectDisplayName());
 
     }
-    
-      
+
+    public void testAntProjectStyle() throws Exception {
+        
+        
+
+        String log = "<record>" +
+        "  <date>2007-09-11T14:41:41</date>" +
+        "  <millis>1189514501494</millis>" +
+        "  <sequence>90</sequence>" +
+        "  <level>CONFIG</level>" +
+        "  <thread>12</thread>" +
+        "  <message>Opening 1 FreeformProject Projects</message>" +
+        "  <key>UI_OPEN_PROJECTS</key>" +
+        "  <catalog>org.netbeans.modules.project.ui.Bundle</catalog>" +
+        "  <param>org.netbeans.modules.ant.freeform.FreeformProject</param>" +
+        "  <param>FreeformProject</param>" +
+        "  <param>1</param>" +
+        "</record>";
+
+        InputStream is = new ByteArrayInputStream(log.getBytes());
+        TestHandler records = new TestHandler(is);
+        LogRecord rec = records.read();
+        is.close();
+        
+        ProjectOp op = ProjectOp.valueOf(rec);
+        assertEquals("One change", 1, op.getDelta());
+        assertEquals("org.netbeans.modules.ant.freeform.FreeformProject", op.getProjectType());
+        assertEquals("FreeformProject", op.getProjectDisplayName());
+    }
       
 }
 
