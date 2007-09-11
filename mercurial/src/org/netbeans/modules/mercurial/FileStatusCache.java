@@ -204,7 +204,7 @@ public class FileStatusCache {
      * @see FileInformation
      */
     public FileInformation getStatus(File file) {
-        if (hg.isAdministrative(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE)
+        if (file.isDirectory() && (hg.isAdministrative(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE))
             return FileStatusCache.FILE_INFORMATION_EXCLUDED_DIRECTORY;
         File dir = file.getParentFile();
         if (dir == null) {
@@ -347,11 +347,19 @@ public class FileStatusCache {
         FileInformation current = files.get(file);  
         if (FileStatusCache.equivalent(fi, current)) return;
         
-        files.put(file, fi);
-
+        file = FileUtil.normalizeFile(file);
         dir = FileUtil.normalizeFile(dir);
+        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
+        if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
+            newFiles.remove(file);
+            turbo.writeEntry(file, FILE_STATUS_MAP, null);  // remove mapping in case of directories
+        } else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
+            newFiles.remove(file);
+        } else {
+            newFiles.put(file, fi);
+        }
         assert files.containsKey(dir) == false;
-        turbo.writeEntry(dir, FILE_STATUS_MAP, files);
+        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles);
 
         fireFileStatusChanged(file, current, fi);
         return;
@@ -411,14 +419,52 @@ public class FileStatusCache {
      */
     public void refreshCached(VCSContext ctx) {
         
-        File [] files = listFiles(ctx, ~0);
-        
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        File repository = HgUtils.getRootFile(ctx);
+
+        for (File root : ctx.getRootFiles()) {
+            if (root.isDirectory()) {
+                File roots[] = new File[1];
+                roots[0] = root;
+                File [] files = listFiles(roots, ~0);
+                Map<File, FileInformation> allFiles;
+                try {
+                    allFiles = HgCommand.getAllStatus(repository, root);
+                    for (int i = 0; i < files.length; i++) {
+                        File file = files[i];
+                        FileInformation fi = allFiles.get(file);
+                        refreshFileStatus(file, fi);
+                    }
+                } catch (HgException ex) {
+                    Mercurial.LOG.log(Level.FINE, "refreshCached() file: {0} {1} { 2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N
+                }
+            } else {
+                refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            }
         }
     }
     
+    public void addToCache(Set<File> files) {
+        FileInformation fi = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, null, false);
+        HashMap <File, Map<File, FileInformation>> dirMap = new HashMap<File, Map<File, FileInformation>> (files.size());
+
+        for (File file : files) {
+            File parent = file.getParentFile();
+            file = FileUtil.normalizeFile(file);
+            parent = FileUtil.normalizeFile(parent);
+            Map<File, FileInformation> currentDirMap = dirMap.get(parent);
+            if (currentDirMap == null) {
+                // 20 is a guess at number of files in a directory
+                currentDirMap = new HashMap<File, FileInformation> (20);
+                dirMap.put(parent, currentDirMap);
+            }
+            currentDirMap.put(file, fi);
+        } 
+        for (File dir : dirMap.keySet()) {
+            dir = FileUtil.normalizeFile(dir);
+            Map<File, FileInformation> currentDirMap = dirMap.get(dir);
+            turbo.writeEntry(dir, FILE_STATUS_MAP, currentDirMap);
+        }
+    }
     // --- Package private contract ------------------------------------------
     
     Map<File, FileInformation>  getAllModifiedFiles() {
@@ -527,7 +573,10 @@ public class FileStatusCache {
         Map<File, FileInformation> interestingFiles;
         // Map<File, FileInformation> removedOrDeletedFiles;
         try {
+            Calendar start = Calendar.getInstance();
             interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, dir);
+            Calendar end = Calendar.getInstance();
+            Mercurial.LOG.log(Level.FINE, "getInterestingStatus took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
             // removedOrDeletedFiles = HgCommand.getRemovedDeletedStatus(rootManagedFolder,dir);
             //interestingFiles = HgCommand.getAllInterestingStatus(rootManagedFolder);
             //removedOrDeletedFiles = HgCommand.getAllRemovedDeletedStatus(rootManagedFolder);
