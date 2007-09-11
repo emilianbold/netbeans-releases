@@ -378,11 +378,12 @@ class ConnectionCustomEditor extends javax.swing.JPanel {
                 propertyField.setText(selectedComponent.getName() + "." + selectedItem.getPropertyName()); // NOI18N
 
             selectedProperty = selectedItem.getPropertyDescriptor();
-            if (selectedComponent != null && selectedProperty != null)
-                propertyEditor.setValue(new RADConnectionPropertyEditor.RADConnectionDesignValue(selectedComponent, selectedProperty));
-            else
+            if (selectedProperty == null)
                 propertyEditor.setValue(new RADConnectionPropertyEditor.RADConnectionDesignValue(selectedItem.getReadMethodName()));                
-                //propertyEditor.setValue(BeanSupport.NO_VALUE);
+            else if (selectedComponent != null && selectedProperty != null)
+                propertyEditor.setValue(new RADConnectionPropertyEditor.RADConnectionDesignValue(selectedComponent, selectedProperty));
+            else                
+                propertyEditor.setValue(BeanSupport.NO_VALUE);
         }
     }//GEN-LAST:event_propertyDetailsButtonActionPerformed
 
