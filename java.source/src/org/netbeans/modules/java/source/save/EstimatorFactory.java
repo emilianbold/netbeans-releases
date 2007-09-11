@@ -21,6 +21,7 @@ package org.netbeans.modules.java.source.save;
 import com.sun.source.tree.*;
 import java.util.List;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.source.save.CasualDiff.LineInsertionType;
 
 /**
  * Factory used for creating instances of position provider.
@@ -91,9 +92,26 @@ final class EstimatorFactory {
 
     static PositionEstimator annotations(List<? extends Tree> oldL, 
                                       List<? extends Tree> newL,
-                                      WorkingCopy copy)
+                                      WorkingCopy copy,
+                                      boolean parameterPrint)
     {
-        return new PositionEstimator.AnnotationsEstimator(oldL, newL, copy);
+        if (parameterPrint) {
+            return new PositionEstimator.AnnotationsEstimator(oldL, newL, copy) {
+                @Override
+                public int prepare(int startPos, StringBuilder aHead, StringBuilder aTail) {
+                    int result = super.prepare(startPos, aHead, aTail);
+                    aTail.append(" ");
+                    return result;
+                }
+                
+                @Override
+                public LineInsertionType lineInsertType() {
+                    return LineInsertionType.NONE;
+                }
+            };
+        } else {
+            return new PositionEstimator.AnnotationsEstimator(oldL, newL, copy);
+        }
     }
     
     /**

@@ -63,6 +63,10 @@ public class CasualDiff {
 
     private Map<Integer, String> diffInfo = new HashMap<Integer, String>();
     
+    // used for diffing var def, when parameter is printed, annotation of
+    // such variable should not provide new line at the end.
+    private boolean parameterPrint = false;
+    
     /** provided for test only */
     public CasualDiff() {
     }
@@ -426,7 +430,9 @@ public class CasualDiff {
         if (!listsMatch(oldT.params, newT.params)) {
             copyTo(localPointer, posHint);
             int old = printer.setPrec(TreeInfo.noPrec);
+            parameterPrint = true;
             localPointer = diffParameterList(oldT.params, newT.params, null, posHint, Measure.MEMBER);
+            parameterPrint = false;
             printer.setPrec(old);
         }
         if (localPointer < posHint)
@@ -1344,9 +1350,10 @@ public class CasualDiff {
                 if (index > -1) {
                     startPos += index + 1;
                 }
+                if (startPos < localPointer) startPos = localPointer;
             }
             copyTo(localPointer, startPos);
-            PositionEstimator est = EstimatorFactory.annotations(oldT.getAnnotations(),newT.getAnnotations(), workingCopy);
+            PositionEstimator est = EstimatorFactory.annotations(oldT.getAnnotations(),newT.getAnnotations(), workingCopy, parameterPrint);
             localPointer = diffList(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
         }
         if (oldT.flags != newT.flags) {
