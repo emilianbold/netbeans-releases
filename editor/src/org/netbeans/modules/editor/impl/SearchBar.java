@@ -25,7 +25,6 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.editor.*;
 import javax.swing.Action;
-import javax.swing.UIManager;
 import org.openide.util.NbBundle;
 
 import java.awt.Color;
@@ -55,6 +54,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -83,7 +83,7 @@ import org.openide.util.Utilities;
  *
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
-public final class SearchBar extends JToolBar {
+public final class SearchBar extends JPanel {
     
     private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
 
@@ -156,7 +156,7 @@ public final class SearchBar extends JToolBar {
     public SearchBar(JTextComponent component) {
         this.component = component;
 
-        setFloatable(false);
+        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         Color bgColor = getBackground();
         bgColor = new Color( Math.max( 0, bgColor.getRed() - 20 ),
                              Math.max( 0, bgColor.getGreen() - 20 ),
@@ -231,7 +231,7 @@ public final class SearchBar extends JToolBar {
         closeButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_CloseIncrementalSearchSidebar")); // NOI18N
         processButton(closeButton);
 
-        expandButton = new JButton(NbBundle.getMessage(SearchBar.class, "CTL_ExpandButton")); // NOI18N
+        expandButton = new JButton(new ImageIcon(Utilities.loadImage("org/netbeans/modules/editor/resources/find_expand.png"))); // NOI18N
         expandButton.setMnemonic(NbBundle.getMessage(SearchBar.class, "CTL_ExpandButton_Mnemonic").charAt(0)); // NOI18N
         processButton(expandButton);
         expandButton.addActionListener(new ActionListener() {
@@ -415,10 +415,10 @@ public final class SearchBar extends JToolBar {
         
         add(findLabel);
         add(incrementalSearchComboBox);
-        addSeparator();
+        add(new JToolBar.Separator());
         add(findPreviousButton);
         add(findNextButton);
-        addSeparator();
+        add(new JToolBar.Separator());
         add(matchCaseCheckBox);
         add(wholeWordsCheckBox);
         add(regexpCheckBox);
@@ -507,13 +507,23 @@ public final class SearchBar extends JToolBar {
             expandPopup.validate();
         }
     }
+
+    private int getComponentIndex(Component c) {
+        Component[] comps = getComponents();
+        for (int i = 0; i < comps.length; i++) {
+            if (c == comps[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
     
     private void showExpandedMenu() {
         if (!inPopup.isEmpty() && !expandPopup.isVisible()) {
             isPopupGoingToShow = true;
             Insets ins = expandPopup.getInsets();
             // compute popup height since JPopupMenu.getHeight does not work
-            expandPopup.show(expandButton, 0, -(expandButton.getHeight() * inPopup.size() + ins.top + ins.bottom));
+            expandPopup.show(expandButton, 0, -(matchCaseCheckBox.getHeight() * inPopup.size() + ins.top + ins.bottom));
         }
     }
     
@@ -525,17 +535,6 @@ public final class SearchBar extends JToolBar {
         }
     }
 
-    public @Override String getUIClassID() {
-        //For GTK and Aqua look and feels, we provide a custom toolbar UI -
-        //but we cannot override this globally or it will cause problems for
-        //the form editor & other things
-        if (UIManager.get("Nb.Toolbar.ui") != null) { //NOI18N
-            return "Nb.Toolbar.ui"; //NOI18N
-        } else {
-            return super.getUIClassID();
-        }
-    }
-    
     public @Override String getName() {
         //Required for Aqua L&F toolbar UI
         return "editorSearchBar"; // NOI18N
