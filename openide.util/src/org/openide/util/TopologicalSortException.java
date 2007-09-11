@@ -18,6 +18,8 @@
  */
 package org.openide.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 
@@ -94,10 +96,22 @@ public final class TopologicalSortException extends Exception {
         return unsort.toArray(new Set[0]);
     }
 
-    /** Adds description why the graph cannot be sorted.
-     * @param w writer to write to
-     */
-    public final void printStackTrace(java.io.PrintWriter w) {
+    @Override
+    public String getMessage() {
+        StringWriter w = new StringWriter();
+        PrintWriter pw = new PrintWriter(w);
+        printDebug(pw);
+        pw.close();
+        return w.toString();
+    }
+    
+    @Override
+    public String toString() {
+        String s = getClass().getName();
+        return s;
+    }
+
+    private void printDebug(java.io.PrintWriter w) {
         w.print("TopologicalSortException - Collection: "); // NOI18N
         w.print(vertexes);
         w.print(" with edges "); // NOI18N
@@ -112,7 +126,13 @@ public final class TopologicalSortException extends Exception {
             w.print(": "); // NOI18N
             w.println(bad[i]);
         }
-
+    }
+    
+    /** Adds description why the graph cannot be sorted.
+     * @param w writer to write to
+     */
+    public final void printStackTrace(java.io.PrintWriter w) {
+        printDebug(w);
         super.printStackTrace(w);
     }
 

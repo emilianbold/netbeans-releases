@@ -310,17 +310,42 @@ public class UtilitiesTopologicalSortTest extends NbTestCase {
             
             assertTrue ("Both messages should be the same", Arrays.equals(warr, sarr));
             
-            String msg = w.toString();
-            
-            int cnt = 0;
-            int indx = -1;
-            for (;;) {
-                indx = msg.indexOf("Conflict #", indx + 1);
-                if (indx == -1) break;
-                cnt++;
+            {
+                String msg = w.toString();
+
+                int cnt = 0;
+                int indx = -1;
+                for (;;) {
+                    indx = msg.indexOf("Conflict #", indx + 1);
+                    if (indx == -1) break;
+                    cnt++;
+                }
+
+                assertEquals(
+                    "There is the same number of lines with " +
+                    "'Conflict #' as unsortable sets", 
+                    cnt, ex.unsortableSets().length
+                );
             }
             
-            assertEquals ("There is the same number of lines with 'Conflict #' as unsortable sets", cnt, ex.unsortableSets().length);
+            {
+                String msg = ex.getMessage();
+
+                int cnt = 0;
+                int indx = -1;
+                for (;;) {
+                    indx = msg.indexOf("Conflict #", indx + 1);
+                    if (indx == -1) break;
+                    cnt++;
+                }
+
+                assertEquals(
+                    "There is the same number of lines with " +
+                    "'Conflict #' as unsortable sets", 
+                    cnt, ex.unsortableSets().length
+                );
+            }
+            
         }
         
         
