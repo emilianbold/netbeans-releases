@@ -84,6 +84,11 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
             }
         }
         name.setText(defaultName);
+        if ( name != null && defaultName.trim().length() > 0 ) {
+            this.name.setCaretPosition(defaultName.length());
+            this.name.setSelectionStart(0);
+            this.name.setSelectionEnd(defaultName.length());
+        }
     }
     
     private Preferences getPreferences( boolean introduceConstant ) {

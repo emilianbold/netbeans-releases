@@ -49,6 +49,11 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
         initComponents();
         
         this.name.setText(name);
+        if ( name != null && name.trim().length() > 0 ) {
+            this.name.setCaretPosition(name.length());
+            this.name.setSelectionStart(0);
+            this.name.setSelectionEnd(name.length());
+        }
         
         Preferences pref = getPreferences();
         
