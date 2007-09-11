@@ -54,38 +54,38 @@ public class Utils {
         if( "int".equals( typeName )) { 
             return "Integer.parseInt( " + variable + " )";
         } else if( "java.lang.Integer".equals( typeName )) {
-            return "new Integer( " + variable + " )";
+            return "new Integer(Integer.parseInt( " + variable + " ))";
         }
         if( "boolean".equals( typeName )) {
             return "Boolean.parseBoolean( " + variable + " )";
         } else if( "java.lang.Boolean".equals( typeName )) {
-            return "new Boolean( " + variable + " )";
+            return "new Boolean( \"true\".equals( " + variable + " ))";
         }
         if( "byte".equals( typeName )) {
             return "Byte.parseByte( " + variable + " )";
         } else if( "java.lang.Byte".equals( typeName )) {
-            return "new Byte( " + variable + " )";
+            return "new Byte(Byte.parseByte( " + variable + " ))";
         }
         if( "long".equals( typeName )) {
             return "Long.parseLong( " + variable + " )";
         } else if( "java.lang.Long".equals( typeName )) {
-            return "new Long( " + variable + " )";
+            return "new Long(Long.parseLong( " + variable + " ))";
         }
         if( "short".equals( typeName )) {
             return "Short.parseShort( " + variable + " )";
         } else if( "java.lang.Short".equals( typeName )) {
-            return "new Short( " + variable + " )";
+            return "new Short(Short.parseShort( " + variable + " ))";
         }
         
         if( "float".equals( typeName )) {
             return "Float.parseFloat( " + variable + " )";
         } else if( "java.lang.Float".equals( typeName )) {
-            return "new Float( " + variable + " )";
+            return "new Float(Float.parseFloat( " + variable + " ))";
         }
         if( "double".equals( typeName )) {
             return "Double.parseDouble( " + variable + " )";
         } else if( "java.lang.Double".equals( typeName )) {
-            return "new Double( " + variable + " )";
+            return "new Double(Double.parseDouble( " + variable + " ))";
         }
         
         return "";
