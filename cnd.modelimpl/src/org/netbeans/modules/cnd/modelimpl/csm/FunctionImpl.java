@@ -579,7 +579,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (TraceFlags.USE_REPOSITORY) {
             if (parameters != null) {
                 // #114884 ConcurrentModificationException in FunctionImpl
-                List<CsmUID<CsmParameter>> copy = parameters;
+                List<CsmUID<CsmParameter>> copy = new ArrayList<CsmUID<CsmParameter>>(parameters);
                 parameters  = null;
                 RepositoryUtils.remove(copy);
             }
