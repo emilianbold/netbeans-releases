@@ -23,6 +23,8 @@ package org.netbeans.installer.utils.system.windows;
 import java.util.Map;
 import java.util.Random;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 
@@ -58,7 +60,7 @@ public class WindowsRegistry {
         try {
             return checkKeyAccess0(section, key, KEY_READ_LEVEL);
         } catch (UnsatisfiedLinkError e) {
-            throw new NativeException("Cannot access native method", e);
+            throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
         }
     }
     
@@ -71,7 +73,7 @@ public class WindowsRegistry {
         try {
             return keyExists(section, parent + SEPARATOR + child);
         } catch (UnsatisfiedLinkError e) {
-            throw new NativeException("Cannot access native method", e);
+            throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
         }
     }
     
@@ -92,7 +94,7 @@ public class WindowsRegistry {
             try {
                 return valueExists0(section, key, name);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot check for value existance - key does not exist");
@@ -115,7 +117,7 @@ public class WindowsRegistry {
             try {
                 return keyEmpty0(section, key);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot check -- key does not exist");
@@ -138,7 +140,7 @@ public class WindowsRegistry {
             try {
                 return countSubKeys0(section, key);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot count subkeys -- key does not exist");
@@ -159,7 +161,7 @@ public class WindowsRegistry {
             try {
                 return countValues0(section, key);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
             
         } else {
@@ -194,7 +196,7 @@ public class WindowsRegistry {
             try {
                 return getSubkeyNames0(section, key);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot get subkey names -- key does not exist");
@@ -215,7 +217,7 @@ public class WindowsRegistry {
             try {
                 return getValueNames0(section, key);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot list value names -- key does not exist");
@@ -254,7 +256,7 @@ public class WindowsRegistry {
                 try {
                     return getValueType0(section, key, name);
                 } catch (UnsatisfiedLinkError e) {
-                    throw new NativeException("Cannot access native method", e);
+                    throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
             } else {
                 throw new NativeException("Cannot get value type -- value does not exist");
@@ -300,7 +302,7 @@ public class WindowsRegistry {
             try {
                 createKey0(section, parent, child);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         }
     }
@@ -335,7 +337,7 @@ public class WindowsRegistry {
             try {
                 deleteKey0(section, parent, child);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         }
     }
@@ -359,7 +361,7 @@ public class WindowsRegistry {
                 try {
                     deleteValue0(section, key, name);
                 } catch (UnsatisfiedLinkError e) {
-                    throw new NativeException("Cannot access native method", e);
+                    throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
             }
         } else {
@@ -397,7 +399,7 @@ public class WindowsRegistry {
                 try {
                     return getStringValue0(section, key, name, expand);
                 } catch (UnsatisfiedLinkError e) {
-                    throw new NativeException("Cannot access native method", e);
+                    throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
             } else {
                 throw new NativeException("Cannot get string value -- value does not exist");
@@ -443,7 +445,7 @@ public class WindowsRegistry {
             try {
                 setStringValue0(section, key, name, value, expandable);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot set string value -- key does not exist");
@@ -466,7 +468,7 @@ public class WindowsRegistry {
                 try {
                     return get32BitValue0(section, key, name);
                 } catch (UnsatisfiedLinkError e) {
-                    throw new NativeException("Cannot access native method", e);
+                    throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
             } else {
                 throw new NativeException("Cannot get 32-bit value -- value does not exist");
@@ -494,7 +496,7 @@ public class WindowsRegistry {
             try {
                 set32BitValue0(section, key, name, value);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot set 32-bit value -- key does not exist");
@@ -517,7 +519,7 @@ public class WindowsRegistry {
                 try {
                     return getMultiStringValue0(section, key, name);
                 } catch (UnsatisfiedLinkError e) {
-                    throw new NativeException("Cannot access native method", e);
+                    throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
             } else {
                 throw new NativeException("Cannot get multistring value -- value does not exist");
@@ -545,7 +547,7 @@ public class WindowsRegistry {
             try {
                 setMultiStringValue0(section, key, name, value);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot set multistring value -- key does not exist");
@@ -570,7 +572,7 @@ public class WindowsRegistry {
                 try {
                     return getBinaryValue0(section, key, name);
                 } catch (UnsatisfiedLinkError e) {
-                    throw new NativeException("Cannot access native method", e);
+                    throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
             } else {
                 throw new NativeException("Cannot get binary value -- value does not exist");
@@ -598,7 +600,7 @@ public class WindowsRegistry {
             try {
                 setBinaryValue0(section, key, name, value);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot set binary value -- key does not exist");
@@ -621,7 +623,7 @@ public class WindowsRegistry {
             try {
                 setNoneValue0(section, key, name, bytes);
             } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+                throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
         } else {
             throw new NativeException("Cannot access value -- key does not exist");
@@ -699,7 +701,7 @@ public class WindowsRegistry {
                 return canModifyKey(section,getKeyParent(key));
             }
         } catch (UnsatisfiedLinkError e) {
-            throw new NativeException("Cannot access native method", e);
+            throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
         }
     }
     
@@ -725,7 +727,7 @@ public class WindowsRegistry {
         if (index != -1) {
             return temp.substring(0, index);
         } else {
-            return "";
+            return StringUtils.EMPTY_STRING;
         }
     }
     
@@ -884,4 +886,8 @@ public class WindowsRegistry {
     
     private static int KEY_READ_LEVEL = 0;
     private static int KEY_MODIFY_LEVEL = 1;
+    
+    private static final String ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING =
+            ResourceUtils.getString(WindowsRegistry.class, 
+            "WR.error.cannot.access.native");//NOI18N
 }

@@ -34,13 +34,20 @@ public enum PerceivedType {
     
     public String toString() {
         switch (this) {
-            case TEXT: return "text";
-            case VIDEO: return "video";
-            case AUDIO: return "audio";
-            case SYSTEM: return "system";
-            case IMAGE: return "image";
-            case COMPRESSED: return "compressed";
-            default: return null;            
+            case TEXT: 
+                return "text";              //NOI18N
+            case VIDEO: 
+                return "video";            //NOI18N
+            case AUDIO: 
+                return "audio";            //NOI18N
+            case SYSTEM:
+                return "system";          //NOI18N
+            case IMAGE: 
+                return "image";            //NOI18N
+            case COMPRESSED: 
+                return "compressed";  //NOI18N
+            default:
+                return null;            
         }
     }
 }
