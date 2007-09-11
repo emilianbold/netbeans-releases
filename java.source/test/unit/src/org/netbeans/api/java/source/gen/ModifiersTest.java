@@ -89,6 +89,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute3"));
 //        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute4"));
 //        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute5"));
+//        suite.addTest(new ModifiersTest("testAddAnnotationToMethodPar"));
         return suite;
     }
 
@@ -1288,6 +1289,54 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 modified = make.removeAnnotationAttrValue(modified, 1);
                 modified = make.removeAnnotationAttrValue(modified, 0);
                 workingCopy.rewrite(ann, modified);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddAnnotationToMethodPar() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    void alois(String a, String b) {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    void alois(String a, @Annotation String b) {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ModifiersTree mods = method.getParameters().get(1).getModifiers();
+                ModifiersTree copy = make.addModifiersAnnotation(
+                        mods,
+                        make.Annotation(
+                                make.Identifier("Annotation"),
+                                Collections.<ExpressionTree>emptyList()
+                        )
+                );
+                workingCopy.rewrite(mods, copy);
             }
         };
         testSource.runModificationTask(task).commit();
