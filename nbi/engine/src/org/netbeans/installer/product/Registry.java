@@ -1566,14 +1566,15 @@ public class Registry {
                     
                     if (component.getProperties().size() > 0) {
                         Element propertiesNode = document.createElement("properties");
-                        
-                        for (Object key: component.getProperties().keySet()) {
+                        Properties props = new Properties();
+                        props.putAll(component.getProperties());
+                        for (Object key: props.keySet()) {
                             String name = (String) key;
                             
                             Element propertyNode = document.createElement("property");
                             
                             propertyNode.setAttribute("name", name);
-                            propertyNode.setTextContent(component.getProperties().getProperty(name));
+                            propertyNode.setTextContent(props.getProperty(name));
                             
                             propertiesNode.appendChild(propertyNode);
                         }
