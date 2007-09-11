@@ -302,12 +302,21 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
      * @param setlFilename [in] The full filename for the etld file.
      * @param pProxyDiagram [out,retval] The resulting IProxyDiagram used to control this diagram file (and the etlp)
      */
+    
+    public static java.util.HashMap<String, IProxyDiagram> fileList = new java.util.HashMap<String, IProxyDiagram>();
     public IProxyDiagram getDiagram(String sTOMFilename)
     {
-        IProxyDiagram retVal = new ProxyDiagramImpl();
-        
-        retVal.setFilename(sTOMFilename);
-        
+        IProxyDiagram retVal = null;
+        if (!fileList.containsKey(sTOMFilename) ) 
+        {
+            retVal = new ProxyDiagramImpl();
+            retVal.setFilename(sTOMFilename);
+            fileList.put(sTOMFilename, retVal);
+        } 
+        else 
+        {
+            retVal = fileList.get(sTOMFilename);
+        }
         return retVal;
     }
     /**
