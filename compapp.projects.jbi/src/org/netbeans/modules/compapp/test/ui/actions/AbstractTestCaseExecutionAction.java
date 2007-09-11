@@ -19,15 +19,14 @@
 
 package org.netbeans.modules.compapp.test.ui.actions;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Enumeration;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
 import org.netbeans.modules.compapp.test.ui.wizards.NewTestcaseConstants;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.*;
@@ -68,26 +67,12 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
             return;
         }
         
-        // REFACTOR ME
         /*tc.getTestcaseNode().showDiffTopComponentVisible();*/        
         JbiProject project = tc.getTestcaseNode().getProject();
         FileObject projectDir = project.getProjectDirectory();
         FileObject buildXMLFile = projectDir.getFileObject(project.getBuildXmlName());
         
         FileObject testDir = project.getTestDirectory();
-//        Enumeration testFolders = testDir.getFolders(true);
-//        String testCasesCSV = ""; // NOI18N
-//        while(testFolders.hasMoreElements()) {
-//            FileObject testFolder = (FileObject)testFolders.nextElement();
-//            String testFolderName = testFolder.getName();
-//            //accumulate everything except "results" folder and other well-known folders
-//            if(!testFolderName.equals("results") && 
-//                    !testFolderName.equalsIgnoreCase("cvs")) { // NOI18N
-//                testCasesCSV +=  testFolderName + ","; // NOI18N
-//            }
-//        }
-//        testCasesCSV = testCasesCSV.substring(0, testCasesCSV.length() - 1);
-//        String testCasesProperty = "testcases=" + testCasesCSV; // NOI18N
         
         String selectedTestCasesCSV = ""; // NOI18N
         for (Node activatedNode : activatedNodes) {
@@ -97,19 +82,17 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
             selectedTestCasesCSV +=  testFolderName + ","; // NOI18N
         }
         selectedTestCasesCSV = selectedTestCasesCSV.substring(0, selectedTestCasesCSV.length() - 1);
-        String selectedTestCasesProperty = "testcases=" + selectedTestCasesCSV;
         
         try {
-            String testDirPath = FileUtil.toFile(testDir).getAbsolutePath();
-//            String fileName = testDirPath + "/all-tests.properties"; // NOI18N
-//            BufferedWriter fw = new BufferedWriter(new FileWriter(fileName));
-//            fw.write(testCasesProperty);
-//            fw.close();
-            
+            String testDirPath = FileUtil.toFile(testDir).getAbsolutePath();            
             String fileName = testDirPath + "/selected-tests.properties"; // NOI18N
-            BufferedWriter fw = new BufferedWriter(new FileWriter(fileName));
-            fw.write(selectedTestCasesProperty);
-            fw.close();
+            
+            // EditableProperties takes care of encoding.
+            EditableProperties props = new EditableProperties();
+            props.setProperty("testcases", selectedTestCasesCSV);    // NOI18N
+            FileOutputStream outStream = new FileOutputStream(fileName);
+            props.store(outStream);
+            outStream.close();
             
             for (Node activatedNode : activatedNodes) {
                 TestcaseCookie cookie = activatedNode.getCookie(TestcaseCookie.class);

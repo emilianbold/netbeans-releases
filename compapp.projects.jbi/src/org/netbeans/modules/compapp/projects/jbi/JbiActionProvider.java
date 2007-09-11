@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.awt.Dialog;
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -55,6 +56,7 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
@@ -432,19 +434,25 @@ public class JbiActionProvider implements ActionProvider {
             if (testCasesCSV.length() > 1) {
                 testCasesCSV = testCasesCSV.substring(0, testCasesCSV.length() - 1);
             }
-            String testCasesProperty = "testcases=" + testCasesCSV; // NOI18N
+            
             //write csv to all-tests.properties
             String fileName = FileUtil.toFile(testDir).getPath() + "/all-tests.properties"; // NOI18N
-            BufferedWriter fw = new BufferedWriter(new FileWriter(fileName));
-            fw.write(testCasesProperty, 0, testCasesProperty.length());
-            fw.close();
+            // EditableProperties takes care of encoding.
+            EditableProperties props = new EditableProperties();
+            props.setProperty("testcases", testCasesCSV);    // NOI18N
+            FileOutputStream outStream = new FileOutputStream(fileName);
+            props.store(outStream);
+            outStream.close();
 
             //write csv to selected-tests.properties
             //org.netbeans.modules.compapp.catd.ConfiguredTests expects this
             fileName = FileUtil.toFile(testDir).getPath() + "/selected-tests.properties"; // NOI18N
-            fw = new BufferedWriter(new FileWriter(fileName));
-            fw.write(testCasesProperty, 0, testCasesProperty.length());
-            fw.close();
+            // EditableProperties takes care of encoding.
+            props = new EditableProperties();
+            props.setProperty("testcases", testCasesCSV);    // NOI18N
+            outStream = new FileOutputStream(fileName);
+            props.store(outStream);
+            outStream.close();
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }

@@ -88,6 +88,7 @@ import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import javax.swing.text.BadLocationException;
 
 //import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.compapp.catd.util.EditableProperties;
 
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
@@ -2397,21 +2398,14 @@ public class ConfiguredTest extends TestCase {
      * Utility method to load a properties file
      */
     static Properties loadProperties(String propertiesFile) throws IOException{
-        FileInputStream fis = null;
-        Properties props = null;
-        try {
-            fis = new FileInputStream(new File(propertiesFile));
-            props = new Properties();
-            props.load(fis);
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-            } catch (Exception ex) {
-                // ignore
-            }
-        }
+        Properties props = new Properties();
+        // EditableProperties takes case of encoding.
+        EditableProperties editableProps = new EditableProperties();
+        editableProps.load(new FileInputStream(propertiesFile));
+        for (String key : editableProps.keySet()) {
+            props.put(key, editableProps.getProperty(key));
+        }        
+        
         return props;
     }
     

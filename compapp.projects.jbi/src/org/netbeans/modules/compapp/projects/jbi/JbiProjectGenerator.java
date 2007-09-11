@@ -338,9 +338,7 @@ public class JbiProjectGenerator {
         }      
 
         //============= Start of JBI ========================================//
-        ep.setProperty(JbiProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
-
-
+        //ep.setProperty(JbiProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
         //============= End of JBI ========================================//
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
