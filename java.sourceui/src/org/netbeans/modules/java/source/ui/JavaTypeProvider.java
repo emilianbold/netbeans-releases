@@ -94,138 +94,151 @@ public class JavaTypeProvider implements TypeProvider {
 //        }
 //    }
 
-       public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType searchType) {
-            ClassIndex.NameKind nameKind;
-            switch (searchType) {
-            case EXACT_NAME: nameKind = ClassIndex.NameKind.SIMPLE_NAME; break;
-            case PREFIX: nameKind = ClassIndex.NameKind.PREFIX; break;
-            case CASE_INSENSITIVE_PREFIX: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX; break;
-            case REGEXP: nameKind = ClassIndex.NameKind.REGEXP; break;
-            case CASE_INSENSITIVE_REGEXP: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP; break;
-            case CAMEL_CASE: nameKind = ClassIndex.NameKind.CAMEL_CASE; break;
-            default: throw new RuntimeException("Unexpected search type: " + searchType);
-            }
-        
-            long time;
-            
-            long cp, gss, gsb, sfb, gtn, add, sort;
-            cp = gss = gsb = sfb = gtn = add = sort = 0;
-            
-            if (cache == null) {
-                // Sources
-                time = System.currentTimeMillis();
-                ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
-                FileObject roots[] = scp.getRoots();
-                gss += System.currentTimeMillis() - time; 
-                FileObject root[] = new FileObject[1];
-                Set<CacheItem> sources = new HashSet<CacheItem>( roots.length );
-                for (int i = 0; i < roots.length; i++ ) {                    
-                    root[0] = roots[i];
-                    time = System.currentTimeMillis();                
-                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root));               //create(roots[i]);
-                    if ( isCanceled ) {
-                        return null;
-                    }
-                    else {
-                        sources.add( new CacheItem( roots[i], ci, false ) );
-                    }                        
-                    cp += System.currentTimeMillis() - time;
-                }
-                     
-                
-                
-                // Binaries
+   public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType searchType) {
+        ClassIndex.NameKind nameKind;
+        switch (searchType) {
+        case EXACT_NAME: nameKind = ClassIndex.NameKind.SIMPLE_NAME; break;
+        case PREFIX: nameKind = ClassIndex.NameKind.PREFIX; break;
+        case CASE_INSENSITIVE_PREFIX: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX; break;
+        case REGEXP: nameKind = ClassIndex.NameKind.REGEXP; break;
+        case CASE_INSENSITIVE_REGEXP: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP; break;
+        case CAMEL_CASE: nameKind = ClassIndex.NameKind.CAMEL_CASE; break;
+        default: throw new RuntimeException("Unexpected search type: " + searchType);
+        }
+
+        long time;
+
+        long cp, gss, gsb, sfb, gtn, add, sort;
+        cp = gss = gsb = sfb = gtn = add = sort = 0;
+
+        if (cache == null) {
+            // Sources
+            time = System.currentTimeMillis();
+            ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
+            FileObject roots[] = scp.getRoots();
+            gss += System.currentTimeMillis() - time; 
+            FileObject root[] = new FileObject[1];
+            Set<CacheItem> sources = new HashSet<CacheItem>( roots.length );
+            for (int i = 0; i < roots.length; i++ ) {                    
+                root[0] = roots[i];
                 time = System.currentTimeMillis();                
-                scp = RepositoryUpdater.getDefault().getScannedBinaries();
-                roots = scp.getRoots(); 
-                gsb += System.currentTimeMillis() - time;
-                root = new FileObject[1];
-                for (int i = 0; i < roots.length; i++ ) {
-                    try {
-                        if ( isCanceled ) {
-                            return null;
-                        }
-                        time = System.currentTimeMillis();
-                        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(roots[i].getURL());
-                        if ( result.getRoots().length == 0 ) {
-                            continue;
-                        }       
-                        sfb += System.currentTimeMillis() - time;                        
-                        time = System.currentTimeMillis();                        
-                        root[0] = roots[i];
-                        ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);                                
-                        sources.add( new CacheItem( roots[i], ci, true ) );                                                
-                        cp += System.currentTimeMillis() - time;
-                    }
-                    catch ( FileStateInvalidException e ) {
-                        continue;
-                    }                   
-                    finally {
-                        if ( isCanceled ) {
-                            return null;
-                        }
-                    }
-                }
-                if ( !isCanceled ) {
-                    cache = sources;
-                }
-                else {
-                    return null;
-                }
-                
-            }
-            
-            ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(cache.size() * 20);
-            
-            for( CacheItem ci : cache ) {    
-                time = System.currentTimeMillis();
-                
-                String textForQuery;
-                switch( nameKind ) {
-                    case REGEXP:
-                    case CASE_INSENSITIVE_REGEXP:
-                        String pattern = text + "*"; // NOI18N
-                        pattern = pattern.replace( "*", ".*" ).replace( '?', '.' );
-                        textForQuery = pattern;
-                        break;
-                    default:
-                        textForQuery = text;
-                }
-                Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, EnumSet.of( ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE ));
+                ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root));               //create(roots[i]);
                 if ( isCanceled ) {
                     return null;
                 }
-                
-                gtn += System.currentTimeMillis() - time;            
-                time = System.currentTimeMillis();
-                
-//              Removed because of bad performance To reenable see diff between 1.15 and 1.16
-//              ClassPath.Entry defEntry = ci.getDefiningEntry();
-                for (ElementHandle<TypeElement> name : names) {
-//                    Removed because of bad performance To reenable see diff between 1.15 and 1.16
-//                    if (defEntry.includes(convertToSourceName(name.getBinaryName()))) {
-                        JavaTypeDescription td = new JavaTypeDescription(ci, name );
-                        types.add(td);
-//                    }
+                else {
+                    sources.add( new CacheItem( roots[i], ci, false ) );
+                }                        
+                cp += System.currentTimeMillis() - time;
+            }
+
+
+
+            // Binaries
+            time = System.currentTimeMillis();                
+            scp = RepositoryUpdater.getDefault().getScannedBinaries();
+            roots = scp.getRoots(); 
+            gsb += System.currentTimeMillis() - time;
+            root = new FileObject[1];
+            for (int i = 0; i < roots.length; i++ ) {
+                try {
+                    if ( isCanceled ) {
+                        return null;
+                    }
+                    time = System.currentTimeMillis();
+                    SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(roots[i].getURL());
+                    if ( result.getRoots().length == 0 ) {
+                        continue;
+                    }       
+                    sfb += System.currentTimeMillis() - time;                        
+                    time = System.currentTimeMillis();                        
+                    root[0] = roots[i];
+                    ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);                                
+                    sources.add( new CacheItem( roots[i], ci, true ) );                                                
+                    cp += System.currentTimeMillis() - time;
+                }
+                catch ( FileStateInvalidException e ) {
+                    continue;
+                }                   
+                finally {
                     if ( isCanceled ) {
                         return null;
                     }
                 }
-                add += System.currentTimeMillis() - time;
             }
-            
-            if ( !isCanceled ) {            
-                time = System.currentTimeMillis();
-                // Sorting is now done on the Go To Tpe dialog side
-                // Collections.sort(types);
-                sort += System.currentTimeMillis() - time;
-                LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
-                return types;
+            if ( !isCanceled ) {
+                cache = sources;
             }
             else {
                 return null;
             }
+
         }
+
+        ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(cache.size() * 20);
+
+        for( CacheItem ci : cache ) {    
+            time = System.currentTimeMillis();
+
+            String textForQuery;
+            switch( nameKind ) {
+                case REGEXP:
+                case CASE_INSENSITIVE_REGEXP:
+                    text = removeNonJavaChars(text);
+                    String pattern = text + "*"; // NOI18N
+                    pattern = pattern.replace( "*", ".*" ).replace( '?', '.' );
+                    textForQuery = pattern;
+                    break;
+                default:
+                    textForQuery = text;
+            }
+            Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, EnumSet.of( ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE ));
+            if ( isCanceled ) {
+                return null;
+            }
+
+            gtn += System.currentTimeMillis() - time;            
+            time = System.currentTimeMillis();
+
+//              Removed because of bad performance To reenable see diff between 1.15 and 1.16
+//              ClassPath.Entry defEntry = ci.getDefiningEntry();
+            for (ElementHandle<TypeElement> name : names) {
+//                    Removed because of bad performance To reenable see diff between 1.15 and 1.16
+//                    if (defEntry.includes(convertToSourceName(name.getBinaryName()))) {
+                    JavaTypeDescription td = new JavaTypeDescription(ci, name );
+                    types.add(td);
+//                    }
+                if ( isCanceled ) {
+                    return null;
+                }
+            }
+            add += System.currentTimeMillis() - time;
+        }
+
+        if ( !isCanceled ) {            
+            time = System.currentTimeMillis();
+            // Sorting is now done on the Go To Tpe dialog side
+            // Collections.sort(types);
+            sort += System.currentTimeMillis() - time;
+            LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
+            return types;
+        }
+        else {
+            return null;
+        }
+    }
+   
+   private static String removeNonJavaChars(String text) {
+       StringBuilder sb = new StringBuilder();
+       
+       for( int i = 0; i < text.length(); i++) {
+           char c = text.charAt(i);
+           if( Character.isJavaIdentifierPart(c) || c == '*' || c == '?') {
+               sb.append(c);
+           }
+       }
+       return sb.toString();
+   }
   
     static class CacheItem {
 
