@@ -47,6 +47,7 @@ public class RegexpFileFilter implements FileFilter, FilenameFilter {
             this.filterText = caseSensitive ? filterText : filterText.toLowerCase();
         }
         else {            
+            filterText = removeRegexpEscapes(filterText);
             filterText = filterText.replace(".", "\\."); // NOI18N
             filterText = filterText.replace("?", "."); // NOI18N
             filterText = filterText.replace("*", ".*"); // NOI18N       
@@ -88,4 +89,25 @@ public class RegexpFileFilter implements FileFilter, FilenameFilter {
        return true;
     }
 
+    private static String removeRegexpEscapes(String text) {
+        StringBuilder sb = new StringBuilder();
+       
+        for( int i = 0; i < text.length(); i++) {
+           char c = text.charAt(i);
+           switch(c) {
+           case '\\':
+//           case '(':
+//           case ')':
+//           case '{':
+//           case '}':
+//           case '[':
+//           case ']':
+                continue;
+           default:
+               sb.append(c);
+           }                      
+        }
+        return sb.toString();
+    }
+    
 }
