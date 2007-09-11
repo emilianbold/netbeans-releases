@@ -61,7 +61,7 @@ public class SelectingMultipleNodes extends org.netbeans.performance.test.utilit
         log(":: initialize");
         
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
         
     }
    
@@ -85,8 +85,8 @@ public class SelectingMultipleNodes extends org.netbeans.performance.test.utilit
     
     protected void shutdown() {
         log("::shutdown");
-//        ProjectSupport.closeProject(testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+        ProjectSupport.closeProject(testProjectName);
+//        new CloseAllDocumentsAction().performAPI();
     }
    
 

@@ -61,7 +61,7 @@ public class GenerateDependencyDiagram extends org.netbeans.performance.test.uti
         log(":: initialize");
         
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
         
     }
    
@@ -83,8 +83,8 @@ public class GenerateDependencyDiagram extends org.netbeans.performance.test.uti
     
     protected void shutdown() {
         log("::shutdown");
-//        ProjectSupport.closeProject(testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+        ProjectSupport.closeProject(testProjectName);
+//        new CloseAllDocumentsAction().performAPI();
     }
    
 

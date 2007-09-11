@@ -65,7 +65,7 @@ public class ApplyDesignPattern extends org.netbeans.performance.test.utilities.
         log(":: initialize");
         
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
         
     }
    
@@ -106,13 +106,13 @@ public class ApplyDesignPattern extends org.netbeans.performance.test.utilities.
     
     protected void shutdown() {
         log("::shutdown");
-//        ProjectSupport.closeProject(testProjectName);
+        ProjectSupport.closeProject(testProjectName);
     }
    
 
     public void close(){
         log("::close");
-      new CloseAllDocumentsAction().performAPI();
+//      new CloseAllDocumentsAction().performAPI();
  
     } 
     public static void main(java.lang.String[] args) {

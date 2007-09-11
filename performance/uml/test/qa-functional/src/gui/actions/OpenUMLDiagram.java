@@ -60,7 +60,7 @@ public class OpenUMLDiagram extends org.netbeans.performance.test.utilities.Perf
         log(":: initialize");
         
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
     }
    
     public void prepare() {
@@ -82,7 +82,7 @@ public class OpenUMLDiagram extends org.netbeans.performance.test.utilities.Perf
     
     protected void shutdown() {
         log("::shutdown");
-//        ProjectSupport.closeProject(testProjectName);
+        ProjectSupport.closeProject(testProjectName);
     }
    
 

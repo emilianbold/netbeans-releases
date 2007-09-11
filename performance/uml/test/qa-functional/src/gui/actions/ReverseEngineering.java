@@ -68,7 +68,7 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
     
     public void initialize(){
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
     }
     
     public void prepare(){
@@ -102,13 +102,13 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
     }
     
     public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-//        ProjectSupport.closeProject("jEdit-Model_"+ suffix);
+//        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        ProjectSupport.closeProject("jEdit-Model_"+ suffix);
  }
 
     protected void shutdown() {
 
-    new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport      
+//    new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport      
     }
     
     public static void main(java.lang.String[] args) {

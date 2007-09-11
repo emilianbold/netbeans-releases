@@ -62,7 +62,7 @@ public class ScrollExpandedProject extends org.netbeans.performance.test.utiliti
         log(":: initialize");
         
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         Node nodeModel = new Node(pNode,"Model");
         Node nodeDiagrams = new Node(pNode,"Diagrams");
@@ -90,8 +90,8 @@ public class ScrollExpandedProject extends org.netbeans.performance.test.utiliti
     
     protected void shutdown() {
         log("::shutdown");
-//        ProjectSupport.closeProject(testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+        ProjectSupport.closeProject(testProjectName);
+//        new CloseAllDocumentsAction().performAPI();
     }
    
 

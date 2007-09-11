@@ -64,7 +64,7 @@ public class CreateEmptyDiagram extends org.netbeans.performance.test.utilities.
     public void initialize(){
         log(":: initialize");
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
                 
     }
    
@@ -93,8 +93,8 @@ public class CreateEmptyDiagram extends org.netbeans.performance.test.utilities.
     
     protected void shutdown() {
         log("::shutdown");
-//        ProjectSupport.closeProject(testProjectName);
-        new EventTool().waitNoEvent(2000);
+        ProjectSupport.closeProject(testProjectName);
+//        new EventTool().waitNoEvent(2000);
     }
 
     public void close(){

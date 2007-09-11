@@ -61,7 +61,7 @@ public class CodeGenerationFromUMLProject extends org.netbeans.performance.test.
         log(":: initialize");
         
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
         
     }
    
@@ -86,13 +86,13 @@ public class CodeGenerationFromUMLProject extends org.netbeans.performance.test.
     
     protected void shutdown() {
         log("::shutdown");
-//        ProjectSupport.closeProject(testProjectName);
+        ProjectSupport.closeProject(testProjectName);
     }
    
 
     public void close(){
         log("::close");
-      new CloseAllDocumentsAction().performAPI();
+//      new CloseAllDocumentsAction().performAPI();
  
     } 
     public static void main(java.lang.String[] args) {

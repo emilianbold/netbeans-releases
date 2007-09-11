@@ -68,7 +68,7 @@ public class CreateSequenceDiagramFromMultipleNodes extends org.netbeans.perform
         log(":: initialize");
         
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+//        new CloseAllDocumentsAction().performAPI();
         
     }
    
@@ -107,8 +107,8 @@ public class CreateSequenceDiagramFromMultipleNodes extends org.netbeans.perform
     
     protected void shutdown() {
         log("::shutdown");
-//        ProjectSupport.closeProject(testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+        ProjectSupport.closeProject(testProjectName);
+//        new CloseAllDocumentsAction().performAPI();
     }
    
 
