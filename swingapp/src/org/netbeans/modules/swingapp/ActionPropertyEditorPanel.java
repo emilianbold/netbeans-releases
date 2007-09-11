@@ -989,6 +989,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         act.setClassname(getSelectedClassname());
         //act.setMethodname(methodField.getText());
         act.setId(methodField.getText());
+        act.setMethodName(methodField.getText());
         act.putValue(Action.NAME,textField.getText());
         act.putValue(Action.SHORT_DESCRIPTION,tooltipField.getText());
         //act.setTaskEnabled(returnsTask);
