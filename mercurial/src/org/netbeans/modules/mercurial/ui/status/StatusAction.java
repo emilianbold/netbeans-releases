@@ -20,7 +20,9 @@ package org.netbeans.modules.mercurial.ui.status;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.logging.Level;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgException;
@@ -86,7 +88,10 @@ public class StatusAction extends AbstractAction {
 
         try {
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+            Calendar start = Calendar.getInstance();
             cache.refreshCached(context);
+            Calendar end = Calendar.getInstance();
+            Mercurial.LOG.log(Level.FINE, "refreshCached took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
             for (File root :  context.getRootFiles()) {
                 if(support.isCanceled()) {
                     return;
@@ -95,13 +100,17 @@ public class StatusAction extends AbstractAction {
                     Map<File, FileInformation> interestingFiles;
                     interestingFiles = HgCommand.getInterestingStatus(repository, root);
                     if (!interestingFiles.isEmpty()){
+                        start = Calendar.getInstance();
                         Collection<File> files = interestingFiles.keySet();
                         for (File file : files) {
                              if(support.isCanceled()) {
                                  return;
                              }
-                             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN); 
+                             FileInformation fi = interestingFiles.get(file);
+                             cache.refreshFileStatus(file, fi); 
                         }
+                        end = Calendar.getInstance();
+                        Mercurial.LOG.log(Level.FINE, "process interesting files took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
                     } 
                 } else {
                     cache.refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN); 
