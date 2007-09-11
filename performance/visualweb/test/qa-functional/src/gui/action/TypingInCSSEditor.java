@@ -43,8 +43,8 @@ public class TypingInCSSEditor extends TypingInEditor {
         fileName = "stylesheet.css";
         caretPositionX = 1;
         caretPositionY = 8;
-        kitClass = org.netbeans.modules.css.editor.CssEditorKit.class;
-        optionsClass = org.netbeans.modules.css.options.CssOptions.class;
+        //kitClass = org.netbeans.modules.css.editor.CssEditorKit.class;
+        //optionsClass = org.netbeans.modules.css.options.CssOptions.class;
         fileToBeOpened = new Node(new WebPagesNode("VisualWebProject"),"resources|"+fileName);
         doMeasurement();
     }
