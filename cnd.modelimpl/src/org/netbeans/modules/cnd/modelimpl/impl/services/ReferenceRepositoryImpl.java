@@ -222,14 +222,14 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     public static ReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         assert targetDecl != null;
         CsmObject owner = ref.getOwner();
-        assert owner != null;        
-        ReferenceKind kind;
-        if (owner.equals(targetDecl)) {
-            kind = ReferenceKind.DECLARATION;
-        } else if (owner.equals(targetDef)) {
-            kind = ReferenceKind.DEFINITION;
-        } else {
-            kind = ReferenceKind.USAGE;
+        // assert owner != null;        
+        ReferenceKind kind = ReferenceKind.USAGE;
+        if (owner != null) {
+            if (owner.equals(targetDecl)) {
+                kind = ReferenceKind.DECLARATION;
+            } else if (owner.equals(targetDef)) {
+                kind = ReferenceKind.DEFINITION;
+            }
         }
         return kind;
     }
