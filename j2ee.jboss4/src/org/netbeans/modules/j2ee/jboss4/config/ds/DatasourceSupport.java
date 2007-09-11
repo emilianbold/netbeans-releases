@@ -67,6 +67,8 @@ public class DatasourceSupport {
     private FileObject datasourcesFO;
     
     public DatasourceSupport(File resourceDir) {
+        assert resourceDir != null : "Resource directory can't be null"; // NOI18N
+        
         this.resourceDir = resourceDir;
         this.datasourcesFile = new File(resourceDir, DS_RESOURCE_NAME);
         ensureDatasourcesFOExists();
