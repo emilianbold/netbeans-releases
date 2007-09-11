@@ -103,6 +103,10 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
             if (lineElem == null) { return null; }
             int lineStartOffset = lineElem.getStartOffset();
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
+            if (col + 1 >= lineLen) {
+                // do not evaluate when mouse hover behind the end of line (112662)
+                return null;
+            }
             t = doc.getText(lineStartOffset, lineLen);
             int identStart = col;
             while (identStart > 0 && (Character.isJavaIdentifierPart(t.charAt(identStart - 1)) || (t.charAt(identStart - 1) == '.'))) {
