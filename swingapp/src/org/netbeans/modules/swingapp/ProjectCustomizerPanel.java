@@ -37,8 +37,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
 
-public class ProjectCustomizerPanel extends javax.swing.JPanel {
+public class ProjectCustomizerPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private static final String[] LAF_RESOURCE_NAMES = { "default", "system" }; // NOI18N
     private static final String[] LAF_DISPLAY_NAMES = {
@@ -287,5 +288,9 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox lafCombo;
     private javax.swing.JTextField vendorIdTextField;
     // End of variables declaration//GEN-END:variables
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.swingapp.ProjectCustomizerPanel");
+    }
     
 }

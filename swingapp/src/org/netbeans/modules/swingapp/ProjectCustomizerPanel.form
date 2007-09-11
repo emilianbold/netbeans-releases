@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
@@ -24,9 +24,9 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="vendorIdTextField" pref="304" max="32767" attributes="0"/>
-                      <Component id="appIdTextField" alignment="0" pref="304" max="32767" attributes="0"/>
-                      <Component id="lafCombo" alignment="1" pref="304" max="32767" attributes="0"/>
+                      <Component id="vendorIdTextField" pref="534" max="32767" attributes="0"/>
+                      <Component id="appIdTextField" alignment="0" pref="534" max="32767" attributes="0"/>
+                      <Component id="lafCombo" alignment="1" pref="534" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="browseButton" min="-2" max="-2" attributes="0"/>

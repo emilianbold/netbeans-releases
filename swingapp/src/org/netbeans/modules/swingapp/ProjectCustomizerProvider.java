@@ -85,7 +85,7 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
         DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
         panel.setVendorId(resMap.getString(KEY_VENDOR_ID));
         panel.setApplicationId(resMap.getString(KEY_APP_ID));
-        panel.setLookAndFeel(resMap.getString(KEY_LOOK_AND_FEEL));
+        panel.setLookAndFeel(resMap.getString(KEY_LOOK_AND_FEEL));        
         return panel;
     }
 
