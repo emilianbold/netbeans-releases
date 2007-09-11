@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 

@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -196,7 +197,8 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
                 Children.MUTEX.writeAccess(new Runnable(){
                     public void run() {
                         children.remove(children.getNodes());
-                        final Node node = new HierarchyNode(csmClass, new HierarchyModel(csmClass, subDirection), null);
+                        final Node node = new HierarchyNode(csmClass,
+                                HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, subDirection), null);
                         children.add(new Node[]{node});
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {

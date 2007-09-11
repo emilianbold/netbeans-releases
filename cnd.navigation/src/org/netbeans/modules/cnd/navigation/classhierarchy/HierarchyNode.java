@@ -28,6 +28,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 

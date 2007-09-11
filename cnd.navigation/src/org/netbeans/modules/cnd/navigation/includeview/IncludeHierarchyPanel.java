@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -340,7 +341,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
                 Children.MUTEX.writeAccess(new Runnable(){
                     public void run() {
                         children.remove(children.getNodes());
-                        final Node node = new IncludeNode(csmFile, new IncludedModel(csmFile, whoIncludes, plain, recursive), null);
+                        final Node node = new IncludeNode(csmFile,
+                                HierarchyFactory.getInstance().buildIncludeHierarchyModel(csmFile, whoIncludes, plain, recursive), null);
                         children.add(new Node[]{node});
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {

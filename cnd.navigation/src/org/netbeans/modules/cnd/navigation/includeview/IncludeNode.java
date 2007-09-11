@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.navigation.services.IncludedModel;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;

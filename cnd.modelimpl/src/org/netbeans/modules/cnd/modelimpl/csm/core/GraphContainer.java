@@ -211,12 +211,12 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
     
     /**
-     * gets all included files.
+     * gets all direct or indirect included files into the  referenced file.
      */
-    public Set<CsmFile> getIncludedFiles(CsmFile start){
+    public Set<CsmFile> getIncludedFiles(CsmFile referencedFile){
         if (TraceFlags.USE_REPOSITORY) {
             Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
-            CsmUID<CsmFile> keyFrom = UIDCsmConverter.fileToUID(start);
+            CsmUID<CsmFile> keyFrom = UIDCsmConverter.fileToUID(referencedFile);
             if (keyFrom != null) {
                 synchronized (graph){
                     getIncludedFiles(res, keyFrom);
@@ -226,19 +226,19 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         } else {
             Set<CsmFile> res = new HashSet<CsmFile>();
             synchronized (graphOld){
-                getIncludedFiles(res, start);
+                getIncludedFiles(res, referencedFile);
             }
             return res;
         }
     }
     
     /**
-     * gets all files that include this file.
+     * gets all files that direct or indirect include the referenced file.
      */
-    public Set<CsmFile> getParentFiles(CsmFile start){
+    public Set<CsmFile> getParentFiles(CsmFile referencedFile){
         if (TraceFlags.USE_REPOSITORY) {
             Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
-            CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(start);
+            CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
             if (keyTo != null) {
                 synchronized (graph){
                     getParentFiles(res, keyTo);
@@ -248,19 +248,21 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         } else {
             Set<CsmFile> res = new HashSet<CsmFile>();
             synchronized (graph){
-                getParentFiles(res, start);
+                getParentFiles(res, referencedFile);
             }
             return res;
         }
     }
     
     /**
-     * gets all files that include this file.
+     * gets all files that direct or indirect include the referenced file.
+     * return files that not included into other files.
+     * If set empty then return set with the referenced file.
      */
-    public Set<CsmFile> getTopParentFiles(CsmFile start){
+    public Set<CsmFile> getTopParentFiles(CsmFile referencedFile){
         if (TraceFlags.USE_REPOSITORY) {
             Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
-            CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(start);
+            CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
             if (keyTo != null) {
                 synchronized (graph){
                     getParentFiles(res, keyTo);
@@ -281,10 +283,10 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         } else {
             Set<CsmFile> res = new HashSet<CsmFile>();
             synchronized (graphOld){
-                getParentFiles(res, start);
+                getParentFiles(res, referencedFile);
                 List<CsmFile> list = new ArrayList<CsmFile>(res);
                 if (res.size()==0) {
-                    res.add(start);
+                    res.add(referencedFile);
                 }
                 res.clear();
                 for(CsmFile uid : list){
@@ -299,13 +301,14 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
     
     /**
-     * gets all files that include this file.
+     * gets all files that direct or indirect include referenced file.
+     * If set empty then return set with the referenced file.
      */
-    public Set<CsmFile> getCoherenceFiles(CsmFile start){
-        CsmProject project = start.getProject();
+    public Set<CsmFile> getCoherenceFiles(CsmFile referencedFile){
+        CsmProject project = referencedFile.getProject();
         if (TraceFlags.USE_REPOSITORY) {
             Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
-            CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(start);
+            CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
             if (keyTo != null) {
                 synchronized (graph){
                     getParentFiles(res, keyTo);
@@ -321,9 +324,9 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         } else {
             Set<CsmFile> res = new HashSet<CsmFile>();
             synchronized (graphOld){
-                getParentFiles(res, start);
+                getParentFiles(res, referencedFile);
                 if (res.size()==0) {
-                    res.add(start);
+                    res.add(referencedFile);
                 }
                 for(CsmFile uid : new ArrayList<CsmFile>(res)){
                     getIncludedFiles(res, uid);
@@ -333,7 +336,78 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         }
     }
     
+    /**
+     *  Returns set files that direct include referenced file.
+     */
+    public Set<CsmFile> getInLinks(CsmFile referencedFile){
+        if (TraceFlags.USE_REPOSITORY) {
+            Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
+            CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
+            if (keyTo != null) {
+                synchronized (graph){
+                    NodeLink node = graph.get(keyTo);
+                    if (node != null) {
+                        for(CsmUID<CsmFile> uid : node.getInLinks()){
+                            if (!res.contains(uid)){
+                                res.add(uid);
+                            }
+                        }
+                    }
+                }
+            }
+            return convertToFiles(res);
+        } else {
+            Set<CsmFile> res = new HashSet<CsmFile>();
+            synchronized (graphOld){
+                NodeLinkOld node = graphOld.get(referencedFile);
+                if (node != null) {
+                    for(CsmFile uid : node.getInLinks()){
+                        if (!res.contains(uid)){
+                            res.add(uid);
+                        }
+                    }
+                }
+            }
+            return res;
+        }
+    }
     
+    /**
+     *  Returns set of direct included files in the referenced file.
+     */
+    public Set<CsmFile> getOutLinks(CsmFile referencedFile){
+        if (TraceFlags.USE_REPOSITORY) {
+            Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
+            CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
+            if (keyTo != null) {
+                synchronized (graph){
+                    NodeLink node = graph.get(keyTo);
+                    if (node != null) {
+                        for(CsmUID<CsmFile> uid : node.getOutLinks()){
+                            if (!res.contains(uid)){
+                                res.add(uid);
+                            }
+                        }
+                    }
+                }
+            }
+            return convertToFiles(res);
+        } else {
+            Set<CsmFile> res = new HashSet<CsmFile>();
+            synchronized (graphOld){
+                NodeLinkOld node = graphOld.get(referencedFile);
+                if (node != null) {
+                    for(CsmFile uid : node.getOutLinks()){
+                        if (!res.contains(uid)){
+                            res.add(uid);
+                        }
+                    }
+                }
+            }
+            return res;
+        }
+    }
+
     private Set<CsmFile> convertToFiles(Set<CsmUID<CsmFile>> res) {
         Set<CsmFile> res2= new HashSet<CsmFile>();
         for(CsmUID<CsmFile> uid : res) {
