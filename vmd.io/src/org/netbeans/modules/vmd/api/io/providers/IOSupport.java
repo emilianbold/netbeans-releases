@@ -247,41 +247,4 @@ public final class IOSupport {
         documentUpdating.put(dataObject, enabled);
     }
 
-    /**
-     * Visuals content of DocumentErrorHandler. All messages (wrning and errors) are displayed in 
-     * informational dialog window.
-     * @param errorHandler 
-     * @param fileName
-     */
-    public static void showDocumentErrorHandlerDialog(final DocumentErrorHandler errorHandler, final String fileName) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (errorHandler.getErrors().isEmpty() && errorHandler.getWarnings().isEmpty()) {
-                    return;
-                }
-                StringBuffer warnings = new StringBuffer();
-                if (!errorHandler.getWarnings().isEmpty()) {
-                    warnings.append("<HTML><FONT COLOR=BLUE> <STRONG>" + NbBundle.getMessage(IOSupport.class, "LBL_DialogWarning") + "</STRONG></FONT><UL>"); //NOI18N
-                    for (String warning : errorHandler.getWarnings()) {
-                        warnings.append("<LI>"); //NOI18N
-                        warnings.append(warning);
-                        warnings.append("</LI>"); //NOI18N
-                    }
-                    warnings.append("</UL>"); //NOI18N
-                }
-                StringBuffer errors = new StringBuffer();
-                if (!errorHandler.getErrors().isEmpty()) {
-                    errors.append("<HTML><FONT COLOR=RED> <STRONG>" + NbBundle.getMessage(IOSupport.class, "LBL_DialogError") + "</STRONG></FONT><UL>"); //NOI18N
-                    for (String error : errorHandler.getErrors()) {
-                        errors.append("<LI>"); //NOI18N
-                        errors.append(error);
-                        errors.append("</LI>"); //NOI18N
-                    }
-                    errors.append("</UL>"); //NOI18N
-                }
-                DialogDescriptor descriptor = new DialogDescriptor(errors.toString() + warnings.toString(), NbBundle.getMessage(IOSupport.class, "LBL_DialogTitle") + " " + fileName); //NOI18N
-                DialogDisplayer.getDefault().notify(descriptor);
-            }
-        });
-    }
 }

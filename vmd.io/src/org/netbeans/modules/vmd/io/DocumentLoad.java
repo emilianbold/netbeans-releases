@@ -350,7 +350,7 @@ public class DocumentLoad {
                 errorHandler.addError(XML_ERROR + e.getMessage());
             }
         }
-        IOSupport.showDocumentErrorHandlerDialog(errorHandler, fileObject.getName());
+        DocumentErrorHandlerSupport.showDocumentErrorHandlerDialog(errorHandler, fileObject);
         return doc;
     }
 
