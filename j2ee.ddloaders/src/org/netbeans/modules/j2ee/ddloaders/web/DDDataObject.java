@@ -86,6 +86,7 @@ public class DDDataObject extends  DDMultiViewDataObject
     public static final String HELP_ID_PREFIX_REFERENCES="dd_multiview_references_"; //NOI18N
     public static final String HELP_ID_PREFIX_SECURITY="dd_multiview_security_"; //NOI18N
 
+    private static final Logger LOG = Logger.getLogger(DDMultiViewDataObject.class.getName());
 
     /** Holder of documentDTD property value */
     private String documentDTD;
@@ -251,6 +252,10 @@ public class DDDataObject extends  DDMultiViewDataObject
                 webAppProxy.setError((SAXParseException) ex.getException());
             }
             setSaxError(ex);
+        } catch (IllegalArgumentException iae) {
+            // see #104180
+            webAppProxy.setStatus(WebApp.STATE_INVALID_UNPARSABLE);
+            LOG.log(Level.FINE, "IAE thrown during merge, see #104180.", iae); //NO18N
         }
     }
 

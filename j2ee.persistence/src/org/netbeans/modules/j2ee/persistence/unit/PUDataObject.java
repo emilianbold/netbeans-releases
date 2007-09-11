@@ -34,6 +34,7 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.openide.DialogDisplayer;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
@@ -71,6 +72,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
     private static final int TYPE_TOOLBAR = 0;
     private Persistence persistence;
     private static final String DESIGN_VIEW_ID = "persistence_multiview_design"; // NO18N
+    private static final Logger LOG = Logger.getLogger(PUDataObject.class.getName());
     
     /**
      * The property name for the event fired when a persistence unit was added or removed.
@@ -133,7 +135,13 @@ public class PUDataObject extends XmlMultiViewDataObject {
                     return false;
                 }
                 if (newPersistence!=null) {
-                    persistence.merge(newPersistence, org.netbeans.modules.schema2beans.BaseBean.MERGE_UPDATE);
+                    try{
+                        persistence.merge(newPersistence, BaseBean.MERGE_UPDATE);
+                    } catch (IllegalArgumentException iae) {
+                        // see #104180
+                        LOG.log(Level.FINE, "IAE thrown during merge, see #104180.", iae); //NO18N
+                        return false;
+                    }
                 }
             } catch (IOException ioe){
                 Logger.getLogger("global").log(Level.INFO, null, ioe);

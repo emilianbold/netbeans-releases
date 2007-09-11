@@ -31,6 +31,8 @@ import org.xml.sax.SAXParseException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 
 /**
@@ -66,11 +68,11 @@ public class DDUtils {
     public static void merge(EjbJarProxy ejbJarProxy, Reader reader) {
         try {
             EjbJarProxy newEjbJarProxy = createEjbJarProxy(reader);
-            if (newEjbJarProxy.getStatus() == EjbJar.STATE_INVALID_UNPARSABLE) {
-                ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
-                ejbJarProxy.setError(newEjbJarProxy.getError());
-                return;
-            }
+//            if (newEjbJarProxy.getStatus() == EjbJar.STATE_INVALID_UNPARSABLE) {
+//                ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+//                ejbJarProxy.setError(newEjbJarProxy.getError());
+//                return;
+//            }
             ejbJarProxy.merge(newEjbJarProxy, EjbJar.MERGE_UPDATE);
             ejbJarProxy.setStatus(newEjbJarProxy.getStatus());
             ejbJarProxy.setError(newEjbJarProxy.getError());
@@ -90,6 +92,9 @@ public class DDUtils {
             if (re.getCause() instanceof Schema2BeansException){
                 ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
                 ejbJarProxy.setError(new SAXParseException(null, null, (Schema2BeansException) re.getCause()));
+            } else if (re instanceof IllegalArgumentException){ // see #104180
+                ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+                Logger.getLogger(DDUtils.class.getName()).log(Level.FINE, "IAE thrown during merge, see #104180.", re); //NO18N
             } else {
                 throw re;
             }
