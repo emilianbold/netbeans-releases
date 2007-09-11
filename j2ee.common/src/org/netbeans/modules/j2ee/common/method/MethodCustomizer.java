@@ -43,6 +43,10 @@ public final class MethodCustomizer {
             String prefix, Collection<MethodModel> existingMethods) {
         this.panel = MethodCustomizerPanel.create(methodModel, hasLocal, hasRemote, selectLocal, selectRemote,
                 hasReturnType, ejbql, hasFinderCardinality, hasExceptions, hasInterfaces);
+        
+        // A11Y 
+        this.panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_AddMethod")); // NOI18N
+               
         this.title = title;
         this.prefix = prefix;
         this.existingMethods = existingMethods;

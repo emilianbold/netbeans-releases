@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="finderCardinalityButtonGroup">
     </Component>
@@ -35,8 +35,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="returnTypeTextField" pref="380" max="32767" attributes="0"/>
-                          <Component id="nameTextField" alignment="0" pref="380" max="32767" attributes="0"/>
+                          <Component id="returnTypeTextField" pref="389" max="32767" attributes="0"/>
+                          <Component id="nameTextField" alignment="0" pref="389" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -124,6 +124,11 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="MethodCustomizerPanel.returnTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="ACSD_ReturnType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="returnTypeTextField">
       <Properties>
@@ -154,6 +159,11 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="MethodCustomizerPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="ACSD_Name" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Container class="javax.swing.JPanel" name="interfacesPanel">
 
@@ -168,7 +178,7 @@
                   <Component id="remoteRadio" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="bothRadio" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="139" max="32767" attributes="0"/>
+                  <EmptySpace pref="174" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -197,33 +207,48 @@
               <ComponentRef name="interfaceButtonGroup"/>
             </Property>
             <Property name="selected" type="boolean" value="true"/>
-            <Property name="text" type="java.lang.String" value="Local"/>
+            <Property name="text" type="java.lang.String" value="&amp;Local"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="ACSD_LocalRadioButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
         <Component class="javax.swing.JRadioButton" name="remoteRadio">
           <Properties>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="interfaceButtonGroup"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Remote"/>
+            <Property name="text" type="java.lang.String" value="&amp;Remote"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="ACSD_RemoteRadioButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
         <Component class="javax.swing.JRadioButton" name="bothRadio">
           <Properties>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="interfaceButtonGroup"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Both"/>
+            <Property name="text" type="java.lang.String" value="&amp;Both"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="ACSD_BothRadioButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>
@@ -238,7 +263,7 @@
                   <Component id="oneRadioButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="manyRadioButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="216" max="32767" attributes="0"/>
+                  <EmptySpace pref="243" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -296,7 +321,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="ejbqlLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="430" max="32767" attributes="0"/>
+                  <EmptySpace pref="436" max="32767" attributes="0"/>
               </Group>
               <Component id="ejbqlScrollPane" alignment="0" pref="469" max="32767" attributes="0"/>
           </Group>
