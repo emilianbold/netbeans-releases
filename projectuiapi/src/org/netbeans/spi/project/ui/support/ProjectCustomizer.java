@@ -66,11 +66,9 @@ public final class ProjectCustomizer {
      * of {@link org.netbeans.spi.project.ui.CustomizerProvider}. You don't need
      * to call <code>pack()</code> method on the dialog. The resulting dialog will
      * be non-modal. <br>
-     * Call <code>show()</code> on the dialog to make it visible. If you want the dialog to be
-     * closed after user presses the "OK" button you have to call hide() and dispose() on it.
-     * (Usually in the <code>actionPerformed(...)</code> method of the listener
-     * you provided as a parameter. In case of the click on the "Cancel" button
-     * the dialog will be closed automatically.
+     * Call <code>show()</code> on the dialog to make it visible. The dialog 
+     * will be closed automatically after click on "OK" or "Cancel" button.
+     * 
      * @param categories array of descriptions of categories to be shown in the
      *        dialog. Note that categories have the <code>valid</code>
      *        property. If any of the given categories is not valid cusomizer's
@@ -101,11 +99,9 @@ public final class ProjectCustomizer {
      * to run processing of the customizer data partially off AWT Event Queue. You don't need
      * to call <code>pack()</code> method on the dialog. The resulting dialog will
      * be non-modal. <br>
-     * Call <code>show()</code> on the dialog to make it visible. If you want the dialog to be
-     * closed after user presses the "OK" button you have to call hide() and dispose() on it.
-     * (Usually in the <code>actionPerformed(...)</code> method of the listener
-     * you provided as a parameter. In case of the click on the "Cancel" button
-     * the dialog will be closed automatically.
+     * Call <code>show()</code> on the dialog to make it visible. The dialog 
+     * will be closed automatically after click on "OK" or "Cancel" button.
+     * 
      * @since org.netbeans.modules.projectuiapi/1 1.25
      * @param categories array of descriptions of categories to be shown in the
      *        dialog. Note that categories have the <code>valid</code>
@@ -144,11 +140,9 @@ public final class ProjectCustomizer {
      * Use this method when you want to allow composition and 3rd party additions to your customizer UI.
      * You don't need to call <code>pack()</code> method on the dialog. The resulting dialog will
      * be non-modal. <br> 
-     * Call <code>show()</code> on the dialog to make it visible. If you want the dialog to be
-     * closed after user presses the "OK" button you have to call hide() and dispose() on it.
-     * (Usually in the <code>actionPerformed(...)</code> method of the listener
-     * you provided as a parameter. In case of the click on the "Cancel" button
-     * the dialog will be closed automatically.
+     * Call <code>show()</code> on the dialog to make it visible. The dialog 
+     * will be closed automatically after click on "OK" or "Cancel" button.
+     * 
      * @since org.netbeans.modules.projectuiapi/1 1.15
      * @param folderPath the path in the System Filesystem that is used as root for panel composition.
      *        The content of the folder is assummed to be {@link org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider} instances
@@ -179,11 +173,8 @@ public final class ProjectCustomizer {
      * This version runs processing of the customizer data partially off AWT Event Queue.
      * You don't need to call <code>pack()</code> method on the dialog. The resulting dialog will
      * be non-modal. <br> 
-     * Call <code>show()</code> on the dialog to make it visible. If you want the dialog to be
-     * closed after user presses the "OK" button you have to call hide() and dispose() on it.
-     * (Usually in the <code>actionPerformed(...)</code> method of the listener
-     * you provided as a parameter. In case of the click on the "Cancel" button
-     * the dialog will be closed automatically.
+     * Call <code>show()</code> on the dialog to make it visible. The dialog 
+     * will be closed automatically after click on "OK" or "Cancel" button.
      * 
      * @since org.netbeans.modules.projectuiapi/1 1.25
      * @param folderPath the path in the System Filesystem that is used as root for panel composition.
