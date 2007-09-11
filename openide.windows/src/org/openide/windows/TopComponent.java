@@ -247,6 +247,21 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     * @param activatedNodes activated nodes for this component
     */
     public final void setActivatedNodes(Node[] activatedNodes) {
+        assert multiviewActivatedNodes();
+        setActivatedNodesImpl(activatedNodes);
+    }
+    
+    private boolean multiviewActivatedNodes() {
+        if ("org.netbeans.core.multiview.MultiViewTopComponent".equals(this.getClass().getName()) || //NOI18N
+            "org.netbeans.core.multiview.MultiViewCloneableTopComponent".equals(this.getClass().getName())) { //NOI18N
+            LOG.info("Warning: You should not call setActivatedNodes()" +//NOI18N
+                    " on the multiview topcomponents. Instead please manipulate the lookup of the embedded MultiViewElements." +//NOI18N
+                    " For details, please see http://www.netbeans.org/issues/show_bug.cgi?id=67257");//NOI18N
+        }
+        return true;
+    }
+    
+    private void setActivatedNodesImpl(Node[] activatedNodes) {
         boolean l = LOG.isLoggable(Level.FINER);
 
         if (Arrays.equals(this.activatedNodes, activatedNodes)) {
@@ -1058,6 +1073,11 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     /** Gets lookup which represents context of this component. By default
      * the lookup delegates to result of <code>getActivatedNodes</code>
      * method and result of this component <code>ActionMap</code> delegate.
+     * 
+     * If you override the method in your subclass, the default activatedNodes<->lookup synchronization
+     * will not be performed. That can influence functionality that relies on activated Nodes being present 
+     * in the TopComponent's lookup. If you want to preserve the synchronization, use <code>associateLookup</code>
+     * instead.
      *
      * @return a lookup with designates context of this component
      * @see org.openide.util.ContextAwareAction
@@ -1519,7 +1539,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             if (l) {
                 LOG.fine("setting nodes for " + TopComponent.this + " to " + nodes); // NOI18N
             }
-            setActivatedNodes(nodes.toArray(new Node[0]));
+            setActivatedNodesImpl(nodes.toArray(new Node[0]));
             if (l) {
                 LOG.fine("setting nodes done for " + TopComponent.this + " to " + nodes); // NOI18N
             }
