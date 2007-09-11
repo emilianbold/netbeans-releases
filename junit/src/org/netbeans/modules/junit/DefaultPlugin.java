@@ -951,7 +951,10 @@ public final class DefaultPlugin extends JUnitPlugin {
                     return true;
                 case JUNIT4:
                     String sourceLevel = getSourceLevel(selectedFiles);
-                    assert sourceLevel != null;         //PENDING
+                    if (sourceLevel == null) {    //could not get source level
+                        return true;
+                    }
+
                     if (sourceLevel.compareTo("1.5") >= 0) {            //NOI18N
                         return true;
                     } else if (askUserLastWasJUnit4NowSource14(sourceLevel)) {
@@ -972,12 +975,26 @@ public final class DefaultPlugin extends JUnitPlugin {
         if (junitVer != null) {
             switch (junitVer) {
                 case JUNIT3:
+                    if (storeSettings) {
+                        storeProjectSettingsJUnitVer(project);
+                    }
                     return true;
                 case JUNIT4:
                     String sourceLevel = getSourceLevel(selectedFiles);
-                    assert sourceLevel != null;         //PENDING
-                    if (sourceLevel.compareTo("1.5") >= 0) {            //NOI18N
+                    if ((sourceLevel != null)
+                            && (sourceLevel.compareTo("1.5")) >= 0) {   //NOI18N
+                        if (storeSettings) {
+                            storeProjectSettingsJUnitVer(project);
+                        }
                         return true;
+                    } else if (sourceLevel == null) {
+                        String msgKey
+                            = "MSG_select_junit_version_srclvl_unknown";//NOI18N
+                        junitVer = askUserWhichJUnitToUse(msgKey, true, true);
+                        if ((junitVer != null) && storeSettings) {
+                            storeProjectSettingsJUnitVer(project);
+                        }
+                        return (junitVer != null);
                     } else if (informUserOnlyJUnit3Applicable(sourceLevel)) {
                         junitVer = JUnitVersion.JUNIT3;
                         if (storeSettings) {
@@ -992,18 +1009,26 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
         }
 
+        String msgKey;
+        boolean offerJUnit4;
+        boolean showSourceLevelReqs;
         String sourceLevel = getSourceLevel(selectedFiles);
-        assert sourceLevel != null;         //PENDING
-        boolean offerJUnit4 = (sourceLevel.compareTo("1.5") >= 0);      //NOI18N
-        junitVer = askUserWhichJUnitToUse(offerJUnit4);
-        if (junitVer != null) {
-            if (storeSettings) {
-                storeProjectSettingsJUnitVer(project);
-            }
-            return true;
+        if (sourceLevel == null) {
+            msgKey = "MSG_select_junit_version_srclvl_unknown";         //NOI18N
+            offerJUnit4 = true;
+            showSourceLevelReqs = true;
+        } else {
+            msgKey = "MSG_select_junit_version";                        //NOI18N
+            offerJUnit4 = (sourceLevel.compareTo("1.5") >= 0);          //NOI18N
+            showSourceLevelReqs = !offerJUnit4;
         }
-
-        return false;
+        junitVer = askUserWhichJUnitToUse(msgKey,
+                                          offerJUnit4,
+                                          showSourceLevelReqs);
+        if ((junitVer != null) && storeSettings) {
+            storeProjectSettingsJUnitVer(project);
+        }
+        return (junitVer != null);
     }
     
     /**
@@ -1071,22 +1096,21 @@ public final class DefaultPlugin extends JUnitPlugin {
     
     /**
      */
-    private JUnitVersion askUserWhichJUnitToUse(boolean offerJUnit4) {
+    private JUnitVersion askUserWhichJUnitToUse(String msgKey,
+                                                boolean offerJUnit4,
+                                                boolean showSourceLevelCondition) {
         assert EventQueue.isDispatchThread();
 
-        //JRadioButton rbtnJUnit3 = new JRadioButton(
-        //       NbBundle.getMessage(getClass(), "LBL_JUnit3_generator"));//NOI18N
         JRadioButton rbtnJUnit3 = new JRadioButton();
         Mnemonics.setLocalizedText(rbtnJUnit3, bundle.getString("LBL_JUnit3_generator"));
         rbtnJUnit3.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_JUnit3_generator"));
         
-        //JRadioButton rbtnJUnit4 = new JRadioButton(
-        //       NbBundle.getMessage(getClass(),
-        //                           offerJUnit4
-        //                                ? "LBL_JUnit4_generator"
-        //                                : "LBL_JUnit4_generator_reqs"));//NOI18N
         JRadioButton rbtnJUnit4 = new JRadioButton();
-        Mnemonics.setLocalizedText(rbtnJUnit4, offerJUnit4 ? bundle.getString("LBL_JUnit4_generator") : bundle.getString("LBL_JUnit4_generator"));
+        Mnemonics.setLocalizedText(
+                rbtnJUnit4,
+                showSourceLevelCondition
+                       ? bundle.getString("LBL_JUnit4_generator_reqs")  //NOI18N
+                       : bundle.getString("LBL_JUnit4_generator"));     //NOI18N
         rbtnJUnit4.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_JUnit4_generator"));
 
         ButtonGroup group = new ButtonGroup();
@@ -1101,7 +1125,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         }
 
         JComponent msg
-                = createMessageComponent("MSG_select_junit_version");   //NOI18N
+                = createMessageComponent(msgKey);
         
         JPanel choicePanel = new JPanel(new GridLayout(0, 1, 0, 3));
         choicePanel.add(rbtnJUnit3);
