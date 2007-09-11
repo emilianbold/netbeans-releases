@@ -32,7 +32,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -103,7 +103,7 @@ public final class JsfTable implements ActiveEditorDrop {
         
         FileObject targetJspFO = JsfForm.getFO(target);
         JavaSource javaSource = JavaSource.create(JsfForm.createClasspathInfo(targetJspFO));
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(bean);
@@ -173,7 +173,7 @@ public final class JsfTable implements ActiveEditorDrop {
         final List<String> result = new ArrayList<String>();
         FileObject fileObject = JsfForm.getFO(target);
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(bean.getManagedBeanClass());

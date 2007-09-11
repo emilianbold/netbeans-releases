@@ -48,8 +48,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
@@ -141,7 +141,7 @@ public final class JsfForm implements ActiveEditorDrop {
 
         FileObject targetJspFO = getFO(target);
         JavaSource javaSource = JavaSource.create(createClasspathInfo(targetJspFO));
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(bean);

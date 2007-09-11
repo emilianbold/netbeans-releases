@@ -34,8 +34,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -111,11 +111,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                         // Can be null, if it is just folder. 
                         if (source != null){
                             try {
-                                source.runUserActionTask(new AbstractTask<CompilationController>() {
-                                    @Override
-                                    public void cancel() {
-                                    }
-
+                                source.runUserActionTask(new Task<CompilationController>() {
                                     public void run(CompilationController co) throws Exception {
                                         co.toPhase(JavaSource.Phase.RESOLVED);
                                         CompilationUnitTree cut = co.getCompilationUnit();

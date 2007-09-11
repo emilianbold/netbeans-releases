@@ -50,6 +50,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -57,7 +58,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 //import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 //import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
@@ -134,7 +134,7 @@ public class JSFClientGenerator {
         //detect access type
         final ClasspathInfo classpathInfo = ClasspathInfo.create(pkg);
         JavaSource javaSource = JavaSource.create(classpathInfo);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement jc = controller.getElements().getTypeElement(entityClass);
@@ -189,19 +189,19 @@ public class JSFClientGenerator {
 
         generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc);
         
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 generateNewJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, toOneRelMethods, fieldAccess[0], linkToIndex, doc, jsfRoot);
             }
         }, true);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 generateEditJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, linkToIndex, doc, jsfRoot);
             }
         }, true);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 generateDetailJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot);
@@ -271,7 +271,7 @@ public class JSFClientGenerator {
                 + "<f:param name=\"" + idProperty +"\" value=\"#'{'{0}." + idProperty + "'}'\"/>\n"
                 + "</h:commandLink>\n </h:column>\n";
         JavaSource javaSource = JavaSource.create(classpathInfo);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
@@ -509,7 +509,7 @@ public class JSFClientGenerator {
                 
                 final String[] idPropertyType = new String[1];
                 JavaSource javaSource = JavaSource.create(classpathInfo);
-                javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                javaSource.runModificationTask(new Task<WorkingCopy>() {
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         ExecutableElement idGetter = idGetterHandle.resolve(workingCopy);
@@ -583,7 +583,7 @@ public class JSFClientGenerator {
         final ArrayList<MethodModel> paramSetters = new ArrayList<MethodModel>();
         final boolean[] fieldAccess = new boolean[] { false };
         JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
-        controllerJavaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        controllerJavaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController compilationController) throws IOException {
                 compilationController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeMirror idType = idGetter.resolve(compilationController).getReturnType();
@@ -700,7 +700,7 @@ public class JSFClientGenerator {
 
         FileObject converterFileObject = GenerationUtils.createClass(pkg, simpleConverterName, null);
         JavaSource converterJavaSource = JavaSource.forFileObject(converterFileObject);
-        converterJavaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        converterJavaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
@@ -747,7 +747,7 @@ public class JSFClientGenerator {
             
             FileObject idConverter = GenerationUtils.createClass(pkg, idClassSimpleName[0] + "Converter", null); //NOI18N
             JavaSource idConverterJavaSource = JavaSource.forFileObject(idConverter);
-            idConverterJavaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            idConverterJavaSource.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
@@ -1345,7 +1345,7 @@ public class JSFClientGenerator {
     private static void addImplementsClause(FileObject fileObject, final String className, final String interfaceName) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] modified = new boolean[] { false };
-        ModificationResult modificationResult = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        ModificationResult modificationResult = javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);

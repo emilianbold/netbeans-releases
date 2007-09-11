@@ -30,8 +30,8 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -90,7 +90,7 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
                         final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
                         JavaSource source = JavaSource.create(cpInfo, new FileObject[]{treePathHandle.getFileObject()});
                         try{
-                            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                            source.runUserActionTask(new Task<CompilationController>() {
                                 
                                 public void run(CompilationController co) throws Exception {
                                     co.toPhase(JavaSource.Phase.RESOLVED);
