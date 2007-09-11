@@ -92,10 +92,8 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     }
     
     public String getBody() {
-        throw new UnsupportedOperationException("getBody() was switched off due to performance reasons"); // NOI18N
         // see APTParseFileWalker.createMacro() for details.
-        
-        //return body;
+        return body;
     }
     
     public boolean isSystem() {
