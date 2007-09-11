@@ -35,6 +35,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.MIMENames;
+import org.openide.util.SharedClassObject;
 
 /**
  *  Recognizes single files in the Repository as being of a certain type.
@@ -61,6 +62,9 @@ public class ShellDataLoader extends CndAbstractDataLoader {
     }
     
     public static ShellDataLoader getInstance() {
+        if (instance == null) {
+            instance = SharedClassObject.findObject(ShellDataLoader.class, true);
+        }
 	return instance;
     }
     
