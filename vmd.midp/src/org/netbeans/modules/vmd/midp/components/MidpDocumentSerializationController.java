@@ -19,6 +19,7 @@
  */
 package org.netbeans.modules.vmd.midp.components;
 
+import com.sun.org.apache.bcel.internal.verifier.exc.LoadingException;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.serialization.ComponentElement;
@@ -40,6 +41,7 @@ import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCode;
@@ -106,7 +108,7 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
 
     public void postValidateDocument(DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DocumentErrorHandler errorHandler) {
         if (!MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(context.getProjectType()) || !VERSION_1.equals(documentVersion)) {
-            checkInstanceNames(DocumentSupport.gatherAllComponentsOfTypeID(loadingDocument.getRootComponent(), ClassCD.TYPEID), errorHandler);
+            //checkInstanceNames(DocumentSupport.gatherAllComponentsOfTypeID(loadingDocument.getRootComponent(), ClassCD.TYPEID), errorHandler);
             return;
         }
         DesignComponent rootComponent = loadingDocument.getRootComponent();
@@ -119,19 +121,23 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
         MidpDocumentSupport.getCategoryComponent(loadingDocument, DisplayablesCategoryCD.TYPEID);
         MidpDocumentSupport.getCategoryComponent(loadingDocument, PointsCategoryCD.TYPEID);
         MidpDocumentSupport.getCategoryComponent(loadingDocument, ResourcesCategoryCD.TYPEID);
-        checkInstanceNames(rootComponent.getComponents(), errorHandler);
+        //checkInstanceNames(rootComponent.getComponents(), errorHandler);
     }
-
+    
+    //TODO It's not used anymore, you cant be sure that instance name is not null in the VMD file 
     private void checkInstanceNames(Collection<DesignComponent> components, DocumentErrorHandler errorHandler) {
         for (DesignComponent component : components) {
             PropertyDescriptor descriptor = component.getComponentDescriptor().getPropertyDescriptor(ClassCD.PROP_INSTANCE_NAME);
             if (descriptor == null) {
                 return;
             }
+            
             if (component.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue() == null) {
                 PropertyValue value = InstanceNameResolver.createFromSuggested(component, ClassCode.getSuggestedMainName(component.getType()));
                 component.writeProperty(ClassCD.PROP_INSTANCE_NAME, value);
-                errorHandler.addWarning(NbBundle.getMessage(MidpDocumentSerializationController.class, "MSG_null_instance_name_1") + " <STRONG>" + component + " </STRONG> " + NbBundle.getMessage(MidpDocumentSerializationController.class, "MSG_null_instance_name_2")   + " <STRONG>" + value.getPrimitiveValue() + "</STRONG>"); //NOI18N
+                errorHandler.addWarning(NbBundle.getMessage(MidpDocumentSerializationController.class, "MSG_null_instance_name_1") //NOI18N
+                        + " " + component + " " + NbBundle.getMessage(MidpDocumentSerializationController.class, "MSG_null_instance_name_2") //NOI18N 
+                        + " " + InfoPresenter.getDisplayName(component)); //NOI18N
             }
         }
     }

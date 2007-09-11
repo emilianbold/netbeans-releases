@@ -47,10 +47,10 @@ import org.openide.util.NbBundle;
 // TODO - check for design and document version
 public class DocumentLoad {
     
-    private static final String XML_ERROR = NbBundle.getMessage(DocumentLoad.class, "LBL_BrokenXML_Error"); //NOI18N
-    private static final String WRONG_VERSION_ERROR = NbBundle.getMessage(DocumentLoad.class, "LBL_Wrong_VMD_Version_Error"); //NOI18N
-    private static final String DESERIALIZATION_ERROR = NbBundle.getMessage(DocumentLoad.class, "LBL_Deserialization_Error"); //NOI18N
-    private static final String DESCRIPTOR_MISSING_ERROR = NbBundle.getMessage(DocumentLoad.class, "LBL_MissingDescriptor_Error"); //NOI18N
+    private static final String XML_ERROR = NbBundle.getMessage(DocumentLoad.class, "MSG_BrokenXML_Error"); //NOI18N
+    private static final String WRONG_VERSION_ERROR = NbBundle.getMessage(DocumentLoad.class, "MSG_Wrong_VMD_Version_Error"); //NOI18N
+    private static final String DESERIALIZATION_ERROR = NbBundle.getMessage(DocumentLoad.class, "MSG_Deserialization_Error"); //NOI18N
+    private static final String DESCRIPTOR_MISSING_ERROR = NbBundle.getMessage(DocumentLoad.class, "MSG_MissingDescriptor_Error"); //NOI18N
     
     private static Collection<? extends DocumentSerializationController> getDocumentSerializationControllers() {
         return Lookup.getDefault().lookupAll(DocumentSerializationController.class);
@@ -101,19 +101,10 @@ public class DocumentLoad {
         if (documentNode != null) {
             for (Node child : getChildNode(documentNode)) {
                 if (isComponentNode(child)) {
-                    collectStructure(componentElements, child, Long.MIN_VALUE);
+                    collectStructure(componentElements, child, Long.MIN_VALUE, errorHandler);
                 }
             }
         }
-        /*
-        for (ComponentElement element : componentElements) {
-            if (!checkComponentDescriptor(loadingDocument, element.getTypeID())) { 
-                componentElements.remove(element);
-                Debug.warning("Missing ComponentDescriptor in registry ", element.getTypeID()); // NOI18N
-                errorHandler.addWaring( DESCRIPTOR_MISSING_ERROR + " <STRONG>" + element.getTypeID().toString() + "</STRONG>"); // NOI18N)
-            }
-        }
-         */
         for (DocumentSerializationController controller : getDocumentSerializationControllers()) {
             controller.approveComponents(context, loadingDocument, documentVersion, componentElements, errorHandler);
             if (!errorHandler.getErrors().isEmpty()) {
@@ -157,7 +148,7 @@ public class DocumentLoad {
             loadingDocument.setPreferredComponentID(componentid);
             if (loadingDocument.getDescriptorRegistry().getComponentDescriptor(element.getTypeID()) == null) {
                 Debug.warning("Missing ComponentDescriptor in registry ", element.getTypeID()); // NOI18N
-                errorHandler.addWarning( DESCRIPTOR_MISSING_ERROR + " <STRONG>" + element.getTypeID().toString() + "</STRONG>"); // NOI18N)
+                errorHandler.addWarning( DESCRIPTOR_MISSING_ERROR +" " + element.getTypeID().toString()); // NOI18N)
                 continue;
             }
             if (!errorHandler.getErrors().isEmpty()) {
@@ -209,10 +200,10 @@ public class DocumentLoad {
             }
             for (PropertyElement propertyElement : propertyElements) {
                 String propertyName = propertyElement.getPropertyName();
-                if (descriptor.getPropertyDescriptor(propertyName) == null) {
+                if (propertyName == null || descriptor.getPropertyDescriptor(propertyName) == null) {
                     Debug.warning("Missing property descriptor", component, propertyName); // NOI18N
-                    errorHandler.addWarning( NbBundle.getMessage(DocumentLoad.class, "LBL_MissingProperty_Error") //NOI18N 
-                                           + " <STRONG>" + component + " - " + propertyName + "</STRONG>"); // NOI18N
+                    errorHandler.addWarning( NbBundle.getMessage(DocumentLoad.class, "MSG_MissingProperty_Error") //NOI18N 
+                                           + " " + component + " - " + propertyName); // NOI18N
                     continue;
                 }
                 PropertyValue value;
@@ -220,7 +211,7 @@ public class DocumentLoad {
                     value = PropertyValue.deserialize(propertyElement.getSerialized(), loadingDocument, propertyElement.getTypeID());
                 } catch (Exception e) {
                     Debug.warning("Error while deserializing property value", component, propertyName); // NOI18N
-                    errorHandler.addWarning(DESERIALIZATION_ERROR + " <STRONG>" + component + " " + propertyName + " " + propertyElement.getSerialized() +"</STRONG>"); //NOI18N
+                    errorHandler.addWarning(DESERIALIZATION_ERROR + " " + component + " " + propertyName + " " + propertyElement.getSerialized()); //NOI18N
                     value = PropertyValue.createNull();
                 }
                 component.writeProperty(propertyName, value);
@@ -232,23 +223,26 @@ public class DocumentLoad {
             loadingDocument.setRootComponent(componentByUID);
         }
     }
-    /*
-    private static boolean checkComponentDescriptor(DesignDocument document, TypeID typeID) {
-        DescriptorRegistry dr = document.getDescriptorRegistry();
-        if (dr.getComponentDescriptor(typeID) == null)
-            return false;
-        return true;
-    }
-    */
-    private static void collectStructure(Collection<ComponentElement> componentElements, Node node, long parent) {
-        long componentid = Long.parseLong(getAttributeValue(node, DocumentSave.COMPONENTID_ATTR));
+    
+    private static void collectStructure(Collection<ComponentElement> componentElements, Node node, long parent, DocumentErrorHandler errorHandler) {
+        String id = getAttributeValue(node, DocumentSave.COMPONENTID_ATTR);
+        if (id == null) {
+           StringBuffer sb = new StringBuffer();
+           for (int i=0 ; i < node.getAttributes().getLength() ;i++) {
+               sb.append(" "); //NOI18N
+               sb.append(node.getAttributes().item(i));
+           }
+           errorHandler.addError(NbBundle.getMessage(DocumentLoad.class, "MSG_Wrong_argument") + sb.toString()); //NOI18N
+           return;
+        }
+        long componentid = Long.parseLong(id);
         TypeID typeid = TypeID.createFrom(getAttributeValue(node, DocumentSave.TYPEID_ATTR));
         componentElements.add(ComponentElement.create(parent, componentid, typeid, node));
 
         Node[] children = getChildNode(node);
         for (Node child : children) {
             if (isComponentNode(child)) {
-                collectStructure(componentElements, child, componentid);
+                collectStructure(componentElements, child, componentid, errorHandler);
             }
         }
     }
