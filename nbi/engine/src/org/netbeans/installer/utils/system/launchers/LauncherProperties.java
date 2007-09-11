@@ -32,6 +32,7 @@ import java.util.PropertyResourceBundle;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
 import static org.netbeans.installer.utils.system.launchers.LauncherResource.Type.*;
 
@@ -199,7 +200,7 @@ public class LauncherProperties implements Cloneable {
     }
     
     private String getLocaleName(String name) {
-        String loc = "";
+        String loc = StringUtils.EMPTY_STRING;
         int idx = name.indexOf("_");
         int end = name.indexOf(FileUtils.PROPERTIES_EXTENSION);
         if(idx!=-1) {
@@ -214,13 +215,15 @@ public class LauncherProperties implements Cloneable {
     
     private PropertyResourceBundle getBundle(String dest, InputStream is) throws IOException {
         if(is==null) {
-            throw new IOException("Can`t load bundle from " + dest); //NOI18N
+            throw new IOException(ResourceUtils.getString(LauncherProperties.class, 
+                    ERROR_CANNOT_LOAD_BUNDLE_KEY, dest)); //NOI18N
         }
         
         try {
             return new PropertyResourceBundle(is);
         } catch (IOException ex) {
-            throw new IOException("Can`t load bundle from " + dest);//NOI18N
+            throw new IOException(ResourceUtils.getString(LauncherProperties.class, 
+                    ERROR_CANNOT_LOAD_BUNDLE_KEY, dest)); //NOI18N
         } finally {
             try {
                 is.close();
@@ -248,10 +251,12 @@ public class LauncherProperties implements Cloneable {
     
     private File[] getPropertiesFiles(File dir) throws IOException {
         if(!dir.exists()) {
-            throw new IOException("Directory " + dir + " doesn`t exists");
+            throw new IOException(ResourceUtils.getString(
+                    LauncherProperties.class, ERROR_DIRECTORY_DONT_EXIST_KEY,dir));
         }
         if(!dir.isDirectory()) {
-            throw  new IOException(dir + " is not a directory");
+            throw  new IOException(ResourceUtils.getString(
+                    LauncherProperties.class, ERROR_NOT_DIRECTORY_KEY, dir));
         }
         
         File[] files = dir.listFiles(new FileFilter() {
@@ -260,11 +265,9 @@ public class LauncherProperties implements Cloneable {
         }
         );
         
-        if(files==null) {
-            throw  new IOException("There is no files in " + dir);
-        }
-        if(files.length==0) {
-            throw  new IOException("There is no files in " + dir);
+        if(files==null || files.length==0) {
+            throw  new IOException(ResourceUtils.getString(
+                    LauncherProperties.class, ERROR_NO_FILES_KEY, dir));
         }
         return files;
     }
@@ -277,4 +280,12 @@ public class LauncherProperties implements Cloneable {
             i18nMap.put(loc,getBundle(f));
         }
     }
+    private static final String ERROR_CANNOT_LOAD_BUNDLE_KEY = 
+            "LP.error.cannot.load.bundle";//NOI18N
+    private static final String ERROR_NO_FILES_KEY = 
+            "LP.error.no.files";//NOI18N
+    private static final String ERROR_NOT_DIRECTORY_KEY = 
+            "LP.error.not.directory";//NOI18N
+    private static final String ERROR_DIRECTORY_DONT_EXIST_KEY =
+            "LP.error.directory.do.not.exist";//NOI18N
 }
