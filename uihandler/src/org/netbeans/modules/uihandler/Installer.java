@@ -1062,11 +1062,13 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         
         protected void createDialog() {
+            Dimension dim = new Dimension(450, 50);
             
             if (reportPanel==null) reportPanel = new ReportPanel();
             Throwable t = getThrown();
             if ((t != null)&&(reportPanel !=null)){
                 reportPanel.setSummary(t.toString());
+                dim = new Dimension(450, 350);
             }
             browser = new JEditorPane();
             try {
@@ -1076,7 +1078,6 @@ public class Installer extends ModuleInstall implements Runnable {
                 LOG.log(Level.SEVERE, ex.getMessage(), ex);
             }
             
-            Dimension dim = new Dimension(450, 350);
             browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
             browser.setPreferredSize(dim);
             browser.setEditable(false); 

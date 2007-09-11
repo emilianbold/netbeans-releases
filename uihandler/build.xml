@@ -28,9 +28,11 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <target name="-run-server">
+        <!--
         <tempfile deleteonexit="true" property="url.file"/>
-        <subant target="run-server">
+        <subant target="deploy">
             <property name="url.file" value="${url.file}"/>
+            <property name="skip.checkout" value="true"/>
             <dirset dir="..">
                 <include name="uihandlerserver"/>
             </dirset>
@@ -38,5 +40,6 @@ Microsystems, Inc. All Rights Reserved.
         <loadfile property="client.url" srcfile="${url.file}"/>
         <delete file="${url.file}" failonerror="true"/>
         <property name="tryme.args" value="-J-Dorg.netbeans.modules.uihandler.Submit=${client.url}/upload.jsp"/>
+        -->
     </target>
 </project>
