@@ -40,7 +40,11 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
-    <target name="build-languages-lib">
+    <target name="check-lib-classes">
+        <available file="../../../languages/build/test/qa-functional/classes" property="lib.classes.exist" type="dir"/>
+    </target>
+    
+    <target name="build-languages-lib" unless="lib.classes.exist" depends="check-lib-classes">
         <echo> BUILDING LANGUAGES LIB </echo>
 	<java classname="org.apache.tools.ant.Main" dir="../../../languages/test" failonerror="true" fork="true">
           <jvmarg value="-Dant.home=${ant.home}"/>

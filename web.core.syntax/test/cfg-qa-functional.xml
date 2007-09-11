@@ -20,14 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="QA functional config">
     
-     <testbag testattribs="writing" executor="ide_as" name="JSP text writing">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="**/WritingCompletionTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-        
+    <!-- STABLE Validation suite for JSP/SYNTAX module -->
     <testbag testattribs="stable, validation, autocompletion" executor="ide_as" name="JSP Syntax autocompletion">
         <testset dir="qa-functional/src">
             <patternset>
@@ -36,7 +29,6 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>   
     
-    <!-- Validation suite for my module -->
     <testbag testattribs="stable, validation, completion" executor="ide_as" name="JSP Syntax validation">
         <testset dir="qa-functional/src">
             <patternset>
@@ -61,6 +53,15 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+    <!-- other testcases -->
+     <testbag testattribs="writing" executor="ide_as" name="JSP text writing">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/WritingCompletionTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+        
     <testbag testattribs="j2eecompletion" executor="ide_as" name="JSP Syntax EE5 validation">
         <testset dir="qa-functional/src">
             <patternset>
