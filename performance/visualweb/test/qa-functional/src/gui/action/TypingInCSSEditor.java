@@ -19,33 +19,74 @@
 
 package gui.action;
 
+import java.awt.Font;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
+
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class TypingInCSSEditor extends TypingInEditor {
-    
+public class TypingInCSSEditor extends  org.netbeans.performance.test.utilities.PerformanceTestCase {
+
+    protected Node fileToBeOpened;
+    protected String fileName;    
+    private EditorOperator editorOperator;
+    private int caretBlinkRate;
+    private Font font;
     
     /** Creates a new instance of TypingInCSSEditor */
     public TypingInCSSEditor(String testName) {
         super(testName);
+        expectedTime = WINDOW_OPEN;        
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations        
     }
     /** Creates a new instance of TypingInCSSEditor */
     public TypingInCSSEditor(String testName, String performanceDataName) {
         super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;        
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations        
     }
     
-    public void testCSSEditor() {
+    @Override
+    protected void initialize() {
         fileName = "stylesheet.css";
-        caretPositionX = 1;
-        caretPositionY = 8;
-        //kitClass = org.netbeans.modules.css.editor.CssEditorKit.class;
-        //optionsClass = org.netbeans.modules.css.options.CssOptions.class;
-        fileToBeOpened = new Node(new WebPagesNode("VisualWebProject"),"resources|"+fileName);
+        fileToBeOpened = new Node(new WebPagesNode("VisualWebProject"), "resources|" + fileName);                
+    }
+    
+    public void testCSSEditor() {
         doMeasurement();
+    }
+    
+    public void prepare() {
+        new OpenAction().performAPI(fileToBeOpened);
+        editorOperator = EditorWindowOperator.getEditor(fileName);
+        
+        caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
+
+        editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
+
+        editorOperator.setCaretPosition(8, 1);        
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        waitNoEvent(2000);
+        
+    }
+
+    public ComponentOperator open() {        
+        editorOperator.typeKey('z');
+        return null;
+        
+    }
+    @Override
+    public void close() {
+        editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
+        repaintManager().resetRegionFilters();        
+        EditorOperator.closeDiscardAll();
+        
     }
 }
