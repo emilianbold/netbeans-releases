@@ -155,7 +155,11 @@ public class ProjectUtil
             Project p = (Project) projectNodes[i].getLookup().lookup(Project.class);
             if (p==project)
             {
-                Node selectedNode = findNode(projectNodes[i],  element);
+                Node selectedNode = findNodeQuick(projectNodes[i],  element);
+		if (selectedNode == null) 
+		{
+		    selectedNode = findNode(projectNodes[i],  element);
+		}
                 selectNodeAsync(selectedNode);
                 return true;
             }
@@ -223,10 +227,12 @@ public class ProjectUtil
     
     public static Node findNode(Node root, IElement element)
     {
+
         if (root.isLeaf())
             return null;
         
         Children children = root.getChildren();
+
         Node[] nodes = children.getNodes(true);
         for (int j=0; j<nodes.length; j++)
         {
@@ -254,15 +260,46 @@ public class ProjectUtil
                     return nodes[j];
                 }
             }
+        }
+        for (int j=0; j<nodes.length; j++)
+        {
             if (nodes[j].isLeaf())
                 continue;
             Node val = findNode(nodes[j],  element);
-            if (val!=null)
+            if (val!=null) {
                 return val;
+	    }
         }
         return null;
     }
     
+
+    private static Node findNodeQuick(Node root, IElement element)
+    {
+        if (root.isLeaf())
+            return null;
+
+	if (element == null) 
+	{
+	    return null;
+	}
+
+	IElement owner = element.getOwner();
+	if (owner == null) 
+	{
+	    return findNode(root, element);
+	} 
+	else  
+	{
+	    Node ownerNode = findNodeQuick(root, owner);
+	    if (ownerNode != null) 
+	    {
+		return findNode(ownerNode, element);
+	    }
+	}	
+	return null;
+    }
+	   
     
     public static Project[] getSelectedProjects(Class projectClass)
     {
