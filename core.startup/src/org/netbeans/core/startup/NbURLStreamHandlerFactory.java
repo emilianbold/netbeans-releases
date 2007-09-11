@@ -46,11 +46,15 @@ import org.openide.util.NbBundle;
 final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, LookupListener {
     private static final Logger LOG = Logger.getLogger(NbURLStreamHandlerFactory.class.getName());
     
-    private Lookup.Result<URLStreamHandlerFactory> r = null;
-    private URLStreamHandlerFactory[] handlers = null;
+    private final Lookup.Result<URLStreamHandlerFactory> r;
+    private URLStreamHandlerFactory[] handlers;
     private URLStreamHandlerFactory delegate;
     
-    public NbURLStreamHandlerFactory() {}
+    public NbURLStreamHandlerFactory() {
+        r = Lookup.getDefault().lookupResult(URLStreamHandlerFactory.class);
+        r.addLookupListener(this);
+        resultChanged(null);
+    }
     
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if (protocol.equals("jar") || protocol.equals("file") || // NOI18N
@@ -78,11 +82,6 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
         
         URLStreamHandlerFactory[] _handlers;
         synchronized (this) {
-            if (r == null) {
-                r = Lookup.getDefault().lookupResult(URLStreamHandlerFactory.class);
-                r.addLookupListener(this);
-                resultChanged(null);
-            }
             _handlers = handlers;
         }
         if (_handlers == null) {
