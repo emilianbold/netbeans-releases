@@ -576,8 +576,9 @@ public class PlatformImpl extends J2eePlatformImpl {
                 return true;
             }
             
-            if ("org.hibernate.ejb.HibernatePersistence".equals(toolName) ||      //NOI18N          
-                "kodo.persistence.PersistenceProviderImpl".equals(toolName)) {    //NOI18N
+            if ("org.hibernate.ejb.HibernatePersistence".equals(toolName) || //NOI18N
+                "kodo.persistence.PersistenceProviderImpl".equals(toolName) || // NOI18N
+                "org.apache.openjpa.persistence.PersistenceProviderImpl".equals(toolName)) { //NOI18N
                 return true;
             }
             
