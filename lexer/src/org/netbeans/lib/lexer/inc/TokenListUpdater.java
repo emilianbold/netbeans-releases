@@ -22,7 +22,6 @@ package org.netbeans.lib.lexer.inc;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.LanguageOperation;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
@@ -100,10 +99,11 @@ public final class TokenListUpdater {
      * @param insertedLength number of characters inserted at modOffset.
      * @param removedLength number of characters removed at modOffset.
      * @param change non-null change that will incorporate the performed chagnes.
+     * @param zeroIndexRelexState state used for relexing at index 0.
      */
     public static <T extends TokenId> void update(MutableTokenList<T> tokenList,
     int modOffset, int insertedLength, int removedLength,
-    TokenListChange<T> change) {
+    TokenListChange<T> change, Object zeroIndexRelexState) {
         // Fetch offset where the modification occurred
         LanguageOperation<T> languageOperation = LexerUtilsConstants.innerLanguageOperation(
                 tokenList.languagePath());
@@ -303,7 +303,7 @@ public final class TokenListUpdater {
         }
 
         // State from which the lexer can be started
-        Object relexState = (relexIndex > 0) ? tokenList.state(relexIndex - 1) : null;
+        Object relexState = (relexIndex > 0) ? tokenList.state(relexIndex - 1) : zeroIndexRelexState;
         // Update the matchOffset so that it corresponds to the state
         // after the modification
         matchOffset += insertedLength - removedLength;

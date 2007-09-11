@@ -23,15 +23,12 @@ import java.io.Reader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
@@ -41,7 +38,6 @@ import org.netbeans.lib.lexer.batch.CopyTextTokenList;
 import org.netbeans.lib.lexer.batch.TextTokenList;
 import org.netbeans.lib.lexer.inc.IncTokenList;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
-import org.netbeans.lib.lexer.inc.TokenListUpdater;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
@@ -64,9 +60,6 @@ import org.netbeans.lib.lexer.token.AbstractToken;
 
 public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands for input
     
-    // -J-Dorg.netbeans.lib.lexer.TokenHierarchyOperation.level=FINE
-    private static final Logger LOG = Logger.getLogger(TokenHierarchyOperation.class.getName());
-
     /**
      * The token hierarchy delegating to this operation.
      * <br>
@@ -79,7 +72,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     private MutableTextInput<I> mutableTextInput;
     
-    private TokenList<T> tokenList;
+    private TokenList<T> rootTokenList;
     
     /**
      * The hierarchy can be made inactive to release the tokens
@@ -127,7 +120,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     public TokenHierarchyOperation(Reader inputReader,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
-        this.tokenList = new CopyTextTokenList<T>(this, inputReader,
+        this.rootTokenList = new CopyTextTokenList<T>(this, inputReader,
                 language, skipTokenIds, inputAttributes);
         init();
     }
@@ -137,7 +130,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     public TokenHierarchyOperation(CharSequence inputText, boolean copyInputText,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
-        this.tokenList = copyInputText
+        this.rootTokenList = copyInputText
                 ? new CopyTextTokenList<T>(this, inputText,
                         language, skipTokenIds, inputAttributes)
                 : new TextTokenList<T>(this, inputText,
@@ -151,13 +144,13 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     public TokenHierarchyOperation(MutableTextInput<I> mutableTextInput,
     Language<T> language) {
         this.mutableTextInput = mutableTextInput;
-        this.tokenList = new IncTokenList<T>(this, mutableTextInput);
+        this.rootTokenList = new IncTokenList<T>(this, mutableTextInput);
         init();
     }
 
     public TokenHierarchyOperation(TokenHierarchyOperation<I,T> liveTokenHierarchy) {
         this.liveTokenHierarchyOperation = liveTokenHierarchy;
-        this.tokenList = new SnapshotTokenList<T>(this);
+        this.rootTokenList = new SnapshotTokenList<T>(this);
         init();
     }
 
@@ -176,17 +169,17 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return tokenHierarchy;
     }
     
-    public TokenList<T> tokenList() {
-        return tokenList;
+    public TokenList<T> rootTokenList() {
+        return rootTokenList;
     }
 
-    public TokenList<T> checkedTokenList() {
+    public TokenList<T> validRootTokenList() {
         checkSnapshotNotReleased();
-        return tokenList();
+        return rootTokenList();
     }
     
     public int modCount() {
-        return tokenList.modCount();
+        return rootTokenList.modCount();
     }
 
     public boolean isMutable() {
@@ -219,18 +212,20 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * <br/>
      * If the list needs to be created or it was non-mandatory.
      */
-    public synchronized TokenListList tokenListList(LanguagePath languagePath) {
-        TokenListList tll = path2tokenListList().get(languagePath);
-        if (tll == null) {
-            tll = new TokenListList(this, languagePath);
-            path2tokenListList.put(languagePath, tll);
-            maxTokenListListPathSize = Math.max(languagePath.size(), maxTokenListListPathSize);
-            // Also create parent token list lists if they don't exist yet
-            if (languagePath.size() >= 3) { // Top-level token list list not maintained
-                tokenListList(languagePath.parent()).increaseChildrenCount();
+    public TokenListList tokenListList(LanguagePath languagePath) {
+        synchronized (validRootTokenList()) {
+            TokenListList tll = path2tokenListList().get(languagePath);
+            if (tll == null) {
+                tll = new TokenListList(this, languagePath);
+                path2tokenListList.put(languagePath, tll);
+                maxTokenListListPathSize = Math.max(languagePath.size(), maxTokenListListPathSize);
+                // Also create parent token list lists if they don't exist yet
+                if (languagePath.size() >= 3) { // Top-level token list list not maintained
+                    tokenListList(languagePath.parent()).increaseChildrenCount();
+                }
             }
+            return tll;
         }
-        return tll;
     }
     
     private Map<LanguagePath,TokenListList> path2tokenListList() {
@@ -240,8 +235,13 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return path2tokenListList;
     }
     
-    public synchronized TokenListList tokenListListOrNull(LanguagePath languagePath) {
-        return (path2tokenListList != null) ? path2tokenListList.get(languagePath) : null;
+    /**
+     * Get existing token list list or null if the TLL does not exist yet.
+     */
+    public TokenListList existingTokenListList(LanguagePath languagePath) {
+        synchronized (validRootTokenList()) {
+            return (path2tokenListList != null) ? path2tokenListList.get(languagePath) : null;
+        }
     }
 
     int maxTokenListListPathSize() {
@@ -252,7 +252,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         if (isSnapshot()) // Do nothing for snapshot
             return;
         if (active) {
-            IncTokenList<T> incTokenList = (IncTokenList<T>)tokenList;
+            IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
             incTokenList.incrementModCount();
             TokenListChange<T> change = new TokenListChange<T>(incTokenList);
             CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
@@ -271,7 +271,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 for (int i = snapshotRefs.size() - 1; i >= 0; i--) {
                     TokenHierarchyOperation<I,T> op = snapshotRefs.get(i).get();
                     if (op != null) {
-                        ((SnapshotTokenList<T>)op.tokenList()).update(eventInfo, change);
+                        ((SnapshotTokenList<T>)op.rootTokenList()).update(eventInfo, change);
                     }
                 }
             }
@@ -306,7 +306,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                     this, TokenHierarchyEventType.MODIFICATION,
                     offset, removedLength, removedText, insertedLength);
             // First a top-level token list will be updated then the embedded ones.
-            IncTokenList<T> incTokenList = (IncTokenList<T>)tokenList;
+            IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
 
             if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINEST)) {
                 // Display current state of the hierarchy by faking its text
@@ -346,10 +346,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
 
     private Language<T> language() {
-        TokenList<T> tl = tokenList();
+        TokenList<T> tl = rootTokenList();
         Language<? extends TokenId> l;
         if (tl != null) {
-            l = tokenList.languagePath().topLanguage();
+            l = rootTokenList.languagePath().topLanguage();
         } else {
             assert (mutableTextInput != null);
             l = LexerSpiPackageAccessor.get().language(mutableTextInput);
@@ -466,7 +466,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             for (int i = snapshotCount() - 1; i >= 0; i--) {
                 TokenHierarchyOperation op = snapshotRefs.get(i).get();
                 
-                if (op != null && ((SnapshotTokenList) op.tokenList()).canModifyToken(index, token)) {
+                if (op != null && ((SnapshotTokenList) op.rootTokenList()).canModifyToken(index, token)) {
                     return false;
                 }
             }
@@ -479,10 +479,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
 
     public <TT extends TokenId> int tokenOffset(AbstractToken<TT> token, TokenList<TT> tokenList, int rawOffset) {
-        if (this.tokenList.getClass() == SnapshotTokenList.class) {
+        if (this.rootTokenList.getClass() == SnapshotTokenList.class) {
             if (tokenList != null) {
                 @SuppressWarnings("unchecked")
-                SnapshotTokenList<TT> tlUC = (SnapshotTokenList<TT>)this.tokenList;
+                SnapshotTokenList<TT> tlUC = (SnapshotTokenList<TT>)this.rootTokenList;
                 return tlUC.tokenOffset(token, tokenList, rawOffset);
             } else { // passed tokenList is null => token removed from EmbeddedTokenList
                 return rawOffset;
@@ -495,11 +495,11 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
 
     public int tokenShiftStartOffset() {
-        return isSnapshot() ? ((SnapshotTokenList)tokenList).tokenShiftStartOffset() : -1;
+        return isSnapshot() ? ((SnapshotTokenList)rootTokenList).tokenShiftStartOffset() : -1;
     }
 
     public int tokenShiftEndOffset() {
-        return isSnapshot() ? ((SnapshotTokenList)tokenList).tokenShiftEndOffset() : -1;
+        return isSnapshot() ? ((SnapshotTokenList)rootTokenList).tokenShiftEndOffset() : -1;
     }
     
     @Override
@@ -509,7 +509,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             sb.append(" for " + mutableInputSource());
         }
         sb.append(":\n"); // NOI18N
-        LexerUtilsConstants.appendTokenList(sb, tokenList);
+        LexerUtilsConstants.appendTokenList(sb, rootTokenList);
         if (path2tokenListList != null && path2tokenListList.size() > 0) {
             sb.append(path2tokenListList.size());
             sb.append(" TokenListList(s) maintained:\n"); // NOI18N
@@ -525,7 +525,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * @return string describing the problem or null if the hierarchy is consistent.
      */
     public String checkConsistency() {
-        String error = checkConsistencyTokenList(checkedTokenList(), ArrayUtilities.emptyIntArray(), 0);
+        String error = checkConsistencyTokenList(validRootTokenList(), ArrayUtilities.emptyIntArray(), 0);
         if (error == null && path2tokenListList != null) { // Check token sequences lists
             for (TokenListList tll : path2tokenListList.values()) {
                 for (TokenList<?> tl : tll) {
@@ -609,7 +609,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public String findTokenContext(AbstractToken<?> token) {
-        return findTokenContext(token, checkedTokenList(), ArrayUtilities.emptyIntArray());
+        return findTokenContext(token, validRootTokenList(), ArrayUtilities.emptyIntArray());
     }
 
     private String findTokenContext(AbstractToken<?> token, TokenList<?> tokenList, int[] parentIndexes) {
@@ -642,7 +642,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 
     private String tracePath(int[] indexes, LanguagePath languagePath) {
         StringBuilder sb  = new StringBuilder();
-        TokenList<?> tokenList = checkedTokenList();
+        TokenList<?> tokenList = validRootTokenList();
         for (int i = 0; i < indexes.length; i++) {
             LexerUtilsConstants.appendTokenInfo(sb, tokenList, i,
                     tokenHierarchy(), false, 0);

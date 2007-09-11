@@ -89,8 +89,8 @@ public final class EmbeddingContainer<T extends TokenId> {
 
         // Now either ec == null for no embedding yet or linked list of embedded token lists of ec
         // need to be processed to find the embedded token list for requested language.
-        TokenList<?> root = tokenList.root();
-        synchronized (root) {
+        TokenList<?> rootTokenList = tokenList.root();
+        synchronized (rootTokenList) {
             EmbeddedTokenList<? extends TokenId> prevEtl;
             if (ec != null) {
                 ec.updateStatusImpl();
@@ -126,19 +126,11 @@ public final class EmbeddingContainer<T extends TokenId> {
             }
             if (embedding != null) {
                 if (ec == null) {
-                    ec = new EmbeddingContainer<T>(token, root);
+                    ec = new EmbeddingContainer<T>(token, rootTokenList);
                     tokenList.wrapToken(index, ec);
                 }
                 LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath,
                         embedding.language());
-                // When joining sections ensure that the token list list gets created
-                // Even possibly existing token list list needs to be marked as mandatory
-                // since there is at least one embedding that joins the sections.
-                TokenHierarchyOperation hi;
-                if (embedding.joinSections() && (hi = tokenList.tokenHierarchyOperation()) != null) {
-                    TokenListList tll = hi.tokenListList(embeddedLanguagePath);
-                    tll.setJoinSections(true);
-                }
                 EmbeddedTokenList<ET> etl = new EmbeddedTokenList<ET>(ec,
                         embeddedLanguagePath, embedding, null);
                 if (prevEtl != null) {
@@ -185,12 +177,12 @@ public final class EmbeddingContainer<T extends TokenId> {
         if (tokenHierarchyOperation == null) {
             return false;
         }
-        TokenList<? extends TokenId> root = tokenList.root();
+        TokenList<? extends TokenId> rootTokenList = tokenList.root();
         // Only create embedddings for valid operations so not e.g. for removed token list
         Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
         AbstractToken<T> token;
         EmbeddingContainer<T> ec;
-        synchronized (root) {
+        synchronized (rootTokenList) {
             if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
                 // Embedding container exists
                 @SuppressWarnings("unchecked")
@@ -211,7 +203,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 if (token.isFlyweight()) { // embedding cannot exist for this flyweight token
                     return false;
                 }
-                ec = new EmbeddingContainer<T>(token, root);
+                ec = new EmbeddingContainer<T>(token, rootTokenList);
                 tokenList.wrapToken(index, ec);
             }
         }
@@ -221,7 +213,7 @@ public final class EmbeddingContainer<T extends TokenId> {
         EmbeddedTokenList<ET> etl;
         LanguageEmbedding<ET> embedding;
         TokenListList tll = null;
-        synchronized (root) {
+        synchronized (rootTokenList) {
             if (startSkipLength + endSkipLength > token.length()) // Check for appropriate size
                 return false;
             // Add the new embedding as the first one in the single-linked list
@@ -230,21 +222,17 @@ public final class EmbeddingContainer<T extends TokenId> {
             LanguagePath languagePath = tokenList.languagePath();
             LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath, embeddedLanguage);
             tokenHierarchyOperation.addLanguagePath(embeddedLanguagePath);
-            // When joining sections ensure that the token list list gets created
-            // Even possibly existing token list list needs to be marked as mandatory
-            // since there is at least one embedding that joins the sections.
-            if (embedding.joinSections()) {
-                tll = tokenHierarchyOperation.tokenListList(embeddedLanguagePath);
-                tll.setJoinSections(true);
-            }
             // Make the embedded token list to be the first in the list
             etl = new EmbeddedTokenList<ET>(
                     ec, embeddedLanguagePath, embedding, ec.firstEmbeddedTokenList());
             ec.setFirstEmbeddedTokenList(etl);
-            // Increment mod count and since the addition may produce tokens
-            // for joined sections then this needs to be processed
-            // similarly as a regular text modification.
-            // TBD - implement embedded sections handling
+            // When joining sections ensure that the token list list gets created
+            // and the embedded tokens get created because they must exist
+            // before possible next updating of the token list.
+            if (embedding.joinSections()) {
+                // Ask for token count to force tokens creation
+                etl.tokenCount();
+            }
         }
 
         // Fire the embedding creation to the clients

@@ -255,17 +255,40 @@ public final class LexerUtilsConstants {
             || (state1 != null && state1.equals(state2));
     }
     
-    public static Object endState(TokenList<?> tokenList) {
+    /**
+     * Get end state of the given token list that may be used for relexing
+     * of the next section.
+     * <br/>
+     * If the section is empty but it does not join the sections then null state
+     * is returned.
+     * 
+     * @param tokenList non-null token list.
+     * @return end state or {@link #INVALID_STATE} if previous token list must be queried.
+     */
+    public static Object endState(EmbeddedTokenList<?> tokenList) {
         int tokenCount = tokenList.tokenCount();
-        return (tokenCount > 0) ? tokenList.state(tokenList.tokenCount() - 1) : INVALID_STATE;
+        return (tokenCount > 0)
+                ? tokenList.state(tokenList.tokenCount() - 1)
+                : tokenList.embedding().joinSections() ? INVALID_STATE : null;
     }
     
-    public static Object endState(TokenList<?> tokenList, Object state) {
+    /**
+     * Get end state of the given token list that may be used for relexing
+     * of the next section.
+     * <br/>
+     * If the section is empty but it does not join the sections then null state
+     * is returned.
+     * 
+     * @param tokenList non-null token list.
+     * @param lastEndState current state that will be overriden in case this section
+     *  is not empty while joining the sections.
+     * @return end state or {@link #INVALID_STATE} if previous token list must be queried.
+     */
+    public static Object endState(EmbeddedTokenList<?> tokenList, Object lastEndState) {
         int tokenCount = tokenList.tokenCount();
-        if (tokenCount > 0) {
-            state = tokenList.state(tokenList.tokenCount() - 1);
-        }
-        return state;
+        return (tokenCount > 0)
+                ? tokenList.state(tokenList.tokenCount() - 1)
+                : tokenList.embedding().joinSections() ? lastEndState : null;
     }
     
     public static String idToString(TokenId id) {

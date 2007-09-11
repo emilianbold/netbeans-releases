@@ -84,7 +84,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
     public SnapshotTokenList(TokenHierarchyOperation<?,T> snapshot) {
         this.snapshot = snapshot;
         this.liveTokenList = (IncTokenList<T>)snapshot.
-                liveTokenHierarchyOperation().tokenList();
+                liveTokenHierarchyOperation().rootTokenList();
         token2offset = new CompactMap<AbstractToken<T>,Token2OffsetEntry<T>>();
     }
 

@@ -68,7 +68,7 @@ public final class TokenHierarchyUpdate {
     public void update(IncTokenList<?> incTokenList) {
         incTokenList.incrementModCount();
         // Update top-level token list first
-        rootChange = updateTokenListByModification(incTokenList);
+        rootChange = updateTokenListByModification(incTokenList, null);
         eventInfo.setTokenChangeInfo(rootChange.tokenChangeInfo());
 
         if (LOG.isLoggable(Level.FINE)) {
@@ -98,8 +98,8 @@ public final class TokenHierarchyUpdate {
 
         // 3. The algorithm must collect both removed and added token lists
         //    in the UpdateInfo.
-        // 4. For a removed token list it must check nested embedded token lists
-        //    because some embedded tokens of the removed embedded token list migth contain
+        // 4. For a removed token list the updating must check nested embedded token lists
+        //    because some embedded tokens of the removed embedded token list might contain
         //    another embedding that might also be maintained as token list list
         //    and need to be updated. The parent token list lists
         //    are always maintained too which simplifies the updating algorithm
@@ -167,13 +167,17 @@ public final class TokenHierarchyUpdate {
                         if (childInfo != NO_INFO) {
                             childInfo.markBoundsChange(etl);
                         } else { // No child but want to update nested possible bounds changes
-                            parentChange = change;
-                            change = updateTokenListByModification(etl);
-                            if (change.isBoundsChange()) {
-                                processBoundsChangeEmbeddings(change, parentChange);
-                            } else {
-                                eventInfo.setMinAffectedStartOffset(change.offset());
-                                eventInfo.setMaxAffectedEndOffset(change.addedEndOffset());
+                            if (etl.isInited()) {
+                                parentChange = change;
+                                // Perform change in child - it surely does not join the sections
+                                // since otherwise the childInfo could not be null
+                                change = updateTokenListByModification(etl, null);
+                                if (change.isBoundsChange()) {
+                                    processBoundsChangeEmbeddings(change, parentChange);
+                                } else {
+                                    eventInfo.setMinAffectedStartOffset(change.offset());
+                                    eventInfo.setMaxAffectedEndOffset(change.addedEndOffset());
+                                }
                             }
                         }
                         prevEtl = etl;
@@ -270,10 +274,11 @@ public final class TokenHierarchyUpdate {
         }
     }
     
-    private <T extends TokenId> TokenListChange<T> updateTokenListByModification(MutableTokenList<T> tokenList) {
+    private <T extends TokenId> TokenListChange<T> updateTokenListByModification(
+    MutableTokenList<T> tokenList, Object zeroIndexRelexState) {
         TokenListChange<T> change = new TokenListChange<T>(tokenList);
         TokenListUpdater.update(tokenList, eventInfo.modificationOffset(),
-                eventInfo.insertedLength(), eventInfo.removedLength(), change);
+                eventInfo.insertedLength(), eventInfo.removedLength(), change, zeroIndexRelexState);
         return change;
     }
 
@@ -287,7 +292,7 @@ public final class TokenHierarchyUpdate {
         }
         TLLInfo info = path2info.get(languagePath);
         if (info == null) {
-            TokenListList tll = eventInfo.tokenHierarchyOperation().tokenListListOrNull(languagePath);
+            TokenListList tll = eventInfo.tokenHierarchyOperation().existingTokenListList(languagePath);
             if (tll != null) {
                 info = new TLLInfo(this, tll);
                 int index = languagePath.size() - 2;
@@ -355,19 +360,17 @@ public final class TokenHierarchyUpdate {
          * so it should be necessary to search for the index just once.
          */
         public void markRemoved(TokenList<?> removedTokenList) {
-            if (doMarking(removedTokenList)) {
-                if (index == -1) {
-                    index = tokenListList.findIndex(removedTokenList.startOffset());
-                    assert (index >= 0) : "index=" + index + " < 0"; // NOI18N
-                }
-                TokenList<?> expected = tokenListList.getOrNull(index + removeCount);
-                if (expected != removedTokenList) {
-                    throw new IllegalStateException("Expected to remove " + expected + // NOI18N
-                            "\nbut removing " + removedTokenList + // NOI18N
-                            "\nfrom tokenListList=" + tokenListList);
-                }
-                removeCount++;
+            if (index == -1) {
+                index = tokenListList.findIndex(removedTokenList.startOffset());
+                assert (index >= 0) : "index=" + index + " < 0"; // NOI18N
             }
+            TokenList<?> expected = tokenListList.getOrNull(index + removeCount);
+            if (expected != removedTokenList) {
+                throw new IllegalStateException("Expected to remove " + expected + // NOI18N
+                        "\nbut removing " + removedTokenList + // NOI18N
+                        "\nfrom tokenListList=" + tokenListList);
+            }
+            removeCount++;
         }
 
         /**
@@ -376,24 +379,19 @@ public final class TokenHierarchyUpdate {
          * and then the token lists marked for addition will be added.
          */
         public void markAdded(TokenList<?> addedTokenList) {
-            if (doMarking(addedTokenList)) {
-                if (added.size() == 0) {
-                    if (index == -1) {
-                        index = tokenListList.findIndex(addedTokenList.startOffset());
-                        assert (index >= 0) : "index=" + index + " < 0"; // NOI18N
-                    }
-                    added = new ArrayList<TokenList<?>>(4);
+            if (added.size() == 0) {
+                if (index == -1) {
+                    index = tokenListList.findIndex(addedTokenList.startOffset());
+                    assert (index >= 0) : "index=" + index + " < 0"; // NOI18N
                 }
-                added.add(addedTokenList);
+                added = new ArrayList<TokenList<?>>(4);
             }
+            added.add(addedTokenList);
         }
         
         public void markBoundsChange(TokenList<?> tokenList) {
-            if (doMarking(tokenList)) {
-                assert (index == -1) : "index=" + index + " != -1"; // Should be the first one
-                index = tokenListList.findIndex(tokenList.startOffset());
-                // No additional removals or addings
-            }
+            assert (index == -1) : "index=" + index + " != -1"; // Should be the first one
+            index = tokenListList.findIndex(tokenList.startOffset());
         }
         
         public void update() {
@@ -415,10 +413,10 @@ public final class TokenHierarchyUpdate {
                 EmbeddedTokenList<?> etl = (EmbeddedTokenList<?>)tokenListList.get(index);
                 // Should certainly be non-empty
                 assert (etl.tokenCountCurrent() > 0);
-                Object endState = LexerUtilsConstants.endState(etl);
                 etl.embeddingContainer().updateStatusImpl();
                 Object matchState = LexerUtilsConstants.endState(etl);
-                TokenListChange<?> chng = update.updateTokenListByModification(etl);
+                Object relexState = tokenListList.relexState(index);
+                TokenListChange<?> chng = update.updateTokenListByModification(etl, relexState);
                 if (chng.isBoundsChange()) {
                     TokenListChange<?> parentChange = (tokenListList.languagePath().size() == 2)
                             ? update.rootChange
@@ -427,7 +425,7 @@ public final class TokenHierarchyUpdate {
                 } else { // Regular change
                     update.processNonBoundsChange(chng);
                 }
-                Object relexState = LexerUtilsConstants.endState(etl);
+                relexState = LexerUtilsConstants.endState(etl, relexState);
                 relexAfterLastModifiedSection(index + 1, relexState, matchState);
 
             } else { // Non-bounds change
@@ -442,21 +440,16 @@ public final class TokenHierarchyUpdate {
 
                 Object relexState; // State from which the relexing will start
                 Object matchState = INVALID_STATE; // State that needs to be reached by relexing
-                if (tokenListList.isJoinSections()) { // Need to find the right relexState
+                if (tokenListList.joinSections()) { // Need to find the right relexState
                     // Must update the token list by incremental algorithm
                     // Find non-empty token list and take last token's state
-                    relexState = INVALID_STATE;
+                    relexState = tokenListList.relexState(index);
                     for (int i = removed.length - 1; i >= 0 && matchState == INVALID_STATE; i--) {
-                        matchState = LexerUtilsConstants.endState(removed[i]);
+                        matchState = LexerUtilsConstants.endState((EmbeddedTokenList<?>)removed[i]);
                     }
                     // Find the start state as the previous non-empty section's last token's state
                     // for case there would be no token lists added or all the added sections
                     // would be empty.
-                    for (int i = index - 1; i >= 0 && relexState == INVALID_STATE; i--) {
-                        relexState = LexerUtilsConstants.endState(tokenListList.get(i));
-                    }
-                    if (relexState == INVALID_STATE)
-                        relexState = null;
                     if (matchState == INVALID_STATE) // None or just empty sections were removed
                         matchState = relexState;
 
@@ -466,15 +459,20 @@ public final class TokenHierarchyUpdate {
 
                 // Relex all the added token lists (just by asking for tokenCount - init() will be done)
                 for (int i = 0; i < added.size(); i++) {
-                    TokenList<?> tokenList = added.get(i);
-                    relexState = LexerUtilsConstants.endState(tokenList, relexState);
+                    EmbeddedTokenList<?> tokenList = (EmbeddedTokenList<?>)added.get(i);
+                    assert (!tokenList.isInited());
+                    tokenList.init(relexState);
+                    if (tokenList.embedding().joinSections()) {
+                        tokenListList.setJoinSections(true);
+                    }
+                    relexState = LexerUtilsConstants.endState((EmbeddedTokenList<?>)tokenList, relexState);
                     if (tokenListList.hasChildren()) {
                         update.markAddedEmbeddings(tokenList, 0, tokenList.tokenCount());
                     }
                     update.eventInfo.setMaxAffectedEndOffset(tokenList.endOffset());
                 }
 
-                if (tokenListList.isJoinSections()) {
+                if (tokenListList.joinSections()) {
                     index += added.size();
                     relexAfterLastModifiedSection(index, relexState, matchState);
                 }
@@ -485,14 +483,14 @@ public final class TokenHierarchyUpdate {
             // Must continue relexing existing section(s) (from a different start state)
             // until the relexing will stop before the last token of the given section.
             EmbeddedTokenList<?> etl;
-            while (!LexerUtilsConstants.statesEqual(relexState, matchState) 
+            while (!LexerUtilsConstants.statesEqual(relexState, matchState)
                 && (etl = (EmbeddedTokenList<?>)tokenListList.getOrNull(index)) != null
             ) {
+                etl.embeddingContainer().updateStatusImpl();
                 if (etl.tokenCount() > 0) {
-                    etl.embeddingContainer().updateStatusImpl();
                     // Remember state after the last token of the given section
                     matchState = etl.state(etl.tokenCount() - 1);
-                    TokenListChange<?> chng = updateTokenListAtStart(etl, etl.startOffset());
+                    TokenListChange<?> chng = updateTokenListAtStart(etl, etl.startOffset(), relexState);
                     update.processNonBoundsChange(chng);
                     // Since the section is non-empty (checked above) there should be >0 tokens
                     relexState = etl.state(etl.tokenCount() - 1);
@@ -501,28 +499,10 @@ public final class TokenHierarchyUpdate {
             }
         }
         
-        private boolean doMarking(TokenList<?> tokenList) {
-            if (lexedBeyondModPoint == null) { // Check whether lexed till this point
-                if (tokenListList.isComplete()) {
-                    lexedBeyondModPoint = Boolean.TRUE;
-                } else { // Not complete yet
-//                    if (tokenListList.isMandatory()) { // Should never happen
-//                        // Such list should only be non-mandatory
-//                        throw new IllegalStateException("Mandatory list " + // NOI18N
-//                                tokenListList.languagePath() + " is not fully lexed"); // NOI18N
-//                    }
-                    TokenList<?> lastTokenList;
-                    lexedBeyondModPoint = tokenListList.size() > 0 
-                            && (lastTokenList = tokenListList.getExistingOrNull(tokenListList.size() - 1)) != null
-                            && (lastTokenList.endOffset() >= tokenList.endOffset());
-                }
-            }
-            return lexedBeyondModPoint.booleanValue();
-        }
-        
-        private <T extends TokenId> TokenListChange<T> updateTokenListAtStart(MutableTokenList<T> tokenList, int offset) {
+        private <T extends TokenId> TokenListChange<T> updateTokenListAtStart(
+        MutableTokenList<T> tokenList, int offset, Object zeroIndexRelexState) {
             TokenListChange<T> chng = new TokenListChange<T>(tokenList);
-            TokenListUpdater.update(tokenList, offset, 0, 0, chng);
+            TokenListUpdater.update(tokenList, offset, 0, 0, chng, zeroIndexRelexState);
             update.eventInfo.setMaxAffectedEndOffset(chng.addedEndOffset());
             return chng;
         }

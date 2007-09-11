@@ -19,36 +19,64 @@
 
 package org.netbeans.lib.lexer;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.GapList;
+import static org.netbeans.lib.lexer.LexerUtilsConstants.INVALID_STATE;
 
 /**
  * List of token lists that collects all token lists for a given language path.
+ * <br/>
+ * There can be both lists with/without joining of the embedded sections.
+ * <br/>
+ * Initial implementation attempted to initialize the list of token lists lazily
+ * upon asking for it by client. However there was a problem with fixing
+ * of token list explorers' state when the list is partially initialized
+ * and there is an update of the token hierarchy. Sometimes there were inconsistencies
+ * that a particular token list appeared twice in the token list list.
+ * <br/>
+ * Current impl is non-lazy so once the list becomes created it gets fully initialized
+ * by traversing the parent token lists's tokens for embeddings of the particular language.
+ * <br/>
+ * Advantages:
+ * <ul>
+ *   <li> Easier updating - no issues with incomplete exploration.
+ *   <li> More errorsafe approach with joinSections - if any of the scanned lists is joinSections
+ *        then the whole token list list becomes joinSections from the begining.
+ *   <li> It's disputable how much time the lazy impl has been saving.
+ *   <li> More deterministic behavior - helps to diagnose errors.
+ * </ul>
+ * 
+ * <p>
+ * GapList is used for faster updates and there can be either single top-level
+ * non-EmbeddedTokenList token list or zero or more nested EmbeddedTokenList(s).
+ * </p>
+ * 
+ * <p>
+ * joinSections approach:
+ * <br/>
+ * Non-joining embedded token lists' contents will be lexed without token list list assistance.
+ * <br/>
+ * Joining embedded TLs will need TLL assistance so TLL instance gets created for them.
+ * <br/>
+ * If there are mixed joining/non-joining language embedding instances for the same
+ * language path then the non-joining ones can possibly become initialized (lexed)
+ * without TLL if they are asked individually. Later when first joining embedding is found
+ * the token list list will be created and contain both joining and non-joining
+ * embeddings but the joinSections will be respected for individual lexing.
+ * Non-joining sections will be lexed individually and the join sections will be lexed as joined.
+ * </p>
  *
  * @author Miloslav Metelka
  */
 
-public final class TokenListList extends AbstractList<TokenList<?>> {
+public final class TokenListList extends GapList<TokenList<?>> {
 
     private final TokenHierarchyOperation operation;
 
     private final LanguagePath languagePath;
-
-    private final GapList<TokenList<?>> tokenLists;
-
-    /** Whether searching thgroughout the token hierarchy was finished. */
-    private boolean complete;
-
-    /** Explorers scanning the hierarchy. */
-    private List<TokenListExplorer> explorers;
 
     /**
      * Whether this token list is holding joint sections embeddings.
@@ -63,126 +91,62 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
      */
     private int childrenCount;
 
-    public static List<TokenSequence<? extends TokenId>> createTokenSequenceList(
-    TokenHierarchyOperation operation, LanguagePath languagePath, int startOffset, int endOffset) {
-        TokenListList tll = operation.tokenListList(languagePath);
-        // Only choose the token lists in the requested area
-        int low = 0;
-        int high = tll.size() - 1;
-        // Find the tl which has the end offset above or equal to the requested startOffset
-        // and take the first token list above it.
-        if (startOffset > 0) {
-            while (low <= high) {
-                int mid = (low + high) / 2;
-                TokenList<?> tl = tll.get(mid);
-                int tlEndOffset = tl.endOffset();
-                if (tlEndOffset < startOffset) {
-                    low = mid + 1;
-                } else if (tlEndOffset > startOffset) {
-                    high = mid - 1;
-                } else { // tl ends exactly at start offset
-                    low = mid + 1; // take the first above this
-                    break;
-                }
-            }
-        }
-        // Not found exactly -> take the higher one (low variable)
-        int startIndex = low;
-
-        low = 0;
-        high = tll.size() - 1;
-        if (startIndex <= high) { // startIndex < tll.size()
-            // Find the tl which has the start offset above or equal to the requested endOffset
-            // and take the first token list above it.
-            if (endOffset < Integer.MAX_VALUE) {
-                while (low <= high) {
-                    int mid = (low + high) / 2;
-                    TokenList<?> tl = tll.get(mid);
-                    int tlStartOffset = tl.startOffset();
-                    if (tlStartOffset < endOffset) {
-                        low = mid + 1;
-                    } else if (tlStartOffset > endOffset) {
-                        high = mid - 1;
-                    } else { // tl ends exactly at end offset
-                        high = mid; // take the first above this
-                        break;
-                    }
-                }
-            }
-            // Not found exactly -> take the high plus one as end index
-            int endIndex = high + 1;
-
-            assert (startIndex <= endIndex);
-            if (endIndex - startIndex > 0) {
-                @SuppressWarnings("unchecked")
-                TokenSequence<? extends TokenId>[] tss = new TokenSequence[endIndex - startIndex];
-                TokenList<?> startTokenList = tll.get(startIndex);
-                // Wrap the start token list if the startOffset lies inside it
-                boolean wrapStart = (startTokenList.startOffset() < startOffset)
-                        && (startOffset < startTokenList.endOffset());
-                TokenList<?> endTokenList = tll.get(endIndex - 1);
-                // Wrap the end token list if the endOffset lies inside it
-                boolean wrapEnd = (endTokenList.startOffset() < endOffset)
-                        && (endOffset < endTokenList.endOffset());
-                if (endIndex == startIndex + 1) { // Exactly one token list
-                    if (wrapStart || wrapEnd)
-                        startTokenList = SubSequenceTokenList.create(
-                                startTokenList, startOffset, endOffset);
-                } else { // tss.length >= 2
-                    if (wrapStart)
-                        startTokenList = SubSequenceTokenList.create(
-                                startTokenList, startOffset, Integer.MAX_VALUE);
-                    if (wrapEnd)
-                        endTokenList = SubSequenceTokenList.create(endTokenList, 0, endOffset);
-                    tss[tss.length - 1] = LexerApiPackageAccessor.get().createTokenSequence(endTokenList);
-                    for (int i = 1; i < tss.length - 1; i++) {
-                        tss[i] = LexerApiPackageAccessor.get().createTokenSequence(tll.get(startIndex + i));
-                    }
-
-                }
-                tss[0] = LexerApiPackageAccessor.get().createTokenSequence(startTokenList);
-                return ArrayUtilities.unmodifiableList(tss);
-
-            } // endIndex == startIndex => empty
-        } // startIndex >= tll.size()
-        // Return empty list
-        return Collections.<TokenSequence<? extends TokenId>>emptyList();
-    }
 
     public TokenListList(TokenHierarchyOperation<?,?> operation, LanguagePath languagePath) {
+        super(4);
         this.operation = operation;
         this.languagePath = languagePath;
 
-        tokenLists = new GapList<TokenList<?>>(2);
         if (languagePath.size() == 1) { // Either top-level path or something not present
-            if (languagePath == operation.tokenList().languagePath()) {
-                tokenLists.add(operation.tokenList());
+            if (languagePath == operation.rootTokenList().languagePath()) {
+                add(operation.rootTokenList());
             }
-            complete = true;
 
-        } else {
-            explorers = new ArrayList<TokenListExplorer>(languagePath.size());
-            explorers.add(new TokenListExplorer(operation.checkedTokenList()));
+        } else { // languagePath has size >= 2
+            Language<?> language = languagePath.innerLanguage();
+            if (languagePath.size() > 2) {
+                Object relexState = null;
+                TokenListList parentTokenList = operation.tokenListList(languagePath.parent());
+                for (int parentIndex = 0; parentIndex < parentTokenList.size(); parentIndex++) {
+                    TokenList<?> tokenList = parentTokenList.get(parentIndex);
+                    relexState = scanTokenList(tokenList, language, relexState);
+                }
+            } else { // Parent is root token list
+                scanTokenList(operation.validRootTokenList(), language, null);
+            }
         }
     }
-
+    
+    private Object scanTokenList(TokenList<?> tokenList, Language<?> language, Object relexState) {
+        int tokenCount = tokenList.tokenCount();
+        for (int i = 0; i < tokenCount; i++) {
+            EmbeddedTokenList<?> etl = EmbeddingContainer.embeddedTokenList(
+                tokenList, i, language);
+            if (etl != null) {
+                add(etl);
+                if (etl.embedding().joinSections()) {
+                    joinSections = true;
+                    if (!etl.isInited()) {
+                        etl.init(relexState);
+                        relexState = LexerUtilsConstants.endState(etl, relexState);
+                    }
+                } else { // Not joining sections -> next section starts with null state
+                    relexState = null;
+                }
+            }
+        }
+        return relexState;
+    }
+    
     public LanguagePath languagePath() {
         return languagePath;
     }
     
     /**
-     * Whether the list already contains all the appropriate token lists
-     * from the whole hierarchy.
-     */
-    public boolean isComplete() {
-        return complete;
-    }
-
-    /**
      * Return true if this list is mandatorily updated because there is
      * one or more embeddings that join sections.
      */
-    public boolean isJoinSections() {
+    public boolean joinSections() {
         return joinSections;
     }
     
@@ -201,22 +165,23 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
     public boolean hasChildren() {
         return (childrenCount > 0);
     }
-
-    public TokenList<?> get(int index) {
-        findTokenListWithIndex(index);
-        return tokenLists.get(index); // Will fail naturally if index too high
+    
+    public Object relexState(int index) {
+        // Find the previous non-empty section or non-joining section
+        Object relexState = INVALID_STATE;
+        for (int i = index - 1; i >= 0 && relexState == INVALID_STATE; i--) {
+            relexState = LexerUtilsConstants.endState((EmbeddedTokenList<?>)get(i));
+        }
+        if (relexState == INVALID_STATE) // Start from real begining
+            relexState = null;
+        return relexState;
     }
 
     /**
      * Return a valid token list or null if the index is too high.
      */
     public TokenList<?> getOrNull(int index) {
-        findTokenListWithIndex(index);
-        return getExistingOrNull(index);
-    }
-    
-    public TokenList<?> getExistingOrNull(int index) {
-        return (index < tokenLists.size()) ? tokenLists.get(index) : null;
+        return (index < size()) ? get(index) : null;
     }
     
     private static final TokenList<?>[] EMPTY_TOKEN_LIST_ARRAY = new TokenList<?>[0];
@@ -225,22 +190,13 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
         TokenList<?>[] removed;
         if (removeCount > 0) {
             removed = new TokenList<?>[removeCount];
-            tokenLists.copyElements(index, index + removeCount, removed, 0);
-            tokenLists.remove(index, removeCount);
+            copyElements(index, index + removeCount, removed, 0);
+            remove(index, removeCount);
         } else {
             removed = EMPTY_TOKEN_LIST_ARRAY;
         }
-        tokenLists.addAll(index, addTokenLists);
+        addAll(index, addTokenLists);
         return removed;
-    }
-
-    public int size() {
-        findTokenListWithIndex(Integer.MAX_VALUE);
-        return tokenLists.size();
-    }
-
-    public int sizeCurrent() {
-        return tokenLists.size();
     }
 
     /**
@@ -249,22 +205,11 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
      * Force creation of token lists below the offset if they do not exist yet.
      */
     public int findPreviousNonEmptySectionIndex(int offset) {
-        int high = sizeCurrent() - 1;
-        if (!complete) {
-            if (high == -1) {
-                getOrNull(0); // Force init of first item
-                return findPreviousNonEmptySectionIndex(offset);
-            }
-            TokenList<?> tokenList = get(high); // Should be non-null
-            if (tokenList.endOffset() < offset) {
-                while ((tokenList = getOrNull(++high)) != null && tokenList.endOffset() < offset) { }
-                return findPreviousNonEmptySectionIndex(offset);
-            }
-        }
+        int high = size() - 1;
         int low = 0;
         while (low <= high) {
             int mid = (low + high) >> 1;
-            int cmp = tokenLists.get(mid).endOffset() - offset;
+            int cmp = get(mid).endOffset() - offset;
             if (cmp < 0)
                 low = mid + 1;
             else if (cmp > 0)
@@ -275,7 +220,7 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
             }
         }
         // Use 'high' which == low - 1
-        while (high >= 0 && tokenLists.get(high).tokenCount() == 0) {
+        while (high >= 0 && get(high).tokenCount() == 0) {
             high--; // Skip all empty sections
         }
         return high;
@@ -294,11 +239,11 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
     }
 
     public int findIndex(int offset) {
-        int high = sizeCurrent() - 1;
+        int high = size() - 1;
         int low = 0;
         while (low <= high) {
             int mid = (low + high) >> 1;
-            int cmp = tokenLists.get(mid).startOffset() - offset;
+            int cmp = get(mid).startOffset() - offset;
             if (cmp < 0)
                 low = mid + 1;
             else if (cmp > 0)
@@ -311,61 +256,20 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
         return low;
     }
 
-    private void findTokenListWithIndex(int tokenListIndex) {
-        if (complete || tokenListIndex < tokenLists.size())
-            return;
-        // Force init of all the items
-        do {
-            findTokenListWithIndexImpl(tokenListIndex++);
-        } while (tokenLists.size() == tokenListIndex);
-    }
-    
-    private void findTokenListWithIndexImpl(int tokenListIndex) {
-        while (explorers.size() > 0) {
-            int explorerIndex = explorers.size() - 1;
-            TokenListExplorer explorer = explorers.get(explorerIndex);
-            int tokenCount = explorer.tokenCount();
-            Language<?> language = languagePath.language(explorerIndex + 1);
-            while (explorer.index < tokenCount) {
-                TokenList<?> embeddedTL = LexerUtilsConstants.embeddedTokenList(
-                        explorer.tokenList, explorer.index, language);
-                explorer.index++;
-                if (embeddedTL != null) {
-                    if (explorerIndex + 2 == languagePath.size()) { // Found the one
-                        tokenLists.add(embeddedTL);
-                        if (tokenLists.size() > tokenListIndex) // Return if reached requested index
-                            return;
-                    } else { // Explore this one
-                        explorer = new TokenListExplorer(embeddedTL);
-                        explorers.add(explorer);
-                        explorerIndex++;
-                        tokenCount = explorer.tokenCount();
-                        language = languagePath.language(explorerIndex + 1);
-                    }
-                }
-            }
-            // Finished searching the most embedded list
-            explorers.remove(explorerIndex);
-        }
-        complete = true;
-    }
-    
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("TokenListList for ");
         sb.append(languagePath().mimePath());
-        if (!isComplete()) {
-            sb.append(", incomplete");
-        }
-        if (isJoinSections()) {
+        if (joinSections()) {
             sb.append(", joinSections");
         }
         if (hasChildren()) {
             sb.append(", hasChildren");
         }
         sb.append('\n');
-        int digitCount = ArrayUtilities.digitCount(tokenLists.size());
-        for (int i = 0; i < tokenLists.size(); i++) {
-            TokenList<?> tokenList = tokenLists.get(i);
+        int digitCount = ArrayUtilities.digitCount(size());
+        for (int i = 0; i < size(); i++) {
+            TokenList<?> tokenList = get(i);
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             sb.append("range:[").append(tokenList.startOffset()).append(",").
                     append(tokenList.endOffset()).append(']');
@@ -374,22 +278,6 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
             LexerUtilsConstants.appendTokenListIndented(sb, tokenList, 4);
         }
         return sb.toString();
-    }
-
-    private static final class TokenListExplorer {
-
-        final TokenList<?> tokenList;
-
-        int index;
-
-        TokenListExplorer(TokenList<?> tokenList) {
-            this.tokenList = tokenList;
-        }
-
-        int tokenCount() {
-            return tokenList.tokenCount();
-        }
-
     }
 
 }

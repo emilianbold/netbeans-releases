@@ -32,7 +32,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.lang.TestPlainTokenId;
-import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
  * Test several simple lexer impls.

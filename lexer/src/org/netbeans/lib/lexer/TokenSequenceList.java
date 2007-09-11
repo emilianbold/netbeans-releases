@@ -67,8 +67,8 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
         this.expectedModCount = tokenListList.operation().modCount();
 
         // Possibly skip initial token lists accroding to startOffset
-        int sizeCurrent = tokenListList.sizeCurrent();
-        int high = sizeCurrent - 1;
+        int size = tokenListList.size();
+        int high = size - 1;
         // Find the token list which has the end offset above or equal to the requested startOffset
         TokenList<?> firstTokenList;
         if (startOffset > 0) {
@@ -87,13 +87,14 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
             }
             // If not found exactly -> take the higher one (index variable)
             firstTokenList = tokenListList.getOrNull(tokenListIndex);
-            if (tokenListIndex == sizeCurrent) { // Right above the ones that existed at begining of bin search
+            if (tokenListIndex == size) { // Right above the ones that existed at begining of bin search
                 while (firstTokenList != null && firstTokenList.endOffset() < startOffset)
                     firstTokenList = tokenListList.getOrNull(++tokenListIndex);
             }
 
-        } else // startOffset == 0
+        } else { // startOffset == 0
             firstTokenList = tokenListList.getOrNull(0);
+        }
         
         if (firstTokenList != null) {
             boolean wrapStart = ((startOffset > 0)
@@ -105,8 +106,9 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
             if (wrapStart || wrapEnd) // Must create sub sequence
                 firstTokenList = SubSequenceTokenList.create(
                         firstTokenList, startOffset, endOffset);
-            if (wrapEnd) // Also last one
+            if (wrapEnd) { // Also this will be the last one list
                 tokenListIndex = Integer.MAX_VALUE;
+            }
             tokenSequences = new ArrayList<TokenSequence<?>>(4);
             tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(firstTokenList));
 
@@ -116,6 +118,7 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
         }
     }
     
+    @Override
     public Iterator<TokenSequence<?>> iterator() {
         return new Itr();
     }
@@ -148,8 +151,9 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
                     tokenListIndex = Integer.MAX_VALUE;
                 }
                 tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(tokenList));
-            } else
+            } else { // Singnal no more token sequences
                 tokenListIndex = Integer.MAX_VALUE;
+            }
         }
     }
     

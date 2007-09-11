@@ -164,7 +164,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     public TokenSequence<? extends TokenId> tokenSequence() {
         @SuppressWarnings("unchecked")
         TokenSequence<? extends TokenId> ts = new TokenSequence<TokenId>(
-                (TokenList<TokenId>)operation.checkedTokenList());
+                (TokenList<TokenId>)operation.validRootTokenList());
         return ts;
     }
 
@@ -178,7 +178,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *
      */
     public <T extends TokenId> TokenSequence<T> tokenSequence(Language<T> language) {
-        TokenList<? extends TokenId> tokenList = operation.checkedTokenList();
+        TokenList<? extends TokenId> tokenList = operation.validRootTokenList();
         @SuppressWarnings("unchecked")
         TokenSequence<T> ts
                 = (tokenList.languagePath().topLanguage() == language)
