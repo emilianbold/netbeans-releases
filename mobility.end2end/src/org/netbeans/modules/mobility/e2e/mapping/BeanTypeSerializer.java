@@ -126,6 +126,7 @@ public class BeanTypeSerializer implements JavonSerializer {
                 if( e.getModifiers().contains( Modifier.FINAL )) continue;
                 
                 ClassData fieldClass = traversable.traverseType( e.asType(), typeCache );
+                if( fieldClass == null ) continue;
                 String methodPartName = e.getSimpleName().toString().substring( 0, 1 ).toUpperCase() + 
                         e.getSimpleName().toString().substring( 1 );
                 String setterName = "set" + methodPartName;
