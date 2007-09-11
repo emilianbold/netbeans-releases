@@ -26,7 +26,7 @@ cd $NB_ALL/nbbuild
 #Pack the distrubutions
 find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit 1
 
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit 1
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-javase.zip -@ || exit 1
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-mobility.zip -@ || exit 1
 find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-javaee.zip -@ || exit 1
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit 1
