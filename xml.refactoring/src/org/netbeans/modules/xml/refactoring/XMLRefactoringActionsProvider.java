@@ -165,8 +165,13 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
          if(nodes.size() !=1){
              return false;
          }
-             
+       
          Node[] n = nodes.toArray(new Node[0]);
+         DataObject dob = n[0].getCookie(DataObject.class);
+         if (dob==null || !dob.isValid()) {
+             return false;
+         }
+          
          Referenceable ref = SharedUtils.getReferenceable(n);
          if(ref == null)
              return false;
