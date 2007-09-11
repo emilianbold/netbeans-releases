@@ -146,8 +146,8 @@ public class DataSourceResolver implements DataSourceInfoListener {
      
     public void update(Project currentProj) {
         doCopying();
-        updateProject();        
         registerConnections();
+        updateProject();                
         checkConnections();
     }
 
