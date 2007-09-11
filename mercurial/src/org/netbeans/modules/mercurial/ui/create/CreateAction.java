@@ -19,6 +19,8 @@
 package org.netbeans.modules.mercurial.ui.create;
 
 import java.io.File;
+import java.util.Calendar;
+import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -39,6 +41,13 @@ import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.SourceGroup;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
 
 /**
  * Create action for mercurial: 
@@ -69,22 +78,63 @@ public class CreateAction extends AbstractAction {
             return false;
     } 
 
+    private File getCommonAncestor(File firstFile, File secondFile) {
+        if (firstFile.equals(secondFile)) return firstFile;
+
+        File tempFirstFile = firstFile;
+        while (tempFirstFile != null) {
+            File tempSecondFile = secondFile;
+            while (tempSecondFile != null) {
+                if (tempFirstFile.equals(tempSecondFile))
+                    return tempSecondFile;
+                tempSecondFile = tempSecondFile.getParentFile();
+            }
+            tempFirstFile = tempFirstFile.getParentFile();
+        }
+        return null;
+    }
+
+    private File getCommonAncestor(File[] files) {
+        File f1 = files[0];
+
+        for (int i = 1; i < files.length; i++) {
+            f1 = getCommonAncestor(f1, files[i]);
+            if (f1 == null) {
+                Mercurial.LOG.log(Level.SEVERE, "Unable to get common parent of {0} and {1} ", // NOI18N
+                        new Object[] {f1.getAbsolutePath(), files[i].getAbsolutePath()});
+             }
+
+        }
+        return f1;
+    }
+
     public void actionPerformed(ActionEvent e) {
         final Mercurial hg = Mercurial.getInstance();
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if(files == null || files.length == 0) return;
         
-        // TODO: Assumption of siongle root file is wrong may get many files from ctx we 
-        // need to check
-        File root = files[0];
-        if(!root.isDirectory()) root = root.getParentFile();
-        if (hg.getTopmostManagedParent(root) != null) return;
+        // If there is a .hg directory in an ancestor of any of the files in 
+        // the context we fail.
         
-        while (HgProjectUtils.getProjectName(root) == null) {
-            if( root == null) return;
-            root = root.getParentFile();
+        for (File file : files) {
+            if(!file.isDirectory()) file = file.getParentFile();
+            if (hg.getTopmostManagedParent(file) != null) {
+                Mercurial.LOG.log(Level.SEVERE, "Found .hg directory in ancestor of {0} ", // NOI18N
+                        file);
+                return;
+            }
         }
 
+        final Project proj = HgUtils.getProject(context);
+        File projFile = HgUtils.getProjectFile(proj);
+        if (projFile == null) return;
+        String projName = HgProjectUtils.getProjectName(projFile);
+        File root = null;
+ 
+        root = getCommonAncestor(files);
+        root = getCommonAncestor(root, projFile);
+        if (root == null) return;
+        
         HgUtils.outputMercurialTabInRed(
                 NbBundle.getMessage(CreateAction.class,
                 "MSG_CREATE_TITLE")); // NOI18N
@@ -93,7 +143,7 @@ public class CreateAction extends AbstractAction {
                 "MSG_CREATE_TITLE_SEP")); // NOI18N
         
         final File rootToManage = root;
-        final String prjName = HgProjectUtils.getProjectName(rootToManage);
+        final String prjName = projName;
 
         RequestProcessor rp = hg.getRequestProcessor(rootToManage.getAbsolutePath());
         
@@ -121,43 +171,42 @@ public class CreateAction extends AbstractAction {
         
         HgProgressSupport supportAdd = new HgProgressSupport() {
             public void perform() {
-                List<File> addFiles = new LinkedList<File>();
                 try {
-                    repositoryFiles = HgCommand.getAllUnknownStatus(rootToManage);
-                    addFiles.addAll(repositoryFiles.keySet());
-                    HgUtils.outputMercurialTab(
-                            NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_ADD", addFiles.size())); // NOI18N
-                    for(File f: addFiles){
-                        HgUtils.outputMercurialTab("\t" + f.getAbsolutePath()); // NOI18N
+                    Sources sources = ProjectUtils.getSources(proj);
+                    SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                    FileStatusCache cache = hg.getFileStatusCache();
+                    FileInformation fi = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, null, false);
+
+                    for (int j = 0; j < sourceGroups.length; j++) {
+
+                        SourceGroup sourceGroup = sourceGroups[j];
+                        FileObject srcRootFo = sourceGroup.getRootFolder();
+                        File rootFile = FileUtil.toFile(srcRootFo);
+                        Calendar start = Calendar.getInstance();
+                        repositoryFiles = HgCommand.getUnknownStatus(rootToManage, rootFile);
+                        Calendar end = Calendar.getInstance();
+                        Mercurial.LOG.log(Level.FINE, "getUnknownStatus took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+                        HgUtils.outputMercurialTab(
+                                NbBundle.getMessage(CreateAction.class,
+                                "MSG_CREATE_ADD", repositoryFiles.keySet().size(), rootFile.getAbsolutePath())); // NOI18N
+                        start = Calendar.getInstance();
+                        cache.addToCache(repositoryFiles.keySet());
+                        end = Calendar.getInstance();
+                        Mercurial.LOG.log(Level.FINE, "addUnknownsToCache took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+                        if (repositoryFiles.keySet().size() < 20) {
+                            for(File f: repositoryFiles.keySet()){
+                                HgUtils.outputMercurialTab("\t" + f.getAbsolutePath()); // NOI18N
+                            }
+                        }
                     }
-                 } catch (HgException ex) {
+                HgUtils.outputMercurialTab(""); // NOI18N
+                } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }
-                FileStatusCache cache = hg.getFileStatusCache();
-                for (File file : addFiles){
-                    cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                } 
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_DONE")); // NOI18N
-                HgUtils.outputMercurialTab(""); // NOI18N
             }
         };
         supportAdd.start(rp, rootToManage.getAbsolutePath(), 
                 org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Add_Progress")); // NOI18N
-
-        /*
-         * TODO: Do we commit the NB project files on creation or not?
-        HgProgressSupport supportCommit = new HgProgressSupport() {
-            public void perform() {
-                // Commit newly added files
-                String contentTitle = Utils.getContextDisplayName(context);
-                CommitAction.commit(contentTitle + " - Create", VCSContext.forFiles(repositoryFiles.keySet())); // NOI18N
-            }
-        };
-        supportCommit.start(rp, rootToManage.getAbsolutePath(),
-                org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Commit_Progress")); // NOI18N
-        */
     }
 }
