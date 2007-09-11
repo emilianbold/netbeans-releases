@@ -31,6 +31,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -66,7 +67,7 @@ public class ConstructorGenerator implements CodeGenerator {
                 return Collections.emptySet();
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-            if (!typeElement.getKind().isClass())
+            if (!typeElement.getKind().isClass() || NestingKind.ANONYMOUS.equals(typeElement.getNestingKind()))
                 return Collections.emptySet();
             final Set<VariableElement> initializedFields = new LinkedHashSet<VariableElement>();
             final Set<VariableElement> uninitializedFields = new LinkedHashSet<VariableElement>();
