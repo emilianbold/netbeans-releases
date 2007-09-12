@@ -24,7 +24,6 @@ import java.awt.Cursor;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.websvc.manager.nodes.WebServiceNode;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -34,11 +33,9 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.nodes.FilterNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.netbeans.modules.websvc.manager.nodes.WebServicesPortNode;
 
 /**
  *
@@ -54,24 +51,15 @@ public class ViewWSDLAction extends NodeAction {
         if(nodes != null &&
         nodes.length != 0) {
             for (int i = 0; i < nodes.length; i++) {
-                WebServiceNode wsNode = nodes[i].getCookie(WebServiceNode.class);
-                WebServicesPortNode portNode = nodes[i].getCookie(WebServicesPortNode.class);
+                WebServiceData wsData = nodes[i].getLookup().lookup(WebServiceData.class);
                 
-                if (wsNode != null) {
-                    return wsNode.getWebServiceData().getURL() != null;
-                }else if (portNode != null) {
-                    return portNode.getWebServiceData().getURL() != null;
-                }else if (nodes[i] instanceof WebServiceNode) {
-                    return ((WebServiceNode)nodes[i]).getWebServiceData().getURL() != null;
-                }else if (nodes[i] instanceof WebServicesPortNode) {
-                    return ((WebServicesPortNode)nodes[i]).getWebServiceData().getURL() != null;
+                if (wsData != null && wsData.getURL() != null && wsData.getURL().length() > 0) {
+                    return true;
                 }
             }
-            
-            return false;
-        } else {
-            return false;
         }
+        
+        return false;
     }
     
     public boolean asynchronous() {
@@ -88,123 +76,99 @@ public class ViewWSDLAction extends NodeAction {
     
     protected void performAction(Node[] activatedNodes) {
         if(null != activatedNodes && activatedNodes.length > 0) {
-            
-            /**
-             * First get the web service data
-             */
             WebServiceData wsData = null;
             for(int ii = 0; ii < activatedNodes.length; ii++) {
-                Node node = null;
-                if(activatedNodes[ii] instanceof FilterNode){
-                    node = (Node)(activatedNodes[ii]).getCookie(WebServicesPortNode.class);
-                    if (node == null) {
-                        node = (Node)(activatedNodes[ii]).getCookie(WebServiceNode.class);
-                    }
-                }else{
-                    node = activatedNodes[ii];
-                }
+                wsData = activatedNodes[ii].getLookup().lookup(WebServiceData.class);
                 
-                if(node != null && (node instanceof WebServicesPortNode || node instanceof WebServiceNode)) {
-                    
-                    if (node instanceof WebServiceNode) {
-                        wsData = ((WebServiceNode)node).getWebServiceData();
-                    }else {
-                        wsData = ((WebServicesPortNode)node).getWebServiceData();
-                    }
-                    
-                    if (wsData.getURL() == null || wsData.getURL().length() == 0) {
-                        continue;
-                    }
-                    
-                    File wsdlFile = new File(wsData.getURL());
-                    LocalFileSystem localFileSystem = null;
-                    try {
-                        
-                        
-                        this.getMenuPresenter().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        this.getMenuPresenter().validate();
-                        
-                        this.getMenuPresenter().setCursor(null);
-                        if(null == wsdlFile) {
-                            ErrorManager.getDefault().log(this.getClass().getName() + ".performAction: " +
-                            NbBundle.getMessage(ViewWSDLAction.class, "READING_WSDL_RETURNED_NULL"));
-                            String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND",wsData.getURL());
-                            NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                            Object response = DialogDisplayer.getDefault().notify(d);
-                            return;
-                        }
-                        /**
-                         * get the local file system and then the WSDL file.
-                         */
-                        localFileSystem = new LocalFileSystem();
-                        localFileSystem.setRootDirectory(new File(wsdlFile.getParent()));
-                        /**
-                         * Now set the filesystem to read-only
-                         */
-                        localFileSystem.setReadOnly(true);
-                    } catch(PropertyVetoException pve) {
-                        ErrorManager.getDefault().notify(pve);
-                        String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND",wsData.getURL());
-                        NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                        Object response = DialogDisplayer.getDefault().notify(d);
-                        return;
-                        
-                    } catch(IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                        String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND",wsData.getURL());
+                if (wsData == null || wsData.getURL() == null || wsData.getURL().length() == 0) {
+                    continue;
+                }
+
+                File wsdlFile = new File(wsData.getURL());
+                LocalFileSystem localFileSystem = null;
+                try {
+
+
+                    this.getMenuPresenter().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    this.getMenuPresenter().validate();
+
+                    this.getMenuPresenter().setCursor(null);
+                    if (null == wsdlFile) {
+                        ErrorManager.getDefault().log(this.getClass().getName() + ".performAction: " + 
+                                NbBundle.getMessage(ViewWSDLAction.class, "READING_WSDL_RETURNED_NULL"));
+                        String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND", wsData.getURL());
                         NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
                         Object response = DialogDisplayer.getDefault().notify(d);
                         return;
                     }
-                    
                     /**
-                     * Now we need to get just the file name without the path.
+                     * get the local file system and then the WSDL file.
                      */
-                    String pathName = wsdlFile.getAbsolutePath();
-                    String fileName = pathName.substring(pathName.lastIndexOf(File.separator)+1);
-                    FileObject wsdlFileObject = localFileSystem.findResource(fileName);
-                    if(null == wsdlFileObject){
-                        ErrorManager.getDefault().log(this.getClass().getName() + ".performAction: " +
-                        NbBundle.getMessage(ViewWSDLAction.class, "READ_WSDL_NOT_FOUND"));
-                        String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND",wsData.getURL());
-                        NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                        Object response = DialogDisplayer.getDefault().notify(d);
-                        return;
-                    }
-                    
+                    localFileSystem = new LocalFileSystem();
+                    localFileSystem.setRootDirectory(new File(wsdlFile.getParent()));
                     /**
-                     * Create a DataObject out of the FileObject so we can edit the file.
+                     * Now set the filesystem to read-only
                      */
-                    DataObject wsdlDataObject = null;
-                    
-                    try {
-                        wsdlDataObject = DataObject.find(wsdlFileObject);
-                    } catch (DataObjectNotFoundException donf) {
-                        ErrorManager.getDefault().notify(donf);
-                        String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND",wsData.getURL());
-                        NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                        Object response = DialogDisplayer.getDefault().notify(d);
-                        return;
-                    }
-                    
-                    /**
-                     * Get the EditorCookie for file and display it.
-                     */
-                    EditorCookie editorCookie = (EditorCookie)wsdlDataObject.getCookie(EditorCookie.class);
-                    if (null != editorCookie) {
-                        editorCookie.open();
-                    } else {
-                        ErrorManager.getDefault().log(this.getClass().getName() + ".performAction: " +
-                        NbBundle.getMessage(ViewWSDLAction.class, "ERROR_GETTING_WSDL_EDITOR_COOKIE"));
-                        String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND",wsData.getURL());
-                        NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                        Object response = DialogDisplayer.getDefault().notify(d);
-                        return;
-                    }
+                    localFileSystem.setReadOnly(true);
+                } catch (PropertyVetoException pve) {
+                    ErrorManager.getDefault().notify(pve);
+                    String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND", wsData.getURL());
+                    NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+                    Object response = DialogDisplayer.getDefault().notify(d);
+                    return;
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
+                    String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND", wsData.getURL());
+                    NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+                    Object response = DialogDisplayer.getDefault().notify(d);
+                    return;
+                }
+
+                /**
+                 * Now we need to get just the file name without the path.
+                 */
+                String pathName = wsdlFile.getAbsolutePath();
+                String fileName = pathName.substring(pathName.lastIndexOf(File.separator) + 1);
+                FileObject wsdlFileObject = localFileSystem.findResource(fileName);
+                if (null == wsdlFileObject) {
+                    ErrorManager.getDefault().log(this.getClass().getName() + ".performAction: " + NbBundle.getMessage(ViewWSDLAction.class, "READ_WSDL_NOT_FOUND"));
+                    String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND", wsData.getURL());
+                    NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+                    Object response = DialogDisplayer.getDefault().notify(d);
+                    return;
+                }
+
+                /**
+                 * Create a DataObject out of the FileObject so we can edit the file.
+                 */
+                DataObject wsdlDataObject = null;
+
+                try {
+                    wsdlDataObject = DataObject.find(wsdlFileObject);
+                } catch (DataObjectNotFoundException donf) {
+                    ErrorManager.getDefault().notify(donf);
+                    String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND", wsData.getURL());
+                    NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+                    Object response = DialogDisplayer.getDefault().notify(d);
+                    return;
+                }
+
+                /**
+                 * Get the EditorCookie for file and display it.
+                 */
+                EditorCookie editorCookie = (EditorCookie) wsdlDataObject.getCookie(EditorCookie.class);
+                if (null != editorCookie) {
+                    editorCookie.open();
+                } else {
+                    ErrorManager.getDefault().log(this.getClass().getName() + ".performAction: " + NbBundle.getMessage(ViewWSDLAction.class, "ERROR_GETTING_WSDL_EDITOR_COOKIE"));
+                    String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND", wsData.getURL());
+                    NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+                    Object response = DialogDisplayer.getDefault().notify(d);
+                    return;
                 }
             }
         }
-        
+
     }
     
 }

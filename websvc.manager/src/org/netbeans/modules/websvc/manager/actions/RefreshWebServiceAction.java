@@ -57,7 +57,7 @@ public class RefreshWebServiceAction extends NodeAction {
     
     @Override
     protected String iconResource() {
-        return "org/netbeans/modules/visualweb/websvcmgr/resources/MyActionIcon.gif"; // NOI18N
+        return "org/netbeans/modules/websvc/manager/resources/MyActionIcon.gif"; // NOI18N
     }
     
     public String getName() {
@@ -66,29 +66,20 @@ public class RefreshWebServiceAction extends NodeAction {
     
     protected void performAction(Node[] nodes) {
         
-        
         if(null != nodes && nodes.length > 0) {
             String msg = NbBundle.getMessage(RefreshWebServiceAction.class, "WS_REFRESH");
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
             Object response = DialogDisplayer.getDefault().notify(d);
             if(null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
                 for(int ii = 0; ii < nodes.length; ii++) {
-                    Node node = null;
-                    if(nodes[ii] instanceof FilterNode){
-                        node = (Node)(nodes[ii]).getCookie(WebServiceNode.class);
-                    }else{
-                        node = nodes[ii];
-                    }
-
-                    if(node instanceof WebServiceNode) {
-                        final WebServiceNode currentNode = (WebServiceNode)node;
-                        if(null == currentNode) continue;
-
+                    final WebServiceData wsData = nodes[ii].getLookup().lookup(WebServiceData.class);
+                    
+                    if(wsData != null) {
                         Runnable refreshTask = new Runnable() {
                             public void run() {
                                 try {
-                                    if (!WebServiceManager.getInstance().isCompiling(currentNode.getWebServiceData())) {
-                                        WebServiceManager.getInstance().refreshWebService(currentNode.getWebServiceData());
+                                    if (!WebServiceManager.getInstance().isCompiling(wsData)) {
+                                        WebServiceManager.getInstance().refreshWebService(wsData);
                                     }
                                 } catch (IOException ioe) {
                                     ErrorManager.getDefault().notify(ioe);

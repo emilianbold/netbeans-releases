@@ -39,6 +39,8 @@ import org.openide.nodes.Sheet.Set;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -63,9 +65,14 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie {
     }
     
     public WebServiceNode(WebServiceData wsData) {
-        super(new WebServiceNodeChildren(wsData));
+        this(wsData, new InstanceContent());
+    }
+    
+    private WebServiceNode(WebServiceData wsData, InstanceContent content) {
+        super(new WebServiceNodeChildren(wsData), new AbstractLookup(content));
         this.wsData = wsData;
-        
+        content.add(wsData);
+        content.add(this);
         setName(wsData.getWsdlService().getName());
     }
 
@@ -73,7 +80,7 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie {
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         for (WebServiceManagerExt ext : ManagerUtil.getExtensions()) {
-            for (Action a : ext.getMethodActions(this)) {
+            for (Action a : ext.getWebServiceActions(this)) {
                 actions.add(a);
             }
         }

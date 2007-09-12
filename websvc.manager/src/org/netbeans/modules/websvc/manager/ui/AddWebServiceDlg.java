@@ -488,7 +488,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
             }
         });
 
-        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/visualweb/websvcmgr/resources/warning.png"))); // NOI18N
+        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/manager/resources/warning.png"))); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

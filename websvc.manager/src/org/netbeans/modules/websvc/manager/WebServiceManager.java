@@ -187,7 +187,7 @@ public final class WebServiceManager {
     
     private void removeWebService(WebServiceData wsData, boolean removeFromModel) {
         if (removeFromModel)
-            WebServiceManager.getInstance().removeWebService(wsData);        
+            WebServiceListModel.getInstance().removeWebService(wsData.getId());
         Collection<? extends WebServiceManagerExt> extensions = Lookup.getDefault().lookupAll(WebServiceManagerExt.class);
         WebServiceDescriptor jaxRpcDescriptor = wsData.getJaxRpcDescriptor();
         WebServiceDescriptor jaxWsDescriptor = wsData.getJaxWsDescriptor();
