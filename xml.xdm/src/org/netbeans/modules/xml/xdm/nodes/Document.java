@@ -997,7 +997,7 @@ public class Document extends NodeImpl implements Node, org.w3c.dom.Document {
 
     private FindNamespaceVisitor getNamespaceCache() {
         if (fnv == null || fnv.get() == null) {
-            fnv = new SoftReference(new FindNamespaceVisitor(this));
+            fnv = new SoftReference<FindNamespaceVisitor>(new FindNamespaceVisitor(this));
         }
         return fnv.get();
     }
