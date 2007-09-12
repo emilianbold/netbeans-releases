@@ -35,10 +35,15 @@ public class FileModelTest extends TraceModelTestBase {
         super.setUp();
     }
 
+    @Override
     protected void postSetUp() {
         // init flags needed for file model tests
         getTraceModel().setDumpModel(true);
         getTraceModel().setDumpPPState(true);
+    }
+    
+    public void testPreProcDefinedKeyword() throws Exception {
+        performTest("preproc_defined_keyword.cc");        
     }
     
     public void testFriendsDeclaration() throws Exception {
