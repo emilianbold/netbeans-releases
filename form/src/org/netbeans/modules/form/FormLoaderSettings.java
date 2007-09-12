@@ -31,7 +31,7 @@ import org.openide.util.NbPreferences;
  * Settings for the form editor.
  */
 
-public class FormLoaderSettings  {
+public class FormLoaderSettings implements HelpCtx.Provider   {
     private static final FormLoaderSettings INSTANCE = new FormLoaderSettings();
     public static final String PROP_USE_INDENT_ENGINE = "useIndentEngine"; // NOI18N
 
