@@ -287,6 +287,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         
         //force the menu edit layer to be created
         getMenuEditLayer();
+
+        // vlv: print
+        designPanel.putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
     }
 
     void reset(FormEditor formEditor) {
@@ -1526,19 +1529,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         
     private void finishInPlaceEditing(boolean applyChanges) {
         if (applyChanges) {
-            try {		
-		Object value = editedProperty.getValue();
-		if(value instanceof String) {
-		    editedProperty.setValue(textEditLayer.getEditedText());		    
-		} else {	
-		    PropertyEditor prEd = editedProperty.findDefaultEditor();
-		    editedProperty.setValue(new FormProperty.ValueWithEditor(textEditLayer.getEditedText(), prEd));    		    
-		}		                 
-	    } catch (Exception ex) { // should not happen
+            try {       
+        Object value = editedProperty.getValue();
+        if(value instanceof String) {
+            editedProperty.setValue(textEditLayer.getEditedText());         
+        } else {    
+            PropertyEditor prEd = editedProperty.findDefaultEditor();
+            editedProperty.setValue(new FormProperty.ValueWithEditor(textEditLayer.getEditedText(), prEd));             
+        }                        
+        } catch (Exception ex) { // should not happen
                 ex.printStackTrace();
             }
         }
-	if (handleLayer != null) {
+    if (handleLayer != null) {
             textEditLayer.setVisible(false);
             handleLayer.setVisible(true);
             handleLayer.requestFocus();
@@ -1825,7 +1828,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  contInterior.put(\"" + componentId + "\", new Rectangle(" +  //NOI18N
                                                         rect.x + ", " + rect.y + ", " + rect.width + ", " + rect.height + "));"); //NOI18N
-	    }
+        }
             
             return rect;
         }
@@ -1904,17 +1907,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                        PaddingType paddingType)
         {
             String id = null;
-	    if (getLayoutDesigner().logTestCode()) {
-		id = comp1Id + "-" + comp2Id + "-" + dimension + "-" + comp2Alignment + "-" // NOI18N
+        if (getLayoutDesigner().logTestCode()) {
+        id = comp1Id + "-" + comp2Id + "-" + dimension + "-" + comp2Alignment + "-" // NOI18N
                      + (paddingType != null ? paddingType.ordinal() : 0);
-	    }
+        }
             
             JComponent comp1 = (JComponent) getVisualComponent(comp1Id, true, true);
             JComponent comp2 = (JComponent) getVisualComponent(comp2Id, true, true);
             if (comp1 == null || comp2 == null) { // not JComponents...
                 if (getLayoutDesigner().logTestCode()) {
-                    getLayoutDesigner().testCode.add("  prefPadding.put(\"" + id +				    //NOI18N
-			    "\", new Integer(10)); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType");	    //NOI18N
+                    getLayoutDesigner().testCode.add("  prefPadding.put(\"" + id +                  //NOI18N
+                "\", new Integer(10)); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType");       //NOI18N
                 }
                 return 10; // default distance between components (for non-JComponents)
             }
@@ -1945,7 +1948,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  prefPadding.put(\"" + id + "\", new Integer(" + prefPadding +   //NOI18N
-				")); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType");			    //NOI18N
+                ")); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType");             //NOI18N
             }
             
             return prefPadding;
@@ -1957,9 +1960,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                                int compAlignment)
         {
             String id = null;
-	    if (getLayoutDesigner().logTestCode()) {
-		id = parentId + "-" + compId + "-" + dimension + "-" + compAlignment; //NOI18N
-	    }
+        if (getLayoutDesigner().logTestCode()) {
+        id = parentId + "-" + compId + "-" + dimension + "-" + compAlignment; //NOI18N
+        }
             
             JComponent comp = null;
             Container parent = (Container)getVisualComponent(parentId, true, false);
@@ -1971,8 +1974,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
             if (comp == null) {
                 if (getLayoutDesigner().logTestCode()) {
-                    getLayoutDesigner().testCode.add("  prefPaddingInParent.put(\"" + id +	    //NOI18N
-			    "\", new Integer(10)); // parentId-compId-dimension-compAlignment");    //NOI18N
+                    getLayoutDesigner().testCode.add("  prefPaddingInParent.put(\"" + id +      //NOI18N
+                "\", new Integer(10)); // parentId-compId-dimension-compAlignment");    //NOI18N
                 }
                 return 10; // default distance from parent border (for non-JComponents)
             }
@@ -2002,7 +2005,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  prefPaddingInParent.put(\"" + id + "\", new Integer(" +  //NOI18N
-			prefPadding + ")); // parentId-compId-dimension-compAlignment");		     //NOI18N
+            prefPadding + ")); // parentId-compId-dimension-compAlignment");             //NOI18N
             }
 
             return prefPadding;
