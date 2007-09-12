@@ -132,16 +132,22 @@ public class CompletionProviderImpl implements CompletionProvider {
         return r.getList ();
     }
 
-    private static TokenSequence getInnerTokenSequence (
+    private static TokenSequence getDeepestTokenSequence (
         TokenHierarchy  tokenHierarchy,
         int             offset
     ) {
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-        tokenSequence.move (offset - 1);
-        while (tokenSequence.moveNext ()) {
-            TokenSequence ts = tokenSequence.embedded ();
-            if (ts == null) break;
-            tokenSequence = ts;
+        while(tokenSequence != null) {
+            tokenSequence.move(offset - 1);
+            if(!tokenSequence.moveNext()) {
+                break;
+            }
+            TokenSequence ts = tokenSequence.embedded();
+            if(ts == null) {
+                return tokenSequence;
+            } else {
+                tokenSequence = ts;
+            }
         }
         return tokenSequence;
     }
@@ -175,7 +181,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
             try {
-                TokenSequence tokenSequence = getInnerTokenSequence (
+                TokenSequence tokenSequence = getDeepestTokenSequence (
                     tokenHierarchy,
                     component.getCaret ().getDot ()
                 );
@@ -211,7 +217,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             }
             try {
                 int offset = component.getCaret ().getDot ();
-                TokenSequence tokenSequence = getInnerTokenSequence (
+                TokenSequence tokenSequence = getDeepestTokenSequence (
                     tokenHierarchy,
                     component.getCaret ().getDot ()
                 );
