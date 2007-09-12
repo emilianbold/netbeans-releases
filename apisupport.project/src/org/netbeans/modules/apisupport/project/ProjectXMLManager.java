@@ -446,7 +446,7 @@ public final class ProjectXMLManager {
         Element testTypeEl = null;
         //iterate through test types to determine if testType exist
         for (Element tt : Util.findSubElements(testModuleDependenciesEl)) {
-            Node nameNode = findElement(tt, "name");
+            Node nameNode = findElement(tt, "name"); // NOI18N
             assert nameNode!=null : "should be some child with name";
             //Node nameNode = tt.getFirstChild();
             //nameNode.getNodeName()
@@ -544,10 +544,13 @@ public final class ProjectXMLManager {
                             if (me != null) {
                                 TestModuleDependency tmd = new TestModuleDependency(me, test, recursive, compile);
                                 if (!directTestDeps.add(tmd)) {
-                                    //testdependency already exist
-                                    String msg = "Invalid project.xml(" + project.getPathWithinNetBeansOrg() + 
-                                            "), testdependency " + tmd.getModule().getCodeNameBase() + 
-                                            " is duplicated!";
+                                    // testdependency already exists
+                                    String path = project.getPathWithinNetBeansOrg();
+                                    if (path == null) {
+                                        path = project.getProjectDirectoryFile().getAbsolutePath();
+                                    }
+                                    String msg = "Invalid project.xml (" + path + "); testdependency " // NOI18N
+                                        + tmd.getModule().getCodeNameBase() + " is duplicated!"; // NOI18N
                                     Util.err.log(ErrorManager.WARNING, msg);
                                 }
                             }
