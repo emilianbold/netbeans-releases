@@ -64,8 +64,9 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
         } else {
             removeAll();
             ClassHierarchyPanel panel = new ClassHierarchyPanel();
-            panel.setClass(decl);
             add(panel, BorderLayout.CENTER);
+            validate();
+            panel.setClass(decl);
             last = panel;
         }
         last.requestFocusInWindow();
@@ -79,8 +80,9 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
         } else {
             removeAll();
             IncludeHierarchyPanel panel = new IncludeHierarchyPanel();
-            panel.setFile(file);
             add(panel, BorderLayout.CENTER);
+            validate();
+            panel.setFile(file);
             last = panel;
         }
         validate();

@@ -20,18 +20,14 @@
 package org.netbeans.modules.cnd.navigation.includeview;
 
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.services.IncludedModel;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -104,33 +100,30 @@ public class IncludeNode extends AbstractCsmNode {
                 for (final CsmInclude inc : object.getIncludes()){
                     if (find.equals(inc.getIncludeFile())) {
                         if (CsmKindUtilities.isOffsetable(inc)){
-                            return new AbstractAction(){
-                                public void actionPerformed(ActionEvent e) {
-                                    CsmUtilities.openSource((CsmOffsetable)inc);
-                                }
-                            };
+                            return new GoToFileAction(inc);
                         }
                         break;
                     } else if (object.equals(inc.getIncludeFile())){
                         if (CsmKindUtilities.isOffsetable(inc)){
-                            return new AbstractAction(){
-                                public void actionPerformed(ActionEvent e) {
-                                    CsmUtilities.openSource((CsmOffsetable)inc);
-                                }
-                            };
+                            return new GoToFileAction(inc);
                         }
                     }
                 }
             }
-            return new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    CsmUtilities.openSource(object);
-                }
-            };
+            return new GoToFileAction(object);
         }
-        return super.getPreferredAction();
+        return null;
     }
-    
+
+    @Override
+    public Action[] getActions(boolean context) {
+        Action action = getPreferredAction();
+        if (action != null){
+            return new Action[] { action };
+        }
+        return new Action[0];
+    }
+
     private String getString(String key) {
         return NbBundle.getMessage(IncludeNode.class, key);
     }

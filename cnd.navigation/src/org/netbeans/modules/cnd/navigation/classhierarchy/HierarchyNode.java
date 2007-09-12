@@ -19,15 +19,12 @@
 
 package org.netbeans.modules.cnd.navigation.classhierarchy;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -59,14 +56,19 @@ public class HierarchyNode extends AbstractCsmNode{
     public Action getPreferredAction() {
         if (object.isValid()) {
             if (CsmKindUtilities.isOffsetable(object)){
-                return new AbstractAction(){
-                    public void actionPerformed(ActionEvent e) {
-                        CsmUtilities.openSource((CsmOffsetable)object);
-                    }
-                };
+                return new GoToClassAction((CsmOffsetable)object);
             }
         }
-        return super.getPreferredAction();
+        return null;
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        Action action = getPreferredAction();
+        if (action != null){
+            return new Action[] { action };
+        }
+        return new Action[0];
     }
 
     private String getString(String key) {

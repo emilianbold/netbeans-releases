@@ -21,12 +21,10 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 
 
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -135,13 +133,18 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     @Override
     public Action getPreferredAction() {
         if (CsmKindUtilities.isOffsetable(object)){
-            return new AbstractAction(){
-                public void actionPerformed(ActionEvent e) {
-                    CsmUtilities.openSource((CsmOffsetable)object);
-                }
-            };
+            return new GoToDeclarationAction((CsmOffsetable)object);
         }
-        return super.getPreferredAction();
+        return null;
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        Action action = getPreferredAction();
+        if (action != null){
+            return new Action[] { action };
+        }
+        return new Action[0];
     }
     
     public static CppDeclarationNode nodeFactory(CsmObject element, List<IndexOffsetNode> lineNumberIndex, boolean isFriend){
