@@ -406,11 +406,13 @@ public class IconEditor extends PropertyEditorSupport
 
     private NbImageIcon iconFromFileName(String fileName) {
         File file = new File(fileName);
-        try {
-            Icon icon = new ImageIcon(ImageIO.read(file));
-            new NbImageIcon(TYPE_FILE, fileName, icon);
-        } catch (IOException ex) {
-            Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
+        if (file.exists()) {
+            try {
+                Icon icon = new ImageIcon(ImageIO.read(file));
+                return new NbImageIcon(TYPE_FILE, fileName, icon);
+            } catch (IOException ex) {
+                Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, ex);
+            }
         }
         return null;
     }
