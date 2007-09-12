@@ -49,12 +49,11 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     org.netbeans.api.project.Project nbProject = null ;
     private static Image brokenDsReferenceBadge = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png" ); // NOI18N
     private static Image dSContainerImage = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png" ); // NOI18N
-    private volatile boolean firstTimeShowAlert = false;
 
     public ProjectDataSourceNode(org.netbeans.api.project.Project project) {
         super(new ProjectDataSourceNodeChildren(project));
         nbProject = project;
-//        CurrentProject.getInstance().setProject(nbProject);
+
         // Create a weak listener so that the connection listener can be GC'd when listener for a project is no longer referenced
         ConnectionManager.getDefault().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getDefault()));
         initPuppy() ;
