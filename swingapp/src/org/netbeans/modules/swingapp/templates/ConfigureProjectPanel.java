@@ -52,7 +52,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.swingapp.templates.ConfigureProjectPanel");
+        return new HelpCtx("org.netbeans.modules.swingapp.templates.ConfigureProjectPanel"); // NOI18N
     }
 
     public void readSettings(Object settings) {

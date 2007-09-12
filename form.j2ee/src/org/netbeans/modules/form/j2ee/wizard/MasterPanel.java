@@ -498,7 +498,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
      * @return default help.
      */
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.form.j2ee.wizard.MasterPanel");
+        return new HelpCtx("org.netbeans.modules.form.j2ee.wizard.MasterPanel"); // NOI18N
     }
 
     public void readSettings(Object settings) {

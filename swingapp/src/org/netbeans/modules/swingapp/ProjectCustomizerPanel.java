@@ -290,7 +290,7 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel implements HelpCt
     // End of variables declaration//GEN-END:variables
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.swingapp.ProjectCustomizerPanel");
+        return new HelpCtx("org.netbeans.modules.swingapp.ProjectCustomizerPanel"); // NOI18N
     }
     
 }
