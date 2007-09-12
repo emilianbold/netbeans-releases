@@ -326,7 +326,7 @@ public class CasaWrapperModelTest extends TestCase {
         
         CasaServiceEngineServiceUnit seSU = 
                 casaWrapperModel.getServiceEngineServiceUnits().get(0);        
-        casaWrapperModel.setServiceEngineServiceUnitLocation(seSU, x, y);
+        casaWrapperModel.setLocation(seSU, x, y);
         
         assertEquals(x, seSU.getX());
         assertEquals(y, seSU.getY());
@@ -345,7 +345,7 @@ public class CasaWrapperModelTest extends TestCase {
                 casaWrapperModel.getBindingComponentServiceUnits().get(0);
         CasaPort casaPort = bcSU.getPorts().getPorts().get(0);
         
-        casaWrapperModel.setCasaPortLocation(casaPort, x, y);
+        casaWrapperModel.setLocation(casaPort, x, y);
         assertEquals(x, casaPort.getX());
         assertEquals(y, casaPort.getY());
     }
@@ -543,7 +543,7 @@ public class CasaWrapperModelTest extends TestCase {
         System.out.println("removeEndpoint");
         CasaConnection casaConnection = casaWrapperModel.getCasaConnectionList(false).get(0);
         CasaEndpointRef endpointRef = casaWrapperModel.getCasaEndpointRef(casaConnection, false);
-        casaWrapperModel.removeEndpoint(endpointRef);
+        casaWrapperModel.removeExternalEndpoint(endpointRef);
         CasaEndpointRef newEndpointRef = casaWrapperModel.getCasaEndpointRef(casaConnection, false);
         assertEquals(null, newEndpointRef);
     }
@@ -600,7 +600,7 @@ public class CasaWrapperModelTest extends TestCase {
         CasaServiceEngineServiceUnit seSU = casaWrapperModel.addServiceEngineServiceUnit(false,0,0);
         boolean isConsumes = true;
         CasaEndpointRef expResult = null;
-        CasaEndpointRef result = casaWrapperModel.addEndpointToServiceEngineServiceUnit(seSU, isConsumes);
+        CasaEndpointRef result = casaWrapperModel.addExternalEndpoint(seSU, isConsumes);
         assertEquals("extEndpoint1", result.getEndpointName());
     }
 
@@ -624,7 +624,7 @@ public class CasaWrapperModelTest extends TestCase {
         CasaServiceEngineServiceUnit seSU = casaWrapperModel.getServiceEngineServiceUnits().get(0);
         
         int oldSize = seSU.getEndpoints().size();
-        casaWrapperModel.addEndpointsToServiceEngineServiceUnit(suTransfer, seSU);
+        casaWrapperModel.addExternalEndpoints(suTransfer, seSU);
         int newSize = seSU.getEndpoints().size();
         assertEquals(oldSize+1, newSize);
         
@@ -644,7 +644,7 @@ public class CasaWrapperModelTest extends TestCase {
         String type = "MyProjectType";
         int x = 0;
         int y = 0;
-        casaWrapperModel.addInternalJBIModule(project, type, x, y);
+        casaWrapperModel.addJBIModule(project, type, x, y);
         
     }
 

@@ -44,9 +44,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -267,12 +265,14 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
 
     /**
-     * Sets the endpoint name of a casa port.
+     * Sets the endpoint name of a user-defined casa port in the compapp project. 
+     * The corresponding WSDL port's name will also be updated.
      */
+    // TRANSACTION BOUNDARY
+    // USE CASE: from property sheet
+    // AFFECT: CASA, COMPAPP.WSDL
     public void setEndpointName(final CasaPort casaPort, String endpointName) { 
-        if (!isDefinedInCompApp(casaPort)) {
-            throw new RuntimeException("Cannot change endpoint defined in component projects."); // NOI18N
-        }
+        assert isDefinedInCompApp(casaPort);
         
         CasaEndpointRef endpointRef = casaPort.getConsumes();
         if (endpointRef == null) {
@@ -284,17 +284,20 @@ public class CasaWrapperModel extends CasaModelImpl {
 
     /**
      * Sets the endpoint name of a casa consumes or casa provides.
+     * The endpoint is either a external endpoint or a user-defined endpoint in
+     * compapp project.
      */
+    // TRANSACTION BOUNDARY
+    // USE CASE: from property sheet
+    // AFFECT: CASA, COMPAPP.WSDL
     public void setEndpointName(final CasaEndpointRef endpointRef, 
             String endpointName) {
         CasaPort casaPort = getCasaPort(endpointRef);
         if (casaPort == null) {
             CasaServiceEngineServiceUnit seSU = getCasaEngineServiceUnit(endpointRef);
-            if (seSU.isInternal()) {
-                throw new RuntimeException("Cannot change endpoint in internal JBI modules."); // NOI18N                
-            }
-        } else if (!isDefinedInCompApp(casaPort)) {
-            throw new RuntimeException("Cannot change endpoint defined in component projects."); // NOI18N
+            assert !seSU.isInternal();
+        } else {
+            assert isDefinedInCompApp(casaPort);
         }
         
         setEndpointName(endpointRef, endpointRef, endpointName);
@@ -403,10 +406,13 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Sets the location of a casa service engine service unit.
+     * Sets the location of an internal/external service engine service unit.
      */
-    public void setServiceEngineServiceUnitLocation(
-            final CasaServiceEngineServiceUnit seSU, int x, int y) {
+    // TRANSACTION BOUNDARY
+    // USE CASE: on move
+    // AFFECT: CASA
+    public void setLocation(final CasaServiceEngineServiceUnit seSU, 
+            int x, int y) {
         
         if (seSU.getX() == x && seSU.getY() == y) {
             return;
@@ -426,7 +432,10 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Sets the location of a casa port.
      */
-    public void setCasaPortLocation(final CasaPort casaPort, int x, int y) {
+    // TRANSACTION BOUNDARY
+    // USE CASE: on drop (auto-layout); on move
+    // AFFECT: CASA
+    public void setLocation(final CasaPort casaPort, int x, int y) {
         
         if (casaPort.getX() == x && casaPort.getY() == y) {
             return;
@@ -445,8 +454,11 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     /**
      * Adds a brand new connection or mark a previously deleted connection
-     * as unchanged.
+     * as unchanged. Incompatible endpoint interface may be adjusted.
      */
+    // TRANSACTION BOUNDARY (convenience method)
+    // USE CASE: AddConnectionAction on Navigator
+    // AFFECT: CASA, COMPAPP.WSDL
     public CasaConnection addConnection(final CasaConsumes consumes,
             final CasaProvides provides) {
         return addConnection(consumes, provides, true);
@@ -463,15 +475,17 @@ public class CasaWrapperModel extends CasaModelImpl {
      *                  consumes endpoint; if <code>false</code>, the "source" 
      *                  endpoint is the provides endpoint.
      */
+    // TRANSACTION BOUNDARY
+    // USE CASE: DnD-style connection on canvas; AddConnectionAction on Navigator
+    // AFFECT: CASA, COMPAPP.WSDL
     public CasaConnection addConnection(final CasaConsumes consumes,
             final CasaProvides provides, boolean direction) {
                 
         if (!canConnect(consumes, provides)) {
-            throw new RuntimeException(
-                    "The two endpoints cannot be connected because of their incompatible interfaces."); 
+            throw new RuntimeException("The two endpoints cannot be connected."); // NOI18N
         }
         
-        // Adjust the incompatible BC interface first, if necessary.
+        // 1. Adjust the incompatible BC interface first, if necessary.
         boolean endpoint1Defined = isEndpointDefined(consumes);
         boolean endpoint2Defined = isEndpointDefined(provides);
         if (endpoint1Defined && endpoint2Defined) {
@@ -486,27 +500,29 @@ public class CasaWrapperModel extends CasaModelImpl {
                 boolean isFreeEditablePort2 = casaPort2 != null && 
                         isEditable(casaPort2) &&
                         getConnections(casaPort2, false).size() == 0; // the flag here doesn't matter 
-                
+
                  if (isFreeEditablePort2 && direction) {
-                    setEndpointInterfaceQName(provides, null);
+                    _setEndpointInterfaceQName(provides, null);
                 } else {
-                    setEndpointInterfaceQName(consumes, null);
+                    _setEndpointInterfaceQName(consumes, null);
                 }
             }
         }
-        
+
         CasaConnection connection = getCasaConnection(consumes, provides);
-        
+
         if (connection == null) {
+            // 2.1. Add brand new connection
             connection = addNewConnection(consumes, provides);
         } else {
+            // 2.2 Revitalize a deleted connection
             String state = connection.getState();
             if (!ConnectionState.DELETED.getState().equals(state)) {
                 throw new RuntimeException(
-                        "Cannot add a connection that is marked as \"new\" or \"unchanged\""); 
+                        "Cannot add a connection that is marked as \"new\" or \"unchanged\""); // NOI18N
             }
             setConnectionState(connection, ConnectionState.UNCHANGED);
-        }
+        } 
         
         return connection;
     }
@@ -535,7 +551,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         if (definedEndpointRef != null && undefinedEndpointRef != null) {
             // Populate the interface name of the undefined endpoint
             QName interfaceQName = definedEndpointRef.getInterfaceQName();
-            setEndpointInterfaceQName(undefinedEndpointRef, interfaceQName);
+            _setEndpointInterfaceQName(undefinedEndpointRef, interfaceQName);
         }
         
         // Create a new casa connection
@@ -569,12 +585,8 @@ public class CasaWrapperModel extends CasaModelImpl {
             final Port port, final QName interfaceQName, String bType) {
         
         CasaWrapperModel casaWrapperModel = (CasaWrapperModel) casaPort.getModel();
-        PortType portType = casaWrapperModel.getPortType(interfaceQName); //casaWrapperModel.getCasaPortType(casaPort);
-//        System.out.println("Got WSDLEndpoint Action.. Pt: " + portType);
-        
+        PortType portType = casaWrapperModel.getPortType(interfaceQName);         
         String wsdlLocation = casaWrapperModel.getWSDLLocation(interfaceQName);
-
-//        System.out.println("Got WSDL location: " + wsdlLocation);
         
         ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
@@ -668,7 +680,11 @@ public class CasaWrapperModel extends CasaModelImpl {
                 //System.out.println(invalidBinding + " subType: " + // NOI18N
                 //        bindingSubType.getName()); 
             }
-            
+//        } catch (RuntimeException e) {
+//            if (wsdlModel.isIntransaction()) {
+//                wsdlModel.rollbackTransaction();
+//            }
+//            throw e;
         } finally {
             if (wsdlModel.isIntransaction()) {
                 wsdlModel.endTransaction();
@@ -680,6 +696,9 @@ public class CasaWrapperModel extends CasaModelImpl {
      * Removes a connection or marks it as deleted depending on the current
      * state of the connection.
      */
+    // TRANSACTION BOUNDARY
+    // USE CASE: various delete action
+    // AFFECT: CASA
     public void removeConnection(final CasaConnection connection) {
         removeConnection(connection, false);
     }
@@ -716,7 +735,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             if (casaPort != null) {
 //                if (isDefinedInCompApp(casaPort)) {
 //                    if (getConnections(casaPort, false).size() == 1) { // this is the only visible connection left
-//                        setEndpointInterfaceQName(endpointRef, null);
+//                        _setEndpointInterfaceQName(endpointRef, null);
 //                    }
 //                }
             } else {
@@ -724,7 +743,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                         getCasaEngineServiceUnit(endpointRef);
                 if (sesu != null && !sesu.isInternal()) { // endpoint belongs to external SESU
                     if (getConnections(endpointRef, false).size() == 1) { // this is the only visible connection left
-                        setEndpointInterfaceQName(endpointRef, null);
+                        _setEndpointInterfaceQName(endpointRef, null);
                     }
                 }
             }
@@ -1118,13 +1137,15 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Adds an internal or external unknown service engine service unit
-     * (from the palette).
+     * Adds an external service engine service unit (from the palette).
      */
+    // TRANSACTION BOUNDARY 
+    // USE CASE: DnD from palette
+    // AFFECT: CASA
     public CasaServiceEngineServiceUnit addServiceEngineServiceUnit(
             boolean internal, int x, int y) {
         String projName = getUniqueUnknownServiceEngineServiceUnitName();
-        return addServiceEngineServiceUnit(projName, 
+        return _addServiceEngineServiceUnit(projName, 
                 "",   // component name unknown       // NOI18N
                 null, // use default service unit description
                 internal, 
@@ -1149,7 +1170,21 @@ public class CasaWrapperModel extends CasaModelImpl {
                 
     }
     
+    /**
+     * Adds an external service engine service unit (from JBI Manager).
+     */
+    // TRANSACTION BOUNDARY
+    // USE CASE: DnD from JBI Manager
+    // AFFECT: CASA
     public CasaServiceEngineServiceUnit addServiceEngineServiceUnit(
+            String projName, String compName, String description,
+            boolean internal, boolean unknown, boolean defined,
+            int x, int y) {
+        return _addServiceEngineServiceUnit(projName, compName, description, 
+                internal, unknown, defined, x, y);
+    }
+    
+    private CasaServiceEngineServiceUnit _addServiceEngineServiceUnit(
             String projName, String compName, String description,
             boolean internal, boolean unknown, boolean defined,
             int x, int y) {
@@ -1217,6 +1252,9 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Adds a new WSDL endpoint.
      */
+    // TRANSACTION BOUNDARY
+    // USE CASE: AddWSDLPortAction on the WSDL Port Region; DnD from Palette
+    // AFFECT: CASA, COMPAPP.WSDL
     public CasaPort addCasaPort(String bindingType, String componentName, int x, int y) {
         
         // 1. Update casa wsdl
@@ -1322,13 +1360,17 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Add a port from wsdl file into CASA. This is to restore deleted casa port
-     * from component projects.
+     * Add a WSDL port from WSDL file into CASA. This is to restore user-deleted
+     * CASA port from component projects.
      *
-     * @param port  selected port to add
-     * @param wsdlFile the source wsdl file
+     * @param port  selected WSDL port to add
+     * @param wsdlFile the source WSDL file
      * @return the casa port or null if failed to add
      */
+    // TRSACTION ANNOTATION
+    // USE CASE: LoadWSDLPortsAction from SESU's context menu
+    // AFFECT: CASA
+    // TODO: support adding multiple ports
     public CasaPort addCasaPortFromWsdlPort(final Port port, 
             final File wsdlFile) {
         try {
@@ -1503,6 +1545,9 @@ public class CasaWrapperModel extends CasaModelImpl {
      *
      * @param casaPort          a casa port
      */
+    // TRANSACTION BOUNDARY
+    // USE CASE: various delete action
+    // AFFECT: CASA, COMPAPP.WSDL
     public void removeCasaPort(final CasaPort casaPort) {
         
         String linkHref = casaPort.getLink().getHref();
@@ -1516,14 +1561,14 @@ public class CasaWrapperModel extends CasaModelImpl {
         CasaConsumes consumes = casaPort.getConsumes();
         if (consumes != null) {
             for (CasaConnection connection : getConnections(consumes, false)) { // don't include "deleted" connection
-                removeConnection(connection);
+                removeConnection(connection, false); 
             }
         }
         
         CasaProvides provides = casaPort.getProvides();
         if (provides != null) {
             for (CasaConnection connection : getConnections(provides, false)) { // don't include "deleted" connection
-                removeConnection(connection);
+                removeConnection(connection, false); 
             }
         }
         
@@ -1650,22 +1695,24 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Removes a Consumes/Provides endpoint in an (external) service engine
-     * service unit. All the visible connections connecting the endpoint 
-     * are deleted as well.
+     * Removes a external Consumes/Provides endpoint from an external 
+     * service engine service unit. All the visible connections connecting  
+     * the endpoint are deleted as well.
      *
-     * @param endpoint      a CasaConsumes or CasaProvides endpoint
+     * @param endpoint      an external CasaConsumes or CasaProvides endpoint
      */
-    public void removeEndpoint(final CasaEndpointRef endpointRef) {
+    // TRANSACTION BOUNDARY
+    // USE CASE: various delete action inside an external SE SU
+    // AFFECT: CASA
+    public void removeExternalEndpoint(final CasaEndpointRef endpointRef) {
         
         // 1. Delete any visible connections
         List<CasaConnection> visibleConnections = 
                 getConnections(endpointRef, false);
         for (CasaConnection visibleConnection : visibleConnections) {
-            removeConnection(visibleConnection);
+            removeConnection(visibleConnection, false);
         }
         
-        CasaPort casaPort = getCasaPort(endpointRef);
         CasaEndpoint endpoint = endpointRef.getEndpoint().get();
         
         // 2. Delete the endpoint reference itself
@@ -1685,6 +1732,17 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
+        CasaEndpoints endpoints = getRootComponent().getEndpoints();
+        startTransaction();
+        try {
+            endpoints.removeEndpoint(endpoint);
+        } finally {
+            if (isIntransaction()) {
+                endTransaction();
+            }
+        }
+        
+        /*
         // Delete dangling endpoint
         boolean endpointRemoved = removeDanglingEndpoint(endpoint);
         
@@ -1719,6 +1777,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 }
             }
         }
+        */
     }
     
     /**
@@ -1900,12 +1959,23 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Adds a new endpoint to an (external) service engine service unit.
+     * Adds a new external endpoint to an external service engine service unit.
      */
-    public CasaEndpointRef addEndpointToServiceEngineServiceUnit(
+    // TRANSACTION BOUNDARY
+    // USE CASE: Add[Consumes|Provides]PinAction on external SESU; DnD from palette
+    // AFFECT: CASA
+    public CasaEndpointRef addExternalEndpoint(
+            final CasaServiceEngineServiceUnit seSU, boolean isConsumes) {
+        return _addExternalEndpoint(seSU, isConsumes);
+    }
+    
+    /**
+     * Adds a new external endpoint to an external service engine service unit.
+     */
+    private CasaEndpointRef _addExternalEndpoint(
             final CasaServiceEngineServiceUnit seSU, boolean isConsumes) {
         
-        assert !seSU.isInternal() : "Not supporting adding new endpoints to internal service units for now.";
+        assert !seSU.isInternal();
         
         CasaComponentFactory casaFactory = getFactory();
         
@@ -1949,10 +2019,14 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Adds a list of endpoints (from JBI Manager DnD transfer) to an
-     * (external) service engine service unit.
+     * Adds a list of external endpoints (from JBI Manager DnD transfer) to an
+     * external service engine service unit.
      */
-    public void addEndpointsToServiceEngineServiceUnit(
+    // TRANSACTION BOUNDARY
+    // USE CASE: DnD from JBIManager
+    // AFFECT: CASA
+    // TODO: fix TransferObject
+    public void addExternalEndpoints(
             final JBIServiceUnitTransferObject suTransfer,
             final CasaServiceEngineServiceUnit seSU) {
         
@@ -1960,8 +2034,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         List<JBIServiceUnitTransferObject.Endpoint> pList = 
                 suTransfer.getProvidesEndpoints();
         for (JBIServiceUnitTransferObject.Endpoint p : pList) {
-            CasaEndpointRef endpointRef =
-                    addEndpointToServiceEngineServiceUnit(seSU, false);
+            CasaEndpointRef endpointRef = _addExternalEndpoint(seSU, false);
             CasaEndpoint endpoint = endpointRef.getEndpoint().get();
             
             model.startTransaction();
@@ -1978,8 +2051,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         List<JBIServiceUnitTransferObject.Endpoint> cList = 
                 suTransfer.getConsumesEndpoints();
         for (JBIServiceUnitTransferObject.Endpoint c : cList) {
-            CasaEndpointRef endpointRef =
-                    addEndpointToServiceEngineServiceUnit(seSU, true);
+            CasaEndpointRef endpointRef = _addExternalEndpoint(seSU, true);
             CasaEndpoint endpoint = endpointRef.getEndpoint().get();
             
             model.startTransaction();
@@ -2053,7 +2125,10 @@ public class CasaWrapperModel extends CasaModelImpl {
      * @param x         x location of the new service unit in the editor
      * @param y         y location of the new service unit in the editor
      */
-    public void addInternalJBIModule(final Project project, 
+    // TRANSACTION BOUNDARY
+    // USE CASE: DnD from Project Explorer
+    // AFFECT: CASA
+    public void addJBIModule(final Project project, 
             String type, int x, int y) {
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
         
@@ -2063,7 +2138,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             mAddProjects.put(projectName, project); // todo: needs to fix duplicate proj names..
         }
         
-        addServiceEngineServiceUnit(projectName, type, 
+        _addServiceEngineServiceUnit(projectName, type, 
                 null,  // use default description
                 true,  // is internal SESU?
                 false, // is known?
@@ -2072,11 +2147,15 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Deletes a service engine service unit. All the connections connecting
-     * the service unit, and possibly WSDL endpoints, will be deleted as well.
+     * Deletes an internal or external service engine service unit. 
+     * All the connections connecting the service unit, and possibly 
+     * WSDL endpoints (defined in component projects), will be deleted as well.
      *
      * @param seSU       an existing service engine service unit
      */
+    // TRANSACTION BOUNDARY
+    // USE CASE: various delete action on internal/external SE SU
+    // AFFECT: CASA
     public void removeServiceEngineServiceUnit(
             final CasaServiceEngineServiceUnit seSU) {
         
@@ -2658,13 +2737,28 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
       
     /**
-     * Sets the interface qname of an endpoint. Updates the corresponding WSDL
+     * Sets the interface QName of an endpoint. Updates the corresponding WSDL
      * Port, Binding and PortType if the endpoint is defined in casa wsdl.
      * 
-     * @param endpointRef  a casa consumes or provides endpoint reference
+     * @param endpointRef       a casa consumes or provides endpoint reference
      * @param interfaceQName    the new interface QName for the referenced endpoint
      */
+    // TRANSACTION BOUNDARY
+    // USE CASE: from property sheet or interface property editor
+    // AFFECT: CASA, COMPAPP.WSDL
     public void setEndpointInterfaceQName(final CasaEndpointRef endpointRef,
+            final QName interfaceQName) {
+        _setEndpointInterfaceQName(endpointRef, interfaceQName);
+    }
+    
+    /**
+     * Sets the interface QName of an endpoint. Updates the corresponding WSDL
+     * Port, Binding and PortType if the endpoint is defined in casa wsdl.
+     * 
+     * @param endpointRef       a casa consumes or provides endpoint reference
+     * @param interfaceQName    the new interface QName for the referenced endpoint
+     */
+    private void _setEndpointInterfaceQName(final CasaEndpointRef endpointRef,
             final QName interfaceQName) {
         
         if (endpointRef.getInterfaceQName().equals(interfaceQName)) {
@@ -2696,7 +2790,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
-        // 2. Update casa wsdl and casacade the interface change, if applicable.
+        // 2. Update compapp.wsdl and casacade the interface change, if applicable.
         CasaPort casaPort = getCasaPort(endpointRef);
         if (casaPort == null) {
             return;
@@ -2755,8 +2849,15 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
     }
     
+    /**
+     * Sets the service QName of a casa endpoint.
+     */
+    // TRANSACTION BOUNDARY
+    // USE CASE: from property sheet
+    // AFFECT: CASA
     public void setEndpointServiceQName(final CasaEndpointRef endpointRef,
             final QName serviceQName) {
+        // TODO: assert the owner of the endpoint must be an external SESU.
         CasaEndpoint endpoint = endpointRef.getEndpoint().get();
         
         startTransaction();
@@ -2783,6 +2884,12 @@ public class CasaWrapperModel extends CasaModelImpl {
         return null;
     }
     
+    /**
+     * Sets the width of the given casa region.
+     */
+    // TRANSACTION BOUNDARY
+    // USE CASE: on region resize
+    // AFFECT: CASA
     public void setCasaRegionWidth(final CasaRegion casaRegion, int width) {        
         startTransaction();
         try {
@@ -2794,14 +2901,16 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
     }
     
-    public void setUnitName(final CasaServiceUnit su, String unitName) {   
-        if (su instanceof CasaBindingComponentServiceUnit) {
-            throw new RuntimeException("Cannot change unit-name of binding component service unit.");
-        }
-        
-        if (((CasaServiceEngineServiceUnit) su).isInternal()) {
-            throw new RuntimeException("Cannot change unit-name of internal service engine service unit.");            
-        }
+    /**
+     * Sets the unit name of an external service engine service unit.
+     */
+    // TRANSACTION BOUNDARY
+    // USE CASE: on setting name from property sheet
+    // AFFECT: CASA
+    // TODO: rename me, change signature
+    public void setUnitName(final CasaServiceUnit su, String unitName) { 
+        assert su instanceof CasaServiceEngineServiceUnit;
+        assert ! ((CasaServiceEngineServiceUnit) su).isInternal();
         
         startTransaction();
         try {
@@ -2914,6 +3023,23 @@ public class CasaWrapperModel extends CasaModelImpl {
                 null,
                 null));
     }
+    
+    /*
+    private void startMyTransaction() {
+        assert !isIntransaction();
+        startTransaction();
+    }
+    
+    private void rollbackMyTransaction() {
+        assert isIntransaction();
+        rollbackTransaction();
+    }
+    
+    private void endMyTransaction() {
+        assert isIntransaction();
+        endTransaction();
+    }
+    */
 }
 
 

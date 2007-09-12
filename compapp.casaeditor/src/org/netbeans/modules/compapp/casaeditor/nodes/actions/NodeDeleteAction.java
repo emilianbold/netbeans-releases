@@ -106,14 +106,14 @@ public class NodeDeleteAction extends NodeAbstractAction {
         public void visit(CasaConsumes consumes) {
             // Ensure the endpoint is not already deleted.
             if (consumes.isInDocumentModel()) {
-                mModel.removeEndpoint(consumes);
+                mModel.removeExternalEndpoint(consumes);
             }
         }
         
         public void visit(CasaProvides provides) {
             // Ensure the endpoint is not already deleted.
             if (provides.isInDocumentModel()) {
-                mModel.removeEndpoint(provides);
+                mModel.removeExternalEndpoint(provides);
             }
         }
         

@@ -92,7 +92,7 @@ public class AddProvidesPinAction extends NodeAction {
             final CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) node.getData();
             SwingUtilities.invokeLater(new Runnable(){
                 public void run(){
-                    model.addEndpointToServiceEngineServiceUnit(su, false);
+                    model.addExternalEndpoint(su, false);
                 }
             });
         }

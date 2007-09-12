@@ -419,12 +419,12 @@ public class CasaModelGraphUtilities {
         if (component instanceof CasaServiceEngineServiceUnit) {
             CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) component;
             if (su.getX() != location.x || su.getY() != location.y) {
-                scene.getModel().setServiceEngineServiceUnitLocation(su, location.x, location.y);
+                scene.getModel().setLocation(su, location.x, location.y);
             }
         } else if (component instanceof CasaPort) {
             CasaPort port = (CasaPort) component;
             if (port.getX() != location.x || port.getY() != location.y) {
-                scene.getModel().setCasaPortLocation(port, location.x, location.y);
+                scene.getModel().setLocation(port, location.x, location.y);
             }
         }
     }

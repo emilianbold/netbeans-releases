@@ -90,7 +90,7 @@ public class DefaultPluginDropHandler implements PluginDropHandler {
     public void addInternalJBIModule(Project p) {
         String type = mScene.getModel().getJbiProjectType(p);
         Point regionLoc = getDropLocationForJBIModuleRegion();
-        mScene.getModel().addInternalJBIModule(p, type, regionLoc.x, regionLoc.y);
+        mScene.getModel().addJBIModule(p, type, regionLoc.x, regionLoc.y);
     }
     
     public File getInternalProjectTypePluginLocation() {

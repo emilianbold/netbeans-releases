@@ -111,9 +111,9 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
         CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) scene.findObject(widget);
         if        (type.equals(CasaPalette.ITEM_ID_CONSUME)) {
-            scene.getModel().addEndpointToServiceEngineServiceUnit(su, true);
+            scene.getModel().addExternalEndpoint(su, true);
         } else if (type.equals(CasaPalette.ITEM_ID_PROVIDE)) {
-            scene.getModel().addEndpointToServiceEngineServiceUnit(su, false);
+            scene.getModel().addExternalEndpoint(su, false);
         }
     }
     

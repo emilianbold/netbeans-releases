@@ -244,7 +244,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 }
                 String type = mModel.getJbiProjectType(p);
                 point = getScene().getEngineRegion().convertSceneToLocal(point);
-                mModel.addInternalJBIModule(p, type, point.x, point.y);
+                mModel.addJBIModule(p, type, point.x, point.y);
             } else if(dfo instanceof List) {
                 List dfoList = (List) dfo;
                 if (dfoList.size() == 5 &&
@@ -268,7 +268,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
 
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {  
-                            mModel.addEndpointsToServiceEngineServiceUnit(suTransfer, seSU);    
+                            mModel.addExternalEndpoints(suTransfer, seSU);    
                         }
                     });
                 }
