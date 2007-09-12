@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -42,6 +43,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openidex.search.SearchPattern;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.FINEST;
 
 /**
  * Class encapsulating basic search criteria.
@@ -49,6 +52,11 @@ import org.openidex.search.SearchPattern;
  * @author  Marian Petras
  */
 final class BasicSearchCriteria {
+
+    private static int instanceCounter;
+    private final int instanceId = instanceCounter++;
+    private static final Logger LOG = Logger.getLogger(
+            "org.netbeans.modules.search.BasicSearchCriteria");         //NOI18N
 
     /**
      * Maximum number of matches reported for one line.
@@ -108,6 +116,9 @@ final class BasicSearchCriteria {
     private Map<DataObject, List<TextDetail>> detailsMap;
 
     BasicSearchCriteria() {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("#" + instanceId + ": <init>()");                 //NOI18N
+        }
     }
     
     /**
@@ -116,6 +127,9 @@ final class BasicSearchCriteria {
      * @param  template  template to create a copy from
      */
     BasicSearchCriteria(BasicSearchCriteria template) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("#" + instanceId + ": <init>(template)");         //NOI18N
+        }
 
         /* check-boxes: */
         setCaseSensitive(template.caseSensitive);
@@ -168,11 +182,15 @@ final class BasicSearchCriteria {
      * @param  pattern  pattern to be set
      */
     void setTextPattern(String pattern) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("setTextPattern(" + pattern + ')');               //NOI18N
+        }
         if ((pattern != null) && (pattern.length() == 0)) {
             pattern = null;
         }
         if ((pattern == null) && (textPatternExpr == null)
                || (pattern != null) && pattern.equals(textPatternExpr)) {
+            LOG.finest(" - no change");                                 //NOI18N
             return;
         }
         
@@ -204,12 +222,19 @@ final class BasicSearchCriteria {
      *          {@code false} otherwise
      */
     private boolean compileRegexpPattern() {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("#" + instanceId + ": compileRegexpPattern()");   //NOI18N
+        }
         assert regexp;
         assert textPatternExpr != null;
         try {
+            if (LOG.isLoggable(FINEST)) {
+                LOG.finest(" - textPatternExpr = \"" + textPatternExpr + '"');  //NOI18N
+            }
             textPattern = Pattern.compile(textPatternExpr);
             return true;
         } catch (PatternSyntaxException ex) {
+            LOG.finest(" - invalid regexp - setting 'textPattern' to <null>");  //NOI18N
             textPattern = null;
             return false;
         }
@@ -221,6 +246,9 @@ final class BasicSearchCriteria {
      * {@link #textPattern}.
      */
     private void compileSimpleTextPattern() {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("#" + instanceId + ": compileRegexpPattern()");   //NOI18N
+        }
         assert !regexp;
         assert textPatternExpr != null;
         try {
@@ -228,12 +256,19 @@ final class BasicSearchCriteria {
             if (!caseSensitive) {
                 flags |= Pattern.CASE_INSENSITIVE;
             }
+            if (LOG.isLoggable(FINEST)) {
+                LOG.finest(" - textPatternExpr = \"" + textPatternExpr + '"');  //NOI18N
+            }
 	    String regexp = RegexpMaker.makeRegexp(textPatternExpr);
+            if (LOG.isLoggable(FINEST)) {
+                LOG.finest(" - regexp = \"" + regexp + '"');            //NOI18N
+            }
 	    if (wholeWords) {
                 regexp = "\\b" + regexp + "\\b";                        //NOI18N
 	    }
             textPattern = Pattern.compile(regexp, flags);
         } catch (PatternSyntaxException ex) {
+            LOG.finest(" - invalid regexp");                            //NOI18N
             assert false;
             textPattern = null;
         }
@@ -244,7 +279,11 @@ final class BasicSearchCriteria {
     }
     
     void setRegexp(boolean regexp) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("setRegexp(" + regexp + ')');                     //NOI18N
+        }
         if (regexp == this.regexp) {
+            LOG.finest(" - no change");                                 //NOI18N
             return;
         }
         
@@ -266,7 +305,11 @@ final class BasicSearchCriteria {
     }
     
     void setWholeWords(boolean wholeWords) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("setWholeWords(" + wholeWords + ')');             //NOI18N
+        }
         if (wholeWords == this.wholeWords) {
+            LOG.finest(" - no change");                                 //NOI18N
             return;
         }
         
@@ -282,7 +325,11 @@ final class BasicSearchCriteria {
     }
     
     void setCaseSensitive(boolean caseSensitive) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("setCaseSensitive(" + caseSensitive + ')');       //NOI18N
+        }
         if (caseSensitive == this.caseSensitive) {
+            LOG.finest(" - no change");                                 //NOI18N
             return;
         }
         
@@ -468,6 +515,7 @@ final class BasicSearchCriteria {
      * are compiled.
      */
     void onOk() {
+        LOG.finer("onOk()");                                              //NOI18N
         if (textPatternValid && (textPattern == null)) {
             assert !regexp;             //should have been already compiled
             compileSimpleTextPattern();
