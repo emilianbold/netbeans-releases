@@ -51,7 +51,6 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
         }
     }
     
-    private static Context ctx = null;
     private static Hashtable env = null;
     
     public DesignTimeInitialContextFactory() {
@@ -74,19 +73,8 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
             }
         }
         
-        // If no projects open in the IDE then return null,
-        // else if there is at least one open project then make sure that a context for
-        // the project hasn't been created before creating a context
-        Project currentProj = null; 
-        if (CurrentProject.getInstance() == null)
-            currentProj = OpenProjects.getDefault().getMainProject();
-        else
-            currentProj = CurrentProject.getInstance().getProject();
-        
-        // Handle IDE startup use case
-        if (currentProj == null) {
-            currentProj = CurrentProject.getInstance().getOpenedProject();
-        }
+        // Get the open project based on the open page
+        Project currentProj = CurrentProject.getInstance().getOpenedProject();
         
         //Setup cache of projects per context
         ProjectContextManager prjCtxManager = ProjectContextManager.getInstance();
