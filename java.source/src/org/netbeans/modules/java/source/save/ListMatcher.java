@@ -42,7 +42,20 @@ public final class ListMatcher<E> {
     private final Stack<ResultItem<E>> result;
 
     // contains method for distance-measuring
-    private final Comparator<E> measure;
+    private Comparator<E> measure = new Comparator<E>() {
+
+        public int compare(E first, E second) {
+            assert first != null && second != null : "Shouldn't pass null value!";
+
+            if (first == second || first.equals(second)) {
+                // pefectly match
+                return OBJECTS_MATCH;
+            } else {
+                // does not match
+                return INFINITE_DISTANCE;
+            }
+        }
+    };
     
     // create ListMatcher instance
     @SuppressWarnings("unchecked")
@@ -65,7 +78,9 @@ public final class ListMatcher<E> {
     private ListMatcher(E[] oldL, E[] newL, Comparator<E> measure) {
         this.oldL = oldL;
         this.newL = newL;
-        this.measure = measure != null ? measure : Measure.DEFAULT;
+        if (measure != null) {
+            this.measure = measure;
+        }
         result = new Stack<ResultItem<E>>();
     }
 

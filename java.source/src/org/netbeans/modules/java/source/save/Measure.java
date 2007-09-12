@@ -41,7 +41,7 @@ class Measure {
     /**
      * Default measure based on equals.
      */
-    static final Comparator DEFAULT = new Comparator() {
+    static final Comparator<JCTree> DEFAULT = new Comparator<JCTree>() {
 
         /**
          * Compares two objects and returns distance between
@@ -52,7 +52,7 @@ class Measure {
          * @return Distance between compared objects (0 = objects perfectly match,
          * <code>INFINITE_DISTANCE</code> = objects are completely different)
          */
-        public int compare(Object first, Object second) {
+        public int compare(JCTree first, JCTree second) {
             assert first != null && second != null : "Shouldn't pass null value!";
 
             if (first == second || first.equals(second)) {
