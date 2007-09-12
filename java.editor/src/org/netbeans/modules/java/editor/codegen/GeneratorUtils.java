@@ -458,7 +458,8 @@ public class GeneratorUtils {
         }
             
         //add @Override annotation if developing for 1.5:
-        if (!element.getEnclosingElement().getKind().isInterface() && GeneratorUtils.supportsOverride(wc.getFileObject())) {
+        String level = SourceLevelQuery.getSourceLevel(wc.getFileObject());
+        if ((!element.getEnclosingElement().getKind().isInterface() && "1.5".equals(level)) || "1.6".equals(level)) {
             annotations.add(make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList())); //NOI18N
         }
 
