@@ -59,6 +59,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -173,6 +174,17 @@ public class JaxRpcServiceCreator implements ServiceCreator {
         String portTypeName = null;
         generator.addWebServiceEntry(seiClassName, portTypeName, targetNS);
         
+        //open the class in the editor
+        FileObject servantFO = pkg.getFileObject(wsName+"Impl", "java");
+        if(servantFO!=null) {
+            try {
+                DataObject dobj = DataObject.find(servantFO);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                ec.open();
+            } catch (DataObjectNotFoundException donfe) {
+            }
+        }
+        
         handle.finish();
     }
     
@@ -278,7 +290,7 @@ public class JaxRpcServiceCreator implements ServiceCreator {
         generator.addWebServiceEntry(seiClassName, portTypeName, targetNS);
         
         //open the class in the editor
-        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        EditorCookie ec = dobj.getCookie(EditorCookie.class);
         ec.open();
         
         handle.finish();
