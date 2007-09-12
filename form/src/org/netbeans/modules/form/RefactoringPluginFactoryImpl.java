@@ -33,6 +33,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -151,6 +152,13 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
                 oldName = cp.getResourceName(file, '.', false);
             }
+        } else if (refactoring instanceof SafeDeleteRefactoring) {
+            FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
+            if (file != null && RefactoringInfo.isJavaFileOfForm(file) && isOnSourceClasspath(file)) {
+                // deleting a form
+                changeType = RefactoringInfo.ChangeType.CLASS_DELETE;
+                primaryFile = file;
+            }            
         }
 
         if (changeType != null) {
@@ -196,6 +204,9 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             if (refInfo.isForm()) {
                 FormRefactoringUpdate update = refInfo.getUpdateForFile(refInfo.getPrimaryFile());
                 switch (refInfo.getChangeType()) {
+                case CLASS_DELETE: // in case of delete we only backup the form file
+                    refactoringElements.registerTransaction(update);
+                    return null;
                 case CLASS_RENAME: // renaming form class, always needs to load - auto-i18n
                     if (!update.prepareForm(true)) {
                         return new Problem(true, "Error loading form. Cannot update generated code.");

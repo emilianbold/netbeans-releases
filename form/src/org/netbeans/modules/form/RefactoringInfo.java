@@ -48,6 +48,7 @@ public class RefactoringInfo {
         VARIABLE_RENAME,  // field or local variable in initComponents
         CLASS_RENAME, CLASS_MOVE,  // can be a form, or a component class, or both
         CLASS_COPY,  // a form class
+        CLASS_DELETE, // a form class (safe delete)
         PACKAGE_RENAME, FOLDER_RENAME,  // non-recursive folder and folder with subfolders
         EVENT_HANDLER_RENAME,  // method in a form class
         OTHER_FORM_CHANGE

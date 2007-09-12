@@ -166,7 +166,12 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             }
             break;
             //do nothing otherwise - could be just redundantly registered by the guarded handler
+        case CLASS_DELETE: // deleting form (we only need to backup the form file for undo)
+            saveFormForUndo();
+            transactionDone = true;
+            break;
         }
+            
     }
 
     // Transaction (registered via RefactoringElementsBag.registerTransaction)
