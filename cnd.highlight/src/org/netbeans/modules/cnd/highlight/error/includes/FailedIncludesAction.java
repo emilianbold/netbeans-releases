@@ -94,7 +94,7 @@ public class FailedIncludesAction extends NodeAction {
     }
 
     public String getName() {
-        return i18n("ErrorIncludeMenu_Title");
+        return i18n("ErrorIncludeMenu_Title"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

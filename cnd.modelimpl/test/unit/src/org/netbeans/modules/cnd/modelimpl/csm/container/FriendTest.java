@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.test.BaseTestSuite;
 public class FriendTest extends BaseTestSuite {
     
     public FriendTest() {
-        super("C++ Friend");
+        super("C++ Friend"); // NOI18N
         addTestSuite(FriendTestCase.class);
     }
 

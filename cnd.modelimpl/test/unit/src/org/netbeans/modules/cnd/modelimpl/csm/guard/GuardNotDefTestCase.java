@@ -20,19 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.guard;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmFriend;
-import org.netbeans.modules.cnd.api.model.CsmFriendClass;
-import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.impl.services.FriendResolverImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
@@ -46,38 +34,41 @@ public class GuardNotDefTestCase extends TraceModelTestBase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
     }
     
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
     
     public void testGuard() throws Exception {
-        performTest("argc.cc");
+        performTest("argc.cc"); // NOI18N
     }
     
+    @Override
     protected void performTest(String source) throws Exception {
         File testFile = getDataFile(source);
-        assertTrue("File not found "+testFile.getAbsolutePath(),testFile.exists());
+        assertTrue("File not found "+testFile.getAbsolutePath(),testFile.exists()); // NOI18N
         performModelTest(testFile, System.out, System.err);
         boolean checked = false;
         for(FileImpl file : getProject().getAllFileImpls()){
-            if ("cstdlib.h".equals(file.getName())){
-                assertTrue("Guard guard block defined", file.getMacros().size()==2);
+            if ("cstdlib.h".equals(file.getName())){ // NOI18N
+                assertTrue("Guard guard block defined", file.getMacros().size()==2); // NOI18N
                 String guard = file.testGetGuardState().testGetGuardName();
-                assertTrue("Guard guard block name not _STDLIB_H", "_STDLIB_H".equals(guard));
+                assertTrue("Guard guard block name not _STDLIB_H", "_STDLIB_H".equals(guard)); // NOI18N
                 checked = true;
-            } else if ("iostream.h".equals(file.getName())){
+            } else if ("iostream.h".equals(file.getName())){ // NOI18N
                 String guard = file.testGetGuardState().testGetGuardName();
-                assertTrue("Guard guard block found", guard == null);
-            } else if ("argc.cc".equals(file.getName())){
+                assertTrue("Guard guard block found", guard == null); // NOI18N
+            } else if ("argc.cc".equals(file.getName())){ // NOI18N
                 String guard = file.testGetGuardState().testGetGuardName();
-                assertTrue("Guard guard block name not MAIN", "MAIN".equals(guard));
+                assertTrue("Guard guard block name not MAIN", "MAIN".equals(guard)); // NOI18N
             }
         }
-        assertTrue("Not found FileImpl for cstdlib.h", checked);
+        assertTrue("Not found FileImpl for cstdlib.h", checked); // NOI18N
     }
     
     private String getClassName(Class cls){

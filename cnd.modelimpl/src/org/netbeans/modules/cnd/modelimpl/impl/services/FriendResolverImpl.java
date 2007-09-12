@@ -64,7 +64,7 @@ public class FriendResolverImpl extends CsmFriendResolver {
      */
     public boolean isFriend(CsmOffsetableDeclaration friendDecl, CsmClass target) {
         if (friendDecl == null) {
-            throw new IllegalArgumentException("friendDecl must not be null");
+            throw new IllegalArgumentException("friendDecl must not be null"); // NOI18N
         }
         CsmClass containingClass = null;
         if (CsmKindUtilities.isMethodDefinition(friendDecl)){

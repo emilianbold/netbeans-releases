@@ -427,7 +427,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     private static final String modelTaskPrefix = "Code Model Request Processor"; // NOI18N
     
     public void enqueue(Runnable task, String name) {
-        enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix + " :" + name);
+        enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix + " :" + name); // NOI18N
     }
 
     public void enqueue(Runnable task) {

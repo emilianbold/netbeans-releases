@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.test.BaseTestSuite;
 public class GuardTest extends BaseTestSuite {
     
     public GuardTest() {
-        super("C/C++ Guard block");
+        super("C/C++ Guard block"); // NOI18N
         
         addTestSuite(GuardDefTestCase.class);
         addTestSuite(GuardNotDefTestCase.class);
