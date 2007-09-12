@@ -26,7 +26,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
@@ -86,18 +85,18 @@ public class CallEjbGeneratorTest extends TestBase {
         assertEquals("statelesslr.StatelessLRBean", erc.getLocalReferencingClass());
 
         final String generatedMethodBody =
-        "{\n" +
-        "    try {\n" +
-        "        Context c = new InitialContext();\n" +
-        "        StatelessLRLocalHome2 rv = (StatelessLRLocalHome2)c.lookup(\"java:comp/env/StatelessLRBean2\");\n" +
-        "        return rv.create();\n" +
-        "    } catch (NamingException ne) {\n" +
-        "        java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, \"exception caught\", ne);\n" +
-        "        throw new RuntimeException(ne);\n" +
-        "    } catch (CreateException ce) {\n" +
-        "        java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, \"exception caught\", ce);\n" +
-        "        throw new RuntimeException(ce);\n" +
-        "    }\n" +
+        "{" + newline +
+        "    try {" + newline +
+        "        Context c = new InitialContext();" + newline +
+        "        StatelessLRLocalHome2 rv = (StatelessLRLocalHome2)c.lookup(\"java:comp/env/StatelessLRBean2\");" + newline +
+        "        return rv.create();" + newline +
+        "    } catch (NamingException ne) {" + newline +
+        "        java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, \"exception caught\", ne);" + newline +
+        "        throw new RuntimeException(ne);" + newline +
+        "    } catch (CreateException ce) {" + newline +
+        "        java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, \"exception caught\", ce);" + newline +
+        "        throw new RuntimeException(ce);" + newline +
+        "    }" + newline +
         "}";
         
         JavaSource javaSource = JavaSource.forFileObject(referencingFO);
@@ -137,21 +136,23 @@ public class CallEjbGeneratorTest extends TestBase {
         assertNull(erc.getLocalReferencingClass());
 
         final String generatedHome =
-                "@EJB()\n" +
+                "@EJB()" + newline +
                 "private StatelessLRLocalHome2 statelessLRLocalHome2";
         
         final String generatedComponent =
                 "private StatelessLRLocal2 statelessLRBean2";
         
+        
+        
         final String generatedMethod =
-                "\n" +
-                "@PostConstruct()\n" +
-                "private void initialize() {\n" +
-                "    try {\n" +
-                "        statelessLRBean2 = statelessLRLocalHome2.create();\n" +
-                "    } catch (Exception e) {\n" +
-                "        throw new EJBException(e);\n" +
-                "    }\n" +
+                newline +
+                "@PostConstruct()" + newline +
+                "private void initialize() {" + newline +
+                "    try {" + newline +
+                "        statelessLRBean2 = statelessLRLocalHome2.create();" + newline +
+                "    } catch (Exception e) {" + newline +
+                "        throw new EJBException(e);" + newline +
+                "    }" + newline +
                 "}";
         
         JavaSource javaSource = JavaSource.forFileObject(referencingFO);

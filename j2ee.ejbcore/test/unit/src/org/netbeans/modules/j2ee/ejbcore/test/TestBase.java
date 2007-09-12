@@ -56,6 +56,8 @@ import org.openide.util.test.MockLookup;
  */
 public class TestBase extends NbTestCase {
 
+    protected static final String newline = System.getProperty("line.separator"); // NOI18N
+    
     protected static final String EJB_2_1 = "2.1"; // NOI18N
     protected static final String EJB_3_0 = "3.0"; // NOI18N
     
