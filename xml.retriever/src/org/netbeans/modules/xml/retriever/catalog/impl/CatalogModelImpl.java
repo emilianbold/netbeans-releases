@@ -430,32 +430,20 @@ public class CatalogModelImpl implements CatalogModel {
             Debug debug = CatalogManager.getStaticManager().debug;
             debug.setDebug(logger.getLevel().intValue());
         }
-        //Debug debug = CatalogManager.getStaticManager().debug;
-        //debug.setDebug(4);
-       /*CatalogManager cm = CatalogManager.getStaticManager();
-       cm.setUseStaticCatalog(false);*/
-        //parse catalog file if its required
-        if(reparseRequired(catalogFileList)){
-            CatalogManager manager = new CatalogManager(null);
-            manager.setUseStaticCatalog(false);
-            manager.setPreferPublic(false);
-            catalogResolver = new CatalogResolver(manager);
-            //catalogResolver = new CatalogResolver(true);
-            apacheCatalogResolverObj = catalogResolver.getCatalog();
-            for(File catFile : catalogFileList){
-                try {
-                    apacheCatalogResolverObj.parseCatalog(catFile.getAbsolutePath());
-                } catch (MalformedURLException ex) {
-                    throw new CatalogModelException(ex);
-                }
-            }
+        
+        CatalogManager manager = new CatalogManager(null);
+        manager.setUseStaticCatalog(false);
+        manager.setPreferPublic(false);
+        catalogResolver = new CatalogResolver(manager);
+        apacheCatalogResolverObj = catalogResolver.getCatalog();
+        for(File catFile : catalogFileList){
+            apacheCatalogResolverObj.parseCatalog(catFile.toURL());
         }
+        
         String result = null;
         try {
             result = apacheCatalogResolverObj.resolveSystem(locationURI);
-        } catch (MalformedURLException ex) {
-            result = "";
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             result = "";
         }
         if(result == null){
@@ -487,29 +475,29 @@ public class CatalogModelImpl implements CatalogModel {
     }
     
     
-    long lastModTime = 0;
-    protected boolean reparseRequired(List<File> catalogFileList){
-      /* if((apacheCatalogResolverObj == null) || (lastModTime == 0)){
-           //then parse always
-           lastModTime = catalogFileList.get(0).lastModified(); //bother only public catalog for now
-           //System.out.println("Parsing First time: "+lastModTime);
-           return true;
-       }
-       if((apacheCatalogResolverObj != null) && (lastModTime != 0)){
-           if(lastModTime <  catalogFileList.get(0).lastModified()){
-               //System.out.println("Parsing time diff Old: "+lastModTime+" New:"+catalogFileList.get(0).lastModified());
-               lastModTime = catalogFileList.get(0).lastModified();
-               return true;
-           } else{
-               //System.out.println("NOT Parsing time diff Old: "+lastModTime);
-               return false;
-           }
-       }
-       //System.out.println("Parsing Otherwise: "+lastModTime);*/
-        return true;
-    }
-    
-    
+//    long lastModTime = 0;
+//    protected boolean reparseRequired(List<File> catalogFileList){
+//      /* if((apacheCatalogResolverObj == null) || (lastModTime == 0)){
+//           //then parse always
+//           lastModTime = catalogFileList.get(0).lastModified(); //bother only public catalog for now
+//           //System.out.println("Parsing First time: "+lastModTime);
+//           return true;
+//       }
+//       if((apacheCatalogResolverObj != null) && (lastModTime != 0)){
+//           if(lastModTime <  catalogFileList.get(0).lastModified()){
+//               //System.out.println("Parsing time diff Old: "+lastModTime+" New:"+catalogFileList.get(0).lastModified());
+//               lastModTime = catalogFileList.get(0).lastModified();
+//               return true;
+//           } else{
+//               //System.out.println("NOT Parsing time diff Old: "+lastModTime);
+//               return false;
+//           }
+//       }
+//       //System.out.println("Parsing Otherwise: "+lastModTime);*/
+//        return true;
+//    }
+//    
+//    
     boolean isEditable(File absResourceFile) {
         return true;
     }
