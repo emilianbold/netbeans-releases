@@ -28,10 +28,10 @@ import java.awt.Image;
 import java.io.CharConversionException;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -106,12 +106,21 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         
         boolean isBroken = false;         
         
-        if (ImportDataSource.isLegacyProject(nbProject)) {
-            ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(nbProject);
-            if (!projectDataSourceManager.isRequestedJdbcResourceAvailable() || (BrokenDataSourceSupport.isBroken(nbProject))) {
+        // Manage the migration of legacy projects
+        ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(nbProject);
+        if (JsfProjectUtils.getProjectVersion(nbProject).equals("2.0") && !projectDataSourceManager.isRequestedJdbcResourceAvailable()) {//NOI18N   
+            if (!ProjectDataSourceTracker.isProjectModeled(nbProject)) {
                 DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
+            } else if (ProjectDataSourceTracker.getDynamicDataSources(nbProject).length > 0) {                
+                DataSourceResolver.getInstance().update(nbProject);
             }
-        }                       
+        } else if (JsfProjectUtils.getProjectVersion(nbProject).equals("3.0") && !projectDataSourceManager.isRequestedJdbcResourceAvailable()) { //NOI18N
+            if (!ProjectDataSourceTracker.isProjectModeled(nbProject)) {
+                DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
+            }            
+            
+            DataSourceResolver.getInstance().update(nbProject);
+        }                     
         
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
         if (this.getChildren().getNodes().length > 0) {
