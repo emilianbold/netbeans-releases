@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -62,6 +62,29 @@ import com.nwoods.jgo.JGoPort;
 import com.nwoods.jgo.JGoSelection;
 import com.nwoods.jgo.JGoView;
 import com.nwoods.jgo.layout.JGoLayeredDigraphAutoLayout;
+import org.netbeans.modules.etl.ui.ETLDataObject;
+import org.netbeans.modules.etl.ui.ETLNode;
+import org.netbeans.modules.etl.ui.property.JoinNode;
+import org.netbeans.modules.etl.ui.property.RuntimeInputNode;
+import org.netbeans.modules.etl.ui.property.RuntimeOutputNode;
+import org.netbeans.modules.etl.ui.property.SourceTableNode;
+import org.netbeans.modules.etl.ui.property.TargetTableNode;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLEditorTopView;
+import org.netbeans.modules.sql.framework.model.RuntimeInput;
+import org.netbeans.modules.sql.framework.model.RuntimeOutput;
+import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
+import org.netbeans.modules.sql.framework.model.SQLJoinView;
+import org.netbeans.modules.sql.framework.model.SourceTable;
+import org.netbeans.modules.sql.framework.model.TargetTable;
+import org.netbeans.modules.sql.framework.ui.view.graph.SQLRuntimeInputArea;
+import org.netbeans.modules.sql.framework.ui.view.graph.SQLRuntimeOutputArea;
+import org.netbeans.modules.sql.framework.ui.view.graph.SQLSourceTableArea;
+import org.netbeans.modules.sql.framework.ui.view.graph.SQLTargetTableArea;
+import org.netbeans.modules.sql.framework.ui.view.join.JoinViewGraphNode;
+import org.netbeans.modules.sql.framework.ui.view.join.SQLJoinTableArea;
+import org.openide.nodes.Node;
+import org.openide.windows.WindowManager;
 
 /**
  * Extension of JGoView to implement IGraphView interface.
@@ -74,70 +97,72 @@ public abstract class GraphView extends JGoView implements IGraphView {
     private static final int STANDARD_SCALE = 1;
     private static final int VIEW_SCALE = 2;
     private static final int PAGE_SCALE = 3;
-
+    
     private static final String NETBEANS_DBTABLE_MIMETYPE = "application/x-java-netbeans-dbexplorer-table;class=org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Table";
-
+    
     protected static DataFlavor[] mDataFlavorArray = new DataFlavor[2];
-
+    
     private IGraphController graphController;
-
+    
     private JGoLayeredDigraphAutoLayout layout;
-
+    
     private Object graphViewContainer;
-
+    
     private Object graphModel;
-
+    
     private Object graphFactory;
-
+    
     private IToolBar toolBar;
-
+    
     private List graphActions;
-
+    
     protected JPopupMenu popUpMenu;
-
+    
     private int printScale = STANDARD_SCALE;
-
+    
     protected Point mousePoint = null;
     
     private IOperatorXmlInfo opXmlInfo = null;
-
+    
     // current object under mouse
     private static JGoObject currentObj = null;
-
+    
+    public static JGoObject selectedObject = null;
+    
     static {
         try {
             mDataFlavorArray[0] = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType);
-
+            
             mDataFlavorArray[1] = new DataFlavor(NETBEANS_DBTABLE_MIMETYPE);
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }
     }
-
+    
     /** Creates a new instance of BasicGraphView */
     public GraphView() {
-       // super();
+        // super();
         setDropEnabled(true);
         //set default primary and secondary selection colors
         resetSelectionColors();
-
+        
         //set GraphDocument
         this.setDocument(new GraphDocument());
     }
-
+    
     /**
      * computeAcceptableDrop
-     * 
+     *
      * @param e - DropTargetDragEvent
      * @return - true/false
      */
     public int computeAcceptableDrop(DropTargetDragEvent e) {
         return DnDConstants.ACTION_COPY_OR_MOVE;
     }
-
+    
     /**
      * isDropFlavorAcceptable
-     * 
+     *
      * @param e - DropTargetDragEvent
      * @return - true/false
      */
@@ -147,13 +172,13 @@ public abstract class GraphView extends JGoView implements IGraphView {
                 return true;
             }
         }
-
+        
         return false;
     }
-
+    
     /**
      * Drop
-     * 
+     *
      * @param e - DropTargetDropEvent
      */
     public void drop(java.awt.dnd.DropTargetDropEvent e) {
@@ -162,15 +187,15 @@ public abstract class GraphView extends JGoView implements IGraphView {
             Point docCoord = viewToDocCoords(viewCoord);
             //sets location as doc coordinates
             e.getLocation().setLocation(docCoord);
-
+            
             if (e.isDataFlavorSupported(mDataFlavorArray[0])) {
                 Transferable tr = e.getTransferable();
-
+                
                 /*if (!(tr.getTransferData(mDataFlavorArray[0]) instanceof IOperatorXmlInfo)) {
                     if (graphController != null) {
                         graphController.handleDrop(e);
                     }
-
+                 
                     return;
                 }*/
                 
@@ -188,14 +213,14 @@ public abstract class GraphView extends JGoView implements IGraphView {
                     return;
                 }
                 
-           //    IOperatorXmlInfo xmlInfo = (IOperatorXmlInfo) tr.getTransferData(mDataFlavorArray[0]);
-
+                //    IOperatorXmlInfo xmlInfo = (IOperatorXmlInfo) tr.getTransferData(mDataFlavorArray[0]);
+                
                 if (graphController != null) {
                     graphController.handleNodeAdded(xmlInfo, docCoord);
                 } else {
                     addXmlInfoNode(xmlInfo, docCoord);
                 }
-
+                
                 // Must wait to accept drop until all other execution paths that might
                 // throw an exception have been executed.
                 e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
@@ -204,7 +229,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
             } else {
                 e.rejectDrop();
             }
-
+            
             //            //also call graph controller' handle drop
             //            if (graphController != null) {
             //                graphController.handleDrop(e);
@@ -218,11 +243,11 @@ public abstract class GraphView extends JGoView implements IGraphView {
             } else {
                 msgBuf.append(".");
             }
-
+            
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msgBuf.toString(), NotifyDescriptor.ERROR_MESSAGE));
         }
     }
-
+    
     /**
      * @see com.nwoods.jgo.JGoView#doMouseDown
      */
@@ -230,15 +255,15 @@ public abstract class GraphView extends JGoView implements IGraphView {
         mousePoint = dc;
         return super.doMouseDown(modifiers, dc, vc);
     }
-
+    
     /**
      * Handles key event
-     * 
+     *
      * @param evt Description of the Parameter
      */
     public void onKeyEvent(KeyEvent evt) {
         int t = evt.getKeyCode();
-
+        
         if (t == KeyEvent.VK_DELETE) {
             if (getDocument().isModifiable()) {
                 deleteNodesAndLinks();
@@ -247,10 +272,10 @@ public abstract class GraphView extends JGoView implements IGraphView {
             this.selectAll();
         }
     }
-
+    
     /**
      * Delete an object
-     * 
+     *
      * @param node node to be deleted
      */
     public void deleteNode(IGraphNode node) {
@@ -260,15 +285,15 @@ public abstract class GraphView extends JGoView implements IGraphView {
             graphController.handleNodeRemoved(node);
         }
     }
-
+    
     private void deleteLinks(IGraphNode node) {
         List list = node.getAllLinks();
         deleteLinks(list);
     }
-
+    
     /**
      * Delete a collection of links
-     * 
+     *
      * @param links - links
      */
     public void deleteLinks(Collection links) {
@@ -280,7 +305,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
             }
         }
     }
-
+    
     private void deleteNodesAndLinks() {
         //get all selected nodes
         Collection nodes = this.getSelectedNodes();
@@ -291,18 +316,18 @@ public abstract class GraphView extends JGoView implements IGraphView {
             String title = NbBundle.getMessage(GraphView.class, "MSG_DeleteConfirmation");
             String msg = NbBundle.getMessage(GraphView.class, "MSG_DeleteQuestion");
             msg = msg.replaceFirst("000", "All selected links");
-
+            
             int option = UIUtil.showYesAllDialog(this, msg, title);
             if (option == JOptionPane.YES_OPTION) {
                 this.deleteLinks(links);
             }
-
+            
             return;
         }
         //some node and zero or more links area selected by user
         deleteNodesAndLinks(nodes, links);
     }
-
+    
     private void deleteNodesAndLinks(Collection nodes, Collection links) {
         //keep a list of links which are getting deleted as a result of deleting a node
         ArrayList nodeDeletedLinks = new ArrayList();
@@ -314,7 +339,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
             if (!node.isDeleteAllowed()) {
                 continue;
             }
-
+            
             //links.removeAll(node.getAllLinks());
             if (!delete) {
                 String title = NbBundle.getMessage(GraphView.class, "MSG_DeleteConfirmation");
@@ -341,7 +366,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
                 graphController.handleNodeRemoved(node);
             }
         }
-
+        
         if (delete) {
             //now delete all selected links
             //remove the links which are already deleted as a result of deleting a node
@@ -356,7 +381,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
         //            graphController.handleLinkDeleted(link);
         //        }
     }
-
+    
     private void deleteNodeLinks(Collection nodeLinks, Collection deletedLinks) {
         Iterator it = nodeLinks.iterator();
         while (it.hasNext()) {
@@ -368,32 +393,32 @@ public abstract class GraphView extends JGoView implements IGraphView {
                 graphController.handleLinkDeleted(link);
             }
         }
-
+        
     }
-
+    
     public boolean doMouseMove(int modifiers, Point dc, Point vc) {
         super.doMouseMove(modifiers, dc, vc);
-
+        
         //handle mouse event and delegate to child object under mouse point
         if (getState() != MouseStateCreateLinkFrom && getState() != MouseStateCreateLink && getState() != MouseStateDragBoxSelection)
             doMouseHandling(modifiers, dc, vc);
         return true;
     }
-
+    
     private boolean doMouseHandling(int modifiers, Point dc, Point vc) {
         boolean returnStatus = false;
-
+        
         // if we're over a port, start drawing a new link
         JGoObject obj = pickPort(dc);
-
+        
         if (obj == null) {
             obj = pickDocObject(dc, false);
         }
-
+        
         //if(obj != null)
         //System.out.println(" JGoView doMouseEntered " + obj.getClass().getName());
         //obj = getSelection().selectObject(obj);
-
+        
         while (obj != null) {
             if (obj instanceof GraphPort && ((GraphPort) obj).doMouseEntered(modifiers, dc, vc, this)) {
                 returnStatus = true;
@@ -406,7 +431,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
                 obj = obj.getParent();
             }
         }
-
+        
         //System.out.println("old current obj "+ currentObj + "new Object" + obj);
         //fire mouseExisted event
         if (currentObj instanceof GraphPort && currentObj != null && currentObj != obj) {
@@ -417,13 +442,13 @@ public abstract class GraphView extends JGoView implements IGraphView {
         
         // this is the current obj where mouse has entered
         currentObj = obj;
-
+        
         return returnStatus;
     }
-
+    
     /**
      * Called to create a new link from the from port to the to port.
-     * 
+     *
      * @param from source JGoPort
      * @param to destination JGoPort
      */
@@ -434,29 +459,29 @@ public abstract class GraphView extends JGoView implements IGraphView {
             super.newLink(from, to);
         }
     }
-
+    
     /**
      * Called when link creation fails.
-     * 
+     *
      * @param from source JGoPort
      * @param to destination JGoPort
      */
     public void noNewLink(JGoPort from, JGoPort to) {
     }
-
+    
     /**
      * Called when link reconnection fails.
-     * 
+     *
      * @param oldlink JGoLink to be reconnected
      * @param from source JGoPort
      * @param to destination JGoPort
      */
     public void noReLink(JGoLink oldlink, JGoPort from, JGoPort to) {
     }
-
+    
     /**
      * Adds a link from the given source port to the given destination port.
-     * 
+     *
      * @param from source IGraphPort
      * @param to destination IGraphPort
      */
@@ -464,48 +489,48 @@ public abstract class GraphView extends JGoView implements IGraphView {
         GraphLink link = new GraphLink(from, to);
         this.getDocument().addObjectAtTail(link);
     }
-
+    
     public void addLink(IGraphLink link) {
         this.getDocument().addObjectAtTail((JGoObject) link);
     }
-
+    
     /**
      * Adds the given IGraphNode to the view.
-     * 
+     *
      * @param node new IGraphNode to add
      */
     public void addNode(IGraphNode node) {
         node.setGraphView(this);
-
+        
         JGoObject obj = (JGoObject) node;
-
+        
         if (obj.getLeft() == -1) {
             obj.setLeft(50);
         }
-
+        
         if (obj.getTop() == -1) {
             obj.setTop(50);
         }
-
+        
         //check for overlapping
         avoidOverlap(obj);
-
+        
         JGoObject jgoObj = (JGoObject) node;
-
+        
         //add this node to document
         this.getDocument().addObjectAtTail(jgoObj);
-
+        
         //now select this node
         this.getSelection().selectObject(jgoObj);
-
+        
         //and have focus in this view
         this.requestFocus();
     }
-
+    
     /**
      * Creates and adds a new operator node at the given location, as specified by the
      * given operator descriptor.
-     * 
+     *
      * @param xmlInfo descriptor specifying operator configuration information
      * @param location Point at which to create new operator node
      * @return new IGraphNode representing operator in question
@@ -516,10 +541,10 @@ public abstract class GraphView extends JGoView implements IGraphView {
         addNode(graphNode);
         return graphNode;
     }
-
+    
     /**
      * Ensures given JGoObject does not overlap other JGoObjects in the view.
-     * 
+     *
      * @param guiInfo JGoObject whose positioning should not overlap other objects.
      */
     public void avoidOverlap(JGoObject guiInfo) {
@@ -528,14 +553,14 @@ public abstract class GraphView extends JGoView implements IGraphView {
         int height = guiInfo.getHeight();
         JGoSelection selection = this.getSelection();
         selection.clearSelection();
-
+        
         JGoObject obj = null;
-
+        
         Point tmpPoint = new Point(guiInfo.getLeft(), guiInfo.getTop());
         int selY = -1;
-
+        
         int i = p.x;
-
+        
         //scanning from topleft to topright
         while (i <= (p.x + width)) {
             i = i + 10;
@@ -548,7 +573,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
                 }
             }
         }
-
+        
         i = p.y;
         //scanning from topright to bottomright
         while (i <= (p.y + height)) {
@@ -557,13 +582,13 @@ public abstract class GraphView extends JGoView implements IGraphView {
             obj = getObjectInModel(tmpPoint, true);
             if (obj != null) {
                 selection.extendSelection(obj);
-
+                
                 if (selY == -1 || selY > obj.getTop()) {
                     selY = obj.getTop();
                 }
             }
         }
-
+        
         i = p.x + width;
         //scanning from bottomright to bottomleft
         while (i >= p.x) {
@@ -572,13 +597,13 @@ public abstract class GraphView extends JGoView implements IGraphView {
             obj = getObjectInModel(tmpPoint, true);
             if (obj != null) {
                 selection.extendSelection(obj);
-
+                
                 if (selY == -1 || selY > obj.getTop()) {
                     selY = obj.getTop();
                 }
             }
         }
-
+        
         i = p.y + height;
         //scanning from bottomleft to topleft
         while (i >= p.y) {
@@ -587,46 +612,46 @@ public abstract class GraphView extends JGoView implements IGraphView {
             obj = getObjectInModel(tmpPoint, true);
             if (obj != null) {
                 selection.extendSelection(obj);
-
+                
                 if (selY == -1 || selY > obj.getTop()) {
                     selY = obj.getTop();
                 }
             }
         }
-
+        
         int ydiff = p.y - selY;
-
+        
         int yOffset = 0;
         if (p.y > selY) {
             yOffset = height + ydiff;
         } else {
             yOffset = height - ydiff;
         }
-
+        
         //now move the selection down
         if (!selection.isEmpty()) {
             JGoDocument jgoModel = this.getDocument();
             JGoListPosition pos = null;
             JGoObject jgoObj = null;
-
+            
             for (pos = jgoModel.getFirstObjectPos(); pos != null; pos = jgoModel.getNextObjectPosAtTop(pos)) {
-
+                
                 jgoObj = jgoModel.getObjectAtPos(pos);
                 int top = jgoObj.getTop();
                 if (top > p.y) {
                     selection.extendSelection(jgoObj);
                 }
             }
-
+            
             this.moveSelection(selection, -1, 0, yOffset + 10, JGoView.MouseStateSelection);
             selection.clearSelection();
         }
-
+        
     }
-
+    
     /**
      * Gets the canvas node, if any, at the given position
-     * 
+     *
      * @param loc point in canvas document
      * @param flag if true check only the objects which are selectable
      * @return the object, if any, found at given location
@@ -634,10 +659,10 @@ public abstract class GraphView extends JGoView implements IGraphView {
     public JGoObject getObjectInModel(Point loc, boolean flag) {
         return this.pickDocObject(loc, flag);
     }
-
+    
     /**
      * Removes the link, if any, between the given ports.
-     * 
+     *
      * @param from source IGraphPort of link to be removed
      * @param to destination IGraphPort of link to be removed
      */
@@ -645,9 +670,9 @@ public abstract class GraphView extends JGoView implements IGraphView {
         JGoDocument jgoModel = this.getDocument();
         JGoListPosition pos = null;
         JGoObject jgoObj = null;
-
+        
         for (pos = jgoModel.getFirstObjectPos(); pos != null; pos = jgoModel.getNextObjectPos(pos)) {
-
+            
             jgoObj = jgoModel.getObjectAtPos(pos);
             if (jgoObj instanceof GraphLink) {
                 GraphLink link = (GraphLink) jgoObj;
@@ -657,48 +682,48 @@ public abstract class GraphView extends JGoView implements IGraphView {
             }
         }
     }
-
+    
     /**
      * Removes the given IGraphNode from the view.
-     * 
+     *
      * @param node new IGraphNode to remove
      */
     public void removeNode(IGraphNode node) {
         this.getDocument().removeObject((JGoObject) node);
     }
-
+    
     /**
      * Sets the graph controller of this view.
-     * 
+     *
      * @param controller new graph controller
      */
     public void setGraphController(IGraphController controller) {
         this.graphController = controller;
     }
-
+    
     /**
      * Gets the graph controller of this view.
-     * 
+     *
      * @return current graph controller
      */
     public IGraphController getGraphController() {
         return this.graphController;
     }
-
+    
     /**
      * Expands all graph objects in this view.
      */
     public void expandAll() {
         expandORCollapseAll(true);
     }
-
+    
     /**
      * Collapses all graph objects in this view.
      */
     public void collapseAll() {
         expandORCollapseAll(false);
     }
-
+    
     /**
      * autolayout all the graph objects
      */
@@ -709,14 +734,14 @@ public abstract class GraphView extends JGoView implements IGraphView {
         layout.setLayerSpacing(20);
         layout.performLayout();
     }
-
+    
     private void expandORCollapseAll(boolean expand) {
         JGoDocument jgoModel = this.getDocument();
         JGoListPosition pos = null;
         JGoObject jgoObj = null;
-
+        
         for (pos = jgoModel.getFirstObjectPos(); pos != null; pos = jgoModel.getNextObjectPos(pos)) {
-
+            
             jgoObj = jgoModel.getObjectAtPos(pos);
             if (!(jgoObj instanceof JGoLink) && jgoObj instanceof IGraphNode) {
                 IGraphNode graphNode = (IGraphNode) jgoObj;
@@ -724,10 +749,10 @@ public abstract class GraphView extends JGoView implements IGraphView {
             }
         }
     }
-
+    
     /**
      * Retrieves a collection of currently selected links
-     * 
+     *
      * @return Collection of selected links in this view.
      */
     public Collection getSelectedLinks() {
@@ -736,7 +761,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
         if (selection == null) {
             return list;
         }
-
+        
         JGoObject obj = null;
         JGoListPosition pos = selection.getFirstObjectPos();
         while (pos != null) {
@@ -744,16 +769,16 @@ public abstract class GraphView extends JGoView implements IGraphView {
             if (obj instanceof IGraphLink) {
                 list.add(obj);
             }
-
+            
             pos = selection.getNextObjectPos(pos);
         }
-
+        
         return list;
     }
-
+    
     /**
      * Retrieves a collection of currently selected nodes
-     * 
+     *
      * @return Collection of selected nodes in this view.
      */
     protected Collection getSelectedNodes() {
@@ -762,7 +787,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
         if (selection == null) {
             return list;
         }
-
+        
         JGoObject obj = null;
         JGoListPosition pos = selection.getFirstObjectPos();
         while (pos != null) {
@@ -770,16 +795,16 @@ public abstract class GraphView extends JGoView implements IGraphView {
             if (obj instanceof IGraphNode) {
                 list.add(obj);
             }
-
+            
             pos = selection.getNextObjectPos(pos);
         }
-
+        
         return list;
     }
-
+    
     /**
      * Retrieves a collection of all links
-     * 
+     *
      * @return -
      */
     public Collection getAllGraphLinks() {
@@ -792,66 +817,66 @@ public abstract class GraphView extends JGoView implements IGraphView {
             if (obj instanceof IGraphLink) {
                 list.add(obj);
             }
-
+            
             pos = document.getNextObjectPos(pos);
         }
         return list;
-
+        
     }
-
+    
     /**
      * Reset selection colors
      */
     public void resetSelectionColors() {
         setDefaultPrimarySelectionColor(new Color(73, 117, 183));
         setDefaultSecondarySelectionColor(new Color(73, 117, 183));
-
+        
     }
-
+    
     /**
      * get graph view container which can manage this view
-     * 
+     *
      * @return graph view manager
      */
     public Object getGraphViewContainer() {
         return this.graphViewContainer;
     }
-
+    
     /**
      * set the graph view container which this view can refer to
-     * 
+     *
      * @param mgr graph view manager
      */
     public void setGraphViewContainer(Object mgr) {
         this.graphViewContainer = mgr;
     }
-
+    
     /**
      * Describe <code>getPrintScale</code> method here.
-     * 
+     *
      * @param g2 a <code>Graphics2D</code> value
      * @param pf a <code>PageFormat</code> value
      * @return a <code>double</code> value
      */
     public double getPrintScale(Graphics2D g2, PageFormat pf) {
         switch (printScale) {
-            case VIEW_SCALE:
-                return getScale();
-            case PAGE_SCALE:
-                Rectangle2D.Double pageRect = getPrintPageRect(g2, pf);
-                java.awt.Dimension docSize = getPrintDocumentSize();
-                // make sure it doesn't get scaled too much! (especially if no objects in
-                // document)
-                docSize.width = Math.max(docSize.width, 50);
-                docSize.height = Math.max(docSize.height, 50);
-                double hratio = pageRect.width / docSize.width;
-                double vratio = pageRect.height / docSize.height;
-                return Math.min(hratio, vratio);
-            default:
-                return 1.0d;
+        case VIEW_SCALE:
+            return getScale();
+        case PAGE_SCALE:
+            Rectangle2D.Double pageRect = getPrintPageRect(g2, pf);
+            java.awt.Dimension docSize = getPrintDocumentSize();
+            // make sure it doesn't get scaled too much! (especially if no objects in
+            // document)
+            docSize.width = Math.max(docSize.width, 50);
+            docSize.height = Math.max(docSize.height, 50);
+            double hratio = pageRect.width / docSize.width;
+            double vratio = pageRect.height / docSize.height;
+            return Math.min(hratio, vratio);
+        default:
+            return 1.0d;
         }
     }
-
+    
     /**
      * Print the view
      */
@@ -861,7 +886,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
         String option3 = "Scale to fit page";
         Object[] options = { option1, option2, option3};
         Object selectedValue = JOptionPane.showInputDialog(this, "Choose a print option", "Print Options", JOptionPane.INFORMATION_MESSAGE, null,
-            options, options[0]);
+                options, options[0]);
         if (selectedValue != null) {
             if (selectedValue.equals(option2)) {
                 this.printScale = VIEW_SCALE;
@@ -873,64 +898,95 @@ public abstract class GraphView extends JGoView implements IGraphView {
             print();
         }
     }
-
+    
     public boolean doMouseUp(int modifiers, java.awt.Point dc, java.awt.Point vc) {
-
+        selectedObject  = getCurrentObject();
+        if(getCurrentObject() instanceof SQLJoinTableArea){
+            SQLJoinTableArea joinTblArea = (SQLJoinTableArea) getCurrentObject();
+            TableArea tblArea = joinTblArea.getTableArea();
+            SourceTable srcTable = (SourceTable) joinTblArea.getDataObject();
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new SourceTableNode((SourceTable)srcTable)});
+        } else if(getCurrentObject() instanceof SQLTargetTableArea){
+            SQLTargetTableArea targetTableArea = (SQLTargetTableArea) getCurrentObject();
+            TableArea tblArea = targetTableArea.getTableArea();
+            TargetTable tgtTable = (TargetTable) targetTableArea.getDataObject();
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new TargetTableNode((TargetTable)tgtTable)});
+        } else if(getCurrentObject() instanceof SQLSourceTableArea){
+            SQLSourceTableArea srcTableArea = (SQLSourceTableArea) getCurrentObject();
+            TableArea tblArea = srcTableArea.getTableArea();
+            SourceTable srcTable = (SourceTable) srcTableArea.getDataObject();
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new SourceTableNode((SourceTable)srcTable)});
+        } else if(getCurrentObject() instanceof JoinViewGraphNode){
+            JoinViewGraphNode gn = (JoinViewGraphNode)getCurrentObject();
+            SQLJoinView joinView = (SQLJoinView)gn.getDataObject();
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new JoinNode((SQLJoinOperator)joinView.getRootJoin())});
+        } else if(getCurrentObject() instanceof SQLRuntimeInputArea){
+            SQLRuntimeInputArea runIn = (SQLRuntimeInputArea)getCurrentObject();
+            TableArea tblArea = runIn.getTableArea();
+            RuntimeInput runInArea = (RuntimeInput)runIn.getDataObject();
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeInputNode((RuntimeInput)runInArea)});
+            java.util.logging.Logger.getLogger(GraphView.class.getName()).info("_______________runIntArea "+runInArea);
+        } else if(getCurrentObject() instanceof SQLRuntimeOutputArea){
+            SQLRuntimeOutputArea runOut = (SQLRuntimeOutputArea)getCurrentObject();
+            TableArea tblArea = runOut.getTableArea();
+            RuntimeOutput runOutArea = (RuntimeOutput)runOut.getDataObject();
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeOutputNode((RuntimeOutput)runOutArea)});
+        }
         resetSelectionColors();
-
+        
         boolean mClick = super.doMouseUp(modifiers, dc, vc);
-
+        
         if (this.pickDocObject(dc, false) != null) {
             return mClick;
         }
-
+        
         //if popup menu is null the create it and populate it with actions
         //set on this graph view
         if (popUpMenu == null) {
             buildPopUpMenu();
         }
-
+        
         int onmask = java.awt.event.InputEvent.BUTTON3_MASK;
-
+        
         if ((modifiers & onmask) != 0 && popUpMenu != null) {
             //if element is not checked out then ask user to check it out before
             // modifiying it
-
+            
             if (!canEdit()) {
                 return false;
             }
-
+            
             if (popUpMenu != null) {
                 popUpMenu.show(this, vc.x, vc.y);
-
+                
                 return true;
             }
         }
-
+        
         return false;
     }
-
+    
     private void registerAccelerator(Action action) {
         Object actionName = action.getValue(Action.NAME);
         Action oldAction = getActionMap().get(actionName);
         if (oldAction == null) {
             getActionMap().put(actionName, action);
         }
-
+        
         KeyStroke ks = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
         getInputMap().put(ks, actionName);
     }
-
+    
     private void buildPopUpMenu() {
         popUpMenu = new JPopupMenu();
-
+        
         List actions = this.getGraphActions();
         if (actions == null) {
             return;
         }
-
+        
         Iterator it = actions.iterator();
-
+        
         while (it.hasNext()) {
             Action action = (Action) it.next();
             GraphActionDelegator gaDelegator = new GraphActionDelegator(this, action);
@@ -947,68 +1003,68 @@ public abstract class GraphView extends JGoView implements IGraphView {
             }
         }
     }
-
+    
     /**
      * set the graph model
-     * 
+     *
      * @param model graph model
      */
     public void setGraphModel(Object model) {
         this.graphModel = model;
     }
-
+    
     /**
      * get graph model
-     * 
+     *
      * @return graph model
      */
     public Object getGraphModel() {
         return this.graphModel;
     }
-
+    
     /**
      * get the graph actions that need to be shown in popup menu
-     * 
+     *
      * @return a list of GraphAction, null in list represents a seperator
      */
     public List getGraphActions() {
         return graphActions;
     }
-
+    
     /**
      * set graph actions on this view
-     * 
+     *
      * @param actions list of GraphAction
      */
     public void setGraphActions(List actions) {
         this.graphActions = actions;
     }
-
+    
     /**
      * can this graph be edited
-     * 
+     *
      * @return true if graph is edited
      */
     public boolean canEdit() {
         return true;
     }
-
+    
     public Object getGraphFactory() {
         return this.graphFactory;
     }
-
+    
     /**
      * set the graph factory which is used for creating nodes in this graph
-     * 
+     *
      * @param gFactory graph node factory
      */
     public void setGraphFactory(Object gFactory) {
         this.graphFactory = gFactory;
     }
-
+    
     /**
      * get a action based on class name
-     * 
+     *
      * @param actionClass
      * @return action
      */
@@ -1017,37 +1073,37 @@ public abstract class GraphView extends JGoView implements IGraphView {
         if (actions == null) {
             return null;
         }
-
+        
         Iterator it = actions.iterator();
-
+        
         while (it.hasNext()) {
             Action act = (Action) it.next();
             if (act != null && act.getClass().getName().equals(actionClass.getName())) {
                 return act;
             }
         }
-
+        
         return null;
     }
-
+    
     /**
      * set the toolbar
-     * 
+     *
      * @param tBar
      */
     public void setToolBar(IToolBar tBar) {
         this.toolBar = tBar;
     }
-
+    
     /**
      * get the toolbar
-     * 
+     *
      * @return toolbar
      */
     public IToolBar getToolBar() {
         return this.toolBar;
     }
-
+    
     /**
      * remove all the view and document objects
      */
@@ -1055,14 +1111,14 @@ public abstract class GraphView extends JGoView implements IGraphView {
         this.getDocument().deleteContents();
         JGoListPosition pos = null;
         JGoObject jgoObj = null;
-
+        
         for (pos = getFirstObjectPos(); pos != null; pos = getNextObjectPos(pos)) {
-
+            
             jgoObj = getObjectAtPos(pos);
             this.removeObject(jgoObj);
         }
     }
-
+    
     public void setModifiable(boolean b) {
         this.getDocument().setModifiable(b);
         this.setKeyEnabled(b);
@@ -1072,32 +1128,32 @@ public abstract class GraphView extends JGoView implements IGraphView {
             this.getToolBar().enableToolBar(b);
         }
     }
-
+    
     /**
      * check if this graph view is modifiable
-     * 
+     *
      * @return modifiable
      */
     public boolean isModifiable() {
         return this.getDocument().isModifiable();
     }
-
+    
     /**
      * get the canvas node which holds IDataObject
-     * 
+     *
      * @param obj IDataObject
      * @return -
      */
     public IGraphNode findGraphNode(Object obj) {
-
+        
         JGoDocument jgoModel = this.getDocument();
         JGoListPosition pos = null;
         JGoObject jgoObj = null;
-
+        
         for (pos = jgoModel.getFirstObjectPos(); pos != null; pos = jgoModel.getNextObjectPos(pos)) {
-
+            
             jgoObj = jgoModel.getObjectAtPos(pos);
-
+            
             if (!(jgoObj instanceof IGraphNode)) {
                 continue;
             }
@@ -1108,34 +1164,34 @@ public abstract class GraphView extends JGoView implements IGraphView {
         }
         return null;
     }
-
+    
     public void highlightInvalidNode(Object dataObj, boolean createSel) {
-
+        
         if (createSel) {
             resetSelectionColors();
         }
-
+        
         JGoSelection sel = this.getSelection();
-
+        
         JGoObject obj = (JGoObject) findGraphNode(dataObj);
         if (obj == null) {
             return;
         }
-
+        
         if (createSel) {
             //set invalid node selection color
             setDefaultPrimarySelectionColor(Color.RED);
             setDefaultSecondarySelectionColor(Color.RED);
-
+            
             sel.clearSelection();
             sel.selectObject(obj);
         } else {
             sel.extendSelection(obj);
         }
-
+        
         this.scrollRectToVisible(obj.getBoundingRect());
     }
-
+    
     public void clearSelection() {
         JGoSelection sel = this.getSelection();
         sel.clearSelection();
@@ -1148,4 +1204,13 @@ public abstract class GraphView extends JGoView implements IGraphView {
     public IOperatorXmlInfo getXMLInfo(){
         return opXmlInfo;
     }
+    
+    public void setSelectedObject(JGoObject obj){
+        this.selectedObject = obj;
+    }
+    
+    public JGoObject getSelectedObject(){
+        return this.selectedObject;
+    }
+    
 }
