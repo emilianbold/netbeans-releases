@@ -26,6 +26,7 @@ identifying information:
                 <not><equals arg1="${deployment.nokia.selecteddevices}" arg2="" trim="true"/></not>
             </and>
         </condition>
+        <dirname property="deployment.scriptdir" file="${deployment.scriptfile}"/>
     </target>
 
     <target name="deploy_all" depends="init" if="deployment-to-all-devices">
@@ -33,7 +34,7 @@ identifying information:
             <classpath>
               <pathelement location="${libs.nokiadeployment.classpath}"/>
             </classpath>
-           <jvmarg value="-Djava.library.path=${java.library.path};${netbeans.home}/../extra/modules/lib;${netbeans.home}/../mobility8/modules/lib"/>
+           <jvmarg value="-Djava.library.path=${java.library.path};${deployment.scriptdir}/../lib/"/>
            <arg file="${deployment.jad}"/>
           <arg file="${deployment.jar}"/>
         </java>
@@ -45,7 +46,7 @@ identifying information:
             <classpath>
               <pathelement location="${libs.nokiadeployment.classpath}"/>
           </classpath>
-           <jvmarg value="-Djava.library.path=${java.library.path};${netbeans.home}/../extra/modules/lib;${netbeans.home}/../mobility8/modules/lib"/>
+           <jvmarg value="-Djava.library.path=${java.library.path};${deployment.scriptdir}/../lib/"/>
           <arg file="${deployment.jad}"/>
           <arg file="${deployment.jar}"/>
           <arg value="${deployment.nokia.selecteddevices}"/>
