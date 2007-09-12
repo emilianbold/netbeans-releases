@@ -98,6 +98,9 @@ public class MainPanel extends JPanel {
         JPanel filler = new JPanel ();
         filler.setBackground (BACKGROUND_COLOR);
         add(filler, constraints);
+
+        // vlv: print
+        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
     }
     
     private class SelectionListener extends MouseAdapter implements Runnable {
