@@ -16,6 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.qa.form;
 
 import org.netbeans.jemmy.operators.*;
@@ -34,13 +35,14 @@ public class BindDialogOperator extends JDialogOperator {
     private JComboBoxOperator _cboBindExpression;
     private JComboBoxOperator _cboUpdateMode;
     private JComboBoxOperator _cboConverter;    
+    private JComboBoxOperator _cboValidator;
     private JTextFieldOperator _txtBindExpression;
     private JCheckBoxOperator _chbNullValue;
     private JCheckBoxOperator _chbIncompletePathValue;    
     
-    public static String READ_WRITE_UPDATE_MODE = "(read/write)";
-    public static String READ_ONLY_UPDATE_MODE = "(read-only)";
-    public static String READ_ONCE_UPDATE_MODE = "(read once)";
+    public static String READ_WRITE_UPDATE_MODE = "(read/write)";  // NOI18N
+    public static String READ_ONLY_UPDATE_MODE = "(read-only)";  // NOI18N
+    public static String READ_ONCE_UPDATE_MODE = "(read once)";  // NOI18N
 
     /**
      * Creates new instance using default name
@@ -97,6 +99,16 @@ public class BindDialogOperator extends JDialogOperator {
         }
         return _cboConverter;
     }
+
+    /** Tries to find JComboBoxOperator in Advanced tab.
+     * @return JComboBoxOperator
+     */
+    private JComboBoxOperator cboValidator() {
+        if (_cboValidator ==null) {
+            _cboValidator = new JComboBoxOperator(tbdPane(),2);
+        }
+        return _cboValidator;
+    }
     
     /** Tries to find JComboBoxOperator in this dialog.
      * @return JComboBoxOperator
@@ -123,7 +135,7 @@ public class BindDialogOperator extends JDialogOperator {
      */
     public JButtonOperator btCancel() {
         if (_btCancel==null) {
-            _btCancel = new JButtonOperator(this, "Cancel"); // NOI18N
+            _btCancel = new JButtonOperator(this, "Cancel");  // NOI18N
         }
         return _btCancel;
     }
@@ -221,17 +233,17 @@ public class BindDialogOperator extends JDialogOperator {
     }
     
     private void setTextIntoValueDialog(String text) {
-        JDialogOperator dialog = new JDialogOperator("Value");
-        new JComboBoxOperator(dialog).selectItem("Plain text");
+        JDialogOperator dialog = new JDialogOperator("Value");  // NOI18N
+        new JComboBoxOperator(dialog).selectItem("Plain text");  // NOI18N
         new JTextAreaOperator(dialog).setText(text);
         new JCheckBoxOperator(dialog).setSelected(true);
-        new JButtonOperator(dialog, "OK").push();
+        new JButtonOperator(dialog, "OK").push();  // NOI18N
     }
 
     private String getTextIntoValueDialog() {
-        JDialogOperator dialog = new JDialogOperator("Value");
+        JDialogOperator dialog = new JDialogOperator("Value");  // NOI18N
         String result = (new JTextAreaOperator(dialog)).getText();
-        new JButtonOperator(dialog, "Cancel").push();
+        new JButtonOperator(dialog, "Cancel").push();  // NOI18N
         return result;
     }
     
@@ -276,6 +288,16 @@ public class BindDialogOperator extends JDialogOperator {
     /** gets selected converter */
     public String getSelectedConverter() {
         return cboConverter().getSelectedItem().toString();        
+    }
+
+    /** selects validator from list */
+    public void selectValidator(String validatorName) {
+        cboValidator().selectItem(validatorName);        
+    }
+
+    /** gets selected validator */
+    public String getValidator() {
+        return cboValidator().getSelectedItem().toString();        
     }
     
     /** gets selected binding source

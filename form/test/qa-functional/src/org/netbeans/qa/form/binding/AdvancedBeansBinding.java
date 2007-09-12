@@ -16,6 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.qa.form.binding;
 
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
@@ -28,22 +29,20 @@ import org.netbeans.jellytools.nodes.Node;
 import java.util.*;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.qa.form.BindDialogOperator;
 
 /**
- * Beans Binding advanced test
+ * Beans Binding advanced tests
  *
  * @author Jiri Vagner
  */
 public class AdvancedBeansBinding extends ExtJellyTestCase {
     private String ACTION_PATH = "Bind|text";  // NOI18N
     private String BIND_EXPRESSION = "${text}";  // NOI18N
-    private String FILENAME = "ConvertorAndValidatorTest.java";
+    private String FILENAME = "ConvertorAndValidatorTest.java"; // NOI18N
     
     /** Constructor required by JUnit */
     public AdvancedBeansBinding(String testName) {
@@ -58,10 +57,10 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     /** Creates suite from particular test cases. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
-        suite.addTest(new AdvancedBeansBinding("testAlternateValues")); // NOI18N
-        suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
-//        suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
+//        suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
+//        suite.addTest(new AdvancedBeansBinding("testAlternateValues")); // NOI18N
+//        suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
+        suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
         return suite;
     }
     
@@ -110,7 +109,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         Action act = new ActionNoBlock(null, ACTION_PATH);
         act.perform(actNode);
         
-        JDialogOperator bindOp = new JDialogOperator("Bind");
+        JDialogOperator bindOp = new JDialogOperator("Bind");  // NOI18N
         JTabbedPaneOperator tabOp = new JTabbedPaneOperator(bindOp);
         tabOp.selectPage("Advanced");
 
@@ -124,18 +123,18 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         
         // incomplete value settings
         new JButtonOperator(tabOp,6).pushNoBlock();
-        NbDialogOperator valueOp = new NbDialogOperator("Incomplete Path Value");
+        NbDialogOperator valueOp = new NbDialogOperator("Incomplete Path Value");  // NOI18N
         new JTextAreaOperator(valueOp,0).setText(incompleteMsg);
-        new JButtonOperator(valueOp, "OK").push();
+        new JButtonOperator(valueOp, "OK").push();  // NOI18N
         
         // null value settings
         new JButtonOperator(tabOp,7).pushNoBlock();
-        valueOp = new NbDialogOperator("Null Value");
+        valueOp = new NbDialogOperator("Null Value");  // NOI18N
         new JTextAreaOperator(valueOp,0).setText(nullMsg);
-        new JButtonOperator(valueOp, "OK").push();
+        new JButtonOperator(valueOp, "OK").push();  // NOI18N
 
         // closing bind dialog
-        new JButtonOperator(bindOp,"OK").push();
+        new JButtonOperator(bindOp,"OK").push();  // NOI18N
 
         // test generated code
         findInCode("binding.setSourceNullValue(\"" + nullMsg + "\");", designer); // NOI18N
@@ -146,24 +145,24 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         act = new ActionNoBlock(null, ACTION_PATH);
         act.perform(actNode);
         
-        bindOp = new JDialogOperator("Bind");
+        bindOp = new JDialogOperator("Bind");  // NOI18N
         tabOp = new JTabbedPaneOperator(bindOp);
-        tabOp.selectPage("Advanced");
+        tabOp.selectPage("Advanced");  // NOI18N
 
         // get incomplete path value
         new JButtonOperator(tabOp,6).pushNoBlock();
-        valueOp = new NbDialogOperator("Incomplete Path Value");
+        valueOp = new NbDialogOperator("Incomplete Path Value");  // NOI18N
         String incomleteValue =  new JTextAreaOperator(valueOp,0).getText();
-        new JButtonOperator(valueOp, "OK").push();
+        new JButtonOperator(valueOp, "OK").push();  // NOI18N
         
         // get null value
         new JButtonOperator(tabOp,7).pushNoBlock();
-        valueOp = new NbDialogOperator("Null Value");
+        valueOp = new NbDialogOperator("Null Value");  // NOI18N
         String nullValue =  new JTextAreaOperator(valueOp,0).getText();
-        new JButtonOperator(valueOp, "OK").push();
+        new JButtonOperator(valueOp, "OK").push();  // NOI18N
 
         // closing bind dialog
-        new JButtonOperator(bindOp,"OK").push();
+        new JButtonOperator(bindOp,"OK").push();  // NOI18N
 
         // compare values
         assertEquals(incomleteValue, incompleteMsg);
@@ -172,12 +171,40 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     
     /** Tests validation */
     public void testValidation() {
-        fail("todo"); // NOI18N
+        String validatorName = "loginLengthValidator";  // NOI18N
+        
+        // open frame
+        openFile(FILENAME);
+        ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+        Node actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel12 [JLabel]"); // NOI18N
+        Action act = new ActionNoBlock(null, ACTION_PATH);
+        act.perform(actNode);
+        
+        // set Face2Bool converter from list
+        BindDialogOperator bindOp = new BindDialogOperator();
+        bindOp.selectAdvancedTab();
+        bindOp.selectValidator(validatorName);
+        bindOp.ok();
+        
+        // find code in source file
+        FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
+        findInCode("binding.setValidator(loginLengthValidator);", designer);  // NOI18N
+
+        
+        // open bind dialog again and check selected
+        act.perform(actNode);
+        bindOp = new BindDialogOperator();
+        bindOp.selectAdvancedTab();
+        String selected = bindOp.getValidator();
+        bindOp.ok();
+
+        // test name
+        assertEquals(selected, validatorName);
     }
 
     /** Tests conversion */
     public void testConversion() {
-        String convertorName = "bool2FaceConverter";
+        String convertorName = "bool2FaceConverter";  // NOI18N
         
         // open frame
         openFile(FILENAME);
@@ -194,7 +221,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         
         // find code in source file
         FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
-        findInCode("binding.setConverter(bool2FaceConverter);", designer);
+        findInCode("binding.setConverter(bool2FaceConverter);", designer);  // NOI18N
 
         
         // open bind dialog again and check selected convertor
