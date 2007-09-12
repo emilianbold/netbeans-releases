@@ -37,14 +37,12 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.DatasourceUISettings;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.MissingConnectionsAlertPanel;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
@@ -199,17 +197,14 @@ public class ImportDataSource {
      * @return return true if project is a legacy project
      */
     public static boolean isLegacyProject(Project project) {
-        boolean legacyProject = false;
-        
-        if (project == null) {
-            project = CurrentProject.getInstance().getProject();
-        }
+        boolean isLegacyProject = false;
+                
         // if project is a visualweb or creator project then find out whether it is a Creator 2 project
         if (JsfProjectUtils.getProjectVersion(project).equals("2.0") || JsfProjectUtils.getProjectVersion(project).equals("3.0")) { //NOI18N
-            legacyProject = true;
+            isLegacyProject = true;
         }
         
-        return legacyProject;
+        return isLegacyProject;
     }
     
     /**
