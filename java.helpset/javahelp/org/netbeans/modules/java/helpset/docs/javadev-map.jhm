@@ -230,6 +230,17 @@
 <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersWizardPanel" url="project/csh/proj_j2sefree_wiz3.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
 
+
+<!-- J2SE Desktop App name and location:-->
+<mapID target="org.netbeans.modules.swingapp.templates.ConfigureProjectPanel" url="pending.html" />
+
+<!-- J2SE Desktop App master table:-->
+<mapID target="org.netbeans.modules.form.j2ee.wizard.MasterPanel" url="pending.html" />
+
+<!-- J2SE Desktop App detail options:-->
+<mapID target="org.netbeans.modules.form.j2ee.wizard.DetailPanel" url="pending.html" />
+
+
 <!-- Standard J2SE Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_props_sources.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries" url="project/csh/proj_j2sestand_props_libraries.html" />
@@ -448,9 +459,9 @@ right now the IDs don't seem towork:-->
    <mapID target="javax.swing.JDesktopPane" url="pending.html" />
    <mapID target="javax.swing.JOptionPane" url="pending.html" />
 
-<!--CSH ID for Options | Editing | Form Editor Settings :-->
+<!--CSH ID for Options (Advanced)| Editing | Form Editor Settings :-->
     <mapID target="gui.configuring" url="configure/options_form_classic.html" />
-<!--ID for CSH in Options | Basic Options - Advanced-Form Editor Settings : --> 
+<!--ID for CSH in Options | Basic Options -  Miscellaneous GUI Builder Settings : --> 
     <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
 
 
