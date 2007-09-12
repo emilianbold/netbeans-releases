@@ -45,7 +45,6 @@ package org.netbeans.modules.compapp.test.ui;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import java.awt.Image;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import javax.swing.Action;
@@ -57,15 +56,14 @@ import org.openide.actions.DeleteAction;
 import org.openide.actions.EditAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
 
 /**
- * DOCUMENT ME!
+ * A node representing a test case result.
  *
  * @author Jun Qian
  */
@@ -106,7 +104,9 @@ public class TestCaseResultNode extends FilterNode {
         String fileName = mActualFile.getName();
         String displayName = getActualResultTimeStamp(fileName);
         if (!mSuccess) {
-            displayName += " - Failed"; // NOI18N
+            String failedResultSuffix = NbBundle.getMessage(TestCaseResultNode.class, 
+                    "FAILED_RESULT_SUFFIX"); // NOI18N
+            displayName += failedResultSuffix;
         }
         return displayName;
     }
@@ -154,9 +154,10 @@ public class TestCaseResultNode extends FilterNode {
         };
     }
     
-    public Node.Cookie getCookie(Class type) {
+    @SuppressWarnings("unchecked")
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
         if (type == TestCaseResultCookie.class) {
-            return mTestCaseResultCookie;
+            return (T) mTestCaseResultCookie;
         }
         return super.getCookie(type);
     }
