@@ -105,6 +105,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -1702,6 +1703,20 @@ public class JsfProjectUtils {
     
     public static boolean isDesigntimeLib(String name) {
         return JsfProjectLibrary.isDesigntimeLib(name);
+    }
+
+    public static String getBackwardsKitMesg(boolean addJSF11, boolean addRowset) {
+        String RI = (addJSF11 && addRowset) ? NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingTwo")
+                                            : NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingOne");
+        String nbms = "";
+        if (addJSF11) {
+            nbms = NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingJSF");
+        }
+        if (addRowset) {
+            nbms += NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingRowset");
+        }
+
+        return NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingNBM", RI, nbms);
     }
 
     /** Reports whether the given name is a valid Java file name.

@@ -520,18 +520,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         }
 
         if (addJSF11 || addRowset) {
-            String RI = (addJSF11 && addRowset) ? NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingTwo")
-                                                : NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingOne");
-            String nbms = "";
-            if (addJSF11) {
-                nbms = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF");
-            }
-            if (addRowset) {
-                nbms += NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingRowset");
-            }
-
-            final String mesg = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingNBM", RI, nbms);
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", mesg); //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", JsfProjectUtils.getBackwardsKitMesg(addJSF11, addRowset)); //NOI18N
             return false;
         }
         // </RAVE>
