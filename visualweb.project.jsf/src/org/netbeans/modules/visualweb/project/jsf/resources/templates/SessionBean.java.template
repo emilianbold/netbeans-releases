@@ -2,9 +2,11 @@
  * ${name}.java
  *
  * Created on ${date}, ${time}
- * Copyright ${user}
  */
+ 
+<#if package?? && package != "">
 package ${package};
+</#if>
 
 import com.sun.rave.web.ui.appbase.AbstractSessionBean;
 import javax.faces.FacesException;
@@ -18,6 +20,8 @@ import javax.faces.FacesException;
  * the first time your application evaluates a value binding expression
  * or method binding expression that references a managed bean using
  * this class.</p>
+ *
+ * @author ${user}
  */
 public class ${name} extends AbstractSessionBean {
     // <editor-fold defaultstate="collapsed" desc="Managed Component Definition">

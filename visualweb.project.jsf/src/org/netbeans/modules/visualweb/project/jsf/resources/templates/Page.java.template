@@ -2,9 +2,11 @@
  * ${name}.java
  *
  * Created on ${date}, ${time}
- * Copyright ${user}
  */
+ 
+<#if package?? && package != "">
 package ${package};
+</#if>
 
 import com.sun.rave.web.ui.appbase.AbstractPageBean;
 import com.sun.rave.web.ui.component.Body;
@@ -21,6 +23,8 @@ import javax.faces.FacesException;
  * all components that you have defined on this page, as well as
  * lifecycle methods and event handlers where you may add behavior
  * to respond to incoming events.</p>
+ *
+ * @author ${user}
  */
 public class ${name} extends AbstractPageBean {
     // <editor-fold defaultstate="collapsed" desc="Managed Component Definition">
