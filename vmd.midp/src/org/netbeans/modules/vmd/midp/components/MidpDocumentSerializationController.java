@@ -38,14 +38,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-import org.netbeans.modules.vmd.midp.components.general.ClassCode;
-import org.openide.util.NbBundle;
+
 
 /**
  * @author David Kaspar
@@ -124,7 +117,7 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
         //checkInstanceNames(rootComponent.getComponents(), errorHandler);
     }
     
-    //TODO It's not used anymore, you cant be sure that instance name is not null in the VMD file 
+    /*
     private void checkInstanceNames(Collection<DesignComponent> components, DocumentErrorHandler errorHandler) {
         for (DesignComponent component : components) {
             PropertyDescriptor descriptor = component.getComponentDescriptor().getPropertyDescriptor(ClassCD.PROP_INSTANCE_NAME);
@@ -141,4 +134,5 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
             }
         }
     }
+     */
 }
