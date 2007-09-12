@@ -89,7 +89,11 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                 return Collections.emptySet();
             cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             
-            EqualsHashCodeGenerator gen = createEqualsHashCodeGenerator(cc, cc.getTrees().getElement(path));
+            Element elem = cc.getTrees().getElement(path);
+            if (elem == null) {
+                return Collections.emptySet();
+            }
+            EqualsHashCodeGenerator gen = createEqualsHashCodeGenerator(cc, elem);
             
             if (gen == null) {
                 return Collections.emptySet();
