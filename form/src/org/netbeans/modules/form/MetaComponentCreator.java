@@ -1487,7 +1487,7 @@ public class MetaComponentCreator {
             menu = (Component) menuComp.getBeanInstance();
             menuCont.add(menuComp);
             menuCont.getLayoutSupport().addComponentsToContainer(
-                    menuBar, menuBar, new Component[] { menu }, 0);
+                    menuBar, menuBar, new Component[] { menu }, 1);
         }
 
         return newMetaComp;
