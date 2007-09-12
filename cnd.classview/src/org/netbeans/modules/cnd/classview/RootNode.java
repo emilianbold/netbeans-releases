@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.classview;
 
+import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 
 /**
@@ -34,5 +35,10 @@ public class RootNode extends AbstractNode{
     public void destroy(){
         ProjectsKeyArray keys = (ProjectsKeyArray)getChildren();
         keys.dispose();
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[0];
     }
 }
