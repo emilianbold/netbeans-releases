@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.util.Stack;
-
 /**
  * composition of include handler and macro map for parsing file phase
  * @author Vladimir Voskresensky
