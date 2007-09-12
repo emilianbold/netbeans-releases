@@ -236,7 +236,8 @@ setLauncherLocale() {        index=0
         	localeChanged=0	
 		localeCounter=0
 		while [ $localeCounter -lt $LAUNCHER_LOCALES_NUMBER ] ; do		
-		    arg=`eval echo "$""LAUNCHER_LOCALE_NAME_$localeCounter"`		
+		    localeVar="$""LAUNCHER_LOCALE_NAME_$localeCounter"
+		    arg=`eval "echo \"$localeVar\""`		
                     if [ -n "$arg" ] ; then 
                         # if not a default locale			
 			# $comp length shows the difference between $SYSTEM_LOCALE and $arg
@@ -548,7 +549,8 @@ installJVM() {
 
 resolveResourcePath() {
 	resourcePrefix="$1"
-	resourceName=`eval echo "$""$resourcePrefix""_PATH"`
+	resourceVar="$""$resourcePrefix""_PATH"
+	resourceName=`eval "echo \"$resourceVar\""`
 	resourcePath=`resolveString "$resourceName"`
     	echo "$resourcePath"
 
@@ -556,13 +558,15 @@ resolveResourcePath() {
 
 resolveResourceSize() {
 	resourcePrefix="$1"
-	resourceSize=`eval echo "$""$resourcePrefix""_SIZE"`
+	resourceVar="$""$resourcePrefix""_SIZE"
+	resourceSize=`eval "echo \"$resourceVar\""`
     	echo "$resourceSize"
 }
 
 resolveResourceType() {
 	resourcePrefix="$1"
-	resourceType=`eval echo "$""$resourcePrefix""_TYPE"`
+	resourceVar="$""$resourcePrefix""_TYPE"
+	resourceType=`eval "echo \"$resourceVar\""`
 	echo "$resourceType"
 }
 
@@ -1207,7 +1211,8 @@ prepareJVMArguments() {
     LAUNCHER_JVM_ARGUMENTS=`resolveString "$LAUNCHER_JVM_ARGUMENTS" true`
     debug "... resolved  string :  $LAUNCHER_JVM_ARGUMENTS"
     while [ $jvmArgCounter -lt $JVM_ARGUMENTS_NUMBER ] ; do		
-         arg=`eval echo "$""JVM_ARGUMENT_$jvmArgCounter"`
+	 argumentVar="$""JVM_ARGUMENT_$jvmArgCounter"
+         arg=`eval "echo \"$argumentVar\""`
 	 debug "... jvm argument [$jvmArgCounter] [initial]  : $arg"
 	 arg=`resolveString "$arg"`
 	 debug "... jvm argument [$jvmArgCounter] [resolved] : $arg"
@@ -1227,7 +1232,8 @@ prepareAppArguments() {
     LAUNCHER_APP_ARGUMENTS=`resolveString "$LAUNCHER_APP_ARGUMENTS" true`
     debug "... resolved  string :  $LAUNCHER_APP_ARGUMENTS"
     while [ $appArgCounter -lt $APP_ARGUMENTS_NUMBER ] ; do		
-         arg=`eval echo "$""APP_ARGUMENT_$appArgCounter"`
+	 argumentVar="$""APP_ARGUMENT_$appArgCounter"
+         arg=`eval "echo \"$argumentVar\""`
 	 debug "... app argument [$appArgCounter] [initial]  : $arg"
 	 arg=`resolveString "$arg"`
 	 debug "... app argument [$appArgCounter] [resolved] : $arg"
