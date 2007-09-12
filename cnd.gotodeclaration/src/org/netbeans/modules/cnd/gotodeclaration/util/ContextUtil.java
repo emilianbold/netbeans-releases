@@ -73,7 +73,7 @@ public class ContextUtil {
 	CsmScope scope = cls.getScope();
 	while( scope != null && CsmKindUtilities.isClass(scope) ) {
 	    CsmClass outer = (CsmClass)scope;
-	    sb.insert(0, "::");
+	    sb.insert(0, "::"); // NOI18N
 	    sb.insert(0, (outer).getName());
 	    scope = outer.getScope();
 	}

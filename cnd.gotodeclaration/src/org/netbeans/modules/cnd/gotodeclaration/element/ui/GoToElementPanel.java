@@ -101,7 +101,7 @@ import org.openide.util.NbBundle;
                    matchesList.setSelectedIndex(0);
                    setListPanelContent(null);
                    if ( time != -1 ) {
-                       if( GoToElementAction.TRACE ) System.err.printf("Real search time: %d ms", (System.currentTimeMillis() - time));
+                       if( GoToElementAction.TRACE ) System.err.printf("Real search time: %d ms", (System.currentTimeMillis() - time)); // NOI18N
                        time = -1;
                    }
                }
@@ -357,13 +357,13 @@ import org.openide.util.NbBundle;
         String action = listActionFor(ev);
         
         // Wrap around
-        if ( "selectNextRow".equals(action) && 
+        if ( "selectNextRow".equals(action) &&  // NOI18N
              matchesList.getSelectedIndex() == matchesList.getModel().getSize() -1 ) {
             matchesList.setSelectedIndex(0);
             matchesList.ensureIndexIsVisible(0);
             return;
         }
-        else if ( "selectPreviousRow".equals(action) &&
+        else if ( "selectPreviousRow".equals(action) && // NOI18N
                   matchesList.getSelectedIndex() == 0 ) {
             int last = matchesList.getModel().getSize() - 1;
             matchesList.setSelectedIndex(last);

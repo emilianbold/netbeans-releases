@@ -53,11 +53,11 @@ import org.openide.windows.TopComponent;
  */
 public class GoToElementAction extends AbstractAction implements GoToElementPanel.ContentProvider {
 
-    /*package-local*/ static final boolean TRACE = Boolean.getBoolean("cnd.goto.fv.trace");
+    /*package-local*/ static final boolean TRACE = Boolean.getBoolean("cnd.goto.fv.trace"); // NOI18N
     
     private SearchType nameKind;
     private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
-    private static final RequestProcessor rp = new RequestProcessor("GoToFuncVarAction-RequestProcessor", 1);
+    private static final RequestProcessor rp = new RequestProcessor("GoToFuncVarAction-RequestProcessor", 1); // NOI18N
     private Worker running;
     private RequestProcessor.Task task;
     private GoToElementPanel panel;
@@ -66,7 +66,7 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
     private Collection<? extends ElementProvider> elementProviders;
     
     public GoToElementAction() {
-        super( NbBundle.getMessage( GoToElementAction.class,"TXT_GoToFunctionOrVariable")  );
+        super( NbBundle.getMessage( GoToElementAction.class,"TXT_GoToFunctionOrVariable")  ); // NOI18N
         //putValue("PopupMenuText", NbBundle.getBundle(GoToFuncVarAction.class).getString("editor-popup-TXT_GoToElement")); // NOI18N
     }
 
@@ -116,7 +116,7 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
      */
    private Dialog createDialog( final GoToElementPanel panel) {
        
-        okButton = new JButton (NbBundle.getMessage(GoToElementAction.class, "CTL_OK"));
+        okButton = new JButton (NbBundle.getMessage(GoToElementAction.class, "CTL_OK")); // NOI18N
         okButton.setEnabled (false);
         panel.getAccessibleContext().setAccessibleName( NbBundle.getMessage( GoToElementAction.class, "AN_GoToElement")  ); //NOI18N
         panel.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( GoToElementAction.class, "AD_GoToElement")  ); //NOI18N
