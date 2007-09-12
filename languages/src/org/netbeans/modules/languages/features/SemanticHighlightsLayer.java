@@ -73,7 +73,9 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
         }
 
         public void parsed (State state, ASTNode root) {
-            fireHighlightsChange (0, document.getLength ());
+            if(state != State.PARSING) {
+                fireHighlightsChange(0, document.getLength());
+            }
         }
     }
     
@@ -117,37 +119,46 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
                 startOffset1 = endOffset1;
                 if (startOffset1 >= document.getLength () - 1) return false;
                 ASTPath path = ast.findPath (startOffset1);
-                if (path == null) return false;
-                boolean isTrailing = isTrailing (path);
-                ASTNode splitNode = isTrailing ? splitNode (path) : null;
-                int i, k = path.size ();
-                for ( i = 0; i < k; i++) {
-                    ASTItem item = path.get (i);
-                    if (isTrailing && splitNode == item) {
-                        break;
-                    }
-                    try {
-                        Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
-                        AttributeSet as = null;
-                        List<AttributeSet> colors = ColorsManager.getColors (language, path.subPath (i), document);
-                        if (colors != null && !colors.isEmpty ()) {
-                            for (Iterator<AttributeSet> it = colors.iterator (); it.hasNext ();) {
-                                as = it.next ();
-                                attributeSet.addAttributes (as);
+                if (path != null) {
+                    boolean isTrailing = isTrailing (path);
+                    ASTNode splitNode = isTrailing ? splitNode (path) : null;
+                    int i, k = path.size ();
+                    for ( i = 0; i < k; i++) {
+                        ASTItem item = path.get (i);
+                        if (isTrailing && splitNode == item) {
+                            break;
+                        }
+                        try {
+                            Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
+                            AttributeSet as = null;
+                            List<AttributeSet> colors = ColorsManager.getColors (language, path.subPath (i), document);
+                            if (colors != null && !colors.isEmpty ()) {
+                                for (Iterator<AttributeSet> it = colors.iterator (); it.hasNext ();) {
+                                    as = it.next ();
+                                    attributeSet.addAttributes (as);
+                                }
+                                endOffset1 = path.get (i).getEndOffset ();
                             }
-                            endOffset1 = path.get (i).getEndOffset ();
+                            as = highlighting.get (item);
+                            if (as != null) {
+                                attributeSet.addAttributes (as);
+                                endOffset1 = path.get (i).getEndOffset ();
+                            }
+                        } catch (ParseException ex) {
+                            ex.printStackTrace();
                         }
-                        as = highlighting.get (item);
-                        if (as != null) {
-                            attributeSet.addAttributes (as);
-                            endOffset1 = path.get (i).getEndOffset ();
-                        }
-                    } catch (ParseException ex) {
                     }
                 }
                 if (endOffset1 > startOffset1)
                     return true;
-                endOffset1 = path.getLeaf ().getEndOffset ();
+                
+                //There might be a "holes" in the AST so the ast.findPath (offset)
+                //returns the root 'S' node for the offset.
+                //Do not skip behind the end of the node (end of the file) in such case.
+                if(path.size() > 1) {
+                    endOffset1 = path.getLeaf ().getEndOffset ();
+                }
+                
                 if (endOffset1 == startOffset1)
                     endOffset1++;
             } while (endOffset1 < endOffset);
