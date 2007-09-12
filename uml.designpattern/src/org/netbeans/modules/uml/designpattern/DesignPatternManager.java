@@ -1020,7 +1020,9 @@ public class DesignPatternManager implements IDesignPatternManager {
                     // then that is one case
                     if (pTypeEle instanceof IPartFacade) {
                         IPartFacade pRole = (IPartFacade)pTypeEle;
-                        if (pRole != null) {
+                        // 91018, in case part facade is out side design pattern scope, 
+                        // it does not have participants, we still need to process the type
+                        if (pRole != null && m_Details.getParticipantInstances(pRole.getXMIID()).size() > 0) {
                             // if it is a participant in the pattern then at the time that this property element
                             // is saved, the type will become the instance in the project that is playing the role
                             // of this participant
@@ -1031,8 +1033,10 @@ public class DesignPatternManager implements IDesignPatternManager {
                             String tempStr = "?" + id;
                             pPropEle.setValue(tempStr);
                             pPropEle.setModified(true);
+                            return;
                         }
-                    } else {
+                    }
+//                    } else {
                         // the element representing the type is not a part facade
                         // so at save time of this property element, this type will need to either be created
                         // in the current project or if already there, used
@@ -1051,7 +1055,7 @@ public class DesignPatternManager implements IDesignPatternManager {
                         
                         pPropEle.setValue(temp);
                         pPropEle.setModified(true);
-                    }
+//                    }
                 }
             }
         }
