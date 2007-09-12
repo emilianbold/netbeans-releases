@@ -70,7 +70,7 @@ public class APTFindUnusedBlocksWalker extends APTSelfWalker {
             return; // malformed file -- giveup
         }
         if (!value || !evaluateElif) {
-            addBlock(opener.getEndOffset()+1, closer.getOffset() - 1);
+            addBlock(opener.getEndOffset(), closer.getOffset()-1);
         } 
         if (closer.getType()==APT.Type.ELSE) {
             APT closer2 = closer.getNextSibling();
@@ -78,7 +78,7 @@ public class APTFindUnusedBlocksWalker extends APTSelfWalker {
                 return; // malformed file -- giveup
             }
             if (value || !evaluateElif) {
-                addBlock(closer.getEndOffset()+1, closer2.getOffset() - 1);
+                addBlock(closer.getEndOffset(), closer2.getOffset()-1);
             }
         }
         if (closer.getType()==APT.Type.ELIF) {
