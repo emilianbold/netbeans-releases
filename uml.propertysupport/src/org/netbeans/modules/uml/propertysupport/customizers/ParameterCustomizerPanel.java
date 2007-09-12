@@ -76,7 +76,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     private ResourceBundle bundle = NbBundle.getBundle(ParameterCustomizerPanel.class);
     public ListSelectionModel listSelModel;
     private DefaultListModel listModel;
-    private ArrayList <ElementData> removedElements = new ArrayList();
+    private ArrayList <ElementData> removedElements = new ArrayList<ElementData>();
     private IPropertyElement parentElement;
     private IPropertyDefinition rootDef;
     private boolean paramOrderChanged = false;
@@ -800,7 +800,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             messageArea.setText(text);
             if (text.trim().length() > 0) {
                 errorIcon = new ImageIcon(
-                  Utilities.loadImage("org/netbeans/modules/uml/resources/error.gif"));
+                  Utilities.loadImage("org/netbeans/modules/uml/resources/images/error.png"));
             }
             iconLabel.setIcon(errorIcon); // NOI18N
         }
