@@ -174,8 +174,10 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
             getJsfJspEditorSupport().openDesigner();
         }
         public void edit() {
-            // open form editor with java editor selected (form not loaded)
-            getJsfJspEditorSupport().editJsp();
+            // XXX IZ 114696 - Opening a project with opened pages causes
+            // JSP view to come up by default; this line is intentionally incorrect
+            getJsfJspEditorSupport().openDesigner();
+            // getJsfJspEditorSupport().editJsp();
         }
     }
     
