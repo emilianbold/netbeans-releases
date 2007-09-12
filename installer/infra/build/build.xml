@@ -1157,7 +1157,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1167,7 +1167,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1177,7 +1177,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1187,7 +1187,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1197,7 +1197,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1207,7 +1207,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
 
@@ -1331,7 +1331,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1349,7 +1349,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1366,7 +1366,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1383,7 +1383,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1400,7 +1400,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1417,7 +1417,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="tomcat" version="6.0.13.0.0"/>
+            <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>

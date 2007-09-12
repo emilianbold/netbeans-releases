@@ -121,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
     </ant>
   </target>
 
-  <property name="tomcat.appname" value="apache-tomcat-6.0.13"/>
+  <property name="tomcat.appname" value="apache-tomcat-6.0.14"/>
   <target name="build-tomcat-pkg" if="build_tomcat">
     <echo message="Building ${tomcat.appname} into ${basedir}/tomcat"/>
     <ant dir="tomcat" target="build-pkg" inheritAll="false">

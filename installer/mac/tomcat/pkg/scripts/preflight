@@ -19,7 +19,7 @@
 
 set -e
 
-instdir="/Applications/NetBeans/apache-tomcat-6.0.13"
+instdir="/Applications/NetBeans/apache-tomcat-6.0.14"
 
 if [ -d "$instdir" ] ; then
     rm -rf "$instdir"

@@ -1295,7 +1295,7 @@ NOTICE PURSUANT TO SECTION 9 OF THE COMMON DEVELOPMENT AND DISTRIBUTION LICENSE 
 The NetBeans code released under the CDDL shall be governed by the laws of the State of California (excluding conflict-of-law provisions). Any litigation relating to this License shall be subject to the jurisdiction of the Federal Courts of the Northern District of California and the state courts of the State of California, with venue lying in Santa Clara County, California.
 
 -------------------------------------------------
-Apache Tomcat 6.0.13:
+Apache Tomcat 6.0.14:
 
                                  Apache License
                            Version 2.0, January 2004

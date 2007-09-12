@@ -21,11 +21,11 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="tomcat" basedir="." default="build-pkg">
 
-  <property name="appname" value="apache-tomcat-6.0.13"/>
+  <property name="appname" value="apache-tomcat-6.0.14"/>
   <property name="appdir" value="build/app"/>
   <property name="zipname" value="tomcat-macosx.zip"/>
-  <property name="appversion" value="6.0.13"/>
-  <property name="version" value="6.0.13"/>
+  <property name="appversion" value="6.0.14"/>
+  <property name="version" value="6.0.14"/>
   <property name="exename" value=""/>
   <property name="icon" value=""/>
   <property name="pmproj" value="pkg/tomcat.pmproj"/>
