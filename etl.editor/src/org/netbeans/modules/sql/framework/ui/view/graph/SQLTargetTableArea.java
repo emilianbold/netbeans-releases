@@ -138,11 +138,11 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
         addRemovePopUpMenu(aListener);
         
         // Properties
-        popUpMenu.addSeparator();
+     /*   popUpMenu.addSeparator();
         String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
         propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
         propertiesItem.addActionListener(aListener);
-        popUpMenu.add(propertiesItem);
+        popUpMenu.add(propertiesItem);*/
     }
     
     Icon createIcon() {
@@ -158,7 +158,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
         public void actionPerformed(ActionEvent e) {
             Object source = e.getSource();
             if (source == propertiesItem) {
-                Properties_ActionPerformed(e);
+              //  Properties_ActionPerformed(e);
             } else if (source == showSqlItem) {
                 ShowSql_ActionPerformed(e);
             } else if (source == showDataItem) {

@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -56,8 +57,19 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
+
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoView;
+import java.awt.Container;
+import java.beans.PropertyChangeListener;
+import java.util.logging.Logger;
+import org.netbeans.modules.etl.ui.ETLNode;
+import org.netbeans.modules.etl.ui.property.SourceTableNode;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.openide.ErrorManager;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * @author Ritesh Adval
@@ -97,6 +109,9 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     
     private JMenuItem dataFilterMapItem;
     
+    private transient ETLCollaborationTopComponent designView;
+    
+    
     /**
      * Creates a new instance of SQLSourceTableArea
      */
@@ -109,10 +124,12 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
      *
      * @param table the table to render
      */
-    public SQLSourceTableArea(SQLDBTable table) {
+    public SQLSourceTableArea(SourceTable table) {
         super(table);
     }
-    
+    /**
+     *
+     */
     protected void initializePopUpMenu() {
         ActionListener aListener = new TableActionListener();
         // Show SQL
@@ -146,11 +163,11 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         addRemovePopUpMenu(aListener);
         
         // Show properties
-        popUpMenu.addSeparator();
+     /*   popUpMenu.addSeparator();
         String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
         propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
         propertiesItem.addActionListener(aListener);
-        popUpMenu.add(propertiesItem);
+        popUpMenu.add(propertiesItem);*/
         
         // Auto map action
         autoMapItem = new JMenuItem("Auto Map", new ImageIcon(autoMapImgUrl));
@@ -174,7 +191,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         public void actionPerformed(ActionEvent e) {
             Object source = e.getSource();
             if (source == propertiesItem) {
-                Properties_ActionPerformed(e);
+                //   Properties_ActionPerformed(e);
             } else if (source == showSqlItem) {
                 ShowSql_ActionPerformed(e);
             } else if (source == showDataItem) {
@@ -302,9 +319,17 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     }
     
     public boolean doMouseClick(int modifiers, Point dc, Point vc, JGoView view1) {
+        //java.util.logging.Logger.getLogger(SQLSourceTableArea.class.getName()).info("ETLActivatedNodes in doMouseClick in PropertyChangeListener ------------ ");
+        Node node = null;
+        if(node != null){
+            if (node instanceof SourceTableNode) {
+                WindowManager.getDefault().getRegistry().getActivated().
+                        setActivatedNodes(new Node[]{new SourceTableNode((SourceTable)node)});
+                java.util.logging.Logger.getLogger(SQLSourceTableArea.class.getName()).info("ETLNewPropertySheet  in MouseClick in Property Sheet ------------ "+node.getName());
+            }
+        }
         IGraphView gView = this.getGraphView();
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
-        
         if (sqlModel != null) {
             List tTables = sqlModel.getSQLDefinition().getTargetTables();
             //if there are no target tables then we need not show automap menu item
@@ -377,6 +402,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     }
     
     /**
+     * @return
      * @see org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea#getDefaultBackgroundColor()
      */
     protected Color getDefaultBackgroundColor() {
@@ -388,9 +414,30 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             this.getView().updateUI();
             ETLDataObject etlDataObject = DataObjectProvider.getProvider().getActiveDataObject();
             ETLEditorSupport editor = etlDataObject.getETLEditorSupport();
-            editor.synchDocument();            
+            editor.synchDocument();
         } catch(Exception ex){
             //ignore
+        }
+    }
+    
+    
+    private void setActivatedNodes(final Node[] nodes) {
+        try {
+            TopComponent targetTopComponent = null;
+            Container container = (Container)designView;
+            while (container != null) { // Find TopComponent
+                if (container instanceof TopComponent) {
+                    targetTopComponent = (TopComponent) container;
+                    break;
+                    
+                }
+                container = container.getParent();
+            }
+            if(targetTopComponent != null) {
+                targetTopComponent.setActivatedNodes(nodes);
+            }
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
 }
