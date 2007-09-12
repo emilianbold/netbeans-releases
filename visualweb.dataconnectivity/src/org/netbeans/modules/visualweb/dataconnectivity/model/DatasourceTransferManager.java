@@ -43,12 +43,9 @@ import java.sql.SQLException;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.DataSourceNamePanel;
-import org.netbeans.modules.visualweb.insync.live.LiveUnit;
-import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -129,7 +126,6 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             // Naming Context
             // Make sure duplicate datasources are not added
             boolean cancel = false;
-            boolean unsupported = false;
             String databaseProductName = null;
             try {
                 databaseProductName = dbConnection.getJDBCConnection().getMetaData().getDatabaseProductName().replaceAll("\\s{1}", "");
@@ -155,19 +151,13 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             } else
                 dsName = dbConnection.getSchema() + "_" + databaseProductName;
             
-            
             // Check if target server supports data source creation.  If not then cancel drop
-            DesignContext context = designBeans[0].getDesignContext();
-            FacesModel model = ((LiveUnit)context).getModel();
-            Project currentProj = model.getProject();
-            if (!DataSourceResolver.getInstance().isDatasourceCreationSupported(currentProj)) {
-                unsupported = true;
-                
-                DataSourceResolver.getInstance().showUpdateWait();
+            if (!DataSourceResolver.getInstance().isDatasourceCreationSupported(CurrentProject.getInstance().getProject())) {
+                cancel = true;
             }
             
             // ensure data source name is unique
-            if (!DataSourceResolver.getInstance().isDataSourceUnique(currentProj, dsName, url)) {
+            if (!DataSourceResolver.getInstance().isDataSourceUnique(CurrentProject.getInstance().getProject(), dsName, url)) {
                 dsName = getUniqueName(dsName);
             }
             
@@ -205,12 +195,8 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 projectDataSourceManager.addDataSource(dataSourceInfo);
 
                 // create the rowset
-                if (!unsupported) {
-                    setDataSourceInfo(dataSourceInfo);
-                    return super.beansCreatedSetup(designBeans);
-                } else {
-                    return null;
-                }
+                setDataSourceInfo(dataSourceInfo);
+                return super.beansCreatedSetup(designBeans);
             }
             
              // remove unused data provider that was created
