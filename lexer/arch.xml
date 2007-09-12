@@ -89,7 +89,7 @@ class with its static methods that provide its instance for the given input sour
     <br/>
 <a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/TokenUtilities.html">TokenUtilities</a>
     contains many useful methods related to operations with the token's text such as
-<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/TokenUtilities.html#equals(java.lang.CharSequence,%20java.lang.CharSequence)">TokenUtilities.equals(CharSequence text1, CharSequence text2)</a>,
+<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/TokenUtilities.html#equals(java.lang.CharSequence,%20java.lang.Object)">TokenUtilities.equals(CharSequence text, Object o)</a>,
 <a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/TokenUtilities.html#startsWith(java.lang.CharSequence,%20java.lang.CharSequence)">TokenUtilities.startsWith(CharSequence text, CharSequence prefix)</a>,
    etc.
     <br/>
