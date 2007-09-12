@@ -202,17 +202,39 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     
     private synchronized void refreshModel() {
         models.clear();
-        models.add(treeModels);
-        models.add(treeModelFilters);
-        models.add(treeExpansionModels);
-        models.add(nodeModels);
-        models.add(nodeModelFilters);
-        models.add(tableModels);
-        models.add(tableModelFilters);
-        models.add(nodeActionsProviders);
-        models.add(nodeActionsProviderFilters);
-        models.add(columnModels);
-        models.add(mm);
+        synchronized (treeModels) {
+            models.add(new ArrayList(treeModels));
+        }
+        synchronized (treeModelFilters) {
+            models.add(new ArrayList(treeModelFilters));
+        }
+        synchronized (treeExpansionModels) {
+            models.add(new ArrayList(treeExpansionModels));
+        }
+        synchronized (nodeModels) {
+            models.add(new ArrayList(nodeModels));
+        }
+        synchronized (nodeModelFilters) {
+            models.add(new ArrayList(nodeModelFilters));
+        }
+        synchronized (tableModels) {
+            models.add(new ArrayList(tableModels));
+        }
+        synchronized (tableModelFilters) {
+            models.add(new ArrayList(tableModelFilters));
+        }
+        synchronized (nodeActionsProviders) {
+            models.add(new ArrayList(nodeActionsProviders));
+        }
+        synchronized (nodeActionsProviderFilters) {
+            models.add(new ArrayList(nodeActionsProviderFilters));
+        }
+        synchronized (columnModels) {
+            models.add(new ArrayList(columnModels));
+        }
+        synchronized (mm) {
+            models.add(new ArrayList(mm));
+        }
         
         // <RAVE>
         // Store the propertiesHelpID in the tree model to be retrieved later
@@ -300,10 +322,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public void propertyChange(PropertyChangeEvent e) {
-            clear();
-            setUp();
             List listeners;
             synchronized (this) {
+                clear();
+                setUp();
                 if (propertyChangeListeners == null) {
                     return ;
                 }
