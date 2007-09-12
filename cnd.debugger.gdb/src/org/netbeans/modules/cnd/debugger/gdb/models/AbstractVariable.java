@@ -48,7 +48,7 @@ import org.openide.util.Utilities;
  */
 public class AbstractVariable implements LocalVariable, Customizer {
     
-    private GdbDebugger debugger;
+    private GdbDebugger _debugger;
     private CallStackFrame csf;
     protected String name;
     protected String type;
@@ -57,7 +57,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
     protected Field[] fields;
     protected Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
-    private Set listeners = new HashSet();
+    private Set<PropertyChangeListener> listeners = new HashSet<PropertyChangeListener>();
     
     /** Create the AV from a GV. If the GV has children then create similar children for the AV */
     public AbstractVariable(GdbVariable var) {
@@ -195,7 +195,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         if (value.startsWith("0x") && (pos = value.indexOf(" '")) != -1 && value.endsWith("'")) { // NOI18N
             value = value.substring(pos + 1);
         } else if (value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'') {
-            ; // OK
+            // OK
         } else {
             value = null;
         }
@@ -217,7 +217,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         } else if (value.startsWith("0x") && (pos = value.indexOf(" \"")) != -1 && value.endsWith("\"")) { // NOI18N
             value = value.substring(pos + 1);
         } else if (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
-            ; // OK
+            // OK
         } else {
             value = null;
         }
@@ -231,9 +231,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
     private String setValueEnum(String value) {
-        CallStackFrame csf = getCurrentCallStackFrame();
+        CallStackFrame sf = getCurrentCallStackFrame();
         Object o;
-        if (csf != null && (o = csf.getType(type)) != null) {
+        if (sf != null && (o = sf.getType(type)) != null) {
             List list = (List) o;
             int idx = list.indexOf(value);
             if (idx != -1) {
@@ -251,7 +251,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
      */
     private String setValueNumber(String value) {
         if (isNumber(value)) {
-            ; // OK
+            // OK
         } else {
             value = null;
         }
@@ -272,7 +272,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             return fields.length;
         } else if (type != null && value != null &&
                 ((type.indexOf('[') != -1 || (type.indexOf("**") != -1 && isValidPointerAddress(value))) ||
-                value.charAt(0) == '{')) {
+                (value.length() > 0 && value.charAt(0) == '{'))) {
             return 5;
         } else {
             return 0;
@@ -353,10 +353,12 @@ public class AbstractVariable implements LocalVariable, Customizer {
         this.type = type;
     }
     
+    @Override
     public boolean equals(Object o) {
         return (o instanceof AbstractVariable) && (name.equals(((AbstractVariable) o).name));
     }
     
+    @Override
     public int hashCode() {
         return name.hashCode();
     }
@@ -366,14 +368,14 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     protected final GdbDebugger getDebugger() {
-        if (debugger == null) {
+        if (_debugger == null) {
             DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
             if (currentEngine == null) {
                 return null;
             }
-            debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+            _debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
         }
-        return debugger;
+        return _debugger;
     }
     
     private CallStackFrame getCurrentCallStackFrame() {
@@ -427,17 +429,18 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         return 0;
                     }
                     if (o instanceof Map && ((Map) o).size() > 0) {
-                        Map map = (Map) o;
-                        String value = v.substring(1, v.length() - 1);
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> map = (Map<String, Object>) o;
+                        String val = v.substring(1, v.length() - 1);
                         start = 0;
-                        end = GdbUtils.findNextComma(value, 0);
+                        end = GdbUtils.findNextComma(val, 0);
                         while (end != -1) {
-                            String vfrag = value.substring(start, end).trim();
+                            String vfrag = val.substring(start, end).trim();
                             var.addField(completeFieldDefinition(var, map, vfrag));
                             start = end + 1;
-                            end = GdbUtils.findNextComma(value, end + 1);
+                            end = GdbUtils.findNextComma(val, end + 1);
                         }
-                        var.addField(completeFieldDefinition(var, map, value.substring(start).trim()));
+                        var.addField(completeFieldDefinition(var, map, val.substring(start).trim()));
                         count++;
                     } else if (o instanceof String) {
                         if (GdbUtils.isArray(o.toString())) {
@@ -470,12 +473,13 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * ignores it.
      */
     private AbstractField completeFieldDefinition(AbstractVariable parent, Map<String, Object> map, String info) {
-        String name, type, value;
+        String n, t, v;
         if (info.charAt(0) == '{') { // we've got an anonymous class/struct/union...
-            int count = Integer.parseInt((String) map.get("<anon-count>"));
+            int count = Integer.parseInt((String) map.get("<anon-count>")); // NOI18N
             info = info.substring(1, info.length() - 1);
             for (int i = 1; i <= count; i++) {
-                Map m = (Map) map.get("<anonymous" + i + ">");
+                @SuppressWarnings("unchecked")
+                Map<String, Object> m = (Map<String, Object>) map.get("<anonymous" + i + ">"); // NOI18N
                 int start = 0;
                 int end = GdbUtils.findNextComma(info, 0);
                 while (end != -1) {
@@ -490,41 +494,41 @@ public class AbstractVariable implements LocalVariable, Customizer {
             int pos = info.indexOf('=');
             if (pos != -1) {
                 if (info.charAt(0) == '<') {
-                    name = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
-                    type = info.substring(1, pos - 2).trim();
-                    value = info.substring(pos + 1).trim();
-                    if (name.startsWith("_vptr")) { // NOI18N
+                    n = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
+                    t = info.substring(1, pos - 2).trim();
+                    v = info.substring(pos + 1).trim();
+                    if (n.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
                 } else {
-                    name = info.substring(0, pos - 1).trim();
-                    value = info.substring(pos + 1).trim();
-                    if (name.startsWith("_vptr")) { // NOI18N
+                    n = info.substring(0, pos - 1).trim();
+                    v = info.substring(pos + 1).trim();
+                    if (n.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
                     if (map == null) {
-                        map = lookupMap(name, parent);
+                        map = lookupMap(n, parent);
                     }
                     if (map != null) {
-                        Object o = map.get(name);
+                        Object o = map.get(n);
                         if (o instanceof String) {
-                            type = o.toString();
+                            t = o.toString();
                         } else if (o instanceof Map) {
-                            type = (String) ((Map) o).get("<typename>"); // NOI18N
-                        } else if (isNumber(value)) {
-                            type = "int"; // NOI18N - best guess (std::string drops an "int")
+                            t = (String) ((Map) o).get("<typename>"); // NOI18N
+                        } else if (isNumber(v)) {
+                            t = "int"; // NOI18N - best guess (std::string drops an "int")
                         } else {
-                            log.warning("Cannot determine field type for " + name); // NOI18N
+                            log.warning("Cannot determine field type for " + n); // NOI18N
                             return null;
                         }
                     } else {
                         if (!parent.getType().endsWith("{...}")) { // NOI18N
-                            log.warning("Connot determine field type for " + name + " (no type Map found)"); // NOI18N
+                            log.warning("Connot determine field type for " + n + " (no type Map found)"); // NOI18N
                         }
-                        type = "";
+                        t = "";
                     }
                 }
-                return new AbstractField(parent, name, type, value);
+                return new AbstractField(parent, n, t, v);
             } else if (info.trim().equals("<No data fields>")) { // NOI18N
                 return new AbstractField(parent, "", "", info.trim());
             }
@@ -532,6 +536,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return null;
     }
     
+    @SuppressWarnings("unchecked")
     private Map<String, Object> lookupMap(String name, AbstractVariable parent) {
         String t;
         String oname = name;
@@ -541,10 +546,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
             if (t != null) {
                 Object o = getCurrentCallStackFrame().getType(t);
                 if (o instanceof Map) {
-                    Map map = (Map) o;
+                    Map<String, Object> map = (Map<String, Object>) o;
                     o = map.get(name);
                     if (o instanceof Map && ((Map) o).get(oname) != null) {
-                        return (Map) o;
+                        return (Map<String, Object>) o;
                     }
                 }
             }
@@ -621,6 +626,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         listeners.remove(l);
     }
     
+    @Override
     public String toString() {
         return "AbstractVariable "; // NOI18N
     }

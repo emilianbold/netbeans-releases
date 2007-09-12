@@ -201,7 +201,7 @@ public class GdbUtils {
      *  @return A HashMap containing each key/value
      */
     public static Map<String, String> createMapFromString(String info) {
-        HashMap<String, String> map = new HashMap();
+        HashMap<String, String> map = new HashMap<String, String>();
         String key, value;
         int tstart, tend;
         int len = info.length();
@@ -263,8 +263,8 @@ public class GdbUtils {
      *  @param info A string of key/value pairs where each key/value
      *  @return An ArrayList with each entry of the form key=value
      */
-    public static List createListFromString(String info) {
-        List list = new ArrayList();
+    public static List<String> createListFromString(String info) {
+        List<String> list = new ArrayList<String>();
         String key, value;
         int tstart, tend;
         int len = info.length();
@@ -308,9 +308,9 @@ public class GdbUtils {
      * @param info The string returned from -stack-list-locals with the header removed
      * @return A List containing GdbVariables for each name/value pair
      */
-    public static List createLocalsList(String info) {
+    public static List<GdbVariable> createLocalsList(String info) {
         String name, value; 
-        List<GdbVariable> list = new ArrayList();
+        List<GdbVariable> list = new ArrayList<GdbVariable>();
         int idx = 0;
         int pos = 0;
         
@@ -335,9 +335,9 @@ public class GdbUtils {
      * @param info The string returned from -stack-list-arguments with the header removed
      * @return A List containing GdbVariables of each argument
      */
-    public static List createArgumentList(String info) {
+    public static List<GdbVariable> createArgumentList(String info) {
         String name, value; 
-        List<GdbVariable> list = new ArrayList();
+        List<GdbVariable> list = new ArrayList<GdbVariable>();
         int len = info.length();
         int pos, pos2;
         int idx = 0;

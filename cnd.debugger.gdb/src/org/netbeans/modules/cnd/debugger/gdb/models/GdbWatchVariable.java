@@ -47,7 +47,6 @@ import org.netbeans.spi.debugger.ui.Constants;
 public class GdbWatchVariable extends AbstractVariable implements PropertyChangeListener {
     
     private Watch watch;
-    private GdbWatchVariable evaluatedWatch;
     private WatchesTreeModel model;
     private StringBuilder typeBuf = new StringBuilder();
     private boolean[] invalidType = new boolean[] { false };
@@ -60,19 +59,24 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         this.watch = watch;
         
         GdbVariable var;
-        if (expressionIsSimpleVariable() && (var = findSimpleVariable()) != null) {
-            type = var.getType();
-            value = var.getValue();
-            if (type != null && value != null) {
-                expandChildrenFromValue(this);
+        if (watch.getExpression().length() > 0) {
+            if (expressionIsSimpleVariable() && (var = findSimpleVariable()) != null) {
+                type = var.getType();
+                value = var.getValue();
+                if (type != null && value != null) {
+                    expandChildrenFromValue(this);
+                }
             }
+            if (type == null && getDebugger().getState().equals(GdbDebugger.STATE_STOPPED)) {
+                setTypeInvalid();
+                setValueInvalid();
+            }
+            getDebugger().addPropertyChangeListener(this);
+            watch.addPropertyChangeListener(this);
+        } else {
+            type = "";
+            value = "";
         }
-        if (type == null && getDebugger().getState() == GdbDebugger.STATE_STOPPED) {
-            setTypeInvalid();
-            setValueInvalid();
-        }
-        getDebugger().addPropertyChangeListener(this);
-        watch.addPropertyChangeListener(this);
     }
     
     public void remove() {
@@ -102,18 +106,20 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
-        if (ev.getPropertyName() == GdbDebugger.PROP_STATE && ev.getNewValue() == GdbDebugger.STATE_STOPPED) {
+        if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE) && ev.getNewValue().equals(GdbDebugger.STATE_STOPPED)) {
             setValueInvalid();
-        } else if (ev.getPropertyName() == Watch.PROP_EXPRESSION) {
+        } else if (ev.getPropertyName().equals(Watch.PROP_EXPRESSION)) {
             setTypeInvalid();
             setValueInvalid();
         }
     }
     
+    @Override
     public String getName() {
         return watch.getExpression();
     }
     
+    @Override
     public String getType() {
         if (type == null || type.length() == 0) {
             synchronized (invalidType) {
@@ -133,6 +139,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         return type;
     }
     
+    @Override
     public void setType(String type) {
         synchronized (invalidType) {
             this.type = type;
@@ -143,6 +150,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         }
     }
     
+    @Override
     public String getValue() {
         if (value == null) {
             synchronized (invalidValue) {
@@ -162,6 +170,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         return value;
     }
     
+    @Override
     public void setValue(String value) {
         synchronized (invalidValue) {
             this.value = value;
@@ -187,18 +196,19 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     private boolean expressionIsSimpleVariable() {
         String expression = watch.getExpression();
         
-        char ch = expression.charAt(0);
-        if (Character.isLetter(ch) || ch == '_') {
-            for (int i = 1; i < expression.length(); i++) {
-                ch = expression.charAt(i);
-                if (!Character.isLetterOrDigit(ch) && ch != '_') {
-                    return false;
+        if (expression.length() > 0) {
+            char ch = expression.charAt(0);
+            if (Character.isLetter(ch) || ch == '_') {
+                for (int i = 1; i < expression.length(); i++) {
+                    ch = expression.charAt(i);
+                    if (!Character.isLetterOrDigit(ch) && ch != '_') {
+                        return false;
+                    }
                 }
+                return true;
             }
-            return true;
-        } else {
-            return false;
         }
+        return false;
     }
     
     private GdbVariable findSimpleVariable() {
@@ -219,11 +229,4 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     public void setExpression(String expression) {
         watch.setExpression(expression);
     }
-        
-//    public void setEvaluated(GdbWatchVariable evaluatedWatch) {
-//        this.evaluatedWatch = evaluatedWatch;
-//        if (evaluatedWatch != null) {
-//
-//        }
-//    }
 }

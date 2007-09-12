@@ -54,10 +54,10 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
     private ContextProvider lookupProvider;
     private LocalsTreeModel localsTreeModel;
     private Listener listener;
-    private Vector listeners = new Vector();
-    private Map watchToVariable = new WeakHashMap(); // <node (expression), GdbWatchVariable>
-    private Set expandedNodes = new WeakSet();
-    private Set collapsedNodes = new WeakSet();
+    private Vector<ModelListener> listeners = new Vector<ModelListener>();
+    private Map<Watch, GdbWatchVariable> watchToVariable = new WeakHashMap<Watch, GdbWatchVariable>(); 
+    private Set<Object> expandedNodes = new WeakSet<Object>();
+    private Set<Object> collapsedNodes = new WeakSet<Object>();
     
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
@@ -110,7 +110,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
             int i, k = fws.length;
             GdbWatchVariable[] gws = new GdbWatchVariable[k];
             for (i = 0; i < k; i++) {
-                GdbWatchVariable gw = (GdbWatchVariable) watchToVariable.get(fws[i]);
+                GdbWatchVariable gw = watchToVariable.get(fws[i]);
                 if (gw == null) {
                     gw = new GdbWatchVariable(this, fws[i]);
                     watchToVariable.put(fws[i], gw);
@@ -285,8 +285,8 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
         private WeakReference debugger;
         
         private Listener(WatchesTreeModel tm, GdbDebugger debugger) {
-            model = new WeakReference(tm);
-            this.debugger = new WeakReference(debugger);
+            model = new WeakReference<WatchesTreeModel>(tm);
+            this.debugger = new WeakReference<GdbDebugger>(debugger);
             DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_WATCHES, this);
             debugger.addPropertyChangeListener(this);
             Watch[] ws = DebuggerManager.getDebuggerManager().getWatches();
@@ -304,6 +304,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
             return m;
         }
         
+        @Override
         public void watchAdded(Watch watch) {
             WatchesTreeModel m = getModel();
             if (m == null) {
@@ -313,6 +314,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
             m.fireWatchesChanged();
         }
         
+        @Override
         public void watchRemoved(Watch watch) {
             WatchesTreeModel m = getModel();
             if (m == null) {
@@ -327,6 +329,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
         // there is at most one
         private RequestProcessor.Task task;
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
@@ -337,11 +340,11 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
             if (m == null) {
                 return;
             }
-            if (m.debugger.getState() == GdbDebugger.STATE_EXITED) {
+            if (m.debugger.getState().equals(GdbDebugger.STATE_EXITED)) {
                 destroy();
                 return;
             }
-            if (m.debugger.getState() == GdbDebugger.STATE_RUNNING) {
+            if (m.debugger.getState().equals(GdbDebugger.STATE_RUNNING)) {
                 return;
             }
             
@@ -386,5 +389,4 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
             }
         }
     }
-    
 }
