@@ -110,16 +110,22 @@ public class OccurrencesMarkProvider extends MarkProvider {
         firePropertyChange(PROP_MARKS, old, nue);
     }
     
-    public static Collection<Mark> createMarks(Document doc, List<int[]> bag, Color color, String tooltip) {
-        List<Mark> result = new LinkedList<Mark>();
+    public static Collection<Mark> createMarks(final Document doc, final List<int[]> bag, final Color color, final String tooltip) {
+        final List<Mark> result = new LinkedList<Mark>();
         
-        for (int[] span : bag) {
-            try {
-                result.add(new MarkImpl(doc, doc.createPosition(span[0]), color, tooltip));
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
+        doc.render(new Runnable() {
+            public void run() {
+                for (int[] span : bag) {
+                    try {
+                        if (span[0] < doc.getLength()) {
+                            result.add(new MarkImpl(doc, doc.createPosition(span[0]), color, tooltip));
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
-        }
+        });
         
         return result;
     }
