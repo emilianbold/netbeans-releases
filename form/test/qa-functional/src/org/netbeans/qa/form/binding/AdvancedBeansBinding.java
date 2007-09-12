@@ -57,9 +57,9 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     /** Creates suite from particular test cases. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
-//        suite.addTest(new AdvancedBeansBinding("testAlternateValues")); // NOI18N
-//        suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
+        suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
+        suite.addTest(new AdvancedBeansBinding("testAlternateValues")); // NOI18N
+        suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
         return suite;
     }
