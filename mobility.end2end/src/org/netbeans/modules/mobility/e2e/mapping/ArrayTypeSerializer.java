@@ -116,8 +116,14 @@ public class ArrayTypeSerializer implements JavonSerializer {
         if( arrayTypes.contains( type )) {
             String deserializationCode = "";
             String id = "" + mapping.getRegistry().getRegisteredTypeId( type );
+            ClassData leafComponentType = type;
+            int depth = 0;
+            while(( leafComponentType = leafComponentType.getComponentType()).isArray()) depth++;
+            String appendedBrackets = "";
+            for( int i = 0; i < depth; i++ ) appendedBrackets += "[]";
             deserializationCode += "int a_size_" + id + " = " + stream + ".readInt();\n";
-            deserializationCode += type.getFullyQualifiedName() + " a_result_" + id + " = new " + type.getComponentType().getFullyQualifiedName() + "[ a_size_" + id + " ];\n";
+            deserializationCode += type.getFullyQualifiedName() + " a_result_" + id + 
+                    " = new " + leafComponentType.getFullyQualifiedName() + "[ a_size_" + id + " ]" + appendedBrackets + ";\n";
             String i = "a_i_" + id;
             deserializationCode += "for( int " + i + " = 0; " + i + " < a_size_" + id + "; " + i + "++ ) {\n";
             ClassData componentType = type.getComponentType();
@@ -125,7 +131,8 @@ public class ArrayTypeSerializer implements JavonSerializer {
                 deserializationCode += "a_result_" + id + "[" + i + "] = " + 
                         componentType.getSerializer().fromObject( componentType, "readObject( " + stream + " )" ) + ";\n";
             } else {
-                deserializationCode += "a_result_" + id + "[" + i + "] = readObject( " + stream + " );\n";
+                deserializationCode += "a_result_" + id + "[" + i + "] = (" + 
+                        type.getComponentType().getFullyQualifiedName() + ")readObject( " + stream + " );\n";
             }
             deserializationCode += "}\n";
             deserializationCode += ( object == null ? "" :  object + " = a_result_" + id + ";\n" );
