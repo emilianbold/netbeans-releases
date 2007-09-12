@@ -419,7 +419,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                             suffix += APP_SUFFIX;
                         }
                     }
-		    if(! new File(newDestination).getName().equals(suffix)) {
+		    if(! new File(newDestination).equals(currentDestination)) {
                         newDestination = new File(
                                 newDestination,
                                 suffix).getAbsolutePath();
