@@ -269,7 +269,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         Logger.getLogger(ConvertAnonymousToInner.class.getName()).log(Level.FINE, "usedFieldsVariables = {0}", usedFieldsVariables ); //NOI18N
         
-        TreePath superConstructorCall = new FindSuperConstructorCall().scan(newClassToConvert, null);
+        TreePath superConstructorCall = findSuperConstructorCall(newClassToConvert);
         
         ModifiersTree classModifiers = make.Modifiers((isStaticContext && usedFieldsVariables.isEmpty()) ? EnumSet.of(Modifier.PRIVATE, Modifier.STATIC) : EnumSet.of(Modifier.PRIVATE));
         
@@ -345,25 +345,38 @@ public class ConvertAnonymousToInner extends AbstractHint {
     public void cancel() {
     }
 
-    private static final class FindSuperConstructorCall extends TreePathScanner<TreePath, Void> {
-        
-        @Override
-        public TreePath visitMethodInvocation(MethodInvocationTree tree, Void v) {
-            if (tree.getMethodSelect().getKind() == Kind.IDENTIFIER && "super".equals(((IdentifierTree) tree.getMethodSelect()).getName().toString())) {
-                return getCurrentPath();
+    private static TreePath findSuperConstructorCall(TreePath nct) {
+        class FindSuperConstructorCall extends TreePathScanner<TreePath, Void> {
+
+            private boolean stop;
+
+            @Override
+            public TreePath scan(Tree tree, Void p) {
+                if (stop) return null;
+                return super.scan(tree, p);
             }
             
-            return null;
-        }
-        
-        @Override
-        public TreePath reduce(TreePath first, TreePath second) {
-            if (first == null) {
-                return second;
-            } else {
-                return first;
+            @Override
+            public TreePath visitMethodInvocation(MethodInvocationTree tree, Void v) {
+                if (tree.getMethodSelect().getKind() == Kind.IDENTIFIER && "super".equals(((IdentifierTree) tree.getMethodSelect()).getName().toString())) {
+                    stop = true;
+                    return getCurrentPath();
+                }
+
+                return null;
             }
+
+            @Override
+            public TreePath reduce(TreePath first, TreePath second) {
+                if (first == null) {
+                    return second;
+                } else {
+                    return first;
+                }
+            }
+
         }
         
+        return new FindSuperConstructorCall().scan(nct, null);
     }
 }

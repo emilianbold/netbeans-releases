@@ -374,6 +374,45 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "}\n");
     }
     
+    public void test114079() throws Exception {
+        performTest(
+        "package hierbas.del.litoral;\n\n" +
+        "public class TestClass {\n" +
+        "    public void test() {\n" +
+        "        new SuperClass() {\n" +
+        "            public void method() {\n" +
+        "                new SubClass() {\n" +
+        "                };\n" +
+        "            }\n" +
+        "        };\n" +
+        "    }\n" +
+        "}\n" +
+        "class SuperClass {\n" +
+        "}\n" +
+        "\n" +
+        "class SubClass extends SuperClass {\n" +
+        "}\n",
+                "package hierbas.del.litoral;\n\n" +
+        "public class TestClass {\n" +
+        "    public void test() {\n" +
+        "        new SuperClassImpl();\n" +
+        "    }\n" +
+        "    private static class SuperClassImpl extends SuperClass {\n" +
+        "        private SuperClassImpl() {\n" +
+        "        }\n" +
+        "            public void method() {\n" +
+        "                new SubClass() {\n" +
+        "                };\n" +
+        "            }\n" +
+        "    }\n" +
+        "}\n" +
+        "class SuperClass {\n" +
+        "}\n" +
+        "\n" +
+        "class SubClass extends SuperClass {\n" +
+        "}\n");
+    }
+    
     private void performTest(String test, String golden) throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, test);
