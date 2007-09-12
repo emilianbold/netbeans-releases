@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -1283,18 +1282,14 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getUnknownStatus(File repository, File dir)  throws HgException{
-        Calendar start = Calendar.getInstance();
         Map<File, FileInformation> files = getDirStatusWithFlags(repository, dir, HG_STATUS_FLAG_UNKNOWN_CMD, false);
-        Calendar end = Calendar.getInstance();
-        Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-        start = Calendar.getInstance();
+        int share = SharabilityQuery.getSharability(dir == null ? repository : dir);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            if(HgUtils.isIgnored(file))
+            if((share == SharabilityQuery.MIXED && SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) ||
+               (share == SharabilityQuery.NOT_SHARABLE))
                 i.remove();
         }
-        end = Calendar.getInstance();
-        Mercurial.LOG.log(Level.FINE, "looking for ignored files took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
         return files;
     }
 
