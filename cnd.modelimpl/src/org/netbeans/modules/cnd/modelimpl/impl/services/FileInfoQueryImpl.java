@@ -16,14 +16,19 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindUnusedBlocksWalker;
 
 /**
  * implementaion of CsmFileInfoQuery
@@ -56,5 +61,27 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             }   
         }
         return out;
-    }    
+    }
+
+    public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
+        List<CsmOffsetable> out = Collections.<CsmOffsetable>emptyList();
+        if (file instanceof FileImpl) {
+            FileImpl fileImpl = (FileImpl)file;
+            try {
+                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
+                // seems next line fits better here but APTLight is not precise, see IZ115345
+                // APTFile aptLight = fileImpl.getProjectImpl().getAPTLight(fileImpl);
+                if (apt != null) {
+                    APTFindUnusedBlocksWalker walker = 
+                        new APTFindUnusedBlocksWalker(apt, fileImpl.getCreatePreprocHandler());
+                    walker.visit();
+                    out = walker.getBlocks();
+                }
+            }
+            catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return out;
+    }
 }

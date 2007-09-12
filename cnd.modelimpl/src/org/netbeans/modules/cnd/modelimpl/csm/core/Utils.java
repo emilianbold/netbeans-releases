@@ -26,9 +26,11 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -53,6 +55,10 @@ public class Utils {
                 LOG.setLevel(Level.SEVERE);
             }
         }
+    }
+    
+    public static CsmOffsetable createOffsetable(CsmFile file, int startOffset, int endOffset) {
+        return new OffsetableBase(file, startOffset, endOffset);
     }
     
     public static String getQualifiedName(String name, CsmNamespace parent) {

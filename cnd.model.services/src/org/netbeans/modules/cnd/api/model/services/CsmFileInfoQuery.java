@@ -19,6 +19,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.openide.util.Lookup;
 
 /**
@@ -57,6 +58,12 @@ public abstract class CsmFileInfoQuery {
      * @return list of user include paths used to parse file
      */
     public abstract List<String> getUserIncludePaths(CsmFile file);
+    
+    /**
+     * @return list of code blocks which are excluded from compilation
+     * due to current set of preprocessor directives
+     */
+    public abstract List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file);
 
     //
     // Implementation of the default query
@@ -71,6 +78,10 @@ public abstract class CsmFileInfoQuery {
 
         public List<String> getUserIncludePaths(CsmFile file) {
             return Collections.<String>emptyList();
+        }
+
+        public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
+            return Collections.<CsmOffsetable>emptyList();
         }
     } 
 }

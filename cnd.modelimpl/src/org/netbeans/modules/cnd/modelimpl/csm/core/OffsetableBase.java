@@ -30,10 +30,10 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
- * Abstracr Base class for CsmOffsetable
+ * Base class for CsmOffsetable
  * @author Vladimir Kvashin
  */
-public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmObject {
+public class OffsetableBase implements CsmOffsetable, Disposable, CsmObject {
     // only one of fileRef/fileUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private /*final*/ CsmFile fileRef; // can be set in onDispose or contstructor only
     private final CsmUID<CsmFile> fileUID;
@@ -62,7 +62,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmOb
                 pos != null ? pos.getEndOffset() : 0);      
     }
     
-    protected OffsetableBase(CsmFile file, int start, int end) {
+    public OffsetableBase(CsmFile file, int start, int end) {
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.fileUID = UIDCsmConverter.fileToUID(file);
             this.fileRef = null;// to prevent error with "final"
