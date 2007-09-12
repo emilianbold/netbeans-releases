@@ -50,7 +50,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private String name;
     private final CsmType returnType;
     private final List<CsmParameter>  parametersOLD;
-    private List<CsmUID<CsmParameter>>  parameters;
+    private final List<CsmUID<CsmParameter>>  parameters;
     private final boolean isVoidParameterList;
     private String signature;
     
@@ -578,10 +578,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private void _disposeParameters() {
         if (TraceFlags.USE_REPOSITORY) {
             if (parameters != null) {
-                // #114884 ConcurrentModificationException in FunctionImpl
-                List<CsmUID<CsmParameter>> copy = new ArrayList<CsmUID<CsmParameter>>(parameters);
-                parameters  = null;
-                RepositoryUtils.remove(copy);
+                RepositoryUtils.remove(parameters);
             }
         } else {
             this.parametersOLD.clear();

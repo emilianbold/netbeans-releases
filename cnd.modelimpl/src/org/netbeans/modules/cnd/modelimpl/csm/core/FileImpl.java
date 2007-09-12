@@ -93,11 +93,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private ReadWriteLock  declarationsLock = new ReentrantReadWriteLock();
 
     private Set<CsmInclude> includesOLD = Collections.<CsmInclude>synchronizedSortedSet(new TreeSet<CsmInclude>(START_OFFSET_COMPARATOR));
-    private Set<CsmUID<CsmInclude>> includes = new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR);
+    private Set<CsmUID<CsmInclude>> includes = createIncludes();
     private ReadWriteLock includesLock = new ReentrantReadWriteLock();
 
     private Set<CsmMacro> macrosOLD = Collections.<CsmMacro>synchronizedSortedSet(new TreeSet<CsmMacro>(START_OFFSET_COMPARATOR));    
-    private Set<CsmUID<CsmMacro>> macros = new TreeSet<CsmUID<CsmMacro>>(UID_START_OFFSET_COMPARATOR);    
+    private Set<CsmUID<CsmMacro>> macros = createMacros();
     private ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     
     private int errorCount = 0;
@@ -408,10 +408,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         
     private void _clearMacros() {
         if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.remove(macros);
+            Set<CsmUID<CsmMacro>> copy = macros;
+            macros = createMacros();
+            RepositoryUtils.remove(copy);
         } else {
             macrosOLD.clear();
         }        
+    }
+    
+    private Set<CsmUID<CsmMacro>> createMacros() {
+        return new TreeSet<CsmUID<CsmMacro>>(UID_START_OFFSET_COMPARATOR);
     }
     
     private void _clearIncludes() {
@@ -419,12 +425,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             try {
                 includesLock.writeLock().lock();
 		RepositoryUtils.remove(includes);
+                includes = createIncludes();
             } finally {
                 includesLock.writeLock().unlock();
             }
         } else {
             includesOLD.clear();
         }
+    }
+    
+    private Set<CsmUID<CsmInclude>> createIncludes() {
+        return new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR);
     }
     
     public AST parse(APTPreprocHandler preprocHandler) {

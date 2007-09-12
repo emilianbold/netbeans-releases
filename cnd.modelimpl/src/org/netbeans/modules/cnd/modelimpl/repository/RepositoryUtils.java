@@ -118,7 +118,6 @@ public class RepositoryUtils {
             for (CsmUID uid : uids) {
                 remove(uid);
             }
-            uids.clear();
         }
     }
     
