@@ -38,11 +38,6 @@ public class IndexTest extends NbTestCase {
     public IndexTest(String name) {
         super (name);
     }
-
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(IndexTest.class));
-    }    
-    
     
     @Override
     protected void setUp () throws Exception {
