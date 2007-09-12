@@ -232,8 +232,6 @@ function update() {
 	
 	var messages_counter = 0;	
 	
-	error_message = '<td class="no_padding no_border left">' + 
-			'<span class="warning">';
 	error_message += 'Note: ';
 	
     	for (var j = 0; j < product_uids.length; j++) {
@@ -255,9 +253,7 @@ function update() {
         } else {
 		error_message += ' are not available for';
 	}
-	error_message += ' ' + platform_display_name;
-	
-	error_message += '.</span></td>';
+	error_message += ' ' + platform_display_name;	
     } else {
 	error_message = '<br>';
     }
