@@ -133,7 +133,6 @@ public final class ElementOpen {
                         
                         if (l != null) {
                             l.show(Line.SHOW_GOTO, column);
-                            ec.getOpenedPanes()[0].requestFocusInWindow();
                             return true;
                         }
                     }
