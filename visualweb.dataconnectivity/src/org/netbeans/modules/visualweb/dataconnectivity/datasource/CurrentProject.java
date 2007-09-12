@@ -20,6 +20,8 @@
 
 package org.netbeans.modules.visualweb.dataconnectivity.datasource;
 
+import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.DesignContext;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -36,6 +38,8 @@ import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectChangeEvent;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectChangeListener;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
+import org.netbeans.modules.visualweb.insync.live.LiveUnit;
+import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -193,6 +197,13 @@ public class CurrentProject {
         }
 
         return project;
+    }
+    
+    // Return project associated with the current page
+    public Project getCurrentProject(DesignBean[] designBeans) {
+        DesignContext context = designBeans[0].getDesignContext();
+        FacesModel model = ((LiveUnit) context).getModel();
+        return model.getProject();
     }
              
 }
