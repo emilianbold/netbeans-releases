@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.io.File;
 import java.util.logging.Level;
@@ -30,7 +29,6 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
-import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
