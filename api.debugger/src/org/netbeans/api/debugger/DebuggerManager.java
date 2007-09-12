@@ -249,18 +249,20 @@ public final class DebuggerManager {
         ArrayList engines = new ArrayList ();
         Lookup l = info.getLookup ();
         Lookup l2 = info.getLookup ();
-        sessionProviders.addAll (
-            l.lookup (
-                null,
-                SessionProvider.class
-            )
-        );
-        sessionProviders.addAll (
-            l.lookup (
-                null,
-                DelegatingSessionProvider.class
-            )
-        );
+        synchronized (l) {
+            sessionProviders.addAll (
+                l.lookup (
+                    null,
+                    SessionProvider.class
+                )
+            );
+            sessionProviders.addAll (
+                l.lookup (
+                    null,
+                    DelegatingSessionProvider.class
+                )
+            );
+        }
         Session sessionToStart = null;
         int i, k = sessionProviders.size ();
         for (i = 0; i < k; i++) {
@@ -291,12 +293,14 @@ public final class DebuggerManager {
             
             // init DebuggerEngines
             ArrayList engineProviders = new ArrayList ();
-            engineProviders.addAll (
-                l2.lookup (null, DebuggerEngineProvider.class)
-            );
-            engineProviders.addAll (
-                l2.lookup (null, DelegatingDebuggerEngineProvider.class)
-            );
+            synchronized (l2) {
+                engineProviders.addAll (
+                    l2.lookup (null, DebuggerEngineProvider.class)
+                );
+                engineProviders.addAll (
+                    l2.lookup (null, DelegatingDebuggerEngineProvider.class)
+                );
+            }
             int j, jj = engineProviders.size ();
             for (j = 0; j < jj; j++) {
                 DebuggerEngine engine = null;

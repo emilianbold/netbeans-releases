@@ -476,18 +476,21 @@ public abstract class Properties {
         private void initReaders () {
             register = new HashMap<String, Reader>();
             readersList = DebuggerManager.getDebuggerManager().lookup(null, Reader.class);
-            for (Reader r : readersList) {
-                registerReader(r);
+            synchronized (readersList) {
+                for (Reader r : readersList) {
+                    registerReader(r);
+                }
             }
             ((Customizer) readersList).addPropertyChangeListener(
                     new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
                             synchronized (PropertiesImpl.this) {
                                 Set<Reader> registeredReaders = new HashSet<Reader>(register.values());
-                                //List<Reader> readersList = (List<Reader>) evt.getSource();
-                                for (Reader r : readersList) {
-                                    if (!registeredReaders.remove(r)) {
-                                        registerReader(r);
+                                synchronized (readersList) {
+                                    for (Reader r : readersList) {
+                                        if (!registeredReaders.remove(r)) {
+                                            registerReader(r);
+                                        }
                                     }
                                 }
                                 for (Reader r : registeredReaders) {

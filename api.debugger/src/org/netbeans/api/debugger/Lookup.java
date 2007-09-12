@@ -54,8 +54,12 @@ import org.openide.util.WeakSet;
 
 
 /**
+ * Lookup implementation, which provides services in a list.
+ * The list can refresh itself when the services change.
+ * The refreshing is performed under a lock on the list object so that
+ * clients have consistent data under synchronization on the list instance.
  *
- * @author   Jan Jancura
+ * @author   Jan Jancura, Martin Entlicher
  */
 abstract class Lookup implements ContextProvider {
     
@@ -66,8 +70,10 @@ abstract class Lookup implements ContextProvider {
     
     public Object lookupFirst (String folder, Class service) {
         List l = lookup (folder, service);
-        if (l.isEmpty ()) return null;
-        return l.get (0);
+        synchronized (l) {
+            if (l.isEmpty ()) return null;
+            return l.get (0);
+        }
     }
     
     public abstract List lookup (String folder, Class service);
@@ -138,7 +144,7 @@ abstract class Lookup implements ContextProvider {
                 setUp();
             }
             
-            private void setUp() {
+            private synchronized void setUp() {
                 clear();
                 addAll (l1.lookup (folder, service));
                 addAll (l2.lookup (folder, service));
@@ -530,7 +536,9 @@ abstract class Lookup implements ContextProvider {
         /**
          * A special List implementation, which ensures that hidden elements
          * are removed when adding items into the list.
-         * Also it can refresh itself when the services change
+         * Also it can refresh itself when the services change.
+         * The refreshing is performed under a lock on this list object so that
+         * clients have consistent data under synchronization on this.
          */
         private final class MetaInfLookupList extends LookupList implements Customizer {
             
@@ -577,7 +585,9 @@ abstract class Lookup implements ContextProvider {
                 }
             }
             
-            private void refreshContent() {
+            private synchronized void refreshContent() {
+                // Perform changes under a lock so that iterators reading this list
+                // can sync on it
                 clear();
                 List l = list (folder, service);
                 Set<String> s = getHiddenClassNames(l);
