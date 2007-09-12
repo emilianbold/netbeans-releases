@@ -16,6 +16,7 @@
  */
 package org.netbeans.modules.vmd.api.io.serialization;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +46,19 @@ public final class DocumentErrorHandler {
         errors.add(error);
         return this;
     }
+    
+    /**
+     * This method adds critical issues to the deserializing document rapport  and
+     * stops loading of document. All reported issues are shown in report dialog window when document is loaded.
+     * @param strings - parts of the warning message
+     * @param pattern - string warning pattern
+     */ 
+    public DocumentErrorHandler addError(String pattern, Object... strings) {
+         if (pattern == null || strings == null)
+            throw new IllegalArgumentException();
+        errors.add(MessageFormat.format(pattern, strings));
+        return this;
+    }
     /**
      * This method adds NON critical issues to the deserializing document rapport.
      * All reported issues are shown in report dialog window when document is loaded.
@@ -54,6 +68,19 @@ public final class DocumentErrorHandler {
          if (warning == null)
             throw new IllegalArgumentException();
         warnings.add(warning);
+        return this;
+    }
+    
+    /**
+     * This method adds NON critical issues to the deserializing document rapport.
+     * All reported issues are shown in report dialog window when document is loaded.
+     * @param strings - parts of the warning message
+     * @param pattern - string warning pattern
+     */ 
+    public DocumentErrorHandler addWarning(String pattern, Object... strings) {
+         if (pattern == null || strings == null)
+            throw new IllegalArgumentException();
+        warnings.add(MessageFormat.format(pattern, strings));
         return this;
     }
     /**

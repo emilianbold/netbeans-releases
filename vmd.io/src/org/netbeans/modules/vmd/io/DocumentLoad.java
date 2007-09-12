@@ -37,6 +37,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.*;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 import org.openide.util.NbBundle;
@@ -148,7 +149,7 @@ public class DocumentLoad {
             loadingDocument.setPreferredComponentID(componentid);
             if (loadingDocument.getDescriptorRegistry().getComponentDescriptor(element.getTypeID()) == null) {
                 Debug.warning("Missing ComponentDescriptor in registry ", element.getTypeID()); // NOI18N
-                errorHandler.addWarning(DESCRIPTOR_MISSING_ERROR + " " + element.getTypeID().toString()); // NOI18N)
+                errorHandler.addWarning("{0} {1}", DESCRIPTOR_MISSING_ERROR, element.getTypeID().toString()); //NOI18N
                 continue;
             }
             if (!errorHandler.getErrors().isEmpty()) {
@@ -202,7 +203,7 @@ public class DocumentLoad {
                 String propertyName = propertyElement.getPropertyName();
                 if (propertyName == null || descriptor.getPropertyDescriptor(propertyName) == null) {
                     Debug.warning("Missing property descriptor", component, propertyName); // NOI18N
-                    errorHandler.addWarning(NbBundle.getMessage(DocumentLoad.class, "MSG_MissingProperty_Error") + " " + component + " - " + propertyName); // NOI18N
+                    errorHandler.addWarning("{0} {1} - {2}", NbBundle.getMessage(DocumentLoad.class, "MSG_MissingProperty_Error"), component, propertyName); // NOI18N
                     continue;
                 }
                 PropertyValue value;
@@ -210,7 +211,7 @@ public class DocumentLoad {
                     value = PropertyValue.deserialize(propertyElement.getSerialized(), loadingDocument, propertyElement.getTypeID());
                 } catch (Exception e) {
                     Debug.warning("Error while deserializing property value", component, propertyName); // NOI18N
-                    errorHandler.addWarning(DESERIALIZATION_ERROR + " " + component + " " + propertyName + " " + propertyElement.getSerialized()); //NOI18N
+                    errorHandler.addWarning("{0} {1} {2} {3}", DESERIALIZATION_ERROR, component, propertyName, propertyElement.getSerialized()); //NOI18N
                     value = PropertyValue.createNull();
                 }
                 component.writeProperty(propertyName, value);
@@ -238,7 +239,7 @@ public class DocumentLoad {
         try {
             componentid = Long.parseLong(id);
         } catch (NumberFormatException ex) {
-            errorHandler.addError(NbBundle.getMessage(DocumentLoad.class, "MSG_Wrong_argument_value") +" " + id);
+            errorHandler.addError("{0} {1}", NbBundle.getMessage(DocumentLoad.class, "MSG_Wrong_argument_value"), id); //NOI18N
             return;
         }
         TypeID typeid = TypeID.createFrom(getAttributeValue(node, DocumentSave.TYPEID_ATTR));
