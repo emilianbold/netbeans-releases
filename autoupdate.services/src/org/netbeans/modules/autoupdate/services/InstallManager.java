@@ -218,13 +218,8 @@ public class InstallManager extends InstalledFileLocator{
             if (targetCluster != null) {
                 for (File cluster : UpdateTracking.clusters (false)) {
                     if (targetCluster.equals (cluster.getName ())) {
-                        if (cluster.canWrite ()) {
-                            res = cluster;
-                            break;
-                        } else {
-                            ERR.log (Level.WARNING, "No write permision in target cluster " + targetCluster + 
-                                    " for " + update.getUpdateElement ());
-                        }
+                        res = cluster;
+                        break;
                     }
                 }
             }
@@ -249,10 +244,16 @@ public class InstallManager extends InstalledFileLocator{
                     break;
                 }
             }
-            assert res != null : "Install cluster exists for UpdateElementImpl " + installed;
-            ERR.log (Level.FINEST, "Install dir of " + installed + " is " + res);
         }
 
+        if (res == null || ! res.canWrite ()) {
+            // go to userdir if no writable cluster is known
+            ERR.log (Level.WARNING, "No write permision in target cluster " + res + 
+                    " for " + update.getUpdateElement ());
+            res = UpdateTracking.getUserDir ();
+        }
+        ERR.log (Level.FINEST, "Install dir of " + installed + " is " + res);
+        
         return res;
     }
     
