@@ -63,9 +63,20 @@ public class ComboBoxWithTree extends JComboBox {
     private void initCombo() {
         setEditable(true);
         addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuCanceled(PopupMenuEvent e) {}
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                if (issue112997Hack) {
+                    setPopupVisible(true);
+                    return;
+                }
+                getPopup().setVisible(false);
+            }
 
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                if (issue112997Hack) {
+                    issue112997Hack = false;
+                    setPopupVisible(true);
+                    return;
+                }
                 getPopup().setVisible(false);
             }
 
@@ -112,6 +123,9 @@ public class ComboBoxWithTree extends JComboBox {
         tree.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                if (!isPopupVisible()) {
+                    setPopupVisible(true);
+                }
                 int code = e.getKeyCode();
                 if ((code == KeyEvent.VK_ENTER) || (code == KeyEvent.VK_ESCAPE)) {
                     setPopupVisible(false);
@@ -121,6 +135,9 @@ public class ComboBoxWithTree extends JComboBox {
         tree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                if (!isPopupVisible()) {
+                    setPopupVisible(true);
+                }
                 if (e.getClickCount() > 1) {
                     setPopupVisible(false);
                 }
@@ -185,6 +202,26 @@ public class ComboBoxWithTree extends JComboBox {
         TreePath path = converter.stringToPath(value);
         return path;
     }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        Container cont = getParent();
+        while (!(cont instanceof Window) && (cont.getParent() != null)) {
+            cont = cont.getParent();
+        }
+        if (cont instanceof Window) {
+            ((Window)cont).addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowDeactivated(WindowEvent e) {
+                    if (isPopupVisible()) {
+                        issue112997Hack = true;
+                    }
+                }
+            });
+        }
+    }
+    private boolean issue112997Hack = false;
 
     /**
      * Converter between tree path and its string representation.
