@@ -19,18 +19,25 @@
 
 package org.netbeans.modules.cnd.navigation.includeview;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
+import org.netbeans.modules.cnd.navigation.services.IncludedModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  *
@@ -45,6 +52,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private boolean recursive = true;
     private boolean plain = true;
     private boolean whoIncludes = true;
+    private Action[] actions;
+    private Action close;
     
     /** Creates new form IncludeHierarchyPanel */
     public IncludeHierarchyPanel() {
@@ -54,8 +63,23 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
         ((BeanTreeView)hierarchyPane).setRootVisible(false);
         Children.Array children = new Children.SortedArray();
-        root = new AbstractNode(children);
+        actions = new Action[]{
+            new RefreshAction(), null,
+            new RecursiveAction(), new DirectOnlyAction(), null,
+            new TreeAction(), new ListAction(), null,
+            new WhoIncludesAction(), new WhoIsIncludedAction()
+        };
+        root = new AbstractNode(children){
+            @Override
+            public Action[] getActions(boolean context) {
+                return actions;
+            }
+        };
         getExplorerManager().setRootContext(root);
+    }
+
+    public void setClose(Action close) {
+        this.close = close;
     }
     
     /** This method is called from within the constructor to
@@ -236,84 +260,77 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         if (recursive == recursiveButton.isSelected()) {
             return;
         }
+        setRecursive(true);
+    }//GEN-LAST:event_recursiveButtonActionPerformed
+
+    private void setRecursive(boolean isRecursive){
         if (object != null) {
             CsmFile file = object.getObject();
             if (file != null){
-                recursive = recursiveButton.isSelected();
+                recursive = isRecursive;
                 updateButtons();
                 update(file);
             }
         }
-    }//GEN-LAST:event_recursiveButtonActionPerformed
+    }
 
+    
     private void directOnlyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_directOnlyButtonActionPerformed
         if (recursive != directOnlyButton.isSelected()) {
             return;
         }
-        if (object != null) {
-            CsmFile file = object.getObject();
-            if (file != null){
-                recursive = !directOnlyButton.isSelected();
-                updateButtons();
-                update(file);
-            }
-        }
+        setRecursive(false);
     }//GEN-LAST:event_directOnlyButtonActionPerformed
 
     private void treeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_treeButtonActionPerformed
         if (plain != treeButton.isSelected()) {
             return;
         }
-        if (object != null) {
-            CsmFile file = object.getObject();
-            if (file != null){
-                plain = !treeButton.isSelected();
-                updateButtons();
-                update(file);
-            }
-        }
+        setPlain(false);
     }//GEN-LAST:event_treeButtonActionPerformed
 
     private void listButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_listButtonActionPerformed
         if (plain == listButton.isSelected()) {
             return;
         }
+        setPlain(true);
+    }//GEN-LAST:event_listButtonActionPerformed
+
+    private void setPlain(boolean isPlain){
         if (object != null) {
             CsmFile file = object.getObject();
             if (file != null){
-                plain = listButton.isSelected();
+                plain = isPlain;
                 updateButtons();
                 update(file);
             }
         }
-    }//GEN-LAST:event_listButtonActionPerformed
-
+        
+    }
+    
     private void whoIncludesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_whoIncludesButtonActionPerformed
         if (whoIncludes == whoIncludesButton.isSelected()) {
             return;
         }
+        setWhoIncludes(true);
+    }//GEN-LAST:event_whoIncludesButtonActionPerformed
+
+    private void setWhoIncludes(boolean isWhoIncludes) {
         if (object != null) {
             CsmFile file = object.getObject();
             if (file != null){
-                whoIncludes = whoIncludesButton.isSelected();
+                whoIncludes = isWhoIncludes;
                 updateButtons();
                 update(file);
             }
         }
-    }//GEN-LAST:event_whoIncludesButtonActionPerformed
-
+    }
+    
     private void whoIsIncludedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_whoIsIncludedButtonActionPerformed
         if (whoIncludes != whoIsIncludedButton.isSelected()) {
             return;
         }
-        if (object != null) {
-            CsmFile file = object.getObject();
-            if (file != null){
-                whoIncludes = !whoIsIncludedButton.isSelected();
-                updateButtons();
-                update(file);
-            }
-        }
+        setWhoIncludes(false);
     }//GEN-LAST:event_whoIsIncludedButtonActionPerformed
     
     public void setFile(CsmFile file){
@@ -368,8 +385,9 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
                 Children.MUTEX.writeAccess(new Runnable(){
                     public void run() {
                         children.remove(children.getNodes());
-                        final Node node = new IncludeNode(csmFile,
-                                HierarchyFactory.getInstance().buildIncludeHierarchyModel(csmFile, whoIncludes, plain, recursive), null);
+                        IncludedModel model = HierarchyFactory.getInstance().buildIncludeHierarchyModel(csmFile, actions, whoIncludes, plain, recursive);
+                        model.setCloseWindowAction(close);
+                        final Node node = new IncludeNode(csmFile,model, null);
                         children.add(new Node[]{node});
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -415,4 +433,130 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private javax.swing.JToggleButton whoIsIncludedButton;
     // End of variables declaration//GEN-END:variables
     
+    private class RefreshAction extends AbstractAction {
+        private JMenuItem menuItem;
+        public RefreshAction() {
+            putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.refreshButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, refreshButton.getIcon());
+            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+        public void actionPerformed (ActionEvent e) {
+            refreshButtonActionPerformed(e);
+        }
+    }
+
+    private class RecursiveAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public RecursiveAction() {
+            putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.recursiveButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, recursiveButton.getIcon());
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setRecursive(true);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(recursive);
+            return menuItem;
+        }
+    }
+
+    private class DirectOnlyAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public DirectOnlyAction() {
+            putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.directOnlyButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, directOnlyButton.getIcon());
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setRecursive(false);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(!recursive);
+            return menuItem;
+        }
+    }
+
+    private class ListAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public ListAction() {
+            putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.listButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, listButton.getIcon());
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setPlain(true);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(plain);
+            return menuItem;
+        }
+    }
+
+    private class TreeAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public TreeAction() {
+            putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.treeButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, treeButton.getIcon());
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setPlain(false);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(!plain);
+            return menuItem;
+        }
+    }
+
+    private class WhoIncludesAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public WhoIncludesAction() {
+            putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.whoIncludesButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, whoIncludesButton.getIcon());
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setWhoIncludes(true);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(whoIncludes);
+            return menuItem;
+        }
+    }
+
+    private class WhoIsIncludedAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public WhoIsIncludedAction() {
+            putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.whoIsIncludedButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, whoIsIncludedButton.getIcon());
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setWhoIncludes(false);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(!whoIncludes);
+            return menuItem;
+        }
+    }
 }

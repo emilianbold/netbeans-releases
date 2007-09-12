@@ -24,8 +24,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
  *
  * @author Alexander Simon
  */
-public interface HierarchyModel {
+public interface HierarchyModel extends HierarchyActions {
 
     public Map<CsmClass, Set<CsmClass>> getModel();
-
 }

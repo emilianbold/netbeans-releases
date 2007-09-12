@@ -71,10 +71,10 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
         Node node = null;
         Set<CsmClass> set = model.getModel().get(cls);
         if (set == null || set.size() == 0) {
-            node = new HierarchyNode(cls, Children.LEAF, false);
+            node = new HierarchyNode(cls, Children.LEAF, model, false);
         } else {
             if (checkRecursion(cls)) {
-                node = new HierarchyNode(cls, Children.LEAF, true);
+                node = new HierarchyNode(cls, Children.LEAF, model, true);
             } else {
                 node = new HierarchyNode(cls, model, this);
             }

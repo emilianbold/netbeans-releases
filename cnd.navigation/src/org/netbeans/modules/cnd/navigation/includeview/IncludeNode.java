@@ -20,6 +20,8 @@
 package org.netbeans.modules.cnd.navigation.includeview;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -41,19 +43,21 @@ import org.openide.util.Utilities;
 public class IncludeNode extends AbstractCsmNode {
     private Image icon;
     private CsmFile object;
+    private IncludedModel model;
     
     /** Creates a new instance of IncludeNode */
     public IncludeNode(CsmFile element, IncludedModel model, IncludedChildren parent) {
-        this(element, new IncludedChildren(element,model,parent), false);
+        this(element, new IncludedChildren(element,model,parent), model, false);
     }
     
-    public IncludeNode(CsmFile element, Children children, boolean recursion) {
+    public IncludeNode(CsmFile element, Children children, IncludedModel model, boolean recursion) {
         super(children);
         if (recursion) {
             setName(element.getName()+" "+getString("CTL_Recuesion")); // NOI18N
         } else {
             setName(element.getName());
         }
+        this.model = model;
         object = element;
     }
     
@@ -100,17 +104,17 @@ public class IncludeNode extends AbstractCsmNode {
                 for (final CsmInclude inc : object.getIncludes()){
                     if (find.equals(inc.getIncludeFile())) {
                         if (CsmKindUtilities.isOffsetable(inc)){
-                            return new GoToFileAction(inc);
+                            return new GoToFileAction(inc, model.getCloseWindowAction());
                         }
                         break;
                     } else if (object.equals(inc.getIncludeFile())){
                         if (CsmKindUtilities.isOffsetable(inc)){
-                            return new GoToFileAction(inc);
+                            return new GoToFileAction(inc, model.getCloseWindowAction());
                         }
                     }
                 }
             }
-            return new GoToFileAction(object);
+            return new GoToFileAction(object, model.getCloseWindowAction());
         }
         return null;
     }
@@ -119,9 +123,15 @@ public class IncludeNode extends AbstractCsmNode {
     public Action[] getActions(boolean context) {
         Action action = getPreferredAction();
         if (action != null){
-            return new Action[] { action };
+            List<Action> list = new ArrayList<Action>();
+            list.add(action);
+            list.add(null);
+            for (Action a : model.getDefaultActions()){
+                list.add(a);
+            }
+            return list.toArray(new Action[list.size()]);
         }
-        return new Action[0];
+        return model.getDefaultActions();
     }
 
     private String getString(String key) {

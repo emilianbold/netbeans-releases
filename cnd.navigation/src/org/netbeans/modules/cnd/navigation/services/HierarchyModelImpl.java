@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -39,9 +40,12 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
  */
 /*package-local*/ class HierarchyModelImpl implements HierarchyModel {
     private Map<CsmClass,Set<CsmClass>> myMap;
-    
+    private Action[] actions;
+    private Action close;
+       
     /** Creates a new instance of HierarchyModel */
-    public HierarchyModelImpl(CsmClass cls, boolean subDirection) {
+    public HierarchyModelImpl(CsmClass cls, Action[] actions, boolean subDirection) {
+        this.actions = actions;
         if (subDirection) {
             myMap = buildSubHierarchy(cls);
         } else {
@@ -119,5 +123,17 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
                 buildSubHierarchy(map, (CsmClass)member);
             }
         }
+    }
+
+    public Action[] getDefaultActions() {
+        return actions;
+    }
+
+    public Action getCloseWindowAction() {
+        return close;
+    }
+
+    public void setCloseWindowAction(Action close) {
+        this.close = close;
     }
 }

@@ -19,18 +19,25 @@
 
 package org.netbeans.modules.cnd.navigation.classhierarchy;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
+import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  *
@@ -42,7 +49,9 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private AbstractNode root;
     private CsmUID<CsmClass> object;
     private boolean subDirection = true;
-    private ExplorerManager explorerManager = new ExplorerManager();;
+    private ExplorerManager explorerManager = new ExplorerManager();
+    private Action[] actions;
+    private Action close;
     
     /** Creates new form ClassHierarchyPanel */
     public ClassHierarchyPanel() {
@@ -52,8 +61,21 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
         ((BeanTreeView)hierarchyPane).setRootVisible(false);
         Children.Array children = new Children.SortedArray();
-        root = new AbstractNode(children);
+        actions = new Action[]{
+            new RefreshAction(), null,
+            new SubTypeAction(), new SuperTypeAction()
+        };
+        root = new AbstractNode(children){
+            @Override
+            public Action[] getActions(boolean context) {
+                return actions;
+            }
+        };
         getExplorerManager().setRootContext(root);
+    }
+
+    public void setClose(Action close) {
+        this.close = close;
     }
     
     /** This method is called from within the constructor to
@@ -170,30 +192,27 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         if (subDirection == subtypeButton.isSelected()) {
             return;
         }
+        setSubtypeHierarchy(true);
+    }//GEN-LAST:event_subtypeButtonActionPerformed
+
+    private void setSubtypeHierarchy(boolean isSub){
         if (object != null) {
             CsmClass cls = object.getObject();
             if (cls != null){
-                subDirection = subtypeButton.isSelected();
+                subDirection = isSub;
                 updateButtons();
                 update(cls);
             }
         }
-    }//GEN-LAST:event_subtypeButtonActionPerformed
-
+    }
+    
     private void supertypeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_supertypeButtonActionPerformed
         if (subDirection != supertypeButton.isSelected()){
             return;
         }
-        if (object != null) {
-            CsmClass cls = object.getObject();
-            if (cls != null){
-                subDirection = !supertypeButton.isSelected();
-                updateButtons();
-                update(cls);
-            }
-        }
+        setSubtypeHierarchy(false);
     }//GEN-LAST:event_supertypeButtonActionPerformed
-    
+
     public void setClass(CsmClass cls){
         object = cls.getUID();
         subDirection = true;
@@ -224,8 +243,9 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
                 Children.MUTEX.writeAccess(new Runnable(){
                     public void run() {
                         children.remove(children.getNodes());
-                        final Node node = new HierarchyNode(csmClass,
-                                HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, subDirection), null);
+                        HierarchyModel model = HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, actions, subDirection);
+                        model.setCloseWindowAction(close);
+                        final Node node = new HierarchyNode(csmClass,model, null);
                         children.add(new Node[]{node});
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -266,4 +286,61 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JToolBar toolBar;
     // End of variables declaration//GEN-END:variables
     
+    private class RefreshAction extends AbstractAction implements Presenter.Popup {
+        private JMenuItem menuItem;
+        public RefreshAction() {
+            putValue(Action.NAME, NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.refreshButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, refreshButton.getIcon());
+            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            refreshButtonActionPerformed(e);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(subDirection);
+            return menuItem;
+        }
+    }
+
+    private class SubTypeAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public SubTypeAction() {
+            putValue(Action.NAME, NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.subtypeButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, subtypeButton.getIcon());
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setSubtypeHierarchy(true);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(subDirection);
+            return menuItem;
+        }
+    }
+
+    private class SuperTypeAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public SuperTypeAction() {
+            putValue(Action.NAME, NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.supertypeButton.toolTipText")); //NOI18N
+            putValue(Action.SMALL_ICON, supertypeButton.getIcon());
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setSubtypeHierarchy(false);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(!subDirection);
+            return menuItem;
+        }
+    }
+
 }

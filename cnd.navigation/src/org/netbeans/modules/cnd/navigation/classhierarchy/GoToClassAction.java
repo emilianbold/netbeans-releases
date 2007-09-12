@@ -32,13 +32,18 @@ import org.openide.util.NbBundle;
 public class GoToClassAction extends AbstractAction {
     
     private CsmOffsetable csmObject;
+    private Action delegate;
     
-    public GoToClassAction(CsmOffsetable csmObject) {
+    public GoToClassAction(CsmOffsetable csmObject, Action delegate) {
         this.csmObject = csmObject;
+        this.delegate = delegate;
         putValue(Action.NAME, NbBundle.getMessage(GoToClassAction.class, "LBL_GoToClass")); //NOI18N
     }
     
     public void actionPerformed(ActionEvent e) {
         CsmUtilities.openSource(csmObject);
+        if (delegate != null){
+            delegate.actionPerformed(e);
+        }
     }
 }

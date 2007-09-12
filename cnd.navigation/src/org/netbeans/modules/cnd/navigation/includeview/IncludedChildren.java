@@ -71,10 +71,10 @@ public class IncludedChildren extends Children.Keys<CsmFile> {
         Node node = null;
         Set<CsmFile> set = model.getModel().get(file);
         if (set == null || set.size() == 0) {
-            node = new IncludeNode(file, Children.LEAF, false);
+            node = new IncludeNode(file, Children.LEAF, model, false);
         } else {
             if (checkRecursion(file)) {
-                node = new IncludeNode(file, Children.LEAF, true);
+                node = new IncludeNode(file, Children.LEAF, model, true);
             } else {
                 node = new IncludeNode(file, model, this);
             }

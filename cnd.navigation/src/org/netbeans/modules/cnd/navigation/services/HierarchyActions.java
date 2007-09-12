@@ -16,16 +16,17 @@
  */
 package org.netbeans.modules.cnd.navigation.services;
 
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmFile;
+import javax.swing.Action;
 
 /**
  *
- * @author Alexander Simon
+ * @author as204739
  */
-public interface IncludedModel extends HierarchyActions {
+public interface HierarchyActions {
 
-    public Map<CsmFile, Set<CsmFile>> getModel();
+    public Action[] getDefaultActions();
 
+    public Action getCloseWindowAction();
+
+    public void setCloseWindowAction(Action close);
 }

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -34,9 +35,12 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
  */
 /*package-local*/ class IncludedModelImpl implements IncludedModel {
     private Map<CsmFile,Set<CsmFile>> map;
-    
+    private Action[] actions;
+    private Action close;
+       
     /** Creates a new instance of IncludedModel */
-    public IncludedModelImpl(CsmFile file, boolean whoIncludes, boolean plain, boolean recursive) {
+    public IncludedModelImpl(CsmFile file, Action[] actions, boolean whoIncludes, boolean plain, boolean recursive) {
+        this.actions = actions;
         if (whoIncludes) {
             map = buildWhoIncludes(file);
         } else {
@@ -133,5 +137,17 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
                 buildWhoIsIncluded(included, map);
             }
         }
+    }
+
+    public Action[] getDefaultActions() {
+        return actions;
+    }
+
+    public Action getCloseWindowAction() {
+        return close;
+    }
+
+    public void setCloseWindowAction(Action close) {
+        this.close = close;
     }
 }

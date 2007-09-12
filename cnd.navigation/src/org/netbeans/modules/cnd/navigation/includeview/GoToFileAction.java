@@ -33,13 +33,18 @@ import org.openide.util.NbBundle;
 public class GoToFileAction extends AbstractAction {
     
     private CsmObject csmObject;
+    private Action delegate;
     
-    public GoToFileAction(CsmObject csmObject) {
+    public GoToFileAction(CsmObject csmObject, Action delegate) {
         this.csmObject = csmObject;
+        this.delegate = delegate;
         putValue(Action.NAME, NbBundle.getMessage(GoToFileAction.class, "LBL_GoToFile")); //NOI18N
     }
     
     public void actionPerformed(ActionEvent e) {
         CsmUtilities.openSource(csmObject);
+        if (delegate != null){
+            delegate.actionPerformed(e);
+        }
     }
 }

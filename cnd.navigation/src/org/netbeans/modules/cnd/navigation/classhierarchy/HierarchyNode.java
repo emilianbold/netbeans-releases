@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.navigation.classhierarchy;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -34,11 +36,13 @@ import org.openide.util.NbBundle;
  */
 public class HierarchyNode extends AbstractCsmNode{
     private CsmClass object;
+    private HierarchyModel model;
+    
     public HierarchyNode(CsmClass element, HierarchyModel model, HierarchyChildren parent) {
-        this(element, new HierarchyChildren(element, model, parent), false);
+        this(element, new HierarchyChildren(element, model, parent), model, false);
     }
 
-    public HierarchyNode(CsmClass element, Children children, boolean recursion) {
+    public HierarchyNode(CsmClass element, Children children, HierarchyModel model, boolean recursion) {
         super(children);
         if (recursion) {
             setName(element.getName()+" "+getString("CTL_Recuesion")); // NOI18N
@@ -46,6 +50,7 @@ public class HierarchyNode extends AbstractCsmNode{
             setName(element.getName());
         }
         object = element;
+        this.model = model;
     }
     
     public CsmObject getCsmObject() {
@@ -56,7 +61,7 @@ public class HierarchyNode extends AbstractCsmNode{
     public Action getPreferredAction() {
         if (object.isValid()) {
             if (CsmKindUtilities.isOffsetable(object)){
-                return new GoToClassAction((CsmOffsetable)object);
+                return new GoToClassAction((CsmOffsetable)object, model.getCloseWindowAction());
             }
         }
         return null;
@@ -66,9 +71,15 @@ public class HierarchyNode extends AbstractCsmNode{
     public Action[] getActions(boolean context) {
         Action action = getPreferredAction();
         if (action != null){
-            return new Action[] { action };
+            List<Action> list = new ArrayList<Action>();
+            list.add(action);
+            list.add(null);
+            for (Action a : model.getDefaultActions()){
+                list.add(a);
+            }
+            return list.toArray(new Action[list.size()]);
         }
-        return new Action[0];
+        return model.getDefaultActions();
     }
 
     private String getString(String key) {
