@@ -1,1 +1,3 @@
-exclude LocalizationDemo/src/l10ndemo/messages.properties
+# mobility/examples/midp
+read global
+exclude ${l10n-module}/LocalizationDemo/src/l10ndemo/messages.properties
