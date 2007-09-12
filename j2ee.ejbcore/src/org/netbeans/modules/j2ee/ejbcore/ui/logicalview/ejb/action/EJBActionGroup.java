@@ -58,9 +58,6 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
     /** List of system actions to be displayed within this one's toolbar or submenu. */
     protected Action[] grouped() {
         return new Action[] {
-            SystemAction.get(ExposeInLocalAction.class),
-            SystemAction.get(ExposeInRemoteAction.class),
-            null,
             new AddBusinessMethodAction(),
             new AddCreateMethodAction(),
             new AddFinderMethodAction(),
