@@ -29,6 +29,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
@@ -149,19 +150,32 @@ public final class PersistenceProviderComboboxHelper {
 
         if (providers.getSize() == 0 && providerSupplier.supportsDefaultProvider()){
             providers.addElement(ProviderUtil.DEFAULT_PROVIDER);
-        }
+        } 
         
         addProvidersFromLibraries(providers);
+
+        if (providers.getSize() == 0){
+            providers.addElement(EMPTY);
+        }
         
         providerCombo.setModel(providers);
         providerCombo.addItem(SEPARATOR);
         providerCombo.addItem(new NewPersistenceLibraryItem());
         providerCombo.addItem(new ManageLibrariesItem());
-        providerCombo.setRenderer(new PersistenceProviderCellRenderer((Provider)providers.getElementAt(0)));
+        providerCombo.setRenderer(new PersistenceProviderCellRenderer(getFirstElement(providers)));
         providerCombo.setSelectedIndex(0);
     }
     
-    
+    /**
+     * @return the first element of the given ComboBoxModel if it 
+     * is an instance of <code>Provider</code>, null otherwise.
+     */ 
+    private Provider getFirstElement(ComboBoxModel providers){
+        if (providers.getElementAt(0) instanceof Provider){
+            return (Provider) providers.getElementAt(0);
+        }
+        return null;
+    }
     /**
      * Adds persistence providers found from libraries to the given model.
      */
