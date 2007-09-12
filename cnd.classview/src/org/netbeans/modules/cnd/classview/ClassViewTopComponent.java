@@ -152,7 +152,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: componentClosed()"); // NOI18N
         if (!isAutoMode) {
             Preferences ps = NbPreferences.forModule(ShowHideClassViewAction.class);
-            ps.putBoolean("ClassViewWasOpened", true);
+            ps.putBoolean("ClassViewWasOpened", true); // NOI18N
         }
         isAutoMode = false;
         addRemoveModelListeners(false);

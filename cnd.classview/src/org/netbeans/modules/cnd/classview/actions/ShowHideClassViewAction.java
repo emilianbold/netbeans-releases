@@ -53,7 +53,7 @@ public class ShowHideClassViewAction extends CallableSystemAction {
         if (!tc.isOpened()) {
             tc.open();
             Preferences ps = NbPreferences.forModule(ShowHideClassViewAction.class);
-            ps.putBoolean("ClassViewWasOpened", true);
+            ps.putBoolean("ClassViewWasOpened", true); // NOI18N
         }
         tc.requestActive();
     }

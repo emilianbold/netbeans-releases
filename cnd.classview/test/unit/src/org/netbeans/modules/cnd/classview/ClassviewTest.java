@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.test.BaseTestSuite;
 public class ClassviewTest extends BaseTestSuite {
     
     public ClassviewTest() {
-        super("C/C++ Class View");
+        super("C/C++ Class View"); // NOI18N
         
         addTestSuite(QuoteTestCase.class);
     }

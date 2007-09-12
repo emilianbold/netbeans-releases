@@ -48,7 +48,7 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
     
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("cnd.classview.no-loading-node","true");
+        System.setProperty("cnd.classview.no-loading-node","true"); // NOI18N
         super.setUp();
     }
     
@@ -78,7 +78,7 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
     @Override
     protected void performTest(String source) throws Exception {
         CsmProject project = getCsmProject();
-        assertNotNull("Project not found",project);
+        assertNotNull("Project not found",project); // NOI18N
         childrenUpdater = new ChildrenUpdater();
         CsmNamespace globalNamespace = project.getGlobalNamespace();
         NamespaceKeyArray global = new NamespaceKeyArray(childrenUpdater, globalNamespace);
@@ -93,13 +93,13 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
     private void dump(HostKeyArray children, String ident, boolean trace){
         Node[] nodes = children.getNodes();
         for(Node node : nodes){
-            String res = ident+node.getDisplayName()+" / "+getNodeIcon(node);
+            String res = ident+node.getDisplayName()+" / "+getNodeIcon(node); // NOI18N
             if (trace) {
                 System.out.println(res);
             }
             Children child = node.getChildren();
             if (child instanceof HostKeyArray){
-                dump((HostKeyArray)child, ident+"\t", trace);
+                dump((HostKeyArray)child, ident+"\t", trace); // NOI18N
             }
         }
     }
