@@ -362,7 +362,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 index++;
             }
 
-            for (Position line : modifiedLinesTokens) {
+            for (Position line : new LinkedList<Position>(modifiedLinesTokens)) {
                 List<ErrorDescription> eds = line2Errors.get(line);
 
                 if (eds == null || eds.isEmpty()) {
