@@ -77,8 +77,10 @@ public abstract class ModelEventMediator implements PropertyChangeListener{
     }
     
     protected void cleanUp() {
-        if(!uiPeer.getContext().isShutdown() &&
-            uiPeer instanceof ElementsContainerPanel) // &&!= uiPeer.getAXIComponent())
+        if(uiPeer != null &&
+           uiPeer.getContext() != null &&
+           !uiPeer.getContext().isShutdown() &&
+           uiPeer instanceof ElementsContainerPanel)
             return;
         
         if(modelPeer != null) {

@@ -129,24 +129,28 @@ public class ElementPanel extends ABEBaseDropPanel{
     }
     
     public void expandChild(){
-        if(expandButton.isExpanded())
-            expandButton.setText("-");
-        setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        try{
-            if(fadeinPanel != null){
-                //children already added just show
-                fadeinPanel.setVisible(true);
-            }else{
-                //children not added create them and then show
-                createChild();
-                setExpanded(true);
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run() {
+                if(expandButton.isExpanded())
+                    expandButton.setText("-");
+                setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                try{
+                    if(fadeinPanel != null){
+                        //children already added just show
+                        fadeinPanel.setVisible(true);
+                    }else{
+                        //children not added create them and then show
+                        createChild();
+                        setExpanded(true);
+                    }
+                }finally{
+                    //always reset back
+                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+                revalidate();
+                repaint();
             }
-        }finally{
-            //always reset back
-            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        }
-        revalidate();
-        repaint();
+        });
     }
     
     public void collapseChild(){
@@ -306,7 +310,9 @@ public class ElementPanel extends ABEBaseDropPanel{
     
     //Following set of methods needed for the tag size calculation and horizontal bar display logic
     public Dimension getPreferredSize() {
-        return getMinimumSize();
+        synchronized(this){        
+            return getMinimumSize();
+        }
     }
     
     public Dimension getMinimumSize() {

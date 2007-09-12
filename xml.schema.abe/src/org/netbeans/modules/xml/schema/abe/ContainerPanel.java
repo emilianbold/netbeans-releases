@@ -383,6 +383,14 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
     
     
     public void adjustChildrenPanelSize() {
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run() {
+                doAdjustChildrenPanelSize();
+            }
+        });
+    }
+    
+    private void doAdjustChildrenPanelSize() {
         int width = 0;
         int height = 0;
         int indent = getChildrenIndent();
@@ -420,8 +428,7 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         if(revalidateChild)
             childrenPanel.revalidate();
         if(revalidateMe)
-            revalidate();
-        
+            revalidate();        
     }
     
 //Following set of methods needed for the tag size calculation and horizontal bar display logic
@@ -432,13 +439,15 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
     public Dimension _getMinimumSize() {
         int width = 0;
         int height = 0;
-        for(Component child: this.getComponents()){
-            if(!child.isVisible())
-                break;
-            Dimension dim = child.getPreferredSize();
-            height += dim.getHeight();
-            int thisW = dim.width ;
-            width = width < thisW ? thisW : width;
+        synchronized(this) {
+            for(Component child: this.getComponents()){
+                if(!child.isVisible())
+                    break;
+                Dimension dim = child.getPreferredSize();
+                height += dim.getHeight();
+                int thisW = dim.width ;
+                width = width < thisW ? thisW : width;
+            }
         }
         return new Dimension(width, height);
     }
