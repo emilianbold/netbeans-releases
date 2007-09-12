@@ -68,11 +68,11 @@ public class DDUtils {
     public static void merge(EjbJarProxy ejbJarProxy, Reader reader) {
         try {
             EjbJarProxy newEjbJarProxy = createEjbJarProxy(reader);
-//            if (newEjbJarProxy.getStatus() == EjbJar.STATE_INVALID_UNPARSABLE) {
-//                ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
-//                ejbJarProxy.setError(newEjbJarProxy.getError());
-//                return;
-//            }
+            if (newEjbJarProxy.getStatus() == EjbJar.STATE_INVALID_UNPARSABLE) {
+                ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+                ejbJarProxy.setError(newEjbJarProxy.getError());
+                return;
+            }
             ejbJarProxy.merge(newEjbJarProxy, EjbJar.MERGE_UPDATE);
             ejbJarProxy.setStatus(newEjbJarProxy.getStatus());
             ejbJarProxy.setError(newEjbJarProxy.getError());
