@@ -46,12 +46,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedResource;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -494,6 +495,11 @@ public class DesignTimeDataSourceHelper {
     
     
     public Map updateDataSource(Project currentProj) {
+        
+         // Manage the migration of legacy projects
+        if (ImportDataSource.isLegacyProject(currentProj)) {//NOI18N   
+            DataSourceResolver.getInstance().updateSettings();
+        } 
         
         // Get the data sources in the project then bind them to the project's context
         String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);

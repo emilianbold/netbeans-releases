@@ -217,10 +217,15 @@ public class ProjectDataSourceTracker{
      * Used for migrating Creator 2 projects, since a source file must be modeled, not the project
      */
     public static boolean isProjectModeled(final Project project) {
-        if (FacesModelSet.getFacesModelIfAvailable(retrieveFileToModel(project)) == null)
-            return false;
-        else
-            return true;
+        Iterator it = retrieveFileToModel(project).iterator();
+        
+        while (it.hasNext()) {
+            if (FacesModelSet.getFacesModelIfAvailable((FileObject) it.next()) != null) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     private DSTracker addDSTracker(Project project) {
@@ -233,9 +238,9 @@ public class ProjectDataSourceTracker{
     /**
      *  Used to retrieve a source file from a Creator 2 project for modeling
      */ 
-    private static FileObject retrieveFileToModel(Project project) {        
+    private static List<FileObject> retrieveFileToModel(Project project) {        
         FileObject[] projContents = project.getProjectDirectory().getChildren();
-        FileObject fileToModel = null;
+        List<FileObject> fileToModel = new ArrayList<FileObject>();
         for (FileObject projItem : projContents) {
             if (projItem.isFolder()) {
                 if (projItem.getName().equals("src")) {
@@ -245,7 +250,7 @@ public class ProjectDataSourceTracker{
                         FileObject projSrc = (FileObject) folders.nextElement();
                         for (FileObject srcFile : projSrc.getChildren()) {
                             if (srcFile.existsExt("java")) {
-                                fileToModel = srcFile;
+                                fileToModel.add(srcFile);
                                 break;
                             }
                         }

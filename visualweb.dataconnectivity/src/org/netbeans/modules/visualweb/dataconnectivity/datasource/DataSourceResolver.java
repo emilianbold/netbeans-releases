@@ -144,11 +144,13 @@ public class DataSourceResolver implements DataSourceInfoListener {
         return url;
     }
      
-    public void update(Project currentProj) {
+    public void updateSettings() {
         doCopying();
         registerConnections();
-        updateProject();                
-        checkConnections();
+    }
+    
+    public void update(Project currentProj) {
+        updateProject(currentProj);                
     }
 
 
@@ -197,17 +199,18 @@ public class DataSourceResolver implements DataSourceInfoListener {
         }
     }
 
-    private void updateProject() {
+    private void updateProject(Project project) {
         // Update Project's datasources
         try {
             new DesignTimeDataSourceHelper().updateDataSource(project);
+            checkConnections(project);
         } catch (NamingException ne) {
             Logger.getLogger("copy").info("Migrating user settings failed " + ne); //NOI18N
         }
     }
     
     // Check if any database connections needed by the project are missing
-    private void checkConnections() {
+    private void checkConnections(Project project) {
         DesignTimeDataSourceService dataSourceService = Lookup.getDefault().lookup(DesignTimeDataSourceService.class);
         Set<RequestedJdbcResource> problemDatasources = dataSourceService.getBrokenDatasources(project);
         if (!problemDatasources.isEmpty()) {
