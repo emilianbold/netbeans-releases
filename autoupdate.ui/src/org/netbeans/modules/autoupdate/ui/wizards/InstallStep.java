@@ -35,7 +35,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.InstallSupport.Restarter;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -56,7 +56,7 @@ import org.openide.awt.Mnemonics;
  * @author Jiri Rechtacek
  */
 public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
-    private InstallPanel panel;
+    private OperationPanel panel;
     private PanelBodyContainer component;
     private InstallUnitWizardModel model = null;
     private WizardDescriptor wd = null;
@@ -91,10 +91,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
 
     public PanelBodyContainer getComponent() {
         if (component == null) {
-            panel = new InstallPanel ();
+            panel = new OperationPanel ();
             panel.addPropertyChangeListener (new PropertyChangeListener () {
                     public void propertyChange (PropertyChangeEvent evt) {
-                        if (InstallPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
+                        if (OperationPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
                             doDownloadAndVerificationAndInstall ();
                         }
                     }
@@ -129,7 +129,8 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private Validator handleDownload () {
         validator = null;
         final InstallSupport support = model.getInstallSupport ();
-        assert support != null;
+        assert support != null : "OperationSupport cannot be null because OperationContainer " +
+                "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
         Runnable performDownload = new Runnable () {
             public void run () {
                 try {
@@ -167,7 +168,8 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private Installer handleValidation (Validator v) {
         component.setHeadAndContent (getBundle (HEAD_VERIFY), getBundle (CONTENT_VERIFY));
         final InstallSupport support = model.getInstallSupport ();
-        assert support != null;
+        assert support != null : "OperationSupport cannot be null because OperationContainer " +
+                "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
         ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"));
         JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
         JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent (handle);
@@ -243,7 +245,8 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private Restarter handleInstall (Installer i) {
         component.setHeadAndContent (getBundle (HEAD_INSTALL), getBundle (CONTENT_INSTALL));
         InstallSupport support = model.getInstallSupport();
-        assert support != null;
+        assert support != null : "OperationSupport cannot be null because OperationContainer " +
+                "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
         model.modifyOptionsForDisabledCancel (wd);
         
         ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Install_InstallingPlugins"));
@@ -279,7 +282,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private void presentInstallNeedsRestart (Restarter r) {
         component.setHeadAndContent (getBundle (HEAD_RESTART), getBundle (CONTENT_RESTART));
-        model.modifyOptionsForDoClose (wd);
+        model.modifyOptionsForDoClose (wd, true);
         restarter = r;
         panel.setRestartButtonsVisible (true);
         panel.setBody (getBundle ("InstallStep_InstallDone_Text"), InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
@@ -300,9 +303,16 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             return ;
         }
         this.wasStored = true;
-        if (restarter != null) {
+        if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
+            try {
+                model.doCleanup (true);
+            } catch (OperationException x) {
+                Logger.getLogger (InstallStep.class.getName ()).log (Level.INFO, x.getMessage (), x);
+            }
+        } else if (restarter != null) {
             InstallSupport support = model.getInstallSupport ();
-            assert support != null;
+            assert support != null : "OperationSupport cannot be null because OperationContainer " +
+                    "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
             if (panel.restartNow ()) {
                 try {
                     support.doRestart (restarter, null);
@@ -322,11 +332,12 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 }
                 return ;
             }
-        }
-        try {
-            model.doCleanup (! WizardDescriptor.FINISH_OPTION.equals (wd.getValue ()));
-        } catch (OperationException x) {
-            log.log (Level.INFO, x.getMessage (), x);
+        } else {
+            try {
+                model.doCleanup (! WizardDescriptor.FINISH_OPTION.equals (wd.getValue ()));
+            } catch (OperationException x) {
+                log.log (Level.INFO, x.getMessage (), x);
+            }
         }
     }
 

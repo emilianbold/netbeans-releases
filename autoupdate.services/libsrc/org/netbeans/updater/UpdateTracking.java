@@ -38,6 +38,11 @@ import org.xml.sax.InputSource;
  * @author  Ales Kemr
  */
 public final class UpdateTracking {
+    
+    /** Platform dependent file name separator */
+    public static final String FILE_SEPARATOR = System.getProperty ("file.separator");
+    public static final String PATH_SEPARATOR = System.getProperty ("path.separator");
+    
     public static final String ELEMENT_MODULES = "installed_modules"; // NOI18N
     public static final String ELEMENT_MODULE = "module"; // NOI18N
     public static final String ATTR_CODENAMEBASE = "codename"; // NOI18N
@@ -61,8 +66,6 @@ public final class UpdateTracking {
     
     public static final String EXTRA_CLUSTER_NAME = "extra";
     
-    /** Platform dependent file name separator */
-    private static final String FILE_SEPARATOR = System.getProperty ("file.separator");
     private static final String LOCALE_DIR = FILE_SEPARATOR + "locale" + FILE_SEPARATOR; // NOI18N
 
     public static final String TRACKING_FILE_NAME = "update_tracking"; // NOI18N
@@ -98,29 +101,6 @@ public final class UpdateTracking {
     // Various factory and utility methods
     //
     
-    /** Loads update tracking for given location 
-     * @return the tracking
-     */
-    static UpdateTracking getTracking( boolean fromuser ) {        
-        UpdateTracking ut = getTracking (
-            System.getProperty (fromuser ? "netbeans.user" : "netbeans.home"), // NOI18N
-            fromuser
-        );
-        return ut;
-    }
-
-    /** Loads update tracking for given location 
-     * @param cluster the name of the cluster that we want to install to
-     * @param createIfDoesNotExists should new tracking be created if it does not exists
-     * @return the tracking
-     */
-    private static UpdateTracking getTracking(String cluster, boolean createIfDoesNotExists) {        
-        File f = new File (cluster);
-        
-        UpdateTracking ut = getTracking (f, createIfDoesNotExists);
-        return ut;
-    }
-    
     /** Finds update tracking for given cluster root. Automatically creates
      * the cluster if this is user dir.
      *
@@ -131,12 +111,7 @@ public final class UpdateTracking {
         // bugfix #54046: the cluster for install must be normalized
         path = new File(path.toURI ().normalize ()).getAbsoluteFile ();
         
-        // bugfix #50242: the property "netbeans.user" can return dir with non-normalized file e.g. duplicate //
-        // and path and value of this property wrongly differs
-        File userDir = new File (System.getProperty ("netbeans.user"));
-        userDir = new File(userDir.toURI ().normalize ()).getAbsoluteFile ();
-
-        return getTracking (path, path.toString().equals (userDir.getPath ()));
+        return getTracking (path, path.toString().equals (getUserDir ().getPath ()));
     }
     
     /** Finds update tracking for given cluster root.
@@ -201,6 +176,15 @@ public final class UpdateTracking {
         return new File (System.getProperty ("netbeans.home")); // NOI18N
     }
     
+    public static File getUserDir () {
+        // bugfix #50242: the property "netbeans.user" can return dir with non-normalized file e.g. duplicate //
+        // and path and value of this property wrongly differs
+        File userDir = new File (System.getProperty ("netbeans.user"));
+        userDir = new File(userDir.toURI ().normalize ()).getAbsoluteFile ();
+        
+        return userDir;
+    }
+    
     /** Returns enumeration of Files that represent each possible install
      * directory.
      * @param includeUserDir whether to include also user dir
@@ -210,7 +194,7 @@ public final class UpdateTracking {
         List<File> files = new ArrayList<File> ();
         
         if (includeUserDir) {
-            File ud = new File (System.getProperty ("netbeans.user"));  // NOI18N
+            File ud = getUserDir ();
             files.add (ud);
         }
         
@@ -613,7 +597,7 @@ public final class UpdateTracking {
         }
         
         void writeConfigModuleXMLIfMissing () {
-            File configDir = new File (new File (directory, "config"), "Modules"); // NOI18N
+            File configDir = new File (new File (directory, ModuleDeactivator.CONFIG), ModuleDeactivator.MODULES); // NOI18N
             
             String candidate = null;
             String oldCandidate = null;
@@ -629,7 +613,7 @@ public final class UpdateTracking {
             String replaced = name.replace ('.', '-'); // NOI18N
             String searchFor;
             
-            if (replaced.indexOf ("modules") > 0) { // NOI18N
+            if (replaced.indexOf (ModuleDeactivator.MODULES) > 0) { // NOI18N
                 // standard module
                 searchFor = replaced + ".jar"; // NOI18N
             } else {
@@ -659,7 +643,7 @@ public final class UpdateTracking {
                 String n = f.getName ();
                 String parentDir = new File (f.getName ()).getParentFile ().getName ();
                 
-                needToWrite = needToWrite || n.indexOf ("modules") >= 0;
+                needToWrite = needToWrite || n.indexOf (ModuleDeactivator.MODULES) >= 0;
                 
                 if (n.endsWith (".jar")) { // NOI18N
                     // ok, module candidate                    

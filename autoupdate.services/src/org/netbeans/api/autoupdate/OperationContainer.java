@@ -62,6 +62,12 @@ public final class OperationContainer<Support> {
         retval.getSupport().setContainer(retval);
         return retval;
     }
+    public static OperationContainer<OperationSupport> createForDirectUninstall() {
+        OperationContainer<OperationSupport> retval =
+                new OperationContainer<OperationSupport>(OperationContainerImpl.createForDirectUninstall(), new OperationSupport());
+        retval.getSupport().setContainer(retval);
+        return retval;
+    }
     public static OperationContainer<OperationSupport> createForEnable() {
         OperationContainer<OperationSupport> retval =
                 new OperationContainer<OperationSupport>(OperationContainerImpl.createForEnable(), new OperationSupport());
@@ -71,6 +77,13 @@ public final class OperationContainer<Support> {
     public static OperationContainer<OperationSupport> createForDisable() {
         OperationContainer<OperationSupport> retval =
                 new OperationContainer<OperationSupport>(OperationContainerImpl.createForDisable(), new OperationSupport());
+        retval.getSupport().setContainer(retval);
+        return retval;
+    }
+    
+    public static OperationContainer<OperationSupport> createForDirectDisable() {
+        OperationContainer<OperationSupport> retval =
+                new OperationContainer<OperationSupport>(OperationContainerImpl.createForDirectDisable(), new OperationSupport());
         retval.getSupport().setContainer(retval);
         return retval;
     }

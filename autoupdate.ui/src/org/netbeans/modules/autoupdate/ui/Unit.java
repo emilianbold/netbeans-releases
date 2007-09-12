@@ -264,11 +264,17 @@ public abstract class Unit {
         public static boolean isOperationAllowed (UpdateUnit uUnit, UpdateElement element, OperationContainer<OperationSupport> container) {
             return container.canBeAdded (uUnit, element);
         }
+        
         public Installed (UpdateUnit unit, String categoryName) {
             super (categoryName);
             this.updateUnit = unit;
-            this.installEl = unit.getInstalled ();
-            assert installEl != null : "Installed UpdateUnit " + unit + " has Installed UpdateElement.";
+            if (unit.getInstalled () == null && unit.isPending ()) {
+                this.installEl = unit.getAvailableUpdates ().get (unit.getAvailableUpdates ().size () - 1);
+                assert installEl != null : "Pending UpdateUnit " + unit + " has UpdateElement for update.";
+            } else {
+                this.installEl = unit.getInstalled ();
+                assert installEl != null : "Installed UpdateUnit " + unit + " has Installed UpdateElement.";
+            }
             this.backupEl = unit.getBackup ();
             this.isUninstallAllowed = isOperationAllowed (this.updateUnit, installEl, Containers.forUninstall ());
             initState();
@@ -291,7 +297,8 @@ public abstract class Unit {
             if (u1 instanceof Unit.Installed && u2 instanceof Unit.Installed) {
                 Unit.Installed unit1 = (Unit.Installed )u1;
                 Unit.Installed unit2 = (Unit.Installed )u2;
-                return Boolean.valueOf (unit1.getRelevantElement ().isEnabled ()).compareTo (unit2.getRelevantElement ().isEnabled ());
+                final int retval = Boolean.valueOf(unit1.getRelevantElement().isEnabled()).compareTo(unit2.getRelevantElement().isEnabled());
+                return (retval == 0) ? Boolean.valueOf(unit1.updateUnit.isPending()).compareTo(unit2.updateUnit.isPending()) : retval;
             }
             return Unit.compareDisplayVersions (u1, u2);
         }

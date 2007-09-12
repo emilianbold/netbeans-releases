@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.modules.SpecificationVersion;
 
 
@@ -37,6 +38,7 @@ public abstract class UpdateUnitImpl extends Object {
     private UpdateElement installedLocalization;
     private List<UpdateElement> localizationUpdates;
     private UpdateElement backup;
+    private UpdateUnit updateUnit;
     
     private Logger err = Logger.getLogger (this.getClass ().getName ());
 
@@ -44,6 +46,15 @@ public abstract class UpdateUnitImpl extends Object {
         this.codeName = codename;
     }
 
+    public void setUpdateUnit (UpdateUnit unit) {
+        assert unit != null : "UpdateUnit cannot for " + this + " cannot be null.";
+        updateUnit = unit;
+    }
+    
+    public UpdateUnit getUpdateUnit () {
+        return updateUnit;
+    }
+    
     public String getCodeName () {
         return codeName;
     }
@@ -91,7 +102,7 @@ public abstract class UpdateUnitImpl extends Object {
         assert this.installed != null;
         this.installed = null;
     }
-    
+
     public void updateInstalled (UpdateElement installed) {
         //assert this.installed != null;
         this.installed = null;
@@ -114,6 +125,10 @@ public abstract class UpdateUnitImpl extends Object {
     public void setBackup (UpdateElement backup) {
         assert this.backup == null;
         this.backup = backup;
+    }
+    
+    public boolean isPending () {
+        return false;
     }
     
     public abstract UpdateManager.TYPE getType ();

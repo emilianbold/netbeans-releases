@@ -191,10 +191,15 @@ public abstract class OperationWizardModel {
     
     // XXX Hack in WizardDescriptor
     public void modifyOptionsForDoClose (WizardDescriptor wd) {
+        modifyOptionsForDoClose (wd, false);
+    }
+    
+    // XXX Hack in WizardDescriptor
+    public void modifyOptionsForDoClose (WizardDescriptor wd, boolean canCancel) {
         recognizeButtons (wd);
         JButton b = getOriginalFinish (wd);
         Mnemonics.setLocalizedText (b, getBundle ("InstallUnitWizardModel_Buttons_Close"));
-        wd.setOptions (new JButton [] {b});
+        wd.setOptions (canCancel ? new JButton [] { b, getOriginalCancel (wd) } : new JButton [] { b });
     }
     
     // XXX Hack in WizardDescriptor

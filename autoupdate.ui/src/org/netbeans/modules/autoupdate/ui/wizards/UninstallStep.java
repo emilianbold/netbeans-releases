@@ -36,6 +36,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 
 /**
  *
@@ -43,10 +44,11 @@ import org.netbeans.api.autoupdate.OperationSupport;
  */
 public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
     private final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.wizards.UninstallStep");
-    private InstallPanel panel;
+    private OperationPanel panel;
     private PanelBodyContainer component;
     private UninstallUnitWizardModel model = null;
     private WizardDescriptor wd = null;
+    private Restarter restarter = null;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     private static final String HEAD_UNINSTALL = "UninstallStep_Header_Uninstall_Head";
     private static final String CONTENT_UNINSTALL = "UninstallStep_Header_Uninstall_Content";
@@ -70,6 +72,11 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     private static final String ACTIVATE_PROGRESS_NAME = "UninstallStep_ProgressName_Activate";
     private static final String DEACTIVATE_PROGRESS_NAME = "UninstallStep_ProgressName_Deactivate";
     
+    private static final String HEAD_RESTART = "UninstallStep_Header_Restart_Head";
+    private static final String CONTENT_RESTART = "UninstallStep_Header_Restart_Content";
+    
+    private boolean wasStored = false;
+    
     /** Creates a new instance of OperationDescriptionStep */
     public UninstallStep (UninstallUnitWizardModel model) {
         this.model = model;
@@ -81,10 +88,10 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
 
     public PanelBodyContainer getComponent() {
         if (component == null) {
-            panel = new InstallPanel ();
+            panel = new OperationPanel ();
             panel.addPropertyChangeListener (new PropertyChangeListener () {
                     public void propertyChange (PropertyChangeEvent evt) {
-                        if (InstallPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
+                        if (OperationPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
                             doAction ();
                         }
                     }
@@ -108,15 +115,21 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     }
     
     private void doAction () {
-        handleAction ();
-        presentActionDone ();
+        // proceed operation
+        Restarter r = null;
+        if ((r = handleAction ()) != null) {
+            presentActionNeedsRestart (r);
+        } else {
+            presentActionDone ();
+        }
         fireChange ();
     }
     
-    private void handleAction () {
+    private Restarter handleAction () {
         assert model.getBaseContainer () != null : "getBaseContainers() returns not null container.";
         OperationSupport support = (OperationSupport) model.getBaseContainer ().getSupport ();
-        assert support != null;
+        assert support != null : "OperationSupport cannot be null because OperationContainer " +
+                "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
         ProgressHandle handle = null;
         switch (model.getOperation ()) {
             case UNINSTALL :
@@ -139,12 +152,14 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         
         panel.waitAndSetProgressComponents (mainLabel, progressComponent, detailLabel);
         
+        Restarter r = null;
         try {
-            support.doOperation (handle);
+            r = support.doOperation (handle);
         } catch (OperationException ex) {
             err.log (Level.INFO, ex.getMessage (), ex);
         }
         panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("UninstallStep_Done")));
+        return r;
     }
     
     private void presentActionDone () {
@@ -177,24 +192,76 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         }
     }
     
+    private void presentActionNeedsRestart (Restarter r) {
+        component.setHeadAndContent (getBundle (HEAD_RESTART), getBundle (CONTENT_RESTART));
+        model.modifyOptionsForDoClose (wd, true);
+        restarter = r;
+        panel.setRestartButtonsVisible (true);
+        switch (model.getOperation ()) {
+            case UNINSTALL :
+                panel.setBody (getBundle ("UninstallStep_UninstallDone_Text"), UninstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                break;
+            case ENABLE :
+                panel.setBody (getBundle ("UninstallStep_ActivateDone_Text"), UninstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                break;
+            case DISABLE :
+                panel.setBody (getBundle ("UninstallStep_DeactivateDone_Text"), UninstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+                break;
+            default:
+                assert false : "Unknown OperationType " + model.getOperation ();
+        }
+    }
+    
     public HelpCtx getHelp() {
         return null;
     }
 
     public void readSettings (WizardDescriptor wd) {
         this.wd = wd;
+        this.wasStored = false;
     }
 
     public void storeSettings (WizardDescriptor wd) {
+        assert ! WizardDescriptor.PREVIOUS_OPTION.equals (wd.getValue ()) : "Cannot invoke Back in this case.";
+        if (wasStored) {
+            return ;
+        }
+        this.wasStored = true;
         if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
             try {
                 model.doCleanup (true);
             } catch (OperationException x) {
-                Logger.getLogger (InstallUnitWizardModel.class.getName ()).log (Level.INFO, x.getMessage (), x);
+                Logger.getLogger (UninstallStep.class.getName ()).log (Level.INFO, x.getMessage (), x);
+            }
+        } else if (restarter != null) {
+            OperationSupport support = (OperationSupport) model.getBaseContainer ().getSupport ();
+            assert support != null : "OperationSupport cannot be null because OperationContainer " +
+                    "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
+            if (panel.restartNow ()) {
+                try {
+                    support.doRestart (restarter, null);
+                } catch (OperationException x) {
+                    err.log (Level.INFO, x.getMessage (), x);
+                }
+                
+            } else {
+                support.doRestartLater (restarter);
+                try {
+                    model.doCleanup (false);
+                } catch (OperationException x) {
+                    err.log (Level.INFO, x.getMessage (), x);
+                }
+                return ;
+            }
+        } else {
+            try {
+                model.doCleanup (! WizardDescriptor.FINISH_OPTION.equals (wd.getValue ()));
+            } catch (OperationException x) {
+                err.log (Level.INFO, x.getMessage (), x);
             }
         }
     }
-
+    
     public boolean isValid() {
         return true;
     }

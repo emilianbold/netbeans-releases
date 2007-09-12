@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.jar.*;
 
 //import org.openide.util.NbBundle;
+import javax.swing.SwingUtilities;
 
 /** Class used by autoupdate module for the work with module files and
  * for installing / uninstalling modules
@@ -37,19 +38,14 @@ public final class ModuleUpdater extends Thread {
         this.forInstall = forInstall;
     }
 
-    /** Platform dependent file name separator */
-    private static final String FILE_SEPARATOR = System.getProperty ("file.separator");
-    private static final String PATH_SEPARATOR = System.getProperty ("path.separator");    
-
     /** Relative name of update directory */
-    private static final String UPDATE_DIR = "update"; // NOI18N
     private static final String DOWNLOAD_DIR_NAME = "download"; // NOI18N
 
     /** Relative name of directory where the .NBM files are downloaded */
-    static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + DOWNLOAD_DIR_NAME; // NOI18N
+    static final String DOWNLOAD_DIR = UpdaterDispatcher.UPDATE_DIR + UpdateTracking.FILE_SEPARATOR + DOWNLOAD_DIR_NAME; // NOI18N
 
     /** Relative name of backup directory */
-    private static final String BACKUP_DIR = UPDATE_DIR + FILE_SEPARATOR + "backup"; // NOI18N
+    private static final String BACKUP_DIR = UpdaterDispatcher.UPDATE_DIR + UpdateTracking.FILE_SEPARATOR + "backup"; // NOI18N
 
     /** The name of zip entry containing netbeans files */
     public static final String UPDATE_NETBEANS_DIR = "netbeans"; // NOI18N
@@ -90,6 +86,7 @@ public final class ModuleUpdater extends Thread {
     /** Creates new ModuleUpdater */
     @Override
     public void run() {
+        assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ";
         try {
 
             checkStop();
@@ -113,21 +110,31 @@ public final class ModuleUpdater extends Thread {
         } catch (Exception x) {
             x.printStackTrace ();
         } finally {
-            UpdaterFrame.getUpdaterFrame().unpackingFinished();
+            if (UpdaterFrame.isFromIDE ()) {
+                UpdaterFrame.getUpdaterFrame ().runningFinished ();
+            }
         }
     }
     
-    private void deleteInstall_Later (File cluster) {
-        File later = new File (cluster, FILE_SEPARATOR + DOWNLOAD_DIR + FILE_SEPARATOR + LATER_FILE_NAME);
+    private void deleteInstallLater (File cluster) {
+        File later = new File (cluster, UpdateTracking.FILE_SEPARATOR + DOWNLOAD_DIR + UpdateTracking.FILE_SEPARATOR + LATER_FILE_NAME);
         if ( later.exists() ) {
             later.delete();
+        }
+        File f = later.getParentFile ();
+        while (f != null && f.delete ()) { // remove empty dirs too
+            f = f.getParentFile ();
         }
     }
 
     private void deleteAdditionalInfo (File cluster) {
-        File additional = new File (cluster, FILE_SEPARATOR + DOWNLOAD_DIR + FILE_SEPARATOR + UpdateTracking.ADDITIONAL_INFO_FILE_NAME);
+        File additional = new File (cluster, UpdateTracking.FILE_SEPARATOR + DOWNLOAD_DIR + UpdateTracking.FILE_SEPARATOR + UpdateTracking.ADDITIONAL_INFO_FILE_NAME);
         if (additional != null && additional.exists ()) {
             additional.delete ();
+        }
+        File f = additional == null ? null : additional.getParentFile ();
+        while (f != null && f.delete ()) { // remove empty dirs too
+            f = f.getParentFile ();
         }
     }
 
@@ -160,7 +167,7 @@ public final class ModuleUpdater extends Thread {
                 files2clustersForInstall.put (cluster, tmp);
                 // if ModuleUpdater runs 'offline' then delete install_later files
                 if (! UpdaterFrame.isFromIDE ()) {
-                    deleteInstall_Later (cluster);
+                    deleteInstallLater (cluster);
                 }
             }
         } else {
@@ -184,7 +191,8 @@ public final class ModuleUpdater extends Thread {
             assert nbm.getParentFile () != null : nbm + " has parent.";
             assert DOWNLOAD_DIR_NAME.equalsIgnoreCase (nbm.getParentFile ().getName ()) : nbm + " is in directory " + DOWNLOAD_DIR_NAME;
             assert nbm.getParentFile ().getParentFile () != null : nbm.getParentFile () + " has parent.";
-            assert UPDATE_DIR.equalsIgnoreCase (nbm.getParentFile ().getParentFile ().getName ()) : nbm + " is in directory " + UPDATE_DIR;
+            assert UpdaterDispatcher.UPDATE_DIR.equalsIgnoreCase (nbm.getParentFile ().getParentFile ().getName ()) :
+                nbm + " is in directory " + UpdaterDispatcher.UPDATE_DIR;
             assert nbm.getParentFile ().getParentFile ().getParentFile () != null : nbm.getParentFile ().getParentFile () + " has parent.";
             
             cluster = nbm.getParentFile ().getParentFile ().getParentFile ();
@@ -219,13 +227,12 @@ public final class ModuleUpdater extends Thread {
         }
         UpdaterFrame.setProgressRange (0, allFiles.size ());
 
-        int i = 1;
+        int i = 0;
         for (File f : allFiles) {
 
             JarFile jarFile = null;
 
             try {
-                UpdaterFrame.setProgressValue (i ++);
                 jarFile = new JarFile (f);
                 Enumeration<JarEntry> entries = jarFile.entries ();
                 while (entries.hasMoreElements ()) {
@@ -237,6 +244,7 @@ public final class ModuleUpdater extends Thread {
                         totalLength += entry.getSize ();
                     }
                 }
+                UpdaterFrame.setProgressValue (i ++);
             } catch (java.io.IOException e) {
                 System.out.println ("Error: Counting size of entries in " + f + " throws " + e);
             } finally {
@@ -352,10 +360,10 @@ public final class ModuleUpdater extends Thread {
                         }
                     }
                     if ( hasMainClass ) {                    
-                        MainConfig mconfig = new MainConfig (getMainDirString (cluster) + FILE_SEPARATOR + JVM_PARAMS_FILE, cluster);
+                        MainConfig mconfig = new MainConfig (getMainDirString (cluster) + UpdateTracking.FILE_SEPARATOR + JVM_PARAMS_FILE, cluster);
                         if (mconfig.isValid()) {
-                            String java_path = System.getProperty ("java.home") + FILE_SEPARATOR
-                                + "bin"  + FILE_SEPARATOR + "java";                              // NOI18N
+                            String java_path = System.getProperty ("java.home") + UpdateTracking.FILE_SEPARATOR
+                                + "bin"  + UpdateTracking.FILE_SEPARATOR + "java";                              // NOI18N
                             java_path = quoteString( java_path );
                             String torun = java_path + " -cp " + quoteString (getMainDirString (cluster) + mconfig.getClasspath() ) + mconfig.getCommand();  // NOI18N
                             startCommand(torun);
@@ -450,7 +458,7 @@ public final class ModuleUpdater extends Thread {
     /** Gets the netbeans directory */
     private File getMainDirectory (File activeCluster) {
         // #72918: Post-install cannot write into platform cluster
-        File mainDirectory = new File (activeCluster, FILE_SEPARATOR + UPDATE_DIR + FILE_SEPARATOR + UPDATE_MAIN_DIR);
+        File mainDirectory = new File (activeCluster, UpdateTracking.FILE_SEPARATOR + UpdaterDispatcher.UPDATE_DIR + UpdateTracking.FILE_SEPARATOR + UPDATE_MAIN_DIR);
         if (! mainDirectory.isDirectory ()) {
             mainDirectory.mkdirs();
         }
@@ -531,37 +539,6 @@ public final class ModuleUpdater extends Thread {
         }
         return progressVal;
 
-    }
-
-    /** Test whether the user has rights to write into directory */
-
-    private static boolean canWrite( File dir, boolean create ) {
-        if ( !dir.exists() && create )
-
-            dir.mkdirs();
-
-        if ( !dir.isDirectory() || !dir.canWrite() )
-            return false;
-
-
-
-        File tmp = null;
-
-        try {
-            tmp = File.createTempFile( "test", "access", dir ); // NOI18N
-        }
-        catch ( java.io.IOException e ) {
-            return false;
-        }
-
-        if ( tmp == null )
-            return false;
-
-        boolean cw = tmp.canWrite();
-        if (cw)
-            tmp.delete();
-
-        return cw;
     }
 
     private void deleteDir(File dir) {
@@ -790,9 +767,9 @@ public final class ModuleUpdater extends Thread {
             relpath = details.getProperty(PAR_RELCP,null);
             if (relpath != null) {
                 relpath = replaceVars( relpath );
-                StringTokenizer token = new StringTokenizer( relpath, PATH_SEPARATOR, false );
+                StringTokenizer token = new StringTokenizer( relpath, UpdateTracking.PATH_SEPARATOR, false );
                 while ( token.hasMoreTokens() ) {
-                    classpath = classpath + PATH_SEPARATOR + changeRelative( token.nextToken() );
+                    classpath = classpath + UpdateTracking.PATH_SEPARATOR + changeRelative( token.nextToken() );
                 }
             }
         
@@ -821,7 +798,7 @@ public final class ModuleUpdater extends Thread {
             original = replaceAll(original,VAR_IDE_USER,
                 org.netbeans.updater.UpdateTracking.getPlatformDir ().getPath());            
             original = replaceAll(original,VAR_FILE_SEPARATOR,
-                FILE_SEPARATOR);            
+                UpdateTracking.FILE_SEPARATOR);            
             original = replaceAll(original,VAR_JAVA_HOME,
                 System.getProperty ("java.home"));
             return original;
@@ -831,7 +808,7 @@ public final class ModuleUpdater extends Thread {
             if ( new File( path ).isAbsolute() )
                 return path;
             else
-                return getMainDirString (this.activeCluster) + FILE_SEPARATOR + path;
+                return getMainDirString (this.activeCluster) + UpdateTracking.FILE_SEPARATOR + path;
         }
         
         
@@ -854,7 +831,7 @@ public final class ModuleUpdater extends Thread {
      * @param File root of cluster
      * @return List<File> of nbm files
      */
-    private static Set<File> getModulesToInstall (File cluster) {
+    public static Set<File> getModulesToInstall (File cluster) {
         
         class NbmFilter implements java.io.FilenameFilter {
             public boolean accept (File dir, String name) {

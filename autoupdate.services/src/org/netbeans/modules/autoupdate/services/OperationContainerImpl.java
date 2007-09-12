@@ -54,11 +54,17 @@ public final class OperationContainerImpl<Support> {
     public static OperationContainerImpl<OperationSupport> createForUninstall () {
         return new OperationContainerImpl<OperationSupport> (OperationType.UNINSTALL);
     }
+    public static OperationContainerImpl<OperationSupport> createForDirectUninstall () {
+        return new OperationContainerImpl<OperationSupport> (OperationType.DIRECT_UNINSTALL);
+    }
     public static OperationContainerImpl<OperationSupport> createForEnable () {
         return new OperationContainerImpl<OperationSupport> (OperationType.ENABLE);
     }
     public static OperationContainerImpl<OperationSupport> createForDisable () {
         return new OperationContainerImpl<OperationSupport> (OperationType.DISABLE);
+    }
+    public static OperationContainerImpl<OperationSupport> createForDirectDisable () {
+        return new OperationContainerImpl<OperationSupport> (OperationType.DIRECT_DISABLE);
     }
     public static OperationContainerImpl<OperationSupport> createForInstallNativeComponent () {
         return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_INSTALL);
@@ -73,21 +79,33 @@ public final class OperationContainerImpl<Support> {
         if (!isValid) {
             throw new IllegalArgumentException ("Invalid " + updateElement.getCodeName () + " for operation " + type);
         }
-        if (type == OperationType.INSTALL || type == OperationType.UPDATE) {
-            if (UpdateUnitFactory.getDefault().isScheduledForRestart (updateElement)) {
-                Logger.getLogger(this.getClass ().getName ()).log (Level.INFO, updateElement + " is scheduled for restart IDE.");
-                return null;
-            }
+        if (UpdateUnitFactory.getDefault().isScheduledForRestart (updateElement)) {
+            Logger.getLogger(this.getClass ().getName ()).log (Level.INFO, updateElement + " is scheduled for restart IDE.");
+            return null;
         }
         if (isValid) {
-            if (type == OperationType.UNINSTALL || type == OperationType.ENABLE || type == OperationType.DISABLE) {
+            switch (type) {
+            case UNINSTALL :
+            case DIRECT_UNINSTALL :
+            case CUSTOM_UNINSTALL :
+            case ENABLE :
+            case DISABLE :
+            case DIRECT_DISABLE :
                 if (updateUnit.getInstalled () != updateElement) {
-                    throw new IllegalArgumentException (updateUnit.getInstalled () + " and " + updateElement + "must be same for operation " + type);
+                    throw new IllegalArgumentException (updateUnit.getInstalled () +
+                            " and " + updateElement + " must be same for operation " + type);
                 }
-            } else {
+                break;
+            case INSTALL :
+            case UPDATE :
+            case CUSTOM_INSTALL:
                 if (updateUnit.getInstalled () == updateElement) {
-                    throw new IllegalArgumentException (updateUnit.getInstalled () + " and " + updateElement + "cannot be same for operation " + type);
+                    throw new IllegalArgumentException (updateUnit.getInstalled () +
+                            " and " + updateElement + " cannot be same for operation " + type);
                 }
+                break;
+            default:
+                assert false : "Unknown type of operation " + type;
             }
         }
         synchronized(this) {
@@ -272,6 +290,8 @@ public final class OperationContainerImpl<Support> {
         INSTALL,
         /** Uninstall <code>UpdateElement</code> */
         UNINSTALL,
+        /** Uninstall <code>UpdateElement</code> on-the-fly */
+        DIRECT_UNINSTALL,
         /** Update installed <code>UpdateElement</code> to newer version. */
         UPDATE,
         /** Rollback installed <code>UpdateElement</code> to previous version. */
@@ -279,6 +299,8 @@ public final class OperationContainerImpl<Support> {
         /** Enable <code>UpdateElement</code> */
         ENABLE,
         /** Disable <code>UpdateElement</code> */
+        DIRECT_DISABLE,
+        /** Disable <code>UpdateElement</code> on-the-fly */
         DISABLE,
         /** Install <code>UpdateElement</code> with custom installer. */
         CUSTOM_INSTALL,

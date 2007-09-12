@@ -102,6 +102,15 @@ public final class UpdateUnit {
         return impl.getType ();
     }
     
+    /** Returns if the <code>UpdateUnit</code> is in a pending state.
+     * State of this unit will be changed while restart IDE.
+     * 
+     * @return true of UpdateUnit is pending
+     */
+    public boolean isPending () {
+        return impl.isPending ();
+    }
+    
     public boolean equals(Object obj) {
         if (obj == null)
             return false;

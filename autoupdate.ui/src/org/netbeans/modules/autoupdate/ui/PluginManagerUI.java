@@ -66,6 +66,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         initTask = Utilities.startAsWorkerThread (new Runnable () {
             public void run () {
                 initialize ();
+                setSelectedTab();
             }
         });
     }
@@ -189,6 +190,17 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
             });
         }
     }
+
+    private UnitTable createTabForModel(UnitCategoryTableModel model) {
+        UnitTable table = new UnitTable(model);
+        selectFirstRow(table);
+        
+        UnitTab tab = new UnitTab(table, new UnitDetails(), this);
+        tab.addUpdateUnitListener(this);
+        tpTabs.add(tab, model.getTabIndex());
+        decorateTabTitle(table);
+        return table;
+    }
     
     private void setProgressComponentInAwt (JLabel detail, JComponent progressComponent) {
         assert pProgress != null;
@@ -219,6 +231,28 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                     unsetProgressComponentInAwt (detail, progressComponent);
                 }
             });
+        }
+    }
+
+    private void setSelectedTab() {
+        Component component = tpTabs.getSelectedComponent();
+        if (component instanceof UnitTab) {
+            UnitTab unitTab = (UnitTab) component;
+            if (!unitTab.getModel().isTabEnabled()) {
+                for (int i = 0; i < tpTabs.getComponentCount(); i++) {
+                    component = tpTabs.getComponentAt(i);
+                    if (component instanceof UnitTab) {
+                        unitTab = (UnitTab) component;
+                        if (unitTab.getModel().isTabEnabled() && unitTab.getModel().canBePrimaryTab()) {
+                            tpTabs.setSelectedIndex(i);
+                            break;
+                        }
+                    } else {
+                        tpTabs.setSelectedIndex(i);
+                        break;                        
+                    }
+                }
+            }
         }
     }
     
@@ -297,49 +331,22 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
     
     private void postInitComponents () {
         Containers.initNotify ();
-        installedTable = new UnitTable (new InstalledTableModel (units));
-        updateTable = new UnitTable (new UpdateTableModel (units));
-        availableTable = new UnitTable (new AvailableTableModel (units));
-        localTable = new UnitTable (new LocallyDownloadedTableModel (new LocalDownloadSupport()));
-        selectFirstRow (installedTable);
-        selectFirstRow (updateTable);
-        selectFirstRow (availableTable);
-        
-        UnitTab updateTab = new UnitTab (updateTable, new UnitDetails (), this);
-        updateTab.addUpdateUnitListener (this);
-        tpTabs.add (NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"), updateTab);
-        
-        UnitTab availableTab = new UnitTab (availableTable, new UnitDetails (), this);
-        availableTab.addUpdateUnitListener (this);
-        tpTabs.add (NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"), availableTab);
-        
-        UnitTab localTab = new UnitTab (localTable, new UnitDetails (), this);
-        localTab.addUpdateUnitListener (this);
-        tpTabs.add (NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"), localTab);
-        
-        UnitTab installedTab = new UnitTab (installedTable, new UnitDetails (), this);
-        installedTab.addUpdateUnitListener (this);
-        tpTabs.add (NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"), installedTab);
+        updateTable = createTabForModel(new UpdateTableModel(units));
+        availableTable = createTabForModel(new AvailableTableModel (units));
+        localTable = createTabForModel(new LocallyDownloadedTableModel (new LocalDownloadSupport()));
+        installedTable = createTabForModel(new InstalledTableModel(units));
         
         SettingsTab tab = new SettingsTab (this);
-        tpTabs.add (tab.getDisplayName(), tab);
-        
-        decorateTitle (0, updateTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
-        decorateTitle (1, availableTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));
-        decorateTitle (2, localTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"));
-        decorateTitle (3, installedTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"));
+        tpTabs.add (tab,4);
+        tpTabs.setTitleAt(4, tab.getDisplayName());        
     }
     
-    private void decorateTitle (int index, JTable table, String originalName) {
-        TableModel model = table.getModel ();
-        assert model instanceof UnitCategoryTableModel : model + " is instanceof UnitCategoryTableModel.";
-        UnitCategoryTableModel catModel = (UnitCategoryTableModel) model;
-        int count = catModel.getItemCount ();
-        int rawCount = catModel.getRawItemCount ();
-        String countInfo = (count == rawCount) ? String.valueOf (rawCount) :
-            NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_CountFormat", count, rawCount);
-        String newName = NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_NameFormat", originalName, countInfo);
-        tpTabs.setTitleAt (index, rawCount == 0 ? originalName : newName);
+    private void decorateTabTitle (UnitTable table) {
+        UnitCategoryTableModel model = (UnitCategoryTableModel)table.getModel();
+        int index = model.getTabIndex();
+        tpTabs.setTitleAt (index, model.getDecoratedTabTitle());
+        tpTabs.setEnabledAt(index, model.isTabEnabled());
+        tpTabs.setToolTipTextAt(index, model.getTabTooltipText()); // NOI18N
     }
     
     private int findRowWithFirstUnit (UnitCategoryTableModel model) {
@@ -385,10 +392,10 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
             selectFirstRow(updateTable);
             selectFirstRow(availableTable);
             selectFirstRow(localTable);
-            decorateTitle(0, updateTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
-            decorateTitle(1, availableTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));
-            decorateTitle(2, localTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"));
-            decorateTitle(3, installedTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"));
+            decorateTabTitle(updateTable);
+            decorateTabTitle(availableTable);
+            decorateTabTitle(localTable);
+            decorateTabTitle(installedTable);
             Component[] components = tpTabs.getComponents();
             for (Component component : components) {
                 if (component instanceof UnitTab) {
@@ -396,8 +403,8 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
                     tab.refreshState();
                 }
             }
-
-        }
+            setSelectedTab();
+        }        
     }
         
     private LocalDownloadSupport getLocalDownloadSupport() {

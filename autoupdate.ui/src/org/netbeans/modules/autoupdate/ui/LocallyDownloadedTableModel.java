@@ -242,4 +242,21 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private String getBundle (String key) {
         return NbBundle.getMessage (this.getClass (), key);
     }
+
+    public String getTabTitle() {
+        return NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title");//NOI18N
+    }
+
+    public int getTabIndex() {
+        return 2;
+    }
+    
+    @Override
+    public boolean canBePrimaryTab() {
+        return false;
+    }
+
+    public boolean needsRestart () {
+        return false;
+    }
 }

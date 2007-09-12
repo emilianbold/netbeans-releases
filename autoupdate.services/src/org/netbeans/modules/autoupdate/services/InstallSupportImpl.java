@@ -54,13 +54,14 @@ import java.util.logging.Logger;
 import org.netbeans.Module;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.InstallSupport.Restarter;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.updater.ModuleDeactivator;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -226,7 +227,10 @@ public class InstallSupportImpl {
         }
         return retval;
     }
-
+    
+    private Set<ModuleUpdateElementImpl> affectedModuleImpls = null;
+    private Set<FeatureUpdateElementImpl> affectedFeatureImpls = null; 
+    
     public Boolean doInstall (final Installer installer, final ProgressHandle progress/*or null*/) throws OperationException {
         assert installer != null;
         Callable<Boolean> installCallable = new Callable<Boolean>() {
@@ -238,8 +242,8 @@ public class InstallSupportImpl {
                 }
                 assert support.getContainer ().listInvalid ().isEmpty () : "listInvalid() isEmpty() but " + support.getContainer ().listInvalid ();
                 List<OperationInfo<InstallSupport>> infos = support.getContainer().listAll();
-                Set<ModuleUpdateElementImpl> moduleImpls = new HashSet<ModuleUpdateElementImpl> ();
-                Set<FeatureUpdateElementImpl> affectedFeatureImpls = new HashSet<FeatureUpdateElementImpl> ();
+                affectedModuleImpls = new HashSet<ModuleUpdateElementImpl> ();
+                affectedFeatureImpls = new HashSet<FeatureUpdateElementImpl> ();
                 
                 if (progress != null) progress.start();
                 
@@ -248,12 +252,12 @@ public class InstallSupportImpl {
                     switch (toUpdateImpl.getType ()) {
                     case KIT_MODULE :
                     case MODULE :
-                        moduleImpls.add ((ModuleUpdateElementImpl) toUpdateImpl);
+                        affectedModuleImpls.add ((ModuleUpdateElementImpl) toUpdateImpl);
                         break;
                     case STANDALONE_MODULE :
                     case FEATURE :
                         affectedFeatureImpls.add ((FeatureUpdateElementImpl) toUpdateImpl);
-                        moduleImpls.addAll (((FeatureUpdateElementImpl) toUpdateImpl).getContainedModuleElements ());
+                        affectedModuleImpls.addAll (((FeatureUpdateElementImpl) toUpdateImpl).getContainedModuleElements ());
                         break;
                     default:
                         // XXX: what other types
@@ -262,7 +266,7 @@ public class InstallSupportImpl {
                 }
                 
                 boolean needsRestart = false;
-                for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
+                for (ModuleUpdateElementImpl moduleImpl : affectedModuleImpls) {
                     synchronized(this) {
                         if (currentStep == STEP.CANCEL) {
                             if (progress != null) progress.finish ();
@@ -289,64 +293,51 @@ public class InstallSupportImpl {
                     needsRestart |= needsRestart(installed != null, moduleImpl, dest);
                 }
                 
-                // store source of installed files
-                Utilities.writeAdditionalInformation (getElement2Clusters ());
-                
-                if (! needsRestart) {
-                    synchronized(this) {
-                        if (currentStep == STEP.CANCEL) {
-                            if (progress != null) progress.finish ();
-                            return false;
-                        }
-                    }
-                    
-                    if (progress != null) progress.switchToDeterminate (moduleImpls.size ());
-
-                    if (! getDownloadedFiles ().isEmpty ()) {
-                        
-                        // XXX: should run in single Thread
-                        Thread th = org.netbeans.updater.UpdaterFrame.runFromIDE(
-                                getDownloadedFiles (),
-                                new RefreshModulesListener (progress),
-                                NbBundle.getBranding(), false);
-                        
-                        try {
-                            th.join();
-                            for (ModuleUpdateElementImpl impl : moduleImpls) {
-                                int rerunWaitCount = 0;
-                                Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
-                                // XXX: consider again this
-                                for (; rerunWaitCount < 100 && (module == null || !module.isEnabled()); rerunWaitCount++) {
-                                    Thread.sleep(100);
-                                    module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
-                                }
-                                if (rerunWaitCount == 100) {
-                                    err.log (Level.INFO, "Overflow checks of installed module " + module);
-                                    th.interrupt();
-                                    break;
-                                }
-                            }
-                        } catch(InterruptedException ie) {
-                            err.log (Level.INFO, ie.getMessage (), ie);
-                            th.interrupt();
-                        }
-                    }
-                } else {
-                    for (ModuleUpdateElementImpl impl : moduleImpls) {
-                        UpdateUnitFactory.getDefault ().scheduleForRestart (impl.getUpdateElement ());
-                    }
-                }
-                
                 try {
-                    for (ModuleUpdateElementImpl impl : moduleImpls) {
-                        UpdateUnit u = impl.getUpdateUnit ();
-                        UpdateElement el = impl.getUpdateElement ();
-                        Trampoline.API.impl(u).updateInstalled(el);
-                    }
-                    for (FeatureUpdateElementImpl impl : affectedFeatureImpls) {
-                        UpdateUnit u = impl.getUpdateUnit ();
-                        UpdateElement el = impl.getUpdateElement ();
-                        Trampoline.API.impl(u).updateInstalled(el);
+                    // store source of installed files
+                    Utilities.writeAdditionalInformation (getElement2Clusters ());
+
+                    if (! needsRestart) {
+                        synchronized(this) {
+                            if (currentStep == STEP.CANCEL) {
+                                if (progress != null) progress.finish ();
+                                return false;
+                            }
+                        }
+
+                        if (progress != null) progress.switchToDeterminate (affectedModuleImpls.size ());
+
+                        if (! getDownloadedFiles ().isEmpty ()) {
+
+                            // XXX: should run in single Thread
+                            Thread th = org.netbeans.updater.UpdaterFrame.runFromIDE(
+                                    getDownloadedFiles (),
+                                    new RefreshModulesListener (progress),
+                                    NbBundle.getBranding(), false);
+
+                            try {
+                                th.join();
+                                for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
+                                    int rerunWaitCount = 0;
+                                    Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
+                                    // XXX: consider again this
+                                    for (; rerunWaitCount < 100 && (module == null || !module.isEnabled()); rerunWaitCount++) {
+                                        Thread.sleep(100);
+                                        module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
+                                    }
+                                    if (rerunWaitCount == 100) {
+                                        err.log (Level.INFO, "Overflow checks of installed module " + module);
+                                        th.interrupt();
+                                        break;
+                                    }
+                                }
+                            } catch(InterruptedException ie) {
+                                err.log (Level.INFO, ie.getMessage (), ie);
+                                th.interrupt();
+                            }
+                        }
+                        afterInstall ();
+                        downloadedFiles = null;
                     }
                 } finally {
                     // end progress
@@ -375,6 +366,28 @@ public class InstallSupportImpl {
         }
         return retval;
     }
+    
+    private void afterInstall () {
+        
+        if (affectedModuleImpls != null) {
+            for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
+                UpdateUnit u = impl.getUpdateUnit ();
+                UpdateElement el = impl.getUpdateElement ();
+                Trampoline.API.impl(u).updateInstalled(el);
+            }
+            affectedModuleImpls = null;
+        }
+        
+        if (affectedFeatureImpls != null) {
+            for (FeatureUpdateElementImpl impl : affectedFeatureImpls) {
+                UpdateUnit u = impl.getUpdateUnit ();
+                UpdateElement el = impl.getUpdateElement ();
+                Trampoline.API.impl(u).updateInstalled(el);
+            }
+            affectedFeatureImpls = null;
+        }
+        
+    }
 
     public void doRestart (Restarter validator,ProgressHandle progress/*or null*/) throws OperationException {
         synchronized(this) {
@@ -382,13 +395,20 @@ public class InstallSupportImpl {
             if (currentStep == STEP.CANCEL) return;
             currentStep = STEP.RESTART;
         }        
-        Utilities.deleteInstall_Later();
+        Utilities.deleteAllDoLater ();
         getElement2Clusters ().clear ();
         LifecycleManager.getDefault ().exit ();
     }
     
-    public void doRestartLater(Restarter restarter) {    
-        Utilities.writeInstall_Later(new HashMap<UpdateElementImpl, File>(getElement2Clusters ()));
+    public void doRestartLater(Restarter restarter) {
+        // schedule module for install later
+        if (affectedModuleImpls != null) {
+            for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
+                UpdateUnitFactory.getDefault ().scheduleForRestart (impl.getUpdateElement ());
+            }
+        }
+
+        Utilities.writeInstallLater(new HashMap<UpdateElementImpl, File>(getElement2Clusters ()));
         getElement2Clusters ().clear ();
     }
 
@@ -480,6 +500,8 @@ public class InstallSupportImpl {
             }
         }
         getDownloadedFiles ().clear ();
+        if (affectedFeatureImpls != null) affectedFeatureImpls = null;
+        if (affectedModuleImpls != null) affectedModuleImpls = null;
         
         // also mapping elements to cluster clear because global vs. local may be changed
         getElement2Clusters ().clear ();
@@ -783,7 +805,7 @@ public class InstallSupportImpl {
                 }
             } else if (org.netbeans.updater.UpdaterFrame.FINISHED.equals (arg0.getPropertyName ())){
                 // XXX: the modules list should be refresh automatically when config/Modules/ changes
-                final FileObject modulesRoot = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); // NOI18N
+                final FileObject modulesRoot = Repository.getDefault().getDefaultFileSystem().findResource(ModuleDeactivator.MODULES);
                 err.log(Level.FINE,
                         "It\'s a hack: Call refresh on " + modulesRoot +
                         " file object.");

@@ -28,10 +28,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -58,12 +60,12 @@ public final class ModuleDeleterImpl  {
     private static final ModuleDeleterImpl INSTANCE = new ModuleDeleterImpl();
     private static final String ELEMENT_MODULE = "module"; // NOI18N
     private static final String ELEMENT_VERSION = "module_version"; // NOI18N
-    private static final String ATTR_ORIGIN = "origin"; // NOI18N
     private static final String ATTR_LAST = "last"; // NOI18N
     private static final String ATTR_FILE_NAME = "name"; // NOI18N
-    private static final boolean ONLY_FROM_AUTOUPDATE = false;
     
-    private Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services"); // NOI18N
+    private Logger err = Logger.getLogger (ModuleDeleterImpl.class.getName ()); // NOI18N
+    
+    private Set<File> storageFilesForDelete = null;
     
     public static ModuleDeleterImpl getInstance() {
         return INSTANCE;
@@ -78,14 +80,74 @@ public final class ModuleDeleterImpl  {
                     "Cannot delete module because module " +
                     moduleInfo.getCodeName() + " isEssentialModule.");
         }
-        return isUninstallAllowed (moduleInfo) && findUpdateTracking (moduleInfo, ONLY_FROM_AUTOUPDATE);
+        return isUninstallAllowed (moduleInfo) && findUpdateTracking (moduleInfo);
     }
     
     private static boolean isUninstallAllowed(final ModuleInfo m) {
         return ! (Utilities.isEssentialModule (m));
     }
     
+    public Collection<File> markForDisable (Collection<ModuleInfo> modules, ProgressHandle handle) {
+        if (modules == null) {
+            throw new IllegalArgumentException ("ModuleInfo argument cannot be null.");
+        }
+        
+        if (handle != null) {
+            handle.switchToDeterminate (modules.size() + 1);
+        }
+        
+        Collection<File> configs = new HashSet<File> ();
+        int i = 0;
+        for (ModuleInfo moduleInfo : modules) {
+            File config = locateConfigFile (moduleInfo);
+            assert config != null : "Located config file for " + moduleInfo.getCodeName ();
+            assert config.exists () : config + " config file must exists for " + moduleInfo.getCodeName ();
+            err.log(Level.FINE, "Locate config file of " + moduleInfo.getCodeNameBase () + ": " + config);
+            configs.add (config);
+            if (handle != null) {
+                handle.progress (++i);
+            }
+        }
+
+        return configs;
+    }
+    
+    public Collection<File> markForDelete (Collection<ModuleInfo> modules, ProgressHandle handle) throws IOException {
+        storageFilesForDelete = null;
+        if (modules == null) {
+            throw new IllegalArgumentException ("ModuleInfo argument cannot be null.");
+        }
+        
+        if (handle != null) {
+            handle.switchToDeterminate (modules.size() + 1);
+        }
+
+        Collection<File> configFiles = new HashSet<File> ();
+        int i = 0;
+        for (ModuleInfo moduleInfo : modules) {
+            Collection<File> configs = locateAllConfigFiles (moduleInfo);
+            assert configs != null : "Located config files for " + moduleInfo.getCodeName ();
+            assert ! configs.isEmpty () : configs + " config files must exists for " + moduleInfo.getCodeName ();
+            configFiles.addAll (configs);
+            err.log(Level.FINE, "Locate config files of " + moduleInfo.getCodeNameBase () + ": " + configs);
+            if (handle != null) {
+                handle.progress (++i);
+            }
+        }
+        getStorageFilesForDelete ().addAll (configFiles);
+        
+        for (ModuleInfo moduleInfo : modules) {
+            removeModuleFiles(moduleInfo, true); 
+            if (handle != null) {
+                handle.progress (++i);
+            }
+
+        }
+        return getStorageFilesForDelete ();
+    }
+    
     public void delete (final ModuleInfo[] modules, ProgressHandle handle) throws IOException {
+        storageFilesForDelete = null;
         if (modules == null) {
             throw new IllegalArgumentException ("ModuleInfo argument cannot be null.");
         }
@@ -97,7 +159,7 @@ public final class ModuleDeleterImpl  {
         
         for (ModuleInfo moduleInfo : modules) {
             err.log(Level.FINE,"Locate and remove config file of " + moduleInfo.getCodeNameBase ());
-            removeControlModuleFile(moduleInfo);
+            removeControlModuleFile(moduleInfo, false);
         }
 
         if (handle != null) {
@@ -105,7 +167,6 @@ public final class ModuleDeleterImpl  {
         }
         
         refreshModuleList ();
-        
         
         int rerunWaitCount = 0;
         for (ModuleInfo moduleInfo : modules) {
@@ -115,13 +176,13 @@ public final class ModuleDeleterImpl  {
             }
             for (; rerunWaitCount < 100 && !isModuleUninstalled(moduleInfo); rerunWaitCount++) {
                 try {
-                    Thread.currentThread().sleep(100);
+                    Thread.sleep(100);
                 } catch (InterruptedException ex) {
                     err.log (Level.INFO, "Overflow checks of uninstalled module " + moduleInfo.getCodeName ());
                     Thread.currentThread().interrupt();
                 }
             }
-            removeModuleFiles(moduleInfo); 
+            removeModuleFiles(moduleInfo, false); 
         }
     }
     
@@ -129,18 +190,36 @@ public final class ModuleDeleterImpl  {
         return (InstalledModuleProvider.getInstalledModules ().get (moduleInfo.getCodeNameBase()) == null);
     }
 
-    private File locateControlFile (ModuleInfo m) {
-        String configFile = "config" + '/' + "Modules" + '/' + m.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
+    private File locateConfigFile (ModuleInfo m) {
+        String configFile = ModuleDeactivator.CONFIG + '/' + ModuleDeactivator.MODULES + '/' + m.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
         return InstalledFileLocator.getDefault ().locate (configFile, m.getCodeNameBase (), false);
     }
     
-    private void removeControlModuleFile (ModuleInfo m) throws IOException {
+    private Collection<File> locateAllConfigFiles (ModuleInfo m) {
+        Collection<File> configFiles = new HashSet<File> ();
+        String configFileName = m.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
+        for (File cluster : UpdateTracking.clusters (true)) {
+            File configFile = new File (new File (new File (cluster, ModuleDeactivator.CONFIG), ModuleDeactivator.MODULES), configFileName);
+            if (configFile.exists ()) {
+                configFiles.add (configFile);
+            }
+        }
+        return configFiles;
+    }
+    
+    private void removeControlModuleFile (ModuleInfo m, boolean markForDelete) throws IOException {
         File configFile = null;
-        while ((configFile = locateControlFile (m)) != null) {
+        while ((configFile = locateConfigFile (m)) != null && ! getStorageFilesForDelete ().contains (configFile)) {
             if (configFile != null && configFile.exists ()) {
-                err.log(Level.FINE, "Try delete the config File " + configFile);
                 //FileUtil.toFileObject (configFile).delete ();
-                configFile.delete();
+                if (markForDelete) {
+                    err.log(Level.FINE, "Control file " + configFile + " is marked for delete.");
+                    getStorageFilesForDelete ().add (configFile);
+                } else {
+                    err.log(Level.FINE, "Try delete the config File " + configFile);
+                    configFile.delete ();
+                    err.log(Level.FINE, "Control file " + configFile + " is deleted.");
+                }
             } else {
                 err.log(Level.FINE,
                         "Warning: Config File " + configFile + " doesn\'t exist!");
@@ -148,7 +227,7 @@ public final class ModuleDeleterImpl  {
         }
     }
     
-    private boolean findUpdateTracking (ModuleInfo moduleInfo, boolean checkIfFromAutoupdate) {
+    private boolean findUpdateTracking (ModuleInfo moduleInfo) {
         File updateTracking = Utilities.locateUpdateTracking (moduleInfo);
         if (updateTracking != null && updateTracking.exists ()) {
             //err.log ("Find UPDATE_TRACKING: " + updateTracking + " found.");
@@ -160,15 +239,7 @@ public final class ModuleDeleterImpl  {
                         updateTracking.getParent());
                 return false;
             }
-            if (checkIfFromAutoupdate) {
-                boolean isFromAutoupdate = fromAutoupdate (getModuleConfiguration (updateTracking));
-                err.log(Level.FINE,
-                        "Is ModuleInfo " + moduleInfo.getCodeName() +
-                        " installed by AutoUpdate? " + isFromAutoupdate);
-                return isFromAutoupdate;
-            } else {
-                return true;
-            }
+            return true;
         } else {
             err.log(Level.FINE,
                     "Cannot delete module " + moduleInfo.getCodeName() +
@@ -177,30 +248,26 @@ public final class ModuleDeleterImpl  {
         }
     }
             
-    private boolean fromAutoupdate (Node moduleNode) {
-        Node attrOrigin = moduleNode.getAttributes ().getNamedItem (ATTR_ORIGIN);
-        assert attrOrigin != null : "ELEMENT_VERSION must contain ATTR_ORIGIN attribute.";
-        String origin = attrOrigin.getNodeValue ();
-        return UpdateTracking.UPDATER_ORIGIN.equals (origin);
-    }
-    
-    private void removeModuleFiles (ModuleInfo m) throws IOException {
+    private void removeModuleFiles (ModuleInfo m, boolean markForDelete) throws IOException {
         err.log (Level.FINE, "Entry removing files of module " + m);
         File updateTracking = null;
-        while ((updateTracking = Utilities.locateUpdateTracking (m)) != null) {
-            removeModuleFilesInCluster (m, updateTracking);
+        while ((updateTracking = Utilities.locateUpdateTracking (m)) != null && ! getStorageFilesForDelete ().contains (updateTracking)) {
+            removeModuleFilesInCluster (m, updateTracking, markForDelete);
         }
         err.log (Level.FINE, "Exit removing files of module " + m);
     }
     
-    private void removeModuleFilesInCluster (ModuleInfo moduleInfo, File updateTracking) throws IOException {
+    private void removeModuleFilesInCluster (ModuleInfo moduleInfo, File updateTracking, boolean markForDelete) throws IOException {
         err.log(Level.FINE, "Read update_tracking " + updateTracking + " file.");
         Set<String> moduleFiles = readModuleFiles (getModuleConfiguration (updateTracking));
-        String configFile = "config" + '/' + "Modules" + '/' + moduleInfo.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
+        String configFile = ModuleDeactivator.CONFIG + '/' + ModuleDeactivator.MODULES + '/' + moduleInfo.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
+        
         if (moduleFiles.contains (configFile)) {
             File file = InstalledFileLocator.getDefault ().locate (configFile, moduleInfo.getCodeNameBase (), false);
-            assert file == null || ! file.exists () : "Config file " + configFile + " must be already removed.";
+            assert file == null || ! file.exists () ||
+                    getStorageFilesForDelete ().contains (file): "Config file " + configFile + " must be already removed or marked for remove.";
         }
+        
         for (String fileName : moduleFiles) {
             if (fileName.equals (configFile)) {
                 continue;
@@ -215,33 +282,46 @@ public final class ModuleDeleterImpl  {
             }
             assert file.exists () : "File " + file + " exists.";
             if (file.exists ()) {
-                err.log(Level.FINE, "File " + file + " is deleted.");
-                try {
-                    FileObject fo = FileUtil.toFileObject (file);
-                    //assert fo != null || !file.exists() : file.getAbsolutePath();
-                    if (fo != null) {
-                        fo.lock().releaseLock();
+                if (markForDelete) {
+                    err.log(Level.FINE, "File " + file + " is marked for delete.");
+                    getStorageFilesForDelete ().add (file);
+                } else {
+                    try {
+                        FileObject fo = FileUtil.toFileObject (file);
+                        //assert fo != null || !file.exists() : file.getAbsolutePath();
+                        if (fo != null) {
+                            fo.lock().releaseLock();
+                        }
+                        File f = file;
+                        while (f.delete()) {
+                            f = f.getParentFile(); // remove empty dirs too
+                        }
+                    } catch (IOException ioe) {
+                        assert false : "Waring: IOException " + ioe.getMessage () + " was caught. Propably file lock on the file.";
+                        err.log(Level.FINE,
+                                "Waring: IOException " + ioe.getMessage() +
+                                " was caught. Propably file lock on the file.");
+                        err.log(Level.FINE,
+                                "Try call File.deleteOnExit() on " + file);
+                        file.deleteOnExit ();
                     }
-                    File f = file;
-                    while (f.delete()) {
-                        f = f.getParentFile(); // remove empty dirs too
-                    }
-                } catch (IOException ioe) {
-                    assert false : "Waring: IOException " + ioe.getMessage () + " was caught. Propably file lock on the file.";
-                    err.log(Level.FINE,
-                            "Waring: IOException " + ioe.getMessage() +
-                            " was caught. Propably file lock on the file.");
-                    err.log(Level.FINE,
-                            "Try call File.deleteOnExit() on " + file);
-                    file.deleteOnExit ();
+                    err.log(Level.FINE, "File " + file + " is deleted.");
                 }
             }
         }
+        
         FileObject trackingFo = FileUtil.toFileObject (updateTracking);
         FileLock lock = null;
+        
         try {
-        lock = (trackingFo != null) ? trackingFo.lock() : null;        
-        updateTracking.delete ();
+            lock = (trackingFo != null) ? trackingFo.lock() : null;        
+            if (markForDelete) {
+                err.log(Level.FINE, "Tracking file " + updateTracking + " is marked for delete.");
+                getStorageFilesForDelete ().add (updateTracking);
+            } else {
+                updateTracking.delete ();
+                err.log(Level.FINE, "Tracking file " + updateTracking + " is deleted.");
+            }
         } finally {
             if (lock != null) {
                 lock.releaseLock();
@@ -311,10 +391,17 @@ public final class ModuleDeleterImpl  {
 
     private void refreshModuleList () {
         // XXX: the modules list should be delete automatically when config/Modules/module.xml is removed
-        FileObject modulesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules"); // NOI18N
+        FileObject modulesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource (ModuleDeactivator.MODULES); // NOI18N
         err.log (Level.FINE, "Call refresh on " + modulesRoot + " file object.");
         if (modulesRoot != null) {
             modulesRoot.refresh ();
         }
+    }
+    
+    private Set<File> getStorageFilesForDelete () {
+        if (storageFilesForDelete == null) {
+            storageFilesForDelete = new HashSet<File> ();
+        }
+        return storageFilesForDelete;
     }
 }

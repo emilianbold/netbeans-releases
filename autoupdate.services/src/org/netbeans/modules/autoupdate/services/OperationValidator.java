@@ -56,6 +56,7 @@ abstract class OperationValidator {
         case INSTALL:
             isValid = FOR_INSTALL.isValidOperationImpl(updateUnit, updateElement);
             break;
+        case DIRECT_UNINSTALL:
         case UNINSTALL:
             isValid = FOR_UNINSTALL.isValidOperationImpl(updateUnit, updateElement);
             break;
@@ -65,6 +66,7 @@ abstract class OperationValidator {
         case ENABLE:
             isValid = FOR_ENABLE.isValidOperationImpl(updateUnit, updateElement);
             break;
+        case DIRECT_DISABLE:
         case DISABLE:
             isValid = FOR_DISABLE.isValidOperationImpl(updateUnit, updateElement);
             break;
@@ -83,6 +85,7 @@ abstract class OperationValidator {
         case INSTALL:
             retval = FOR_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos);
             break;
+        case DIRECT_UNINSTALL:
         case UNINSTALL:
             retval = FOR_UNINSTALL.getRequiredElementsImpl(updateElement, moduleInfos);
             break;
@@ -92,6 +95,7 @@ abstract class OperationValidator {
         case ENABLE:
             retval = FOR_ENABLE.getRequiredElementsImpl(updateElement, moduleInfos);
             break;
+        case DIRECT_DISABLE:
         case DISABLE:
             retval = FOR_DISABLE.getRequiredElementsImpl(updateElement, moduleInfos);
             break;

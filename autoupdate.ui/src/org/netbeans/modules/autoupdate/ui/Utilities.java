@@ -75,8 +75,8 @@ public class Utilities {
             List<String> names = new ArrayList<String> ();
             for (UpdateUnit u : units) {
                 UpdateElement el = u.getInstalled();
-                if (el != null) {
-                    String catName = el.getCategory ();
+                if (el != null || u.isPending ()) {
+                    String catName = el == null && u.isPending () ? u.getAvailableUpdates ().get (0).getCategory () : el.getCategory ();
                     Unit.Installed i = new Unit.Installed (u, catName);
                     if (names.contains(catName)) {
                         UnitCategory cat = res.get(names.indexOf(catName));
@@ -98,7 +98,7 @@ public class Utilities {
         List<String> names = new ArrayList<String> ();
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
-            if (el != null) {
+            if (! u.isPending() && el != null) {
                 List<UpdateElement> updates = u.getAvailableUpdates ();
                 if (updates.isEmpty()) {
                     continue;
@@ -124,7 +124,7 @@ public class Utilities {
         List<String> names = new ArrayList<String> ();
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
-            if (el == null) {
+            if (! u.isPending() && el == null) {
                 List<UpdateElement> updates = u.getAvailableUpdates ();
                 if (updates == null || updates.size() == 0) {
                     continue;

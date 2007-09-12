@@ -54,18 +54,16 @@ public class UpdaterFrame extends javax.swing.JPanel {
 
     private static boolean bigBounds = false;
 
-    private static ModuleUpdater mu = null;
-    
     private static boolean fromIDE = false;
     
     private static Window splashWindow;
     
     /** For external running Updater without GUI */
-    private static boolean noSplash = false;
+    private static boolean noSplash = false; 
     
     public static final String FINISHED = "FINISHED"; // NOI18N
     public static final String RUNNING = "RUNNING"; // NOI18N
-    
+
     /** Creates new form UpdaterFrame */
     public UpdaterFrame() {
         initComponents ();
@@ -188,6 +186,10 @@ public class UpdaterFrame extends javax.swing.JPanel {
                     });
     }
     
+    static void disposeSplash () {
+        if (splashWindow != null) splashWindow.dispose ();
+    }
+    
     /**
     * @param args the command line arguments
     */
@@ -202,17 +204,11 @@ public class UpdaterFrame extends javax.swing.JPanel {
             showSplash ();
         }
 
-        mu = new ModuleUpdater (null);
-        mu.start();
-
+        new UpdaterDispatcher ().run ();
     }
 
     public static Thread runFromIDE (Collection<File> files, PropertyChangeListener listener, String brandingToken, boolean showSplash) {
         noSplash = ! showSplash;
-        return runFromIDE (files, listener, brandingToken);
-    }
-
-    public static Thread runFromIDE (Collection<File> files, PropertyChangeListener listener, String brandingToken) {
         fromIDE = true;        
         Localization.setBranding (brandingToken);
         panel = new UpdaterFrame ();
@@ -221,11 +217,11 @@ public class UpdaterFrame extends javax.swing.JPanel {
             showSplash();
         }
         
-        mu = new ModuleUpdater (files);
+        ModuleUpdater mu = new ModuleUpdater (files);
         mu.start();
         return mu;
     }
-    
+
     void unpackingIsRunning () {
         if (fromIDE) {
             firePropertyChange (RUNNING, null, null);

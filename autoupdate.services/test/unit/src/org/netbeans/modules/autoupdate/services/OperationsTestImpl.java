@@ -116,14 +116,11 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         // XXX: assert same could be broken later
         assertSame (toInstall, Utilities.toUpdateUnit (toInstall.getCodeName ()));
         
-        InstallSupport.Restarter r = null;
-        
         OperationContainer<OperationSupport> container = OperationContainer.createForCustomInstallComponent ();
         OperationContainer.OperationInfo<OperationSupport> info = container.add (installElement);
         assertNotNull (info);
         container.add (info.getRequiredElements ());
         assertEquals (0,container.listInvalid ().size ());
-        List<OperationContainer.OperationInfo<OperationSupport>> all =  container.listAll ();
         
         OperationSupport support = container.getSupport ();
         assertNotNull (support);
@@ -156,7 +153,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         assertSame (toInstall, Utilities.toUpdateUnit (toInstall.getCodeName ()));
         
         OperationContainer container2 = null;
-        InstallSupport.Restarter r = null;
+        OperationSupport.Restarter r = null;
         if (installSupport) {
             OperationContainer<InstallSupport> container = OperationContainer.createForInstall ();
             container2 = container;

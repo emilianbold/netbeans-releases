@@ -77,7 +77,7 @@ public abstract class UpdateElementImpl extends Object {
     public abstract String getCategory ();
     
     public abstract boolean isEnabled ();
-    
+
     public abstract String getLicence ();
     
     public abstract UpdateManager.TYPE getType ();
@@ -86,7 +86,7 @@ public abstract class UpdateElementImpl extends Object {
     public abstract boolean isEager ();
     public abstract boolean isFixed ();
     
-    // XXX: try to rid of this
+   // XXX: try to rid of this
     public abstract List<ModuleInfo> getModuleInfos ();
     
     // XXX: try to rid of this

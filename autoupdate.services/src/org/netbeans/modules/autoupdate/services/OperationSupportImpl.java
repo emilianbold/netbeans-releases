@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,8 +33,10 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.spi.autoupdate.CustomInstaller;
+import org.openide.LifecycleManager;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -43,7 +47,9 @@ public abstract class OperationSupportImpl {
     private static final OperationSupportImpl FOR_UPDATE = new ForUpdate();
     private static final OperationSupportImpl FOR_ENABLE = new ForEnable();
     private static final OperationSupportImpl FOR_DISABLE = new ForDisable();
+    private static final OperationSupportImpl FOR_DIRECT_DISABLE = new ForDirectDisable();
     private static final OperationSupportImpl FOR_UNINSTALL = new ForUninstall();
+    private static final OperationSupportImpl FOR_DIRECT_UNINSTALL = new ForDirectUninstall();
     private static final OperationSupportImpl FOR_CUSTOM_INSTALL = new ForCustomInstall ();
     
     private static final Logger LOGGER = Logger.getLogger ("org.netbeans.modules.autoupdate.services.OperationSupportImpl");
@@ -57,25 +63,33 @@ public abstract class OperationSupportImpl {
     public static OperationSupportImpl forUninstall() {
         return FOR_UNINSTALL;
     }
+    public static OperationSupportImpl forDirectUninstall() {
+        return FOR_DIRECT_UNINSTALL;
+    }
     public static OperationSupportImpl forEnable() {
         return FOR_ENABLE;
     }
     public static OperationSupportImpl forDisable() {
         return FOR_DISABLE;
     }
+    public static OperationSupportImpl forDirectDisable() {
+        return FOR_DIRECT_DISABLE;
+    }
     public static OperationSupportImpl forCustomInstall () {
         return FOR_CUSTOM_INSTALL;
     }
     
-    public abstract void doOperation(ProgressHandle progress/*or null*/, OperationContainer<?> container) throws OperationException;
+    public abstract Boolean doOperation(ProgressHandle progress/*or null*/, OperationContainer<?> container) throws OperationException;
     public abstract void doCancel () throws OperationException;
-    
+    public abstract void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException;
+    public abstract void doRestartLater (Restarter restarter);
+            
     /** Creates a new instance of OperationContainer */
     private OperationSupportImpl() {
     }
     
     private static class ForEnable extends OperationSupportImpl {
-        public void doOperation(ProgressHandle progress,
+        public Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 if (progress != null) {
@@ -106,8 +120,11 @@ public abstract class OperationSupportImpl {
                 if (progress != null) {
                     progress.finish();
                 }
-            }            
+            }
+            
+            return false;
         }
+        
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
@@ -124,10 +141,95 @@ public abstract class OperationSupportImpl {
             }
             return retval;
         }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
         
     }
+    
     private static class ForDisable extends OperationSupportImpl {
-        public void doOperation(ProgressHandle progress,
+        private Collection<File> controlFileForDisable = null;
+        private Collection<UpdateElement> affectedModules = null;
+        public Boolean doOperation(ProgressHandle progress,
+                OperationContainer<?> container) throws OperationException {
+            try {
+                if (progress != null) {
+                    progress.start();
+                }
+                ModuleManager mm = null;
+                List<? extends OperationInfo> elements = container.listAll();
+                affectedModules = new HashSet<UpdateElement> ();
+                Set<ModuleInfo> moduleInfos = new HashSet<ModuleInfo> ();
+                for (OperationInfo operationInfo : elements) {
+                    UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
+                    affectedModules.add (operationInfo.getUpdateElement ());
+                    moduleInfos.addAll (impl.getModuleInfos ());
+                }
+                Set<ModuleInfo> modules = new HashSet<ModuleInfo> ();
+                for (ModuleInfo info : moduleInfos) {
+                    Module m = Utilities.toModule (info);
+                    if (Utilities.canDisable (m)) {
+                        modules.add(m);
+                        LOGGER.log (Level.FINE, "Mark module " + m.getCodeNameBase () + " for disable.");
+                    }
+                    if (mm == null) {
+                        mm = m.getManager();
+                    }
+                }
+                assert mm != null;
+                ModuleDeleterImpl deleter = new ModuleDeleterImpl ();
+                controlFileForDisable = deleter.markForDisable (modules, progress);
+            } finally {
+                if (progress != null) {
+                    progress.finish();
+                }
+            }
+            
+            return true;
+        }
+        
+        public void doCancel () throws OperationException {
+            if (controlFileForDisable != null) {
+                controlFileForDisable = null;
+            }
+            if (affectedModules != null) {
+                affectedModules = null;
+            }
+        }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            // write files marked to delete (files4remove) into temp file
+            // Updater will handle it
+            Utilities.writeFileMarkedForDisable (controlFileForDisable);
+            
+            // restart IDE
+            Utilities.deleteAllDoLater ();
+            LifecycleManager.getDefault ().exit ();
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            // write files marked to delete (files4remove) into temp file
+            // Updater will handle it
+            Utilities.writeFileMarkedForDisable (controlFileForDisable);
+            
+            // shedule module for restart
+            for (UpdateElement el : affectedModules) {
+                UpdateUnitFactory.getDefault().scheduleForRestart (el);
+            }
+            
+            // write deactivate_later.txt
+            Utilities.writeDeactivateLater (controlFileForDisable);
+        }
+        
+    }
+    
+    private static class ForDirectDisable extends OperationSupportImpl {
+        public Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 if (progress != null) {
@@ -158,14 +260,111 @@ public abstract class OperationSupportImpl {
                     progress.finish();
                 }
             }
+            
+            return false;
         }
+        
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
         
     }
+    
     private static class ForUninstall extends OperationSupportImpl {
-        public void doOperation(ProgressHandle progress,
+        private Collection<File> files4remove = null;
+        private Collection<UpdateElement> affectedModules = null;
+        public Boolean doOperation(ProgressHandle progress,
+                OperationContainer<?> container) throws OperationException {
+            try {
+                if (progress != null) {
+                    progress.start();
+                }
+                ModuleDeleterImpl deleter = new ModuleDeleterImpl();
+                
+                List<? extends OperationInfo> infos = container.listAll ();
+                Set<ModuleInfo> moduleInfos = new HashSet<ModuleInfo> ();
+                affectedModules = new HashSet<UpdateElement> ();
+                for (OperationInfo operationInfo : infos) {
+                    UpdateElement updateElement = operationInfo.getUpdateElement ();
+                    UpdateElementImpl updateElementImpl = Trampoline.API.impl (updateElement);
+                    switch (updateElementImpl.getType ()) {
+                    case KIT_MODULE :    
+                    case MODULE :
+                        moduleInfos.add (((ModuleUpdateElementImpl) updateElementImpl).getModuleInfo ());
+                        affectedModules.add (updateElementImpl.getUpdateElement ());
+                        break;
+                    case STANDALONE_MODULE :
+                    case FEATURE :
+                        for (ModuleUpdateElementImpl moduleImpl : ((FeatureUpdateElementImpl) updateElementImpl).getContainedModuleElements ()) {
+                            moduleInfos.add (moduleImpl.getModuleInfo ());
+                            if (moduleImpl.getUpdateUnit ().getInstalled () != null) {
+                                affectedModules.add (moduleImpl.getUpdateElement ());
+                            }
+                        }
+                        break;
+                    default:
+                        assert false : "Not supported for impl " + updateElementImpl;
+                    }
+                }
+                try {
+                    files4remove = deleter.markForDelete (moduleInfos, progress);
+                } catch(IOException iex) {
+                    throw new OperationException(OperationException.ERROR_TYPE.UNINSTALL, iex);
+                }
+
+            } finally {
+                if (progress != null) {
+                    progress.finish();
+                }
+            }
+
+            return true;
+        }
+        public void doCancel () throws OperationException {
+            if (files4remove != null) {
+                files4remove = null;
+            }
+            if (affectedModules != null) {
+                affectedModules = null;
+            }
+        }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            // write files marked to delete (files4remove) into temp file
+            // Updater will handle it
+            Utilities.writeFileMarkedForDelete (files4remove);
+            
+            // restart IDE
+            Utilities.deleteAllDoLater ();
+            LifecycleManager.getDefault ().exit ();
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            // write files marked to delete (files4remove) into temp file
+            // Updater will handle it
+            Utilities.writeFileMarkedForDelete (files4remove);
+            
+            // shedule module for restart
+            for (UpdateElement el : affectedModules) {
+                UpdateUnitFactory.getDefault().scheduleForRestart (el);
+            }
+            
+            // write deactivate_later.txt
+            Utilities.writeDeactivateLater (files4remove);
+        }
+        
+    }
+    
+    private static class ForDirectUninstall extends OperationSupportImpl {
+        public Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 if (progress != null) {
@@ -223,35 +422,63 @@ public abstract class OperationSupportImpl {
                     progress.finish();
                 }
             }
+            
+            return false;
         }
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
         
     }
+    
     private static class ForInstall extends OperationSupportImpl {
-        public void doOperation(ProgressHandle progress,
+        public Boolean doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
+        }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            throw new UnsupportedOperationException ("Not supported yet.");
         }
         
     }
+    
     private static class ForUpdate extends OperationSupportImpl {
-        public void doOperation(ProgressHandle progress,
+        public Boolean doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
+        }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            throw new UnsupportedOperationException ("Not supported yet.");
         }
         
     }
     
     private static class ForCustomInstall extends OperationSupportImpl {
-        public void doOperation(ProgressHandle progress,
+        public Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 
@@ -280,9 +507,21 @@ public abstract class OperationSupportImpl {
                     progress.finish ();
                 }
             }
+            
+            // XXX
+            return false;
+            
         }
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
+        }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            throw new UnsupportedOperationException ("Not supported yet.");
         }
         
     }

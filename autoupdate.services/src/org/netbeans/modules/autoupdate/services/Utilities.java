@@ -55,6 +55,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.spi.autoupdate.KeyStoreProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
+import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.ModuleUpdater;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileUtil;
@@ -133,31 +134,46 @@ public class Utilities {
     private static final String ATTR_SIZE = "size"; // NOI18N
     private static final String ATTR_NBM_NAME = "nbm_name"; // NOI18N
     
-    private static File getInstall_Later(File root) {
+    private static File getInstallLater(File root) {
         File file = new File(root.getPath() + FILE_SEPARATOR + DOWNLOAD_DIR + FILE_SEPARATOR + ModuleUpdater.LATER_FILE_NAME);
         return file;
     }
 
-    public static void deleteInstall_Later() {
+    public static void deleteAllDoLater() {
         List<File> clusters = UpdateTracking.clusters(true);
         assert clusters != null : "Clusters cannot be empty."; // NOI18N
-        for (File installLaterFile : clusters) {
-            if (installLaterFile != null && installLaterFile.exists()) {
-                installLaterFile.delete();                
+        for (File cluster : clusters) {
+            for (File doLater : findDoLater (cluster)) {
+                doLater.delete ();
             }
         }                                
     }
     
-    public static void writeInstall_Later(Map<UpdateElementImpl, File> updates) {
+    private static Collection<File> findDoLater (File cluster) {
+        if (! cluster.exists ()) {
+            return Collections.emptySet ();
+        } else {
+            Collection<File> res = new HashSet<File> ();
+            if (getInstallLater (cluster).exists ()) {
+                res.add (getInstallLater (cluster));
+            }
+            if (ModuleDeactivator.getDeactivateLater (cluster).exists ()) {
+                res.add (ModuleDeactivator.getDeactivateLater (cluster));
+            }
+            return res;
+        }
+    }
+    
+    public static void writeInstallLater (Map<UpdateElementImpl, File> updates) {
         // loop for all clusters and write if needed
         List<File> clusters = UpdateTracking.clusters(true);
         assert clusters != null : "Clusters cannot be empty."; // NOI18N
         for (File cluster : clusters) {
-            writeToCluster (cluster, updates);
+            writeInstallLaterToCluster (cluster, updates);
         }
     }
     
-    private static void writeToCluster (File cluster, Map<UpdateElementImpl, File> updates) {
+    private static void writeInstallLaterToCluster (File cluster, Map<UpdateElementImpl, File> updates) {
         Document document = XMLUtil.createDocument(UpdateTracking.ELEMENT_MODULES, null, null, null);                
         
         Element root = document.getDocumentElement();
@@ -187,40 +203,102 @@ public class Utilities {
             return ;
         }
         
-        document.getDocumentElement().normalize();
-                
-        File installLaterFile = getInstall_Later (cluster);
-        installLaterFile.getParentFile ().mkdirs ();
+        writeXMLDocumentToFile (document, getInstallLater (cluster));
+    }
+    
+    private static void writeXMLDocumentToFile (Document doc, File dest) {
+        doc.getDocumentElement ().normalize ();
+
+        dest.getParentFile ().mkdirs ();
         InputStream is = null;
-        ByteArrayOutputStream  bos = new ByteArrayOutputStream ();        
-        OutputStream fos = null;            
+        ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+        OutputStream fos = null;
+        try {
             try {
-                try {
-                    XMLUtil.write(document, bos, "UTF-8"); // NOI18N
-                    if (bos != null) bos.close();
-                    fos = new FileOutputStream(installLaterFile);
-                    is = new ByteArrayInputStream(bos.toByteArray());
-                    FileUtil.copy(is,fos);
-                } finally {
-                    if (is != null) is.close();
-                    if (fos != null) fos.close();
-                    if (bos != null) bos.close();
-                }                
-            } catch (java.io.FileNotFoundException fnfe) {
-                Exceptions.printStackTrace(fnfe);
-            } catch (java.io.IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            } finally {
+                XMLUtil.write (doc, bos, "UTF-8"); // NOI18N
                 if (bos != null) {
-                    try {
-                        bos.close();
-                    } catch (Exception x) {
-                        Exceptions.printStackTrace(x);
-                    }
+                    bos.close ();
+                }
+                fos = new FileOutputStream (dest);
+                is = new ByteArrayInputStream (bos.toByteArray ());
+                FileUtil.copy (is, fos);
+            } finally {
+                if (is != null) {
+                    is.close ();
+                }
+                if (fos != null) {
+                    fos.close ();
+                }
+                if (bos != null) {
+                    bos.close ();
                 }
             }
-            
+        } catch (java.io.FileNotFoundException fnfe) {
+            Exceptions.printStackTrace (fnfe);
+        } catch (java.io.IOException ioe) {
+            Exceptions.printStackTrace (ioe);
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close ();
+                } catch (Exception x) {
+                    Exceptions.printStackTrace (x);
+                }
+            }
         }
+    }
+
+    public static void writeDeactivateLater (Collection<File> files) {
+        File userdir = InstallManager.getUserDir ();
+        assert userdir != null && userdir.exists (): "Userdir " + userdir + " found and exists."; // NOI18N
+        writeMarkedFilesToFile (files, ModuleDeactivator.getDeactivateLater (userdir));
+    }
+    
+    public static void writeFileMarkedForDelete (Collection<File> files) {
+        writeMarkedFilesToFile (files, ModuleDeactivator.getControlFileForMarkedForDelete (InstallManager.getUserDir ()));
+    }
+    
+    public static void writeFileMarkedForDisable (Collection<File> files) {
+        writeMarkedFilesToFile (files, ModuleDeactivator.getControlFileForMarkedForDisable (InstallManager.getUserDir ()));
+    }
+    
+    private static void writeMarkedFilesToFile (Collection<File> files, File dest) {
+        
+        // don't forget for content written before
+        String content = "";
+        if (dest.exists ()) {
+            content += ModuleDeactivator.readStringFromFile (dest);
+        }
+        
+        for (File f : files) {
+            content += f.getAbsolutePath () + UpdateTracking.PATH_SEPARATOR;
+        }
+        
+        if (content == null || content.length () == 0) {
+            return ;
+        }
+        
+        dest.getParentFile ().mkdirs ();
+        assert dest.getParentFile ().exists () && dest.getParentFile ().isDirectory () : "Parent of " + dest + " exists and is directory.";
+        InputStream is = null;
+        OutputStream fos = null;            
+        
+        try {
+            try {
+                fos = new FileOutputStream (dest);
+                is = new ByteArrayInputStream (content.getBytes());
+                FileUtil.copy (is, fos);
+            } finally {
+                if (is != null) is.close();
+                if (fos != null) fos.close();
+            }                
+        } catch (java.io.FileNotFoundException fnfe) {
+            Exceptions.printStackTrace(fnfe);
+        } catch (java.io.IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+
+    }
     
     public static void writeAdditionalInformation (Map<UpdateElementImpl, File> updates) {
         // loop for all clusters and write if needed
@@ -618,38 +696,7 @@ public class Utilities {
             return ;
         }
         
-        document.getDocumentElement ().normalize ();
-                
-        File additionalFile = getAdditionalInformation (cluster);
-        additionalFile.getParentFile ().mkdirs ();
-        InputStream is = null;
-        ByteArrayOutputStream  bos = new ByteArrayOutputStream ();        
-        OutputStream fos = null;            
-        try {
-            try {
-                XMLUtil.write (document, bos, "UTF-8"); // NOI18N
-                fos = new FileOutputStream (additionalFile);
-                is = new ByteArrayInputStream (bos.toByteArray ());
-                FileUtil.copy (is, fos);
-            } finally {
-                if (is != null) is.close();
-                if (fos != null) fos.close();
-                if (bos != null) bos.close();
-            }                
-        } catch (java.io.FileNotFoundException fnfe) {
-            Exceptions.printStackTrace(fnfe);
-        } catch (java.io.IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        } finally {
-            if (bos != null) {
-                try {
-                    bos.close();
-                } catch (Exception x) {
-                    Exceptions.printStackTrace(x);
-                }
-            }
-        }
-
+        writeXMLDocumentToFile (document, getAdditionalInformation (cluster));
     }
     
     public static UpdateItem createUpdateItem (UpdateItemImpl impl) {
@@ -676,10 +723,6 @@ public class Utilities {
             return false;
         }
         return el.equals (el.getUpdateUnit ().getInstalled ());
-    }
-    
-    private static boolean isLeafModule (ModuleInfo mi) {
-        return isKitModule (mi) || isEssentialModule (mi);
     }
     
     public static boolean isKitModule (ModuleInfo mi) {

@@ -21,6 +21,7 @@ package org.netbeans.api.autoupdate;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.autoupdate.services.InstallSupportImpl;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 
 /**
  * @author Radek Matous
@@ -51,7 +52,7 @@ public final class InstallSupport {
         if (restart == null /*was problem*/ || ! restart.booleanValue ()) {
             return null;
         } else {
-            return new Restarter ();
+            return new OperationSupport.Restarter ();
         }
     }
     
@@ -83,9 +84,8 @@ public final class InstallSupport {
     public OperationContainer<InstallSupport> getContainer() {return container;}
     
     //just tokens for passing it further to guarantee the order of operations
-    public final class Validator {private Validator() {}}
-    public final class Installer {private Installer() {}}
-    public final class Restarter {private Restarter () {}}
+    public static final class Validator {private Validator() {}}
+    public static final class Installer {private Installer() {}}
 
     //end of API - next just impl details
     private OperationContainer<InstallSupport> container;

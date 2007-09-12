@@ -101,8 +101,30 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     public abstract Type getType ();
     public abstract boolean isSortAllowed (Object columnIdentifier);
     public abstract int getDownloadSize ();
+    public abstract boolean needsRestart ();
     protected abstract Comparator<Unit> getComparator (final Object columnIdentifier, final boolean sortAscending);
     public abstract void setUnits (List<UpdateUnit> units);
+    public String getTabTooltipText() {
+        return null;
+    }
+    public abstract String getTabTitle();
+    public final String getDecoratedTabTitle() {
+        int count = getItemCount ();
+        int rawCount = getRawItemCount ();
+        String countInfo = (count == rawCount) ? String.valueOf (rawCount) :
+            NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_CountFormat", count, rawCount);
+        String newName = NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_NameFormat", getTabTitle(), countInfo);
+        int index = getTabIndex();
+        return (rawCount == 0) ? getTabTitle() : newName;        
+    }
+        
+    public boolean canBePrimaryTab() {
+        return true;
+    }
+    public abstract int getTabIndex();
+    public boolean isTabEnabled() {
+        return true;
+    }
     public String getToolTipText (int row, int col) {
         String retval = null;
         if (col == 0) {

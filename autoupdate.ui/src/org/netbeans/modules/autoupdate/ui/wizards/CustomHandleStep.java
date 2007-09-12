@@ -42,7 +42,7 @@ import org.netbeans.api.autoupdate.OperationSupport;
  * @author Jiri Rechtacek
  */
 public class CustomHandleStep implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
-    private InstallPanel panel;
+    private OperationPanel panel;
     private PanelBodyContainer component;
     private OperationWizardModel model = null;
     private WizardDescriptor wd = null;
@@ -81,10 +81,10 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
 
     public PanelBodyContainer getComponent() {
         if (component == null) {
-            panel = new InstallPanel ();
+            panel = new OperationPanel ();
             panel.addPropertyChangeListener (new PropertyChangeListener () {
                     public void propertyChange (PropertyChangeEvent evt) {
-                        if (InstallPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
+                        if (OperationPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
                             doHandleOperation ();
                         }
                     }

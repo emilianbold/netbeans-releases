@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationSupport;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -58,9 +59,19 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     @Override
     public String getToolTipText(int row, int col) {
         if (col == 3) {
-            boolean isEnabled = (Boolean)getValueAt (row, 3);            
+            Unit.Installed u = (Unit.Installed) getUnitAtRow (row);
+            assert u != null : "Unit must found at row " + row;
             String key = null;
-            if (isEnabled) {
+            UpdateElement ue = u.getRelevantElement ();
+            UpdateUnit uu = u.getRelevantElement ().getUpdateUnit ();
+            if (uu.isPending ()) {
+                // installed?
+                if (ue.getUpdateUnit ().getInstalled () == null || ! ue.getUpdateUnit ().getInstalled ().equals (ue)) {
+                    key = "InstallTab_PendingForInstall_Tooltip";
+                } else {
+                    key = "InstallTab_PendingForDeactivate_Tooltip";
+                }
+            } else if (ue.isEnabled ()) {
                 key = "InstallTab_Active_Tooltip";
             } else {
                 key = "InstallTab_InActive_Tooltip";
@@ -229,6 +240,18 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     public boolean isCellEditable(int row, int col) {
         Unit.Installed u = (Unit.Installed)getUnitAtRow(row);
         return (col == 0) ? u != null && u.canBeMarked() : super.isCellEditable(row, col);
+    }
+
+    public String getTabTitle() {
+        return NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title");//NOI18N
+    }
+
+    public int getTabIndex() {
+        return 3;
+    }
+
+    public boolean needsRestart () {
+        return true;
     }
 
 }

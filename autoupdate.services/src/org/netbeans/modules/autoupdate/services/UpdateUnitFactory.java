@@ -65,7 +65,8 @@ public class UpdateUnitFactory {
     private final Logger log = Logger.getLogger (this.getClass ().getName ());
     private static final DateFormat FMT = new SimpleDateFormat ("mm:ss:SS");
     private static long runTime = -1;
-    private Set<String> scheduledForRestart = null;
+    private Set<String> scheduledForRestartUE = null;
+    private Set<String> scheduledForRestartUU = null;
     
     public static final String UNSORTED_CATEGORY = NbBundle.getMessage (UpdateUnitFactory.class, "UpdateUnitFactory_Unsorted_Category");
     public static final String LIBRARIES_CATEGORY = NbBundle.getMessage (UpdateUnitFactory.class, "UpdateUnitFactory_Libraries_Category");
@@ -282,8 +283,10 @@ public class UpdateUnitFactory {
             unitImpl = Trampoline.API.impl (unit);
         }
         
-        if (provider instanceof InstalledUpdateProvider || isScheduledForRestart (element)) {
-            unitImpl.setInstalled (element);
+        if (provider instanceof InstalledUpdateProvider) {
+            if (unitImpl.getInstalled () == null) {
+                unitImpl.setInstalled (element);
+            }
         } else if (provider instanceof BackupUpdateProvider) {
             unitImpl.setBackup (element);
         } else {
@@ -299,7 +302,7 @@ public class UpdateUnitFactory {
     private void resetRunTime (String msg) {
         if (log.isLoggable (Level.FINE)) {
             if (msg != null) {
-                log.log (Level.FINE, "|=== " + msg + " ===|");
+                log.log (Level.FINE, "|=== " + msg + " ===|"); // NOI18N
             }
         runTime = System.currentTimeMillis ();
         }
@@ -315,14 +318,20 @@ public class UpdateUnitFactory {
     }
     
     public void scheduleForRestart (UpdateElement el) {
-        if (scheduledForRestart == null) {
-            scheduledForRestart = new HashSet<String> ();
+        if (scheduledForRestartUE == null) {
+            scheduledForRestartUE = new HashSet<String> ();
+            scheduledForRestartUU = new HashSet<String> ();
         }
-        scheduledForRestart.add (el.getCodeName () + "_" + el.getSpecificationVersion ());
+        scheduledForRestartUE.add (el.getCodeName () + "_" + el.getSpecificationVersion ()); // NOI18N
+        scheduledForRestartUU.add (el.getCodeName ());
     }
     
     public boolean isScheduledForRestart (UpdateElement el) {
-        return scheduledForRestart != null && scheduledForRestart.contains (el.getCodeName () + "_" + el.getSpecificationVersion ());
+        return scheduledForRestartUE != null && scheduledForRestartUE.contains (el.getCodeName () + "_" + el.getSpecificationVersion ()); // NOI18N
+    }
+    
+    public boolean isScheduledForRestart (UpdateUnit u) {
+        return scheduledForRestartUU != null && scheduledForRestartUU.contains (u.getCodeName ());
     }
     
 }

@@ -103,7 +103,7 @@ public class Containers {
     public static OperationContainer<OperationSupport> forDisable() {
         synchronized(Containers.class) {
             if (DISABLE == null || DISABLE.get() == null) {
-                DISABLE = new WeakReference<OperationContainer<OperationSupport>>(OperationContainer.createForDisable());
+                DISABLE = new WeakReference<OperationContainer<OperationSupport>> (OperationContainer.createForDisable ());
             }
             return DISABLE.get();
         }        

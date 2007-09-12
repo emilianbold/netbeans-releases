@@ -32,4 +32,9 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
         return UpdateManager.TYPE.MODULE;
     }
     
+    @Override
+    public boolean isPending () {
+        return UpdateUnitFactory.getDefault().isScheduledForRestart (getUpdateUnit ());
+    }
+    
 }

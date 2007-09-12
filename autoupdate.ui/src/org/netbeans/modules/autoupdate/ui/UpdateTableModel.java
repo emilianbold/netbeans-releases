@@ -221,4 +221,29 @@ public class UpdateTableModel extends UnitCategoryTableModel {
     private String getBundle (String key) {
         return NbBundle.getMessage (this.getClass (), key);
     }
+
+    public String getTabTitle() {
+        return NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title");//NOI18N
+    }
+
+    @Override
+    public String getTabTooltipText() {
+        if (isTabEnabled()) {
+            return super.getTabTooltipText(); 
+        }
+        return NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_ToolTip");
+    }
+
+    public int getTabIndex() {
+        return 0;
+    }
+
+    @Override
+    public boolean isTabEnabled() {
+        return getRawItemCount() > 0;
+    }
+
+    public boolean needsRestart () {
+        return true;
+    }
 }

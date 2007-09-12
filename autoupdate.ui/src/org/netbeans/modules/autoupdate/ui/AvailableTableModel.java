@@ -216,5 +216,29 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     private String getBundle (String key) {
         return NbBundle.getMessage (this.getClass (), key);
     }
-     
+
+    @Override
+    public String getTabTooltipText() {
+        if (isTabEnabled()) {
+            return super.getTabTooltipText(); 
+        }
+        return NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_ToolTip");
+    }
+    
+    public String getTabTitle() {
+        return NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title");//NOI18N
+    }
+
+    public int getTabIndex() {
+        return 1;
+    }
+
+    @Override
+    public boolean isTabEnabled() {
+        return getRawItemCount() > 0;
+    }
+
+    public boolean needsRestart () {
+        return false;
+    }
 }

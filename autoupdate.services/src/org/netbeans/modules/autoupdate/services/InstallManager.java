@@ -35,6 +35,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.layers.LocalFileSystemEx;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
+import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -187,7 +188,7 @@ public class InstallManager extends InstalledFileLocator{
 
     private static void extendSystemFileSystem(File cluster) {
         try {
-            File extradir = new File(cluster, "config");//NOI18N
+            File extradir = new File(cluster, ModuleDeactivator.CONFIG);
             extradir.mkdir();
             LocalFileSystemEx lfse = new LocalFileSystemEx();
             lfse.setRootDirectory(extradir);
@@ -208,7 +209,7 @@ public class InstallManager extends InstalledFileLocator{
         UpdateElementImpl i = Trampoline.API.impl (installed);
         assert i instanceof ModuleUpdateElementImpl : "Impl of " + installed + " instanceof ModuleUpdateElementImpl";
         
-        String configFileName = "config" + '/' + "Modules" + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
+        String configFileName = ModuleDeactivator.CONFIG + '/' + ModuleDeactivator.MODULES + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
         File configFile = InstalledFileLocator.getDefault ().locate (configFileName, installed.getCodeName (), false);
         if (configFile == null) {
             // only fixed module cannot be located
@@ -272,13 +273,9 @@ public class InstallManager extends InstalledFileLocator{
     }
     
     static File getUserDir () {
-        File userDir = new File (System.getProperty ("netbeans.user"));
-        userDir = new File(userDir.toURI ().normalize ()).getAbsoluteFile ();
-        
-        return userDir;
+        return UpdateTracking.getUserDir ();
     }
     
-
     static boolean needsRestart (boolean isUpdate, UpdateElementImpl update, File dest) {
         assert update.getInstallInfo () != null : "Each UpdateElement must know own InstallInfo but " + update;
         boolean isForcedRestart = update.getInstallInfo ().needsRestart () != null && update.getInstallInfo ().needsRestart ().booleanValue ();
