@@ -80,9 +80,9 @@ function write_components() {
 
 function write_table_header() {
     document.write('<tr>');
-    document.write('<td class="no_border no_padding" id="javaee_link"></th>');
+    document.write('<td class="no_border no_padding"></td>');
     document.write('<td class="no_border no_padding" colspan="6">');
-    document.write('<table><tr>');
+    document.write('<table class="components_table"><tr>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
     document.write('	<td class="no_border title bold" style="color:black"">NetBeans IDE 6.0 {build.number}</td>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
