@@ -102,7 +102,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -110,8 +109,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
+ * @author gmpatil
  * @author lgao
- * @author $Author$
  */
 public class ProjectHelper {
 
@@ -140,7 +139,7 @@ public class ProjectHelper {
     private static final String RUN_JVM_ARGS_VAL = RUN_JVM_ARGS_VAL_PREFIX + "=${" + PROP_ENDORSED + "}"; //NOI18N
     private static final String PROP_SYS_RUN_ENDORSED = "run-sys-prop.java.endorsed.dirs" ; //NOI18N
     private static final String PROP_SYS_RUN_ENDORSED_VAL = "${" + PROP_ENDORSED + "}" ; //NOI18N
-    private static final SpecificationVersion JDK_1_6 = new SpecificationVersion("1.6"); //NOI18N
+    //private static final SpecificationVersion JDK_1_6 = new SpecificationVersion("1.6"); //NOI18N
     private static final String JAXB_CONTEXT_CLASS_RES_PATH = "javax/xml/bind/JAXBContext.class"; //NOI18N
 
     // Make sure nobody instantiates this class.

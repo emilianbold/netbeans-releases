@@ -63,7 +63,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * @author $Author$
+ * @author gmpatil
  * @author lgao
  */
 public class JAXBWizardIterator implements TemplateWizard.Iterator  {
@@ -105,6 +105,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
         return cursor < panels.length - 1;
     }
 
+    @Override
     protected void finalize() throws Throwable {
         super.finalize();
     }

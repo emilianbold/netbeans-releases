@@ -59,7 +59,7 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 /**
- * @author $Author$
+ * @author gmpatil
  */
 public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
                                         WizardDescriptor.ValidatingPanel, 
@@ -219,46 +219,46 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     }
     
     public void storeSettings(Object settings) {
-        WizardDescriptor wd = (WizardDescriptor) settings;              
-        wd.putProperty(WIZ_NEW_FILE_TITLE, null);
+        WizardDescriptor wdNew = (WizardDescriptor) settings;              
+        wdNew.putProperty(WIZ_NEW_FILE_TITLE, null);
 
         if (this.bindingInfoPnl.getSchemaName() != null) {
-            wd.putProperty(JAXBWizModuleConstants.SCHEMA_NAME, 
+            wdNew.putProperty(JAXBWizModuleConstants.SCHEMA_NAME, 
                     this.bindingInfoPnl.getSchemaName());    
         }
 
         if (this.bindingInfoPnl.getPackageName() != null) {
-            wd.putProperty(JAXBWizModuleConstants.PACKAGE_NAME, 
+            wdNew.putProperty(JAXBWizModuleConstants.PACKAGE_NAME, 
                     this.bindingInfoPnl.getPackageName());    
         }
 
         if (this.bindingInfoPnl.getSchemaType() != null) {
-            wd.putProperty(JAXBWizModuleConstants.SCHEMA_TYPE, 
+            wdNew.putProperty(JAXBWizModuleConstants.SCHEMA_TYPE, 
                     this.bindingInfoPnl.getSchemaType());    
         }
         
         Map<String, Boolean> options =  this.bindingInfoPnl.getOptions();
-        wd.putProperty(JAXBWizModuleConstants.XJC_OPTIONS, options);
+        wdNew.putProperty(JAXBWizModuleConstants.XJC_OPTIONS, options);
         
         List<String> xsdFileList = new ArrayList<String>();
         String schemaLoc = this.bindingInfoPnl.getSchemaFile();
         if (schemaLoc == null){
             xsdFileList.add(this.bindingInfoPnl.getSchemaURL());            
-            wd.putProperty(JAXBWizModuleConstants.SOURCE_LOCATION_TYPE, 
+            wdNew.putProperty(JAXBWizModuleConstants.SOURCE_LOCATION_TYPE, 
                     JAXBWizModuleConstants.SRC_LOC_TYPE_URL);
         } else {
             xsdFileList.add(this.bindingInfoPnl.getSchemaFile());            
         }
         
-        wd.putProperty(JAXBWizModuleConstants.XSD_FILE_LIST, xsdFileList);            
+        wdNew.putProperty(JAXBWizModuleConstants.XSD_FILE_LIST, xsdFileList);            
         
         // Binding files
         List<String> bindings = this.bindingInfoPnl.getBindingFiles();
-        wd.putProperty(JAXBWizModuleConstants.JAXB_BINDING_FILES, bindings);
+        wdNew.putProperty(JAXBWizModuleConstants.JAXB_BINDING_FILES, bindings);
         
         // catalog file
         String catalogFile = this.bindingInfoPnl.getCatalogFile();
-        wd.putProperty(JAXBWizModuleConstants.CATALOG_FILE, catalogFile);
+        wdNew.putProperty(JAXBWizModuleConstants.CATALOG_FILE, catalogFile);
     }
         
     public void readSettings(Object settings) {

@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
- * @author $Author$
+ * @author gmpatil
  * @author lgao
  */
 public class JAXBDeleteSchemaAction extends NodeAction {
@@ -79,6 +79,7 @@ public class JAXBDeleteSchemaAction extends NodeAction {
         return NbBundle.getMessage(this.getClass(), "LBL_DeleteSchema");//NOI18N
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

@@ -76,7 +76,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * @author lgao
- * @author $Author$
+ * @author gmpatil
  */
 
 public class OpenJAXBCustomizerAction extends NodeAction  {
@@ -230,6 +230,7 @@ public class OpenJAXBCustomizerAction extends NodeAction  {
                 this.getClass(), "LBL_DialogTitleChangeBindingOptions");//NOI18N  
     }   
             
+    @Override
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource()

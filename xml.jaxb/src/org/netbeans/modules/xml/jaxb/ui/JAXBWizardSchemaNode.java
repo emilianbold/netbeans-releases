@@ -74,8 +74,8 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
+ * @author gmpatil
  * @author lgao
- * @author $Author$ 
  */
 public class JAXBWizardSchemaNode extends AbstractNode {
     private String schemaName;
@@ -100,6 +100,7 @@ public class JAXBWizardSchemaNode extends AbstractNode {
         //content.add (...);
     }
     
+    @Override
     public Action[] getActions(boolean b) {
         return actions;
     }
@@ -131,14 +132,17 @@ public class JAXBWizardSchemaNode extends AbstractNode {
         }
     }
     
+    @Override
     public String getDisplayName() {
         return schemaName;
     }
     
+    @Override
     public boolean canDestroy(){
         return true;
     }
     
+    @Override
     public void destroy() throws IOException {
         super.destroy();
         // Delete schema
@@ -147,10 +151,12 @@ public class JAXBWizardSchemaNode extends AbstractNode {
         delAction.performAction(new Node[] {this});
     }
     
+    @Override
     public Image getIcon(int type) {
         return Utilities.loadImage( "org/netbeans/modules/xml/jaxb/resources/package.gif" ); // No I18N
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return Utilities.loadImage( "org/netbeans/modules/xml/jaxb/resources/packageOpen.gif" ); // No I18N
     }
@@ -171,6 +177,7 @@ public class JAXBWizardSchemaNode extends AbstractNode {
             super.addNotify();
         }        
 
+        @Override
         public void removeNotify() {
         }
                 

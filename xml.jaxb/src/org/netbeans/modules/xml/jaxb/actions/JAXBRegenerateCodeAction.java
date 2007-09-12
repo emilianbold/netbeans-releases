@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
- * @author $Author$
+ * @author gmpatil
  * @author lgao
  */
 public class JAXBRegenerateCodeAction extends NodeAction {
