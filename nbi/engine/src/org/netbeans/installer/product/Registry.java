@@ -352,7 +352,7 @@ public class Registry {
                     ResourceUtils.getString(Registry.class,
                     ERROR_CACHE_IS_FILE_KEY,
                     localProductCache ));
-        } else if (!localProductCache.canRead()) {            
+        } else if (!localProductCache.canRead()) {
             throw new InitializationException(
                     ResourceUtils.getString(Registry.class,
                     ERROR_CANNOT_READ_CACHE_KEY,
@@ -378,16 +378,16 @@ public class Registry {
                 FileUtils.copyFile(
                         FileProxy.getInstance().getFile(localRegistryStubUri),
                         localRegistryFile);
-            } catch (DownloadException e) {                
+            } catch (DownloadException e) {
                 throw new InitializationException(
-                    ResourceUtils.getString(Registry.class,
-                    ERROR_CANNOT_CREATE_REGISTRY_KEY), e);
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_CANNOT_CREATE_REGISTRY_KEY), e);
             } catch (IOException e) {
                 throw new InitializationException(
-                    ResourceUtils.getString(Registry.class,
-                    ERROR_CANNOT_CREATE_REGISTRY_KEY), e);
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_CANNOT_CREATE_REGISTRY_KEY), e);
             }
-        } else if (localRegistryFile.isDirectory()) {            
+        } else if (localRegistryFile.isDirectory()) {
             throw new InitializationException(
                     ResourceUtils.getString(Registry.class,
                     ERROR_REGISTRY_IS_DIRECTORY_KEY, localRegistryFile));
@@ -459,10 +459,10 @@ public class Registry {
             try {
                 targetPlatform = StringUtils.parsePlatform(platformString);
             } catch (ParseException e) {
-                 throw new InitializationException(
-                    ResourceUtils.getString(Registry.class,
-                    ERROR_CANNOT_PARSE_PLATFORM_KEY,
-                    platformString), e);
+                throw new InitializationException(
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_CANNOT_PARSE_PLATFORM_KEY,
+                        platformString), e);
                 
             }
         }
@@ -887,13 +887,13 @@ public class Registry {
             validateInstallations();
             
             progress.setPercentage(Progress.COMPLETE);
-        } catch (ParseException e) {            
+        } catch (ParseException e) {
             throw new InitializationException(
-                    ResourceUtils.getString(Registry.class, 
+                    ResourceUtils.getString(Registry.class,
                     ERROR_CANNOT_LOAD_REGISTRY_KEY), e);
         } catch (XMLException e) {
             throw new InitializationException(
-                    ResourceUtils.getString(Registry.class, 
+                    ResourceUtils.getString(Registry.class,
                     ERROR_CANNOT_LOAD_REGISTRY_KEY), e);
         }
     }
@@ -975,8 +975,8 @@ public class Registry {
                 // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        ResourceUtils.getString(Registry.class, 
-                        ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY, 
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY,
                         factory.getClass()), e);
             }
             factory.setNamespaceAware(true);
@@ -1155,7 +1155,7 @@ public class Registry {
                     dependency.getUid(),
                     targetPlatform));
         }
-        ErrorManager.notifyCritical(ResourceUtils.getString(Registry.class, 
+        ErrorManager.notifyCritical(ResourceUtils.getString(Registry.class,
                 ERROR_UNKNOWN_DEPENDENCY_KEY, dependency.getClass().toString()));
         
         // the only way for us to reach this spot is to get to 'default:' in the
@@ -1377,8 +1377,8 @@ public class Registry {
                 // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        ResourceUtils.getString(Registry.class, 
-                        ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY, 
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY,
                         factory.getClass()), e);
             }
             factory.setNamespaceAware(true);
@@ -1428,7 +1428,17 @@ public class Registry {
                     LogManager.log("        parsing component uid=" + uid + ", version=" + version);
                     progress.setDetail(ResourceUtils.getString(Registry.class,
                             LOADING_COMPONENT_KEY, uid, version));
-                    if (platforms.contains(targetPlatform)) {
+                    
+                    boolean compatible = false;
+                    
+                    for (Platform productPlatform: platforms) {
+                        if (targetPlatform.isCompatibleWith(productPlatform)) {
+                            compatible = true;
+                            break;
+                        }
+                    }
+                    
+                    if (compatible) {
                         final Product product = getProduct(uid, version);
                         
                         if (product != null) {
@@ -1501,8 +1511,8 @@ public class Registry {
                 // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        ResourceUtils.getString(Registry.class, 
-                        ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY, 
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY,
                         factory.getClass()), e);
             }
             factory.setNamespaceAware(true);
@@ -1779,7 +1789,7 @@ public class Registry {
             "R.error.cannot.write.cache";//NOI18N
     private static final String ERROR_CANNOT_CREATE_REGISTRY_KEY =
             "R.error.cannot.create.registry";//NOI18N
-    private static final String ERROR_REGISTRY_IS_DIRECTORY_KEY = 
+    private static final String ERROR_REGISTRY_IS_DIRECTORY_KEY =
             "R.error.registry.is.dir";//NOI18N
     private static final String ERROR_CANNOT_READ_REGISTRY_KEY =
             "R.error.cannot.read.registry";//NOI18N
@@ -1787,7 +1797,7 @@ public class Registry {
             "R.error.cannot.write.registry";//NOI18N
     private static final String ERROR_CANNOT_PARSE_PLATFORM_KEY =
             "R.error.cannot.parse.platform";//NOI18N
-    private static final String ERROR_CANNOT_LOAD_REGISTRY_KEY = 
+    private static final String ERROR_CANNOT_LOAD_REGISTRY_KEY =
             "R.error.cannot.load.registry";//NOI18N
     private static final String ERROR_PARSER_DO_NOT_CUPPORT_SCHEMAS_KEY =
             "R.error.parser.not.support.schemas";//NOI18N
