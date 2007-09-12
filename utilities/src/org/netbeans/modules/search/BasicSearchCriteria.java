@@ -259,14 +259,14 @@ final class BasicSearchCriteria {
             if (LOG.isLoggable(FINEST)) {
                 LOG.finest(" - textPatternExpr = \"" + textPatternExpr + '"');  //NOI18N
             }
-	    String regexp = RegexpMaker.makeRegexp(textPatternExpr);
+	    String searchRegexp = RegexpMaker.makeRegexp(textPatternExpr);
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - regexp = \"" + regexp + '"');            //NOI18N
+                LOG.finest(" - regexp = \"" + searchRegexp + '"');      //NOI18N
             }
 	    if (wholeWords) {
-                regexp = "\\b" + regexp + "\\b";                        //NOI18N
+                searchRegexp = "\\b" + searchRegexp + "\\b";            //NOI18N
 	    }
-            textPattern = Pattern.compile(regexp, flags);
+            textPattern = Pattern.compile(searchRegexp, flags);
         } catch (PatternSyntaxException ex) {
             LOG.finest(" - invalid regexp");                            //NOI18N
             assert false;
