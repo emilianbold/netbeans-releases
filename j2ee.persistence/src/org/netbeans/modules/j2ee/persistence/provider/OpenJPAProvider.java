@@ -35,31 +35,31 @@ class OpenJPAProvider extends Provider{
     }
     
     public String getJdbcUrl() {
-        return "openjpa.ConnectionURL";
+        return "openjpa.ConnectionURL";//NOI18N
     }
     
     public String getJdbcDriver() {
-        return "openjpa.ConnectionDriverName";
+        return "openjpa.ConnectionDriverName";//NOI18N
     }
     
     public String getJdbcUsername() {
-        return "openjpa.ConnectionUserName";
+        return "openjpa.ConnectionUserName";//NOI18N
     }
     
     public String getJdbcPassword() {
-        return "openjpa.ConnectionPassword";
+        return "openjpa.ConnectionPassword";//NOI18N
     }
 
     public String getTableGenerationPropertyName() {
-        return "";
+        return "openjpa.jdbc.SynchronizeMappings";//NOI18N
     }
 
     public String getTableGenerationDropCreateValue() {
-        return "";
+        return "buildSchema(SchemaAction='add,deleteTableContents',ForeignKeys=true)";//NOI18N
     }
 
     public String getTableGenerationCreateValue() {
-        return "";
+        return "buildSchema(ForeignKeys=true)";//NOI18N
     }
 
     public Map getUnresolvedVendorSpecificProperties() {
