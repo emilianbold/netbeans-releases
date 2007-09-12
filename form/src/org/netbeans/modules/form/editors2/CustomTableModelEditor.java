@@ -32,6 +32,7 @@ import javax.swing.table.*;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /** A custom property editor for TableModel.
@@ -379,7 +380,11 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         sizePanel.add(rowsField, gridBagConstraints1);
 
         addRowBtn = new JButton(" "+bundle.getString("CTL_CountPlus")+" "); // NOI18N
-        addRowBtn.setMnemonic(bundle.getString("CTL_CountPlusRow_Mnemonic").charAt(0)); // NOI18N
+        if (!Utilities.isMac()) {
+            // there shall be no mnemonics on macosx. #55864, #86165
+            // can't use org.openide.awt.Mnemonics as it isn't accepting non latin characters            
+            addRowBtn.setMnemonic(bundle.getString("CTL_CountPlusRow_Mnemonic").charAt(0)); // NOI18N
+        }                
         addRowBtn.setToolTipText(bundle.getString("CTL_HINT_AddRow")); // NOI18N
         addRowBtn.setMargin(new Insets(-1,1,-2,0));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -392,7 +397,11 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         });
         
         removeRowBtn = new JButton(" "+bundle.getString("CTL_CountMinus")+" "); // NOI18N
-        removeRowBtn.setMnemonic(bundle.getString("CTL_CountMinusRow_Mnemonic").charAt(0)); // NOI18N
+        if (!Utilities.isMac()) {
+            // there shall be no mnemonics on macosx. #55864, #86165
+            // can't use org.openide.awt.Mnemonics as it isn't accepting non latin characters            
+            removeRowBtn.setMnemonic(bundle.getString("CTL_CountMinusRow_Mnemonic").charAt(0)); // NOI18N
+        }
         removeRowBtn.setToolTipText(bundle.getString("CTL_HINT_RemoveRow")); // NOI18N
         removeRowBtn.setMargin(new Insets(-2,1,-1,1));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -419,7 +428,11 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         sizePanel.add(columnsField, gridBagConstraints1);
 
         addColBtn = new JButton(" "+bundle.getString("CTL_CountPlus")+" "); // NOI18N
-        addColBtn.setMnemonic(bundle.getString("CTL_CountPlusColumn_Mnemonic").charAt(0)); // NOI18N
+        if (!Utilities.isMac()) {
+            // there shall be no mnemonics on macosx. #55864, #86165
+            // can't use org.openide.awt.Mnemonics as it isn't accepting non latin characters                   
+            addColBtn.setMnemonic(bundle.getString("CTL_CountPlusColumn_Mnemonic").charAt(0)); // NOI18N
+        }
         addColBtn.setToolTipText(bundle.getString("CTL_HINT_AddColumn")); // NOI18N
         addColBtn.setMargin(new Insets(-1,1,-2,0));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -432,7 +445,11 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         });
         
         removeColBtn = new JButton(" "+bundle.getString("CTL_CountMinus")+" "); // NOI18N
-        removeColBtn.setMnemonic(bundle.getString("CTL_CountMinusColumn_Mnemonic").charAt(0)); // NOI18N
+        if (!Utilities.isMac()) {
+            // there shall be no mnemonics on macosx. #55864, #86165
+            // can't use org.openide.awt.Mnemonics as it isn't accepting non latin characters            
+            removeColBtn.setMnemonic(bundle.getString("CTL_CountMinusColumn_Mnemonic").charAt(0)); // NOI18N
+        }
         removeColBtn.setToolTipText(bundle.getString("CTL_HINT_RemoveColumn")); // NOI18N
         removeColBtn.setMargin(new Insets(-2,1,-1,1));
         gridBagConstraints1 = new java.awt.GridBagConstraints();

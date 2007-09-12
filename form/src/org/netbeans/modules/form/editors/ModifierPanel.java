@@ -26,6 +26,7 @@ import java.beans.FeatureDescriptor;
 import java.lang.reflect.Modifier;
 
 import javax.swing.*;
+import org.openide.awt.Mnemonics;
 
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -57,7 +58,7 @@ final class ModifierPanel {
 
     /** Names of modifiers */
     static final String MODIFIER_NAMES[] = {
-        "abstract", "final", "static", "synchronized", "transient", "volatile", "native" // NOI18N
+        "a&bstract", "&final", "&static", "synch&ronized", "&transient", "&volatile", "nat&ive" // NOI18N
     };
 
     private static final String[] MODIFIER_DESCRIPTION_KEYS = {
@@ -68,16 +69,6 @@ final class ModifierPanel {
         "ACSD_ModifierPanel_Modifier_Transient",        // NOI18N
         "ACSD_ModifierPanel_Modifier_Volatile",         // NOI18N
         "ACSD_ModifierPanel_Modifier_Native"            // NOI18N
-    };
-
-    private static final String[] MODIFIER_MNEMONICS_KEYS = {
-        "ModifierPanel_Modifier_Abstract_Mnemonic",     // NOI18N
-        "ModifierPanel_Modifier_Final_Mnemonic",        // NOI18N
-        "ModifierPanel_Modifier_Static_Mnemonic",       // NOI18N
-        "ModifierPanel_Modifier_Synchronized_Mnemonic", // NOI18N
-        "ModifierPanel_Modifier_Transient_Mnemonic",    // NOI18N
-        "ModifierPanel_Modifier_Volatile_Mnemonic",     // NOI18N
-        "ModifierPanel_Modifier_Native_Mnemonic"        // NOI18N
     };
 
     /** Values of modifiers */
@@ -219,8 +210,8 @@ final class ModifierPanel {
 
         checks = new JCheckBox[MODIFIER_COUNT];
         for (int i = 0; i < MODIFIER_COUNT; i++) {
-            checks[i] = new JCheckBox(MODIFIER_NAMES[i]);
-            checks[i].setMnemonic(getModifierMnemonics(i));
+            checks[i] = new JCheckBox();
+            Mnemonics.setLocalizedText(checks[i], MODIFIER_NAMES[i]);
             checks[i].getAccessibleContext().setAccessibleDescription(getModifierDescription(i));
             modifPanel.add(checks[i]);
             checks[i].setEnabled((myEditor.getMask() & MODIFIER_VALUES[i]) != 0);
@@ -229,10 +220,9 @@ final class ModifierPanel {
     }
     
     private void initComponents() {
-        jLabel1 = new JLabel();
-        jLabel1.setText(getString("LAB_AccessRights")); // NOI18N
+        jLabel1 = new JLabel();        
         jLabel1.setLabelFor(accessCombo);
-        jLabel1.setDisplayedMnemonic(getString("LAB_AccessRights_Mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(jLabel1, getString("LAB_AccessRights")); // NOI18N
 
         jPanel2 = new JPanel();
         jPanel2.setLayout(new java.awt.BorderLayout(8, 8));
@@ -404,7 +394,4 @@ final class ModifierPanel {
         return getString(MODIFIER_DESCRIPTION_KEYS[i]);
     }
     
-    static char getModifierMnemonics(int i) {
-        return getString(MODIFIER_MNEMONICS_KEYS[i]).charAt(0);
-    }
 }
