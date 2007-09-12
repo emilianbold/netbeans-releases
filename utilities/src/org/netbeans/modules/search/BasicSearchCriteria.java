@@ -716,8 +716,9 @@ final class BasicSearchCriteria {
     public Node[] getDetails(Node node) {
         DataObject dataObject = node.getCookie(DataObject.class);
         
-        if(dataObject == null) 
+        if (dataObject == null) {
             return null;
+        }
         
         return getDetails(dataObject);
     }
