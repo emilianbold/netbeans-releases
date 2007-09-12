@@ -64,6 +64,9 @@ public class JDKDerbyHelper {
     }
 
     public String findDerbyLocation() {
+        if (!canBundleDerby()) {
+            return null;
+        }
         // see issue 83144
         if (Utilities.isWindows()) {
             LOGGER.log(Level.FINE, "Operating system: Windows");
