@@ -34,8 +34,13 @@ public enum SearchType {
      * This is not yet used but the Go To Type dialog, but it seems plausible 
      * that it could be.
      */
-    EXACT_NAME, // was: SIMPLE_NAME
+    EXACT_NAME, 
 
+    /**
+     * Same as EXACT NAME but case insensitive
+     */
+    CASE_INSENSITIVE_EXACT_NAME,
+    
     /**
      * A search using a case-sensitive prefix of the type name
      */

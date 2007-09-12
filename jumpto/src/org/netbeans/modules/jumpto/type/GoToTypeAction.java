@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -159,6 +160,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return;
         }
         
+        boolean exact = text.endsWith(" "); // NOI18N
+        
         text = text.trim();
         
         if ( text.length() == 0) {
@@ -173,9 +176,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return;
         }
         
-        if (isAllUpper(text)) {
+        if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
             nameKind = SearchType.CAMEL_CASE;
-        } 
+        }
         else if (wildcard != -1) {
             if (Character.isJavaIdentifierStart(text.charAt(0))) {
                 nameKind = panel.isCaseSensitive() ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
@@ -186,7 +189,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             }
                 
         }
-        else {
+        else if (exact) {
+            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+        }
+        else {            
             nameKind = panel.isCaseSensitive() ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
         }
         
@@ -224,14 +230,18 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     private static int containsWildCard( String text ) {
         for( int i = 0; i < text.length(); i++ ) {
-            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) {
+            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
                 return i;                
             }
         }        
         return -1;
     }
     
+    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{Upper}(?:\\p{Lower}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
     
+    private static boolean isCamelCase(String text) {
+         return camelCasePattern.matcher(text).matches();
+    }
     
     
     /** Creates the dialog to show
@@ -593,4 +603,6 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
         return s1.compareTo( s2 );
     }
+    
+
 }

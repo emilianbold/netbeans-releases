@@ -98,14 +98,22 @@ public class JavaTypeProvider implements TypeProvider {
         ClassIndex.NameKind nameKind;
         switch (searchType) {
         case EXACT_NAME: nameKind = ClassIndex.NameKind.SIMPLE_NAME; break;
+        case CASE_INSENSITIVE_EXACT_NAME: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP; break;        
         case PREFIX: nameKind = ClassIndex.NameKind.PREFIX; break;
         case CASE_INSENSITIVE_PREFIX: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX; break;
         case REGEXP: nameKind = ClassIndex.NameKind.REGEXP; break;
         case CASE_INSENSITIVE_REGEXP: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP; break;
-        case CAMEL_CASE: nameKind = ClassIndex.NameKind.CAMEL_CASE; break;
+        case CAMEL_CASE: 
+            if ( isAllUpper(text) ) {
+                nameKind = ClassIndex.NameKind.CAMEL_CASE;
+            }
+            else {
+                nameKind = ClassIndex.NameKind.REGEXP;
+            }
+            break;
         default: throw new RuntimeException("Unexpected search type: " + searchType);
         }
-
+        
         long time;
 
         long cp, gss, gsb, sfb, gtn, add, sort;
@@ -183,9 +191,13 @@ public class JavaTypeProvider implements TypeProvider {
             String textForQuery;
             switch( nameKind ) {
                 case REGEXP:
+                    if ( searchType == SearchType.CAMEL_CASE ) {
+                        textForQuery = getCamelCaseRegexp(text);
+                        break;
+                    }
                 case CASE_INSENSITIVE_REGEXP:
                     text = removeNonJavaChars(text);
-                    String pattern = text + "*"; // NOI18N
+                    String pattern = searchType == SearchType.CASE_INSENSITIVE_EXACT_NAME ? text : text + "*"; // NOI18N
                     pattern = pattern.replace( "*", ".*" ).replace( '?', '.' );
                     textForQuery = pattern;
                     break;
@@ -228,6 +240,16 @@ public class JavaTypeProvider implements TypeProvider {
         }
     }
    
+    private static boolean isAllUpper( String text ) {
+        for( int i = 0; i < text.length(); i++ ) {
+            if ( !Character.isUpperCase( text.charAt( i ) ) ) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+   
    private static String removeNonJavaChars(String text) {
        StringBuilder sb = new StringBuilder();
        
@@ -239,7 +261,33 @@ public class JavaTypeProvider implements TypeProvider {
        }
        return sb.toString();
    }
+   
+   private static String getCamelCaseRegexp(String text) {
+       StringBuilder sb = new StringBuilder();
+       
+       int lastIndex = 0;
+       int index;
+       do {
+          index = findNextUpper(text, lastIndex + 1);
+          sb.append(text.substring(lastIndex, index == -1 ? text.length(): index)); 
+          sb.append("[\\p{Lower}\\p{Digit}_\\$]*"); // NOI18N         
+          lastIndex = index;
+       }
+       while(index != -1);
+       
+       return sb.toString();
+   }
   
+    private static int findNextUpper(String text, int offset ) {
+        
+        for( int i = offset; i < text.length(); i++ ) {
+            if ( Character.isUpperCase(text.charAt(i)) ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+   
     static class CacheItem {
 
         public final boolean isBinary;
