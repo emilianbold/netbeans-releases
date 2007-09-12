@@ -60,7 +60,7 @@ public class ${mapping.getClientMapping().getClassName()} {
             };
             int paramIDs[] = new int[] {
                 <#list method.getParameters() as parameter>
-                ${registry.getRegisteredTypeId( parameter.getType())}<#if parameter_has_next>, </#if>
+                ${registry.getRegisteredTypeId( parameter.getType())?c}<#if parameter_has_next>, </#if>
                 </#list>
             };
         </#if>
@@ -72,7 +72,7 @@ public class ${mapping.getClientMapping().getClassName()} {
             <#assign invocationParamIDs = "null"/>
         </#if>
         <#if method.getReturnType().getName() == "void"><#rt>
-            invokeServer(${method.getRequestID()}, ${invocationParam}, ${invocationParamIDs});
+            invokeServer(${method.getRequestID()?c}, ${invocationParam}, ${invocationParamIDs});
         <#else><#rt>
             return ${mapping.getRegistry().getTypeSerializer( method.getReturnType()).fromObject( method.getReturnType(), "invokeServer("+method.getRequestID()+", "+invocationParam+", "+invocationParamIDs+")" )};
         </#if>
@@ -169,10 +169,10 @@ public class ${mapping.getClientMapping().getClassName()} {
         Object[] array;
         switch( id ) {
         <#list parameterTypes as type>
-            case ${registry.getRegisteredTypeId( type )}:
+            case ${registry.getRegisteredTypeId( type )?c}:
                 // ${type.getName()}
                 <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-                out.writeShort(${registry.getRegisteredTypeId( type )});
+                out.writeShort(${registry.getRegisteredTypeId( type )?c});
                 <#if type.isPrimitive()>
                 ${serializer.toStream( mapping, type, "out", serializer.fromObject( type, "o" ))}
                 <#else>
@@ -193,7 +193,7 @@ public class ${mapping.getClientMapping().getClassName()} {
         switch (type) {
         <#list returnTypes as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>            
-                case ${registry.getRegisteredTypeId( type )}:
+                case ${registry.getRegisteredTypeId( type )?c}:
                     // ${type.getName()}
                     <#if type.getName() == "void">
                         return _;

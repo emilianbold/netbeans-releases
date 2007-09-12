@@ -65,14 +65,14 @@ public class JavonGateways {
         public int[] getIds() {
             return new int[] {
                 <#list method.getParameters() as parameter>
-                    ${registry.getRegisteredTypeId( parameter.getType())}<#if parameter_has_next>,</#if>
+                    ${registry.getRegisteredTypeId( parameter.getType())?c}<#if parameter_has_next>,</#if>
                 </#list>
                 };
         };
 
         public int[] getReturnIds() {
             return new int[] {
-                ${registry.getRegisteredTypeId( method.getReturnType() )}
+                ${registry.getRegisteredTypeId( method.getReturnType())?c}
                 };
         };
     }

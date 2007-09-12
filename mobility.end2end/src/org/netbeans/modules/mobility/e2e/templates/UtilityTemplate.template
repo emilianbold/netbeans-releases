@@ -51,10 +51,10 @@ public class Utility {
         Object[] array;
         switch( id ) {
         <#list returnTypes as type>
-            case ${registry.getRegisteredTypeId( type )}:
+            case ${registry.getRegisteredTypeId( type )?c}:
                 // ${type.getName()}
                 <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-                output.writeShort(${registry.getRegisteredTypeId( type )});                    
+                output.writeShort(${registry.getRegisteredTypeId( type )?c});                    
                 <#if type.getName() != "void">
                     <#if type.isPrimitive()>
                         ${serializer.toStream( mapping, type, "output", serializer.fromObject( type, "o" ))}
@@ -82,7 +82,7 @@ public class Utility {
         switch (type) {
         <#list parameterTypes as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-            case ${registry.getRegisteredTypeId( type )}:
+            case ${registry.getRegisteredTypeId( type )?c}:
                 // ${type.getName()}
                 <#if type.isPrimitive() && !type.isArray()>
                     <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>

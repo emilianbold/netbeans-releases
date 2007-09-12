@@ -58,7 +58,7 @@ public class ${mapping.getServerMapping().getClassName()} extends HttpServlet {
         METHODS = new HashMap();
         <#list mapping.getServiceMappings() as service>
             <#list service.getMethods() as method>
-        METHODS.put( new Integer(${method.getRequestID()}), new JavonGateways.${packageName?replace( ".", "_" )}_${service.getClassName()}${method.getName()}${method.getRequestID()}Gateway());
+        METHODS.put( new Integer(${method.getRequestID()}), new JavonGateways.${packageName?replace( ".", "_" )}_${service.getClassName()}${method.getName()}${method.getRequestID()?c}Gateway());
             </#list>
         </#list>
     }
