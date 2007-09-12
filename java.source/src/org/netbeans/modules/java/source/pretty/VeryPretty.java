@@ -43,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Comment.Style;
@@ -292,19 +293,13 @@ public final class VeryPretty extends JCTree.Visitor {
     @Override
     public void visitTopLevel(JCCompilationUnit tree) {
         printPackage(tree.pid);
-        boolean hasImports = false;
         List<JCTree> l = tree.defs;
+        ArrayList<JCImport> imports = new ArrayList<JCImport>();
         while (l.nonEmpty() && l.head.getTag() == JCTree.IMPORT){
-            if (!hasImports) {
-                blankLines(cs.getBlankLinesBeforeImports());
-                hasImports = true;
-            }
-            printStat(l.head);
-            newline();
+            imports.add((JCImport) l.head);
             l = l.tail;
         }
-        if (hasImports)
-            blankLines(cs.getBlankLinesAfterImports());
+        printImportsBlock(imports);
 	while (l.nonEmpty()) {
             printStat(l.head, true, false);
             newline();
@@ -1434,7 +1429,20 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
     
-
+    public void printImportsBlock(java.util.List<? extends JCTree> imports) {
+        boolean hasImports = !imports.isEmpty();
+        if (hasImports) {
+            blankLines(cs.getBlankLinesBeforeImports());
+        }
+        for (JCTree importStat : imports) {
+            printStat(importStat);
+            newline();
+        }
+        if (hasImports) {
+            blankLines(cs.getBlankLinesAfterImports());
+        }
+    }
+    
     private void printExpr(JCTree tree) {
 	printExpr(tree, TreeInfo.noPrec);
     }

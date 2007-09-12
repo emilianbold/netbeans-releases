@@ -1987,13 +1987,18 @@ public class CasualDiff {
             StringBuilder aHead = new StringBuilder(), aTail = new StringBuilder();
             int pos = estimator.prepare(localPointer, aHead, aTail);
             copyTo(localPointer, pos, printer);
-            printer.print(aHead.toString());
-            for (JCTree item : newList) {
-                if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
-                printer.print(item);
-                if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
+            
+            if (newList.get(0).getKind() == Kind.IMPORT) {
+                printer.printImportsBlock(newList);
+            } else {
+                printer.print(aHead.toString());
+                for (JCTree item : newList) {
+                    if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
+                    printer.print(item);
+                    if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
+                }
+                printer.print(aTail.toString());
             }
-            printer.print(aTail.toString());
             return pos;
         }
 

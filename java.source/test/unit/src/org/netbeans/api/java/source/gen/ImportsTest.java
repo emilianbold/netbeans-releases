@@ -1098,6 +1098,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "}\n"
             );
         String golden =
+            "\n" +
             "import java.io.IOException;\n" +
             "\n" +
             "public class Test {\n" +
@@ -1139,7 +1140,8 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "@XmlSchema(namespace = \"urn:aaa\")\n" +
             "package javaapplication2;\n" +
             "\n" +
-            "import javax.xml.bind.annotation.XmlSchema;\n";
+            "import javax.xml.bind.annotation.XmlSchema;\n" +
+            "\n";
 
         JavaSource src = getJavaSource(testFile);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
