@@ -499,10 +499,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 cboxReplacement.setModel(new ListComboBoxModel(entries, true));
             }
         }
-        
-        chkWholeWords.setSelected(memory.isWholeWords());
-        chkCaseSensitive.setSelected(memory.isCaseSensitive());
-        chkRegexp.setSelected(memory.isRegularExpression());
     }
     
     /**
@@ -523,6 +519,11 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             replacementPatternEditor.setText(
                     cboxReplacement.getSelectedItem().toString());
         }
+
+        FindDialogMemory memory = FindDialogMemory.getDefault();
+        chkWholeWords.setSelected(memory.isWholeWords());
+        chkCaseSensitive.setSelected(memory.isCaseSensitive());
+        chkRegexp.setSelected(memory.isRegularExpression());
     }
     
     @Override
@@ -756,9 +757,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             FindDialogMemory.getDefault().storeReplacementExpression(
                     replacementPatternEditor.getText());
         }
-        searchCriteria.setRegexp(chkRegexp.isSelected());
-        searchCriteria.setWholeWords(chkWholeWords.isSelected());
-        searchCriteria.setCaseSensitive(chkCaseSensitive.isSelected());
         FindDialogMemory.getDefault().setWholeWords(chkWholeWords.isSelected());
         FindDialogMemory.getDefault().setCaseSensitive(chkCaseSensitive.isSelected());
         FindDialogMemory.getDefault().setRegularExpression(chkRegexp.isSelected());
