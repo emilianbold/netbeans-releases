@@ -401,6 +401,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             protected final List<MethodTree> methods = new ArrayList<MethodTree>();
             // generated constructors
             protected final List<MethodTree> constructors = new ArrayList<MethodTree>();
+            // generated fields. does not include fields of properties, just plain fields 
+            protected final List<VariableTree> fields = new ArrayList<VariableTree>();
 
             // the class tree of the class we are generating
             protected ClassTree classTree;
@@ -615,6 +617,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 // add the generated members
                 TreeMaker make = copy.getTreeMaker();
                 int position = 0;
+                for (VariableTree field : fields){
+                    classTree = make.insertClassMember(classTree, position, field);
+                    position++;
+                }
                 for (Property property : properties) {
                     classTree = make.insertClassMember(classTree, position, property.getField());
                     position++;
@@ -905,6 +911,25 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));
             }
 
+            /**
+             * Creates the <code>serialVersionUID</code> field with
+             * the initial value of <code>1L</code>.
+             * 
+             * @return the created field.
+             */ 
+            private VariableTree createSerialVersionUID(){
+                Set<Modifier> serialVersionUIDModifiers = new HashSet<Modifier>();
+                serialVersionUIDModifiers.add(Modifier.PRIVATE);
+                serialVersionUIDModifiers.add(Modifier.STATIC);
+                serialVersionUIDModifiers.add(Modifier.FINAL);
+
+                TreeMaker make = copy.getTreeMaker();
+                VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), 
+                        "serialVersionUID", genUtils.createType("long"), make.Literal(Long.valueOf("1"))); //NO18N
+                
+                return serialVersionUID;
+            }
+            
             protected void finish() {
                 // create a constructor which takes the primary key field as argument
                 VariableTree pkFieldParam = genUtils.removeModifiers(pkProperty.getField());
@@ -945,6 +970,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 methods.add(createHashCodeMethod(pkFieldParams));
                 methods.add(createEqualsMethod(entityClassName, pkFieldParams));
                 methods.add(createToStringMethod(entityFQClassName, pkFieldParams));
+                
+                // add the serialVersionUID field
+                fields.add(createSerialVersionUID());
             }
 
             private String getRelationshipFieldType(RelationshipRole role, String pkg) {
