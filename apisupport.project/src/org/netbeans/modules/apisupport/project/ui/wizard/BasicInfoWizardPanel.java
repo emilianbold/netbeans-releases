@@ -40,7 +40,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-final class BasicInfoWizardPanel extends BasicWizardPanel.NewTemplatePanel implements WizardDescriptor.ValidatingPanel {
+final class BasicInfoWizardPanel extends BasicWizardPanel.NewTemplatePanel implements WizardDescriptor.ValidatingPanel<WizardDescriptor> {
     
     /** Representing visual component for this step. */
     private BasicInfoVisualPanel visualPanel;

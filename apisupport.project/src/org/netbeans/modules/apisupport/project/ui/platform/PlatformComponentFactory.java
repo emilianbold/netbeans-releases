@@ -60,7 +60,7 @@ public final class PlatformComponentFactory {
     private static final Color INVALID_PLAF_COLOR = UIManager.getColor("nb.errorForeground"); // NOI18N
     
     /** Set of suites added by the user in <em>this</em> IDE session. */
-    private static Set<String> userSuites = new TreeSet(Collator.getInstance());
+    private static Set<String> userSuites = new TreeSet<String>(Collator.getInstance());
     
     private PlatformComponentFactory() {
         // don't allow instances
@@ -175,15 +175,15 @@ public final class PlatformComponentFactory {
             implements ComboBoxModel {
         
         private static NbPlatform[] getSortedPlatforms() {
-            Set _platforms = NbPlatform.getPlatforms();
-            NbPlatform[] platforms = (NbPlatform[]) _platforms.toArray(new NbPlatform[_platforms.size()]);
-            Arrays.sort(platforms, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    int res = Collator.getInstance().compare(((NbPlatform) o1).getLabel(), ((NbPlatform) o2).getLabel());
+            Set<NbPlatform> _platforms = NbPlatform.getPlatforms();
+            NbPlatform[] platforms = _platforms.toArray(new NbPlatform[_platforms.size()]);
+            Arrays.sort(platforms, new Comparator<NbPlatform>() {
+                public int compare(NbPlatform p1, NbPlatform p2) {
+                    int res = Collator.getInstance().compare(p1.getLabel(), p2.getLabel());
                     if (res != 0) {
                         return res;
                     } else {
-                        return System.identityHashCode(o1) - System.identityHashCode(o2);
+                        return System.identityHashCode(p1) - System.identityHashCode(p2);
                     }
                 }
             });
@@ -269,7 +269,7 @@ public final class PlatformComponentFactory {
     private static class SuiteListModel extends AbstractListModel
             implements MutableComboBoxModel {
         
-        private Set<String> suites = new TreeSet(Collator.getInstance());
+        private Set<String> suites = new TreeSet<String>(Collator.getInstance());
         private String selectedSuite;
         
         SuiteListModel(Set<String> suites) {

@@ -20,8 +20,9 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.text.Collator;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,9 +43,7 @@ final class AddModuleFilter {
         this.universe = universe;
         this.dependingModuleCNB = dependingModuleCNB;
         // Prime the cache:
-        Iterator it = universe.iterator();
-        while (it.hasNext()) {
-            ModuleDependency dep = (ModuleDependency) it.next();
+        for (ModuleDependency dep : universe) {
             dep.getFilterTokens(dependingModuleCNB);
         }
         // To test "Please wait" use:
@@ -56,19 +55,15 @@ final class AddModuleFilter {
      */
     public Set<ModuleDependency> getMatches(String text) {
         String textLC = text.toLowerCase(Locale.ENGLISH);
-        Set<ModuleDependency>[] matches = new Set[3];
-        for (int i = 0; i < matches.length; i++) {
+        List<Set<ModuleDependency>> matches = new ArrayList<Set<ModuleDependency>>(3);
+        for (int i = 0; i < 3; i++) {
             // Within groups, just sort by module display name:
-            matches[i] = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
+            matches.add(new TreeSet<ModuleDependency>(ModuleDependency.LOCALIZED_NAME_COMPARATOR));
         }
-        Iterator it = universe.iterator();
-        while (it.hasNext()) {
-            ModuleDependency dep = (ModuleDependency) it.next();
-            int matchLevel = matches.length;
-            Set<String> tokens = dep.getFilterTokens(dependingModuleCNB);
-            Iterator it2 = tokens.iterator();
-            while (it2.hasNext()) {
-                String token = ((String) it2.next()).toLowerCase(Locale.ENGLISH);
+        for (ModuleDependency dep : universe) {
+            int matchLevel = 3;
+            for (String tok : dep.getFilterTokens(dependingModuleCNB)) {
+                String token = tok.toLowerCase(Locale.ENGLISH);
                 // Presort by relevance (#71995):
                 if (token.equals(textLC) || token.endsWith("." + textLC)) { // NOI18N
                     // Exact match (possibly after dot).
@@ -81,13 +76,13 @@ final class AddModuleFilter {
                     matchLevel = Math.min(2, matchLevel);
                 }
             }
-            if (matchLevel < matches.length) {
-                matches[matchLevel].add(dep);
+            if (matchLevel < 3) {
+                matches.get(matchLevel).add(dep);
             }
         }
-        Set result = new LinkedHashSet();
-        for (int i = 0; i < matches.length; i++) {
-            result.addAll(matches[i]);
+        Set<ModuleDependency> result = new LinkedHashSet<ModuleDependency>();
+        for (Set<ModuleDependency> deps : matches) {
+            result.addAll(deps);
         }
         return result;
     }
@@ -97,10 +92,8 @@ final class AddModuleFilter {
      */
     public Set<String> getMatchesFor(String text, ModuleDependency dep) {
         String textLC = text.toLowerCase(Locale.US);
-        Set<String> tokens = new TreeSet(Collator.getInstance());
-        Iterator it = dep.getFilterTokens(dependingModuleCNB).iterator();
-        while (it.hasNext()) {
-            String token = (String) it.next();
+        Set<String> tokens = new TreeSet<String>(Collator.getInstance());
+        for (String token : dep.getFilterTokens(dependingModuleCNB)) {
             if (token.toLowerCase(Locale.US).indexOf(textLC) != -1) {
                 tokens.add(token);
             }

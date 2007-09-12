@@ -21,6 +21,7 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -36,7 +37,7 @@ public class NbPlatformCustomizerSourcesTest extends TestBase {
     private JFrame frame;
     private NbPlatformCustomizerSources sourcesPane;
     private JPanel outerPane;
-    private WeakReference sourcesPaneWR;
+    private Reference<?> sourcesPaneWR;
     
     public NbPlatformCustomizerSourcesTest(String testName) {
         super(testName);
@@ -46,7 +47,7 @@ public class NbPlatformCustomizerSourcesTest extends TestBase {
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
                 sourcesPane = new NbPlatformCustomizerSources();
-                sourcesPaneWR = new WeakReference(sourcesPane);
+                sourcesPaneWR = new WeakReference<Object>(sourcesPane);
                 sourcesPane.setPlatform(NbPlatform.getDefaultPlatform());
                 
                 // workaround for inability to GC JFrame/JDialog itself

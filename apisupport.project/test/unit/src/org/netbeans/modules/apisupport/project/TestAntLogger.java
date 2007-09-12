@@ -74,8 +74,9 @@ public class TestAntLogger extends AntLogger {
     }
 
     static TestAntLogger getDefault() {
-        return  (TestAntLogger) Lookup.getDefault().lookupItem(
-                new Lookup.Template(AntLogger.class,
+        // XXX would be clearer to remove M-I/s reg and use MockLookup instead
+        return (TestAntLogger) Lookup.getDefault().lookupItem(
+                new Lookup.Template<AntLogger>(AntLogger.class,
                                    "org.netbeans.modules.apisupport.project.TestAntLogger",
                                    null)).getInstance();
     }

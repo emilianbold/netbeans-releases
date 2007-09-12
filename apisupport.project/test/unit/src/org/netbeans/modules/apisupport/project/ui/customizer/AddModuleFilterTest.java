@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -42,15 +41,12 @@ public class AddModuleFilterTest extends TestBase {
     
     private AddModuleFilter filter;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         ModuleList ml = ModuleList.getModuleList(resolveEEPFile("suite1/action-project"));
-        Set/*<ModuleDependency>*/ deps = new HashSet();
-        Iterator it = ml.getAllEntries().iterator();
-        while (it.hasNext()) {
-            ModuleEntry entry = (ModuleEntry) it.next();
-            ModuleDependency dep = new ModuleDependency(entry);
-            deps.add(dep);
+        Set<ModuleDependency> deps = new HashSet<ModuleDependency>();
+        for (ModuleEntry entry : ml.getAllEntries()) {
+            deps.add(new ModuleDependency(entry));
         }
         filter = new AddModuleFilter(deps, "some.random.module");
     }
@@ -80,31 +76,28 @@ public class AddModuleFilterTest extends TestBase {
     }
     
     public void testMatchStrings() throws Exception {
-        ModuleDependency dep = (ModuleDependency) filter.getMatches("callablesys").iterator().next();
+        ModuleDependency dep = filter.getMatches("callablesys").iterator().next();
         assertEquals(Collections.singleton("org.openide.util.actions.CallableSystemAction"), filter.getMatchesFor("callablesys", dep));
     }
     
     public void testMatchOrdering() throws Exception { // #71995
-        List/*<String>*/ matches = new ArrayList();
-        Iterator it = filter.getMatches("systemaction").iterator();
-        while (it.hasNext()) {
-            matches.add(((ModuleDependency) it.next()).getModuleEntry().getCodeNameBase());
+        List<String> matches = new ArrayList<String>();
+        for (ModuleDependency dep : filter.getMatches("systemaction")) {
+            matches.add(dep.getModuleEntry().getCodeNameBase());
         }
-        assertEquals(Arrays.asList(new String[] {
+        assertEquals(Arrays.asList(
             "org.openide.util", // etc.SystemAction: matchLevel=0
             "org.netbeans.modules.editor", // etc.NbEditorUI.SystemActionPerformer: matchLevel=1
-            "org.openide.loaders", // etc.FileSystemAction: matchLevel=2
-        }), matches);
+            "org.openide.loaders" // etc.FileSystemAction: matchLevel=2
+        ), matches);
     }
     
     private void assertMatches(String text, String[] cnbs) {
-        Set/*<ModuleDependency>*/ matches = filter.getMatches(text);
-        Set/*<String>*/ matchedCNBs = new HashSet();
-        Iterator it = matches.iterator();
-        while (it.hasNext()) {
-            matchedCNBs.add(((ModuleDependency) it.next()).getModuleEntry().getCodeNameBase());
+        Set<String> matchedCNBs = new HashSet<String>();
+        for (ModuleDependency dep : filter.getMatches(text)) {
+            matchedCNBs.add(dep.getModuleEntry().getCodeNameBase());
         }
-        assertEquals("correct matches for '" + text + "'", new HashSet(Arrays.asList(cnbs)), matchedCNBs);
+        assertEquals("correct matches for '" + text + "'", new HashSet<String>(Arrays.asList(cnbs)), matchedCNBs);
     }
     
 }

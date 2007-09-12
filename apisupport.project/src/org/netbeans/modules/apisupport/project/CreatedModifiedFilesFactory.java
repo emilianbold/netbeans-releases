@@ -101,7 +101,7 @@ public final class CreatedModifiedFilesFactory {
     
     static CreatedModifiedFiles.Operation createLayerEntry(CreatedModifiedFiles cmf, Project project,
             String layerPath, URL content,
-            Map<String,String> substitutionTokens, String localizedDisplayName, Map attrs) {
+            Map<String,String> substitutionTokens, String localizedDisplayName, Map<String,Object> attrs) {
         return new CreateLayerEntry(cmf, project, layerPath, content,
                 substitutionTokens, localizedDisplayName, attrs);
     }
@@ -110,11 +110,8 @@ public final class CreatedModifiedFilesFactory {
             Map<String,String> attributes) {
         CreatedModifiedFilesFactory.ModifyManifest retval =
                 new CreatedModifiedFilesFactory.ModifyManifest(project);
-        for (Iterator it = attributes.entrySet().iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String) entry.getKey();
-            String value = (String) entry.getValue();
-            retval.setAttribute(name, value, section);
+        for (Map.Entry<String,String> entry : attributes.entrySet()) {
+            retval.setAttribute(entry.getKey(), entry.getValue(), section);
         }
         return retval;
     }
@@ -123,11 +120,8 @@ public final class CreatedModifiedFilesFactory {
             String propertyPath, Map<String,String> properties) {
         CreatedModifiedFilesFactory.ModifyProperties retval =
                 new CreatedModifiedFilesFactory.ModifyProperties(project, propertyPath);
-        for (Iterator it = properties.entrySet().iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String) entry.getKey();
-            String value = (String) entry.getValue();
-            retval.setProperty(name, value);
+        for (Map.Entry<String,String> entry : properties.entrySet()) {
+            retval.setProperty(entry.getKey(), entry.getValue());
         }
         return retval;
     }
@@ -313,9 +307,8 @@ public final class CreatedModifiedFilesFactory {
     }
     
     private static String replaceTokens(Map<String,String> tokens, String line) {
-        for (Iterator it = tokens.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            line = line.replaceAll((String) entry.getKey(), (String) entry.getValue());
+        for (Map.Entry<String,String> entry : tokens.entrySet()) {
+            line = line.replaceAll(entry.getKey(), entry.getValue());
         }
         return line;
     }
@@ -477,7 +470,7 @@ public final class CreatedModifiedFilesFactory {
         
         public CreateLayerEntry(CreatedModifiedFiles cmf, Project project, final String layerPath,
                 final URL content,
-                final Map<String,String> tokens, final String localizedDisplayName, final Map attrs) {
+                final Map<String,String> tokens, final String localizedDisplayName, final Map<String,Object> attrs) {
             
             super(project);
             CreatedModifiedFiles.LayerOperation op = new CreatedModifiedFiles.LayerOperation() {
@@ -506,10 +499,8 @@ public final class CreatedModifiedFilesFactory {
                         }
                     }
                     if (attrs != null) {
-                        Iterator it = attrs.entrySet().iterator();
-                        while (it.hasNext()) {
-                            Map.Entry entry = (Map.Entry) it.next();
-                            targetFO.setAttribute((String) entry.getKey(), entry.getValue());
+                        for (Map.Entry<String,Object> entry : attrs.entrySet()) {
+                            targetFO.setAttribute(entry.getKey(), entry.getValue());
                         }
                     }
                 }
@@ -707,9 +698,9 @@ public final class CreatedModifiedFilesFactory {
         }
         
         public void run() throws IOException {
-            EditableProperties ep = getEditableProperties();
-            ep.putAll(getProperties());
-            Util.storeProperties(getPropertyFile(),ep);
+            EditableProperties p = getEditableProperties();
+            p.putAll(getProperties());
+            Util.storeProperties(getPropertyFile(),p);
         }
         
         public final void setProperty(final String name, final String value) {

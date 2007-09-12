@@ -288,7 +288,7 @@ public final class NbPlatformCustomizer extends JPanel {
     private void addPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPlatform
         PlatformChooserWizardPanel chooser = new PlatformChooserWizardPanel(null);
         PlatformInfoWizardPanel info = new PlatformInfoWizardPanel(null);
-        WizardDescriptor wd = new WizardDescriptor(new WizardDescriptor.Panel[] { chooser, info });
+        WizardDescriptor wd = new WizardDescriptor(new BasicWizardPanel[] {chooser, info});
         initPanel(chooser, wd, 0);
         initPanel(info, wd, 1);
         wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N

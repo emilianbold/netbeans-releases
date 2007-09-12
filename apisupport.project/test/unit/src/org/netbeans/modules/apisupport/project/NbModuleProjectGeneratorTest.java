@@ -101,7 +101,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         FileObject fo = FileUtil.toFileObject(suiteDir);
         Project suiteProject = ProjectManager.getDefault().findProject(fo);
         assertNotNull("have a project in " + suiteDir, suiteProject);
-        SubprojectProvider spp = (SubprojectProvider) suiteProject.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = suiteProject.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("has a SubprojectProvider", spp);
         
         // create "relative" module in suite
@@ -148,11 +148,11 @@ public class NbModuleProjectGeneratorTest extends TestBase {
             assertNotNull(BASIC_CREATED_FILES[i]+" file/folder cannot be found",
                     fo.getFileObject(BASIC_CREATED_FILES[i]));
         }
-        assertEquals("now have two suite components", new HashSet(Arrays.asList(new Project[] {moduleProjectRel, moduleProjectAbs})), spp.getSubprojects());
+        assertEquals("now have two suite components", new HashSet<Project>(Arrays.asList(moduleProjectRel, moduleProjectAbs)), spp.getSubprojects());
     }
     
     public void testCreateSuiteLibraryModule() throws Exception {
-        Map/*<String,String>*/ contents = new HashMap();
+        Map<String,String> contents = new HashMap<String,String>();
         contents.put("lib/pkg/Clazz3.class", "");
         contents.put("lib/pkg2/Clazz4.class", "");
         contents.put("1.0/oldlib/Clazz5.class", ""); // #72669
@@ -164,13 +164,12 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 moduleDir, "module", "Module", "module/Bundle.properties",
                 sweet.getProjectDirectoryFile(), null, new File[] {jar});
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(moduleDir));
-        ManifestManager.PackageExport[] exports = new ProjectXMLManager(p).getPublicPackages();
-        Set/*<String>*/ packages = new TreeSet();
-        for (int i = 0; i < exports.length; i++) {
-            assertFalse(exports[i].isRecursive());
-            packages.add(exports[i].getPackage());
+        Set<String> packages = new TreeSet<String>();
+        for (ManifestManager.PackageExport export : new ProjectXMLManager(p).getPublicPackages()) {
+            assertFalse(export.isRecursive());
+            packages.add(export.getPackage());
         }
-        assertEquals(Arrays.asList(new String[] {"lib.pkg", "lib.pkg2"}), new ArrayList(packages));
+        assertEquals(Arrays.asList("lib.pkg", "lib.pkg2"), new ArrayList<String>(packages));
     }
     
     // XXX hmmm, don't know yet how to fully test this case since I don't want

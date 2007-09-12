@@ -265,9 +265,9 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         cmf.run();
         
         ProjectXMLManager pxm = new ProjectXMLManager(project);
-        Set deps = pxm.getDirectDependencies();
+        Set<ModuleDependency> deps = pxm.getDirectDependencies();
         assertEquals("one dependency", 1, deps.size());
-        ModuleDependency antDep = (ModuleDependency) deps.toArray()[0];
+        ModuleDependency antDep = deps.iterator().next();
         assertEquals("cnb", "org.apache.tools.ant.module", antDep.getModuleEntry().getCodeNameBase());
         assertEquals("release version", "3", antDep.getReleaseVersion());
         assertEquals("specification version", "3.9", antDep.getSpecificationVersion());
@@ -570,7 +570,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
     public static void assertLayerContent(final String[] supposedContent,
             final File layerF) throws IOException, FileNotFoundException {
         BufferedReader reader = new BufferedReader(new FileReader(layerF));
-        List actualContent = new ArrayList();
+        List<String> actualContent = new ArrayList<String>();
         boolean fsElementReached = false;
         String line;
         

@@ -30,7 +30,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -98,8 +97,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 }
             }
             NbPlatform supposedPlaf = null;
-            for (Iterator it = NbPlatform.getPlatforms().iterator(); it.hasNext(); ) {
-                NbPlatform plaf = (NbPlatform) it.next();
+            for (NbPlatform plaf : NbPlatform.getPlatforms()) {
                 // XXX more robust condition?
                 if (binaryRoot.toExternalForm().indexOf(plaf.getDestDir().toURI().toURL().toExternalForm()) != -1) {
                     supposedPlaf = plaf;

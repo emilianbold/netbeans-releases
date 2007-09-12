@@ -20,7 +20,6 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
@@ -95,20 +94,19 @@ public class SubprojectProviderImplTest extends TestBase {
     
     private void checkSubprojects(String project, String[] subprojects) throws Exception {
         Project p = project(project);
-        SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("have SPP in " + p, spp);
-        SortedSet/*<String>*/ expected = new TreeSet();
-        for (int i = 0; i < subprojects.length; i++) {
-            File f = new File(subprojects[i]);
+        SortedSet<String> expected = new TreeSet<String>();
+        for (String sp : subprojects) {
+            File f = new File(sp);
             if (!f.isAbsolute()) {
-                f = file(subprojects[i]);
+                f = file(sp);
             }
             expected.add(f.toURI().toString());
         }
-        SortedSet/*<String>*/ actual = new TreeSet();
-        Iterator it = spp.getSubprojects().iterator();
-        while (it.hasNext()) {
-            actual.add(((Project) it.next()).getProjectDirectory().getURL().toExternalForm());
+        SortedSet<String> actual = new TreeSet<String>();
+        for (Project sp : spp.getSubprojects()) {
+            actual.add(sp.getProjectDirectory().getURL().toExternalForm());
         }
         assertEquals("correct subprojects for " + project, expected.toString(), actual.toString());
     }
@@ -125,7 +123,7 @@ public class SubprojectProviderImplTest extends TestBase {
     private void assertDepends(String parent, String child) throws Exception {
         Project p1 = project(parent);
         Project p2 = project(child);
-        SubprojectProvider spp = (SubprojectProvider) p1.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = p1.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("have SPP in " + p1, spp);
         assertTrue(parent + " includes " + child, spp.getSubprojects().contains(p2));
     }

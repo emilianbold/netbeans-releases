@@ -27,14 +27,10 @@ import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.metainf.SUtil;
 import org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler.ServiceRootChildren;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
@@ -44,6 +40,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+
 /**
  *
  * @author pzajac
@@ -54,11 +51,11 @@ public class ServiceNodeHandlerTest extends  TestBase {
     ServiceNodeHandler.ServiceRootNode serviceRootNode;
     LoggingHandler log;                
     
-    public ServiceNodeHandlerTest(java.lang.String testName) {
+    public ServiceNodeHandlerTest(String testName) {
         super(testName);
     }
         
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         log = new LoggingHandler();
         SUtil.getLogger().setLevel(Level.INFO);
@@ -73,13 +70,13 @@ public class ServiceNodeHandlerTest extends  TestBase {
         ProjectManager.getDefault().saveProject(suite);
          
         prj = TestBase.generateSuiteComponent(suite, "prj1");
-        nodeHandler = (ServiceNodeHandler) prj.getLookup().lookup(ServiceNodeHandler.class);
+        nodeHandler = prj.getLookup().lookup(ServiceNodeHandler.class);
         serviceRootNode = (ServiceNodeHandler.ServiceRootNode) nodeHandler.createServiceRootNode();
     }
     
      private void setUpStandaloneModule() throws Exception {
         prj = TestBase.generateStandaloneModule(getWorkDir(), "prj1");
-        nodeHandler = (ServiceNodeHandler) prj.getLookup().lookup(ServiceNodeHandler.class);
+        nodeHandler = prj.getLookup().lookup(ServiceNodeHandler.class);
         serviceRootNode = (ServiceNodeHandler.ServiceRootNode) nodeHandler.createServiceRootNode();
      }
     public void testSuiteWithManyProjects() throws IOException, Exception {
@@ -93,7 +90,7 @@ public class ServiceNodeHandlerTest extends  TestBase {
         NbModuleProject prj1 = TestBase.generateSuiteComponent(suite, "prj1");
         NbModuleProject prj2 = TestBase.generateSuiteComponent(suite, "prj2");
         NbModuleProject prj3 = TestBase.generateSuiteComponent(suite,"prj3");
-        nodeHandler = (ServiceNodeHandler) prj1.getLookup().lookup(ServiceNodeHandler.class);
+        nodeHandler = prj1.getLookup().lookup(ServiceNodeHandler.class);
         serviceRootNode = (ServiceNodeHandler.ServiceRootNode) nodeHandler.createServiceRootNode();
 //        SuiteProjectTest.openSuite(suite);
         exploreNodes(nodeHandler.moduleChild);  
@@ -107,7 +104,7 @@ public class ServiceNodeHandlerTest extends  TestBase {
                     "org.myservice,org.myservice,impl,impl,"
                 );
         
-        nodeHandler = (ServiceNodeHandler) prj3.getLookup().lookup(ServiceNodeHandler.class);
+        nodeHandler = prj3.getLookup().lookup(ServiceNodeHandler.class);
         serviceRootNode = (ServiceNodeHandler.ServiceRootNode) nodeHandler.createServiceRootNode();
 //        SuiteProjectTest.openSuite(suite);
         exploreNodes(nodeHandler.moduleChild);  
@@ -118,7 +115,7 @@ public class ServiceNodeHandlerTest extends  TestBase {
                     "org.myservice,org.myservice,impl,impl,"
                 );
         
-        nodeHandler = (ServiceNodeHandler) prj2.getLookup().lookup(ServiceNodeHandler.class);
+        nodeHandler = prj2.getLookup().lookup(ServiceNodeHandler.class);
         serviceRootNode = (ServiceNodeHandler.ServiceRootNode) nodeHandler.createServiceRootNode();
         exploreNodes(nodeHandler.moduleChild);  
         exploreNodes(nodeHandler.allInContextChild);        
@@ -191,16 +188,16 @@ public class ServiceNodeHandlerTest extends  TestBase {
         deleteService(prjFo,"org.myservice");   
         deleteService(prj2Fo,"org.myservice");   
         try {
-            NbModuleProject prj = (NbModuleProject) ProjectManager.getDefault().findProject(prjFo);
+            NbModuleProject prj1 = (NbModuleProject) ProjectManager.getDefault().findProject(prjFo);
             NbModuleProject prj2 = (NbModuleProject) ProjectManager.getDefault().findProject(prj2Fo);
-            OpenProjects.getDefault().open(new NbModuleProject[]{prj,prj2}, false);
-            nodeHandler = (ServiceNodeHandler) prj.getLookup().lookup(ServiceNodeHandler.class);
+            OpenProjects.getDefault().open(new NbModuleProject[]{prj1,prj2}, false);
+            nodeHandler = prj1.getLookup().lookup(ServiceNodeHandler.class);
             serviceRootNode = (ServiceNodeHandler.ServiceRootNode) nodeHandler.createServiceRootNode();
             exploreNodes(nodeHandler.moduleChild);  
             exploreNodes(nodeHandler.allInContextChild);
              
             assertNodes("org.myservice","","");
-            writeServices(prj,"org.myservice","impl");
+            writeServices(prj1,"org.myservice","impl");
             assertNodes("org.myservice",
                         "org.myservice,org.myservice,impl,impl,",
                         "org.myservice,<b>org.myservice</b>,impl,<b>impl</b>,"
@@ -322,7 +319,7 @@ public class ServiceNodeHandlerTest extends  TestBase {
     }
 
     private Node[] exploreNodes(ServiceNodeHandler.ServiceRootChildren children) throws Exception {
-        List/*<String>*/ events = new ArrayList();
+        List<String> events = new ArrayList<String>();
         events.add(SUtil.LOG_COMPUTE_KEYS);
         events.add(SUtil.LOG_END_COMPUTE_KEYS);
         log.setEvents(events);

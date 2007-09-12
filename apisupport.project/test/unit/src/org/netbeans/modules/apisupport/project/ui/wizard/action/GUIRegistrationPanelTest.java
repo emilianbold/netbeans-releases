@@ -22,6 +22,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
@@ -42,7 +43,7 @@ public class GUIRegistrationPanelTest extends LayerTestBase {
     private JFrame frame;
     private JPanel outerPane;
     private GUIRegistrationPanel regPane;
-    private WeakReference regPaneWR;
+    private Reference<?> regPaneWR;
     private boolean valid;
     
     public GUIRegistrationPanelTest(String testName) {
@@ -51,8 +52,8 @@ public class GUIRegistrationPanelTest extends LayerTestBase {
     
     public void testMemoryLeak_70032() throws Exception {
         TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
-        final WizardDescriptor wd = new WizardDescriptor(new WizardDescriptor.ArrayIterator() {
-            public WizardDescriptor.Panel current() { // satisfying WizardDescriptor 1.32 (#76318)
+        final WizardDescriptor wd = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>() {
+            public WizardDescriptor.Panel<WizardDescriptor> current() { // satisfying WizardDescriptor 1.32 (#76318)
                 return new BasicWizardPanel(null) {
                     public Component getComponent() {
                         return new JPanel();
@@ -75,7 +76,7 @@ public class GUIRegistrationPanelTest extends LayerTestBase {
                 outerPane = new JPanel();
                 outerPane.add(regPane);
                 
-                regPaneWR = new WeakReference(regPane);
+                regPaneWR = new WeakReference<Object>(regPane);
                 
                 frame = new JFrame("testMemoryLeak_70032");
                 frame.getContentPane().setLayout(new BorderLayout());

@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,9 +81,8 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         
         // remove all suite components from the suite - i.e. make them standalone
         SubprojectProvider spp = suite.getLookup().lookup(SubprojectProvider.class);
-        for (Iterator it = spp.getSubprojects().iterator(); it.hasNext();) {
-            NbModuleProject suiteComponent = (NbModuleProject) it.next();
-            SuiteUtils.removeModuleFromSuite(suiteComponent);
+        for (Project suiteComponent : spp.getSubprojects()) {
+            SuiteUtils.removeModuleFromSuite((NbModuleProject) suiteComponent);
         }
     }
     
@@ -113,8 +111,8 @@ public final class SuiteOperations implements DeleteOperationImplementation,
             Set<NbModuleProject> subprojects = TEMPORARY_CACHE.remove(name);
             if (subprojects != null) {
                 Set<Project> toOpen = new HashSet<Project>();
-                for (Iterator it = subprojects.iterator(); it.hasNext();) {
-                    NbModuleProject originalComp = (NbModuleProject) it.next();
+                for (Project _originalComp : subprojects) {
+                    NbModuleProject originalComp = (NbModuleProject) _originalComp;
                     
                     boolean directoryChanged = !original.getProjectDirectory().
                             equals(suite.getProjectDirectory());

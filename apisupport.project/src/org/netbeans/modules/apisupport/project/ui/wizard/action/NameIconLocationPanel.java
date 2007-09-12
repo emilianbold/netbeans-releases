@@ -178,7 +178,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         return ((i <= 1) || (i == name.length())) ? "" : name.substring(i);
     }
     
-    private static Set getPossibleIcons(final String iconPath) {
+    private static Set<File> getPossibleIcons(final String iconPath) {
         File icon = new File(iconPath);
         String[] resultSuffixes = { "16", "24", "" }; // NOI18N
         Set<File> results = new HashSet<File>();
@@ -418,15 +418,15 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             File iconFile =  chooser.getSelectedFile();
             icon.setText(iconFile.getAbsolutePath());
             {
-                Set allFiles = getPossibleIcons(getIconPath());
+                Set<File> allFiles = getPossibleIcons(getIconPath());
                 assert allFiles.contains(iconFile);
                 allFiles.remove(iconFile);
                 boolean isIconSmall = UIUtil.isValidIcon(iconFile, 16, 16);
  
                 File secondIcon = null;
                 boolean isSecondIconSmall = false;
-                for (Iterator it = allFiles.iterator(); it.hasNext() && !isSecondIconSmall;) {
-                    File f = (File) it.next();
+                for (Iterator<File> it = allFiles.iterator(); it.hasNext() && !isSecondIconSmall;) {
+                    File f = it.next();
                     isSecondIconSmall = (isIconSmall) ? 
                         UIUtil.isValidIcon(f, 24, 24) : UIUtil.isValidIcon(f, 16, 16);
                     if (isSecondIconSmall) {

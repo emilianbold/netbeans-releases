@@ -28,7 +28,6 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
 
 /**
  * Tests {@link DataModel}.
@@ -48,8 +47,8 @@ public class DataModelTest extends LayerTestBase {
         project = TestBase.generateStandaloneModule (getWorkDir(), "module1");
     }
     
-    private void testAddUpdateCenter (String pathToSettingsFile, String[] supposedContent) throws Exception {
-        WizardDescriptor wd = new WizardDescriptor (new Panel [] {});
+    private void testAddUpdateCenter(String[] supposedContent) throws Exception {
+        WizardDescriptor wd = new WizardDescriptor() {};
         wd.putProperty (ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
         DataModel data = new DataModel (wd);
         
@@ -88,7 +87,7 @@ public class DataModelTest extends LayerTestBase {
             "</filesystem>"
         };
 
-        testAddUpdateCenter ("src/org/example/module1/resources/org_example_module1_update_centerSettings.xml", supposedContent);
+        testAddUpdateCenter(supposedContent);
     }
     
     public void testAddUpdateCenterDouble () throws Exception {
@@ -116,7 +115,7 @@ public class DataModelTest extends LayerTestBase {
         };
 
         testAddUpdateCenterWithDefaultValues ();
-        testAddUpdateCenter ("src/org/example/module1/resources/org_example_module1_update_center_1Settings.xml", supposedContent);
+        testAddUpdateCenter(supposedContent);
     }
     
 }

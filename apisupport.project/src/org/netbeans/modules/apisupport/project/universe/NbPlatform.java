@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -111,14 +110,12 @@ public final class NbPlatform {
             platforms = new HashSet<NbPlatform>();
             Map<String,String> p = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()}).getProperties();
             boolean foundDefault = false;
-            Iterator entries = p.entrySet().iterator();
-            while (entries.hasNext()) {
-                Map.Entry entry = (Map.Entry) entries.next();
-                String key = (String) entry.getKey();
+            for (Map.Entry<String,String> entry : p.entrySet()) {
+                String key = entry.getKey();
                 if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_DEST_DIR_SUFFIX)) {
                     String id = key.substring(PLATFORM_PREFIX.length(), key.length() - PLATFORM_DEST_DIR_SUFFIX.length());
                     String label = p.get(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
-                    String destdir = (String) entry.getValue();
+                    String destdir = entry.getValue();
                     String harnessdir = p.get(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX);
                     String sources = p.get(PLATFORM_PREFIX + id + PLATFORM_SOURCES_SUFFIX);
                     String javadoc = p.get(PLATFORM_PREFIX + id + PLATFORM_JAVADOC_SUFFIX);
@@ -222,9 +219,7 @@ public final class NbPlatform {
      * @return the platform with that ID, or null
      */
     public static synchronized NbPlatform getPlatformByID(String id) {
-        Iterator it = getPlatformsInternal().iterator();
-        while (it.hasNext()) {
-            NbPlatform p = (NbPlatform) it.next();
+        for (NbPlatform p : getPlatformsInternal()) {
             if (p.getID().equals(id)) {
                 return p;
             }
@@ -242,9 +237,7 @@ public final class NbPlatform {
      * @return the platform with that destination directory
      */
     public static synchronized NbPlatform getPlatformByDestDir(File destDir) {
-        Iterator it = getPlatformsInternal().iterator();
-        while (it.hasNext()) {
-            NbPlatform p = (NbPlatform) it.next();
+        for (NbPlatform p : getPlatformsInternal()) {
             if (p.getDestDir().equals(destDir)) {
                 return p;
             }
@@ -294,9 +287,7 @@ public final class NbPlatform {
      */
     public static synchronized boolean contains(File destDir) {
         boolean contains = false;
-        Iterator it = getPlatformsInternal().iterator();
-        while (it.hasNext()) {
-            NbPlatform p = (NbPlatform) it.next();
+        for (NbPlatform p : getPlatformsInternal()) {
             if (p.getDestDir().equals(destDir)) {
                 contains = true;
                 break;
@@ -908,8 +899,8 @@ public final class NbPlatform {
         if (supposedLabel == null) {
             return false;
         }
-        for (Iterator it = NbPlatform.getPlatforms().iterator(); it.hasNext(); ) {
-            String label = ((NbPlatform) it.next()).getLabel();
+        for (NbPlatform p : NbPlatform.getPlatforms()) {
+            String label = p.getLabel();
             if (supposedLabel.equals(label)) {
                 return false;
             }

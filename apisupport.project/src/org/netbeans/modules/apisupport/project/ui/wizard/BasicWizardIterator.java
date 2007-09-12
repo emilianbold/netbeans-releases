@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-public abstract class BasicWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
+public abstract class BasicWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
     
     private int position = 0;
     private BasicWizardIterator.PrivateWizardPanel[] wizardPanels;
@@ -270,7 +270,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         position--;
     }
     
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return wizardPanels[position];
     }
     
@@ -366,18 +366,16 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             return getPanel();
         }
         
-        public @Override void storeSettings(Object settings) {
-            WizardDescriptor wiz = (WizardDescriptor) settings;
+        public @Override void storeSettings(WizardDescriptor wiz) {
             if (WizardDescriptor.NEXT_OPTION.equals(wiz.getValue()) ||
                     WizardDescriptor.FINISH_OPTION.equals(wiz.getValue())) {
                 panel.storeToDataModel();
             }
             //XXX hack
-            ((WizardDescriptor) settings).putProperty("NewFileWizard_Title", null); // NOI18N
+            wiz.putProperty("NewFileWizard_Title", null); // NOI18N
         }
         
-        public @Override void readSettings(Object settings) {
-            WizardDescriptor wiz = (WizardDescriptor) settings;
+        public @Override void readSettings(WizardDescriptor wiz) {
             // mkleint - copied from someplace.. is definitely weird..
             // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
             // this name is used in NewProjectWizard to modify the title

@@ -46,10 +46,8 @@ class HarnessUpgrader {
             return;
         }
         ModuleUISettings.getDefault().setHarnessesUpgraded(true);
-        final Set<NbPlatform> toUpgrade = new HashSet();
-        Iterator it = NbPlatform.getPlatforms().iterator();
-        while (it.hasNext()) {
-            NbPlatform p = (NbPlatform) it.next();
+        final Set<NbPlatform> toUpgrade = new HashSet<NbPlatform>();
+        for (NbPlatform p : NbPlatform.getPlatforms()) {
             if (p.isDefault() && !p.isValid()) {
                 continue;
             }

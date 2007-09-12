@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
  */
 public final class FsDtdEntityCatalog extends EntityCatalog {
 
-    private final Map DTD_MAP = new HashMap();
+    private final Map<String,String> DTD_MAP = new HashMap<String,String>();
 
     /** Default constructor for lookup. */
     public FsDtdEntityCatalog() {
@@ -42,7 +42,7 @@ public final class FsDtdEntityCatalog extends EntityCatalog {
     }
     
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        String resourcePath = (String) DTD_MAP.get(publicId);
+        String resourcePath = DTD_MAP.get(publicId);
         if (resourcePath == null) {
             return null;
         }

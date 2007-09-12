@@ -31,17 +31,16 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-final class PlatformChooserWizardPanel extends BasicWizardPanel implements WizardDescriptor.FinishablePanel {
+final class PlatformChooserWizardPanel extends BasicWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
     
     /** Representing visual component for this step. */
     private PlatformChooserVisualPanel visualPanel;
     
-    /** Creates a new instance of BasicInfoWizardPanel */
     public PlatformChooserWizardPanel(WizardDescriptor settings) {
         super(settings);
     }
     
-    public void storeSettings(Object settings) {
+    public @Override void storeSettings(WizardDescriptor settings) {
         visualPanel.storeData();
     }
     

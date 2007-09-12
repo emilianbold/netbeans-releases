@@ -21,7 +21,6 @@ package org.netbeans.modules.apisupport.project.metainf;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -90,7 +89,7 @@ public final class ServiceNodeHandler  {
         }
         protected Node[] createNodes(String key) {
             // synchronize access to allServicesMap and moduleServices
-            if (key == KEY_WAIT) {
+            if (key.equals(KEY_WAIT)) {
                 return new Node[] {new AbstractNode(Children.LEAF) {
                     public String getName() {
                         return KEY_WAIT;
@@ -105,7 +104,7 @@ public final class ServiceNodeHandler  {
             } else if (key instanceof String ) {
                 Node parent = getNode(); 
                 String parentName = parent.getName();
-                boolean isThisModule = parentName == THIS_SERVICES;
+                boolean isThisModule = parentName.equals(THIS_SERVICES);
                 ServiceNode node = new ServiceNode(key,isThisModule);
                 return new Node[] {node};
             } else {
@@ -205,10 +204,9 @@ public final class ServiceNodeHandler  {
         }
         
         public void updateNode(String keyName) {
-             Node nodes[] = this.getNodes() ;
-             for (int nIt = 0 ; nIt < nodes.length; nIt++) {
-                ServiceNode n = (ServiceNode)nodes[nIt];
-                if (n.getName().equals(keyName)) {   
+            for (Node _n : getNodes()) {
+                ServiceNode n = (ServiceNode) _n;
+                if (n.getName().equals(keyName)) {
                     n.refreshName();
                     ((ServiceNodeChildren)n.getChildren()).nodesChanged();
                 } 
@@ -258,8 +256,8 @@ public final class ServiceNodeHandler  {
         }
         
         private ServiceClassKey addKey(ServiceClassKey key,TreeMap<String,ServiceClassKey> newKeyMap) {
-              TreeMap keys = getKeysMap();
-              ServiceClassKey oldKey = (ServiceClassKey)keys.get(key.name); 
+            TreeMap<String, ServiceClassKey> ks = getKeysMap();
+            ServiceClassKey oldKey = ks.get(key.name);
               if (oldKey == null) {
                   oldKey = key;
               } else if (oldKey.bRemoved != key.bRemoved) {
@@ -282,9 +280,8 @@ public final class ServiceNodeHandler  {
             TreeMap<String,ServiceClassKey> newKeyMap = new TreeMap<String,ServiceClassKey>();
             // creates two groups - classes and masked class
             //
-            for (Service service : servicesGroup ) {
-                for (Iterator ssIt = service.getClasses().iterator() ; ssIt.hasNext() ; ) {
-                    String name = (String)ssIt.next();
+            for (Service service : servicesGroup) {
+                for (String name : service.getClasses()) {
                     if (name.charAt(0) == '-') {
                         maskedClasses.add(name);
                     } else {
@@ -349,7 +346,7 @@ public final class ServiceNodeHandler  {
               fireDisplayNameChange(null,null);
         }
         boolean isThisModule() {
-            return (getParentNode() == null) ? false : ( getParentNode().getName() == THIS_SERVICES);
+            return (getParentNode() == null) ? false : getParentNode().getName().equals(THIS_SERVICES);
         }
         public String getHtmlDisplayName() {
             List services = (List) moduleServiceMap.get(getName());
@@ -426,13 +423,12 @@ public final class ServiceNodeHandler  {
         Service getService() {
             // The parent node can be null
             if (getParentNode() != null) {
-                List services = (List) allServicesMap.get(getParentNode().getName() );
+                List<Service> services = allServicesMap.get(getParentNode().getName() );
                 String name = getName();
                 if (services != null) {
-                    for (Iterator it = services.iterator() ; it.hasNext() ; ) {
-                        Service service = (Service) it.next();
-                        for (Iterator cIt = service.getClasses().iterator() ; cIt.hasNext() ; ) {
-                            if (name.equals(cIt.next())) { 
+                    for (Service service : services) {
+                        for (String n : service.getClasses()) {
+                            if (name.equals(n)) { 
                                 return service;
                             }
                         }
@@ -446,21 +442,20 @@ public final class ServiceNodeHandler  {
         }
         
         public String getHtmlDisplayName() {
-            List services = (List) moduleServiceMap.get(getParentNode().getName() );
+            List<Service> services = moduleServiceMap.get(getParentNode().getName() );
             String name = getName();
             boolean bFound = false;
             if (services != null) {
-                for (Iterator it = services.iterator() ; it.hasNext() ; ) {
-                    Service service = (Service) it.next();
-                    for (Iterator cIt = service.getClasses().iterator() ; cIt.hasNext() ; ) {
-                        if (name.equals(cIt.next())) {
+                for (Service service : services) {
+                    for (String n : service.getClasses()) {
+                        if (name.equals(n)) {
                             bFound = true;
                             break;
                         }
                     }
                 }
             }
-            String dispName = (bFound && getParentNode().getParentNode().getName() != THIS_SERVICES) ? "<b>" + name + "</b>" : name; //NOI18N
+            String dispName = (bFound && !getParentNode().getParentNode().getName().equals(THIS_SERVICES)) ? "<b>" + name + "</b>" : name; //NOI18N
             if (bRemoved) {
                 dispName = "<s>" + dispName + "</s>"; //NOI18N
             }

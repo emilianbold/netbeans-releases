@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -579,10 +578,8 @@ public class LayerUtils {
                     throw new IOException("Could not load suite for " + p); // NOI18N
                 }
                 List<FileSystem> readOnlyLayers = new ArrayList<FileSystem>();
-                Set<? extends Project> modules = SuiteUtils.getSubProjects(suite);
-                Iterator it = modules.iterator();
-                while (it.hasNext()) {
-                    NbModuleProject sister = (NbModuleProject) it.next();
+                Set<NbModuleProject> modules = SuiteUtils.getSubProjects(suite);
+                for (NbModuleProject sister : modules) {
                     if (sister == p) {
                         continue;
                     }
@@ -599,11 +596,10 @@ public class LayerUtils {
             } else if (type == NbModuleProvider.NETBEANS_ORG) {
                 //it's safe to cast to NbModuleProject here.
                 NbModuleProject nbprj = p.getLookup().lookup(NbModuleProject.class);
-                Set<? extends Project> projects = getProjectsForNetBeansOrgProject(nbprj);
+                Set<NbModuleProject> projects = getProjectsForNetBeansOrgProject(nbprj);
                 List<URL> otherLayerURLs = new ArrayList<URL>();
-                Iterator it = projects.iterator();
-                while (it.hasNext()) {
-                    NbModuleProject p2 = (NbModuleProject) it.next();
+                
+                for (NbModuleProject p2 : projects) {
                     if (p2.getManifest() == null) {
                         //profiler for example.
                         continue;
@@ -666,9 +662,7 @@ public class LayerUtils {
         ModuleList list = project.getModuleList();
         Set<NbModuleProject> projects = new HashSet<NbModuleProject>();
         projects.add(project);
-        Iterator it = list.getAllEntriesSoft().iterator();
-        while (it.hasNext()) {
-            ModuleEntry other = (ModuleEntry) it.next();
+        for (ModuleEntry other : list.getAllEntriesSoft()) {
             if (other.getClusterDirectory().getName().equals("extra")) { // NOI18N
                 continue;
             }
@@ -716,13 +710,10 @@ public class LayerUtils {
      */
     private static FileSystem[] getPlatformLayers(Set<File> platformJars) throws IOException {
         List<FileSystem> layers = new ArrayList<FileSystem>();
-        Iterator it = platformJars.iterator();
-        JAR: while (it.hasNext()) {
-            File jar = (File) it.next();
+        JAR: for (File jar : platformJars) {
             ManifestManager mm = ManifestManager.getInstanceFromJAR(jar);
-            String[] toks = mm.getRequiredTokens();
-            for (int i = 0; i < toks.length; i++) {
-                if (toks[i].startsWith("org.openide.modules.os.")) { // NOI18N
+            for (String tok : mm.getRequiredTokens()) {
+                if (tok.startsWith("org.openide.modules.os.")) { // NOI18N
                     // Best to exclude platform-specific modules, e.g. ide/applemenu, as they can cause confusion.
                     continue JAR;
                 }

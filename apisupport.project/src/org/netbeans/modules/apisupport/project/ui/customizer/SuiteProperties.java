@@ -28,7 +28,6 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.SuiteSubModulesListModel;
@@ -89,13 +88,12 @@ public final class SuiteProperties extends ModuleProperties {
         this.enabledClusters = getArrayProperty(evaluator, ENABLED_CLUSTERS_PROPERTY);
         if (enabledClusters.length == 0) {
             // Compatibility.
-            SortedSet<String> clusters = new TreeSet();
-            ModuleEntry[] modules = activePlatform.getModules();
-            for (int i = 0; i < modules.length; i++) {
-                clusters.add(modules[i].getClusterDirectory().getName());
+            SortedSet<String> clusters = new TreeSet<String>();
+            for (ModuleEntry module : activePlatform.getModules()) {
+                clusters.add(module.getClusterDirectory().getName());
             }
             clusters.removeAll(Arrays.asList(getArrayProperty(evaluator, DISABLED_CLUSTERS_PROPERTY)));
-            enabledClusters = (String[]) clusters.toArray(new String[clusters.size()]);
+            enabledClusters = clusters.toArray(new String[clusters.size()]);
         }
         brandingModel = new BasicBrandingModel(this);
     }
@@ -114,8 +112,8 @@ public final class SuiteProperties extends ModuleProperties {
         return project;
     }
     
-    Map<String, String> getDefaultValues() {
-        return Collections.EMPTY_MAP; // no default value (yet)
+    Map<String,String> getDefaultValues() {
+        return Collections.emptyMap(); // no default value (yet)
     }
     
     public NbPlatform getActivePlatform() {
@@ -191,7 +189,7 @@ public final class SuiteProperties extends ModuleProperties {
         if (changedDisabledModules || changedEnabledClusters) {
             EditableProperties ep = getHelper().getProperties("nbproject/platform.properties"); // NOI18N
             if (changedDisabledModules) {
-                String[] separated = (String[]) disabledModules.clone();
+                String[] separated = disabledModules.clone();
                 for (int i = 0; i < disabledModules.length - 1; i++) {
                     separated[i] = disabledModules[i] + ',';
                 }
@@ -200,20 +198,20 @@ public final class SuiteProperties extends ModuleProperties {
                 setProperty(DISABLED_MODULES_PROPERTY, (String) null);
             }
             if (changedEnabledClusters) {
-                String[] separated = (String[]) enabledClusters.clone();
+                String[] separated = enabledClusters.clone();
                 for (int i = 0; i < enabledClusters.length - 1; i++) {
                     separated[i] = enabledClusters[i] + ',';
                 }
                 ep.setProperty(ENABLED_CLUSTERS_PROPERTY, separated);
                 setProperty(ENABLED_CLUSTERS_PROPERTY, (String) null);
                 // Compatibility.
-                SortedSet<String> disabledClusters = new TreeSet();
+                SortedSet<String> disabledClusters = new TreeSet<String>();
                 ModuleEntry[] modules = activePlatform.getModules();
                 for (int i = 0; i < modules.length; i++) {
                     disabledClusters.add(modules[i].getClusterDirectory().getName());
                 }
                 disabledClusters.removeAll(Arrays.asList(enabledClusters));
-                separated = (String[]) disabledClusters.toArray(new String[disabledClusters.size()]);
+                separated = disabledClusters.toArray(new String[disabledClusters.size()]);
                 for (int i = 0; i < separated.length - 1; i++) {
                     separated[i] = separated[i] + ',';
                 }

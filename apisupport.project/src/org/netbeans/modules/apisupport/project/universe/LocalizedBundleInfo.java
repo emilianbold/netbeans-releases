@@ -256,7 +256,7 @@ public final class LocalizedBundleInfo {
     }
     
     private static String[] splitBySentence(String text) {
-        List<String> sentences = new ArrayList();
+        List<String> sentences = new ArrayList<String>();
         // Use Locale.US since the customizer is setting the default (US) locale text only:
         BreakIterator it = BreakIterator.getSentenceInstance(Locale.US);
         it.setText(text);
@@ -266,7 +266,7 @@ public final class LocalizedBundleInfo {
             sentences.add(text.substring(start, end));
             start = end;
         }
-        return (String[]) sentences.toArray(new String[sentences.size()]);
+        return sentences.toArray(new String[sentences.size()]);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener pchl) {

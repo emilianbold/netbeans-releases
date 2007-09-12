@@ -88,7 +88,7 @@ abstract class AbstractEntry implements ModuleEntry {
                     scanJarForPublicClassNames(publicClassNames, ext);
                 }
             } catch (IOException e) {
-                publicClassNames = Collections.EMPTY_SET;
+                publicClassNames = Collections.emptySet();
                 Util.err.annotate(e, ErrorManager.UNKNOWN, "While scanning for public classes in " + this, null, null, null); // NOI18N
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -97,12 +97,11 @@ abstract class AbstractEntry implements ModuleEntry {
     }
     
     protected final void scanJarForPublicClassNames(Set<String> result, File jar) throws IOException {
-        ManifestManager.PackageExport[] pkgs = getPublicPackages();
-        Set<String> publicPackagesSlashNonRec = new HashSet();
-        List<String> publicPackagesSlashRec = new ArrayList();
-        for (int i = 0; i < pkgs.length; i++) {
-            String name = pkgs[i].getPackage().replace('.', '/') + '/';
-            if (pkgs[i].isRecursive()) {
+        Set<String> publicPackagesSlashNonRec = new HashSet<String>();
+        List<String> publicPackagesSlashRec = new ArrayList<String>();
+        for (ManifestManager.PackageExport pkg : getPublicPackages()) {
+            String name = pkg.getPackage().replace('.', '/') + '/';
+            if (pkg.isRecursive()) {
                 publicPackagesSlashRec.add(name);
             } else {
                 publicPackagesSlashNonRec.add(name);

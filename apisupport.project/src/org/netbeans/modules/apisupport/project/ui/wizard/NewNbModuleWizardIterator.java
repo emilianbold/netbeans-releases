@@ -22,7 +22,9 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -46,7 +48,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
+public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
     
     /** Either standalone module, suite component or NB CVS module. */
     static final int TYPE_MODULE = 1;
@@ -71,7 +73,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     
     private final NewModuleProjectData data;
     private int position;
-    private WizardDescriptor.Panel[] panels;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private FileObject createdProjectFolder;
     
     /** See {@link #PREFERRED_SUITE_DIR}. */
@@ -220,8 +222,8 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
             default:
                 assert false : "Should never get here. type: "  + data.getWizardType();
         }
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
+        for (int i = 0; i < panels.size(); i++) {
+            Component c = panels.get(i).getComponent();
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // step number
@@ -245,11 +247,10 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     }
     
     private String[] initModuleWizard() {
-        panels = new WizardDescriptor.Panel[] {
-            new BasicInfoWizardPanel(data),
-            new BasicConfWizardPanel(data)
-        };
-        String[] steps = new String[] {
+        panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        panels.add(new BasicInfoWizardPanel(data));
+        panels.add(new BasicConfWizardPanel(data));
+        String[] steps = {
             getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
             getMessage("LBL_BasicConfigPanel_Title") // NOI18N
         };
@@ -257,21 +258,19 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     }
     
     private String[] initSuiteModuleWizard() {
-        panels = new WizardDescriptor.Panel[] {
-            new BasicInfoWizardPanel(data),
-        };
-        String[] steps = new String[] {
+        panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        panels.add(new BasicInfoWizardPanel(data));
+        String[] steps = {
             getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
         };
         return steps;
     }
     
     private String[] initLibraryModuleWizard() {
-        panels = new WizardDescriptor.Panel[] {
-            new LibraryStartWizardPanel(data),
-            new BasicInfoWizardPanel(data),
-            new LibraryConfWizardPanel(data)
-        };
+        panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        panels.add(new LibraryStartWizardPanel(data));
+        panels.add(new BasicInfoWizardPanel(data));
+        panels.add(new LibraryConfWizardPanel(data));
         String[] steps = new String[] {
             getMessage("LBL_LibraryStartPanel_Title"), //NOi18N
             getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
@@ -289,7 +288,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     }
     
     public boolean hasNext() {
-        return position < (panels.length - 1);
+        return position < (panels.size() - 1);
     }
     
     public boolean hasPrevious() {
@@ -310,8 +309,8 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         position--;
     }
     
-    public WizardDescriptor.Panel current() {
-        return panels[position];
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
+        return panels.get(position);
     }
     
     /**

@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.layers;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -37,7 +38,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -92,7 +92,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         FileSystem fs = new Layer("<file name='x'><attr name='a' stringvalue='v'/> <attr name='b' urlvalue='file:/nothing'/></file> " +
                 "<folder name='y'> <file name='ignore'/><attr name='a' boolvalue='true'/><!--ignore--></folder>").read();
         FileObject x = fs.findResource("x");
-        assertEquals(new HashSet(Arrays.asList(new String[] {"a", "b"})), new HashSet(Collections.list(x.getAttributes())));
+        assertEquals(new HashSet<String>(Arrays.asList("a", "b")), new HashSet<String>(Collections.list(x.getAttributes())));
         assertEquals("v", x.getAttribute("a"));
         assertEquals(new URL("file:/nothing"), x.getAttribute("b"));
         assertEquals(null, x.getAttribute("dummy"));
@@ -168,7 +168,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 "        </folder>\n" +
                 "    </folder>\n";
         assertEquals("correct XML written", xml, l.write());
-        Map m = new HashMap();
+        Map<String,String> m = new HashMap<String,String>();
         m.put("Foo_java", "some stuff");
         assertEquals("one external file created in " + l, m, l.files());
         TestBase.dump(f, "new stuff");
@@ -453,7 +453,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         FileUtil.createData(fs.getRoot(), "f/b");
         fs.findResource("x").delete();
         assertEquals("expected things fired",
-                new HashSet(Arrays.asList(new String[] {"a", "f/b", "x"})),
+                new HashSet<String>(Arrays.asList("a", "f/b", "x")),
                         fcl.changes());
     }
 
@@ -463,7 +463,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         Listener fcl = new Listener();
         fs.addFileChangeListener(fcl);
         l.edit("<folder name='f'/><file name='y'/><file name='z'/>");
-        Set/*<String>*/ changes = fcl.changes();
+        Set<String> changes = fcl.changes();
         //System.err.println("changes=" + changes);
         /* XXX does not work; fires too much... why?
         assertEquals("expected things fired",
@@ -546,16 +546,16 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 Map.Entry entry = (Map.Entry) it.next();
                 String fname = (String) entry.getKey();
                 String contents = (String) entry.getValue();
-                File f = new File(folder, fname.replace('/', File.separatorChar));
-                f.getParentFile().mkdirs();
-                TestBase.dump(f, contents);
+                File file = new File(folder, fname.replace('/', File.separatorChar));
+                file.getParentFile().mkdirs();
+                TestBase.dump(file, contents);
             }
         }
         private File makeFolder() throws Exception {
-            File f = File.createTempFile("layerdata", "", getWorkDir());
-            f.delete();
-            f.mkdir();
-            return f;
+            File file = File.createTempFile("layerdata", "", getWorkDir());
+            file.delete();
+            file.mkdir();
+            return file;
         }
         private final String HEADER =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -563,9 +563,9 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 "<filesystem>\n";
         private final String FOOTER = "</filesystem>\n";
         private FileObject makeLayer(String xml) throws Exception {
-            File f = new File(folder, "layer.xml");
-            TestBase.dump(f, HEADER + xml + FOOTER);
-            return FileUtil.toFileObject(f);
+            File file = new File(folder, "layer.xml");
+            TestBase.dump(file, HEADER + xml + FOOTER);
+            return FileUtil.toFileObject(file);
         }
         /**
          * Read the filesystem from the layer.
@@ -596,24 +596,24 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          */
         public void editExternal(String path, String newText) throws Exception {
             assert !path.equals("layer.xml");
-            File f = new File(folder, path.replace('/', File.separatorChar));
-            assert f.isFile();
-            TestBase.dump(FileUtil.toFileObject(f), newText);
+            File file = new File(folder, path.replace('/', File.separatorChar));
+            assert file.isFile();
+            TestBase.dump(FileUtil.toFileObject(file), newText);
         }
         public long externalLastModified(String path) {
-            File f = new File(folder, path.replace('/', File.separatorChar));
-            return FileUtil.toFileObject(f).lastModified().getTime();
+            File file = new File(folder, path.replace('/', File.separatorChar));
+            return FileUtil.toFileObject(file).lastModified().getTime();
         }
         /**
          * Get extra files besides layer.xml which were written to.
          * Keys are relative file paths and values are file contents.
          */
-        public Map/*<String,String>*/ files() throws IOException {
-            Map m = new HashMap();
+        public Map<String,String> files() throws IOException {
+            Map<String,String> m = new HashMap<String,String>();
             traverse(m, folder, "");
             return m;
         }
-        private void traverse(Map m, File folder, String prefix) throws IOException {
+        private void traverse(Map<String,String> m, File folder, String prefix) throws IOException {
             String[] kids = folder.list();
             if (kids == null) {
                 throw new IOException(folder.toString());
@@ -623,11 +623,11 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 if (path.equals("layer.xml")) {
                     continue;
                 }
-                File f = new File(folder, kids[i]);
-                if (f.isDirectory()) {
-                    traverse(m, f, prefix + kids[i] + '/');
+                File file = new File(folder, kids[i]);
+                if (file.isDirectory()) {
+                    traverse(m, file, prefix + kids[i] + '/');
                 } else {
-                    m.put(path, TestBase.slurp(f));
+                    m.put(path, TestBase.slurp(file));
                 }
             }
         }
@@ -638,13 +638,13 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
     
     private static final class Listener implements FileChangeListener {
         
-        private Set/*<String>*/ changes = new HashSet();
+        private Set<String> changes = new HashSet<String>();
         
         public Listener() {}
         
-        public Set/*<String>*/ changes() {
-            Set _changes = changes;
-            changes = new HashSet();
+        public Set<String> changes() {
+            Set<String> _changes = changes;
+            changes = new HashSet<String>();
             return _changes;
         }
         

@@ -58,8 +58,8 @@ public class ModuleDependencyTest extends TestBase {
         ModuleDependency d5 = new ModuleDependency(antME, antME.getReleaseVersion(), null, true, false);
         
         // test hash code and equals
-        Set/*<ModuleDependency>*/ set = new HashSet();
-        Set/*<ModuleDependency>*/ sorted = new TreeSet();
+        Set<ModuleDependency> set = new HashSet<ModuleDependency>();
+        Set<ModuleDependency> sorted = new TreeSet<ModuleDependency>();
         set.add(d1);
         sorted.add(d1);
         assertFalse("already there", set.add(sameAsD1));

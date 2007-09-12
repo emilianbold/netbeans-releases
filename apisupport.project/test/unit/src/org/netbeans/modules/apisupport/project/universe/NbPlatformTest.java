@@ -30,7 +30,6 @@ import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 
@@ -47,7 +46,7 @@ public class NbPlatformTest extends TestBase {
     }
     
     public void testBasicUsage() throws Exception {
-        Set/*<NbPlatform>*/ platforms = NbPlatform.getPlatforms();
+        Set<NbPlatform> platforms = NbPlatform.getPlatforms();
         assertEquals("have two platforms", 2, platforms.size());
         NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         assertNotNull("have default platform", def);
@@ -55,7 +54,7 @@ public class NbPlatformTest extends TestBase {
         NbPlatform custom = NbPlatform.getPlatformByID("custom");
         assertNotNull("have custom platform", custom);
         assertNull("no such bogus platform", NbPlatform.getPlatformByID("bogus"));
-        assertEquals(new HashSet(Arrays.asList(new NbPlatform[] {def, custom})), platforms);
+        assertEquals(new HashSet<NbPlatform>(Arrays.asList(def, custom)), platforms);
         assertEquals("right default platform by dest dir", def, NbPlatform.getPlatformByDestDir(destDirF));
         assertEquals("right custom platform by dest dir", custom, NbPlatform.getPlatformByDestDir(resolveEEPFile("suite3/nbplatform")));
         assertFalse("bogus platform is not valid", NbPlatform.getPlatformByDestDir(file("nbbuild")).isValid());
@@ -64,15 +63,15 @@ public class NbPlatformTest extends TestBase {
         assertEquals("right dest dir for custom platform", resolveEEPFile("suite3/nbplatform"), custom.getDestDir());
         assertEquals("right name for default platform", NbPlatform.PLATFORM_ID_DEFAULT, def.getID());
         assertEquals("right name for custom platform", "custom", custom.getID());
-        assertEquals("right sources for default platform", new HashSet(Arrays.asList(new URL[] {
+        assertEquals("right sources for default platform", new HashSet<URL>(Arrays.asList(
             Util.urlForDir(nbCVSRootFile()),
-            Util.urlForDir(resolveEEPFile("suite2")),
-        })), new HashSet(Arrays.asList(def.getSourceRoots())));
-        assertEquals("right Javadoc for default platform", new HashSet(Arrays.asList(new URL[] {
-            Util.urlForJar(apisZip),
-        })), new HashSet(Arrays.asList(def.getJavadocRoots())));
-        assertEquals("no sources for custom platform", Collections.EMPTY_SET, new HashSet(Arrays.asList(custom.getSourceRoots())));
-        assertEquals("no Javadoc for custom platform", Collections.EMPTY_SET, new HashSet(Arrays.asList(custom.getJavadocRoots())));
+            Util.urlForDir(resolveEEPFile("suite2"))
+        )), new HashSet<URL>(Arrays.asList(def.getSourceRoots())));
+        assertEquals("right Javadoc for default platform", new HashSet<URL>(Arrays.asList(
+            Util.urlForJar(apisZip)
+        )), new HashSet<URL>(Arrays.asList(def.getJavadocRoots())));
+        assertEquals("no sources for custom platform", Collections.emptySet(), new HashSet<URL>(Arrays.asList(custom.getSourceRoots())));
+        assertEquals("no Javadoc for custom platform", Collections.emptySet(), new HashSet<URL>(Arrays.asList(custom.getJavadocRoots())));
     }
     
     public void testGetSourceLocationOfModule() throws Exception {
@@ -235,7 +234,7 @@ public class NbPlatformTest extends TestBase {
         if (!f2.exists()) {
             assertTrue(f2.mkdir());
         }
-        URL[] us = new URL[] {f1.toURI().toURL(),f2.toURI().toURL()};
+        URL[] us = {f1.toURI().toURL(), f2.toURI().toURL()};
         String path = def.urlsToAntPath(us);
         URL[] rus = def.findURLs(path);
         assertEquals(us.length, rus.length);
@@ -254,7 +253,7 @@ public class NbPlatformTest extends TestBase {
         File defaultHarnessLocation = NbPlatform.getDefaultPlatform().getHarnessLocation();
         p = NbPlatform.addPlatform("test", testPlatform, defaultHarnessLocation, "Test");
         assertEquals("6.0 harness detected", NbPlatform.HARNESS_VERSION_60, p.getHarnessVersion());
-        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()});
+        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider());
         assertEquals(defaultHarnessLocation, FileUtil.normalizeFile(new File(eval.getProperty("nbplatform.test.harness.dir"))));
         NbPlatform.reset();
         p = NbPlatform.getPlatformByID("test");
@@ -278,7 +277,7 @@ public class NbPlatformTest extends TestBase {
         boolean sourcesChanged;
         
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName() == NbPlatform.PROP_SOURCE_ROOTS) {
+            if (NbPlatform.PROP_SOURCE_ROOTS.equals(evt.getPropertyName())) {
                 sourcesChanged = true;
             }
         }

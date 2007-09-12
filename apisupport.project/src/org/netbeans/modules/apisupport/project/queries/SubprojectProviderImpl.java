@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -57,23 +55,20 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         this.project = project;
     }
     
-    public Set getSubprojects() {
+    public Set<? extends Project> getSubprojects() {
         // XXX could use a special set w/ lazy isEmpty() - cf. #58639 for freeform
-        Set<Project> s = new HashSet();
+        Set<Project> s = new HashSet<Project>();
         ModuleList ml;
         try {
             ml = project.getModuleList();
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
-        List<Element> deps = Util.findSubElements(moduleDependencies);
-        Iterator it = deps.iterator();
-        while (it.hasNext()) {
-            Element dep = (Element)it.next();
+        for (Element dep : Util.findSubElements(moduleDependencies)) {
             /* Probably better to open runtime deps too. TBD.
             if (Util.findElement(dep, "build-prerequisite", // NOI18N
                     NbModuleProjectType.NAMESPACE_SHARED) == null) {
@@ -110,10 +105,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             }
         }
         // #63824: consider also artifacts found in ${cp.extra} and/or <class-path-extension>s
-        List<Element> cpexts = Util.findSubElements(data);
-        it = cpexts.iterator();
-        while (it.hasNext()) {
-            Element cpext = (Element) it.next();
+        for (Element cpext : Util.findSubElements(data)) {
             if (!cpext.getTagName().equals("class-path-extension")) { // NOI18N
                 continue;
             }

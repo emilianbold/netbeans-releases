@@ -111,7 +111,7 @@ final class CreatedModifiedFilesProvider  {
         retval.put("name_to_substitute",data.getLibraryName());//NOI18N
         retval.put("bundle_to_substitute",getPackagePlusBundle(project).replace('/','.'));//NOI18N
         
-        Iterator it = library.getContent(VOLUME_CLASS).iterator();
+        Iterator<URL> it = library.getContent(VOLUME_CLASS).iterator();
         retval.put("classpath_to_substitute",getTokenSubstitution(it, fileSupport, data, "libs/"));//NOI18N
         
         it = library.getContent(VOLUME_SRC).iterator();
@@ -123,11 +123,11 @@ final class CreatedModifiedFilesProvider  {
         return retval;
     }
     
-    private static String getTokenSubstitution(Iterator it, CreatedModifiedFiles fileSupport,
+    private static String getTokenSubstitution(Iterator<URL> it, CreatedModifiedFiles fileSupport,
             NewLibraryDescriptor.DataModel data, String pathPrefix) {
         StringBuffer sb = new StringBuffer();
         while (it.hasNext()) {
-            URL originalURL = (URL)it.next();
+            URL originalURL = it.next();
             String archiveName;
             archiveName = addArchiveToCopy(fileSupport, data, originalURL, "release/"+pathPrefix);//NOI18N
             if (archiveName != null) {
@@ -182,8 +182,8 @@ final class CreatedModifiedFilesProvider  {
             addCreatedOrModifiedPath(relativePath, false);
         }
         
-        public void run() throws java.io.IOException {
-            Collection files = Collections.list(folderToZip.getChildren(true));
+        public void run() throws IOException {
+            Collection<? extends FileObject> files = Collections.list(folderToZip.getChildren(true));
             if (files.isEmpty()) return;
             FileObject prjDir = getProject().getProjectDirectory();
             assert prjDir != null;
@@ -212,13 +212,11 @@ final class CreatedModifiedFilesProvider  {
             }
         }
         
-        private static void createZipFile(OutputStream target, FileObject root, Collection /* FileObject*/ files) throws IOException {
+        private static void createZipFile(OutputStream target, FileObject root, Collection<? extends FileObject> files) throws IOException {
             ZipOutputStream str = null;
             try {
                 str = new ZipOutputStream(target);
-                Iterator it = files.iterator();
-                while (it.hasNext()) {
-                    FileObject fo = (FileObject)it.next();
+                for (FileObject fo : files) {
                     String relativePath = FileUtil.getRelativePath(root, fo);
                     if (fo.isFolder()) {
                         if (fo.getChildren().length > 0) {

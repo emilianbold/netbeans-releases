@@ -81,12 +81,11 @@ final class SuiteSubprojectProviderImpl implements SubprojectProvider {
     }
     
     private Set<NbModuleProject> loadProjects() {
-        Set<NbModuleProject> newProjects = new HashSet();
+        Set<NbModuleProject> newProjects = new HashSet<NbModuleProject>();
         String modules = eval.getProperty("modules"); // NOI18N
         if (modules != null) {
-            String[] pieces = PropertyUtils.tokenizePath(modules);
-            for (int i = 0; i < pieces.length; i++) {
-                FileObject dir = helper.resolveFileObject(pieces[i]);
+            for (String piece : PropertyUtils.tokenizePath(modules)) {
+                FileObject dir = helper.resolveFileObject(piece);
                 if (dir != null) {
                     try {
                         Project subp = ProjectManager.getDefault().findProject(dir);

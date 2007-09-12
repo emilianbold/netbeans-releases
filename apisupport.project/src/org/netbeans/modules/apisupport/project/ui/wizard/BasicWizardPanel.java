@@ -32,7 +32,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-public abstract class BasicWizardPanel implements WizardDescriptor.Panel, PropertyChangeListener {
+public abstract class BasicWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, PropertyChangeListener {
     
     private boolean valid = true;
     private WizardDescriptor settings;
@@ -74,9 +74,9 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
         return null;
     }
     
-    public void storeSettings(Object settings) {}
+    public void storeSettings(WizardDescriptor settings) {}
     
-    public void readSettings(Object settings) {}
+    public void readSettings(WizardDescriptor settings) {}
     
     public boolean isValid() {
         return valid;
@@ -113,11 +113,11 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
             return data;
         }
         
-        public @Override void readSettings(Object settings) {
+        public @Override void readSettings(WizardDescriptor settings) {
             reloadData();
         }
         
-        public @Override void storeSettings(Object settings) {
+        public @Override void storeSettings(WizardDescriptor settings) {
             storeData();
         }
         

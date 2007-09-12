@@ -27,7 +27,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Test {@link JavadocForBinaryImpl}.
@@ -57,7 +56,7 @@ public class JavadocForBinaryImplTest extends TestBase {
         ClassPath.getClassPath(nbCVSRoot().getFileObject("ant/src"), ClassPath.COMPILE);
         File classfileJar = file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-classfile.jar");
         URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(classfileJar)).getRoots();
-        URL[] expectedRoots = new URL[] {
+        URL[] expectedRoots = {
             Util.urlForDir(file("nbbuild/build/javadoc/org-netbeans-modules-classfile")),
             urlForJar(apisZip, "org-netbeans-modules-classfile/"),
         };
@@ -87,10 +86,10 @@ public class JavadocForBinaryImplTest extends TestBase {
         return new URL(Util.urlForJar(jar), path);
     }
     
-    private static SortedSet/*<String>*/ urlSet(URL[] urls) {
-        SortedSet/*<String>*/ set = new TreeSet();
-        for (int i = 0; i < urls.length; i++) {
-            set.add(urls[i].toExternalForm());
+    private static SortedSet<String> urlSet(URL[] urls) {
+        SortedSet<String> set = new TreeSet<String>();
+        for (URL url : urls) {
+            set.add(url.toExternalForm());
         }
         return set;
     }

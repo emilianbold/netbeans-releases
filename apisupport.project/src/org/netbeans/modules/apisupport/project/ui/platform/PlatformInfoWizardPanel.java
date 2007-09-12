@@ -35,16 +35,15 @@ final class PlatformInfoWizardPanel extends BasicWizardPanel {
     /** Representing visual component for this step. */
     private PlatformInfoVisualPanel visualPanel;
     
-    /** Creates a new instance of BasicInfoWizardPanel */
     public PlatformInfoWizardPanel(WizardDescriptor settings) {
         super(settings);
     }
 
-    public void readSettings(Object settings) {
+    public @Override void readSettings(WizardDescriptor settings) {
         ((PlatformInfoVisualPanel) getComponent()).refreshData();
     }
     
-    public void storeSettings(Object settings) {
+    public @Override void storeSettings(WizardDescriptor settings) {
         ((PlatformInfoVisualPanel) getComponent()).storeData();
     }
     

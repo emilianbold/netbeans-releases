@@ -92,13 +92,13 @@ public class ModuleListTest extends TestBase {
     }
     
     public void testFindModulesInSuite() throws Exception {
-        assertEquals("correct modules in suite1", new HashSet(Arrays.asList(new File[] {
+        assertEquals("correct modules in suite1", new HashSet<File>(Arrays.asList(
             file(suite1, "action-project"),
-            file(suite1, "support/lib-project"),
-        })), new HashSet(Arrays.asList(ModuleList.findModulesInSuite(suite1))));
-        assertEquals("correct modules in suite2", new HashSet(Arrays.asList(new File[] {
-            file(suite2, "misc-project"),
-        })), new HashSet(Arrays.asList(ModuleList.findModulesInSuite(suite2))));
+            file(suite1, "support/lib-project")
+        )), new HashSet<File>(Arrays.asList(ModuleList.findModulesInSuite(suite1))));
+        assertEquals("correct modules in suite2", new HashSet<File>(Arrays.asList(
+            file(suite2, "misc-project")
+        )), new HashSet<File>(Arrays.asList(ModuleList.findModulesInSuite(suite2))));
     }
 
     public void testNetBeansOrgEntries() throws Exception {
@@ -262,8 +262,8 @@ public class ModuleListTest extends TestBase {
     }
     
     public void testRefreshSuiteModuleList() throws Exception {
-        SuiteProject suite1 = generateSuite("suite1");
-        final NbModuleProject p = TestBase.generateSuiteComponent(suite1, "module1a");
+        SuiteProject suite = generateSuite("suite1");
+        final NbModuleProject p = TestBase.generateSuiteComponent(suite, "module1a");
         ModuleList ml = ModuleList.getModuleList(
                 p.getProjectDirectoryFile(),
                 NbPlatform.getDefaultPlatform().getDestDir());
@@ -271,18 +271,18 @@ public class ModuleListTest extends TestBase {
         assertEquals("no public packages in the ModuleEntry", 0, ml.getEntry("org.example.module1a").getPublicPackages().length);
         
         // added package must be reflected in the refreshed list (63561)
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 ProjectXMLManager pxm = new ProjectXMLManager(p);
                 String[] newPP = new String[] { "org.example.module1a" };
                 pxm.replacePublicPackages(newPP);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("replace public packages", result.booleanValue());
+        assertTrue("replace public packages", result);
         ProjectManager.getDefault().saveProject(p);
         
-        ModuleList.refreshSuiteModuleList(suite1.getProjectDirectoryFile());
+        ModuleList.refreshSuiteModuleList(suite.getProjectDirectoryFile());
         ml = ModuleList.getModuleList(p.getProjectDirectoryFile(),
                 NbPlatform.getDefaultPlatform().getDestDir());
         assertEquals("one public packages in the refreshed ModuleEntry", 1, ml.getEntry("org.example.module1a").getPublicPackages().length);

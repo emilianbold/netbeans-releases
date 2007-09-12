@@ -257,12 +257,12 @@ public class LayerUtilsTest extends LayerTestBase {
             Manifest mf = new Manifest();
             mf.getMainAttributes().putValue("OpenIDE-Module", "platform.module");
             mf.getMainAttributes().putValue("OpenIDE-Module-Layer", "platform/module/layer.xml");
-            Map/*<String,String>*/ contents = new HashMap();
+            Map<String,String> contents = new HashMap<String,String>();
             contents.put("platform/module/Bundle.properties", "folder/file=English");
             contents.put("platform/module/layer.xml", "<filesystem><folder name=\"folder\"><file name=\"file\"><attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"platform.module.Bundle\"/></file></folder></filesystem>");
             TestBase.createJar(new File(platformDir, "cluster/modules/platform-module.jar".replace('/', File.separatorChar)), contents, mf);
             mf = new Manifest();
-            contents = new HashMap();
+            contents = new HashMap<String,String>();
             contents.put("platform/module/Bundle_ja.properties", "folder/file=Japanese");
             TestBase.createJar(new File(platformDir, "cluster/modules/locale/platform-module_ja.jar".replace('/', File.separatorChar)), contents, mf);
             // To satisfy NbPlatform.isValid:
@@ -314,21 +314,20 @@ public class LayerUtilsTest extends LayerTestBase {
     public void testMasks() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(project);
-        Set/*<String>*/ optionInstanceNames = new HashSet();
+        Set<String> optionInstanceNames = new HashSet<String>();
         FileObject toolsMenu = fs.findResource("Menu/Tools");
         assertNotNull(toolsMenu);
-        FileObject[] kids = toolsMenu.getChildren();
-        for (int i = 0; i < kids.length; i++) {
-            String name = kids[i].getNameExt();
+        for (FileObject kid : toolsMenu.getChildren()) {
+            String name = kid.getNameExt();
             if (name.indexOf("Options") != -1) {
                 optionInstanceNames.add(name);
             }
         }
         assertEquals("#63295: masks work",
-                new HashSet(Arrays.asList(new String[] {
-            "org-netbeans-modules-options-OptionsWindowAction.shadow",
+                new HashSet<String>(Arrays.asList(
+            "org-netbeans-modules-options-OptionsWindowAction.shadow"
             // org-netbeans-core-actions-OptionsAction.instance should be masked
-        })), optionInstanceNames);
+        )), optionInstanceNames);
         assertNotNull("system FS has xml/catalog", fs.findResource("Services/Hidden/CatalogProvider/org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance"));
         assertNull("but one entry hidden by apisupport/project", fs.findResource("Services/Hidden/org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance"));
     }

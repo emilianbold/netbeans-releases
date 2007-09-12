@@ -26,12 +26,10 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -62,8 +60,8 @@ public class JavaPlatformComponentFactory {
         
         private static final Collator COLL = Collator.getInstance();
         private static final JavaPlatformManager mgr = JavaPlatformManager.getDefault();
-        private final SortedSet<JavaPlatform> platforms = new TreeSet(this);
-        private final List<ListDataListener> listeners = new ArrayList();
+        private final SortedSet<JavaPlatform> platforms = new TreeSet<JavaPlatform>(this);
+        private final List<ListDataListener> listeners = new ArrayList<ListDataListener>();
         private JavaPlatform selected;
         
         public Model() {
@@ -81,7 +79,7 @@ public class JavaPlatformComponentFactory {
         }
 
         public Object getElementAt(int index) {
-            return (JavaPlatform) new ArrayList(platforms).get(index);
+            return new ArrayList<JavaPlatform>(platforms).get(index);
         }
 
         public void addListDataListener(ListDataListener l) {
@@ -105,9 +103,8 @@ public class JavaPlatformComponentFactory {
         
         private void fireChange() {
             ListDataEvent ev = new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, 0);
-            Iterator it = new ArrayList(listeners).iterator();
-            while (it.hasNext()) {
-                ((ListDataListener) it.next()).contentsChanged(ev);
+            for (ListDataListener l : new ArrayList<ListDataListener>(listeners)) {
+                l.contentsChanged(ev);
             }
         }
 

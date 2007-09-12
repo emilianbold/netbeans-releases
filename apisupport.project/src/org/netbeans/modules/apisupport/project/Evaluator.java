@@ -268,9 +268,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
         if (ml != null) {
             // Register *.dir for nb.org modules. There is no equivalent for external modules.
-            Iterator it = ml.getAllEntriesSoft().iterator();
-            while (it.hasNext()) {
-                ModuleEntry e = (ModuleEntry) it.next();
+            for (ModuleEntry e : ml.getAllEntriesSoft()) {
                 String nborgPath = e.getNetBeansOrgPath();
                 if (nborgPath != null) {
                     // #48449: intern these; number is (size of modules.xml) * (# of loaded module projects)
@@ -505,9 +503,9 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             }
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 Map<String,String> _props = new TreeMap<String,String>(eval.getProperties());
-                Iterator it = _props.entrySet().iterator();
+                Iterator<String> it = _props.keySet().iterator();
                 while (it.hasNext()) {
-                    String k = (String) ((Map.Entry) it.next()).getKey();
+                    String k = it.next();
                     if (!k.startsWith("nbjdk.") && !k.startsWith("platforms.")) { // NOI18N
                         it.remove();
                     }
@@ -598,11 +596,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
-        List<Element> deps = Util.findSubElements(moduleDependencies);
-        Iterator it = deps.iterator();
         StringBuffer cp = new StringBuffer();
-        while (it.hasNext()) {
-            Element dep = (Element)it.next();
+        for (Element dep : Util.findSubElements(moduleDependencies)) {
             if (Util.findElement(dep, "compile-dependency", // NOI18N
                     NbModuleProjectType.NAMESPACE_SHARED) == null) {
                 continue;

@@ -26,7 +26,6 @@ import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -49,7 +48,7 @@ public class DataModelTest extends LayerTestBase {
     
     public void testValidityOfDataModel() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
-        WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
+        WizardDescriptor wd = new WizardDescriptor() {};
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
         NewLibraryDescriptor.DataModel data = new NewLibraryDescriptor.DataModel(wd);
         

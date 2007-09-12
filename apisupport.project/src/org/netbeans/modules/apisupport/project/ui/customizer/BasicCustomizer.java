@@ -19,16 +19,12 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Iterator;
 import javax.swing.JDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -129,8 +125,8 @@ abstract class BasicCustomizer implements CustomizerProvider {
     
     public final void save() {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     storeProperties();
                     ProjectManager.getDefault().saveProject(project);
                     return null;

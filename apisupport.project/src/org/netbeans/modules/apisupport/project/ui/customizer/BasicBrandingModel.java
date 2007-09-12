@@ -93,7 +93,7 @@ public class BasicBrandingModel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     /**all above splash BundleKeys in set*/
-    private final Set splashKeys = new HashSet();
+    private final Set<BrandingSupport.BundleKey> splashKeys = new HashSet<BrandingSupport.BundleKey>();
     
     /** Creates a new instance of ApplicationDetails */
     public BasicBrandingModel(final SuiteProperties suiteProps) {

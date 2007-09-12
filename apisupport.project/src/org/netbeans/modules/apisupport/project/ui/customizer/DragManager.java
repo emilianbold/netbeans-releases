@@ -73,7 +73,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
     
     private final Cursor oCursor;
     
-    List allItems = new ArrayList();
+    List<DragItem> allItems = new ArrayList<DragItem>();
     private DragItem activeDragItem = null;
     
     /** Creates a new instance of SplashDnDSupport */
@@ -98,8 +98,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         
         SplashComponentPreview scomp = (SplashComponentPreview)component;        
         Rectangle bounds = new Rectangle(new Dimension(scomp.image.getWidth(null),scomp.image.getHeight(null)));
-        for (Iterator it = allItems.iterator(); it.hasNext();) {
-            DragItem elem = (DragItem) it.next();
+        for (DragItem elem : allItems) {
             elem.setBounds(bounds);
         }                            
     }

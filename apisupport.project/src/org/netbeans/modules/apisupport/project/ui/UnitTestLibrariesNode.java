@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +65,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -189,7 +189,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                             for (TestModuleDependency tmd : d) {
                                 if(tmd.isCompile()) {
                                     deps.add(tmd);
-                                };
+                                }
                             }
                             keys.addAll(deps);
                         }
@@ -213,10 +213,8 @@ final class UnitTestLibrariesNode extends AbstractNode {
                     
                 }
             } catch (IOException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
-            };
+                Exceptions.printStackTrace(ex);
+            }
             return result;
         }
         
@@ -439,14 +437,11 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 }
                 deps.add(dep);
             }
-            for (Iterator it = map.entrySet().iterator(); it.hasNext();) {
-                Map.Entry me = (Map.Entry) it.next();
-                NbModuleProject project = (NbModuleProject) me.getKey();
-                Set deps = (Set) me.getValue();
+            for (Map.Entry<NbModuleProject,Set<TestModuleDependency>> me : map.entrySet()) {
+                NbModuleProject project = me.getKey();
                 ProjectXMLManager pxm = new ProjectXMLManager(project);
                 //remove dep one by one
-                for (Iterator it2 = deps.iterator(); it2.hasNext();) {
-                    TestModuleDependency rem = (TestModuleDependency) it2.next();
+                for (TestModuleDependency rem : me.getValue()) {
                     pxm.removeTestDependency(TestModuleDependency.UNIT, rem.getModule().getCodeNameBase());
                 }
                 try {

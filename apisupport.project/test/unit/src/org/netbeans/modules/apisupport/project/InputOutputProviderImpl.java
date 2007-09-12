@@ -20,7 +20,6 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -94,6 +93,7 @@ public class InputOutputProviderImpl extends IOProvider {
         }
     }
     
+    @SuppressWarnings("deprecation") // for flushReader
     private static class IO implements InputOutput {
         
         private OW w;

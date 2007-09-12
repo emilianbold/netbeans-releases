@@ -21,7 +21,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
@@ -177,8 +176,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         FileObject suiteDirFO = FileUtil.toFileObject(new File(suiteDir));
         try {
             Project suite = ProjectManager.getDefault().findProject(suiteDirFO);
-            for (Iterator it = SuiteUtils.getSubProjects(suite).iterator(); it.hasNext();) {
-                Project p = (Project) it.next();
+            for (Project p : SuiteUtils.getSubProjects(suite)) {
                 if (ProjectUtils.getInformation(p).getName().equals(cnb)) {
                     result = true;
                     break;

@@ -155,16 +155,16 @@ public final class CustomizerComponentFactory {
     static final class DependencyListModel extends AbstractListModel {
         
         private final Set<ModuleDependency> currentDeps;
-        private final Set<ModuleDependency> addedDeps = new HashSet();
-        private final Set<ModuleDependency> removedDeps = new HashSet();
-        private final Map<ModuleDependency, ModuleDependency> editedDeps = new HashMap();
+        private final Set<ModuleDependency> addedDeps = new HashSet<ModuleDependency>();
+        private final Set<ModuleDependency> removedDeps = new HashSet<ModuleDependency>();
+        private final Map<ModuleDependency,ModuleDependency> editedDeps = new HashMap<ModuleDependency,ModuleDependency>();
         
         private boolean changed;
         private final boolean invalid;
         
         DependencyListModel(Set<ModuleDependency> deps, boolean sorted) {
             if (sorted) {
-                currentDeps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
+                currentDeps = new TreeSet<ModuleDependency>(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
                 currentDeps.addAll(deps);
             } else {
                 currentDeps = deps;
@@ -368,9 +368,9 @@ public final class CustomizerComponentFactory {
         }
         
         String[] getSelectedPackages() {
-            Set s = new TreeSet();
+            Set<String> s = new TreeSet<String>();
             for (int i = 0; i < pkgNames.length; i++) {
-                if (selected[i].booleanValue()) {
+                if (selected[i]) {
                     s.add(pkgNames[i]);
                 }
             }
@@ -387,7 +387,7 @@ public final class CustomizerComponentFactory {
     
     static final class FriendListModel extends AbstractListModel {
         
-        private final Set<String> friends = new TreeSet();
+        private final Set<String> friends = new TreeSet<String>();
         
         private boolean changed;
         
@@ -423,7 +423,7 @@ public final class CustomizerComponentFactory {
         
         String[] getFriends() {
             String[] result = new String[friends.size()];
-            return (String[]) friends.toArray(result);
+            return friends.toArray(result);
         }
         
         boolean isChanged() {
@@ -436,8 +436,8 @@ public final class CustomizerComponentFactory {
         private final SortedSet<String> tokens;
         private boolean changed;
         
-        RequiredTokenListModel(final SortedSet tokens) {
-            this.tokens = new TreeSet(tokens);
+        RequiredTokenListModel(final SortedSet<String> tokens) {
+            this.tokens = new TreeSet<String>(tokens);
         }
         
         public Object getElementAt(int index) {
@@ -462,7 +462,7 @@ public final class CustomizerComponentFactory {
         
         String[] getTokens() {
             String[] result = new String[tokens.size()];
-            return (String[]) tokens.toArray(result);
+            return tokens.toArray(result);
         }
         
         boolean isChanged() {
@@ -478,7 +478,7 @@ public final class CustomizerComponentFactory {
         private boolean changed;
         
         SuiteSubModulesListModel(Set<NbModuleProject> subModules) {
-            this.subModules = new TreeSet(Util.projectDisplayNameComparator());
+            this.subModules = new TreeSet<NbModuleProject>(Util.projectDisplayNameComparator());
             this.subModules.addAll(subModules);
         }
         

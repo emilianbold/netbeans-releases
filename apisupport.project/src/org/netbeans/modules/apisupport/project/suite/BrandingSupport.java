@@ -27,12 +27,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -54,9 +53,9 @@ public final class BrandingSupport {
     
     private final SuiteProject suiteProject;
     private final SuiteProperties suiteProperties;    
-    private Set brandedModules;
-    private Set brandedBundleKeys;
-    private Set brandedFiles;
+    private Set<ModuleEntry> brandedModules;
+    private Set<BundleKey> brandedBundleKeys;
+    private Set<BrandedFile> brandedFiles;
     
     private NbPlatform platform;
     private final File brandingDir;
@@ -124,11 +123,8 @@ public final class BrandingSupport {
     }
     
     public boolean isBranded(final BrandedFile bFile) {
-        boolean retval = getBrandedFiles().contains(bFile);
-        return retval;
-        
+        return getBrandedFiles().contains(bFile);
     }
-    
     
     /**
      * @return true if NetBeans module is already branded
@@ -139,11 +135,11 @@ public final class BrandingSupport {
         return retval;
     }
     
-    public Set getBrandedModules() {
+    public Set<ModuleEntry> getBrandedModules() {
         return brandedModules;
     }
     
-    public Set getBrandedBundleKeys() {
+    public Set<BundleKey> getBrandedBundleKeys() {
         return brandedBundleKeys;
     }
     
@@ -151,16 +147,16 @@ public final class BrandingSupport {
         return brandedFiles;
     }
     
-    public Set getLocalizingBundleKeys(final String moduleCodeNameBase, final Set keys) {
+    public Set<BundleKey> getLocalizingBundleKeys(final String moduleCodeNameBase, final Set<String> keys) {
         ModuleEntry foundEntry = getModuleEntry(moduleCodeNameBase);
         return (foundEntry != null) ? getLocalizingBundleKeys(foundEntry, keys) : null;
     }
     
-    public Set getLocalizingBundleKeys(final ModuleEntry moduleEntry, final Set keys) {
-        Set retval = new HashSet();
-        for (Iterator it = getBrandedBundleKeys().iterator();
+    public Set<BundleKey> getLocalizingBundleKeys(final ModuleEntry moduleEntry, final Set<String> keys) {
+        Set<BundleKey> retval = new HashSet<BundleKey>();
+        for (Iterator<BundleKey> it = getBrandedBundleKeys().iterator();
         it.hasNext() && retval.size() != keys.size();) {
-            BundleKey bKey = (BundleKey)it.next();
+            BundleKey bKey = it.next();
             if (keys.contains(bKey.getKey())) {
                 retval.add(bKey);
             }
@@ -197,22 +193,20 @@ public final class BrandingSupport {
     
     public BundleKey getBundleKey(final String moduleCodeNameBase,
             final String bundleEntry,final String key) {
-        Set keys = new HashSet();
-        keys.add(key);
-        keys = getBundleKeys(moduleCodeNameBase,bundleEntry, keys);
+        Set<BundleKey> keys = getBundleKeys(moduleCodeNameBase, bundleEntry, Collections.singleton(key));
         return (keys == null) ? null : (BrandingSupport.BundleKey) keys.toArray()[0];
     }
     
-    public Set getBundleKeys(final String moduleCodeNameBase, final String bundleEntry,final Set keys) {
+    public Set<BundleKey> getBundleKeys(final String moduleCodeNameBase, final String bundleEntry, final Set<String> keys) {
         ModuleEntry foundEntry = getModuleEntry(moduleCodeNameBase);
-        return (foundEntry != null) ? getBundleKeys(foundEntry,bundleEntry,  keys) : null;
+        return (foundEntry != null) ? getBundleKeys(foundEntry, bundleEntry, keys) : null;
     }
     
-    public Set getBundleKeys(final ModuleEntry moduleEntry, final String bundleEntry, final Set keys) {
-        Set retval = new HashSet();
-        for (Iterator it = getBrandedBundleKeys().iterator();
+    public Set<BundleKey> getBundleKeys(final ModuleEntry moduleEntry, final String bundleEntry, final Set<String> keys) {
+        Set<BundleKey> retval = new HashSet<BundleKey>();
+        for (Iterator<BundleKey> it = getBrandedBundleKeys().iterator();
         it.hasNext() && retval.size() != keys.size();) {
-            BundleKey bKey = (BundleKey)it.next();
+            BundleKey bKey = it.next();
             if (keys.contains(bKey.getKey())) {
                 retval.add(bKey);
             } 
@@ -231,16 +225,7 @@ public final class BrandingSupport {
     }
     
     private ModuleEntry getModuleEntry(final String moduleCodeNameBase) {
-        NbPlatform platform;
-        platform = getActivePlatform();
-        for (Iterator it = Arrays.asList(platform.getModules()).iterator(); it.hasNext();) {
-            ModuleEntry entry = (ModuleEntry)it.next();
-            if (entry.getCodeNameBase().equals(moduleCodeNameBase)) {
-                return entry;
-            }
-        }
-        
-        return null;
+        return getActivePlatform().getModule(moduleCodeNameBase);
     }
 
     private NbPlatform getActivePlatform() {
@@ -295,18 +280,15 @@ public final class BrandingSupport {
         if (bundleKey == null) {
             return;
         }
-        Set keys = new HashSet();
-        keys.add(bundleKey);
-        brandBundleKeys(keys);
+        brandBundleKeys(Collections.singleton(bundleKey));
     }
     
-    public void brandBundleKeys(final Set bundleKeys) throws IOException {
+    public void brandBundleKeys(final Set<BundleKey> bundleKeys) throws IOException {
         init();
-        Map mentryToEditProp = new HashMap();
-        for (Iterator it = bundleKeys.iterator();it.hasNext();) {
-            BundleKey bKey = (BundleKey)it.next();
+        Map<File,EditableProperties> mentryToEditProp = new HashMap<File,EditableProperties>();
+        for (BundleKey bKey : bundleKeys) {
             if (bKey.isModified()) {
-                EditableProperties ep = (EditableProperties)mentryToEditProp.get(bKey.getBrandingBundle());
+                EditableProperties ep = mentryToEditProp.get(bKey.getBrandingBundle());
                 if (ep == null) {
                     File bundle = bKey.getBrandingBundle();
                     if (!bundle.exists()) {
@@ -320,13 +302,11 @@ public final class BrandingSupport {
             }
         }
         
-        for (Iterator it = mentryToEditProp.entrySet().iterator();it.hasNext();) {
-            Map.Entry entry = (Map.Entry) it.next();
-            File bundle = (File) entry.getKey();
+        for (Map.Entry<File,EditableProperties> entry : mentryToEditProp.entrySet()) {
+            File bundle = entry.getKey();
             assert bundle.exists();
-            storeEditableProperties((EditableProperties) entry.getValue(), bundle);
-            for (Iterator it2 = bundleKeys.iterator();it2.hasNext();) {
-                BundleKey bKey = (BundleKey)it2.next();
+            storeEditableProperties(entry.getValue(), bundle);
+            for (BundleKey bKey: bundleKeys) {
                 File bundle2 = bKey.getBrandingBundle();
                 if (bundle2.equals(bundle)) {
                     brandedBundleKeys.add(bKey);
@@ -341,9 +321,9 @@ public final class BrandingSupport {
         NbPlatform newPlatform = getActivePlatform();
         
         if (brandedModules == null || !newPlatform.equals(platform)) {
-            brandedModules = new HashSet();
-            brandedBundleKeys = new HashSet();
-            brandedFiles = new HashSet();
+            brandedModules = new HashSet<ModuleEntry>();
+            brandedBundleKeys = new HashSet<BundleKey>();
+            brandedFiles = new HashSet<BrandedFile>();
             platform = newPlatform;
             
             if (brandingDir.exists()) {
@@ -356,11 +336,11 @@ public final class BrandingSupport {
     private  void scanModulesInBrandingDir(final File srcDir, final ModuleEntry[] platformModules) throws IOException  {
         if (srcDir.getName().endsWith(".jar")) {//NOI18N
             ModuleEntry foundEntry = null;
-            for (int i = 0; i < platformModules.length; i++){
-                if (isBrandingForModuleEntry(srcDir, platformModules[i])) {
-                    scanBrandedFiles(srcDir, platformModules[i]);
+            for (ModuleEntry platformModule : platformModules) {
+                if (isBrandingForModuleEntry(srcDir, platformModule)) {
+                    scanBrandedFiles(srcDir, platformModule);
                     
-                    foundEntry = platformModules[i];
+                    foundEntry = platformModule;
                     break;
                 }
             }
@@ -371,8 +351,8 @@ public final class BrandingSupport {
             String[] kids = srcDir.list();
             assert (kids != null);
             
-            for (int i = 0; i < kids.length; i++) {
-                File kid = new File(srcDir, kids[i]);
+            for (String kidName : kids) {
+                File kid = new File(srcDir, kidName);
                 if (!kid.isDirectory()) {
                     continue;
                 }
@@ -385,8 +365,8 @@ public final class BrandingSupport {
         String[] kids = srcDir.list();
         assert (kids != null);
         
-        for (int i = 0; i < kids.length; i++) {
-            File kid = new File(srcDir, kids[i]);
+        for (String kidName : kids) {
+            File kid = new File(srcDir, kidName);
             if (!kid.isDirectory()) {
                 if (kid.getName().endsWith(BUNDLE_NAME)) {
                     loadBundleKeys(mEntry, kid);
@@ -402,18 +382,14 @@ public final class BrandingSupport {
     
     private void loadBundleKeys(final ModuleEntry mEntry,
             final File bundle) throws IOException {
-        
         EditableProperties p = getEditableProperties(bundle);
-        
-        for (Iterator it = p.entrySet().iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry)it.next();
-            brandedBundleKeys.add(new BundleKey(mEntry, bundle,(String)entry.getKey(), (String)entry.getValue()));
+        for (Map.Entry<String,String> entry : p.entrySet()) {
+            brandedBundleKeys.add(new BundleKey(mEntry, bundle, entry.getKey(), entry.getValue()));
         }
     }
     
     private void loadBrandedFiles(final ModuleEntry mEntry,
             final File file) throws IOException {
-        
         String entryPath = PropertyUtils.relativizeFile(getModuleEntryDirectory(mEntry),file);
         BrandedFile bf = new BrandedFile(mEntry, file.toURI().toURL(), entryPath);
         brandedFiles.add(bf);
@@ -422,21 +398,17 @@ public final class BrandingSupport {
     
     private static EditableProperties getEditableProperties(final File bundle) throws IOException {
         EditableProperties p = new EditableProperties(true);
-        InputStream is;
-        is = new FileInputStream(bundle);
+        InputStream is = new FileInputStream(bundle);
         try {
             p.load(is);
         } finally {
             is.close();
         }
-        
-        
         return p;
     }
     
     private static void storeEditableProperties(final EditableProperties p, final File bundle) throws IOException {
-        OutputStream os;
-        os = new FileOutputStream(bundle);
+        OutputStream os = new FileOutputStream(bundle);
         try {
             p.store(os);
         } finally {
@@ -445,21 +417,19 @@ public final class BrandingSupport {
     }
     
     
-    private void loadLocalizedBundlesFromPlatform(final ModuleEntry moduleEntry, final Set keys, final Set bundleKeys) {
-        EditableProperties p;
-        p = ModuleList.loadBundleInfo(moduleEntry.getSourceLocation()).toEditableProperties();
-        for (Iterator it = p.keySet().iterator(); it.hasNext(); ) {
-            String key = (String)it.next();
+    private void loadLocalizedBundlesFromPlatform(final ModuleEntry moduleEntry, final Set<String> keys, final Set<BundleKey> bundleKeys) {
+        EditableProperties p = ModuleList.loadBundleInfo(moduleEntry.getSourceLocation()).toEditableProperties();
+        for (String key : p.keySet()) {
             if (keys.contains(key)) {
-                String value = (String)p.getProperty(key);
+                String value = p.getProperty(key);
                 bundleKeys.add(new BundleKey(moduleEntry, key, value));
             }
         }
     }
     
     private void loadLocalizedBundlesFromPlatform(final ModuleEntry moduleEntry,
-            final String bundleEntry, final Set keys, final Set bundleKeys) throws IOException {
-        Properties p = new Properties();
+            final String bundleEntry, final Set<String> keys, final Set<BundleKey> bundleKeys) throws IOException {
+        EditableProperties p = new EditableProperties();
         JarFile module = new JarFile(moduleEntry.getJarLocation());
         JarEntry je = module.getJarEntry(bundleEntry);
         InputStream is = module.getInputStream(je);
@@ -470,10 +440,9 @@ public final class BrandingSupport {
         } finally {
             is.close();
         }
-        for (Iterator it = p.keySet().iterator(); it.hasNext(); ) {
-            String key = (String)it.next();
+        for (String key : p.keySet()) {
             if (keys.contains(key)) {
-                String value = (String)p.getProperty(key);
+                String value = p.getProperty(key);
                 bundleKeys.add(new BundleKey(moduleEntry, bundle, key, value));
             } 
         }

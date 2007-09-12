@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
@@ -68,7 +67,7 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_IMPLEMENTATION_VERSION, "foo-1");
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_LOCALIZING_BUNDLE, "foo/Bundle.properties");
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_PROVIDES, "tok1, tok1a");
-        Map/*<String,String>*/ contents = new HashMap();
+        Map<String,String> contents = new HashMap<String,String>();
         contents.put("foo/Bundle.properties", "OpenIDE-Module-Name=Foo Module");
         TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "foo.jar"), contents, mani);
         // MODULE bar
@@ -80,7 +79,7 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "foo2");
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_PROVIDES, "tok1b");
-        contents = new HashMap();
+        contents = new HashMap<String,String>();
         TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "foo2.jar"), contents, mani);
         // MODULE bar2
         mani = new Manifest();
@@ -103,7 +102,7 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
         em.setAttribute(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, "2.0", null);
         em.setAttribute(ManifestManager.OPENIDE_MODULE_PROVIDES, "tok2", null);
         Util.storeManifest(module.getManifestFile(), em);
-        LocalizedBundleInfo lbinfo = ((LocalizedBundleInfo.Provider) module.getLookup().lookup(LocalizedBundleInfo.Provider.class)).getLocalizedBundleInfo();
+        LocalizedBundleInfo lbinfo = module.getLookup().lookup(LocalizedBundleInfo.Provider.class).getLocalizedBundleInfo();
         lbinfo.setDisplayName("Module One");
         lbinfo.store();
         // MODULE org.example.module2
@@ -112,48 +111,47 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
         em.removeAttribute(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, null);
         em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "tok2", null);
         Util.storeManifest(module.getManifestFile(), em);
-        lbinfo = ((LocalizedBundleInfo.Provider) module.getLookup().lookup(LocalizedBundleInfo.Provider.class)).getLocalizedBundleInfo();
+        lbinfo = module.getLookup().lookup(LocalizedBundleInfo.Provider.class).getLocalizedBundleInfo();
         lbinfo.setDisplayName("Module Two");
         lbinfo.store();
         // MODULE org.example.module3
         module = TestBase.generateSuiteComponent(suite, "module3");
         Util.addDependency(module, "org.example.module2");
         Util.addDependency(module, "bar");
-        lbinfo = ((LocalizedBundleInfo.Provider) module.getLookup().lookup(LocalizedBundleInfo.Provider.class)).getLocalizedBundleInfo();
+        lbinfo = module.getLookup().lookup(LocalizedBundleInfo.Provider.class).getLocalizedBundleInfo();
         lbinfo.setDisplayName("Module Three");
         lbinfo.store();
         ProjectManager.getDefault().saveAllProjects();
     }
     
     public void testUniverseModules() throws Exception { // #65924
-        Set/*<UniverseModule>*/ modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), SuiteUtils.getSubProjects(suite));
-        Map/*<String,UniverseModule>*/ modulesByName = new HashMap();
-        for (Iterator it = modules.iterator(); it.hasNext(); ) {
-            SuiteCustomizerLibraries.UniverseModule m = (SuiteCustomizerLibraries.UniverseModule) it.next();
+        Map<String,SuiteCustomizerLibraries.UniverseModule> modulesByName = new HashMap<String,SuiteCustomizerLibraries.UniverseModule>();
+        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), SuiteUtils.getSubProjects(suite));
+        for (SuiteCustomizerLibraries.UniverseModule m : modules) {
             modulesByName.put(m.getCodeNameBase(), m);
         }
         assertEquals(modules.size(), modulesByName.size());
-        SuiteCustomizerLibraries.UniverseModule m = (SuiteCustomizerLibraries.UniverseModule) modulesByName.get("core");
+        SuiteCustomizerLibraries.UniverseModule m = modulesByName.get("core");
         assertNotNull(m);
         // core.jar is just a dummy JAR, nothing interesting to test
-        m = (SuiteCustomizerLibraries.UniverseModule) modulesByName.get("foo");
+        m = modulesByName.get("foo");
         assertNotNull(m);
         assertEquals("somecluster", m.getCluster());
         assertEquals("Foo Module", m.getDisplayName());
         assertEquals(1, m.getReleaseVersion());
         assertEquals(new SpecificationVersion("1.0"), m.getSpecificationVersion());
         assertEquals("foo-1", m.getImplementationVersion());
-        assertEquals(new HashSet(Arrays.asList(new String[] {"tok1", "tok1a"})), m.getProvidedTokens());
+        assertEquals(new HashSet<String>(Arrays.asList("tok1", "tok1a")), m.getProvidedTokens());
         assertEquals(Collections.EMPTY_SET, m.getRequiredTokens());
         assertEquals(Collections.EMPTY_SET, m.getModuleDependencies());
-        m = (SuiteCustomizerLibraries.UniverseModule) modulesByName.get("bar");
+        m = modulesByName.get("bar");
         assertNotNull(m);
         assertEquals(Collections.EMPTY_SET, m.getProvidedTokens());
         assertEquals(Collections.singleton("tok1"), m.getRequiredTokens());
-        m = (SuiteCustomizerLibraries.UniverseModule) modulesByName.get("baz");
+        m = modulesByName.get("baz");
         assertNotNull(m);
         assertEquals(Dependency.create(Dependency.TYPE_MODULE, "foo/1 > 1.0"), m.getModuleDependencies());
-        m = (SuiteCustomizerLibraries.UniverseModule) modulesByName.get("org.example.module1");
+        m = modulesByName.get("org.example.module1");
         assertNotNull(m);
         assertNull(m.getCluster());
         assertEquals("Module One", m.getDisplayName());
@@ -163,27 +161,27 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
         assertEquals(Collections.singleton("tok2"), m.getProvidedTokens());
         assertEquals(Collections.EMPTY_SET, m.getRequiredTokens());
         assertEquals(Collections.EMPTY_SET, m.getModuleDependencies());
-        m = (SuiteCustomizerLibraries.UniverseModule) modulesByName.get("org.example.module2");
+        m = modulesByName.get("org.example.module2");
         assertNotNull(m);
         assertEquals(-1, m.getReleaseVersion());
         assertNull(m.getSpecificationVersion());
         assertNull(m.getImplementationVersion());
         assertEquals(Collections.EMPTY_SET, m.getProvidedTokens());
         assertEquals(Collections.singleton("tok2"), m.getRequiredTokens());
-        m = (SuiteCustomizerLibraries.UniverseModule) modulesByName.get("org.example.module3");
+        m = modulesByName.get("org.example.module3");
         assertNotNull(m);
         assertEquals(Dependency.create(Dependency.TYPE_MODULE, "org.example.module2, bar"), m.getModuleDependencies());
     }
     
     public void testDependencyWarnings() throws Exception { // #65924
-        Set/*<UniverseModule>*/ modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), SuiteUtils.getSubProjects(suite));
-        Set/*<String>*/ bothClusters = new HashSet(Arrays.asList(new String[] {"somecluster", "anothercluster"}));
-        assertEquals(null, join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.EMPTY_SET)));
+        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), SuiteUtils.getSubProjects(suite));
+        Set<String> bothClusters = new HashSet<String>(Arrays.asList("somecluster", "anothercluster"));
+        assertEquals(null, join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.<String>emptySet())));
         assertEquals("[ERR_platform_excluded_dep, baz, anothercluster, Foo Module, somecluster]",
-                join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("anothercluster"), Collections.EMPTY_SET)));
-        assertNull(join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("somecluster"), Collections.EMPTY_SET)));
+                join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("anothercluster"), Collections.<String>emptySet())));
+        assertNull(join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("somecluster"), Collections.<String>emptySet())));
         assertEquals("[ERR_suite_excluded_dep, Module Three, bar, somecluster]",
-                join(SuiteCustomizerLibraries.findWarning(modules, Collections.EMPTY_SET, Collections.EMPTY_SET)));
+                join(SuiteCustomizerLibraries.findWarning(modules, Collections.<String>emptySet(), Collections.<String>emptySet())));
         assertEquals("[ERR_platform_only_excluded_providers, tok1, bar, somecluster, Foo Module, somecluster]",
                 join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.singleton("foo"))));
         assertEquals("[ERR_platform_only_excluded_providers, tok1b, bar2, somecluster, foo2, somecluster]",

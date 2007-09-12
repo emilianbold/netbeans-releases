@@ -25,8 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
@@ -60,30 +59,27 @@ public class BrandingSupportTest extends TestBase {
     
     public void testBranding1() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
-        Set keys = new HashSet(Arrays.asList(new String[]{"CTL_About_Title"}));
         implOfBundleKeyTest("org.netbeans.core.startup",
-                "org/netbeans/core/startup/Bundle.properties",keys, "About");
+                "org/netbeans/core/startup/Bundle.properties", Collections.singleton("CTL_About_Title"), "About");
     }
     
     public void testBranding2() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
-        Set keys = new HashSet(Arrays.asList(new String[]{"CTL_About_Title"}));
-        implOfBundleKeyTest("org.netbeans.core.startup", null,keys, "About");
+        implOfBundleKeyTest("org.netbeans.core.startup", null, Collections.singleton("CTL_About_Title"), "About");
     }
     
     
     public void testBranding3() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
-        Set keys = new HashSet(Arrays.asList(new String[]{"LBL_ProductInformation"}));
+        // XXX this key no longer exists...
         implOfBundleKeyTest("org.netbeans.core",
-                "org/netbeans/core/ui/Bundle.properties", keys, "NetBeans Product Information");
+                "org/netbeans/core/ui/Bundle.properties", Collections.singleton("LBL_ProductInformation"), "NetBeans Product Information");
     }
 
     public void testBranding4() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
-        Set keys = new HashSet(Arrays.asList(new String[]{"CTL_MainWindow_Title"}));
         implOfBundleKeyTest("org.netbeans.core.windows",
-                "org/netbeans/core/windows/view/ui/Bundle.properties", keys, "NetBeans Platform {0}");
+                "org/netbeans/core/windows/view/ui/Bundle.properties", Collections.singleton("CTL_MainWindow_Title"), "NetBeans Platform {0}");
     }
     
     public void testBrandingFile() throws IOException {
@@ -151,8 +147,8 @@ public class BrandingSupportTest extends TestBase {
     }
     
     
-    private void implOfBundleKeyTest(final String moduleCodeNameBase, final String bundleEntry, final Set keys, String expectedValue) throws IOException {
-        Set bKeys;
+    private void implOfBundleKeyTest(final String moduleCodeNameBase, final String bundleEntry, final Set<String> keys, String expectedValue) throws IOException {
+        Set<BrandingSupport.BundleKey> bKeys;
         if (bundleEntry != null) {
             bKeys= instance.getBundleKeys(moduleCodeNameBase,bundleEntry,keys);
         } else {
@@ -162,7 +158,7 @@ public class BrandingSupportTest extends TestBase {
         assertNotNull(bKeys);
         assertEquals(1, bKeys.size());
         
-        BrandingSupport.BundleKey bKey = (BrandingSupport.BundleKey) bKeys.toArray()[0];
+        BrandingSupport.BundleKey bKey = bKeys.iterator().next();
         assertFalse(instance.isBranded(bKey));
         assertFalse(instance.isBranded(bKey.getModuleEntry()));
         assertFalse(instance.getBrandingRoot().exists());
