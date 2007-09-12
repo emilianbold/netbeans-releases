@@ -77,6 +77,11 @@ public class CustomIconEditor extends javax.swing.JPanel {
         scrollPane.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
         setupBrowseButton(browseFileButton);
         setupBrowseButton(browseExternalButton);
+        if (!prEd.isExternalIconsAllowed()) {
+            externalRadio.setEnabled(false);
+            urlField.setEnabled(false);
+            browseExternalButton.setEnabled(false);
+        }
 
         packageCombo.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -85,13 +90,10 @@ public class CustomIconEditor extends javax.swing.JPanel {
                 return this;
             }
         });
-        fileCombo.setPrototypeDisplayValue("Select..."); // NOI18N
+        fileCombo.setPrototypeDisplayValue(NbBundle.getMessage(CustomIconEditor.class, "CustomIconEditor_FileCombo_Select")); // NOI18N
         fileCombo.setRenderer(new IconComboRenderer());
 
         setTransferHandler(new FileDropHandler());
-        if(!prEd.isExternalIconsAllowed()) {
-            browseExternalButton.setEnabled(false);
-        }
     }
 
     private static void setupBrowseButton(JButton button) {
