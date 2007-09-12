@@ -59,8 +59,8 @@ public final class TokenUtilities {
      * @return true if both parameters are null or both are non-null
      *  and they contain the same text.
      */
-    public static boolean equals(CharSequence text1, Object o) {
-        return CharSequenceUtilities.equals(text1, o);
+    public static boolean equals(CharSequence text, Object o) {
+        return CharSequenceUtilities.equals(text, o);
     }
     
     /**
