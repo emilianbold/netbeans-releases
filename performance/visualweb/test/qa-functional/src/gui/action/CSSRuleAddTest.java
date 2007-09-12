@@ -114,7 +114,7 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
         processAddRule();
         changeRuleValueOne();
         changeRuleValueTwo();
-        return null;
+        return cssEditor;
     }
     
     @Override
@@ -143,6 +143,7 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
         textb.typeText("ZZZ");
         addButton.pushNoBlock();
         createRuleDialog.ok();
+        createRuleDialog.waitClosed();
     }
     private void changeRuleValueOne() {
         TopComponentOperator builder = findStyleBuilder();
