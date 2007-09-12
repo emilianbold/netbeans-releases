@@ -34,6 +34,7 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
+import org.netbeans.modules.css.visual.model.PropertyData;
 import org.openide.util.NbBundle;
 
 
@@ -131,10 +132,12 @@ public class ColorSelectionField extends javax.swing.JPanel {
     }//GEN-LAST:event_colorButtonActionPerformed
     
     private void setColor(){
+        PropertyData colorPropertyData = new PropertyData();
         currentColor = (String)colorComboBox.getSelectedItem();
+        colorPropertyData.setValue(currentColor);
         colorModel.setColor(currentColor);
         repaint();
-        firePropertyChange("color", oldColor, currentColor); //NOI18N
+        firePropertyChange("color", oldColor, colorPropertyData.toString()); //NOI18N
         oldColor = currentColor;
         
     }

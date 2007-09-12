@@ -299,7 +299,7 @@ public class BorderStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_TOP_COLOR, null, topColorField.getColorString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_TOP_COLOR, null, evt.getNewValue().toString());
                 }
             });
 
@@ -337,7 +337,7 @@ public class BorderStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_BOTTOM_COLOR, null, bottomColorField.getColorString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_BOTTOM_COLOR, null, evt.getNewValue().toString());
                 }
             });
 
@@ -378,7 +378,7 @@ public class BorderStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_LEFT_COLOR, null, leftColorField.getColorString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_LEFT_COLOR, null, evt.getNewValue().toString());
                 }
             });
 
@@ -417,7 +417,7 @@ public class BorderStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_RIGHT_COLOR, null, rightColorField.getColorString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_RIGHT_COLOR, null, evt.getNewValue().toString());
                 }
             });
 
