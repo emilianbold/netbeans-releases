@@ -1,5 +1,11 @@
 <#assign pound = '#'>
 <?xml version="1.0" encoding="${encoding}"?>
+<!-- 
+    Document   : ${name}
+    Created on : ${date}, ${time}
+    Author     : ${user}
+-->
+
 <jsp:root version="1.2" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:ui="http://www.sun.com/web/ui">
     <jsp:directive.page contentType="text/html;charset=${encoding}" pageEncoding="${encoding}"/>
     <f:view>
