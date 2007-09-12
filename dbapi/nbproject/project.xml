@@ -65,6 +65,23 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.dbapi</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.db.sql.editor</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
