@@ -566,47 +566,55 @@ class JavaCodeGenerator extends CodeGenerator {
                     component,
                     PROP_CREATE_CODE_CUSTOM, AUX_CREATE_CODE_CUSTOM,
                     bundle.getString("MSG_JC_CustomCreationCode"), // NOI18N
-                    bundle.getString("MSG_JC_CustomCreationCodeDesc"))); // NOI18N
+                    bundle.getString("MSG_JC_CustomCreationCodeDesc"), // NOI18N
+                    FormModel.FormVersion.BASIC));
 
             propList.add(new CodeProperty(
                     component,
                     PROP_CREATE_CODE_PRE, AUX_CREATE_CODE_PRE,
                     bundle.getString("MSG_JC_PreCreationCode"), // NOI18N
-                    bundle.getString("MSG_JC_PreCreationCodeDesc"))); // NOI18N
+                    bundle.getString("MSG_JC_PreCreationCodeDesc"), // NOI18N
+                    FormModel.FormVersion.BASIC));
             propList.add(new CodeProperty(
                     component,
                     PROP_CREATE_CODE_POST, AUX_CREATE_CODE_POST,
                     bundle.getString("MSG_JC_PostCreationCode"), // NOI18N
-                    bundle.getString("MSG_JC_PostCreationCodeDesc"))); // NOI18N
+                    bundle.getString("MSG_JC_PostCreationCodeDesc"), // NOI18N
+                    FormModel.FormVersion.BASIC));
 
             propList.add(new CodeProperty(
                     component,
                     PROP_INIT_CODE_PRE, AUX_INIT_CODE_PRE,
                     bundle.getString("MSG_JC_PreInitCode"), // NOI18N
-                    bundle.getString("MSG_JC_PreInitCodeDesc"))); // NOI18N
+                    bundle.getString("MSG_JC_PreInitCodeDesc"), // NOI18N
+                    FormModel.FormVersion.BASIC));
             propList.add(new CodeProperty(
                     component,
                     PROP_INIT_CODE_POST, AUX_INIT_CODE_POST,
                     bundle.getString("MSG_JC_PostInitCode"), // NOI18N
-                    bundle.getString("MSG_JC_PostInitCodeDesc"))); // NOI18N
+                    bundle.getString("MSG_JC_PostInitCodeDesc"), // NOI18N
+                    FormModel.FormVersion.BASIC));
 
             propList.add(new CodeProperty(
                     component,
                     PROP_LISTENERS_POST, AUX_LISTENERS_POST,
                     bundle.getString("MSG_JC_PostListenersCode"), // NOI18N
-                    bundle.getString("MSG_JC_PostListenersCodeDesc"))); // NOI18N
+                    bundle.getString("MSG_JC_PostListenersCodeDesc"), // NOI18N
+                    FormModel.FormVersion.NB60));
 
             if (component.getParentComponent() != null) {
                 propList.add(new CodeProperty(
                         component,
                         PROP_ADDING_PRE, AUX_ADDING_PRE,
                         bundle.getString("MSG_JC_PreAddCode"), // NOI18N
-                        bundle.getString("MSG_JC_PreAddCodeDesc"))); // NOI18N
+                        bundle.getString("MSG_JC_PreAddCodeDesc"), // NOI18N
+                        FormModel.FormVersion.NB60));
                 propList.add(new CodeProperty(
                         component,
                         PROP_ADDING_POST, AUX_ADDING_POST,
                         bundle.getString("MSG_JC_PostAddCode"), // NOI18N
-                        bundle.getString("MSG_JC_PostAddCodeDesc"))); // NOI18N
+                        bundle.getString("MSG_JC_PostAddCodeDesc"), // NOI18N
+                        FormModel.FormVersion.NB60));
             }
 
             if (component instanceof ComponentContainer) {
@@ -614,30 +622,35 @@ class JavaCodeGenerator extends CodeGenerator {
                         component,
                         PROP_LAYOUT_PRE, AUX_LAYOUT_PRE,
                         bundle.getString("MSG_JC_PrePopulationCode"), // NOI18N
-                        bundle.getString("MSG_JC_PrePopulationCodeDesc"))); // NOI18N
+                        bundle.getString("MSG_JC_PrePopulationCodeDesc"), // NOI18N
+                        FormModel.FormVersion.NB60));
                 propList.add(new CodeProperty(
                         component,
                         PROP_LAYOUT_POST, AUX_LAYOUT_POST,
                         bundle.getString("MSG_JC_PostPopulationCode"), // NOI18N
-                        bundle.getString("MSG_JC_PostPopulationCodeDesc"))); // NOI18N
+                        bundle.getString("MSG_JC_PostPopulationCodeDesc"), // NOI18N
+                        FormModel.FormVersion.NB60));
             }
 
             propList.add(new CodeProperty(
                     component,
                     PROP_ALL_SET_POST, AUX_ALL_SET_POST,
                     bundle.getString("MSG_JC_AfterAllSetCode"), // NOI18N
-                    bundle.getString("MSG_JC_AfterAllSetCodeDesc"))); // NOI18N
+                    bundle.getString("MSG_JC_AfterAllSetCodeDesc"), // NOI18N
+                    FormModel.FormVersion.NB60));
 
             propList.add(new CodeProperty(
                     component,
                     PROP_DECLARATION_PRE, AUX_DECLARATION_PRE,
                     bundle.getString("MSG_JC_PreDeclaration"), // NOI18N
-                    bundle.getString("MSG_JC_PreDeclarationDesc"))); // NOI18N
+                    bundle.getString("MSG_JC_PreDeclarationDesc"), // NOI18N
+                    FormModel.FormVersion.NB60_PRE));
             propList.add(new CodeProperty(
                     component,
                     PROP_DECLARATION_POST, AUX_DECLARATION_POST,
                     bundle.getString("MSG_JC_PostDeclaration"), // NOI18N
-                    bundle.getString("MSG_JC_PostDeclarationDesc"))); // NOI18N
+                    bundle.getString("MSG_JC_PostDeclarationDesc"), // NOI18N
+                    FormModel.FormVersion.NB60_PRE));
 
             propList.add(new PropertySupport.ReadWrite(
                 PROP_CODE_GENERATION,
@@ -3938,15 +3951,18 @@ class JavaCodeGenerator extends CodeGenerator {
         // changes in CodeCustomizer
         private String auxKey;
         private RADComponent component;
-        
+        private FormModel.FormVersion versionLevel;
+
         CodeProperty(RADComponent metacomp,
                      String propertyName, String auxKey ,
-                     String displayName, String shortDescription)
+                     String displayName, String shortDescription,
+                     FormModel.FormVersion versionLevel)
         {
             super(propertyName, String.class, displayName, null);
             setShortDescription(shortDescription); // FormProperty adds the type to the tooltip
             this.auxKey = auxKey;
             component = metacomp;
+            this.versionLevel = versionLevel;
             try {
                 reinstateProperty();
             }
@@ -3959,11 +3975,10 @@ class JavaCodeGenerator extends CodeGenerator {
             if (value != null && !(value instanceof String))
                 throw new IllegalArgumentException();
 
-            Object oldValue = getTargetValue();
-
-            if (value != null && !value.equals("")) // NOI18N
+            if (value != null && !value.equals("")) { // NOI18N
                 component.setAuxValue(auxKey, value);
-            else if (component.getAuxValue(auxKey) != null) {
+                component.getFormModel().raiseVersionLevel(versionLevel, versionLevel);
+            } else if (component.getAuxValue(auxKey) != null) {
                 component.getAuxValues().remove(auxKey);
             }
         }
