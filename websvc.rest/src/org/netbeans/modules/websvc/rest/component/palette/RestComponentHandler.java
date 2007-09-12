@@ -87,7 +87,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
                 
                     RestComponentBean bean = codegen.getBean();
                     boolean wrapperResourceExists = codegen.wrapperResourceExists();
-                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getStaticParameters());
+                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
                     if (! wrapperResourceExists) {
                         allParams.addAll(bean.getInputParameters());
                     }

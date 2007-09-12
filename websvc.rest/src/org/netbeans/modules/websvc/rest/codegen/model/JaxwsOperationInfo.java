@@ -29,7 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.rest.support.JaxWsUtils;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
@@ -41,6 +41,10 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.wizard.Util;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -165,15 +169,15 @@ public class JaxwsOperationInfo {
     }
     
     public void setupSoapHandler(FileObject destdir) {
-        if (JaxWsUtils.needsSoapHandler(getWsdlModel()) &&
-            JaxWsUtils.getSoapHandler(getWsdlModel()) == null) {
+        if (needsSoapHandler() &&
+            JaxWsUtils.getSoapHandler(getServiceClient(), getPort(), getOperation()) == null) {
             Map<QName,Object> initValues = new HashMap<QName,Object>();
-            for (ParameterInfo info : getSoapHandlerParameters()) {
+            for (ParameterInfo info : getSoapHeaderParameters()) {
                 if (info.getDefaultValue() != null) {
                     initValues.put(info.getQName(), info.getDefaultValue());
                 }
             }
-            JaxWsUtils.createSoapHandler(destdir, getWsdlModel(), initValues);
+            JaxWsUtils.createSoapHandler(destdir, getServiceClient(), getPort(), getOperation(), initValues);
         }
     }
 
@@ -304,21 +308,37 @@ public class JaxwsOperationInfo {
         return types.toArray(new Class[types.size()]);
     }
     
-    private List<ParameterInfo> soapHandlerParams;
-    public List<ParameterInfo> getSoapHandlerParameters() {
-        if (soapHandlerParams == null) {
-            soapHandlerParams = new ArrayList<ParameterInfo>();
+    public boolean needsSoapHandler() {
+        return getSoapHeaderParameters().size() > 0;
+    }
+    
+    private List<ParameterInfo> headerParams;
+    public List<ParameterInfo> getSoapHeaderParameters() {
+        if (headerParams == null) {
+            headerParams = new java.util.ArrayList<ParameterInfo>();
 
-            if (JaxWsUtils.needsSoapHandler(getWsdlModel())) {
-                Map<QName,String> params = JaxWsUtils.getSoapHandlerParameterTypes(getWsdlModel());
-                for (Map.Entry<QName,String> entry : params.entrySet()) {
-                    Class type = Util.getType(project, entry.getValue());
-                    ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());
-                    info.setIsQueryParam(false);
-                    soapHandlerParams.add(info);
-                }
+            Map<QName,String> params = JaxWsUtils.getSoapHandlerParameters(
+                    getXamWsdlModel(), getPort(), getOperation());
+            for (Map.Entry<QName,String> entry : params.entrySet()) {
+                Class type = Util.getType(project, entry.getValue());
+                ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());
+                info.setIsQueryParam(false);
+                headerParams.add(info);
             }
         }
-        return soapHandlerParams;
+        return headerParams;
     }
+    
+    public WSDLModel getXamWsdlModel() {
+        try {
+            FileObject folder = support.getLocalWsdlFolderForClient(getServiceName(), false);
+            FileObject wsdlFO = folder.getFileObject(getServiceClient().getLocalWsdlFile());
+            return WSDLModelFactory.getDefault().getModel(Utilities.createModelSource(wsdlFO, true));
+        } catch(CatalogModelException ex) {
+            Logger.global.log(Level.INFO, "", ex);
+        }
+        return null;
+    }
+    
+    
 }

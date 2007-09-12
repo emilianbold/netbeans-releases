@@ -52,7 +52,7 @@ public abstract class RestComponentBean extends GenericResourceBean {
         return inputParams;
     }
     
-    public List<ParameterInfo> getStaticParameters() {
+    public List<ParameterInfo> getHeaderParameters() {
         return Collections.emptyList();
     }
 
@@ -101,7 +101,11 @@ public abstract class RestComponentBean extends GenericResourceBean {
     }
 
     public String[] getRepresentationTypes() {
-        return new String[]{getOutputWrapperPackageName() + "." + getOutputWrapperName()}; //NOI18N
+        if (getMimeTypes().length == 1 && getMimeTypes()[0] == MimeType.HTML) {
+            return new String[] { String.class.getName() };
+        } else {
+            return new String[]{getOutputWrapperPackageName() + "." + getOutputWrapperName()}; //NOI18N
+        }
     }
 
     public String[] getOutputTypes() {

@@ -212,4 +212,8 @@ public class GenericResourceBean {
     public List<ParameterInfo> getQueryParameters() {
         return Collections.emptyList();
     }
+    
+    public static String getGetMethodName(MimeType mime) {
+        return "get"+mime.suffix(); //NOI18N
+    }
 }

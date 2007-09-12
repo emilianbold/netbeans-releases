@@ -43,6 +43,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.RestComponentBean;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
@@ -106,12 +107,17 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         preGenerate();
 
         FileObject outputWrapperFO = generateJaxbOutputWrapper();
-        jaxbOutputWrapperJS = JavaSource.forFileObject(outputWrapperFO);
+        if (outputWrapperFO != null) {
+            jaxbOutputWrapperJS = JavaSource.forFileObject(outputWrapperFO);
+        }
         generateComponentResourceClass();
         addSubresourceLocator();
         FileObject refConverterFO = getOrCreateGenericRefConverter().getFileObjects().iterator().next();
         modifyTargetConverter();
         FileObject[] result = new FileObject[]{targetFile, wrapperResourceFile, refConverterFO, outputWrapperFO};
+        if (outputWrapperFO == null) {
+            result = new FileObject[]{targetFile, wrapperResourceFile, refConverterFO };
+        }
         JavaSourceHelper.saveSource(result);
 
         postGenerate();
@@ -121,10 +127,10 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         return new HashSet<FileObject>(Arrays.asList(result));
     }
 
-    protected void preGenerate() {
+    protected void preGenerate() throws IOException {
     }
 
-    protected void postGenerate() {
+    protected void postGenerate() throws IOException {
     }
 
     protected abstract String getCustomMethodBody() throws IOException;
@@ -150,6 +156,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
             }
             wrapperResourceFile = files.iterator().next();
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
+            addSupportingMethods();
             modifyGetMethod();
         } else {
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
@@ -195,6 +202,12 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
     }
 
     /**
+     *  Add supporting methods, if any, for GET
+     */
+    protected void addSupportingMethods() throws IOException {
+    }
+    
+    /**
      *  Return target and generated file objects
      */
     protected void modifyGetMethod() throws IOException {
@@ -202,13 +215,18 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                JavaSourceHelper.addImports(copy, new String[]{getConverterType()});
+                String converterType = getConverterType();
+                if (converterType != null) {
+                    JavaSourceHelper.addImports(copy, new String[]{getConverterType()});
+                }
 
                 String methodBody = "{" + getOverridingStatements(); //NOI18N
                 methodBody += getCustomMethodBody();
 
                 methodBody += "}"; //NOI18N
-                MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, "getXml"); //NOI18N
+                // currently component resource only generate for one mime.
+                MimeType mime = bean.getMimeTypes()[0]; 
+                MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, bean.getGetMethodName(mime));
                 JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
             }
         });
@@ -238,12 +256,17 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
     }
 
     protected String getConverterType() throws IOException {
-        return JavaSourceHelper.getClassType(jaxbOutputWrapperJS);
+        if (jaxbOutputWrapperJS != null) {
+            return JavaSourceHelper.getClassType(jaxbOutputWrapperJS);
+        }
+        return bean.getOutputWrapperName();
     }
 
     protected String getConverterName() throws IOException {
         String converterType = getConverterType();
-
+        if (converterType == null) {
+            return null;
+        }
         return converterType.substring(converterType.lastIndexOf('.') + 1);
     }
 
