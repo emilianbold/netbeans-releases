@@ -22,8 +22,12 @@ package org.netbeans.api.java.source;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.tools.JavaFileObject;
+import org.netbeans.api.java.source.ModificationResult.CreateChange;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
@@ -114,6 +118,24 @@ public final class ModificationResult {
                                     doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
                                     doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
                                     break;
+                                case CREATE:
+                                    CreateChange change = (CreateChange) diff;
+                                    change.getFileObject().openOutputStream();
+                                    Writer w = null;
+                                    try {
+                                        w = change.getFileObject().openWriter();
+                                        w.append(change.getNewText());
+                                    } catch (IOException e) {
+                                        Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+                                    } finally {
+                                        if (w != null) {
+                                            try {
+                                                w.close();
+                                            } catch (IOException e) {
+                                                Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+                                            }
+                                        }
+                                    }
                             }
                         } catch (BadLocationException ex) {
                             IOException ioe = new IOException();
@@ -222,7 +244,7 @@ public final class ModificationResult {
         return writer.toString();
     }
     
-    public static final class Difference {
+    public static class Difference {
         Kind kind;
         PositionRef startPos;
         PositionRef endPos;
@@ -284,7 +306,26 @@ public final class ModificationResult {
         public static enum Kind {
             INSERT,
             REMOVE,
-            CHANGE
+            CHANGE,
+            CREATE;
+        }
+    }
+    
+    static class CreateChange extends Difference {
+        JavaFileObject fileObject;
+        
+        CreateChange(JavaFileObject fileObject, String text) {
+            super(Kind.CREATE, null, null, null, text, "Create file " + fileObject.getName());
+            this.fileObject = fileObject;
+        }
+
+        public JavaFileObject getFileObject() {
+            return fileObject;
+        }
+
+        @Override
+        public String toString() {
+            return kind + "Create File: " + fileObject.getName() + "; contents = \"\n" + newText + "\"";
         }
     }
 }

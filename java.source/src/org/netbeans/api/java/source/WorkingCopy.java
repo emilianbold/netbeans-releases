@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
-import org.netbeans.api.java.source.ModificationResult.Difference;
+import static org.netbeans.api.java.source.ModificationResult.*;
 import org.netbeans.modules.java.source.transform.ChangeSet;
 import org.netbeans.modules.java.source.query.QueryException;
 import org.netbeans.modules.java.source.transform.Transformer;
@@ -60,6 +60,7 @@ import org.openide.text.CloneableEditorSupport;
 public class WorkingCopy extends CompilationController {
     
     private ChangeSet changes;
+    private List<CreateChange> externalChanges;
     private boolean afterCommit = false;
     private WorkingCopyContext wcc;
     private TreeMaker treeMaker;
@@ -83,6 +84,7 @@ public class WorkingCopy extends CompilationController {
         
         treeMaker = new TreeMaker(this, TreeFactory.instance(getContext()));
         changes = new ChangeSet();
+        externalChanges = null;
         changes.attach(getContext());
     }
     
@@ -163,7 +165,6 @@ public class WorkingCopy extends CompilationController {
             throw new IllegalStateException("Cannot call rewrite before toPhase.");
         
         if (oldTree == null && Kind.COMPILATION_UNIT == newTree.getKind()) {
-            // todo (#pf): hacky stuff - has to be moved to commit() call
             createCompilationUnit((JCTree.JCCompilationUnit) newTree);
             return;
         }
@@ -196,7 +197,13 @@ public class WorkingCopy extends CompilationController {
             save.attach(getContext());
             save.commit();
             save.release();
-            return wcc.diffs;
+            if (externalChanges == null) {
+                return wcc.diffs;
+            } else {
+                List<Difference> diffs = wcc.diffs;
+                diffs.addAll(externalChanges);
+                return diffs;
+            }
         } catch (QueryException qe) {
             Logger.getLogger(WorkingCopy.class.getName()).log(Level.WARNING, qe.getMessage(), qe);
             return null;
@@ -207,30 +214,15 @@ public class WorkingCopy extends CompilationController {
     }
     
     private void createCompilationUnit(JCTree.JCCompilationUnit unitTree) {
-            VeryPretty printer = new VeryPretty(getContext());
-            CompilationUnitTree cut = unitTree;
-            printer.print(unitTree);
-            Writer w = null;
-            try {
-                cut.getSourceFile().openOutputStream();
-                 w = cut.getSourceFile().openWriter();
-                w.append(printer.toString());
-            } catch (IOException e) {
-                Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
-            } finally {
-                if (w != null) {
-                    try {
-                        w.close();
-                    } catch (IOException e) {
-                        Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
-                    }
-                }
-            }
-            return;
+        VeryPretty printer = new VeryPretty(getContext());
+        CompilationUnitTree cut = unitTree;
+        printer.print(unitTree);
+        if (externalChanges == null) externalChanges = new ArrayList<CreateChange>();
+        externalChanges.add(new CreateChange(cut.getSourceFile(), printer.toString()));
+        return;
     }
-            
+    
     // Innerclasses ------------------------------------------------------------
-
     private class WorkingCopyContext implements ApplicationContext {
         
         private ArrayList<Difference> diffs = new ArrayList<Difference>();
