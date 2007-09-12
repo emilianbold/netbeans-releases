@@ -847,8 +847,19 @@ NUMBER
 // Everything that can be treated lke ID
 ID_LIKE:
         {isPreprocPending()}?
-        ("defined") => "defined"
-        {setAfterPPDefined(true); $setType(DEFINED);}
+        ("defined")=> "defined" 
+           ( 
+             (Space | EndOfLine | "(") => {setAfterPPDefined(true); $setType(DEFINED);}
+           | 
+                {
+                    if (isAfterPPDefined()) {
+                        setAfterPPDefined(false);
+                        $setType(ID_DEFINED);
+                    } else {
+                        $setType(ID); 
+                    }
+                }
+           )
      |
         {!isAfterPPDefined()}?
         Identifier

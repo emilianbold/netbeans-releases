@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
@@ -57,7 +58,7 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
             if (macroName != null) {
                 // init macro name only once
                 if (DebugUtils.STANDALONE) {
-                    System.err.printf("line %d: extra tokens after {1} at end of %s directive\n", // NOI18N
+                    System.err.printf("line %d: extra tokens after %s at end of %s directive\n", // NOI18N
                             getToken().getLine(), macroName.getText(), getToken().getText().trim());
                 } else {
                     APTUtils.LOG.log(Level.SEVERE, "line {0}: extra tokens after {1} at end of {2} directive", // NOI18N
@@ -66,6 +67,15 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
             } else {
                 this.macroName = token;
             }
+        } else if (token.getType() == APTTokenTypes.DEFINED) {
+            // "defined" cannot be used as a macro name
+            if (DebugUtils.STANDALONE) {
+                System.err.printf("line %d: \"defined\" cannot be used as a macro name\n", // NOI18N
+                                    getToken().getLine());
+            } else {
+                APTUtils.LOG.log(Level.SEVERE, "line {0}: \"defined\" cannot be used as a macro name", // NOI18N
+                        new Object[] {getToken().getLine()} );
+            }            
         }
         // eat all till END_PREPROC_DIRECTIVE     
         if (APTUtils.isEndDirectiveToken(token.getType())) {
