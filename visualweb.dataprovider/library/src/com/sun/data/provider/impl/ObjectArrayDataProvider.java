@@ -151,6 +151,18 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
      */
     private Class objectType;
     
+    // -------------------------------------------------------------- Private Static Variables
+    
+    /**
+     * <p>The maximum number of rows that can be displayed at designtime.</p>
+     */
+    private static final int MAX_DESIGNTIME_ROWCOUNT = 25;
+    
+    /**
+     * <p>When showing fake data, the number of rows to show.</p>
+     */
+    private static final int FAKE_DATA_ROWCOUNT = 3;
+    
     
     // -------------------------------------------------------------- Properties
     
@@ -173,16 +185,12 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
      * @param array The new array to be wrapped
      */
     public void setArray(Object array[]) {
-        
         this.array = array;
         if (array != null) {
-            objectType = array.getClass().getComponentType();
+            setObjectType(array.getClass().getComponentType());
         } else {
-            objectType = null;
+            setObjectType(null);
         }
-        this.support = null;
-        fireProviderChanged();
-        
     }
     
     /**
@@ -314,24 +322,46 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
     
     /** {@inheritDoc} */
     public int getRowCount() throws DataProviderException {
-        if( java.beans.Beans.isDesignTime()) {
-            return 3;
-        }
-        
-        if (array == null) {
+        //at designtime, if there are no field keys
+        //prevent ELExceptions from being thrown by showing zero rows
+        if (java.beans.Beans.isDesignTime() && getFieldKeys().length < 1) {
             return 0;
-        } else {
-            return array.length;
         }
         
+        //calculate how many rows currently exist in the wrapped data
+        int currentRowCount = calculateRowCount();
+        
+        if (java.beans.Beans.isDesignTime()) {
+            if (currentRowCount < 1) {
+                //we have no rows to show
+                //so show FAKE_DATA_ROWCOUNT rows of fake data
+                return FAKE_DATA_ROWCOUNT;
+            }
+            else if (currentRowCount > MAX_DESIGNTIME_ROWCOUNT) {
+                //we have too many rows to show
+                //only show the maximum permitted
+                return MAX_DESIGNTIME_ROWCOUNT;
+            }
+            else {
+                return currentRowCount;
+            }
+        }
+        else {
+            return currentRowCount;
+        }      
     }
     
     
     /** {@inheritDoc} */
     public Object getValue(FieldKey fieldKey, RowKey rowKey) throws DataProviderException {
-        
-        if( java.beans.Beans.isDesignTime()) {
-            return AbstractDataProvider.getFakeData(getType(fieldKey));
+        if(java.beans.Beans.isDesignTime()) {
+            //calculate how many rows currently exist in the wrapped data
+            int currentRowCount = calculateRowCount();
+            if (currentRowCount < 1) {
+                //we have no actual rows
+                //so show fake data
+                return AbstractDataProvider.getFakeData(getType(fieldKey));
+            }
         }
         
         if ((getSupport() == null) || (getSupport().getFieldKey(fieldKey.getFieldId()) == null)) {
@@ -497,5 +527,14 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
         
     }
     
-    
+    /**
+     * <p>Calculate how many rows exist in the wrapped data.</p>
+     */ 
+    private int calculateRowCount() {
+        int currentRowCount = 0;
+        if (array != null) {
+            currentRowCount = array.length;
+        }
+        return currentRowCount;
+    }
 }
