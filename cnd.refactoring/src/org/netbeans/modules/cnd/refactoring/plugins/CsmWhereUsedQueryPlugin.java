@@ -137,16 +137,15 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     
     //@Override
     public Problem prepare(final RefactoringElementsBag elements) {
-        Collection<CsmFile> files = getRelevantFiles(startReferenceObject);
-        fireProgressListenerStart(ProgressEvent.START, files.size());
         CsmObject referencedObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
+        Collection<CsmFile> files = getRelevantFiles(startReferenceObject, referencedObject);
+        fireProgressListenerStart(ProgressEvent.START, files.size());
         processQuery(referencedObject, elements, files);
 //        processFiles(a, new FindTask(elements));
         fireProgressListenerStop();
         return null;
     }
-    
-//    //@Override
+    //    //@Override
 //    protected Problem fastCheckParameters(CompilationController info) {
 //        if (searchHandle.getKind() == ElementKind.METHOD) {
 //            return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());

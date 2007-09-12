@@ -23,6 +23,11 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
@@ -30,7 +35,6 @@ import org.openide.filesystems.FileObject;
 /**
  * factory of tree elements for C/C++ refactorings
  * 
- * @author Jan Becicka
  * @author Vladimir Voskresensky
  */
 public class TreeElementFactoryImpl implements TreeElementFactoryImplementation {
@@ -48,9 +52,18 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         } else {
             result = map.get(o);
         }
-        if (result!= null)
+        if (result!= null) {
             return result;
-        if (o instanceof FileObject) {
+        }
+        if (o instanceof CsmProject) {
+            Object prj = ((CsmProject)o).getPlatformProject();
+            if (prj instanceof Project) {
+                result = new ProjectTreeElement((Project) prj);
+            }
+        } else if (o instanceof CsmFile) {
+            FileObject fo = CsmUtilities.getFileObject((CsmFile)o);
+            result = new FileTreeElement(fo, (CsmFile)o);
+        } else if (o instanceof FileObject) {
             FileObject fo = (FileObject) o;
 //            if (fo.isFolder()) {
 //                SourceGroup sg = FolderTreeElement.getSourceGroup(fo);
@@ -61,18 +74,19 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
 //            } else {
 //                result = new FileTreeElement(fo);
 //            }
+            result = new FileTreeElement(fo, null);
 //        } else if (o instanceof SourceGroup) {
 //            result = new SourceGroupTreeElement((SourceGroup)o);
 //        } else if (o instanceof ElementGrip) {
 //            result = new ElementGripTreeElement((ElementGrip) o);
-        }
-        else if (o instanceof Project) {
+        } else if (o instanceof Project) {
             result = new ProjectTreeElement((Project) o);
         } else if (o instanceof RefactoringElement) {
 //            ElementGrip grip = ((RefactoringElement) o).getLookup().lookup(ElementGrip.class);
-//            if (grip!=null) {
-//                result = new RefactoringTreeElement((RefactoringElement) o);
-//            } 
+            CsmObject csmObject = ((RefactoringElement) o).getLookup().lookup(CsmObject.class);
+            if (csmObject!=null) {
+                result = new RefactoringTreeElement((RefactoringElement) o);
+            } 
         }
         if (result != null) {
             if (o instanceof SourceGroup) {

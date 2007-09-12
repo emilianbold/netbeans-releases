@@ -19,21 +19,25 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author Jan Becicka
+ * base class for C/C++ refactoring plug-ins
+ * 
  * @author Vladimir Voskresensky
  */
 public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
@@ -153,6 +157,23 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         return result.values();
     }        
     
+    protected CsmFile getScopedElementFile(CsmObject decl) {
+        assert decl != null;
+        CsmObject scopeElem = decl;
+        while (CsmKindUtilities.isScopeElement(scopeElem)) {
+            CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
+            if (CsmKindUtilities.isFunction(scope)) {
+                CsmFile file = ((CsmFunction)scope).getContainingFile();
+                return file;
+            } else if (CsmKindUtilities.isScopeElement(scope)) {
+                scopeElem = ((CsmScopeElement)scope);
+            } else {
+                break;
+            }
+        }
+        return null;
+    }    
+    
     protected final CsmFile getCsmFile(CsmObject csmObject) {
         if (CsmKindUtilities.isFile(csmObject)) {
             return ((CsmFile)csmObject);
@@ -162,10 +183,15 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         return null;
     }  
     
-    protected Collection<CsmFile> getRelevantFiles(CsmObject csmObject) {
+    protected Collection<CsmFile> getRelevantFiles(CsmObject csmObject, CsmObject referencedObject) {
         CsmFile startFile = getCsmFile(csmObject);
-        CsmProject prj = startFile.getProject();
-        return prj.getAllFiles();
+        CsmFile scopeFile = referencedObject == null ? null : this.getScopedElementFile(referencedObject);
+        if (startFile.equals(scopeFile)) {
+            return Collections.singleton(scopeFile);
+        } else {
+            CsmProject prj = startFile.getProject();
+            return prj.getAllFiles();
+        }
     }
     
 //    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) {
