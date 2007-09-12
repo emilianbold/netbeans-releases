@@ -541,13 +541,19 @@ is divided into following sections:
             -->
     <target depends="init,compile-test" if="have.tests" name="-debug-start-debuggee-test">
         <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-        <j2seproject3:debug classname="junit.textui.TestRunner" classpath="${debug.test.classpath}">
+        <property location="${build.test.results.dir}/TEST-${test.class}.xml" name="test.report.file"/>
+        <delete file="${test.report.file}"/>
+        <mkdir dir="${build.test.results.dir}"/>
+        <j2seproject3:debug classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" classpath="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar:${debug.test.classpath}">
             <customize>
                 <syspropertyset>
                     <propertyref prefix="test-sys-prop."/>
                     <mapper from="test-sys-prop.*" to="*" type="glob"/>
                 </syspropertyset>
-                <arg line="${test.class}"/>
+                <arg value="${test.class}"/>
+                <arg value="showoutput=true"/>
+                <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+                <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.report.file}"/>
             </customize>
         </j2seproject3:debug>
     </target>

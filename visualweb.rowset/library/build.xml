@@ -44,6 +44,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="-pre-init">
+        <condition property="nbjdk.bootclasspath.available">
+            <isset property="nbjdk.bootclasspath"/>
+        </condition>
         <available property="have-jdbc-40" 
             classname="java.sql.RowIdLifetime" 
             classpath="${nbjdk.bootclasspath}" 

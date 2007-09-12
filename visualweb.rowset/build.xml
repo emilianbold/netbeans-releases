@@ -27,7 +27,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Build the J2SE project JAR on which this library wrapper module depends. -->
     <target name="library-init">
-        <ant dir="library" target="jar" inheritAll="false"/>
+        <ant dir="library" target="jar" inheritAll="false">
+	  <property name="nbjdk.home" value="${nbjdk.home}"/>
+	  <property name="nbjdk.bootclasspath" value="${nbjdk.bootclasspath}"/>
+	</ant>
     </target>
     
     <target name="netbeans-extra" depends="init">
