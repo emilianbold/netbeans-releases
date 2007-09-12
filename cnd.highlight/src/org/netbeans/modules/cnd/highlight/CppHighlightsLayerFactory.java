@@ -31,7 +31,7 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
  */
 public class CppHighlightsLayerFactory implements HighlightsLayerFactory {
     
-    private static InactiveCodeHighlighter getInactiveCodeHighlighter(Document doc) {
+    public static InactiveCodeHighlighter getInactiveCodeHighlighter(Document doc) {
         InactiveCodeHighlighter ich = (InactiveCodeHighlighter)doc.getProperty(InactiveCodeHighlighter.class);
         if (ich == null)
         {

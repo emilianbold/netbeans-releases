@@ -29,7 +29,7 @@
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-cnd-cpp-parser_annotation_err.xml" url="parser_annotation_err.xml"/>
         </folder>
-<!--        <folder name="text">
+        <folder name="text">
             <folder name="x-c++">
                 <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance" />
                  <folder name="FontsColors">
@@ -69,7 +69,6 @@
                 </folder>
             </folder>
         </folder>
--->
     </folder>
 
     <folder name="Actions">

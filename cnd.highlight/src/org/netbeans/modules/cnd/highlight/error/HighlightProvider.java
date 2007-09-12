@@ -44,6 +44,7 @@ import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.Position;
+import org.netbeans.modules.cnd.highlight.CppHighlightsLayerFactory;
 import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -191,6 +192,9 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
             Document doc = editor != null ? editor.getDocument() : null;
             if (doc instanceof BaseDocument){
                 addAnnotations((BaseDocument)doc, file);
+                // one more point to make a global scheduler
+                // todo: optimize to check dependency between changed file and updated one
+                CppHighlightsLayerFactory.getInactiveCodeHighlighter(doc).scheduleUpdate();
             }
             //}
         }
