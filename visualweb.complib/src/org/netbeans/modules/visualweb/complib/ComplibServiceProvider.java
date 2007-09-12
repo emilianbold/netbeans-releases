@@ -536,14 +536,16 @@ public class ComplibServiceProvider implements ComplibService {
                     for (ExtensionComplib projectComplib : projectComplibs) {
                         ExtensionComplib userComplib = userScope.getExistingComplib(projectComplib);
                         if (userComplib != null) {
-                            try {
-                                removeLegacyLibraryRefsAndDefs(project, projectComplib);
-                            } catch (IOException e) {
-                                IdeUtil
-                                        .logWarning(
-                                                "Unable to remove legacy library reference and definition. Use Project Properties to remove manually",
-                                                e);
-                            }
+                            // FIXME code does not work. It needs to be revised anyway when NB api is available 110040.
+                            // try {
+                            // removeLegacyLibraryRefsAndDefs(project, projectComplib);
+                            // } catch (IOException e) {
+                            // IdeUtil
+                            // .logWarning(
+                            // "Unable to remove legacy library reference and definition. Use
+                            // Project Properties to remove manually",
+                            //                                                e);
+                            //                            }
                             addLibraryRefAndDef(project, userComplib);
                         }
                     }
