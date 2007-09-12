@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.RegistryType;
@@ -288,6 +289,15 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 
                 LogManager.log("Available roots : " + StringUtils.asString(roots));
                 
+                File downloadDataDirRoot = FileUtils.getRoot(
+                        Installer.getInstance().getLocalDirectory(), roots);
+                long downloadSize = 0;
+                for (Product product: toInstall) {
+                    downloadSize+=product.getDownloadSize();
+                }
+                // the critical check point - we download all the data
+                spaceMap.put(downloadDataDirRoot, new Long(downloadSize));                
+                long lastDataSize = 0;
                 for (Product product: toInstall) {
                     final File installLocation = product.getInstallationLocation();
                     final File root = FileUtils.getRoot(installLocation, roots);
@@ -295,12 +305,19 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     
                     LogManager.log("    [" + root + "] <- " + installLocation);
                     
-                    if ( root != null ) {
+                    if ( root != null ) {                        
+                        Long ddSize =  spaceMap.get(downloadDataDirRoot);
+                        // remove space that was freed after the remove of previos product data
+                        spaceMap.put(downloadDataDirRoot, 
+                                Long.valueOf(ddSize - lastDataSize));
+                        
+                        // add space required for next product installation
                         Long size = spaceMap.get(root);
                         size = Long.valueOf(
                                 (size != null ? size.longValue() : 0L) +
-                                productSize);
+                                productSize);                        
                         spaceMap.put(root, size);
+                        lastDataSize = product.getDownloadSize();
                     } else {
                         return StringUtils.format(
                                 panel.getProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY),
