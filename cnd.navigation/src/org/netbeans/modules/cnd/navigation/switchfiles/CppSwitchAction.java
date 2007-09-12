@@ -266,13 +266,13 @@ public final class CppSwitchAction extends CookieAction {
     private static String getName(String path) {
         int idxSlash = path.lastIndexOf(File.separatorChar);
         String name = path.substring(idxSlash == -1 ? 0 : idxSlash + 1);
-        int idxDot = name.lastIndexOf(".");
+        int idxDot = name.lastIndexOf('.');
         return name.substring(0, idxDot == -1 ? name.length() : idxDot);
     }
 
     private static String trimExtension(String path) {
         // I hardly believe we can meet file w/o extension here but lets play safe
-        int idxDot = path.lastIndexOf(".");
+        int idxDot = path.lastIndexOf('.');
         return idxDot == -1 ? path : path.substring(0, idxDot);
     }
 
@@ -301,7 +301,7 @@ public final class CppSwitchAction extends CookieAction {
     @Override
     protected void initialize() {
         super.initialize();
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
 
     public HelpCtx getHelpCtx() {
