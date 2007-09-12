@@ -62,7 +62,7 @@ public class NbToolTip extends FileChangeAdapter {
     
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.tooltip");
     
-    private static final HashMap<String,WeakReference<NbToolTip>> mime2tip = new HashMap();
+    private static final HashMap<String,WeakReference<NbToolTip>> mime2tip = new HashMap<String,WeakReference<NbToolTip>>();
     
     private static int lastRequestId;
     
@@ -121,7 +121,7 @@ public class NbToolTip extends FileChangeAdapter {
             }
 
             if (annoFolder != null) {
-                ArrayList al = new ArrayList();
+                ArrayList<Annotation> al = new ArrayList<Annotation>();
                 Enumeration en = annoFolder.getChildren(false);
                 while (en.hasMoreElements()) {
                     FileObject fo = (FileObject)en.nextElement();
@@ -132,7 +132,7 @@ public class NbToolTip extends FileChangeAdapter {
 
                     try {
                         DataObject dob = DataObject.find(fo);
-                        InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
+                        InstanceCookie ic = dob.getCookie(InstanceCookie.class);
 
                         if (debug) {
                             System.err.println("tooltip annotation instanceCookie=" + ic);
@@ -154,7 +154,7 @@ public class NbToolTip extends FileChangeAdapter {
                                     );
                                 }
                                 
-                                al.add(a);
+                                al.add((Annotation)a);
                             }
                         }
                     } catch (DataObjectNotFoundException e) {
@@ -163,7 +163,7 @@ public class NbToolTip extends FileChangeAdapter {
                     }
                 }
                 
-                annos = (Annotation[])al.toArray(new Annotation[al.size()]);
+                annos = al.toArray(new Annotation[al.size()]);
                 synchronized (NbToolTip.class) {
                     tipAnnotations = annos;
                 }
@@ -198,7 +198,7 @@ public class NbToolTip extends FileChangeAdapter {
                     if (doc != null) {
                         DataObject dob = NbEditorUtilities.getDataObject(doc);
                         if (dob != null && dob.isValid()) {
-                            EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                            EditorCookie ec = dob.getCookie(EditorCookie.class);
                             if (ec != null) {
                                 StyledDocument openedDoc;
                                 try {
@@ -335,7 +335,7 @@ public class NbToolTip extends FileChangeAdapter {
         private boolean isDocumentValid() {
             DataObject dob = NbEditorUtilities.getDataObject(doc);
             if (dob != null) {
-                EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                EditorCookie ec = dob.getCookie(EditorCookie.class);
                 if (ec != null) {
                     StyledDocument openedDoc;
                     try {
