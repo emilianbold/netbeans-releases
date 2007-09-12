@@ -188,9 +188,6 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
             case DesignResourceMap.CLASS_LEVEL:
                 classRadio.setSelected(true);
                 break;
-            case DesignResourceMap.PACKAGE_LEVEL:
-                packageRadio.setSelected(true);
-                break;
             case DesignResourceMap.APP_LEVEL:
                 applicationRadio.setSelected(true);
                 break;
@@ -198,12 +195,11 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
     }
 
     private int getStorageLevel() {
-        if (applicationRadio.isSelected())
+        if (applicationRadio.isSelected()) {
             return DesignResourceMap.APP_LEVEL;
-        else if (packageRadio.isSelected())
-            return DesignResourceMap.PACKAGE_LEVEL;
-        else
+        } else {
             return DesignResourceMap.CLASS_LEVEL;
+        }
     }
 
     private void loadKeys() {
@@ -249,7 +245,6 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         boolean enabled = isEditingEnabled();
         i18nCheckBox.setEnabled(enabled);
         classRadio.setEnabled(enabled);
-        packageRadio.setEnabled(enabled);
         applicationRadio.setEnabled(enabled);
         keyCombo.setEnabled(enabled);
         valueTextField.setEnabled(enabled);
@@ -401,7 +396,6 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         keyLabel = new javax.swing.JLabel();
         valueLabel = new javax.swing.JLabel();
         classRadio = new javax.swing.JRadioButton();
-        packageRadio = new javax.swing.JRadioButton();
         applicationRadio = new javax.swing.JRadioButton();
         valueTextField = new javax.swing.JTextField();
         keyCombo = new javax.swing.JComboBox();
@@ -433,12 +427,6 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         classRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
         classRadio.addActionListener(formListener);
 
-        buttonGroup1.add(packageRadio);
-        packageRadio.setText(org.openide.util.NbBundle.getMessage(ResourcePanelImpl.class, "ResourcePanelImpl.packageRadio.text")); // NOI18N
-        packageRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        packageRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        packageRadio.addActionListener(formListener);
-
         buttonGroup1.add(applicationRadio);
         applicationRadio.setText(org.openide.util.NbBundle.getMessage(ResourcePanelImpl.class, "ResourcePanelImpl.applicationRadio.text")); // NOI18N
         applicationRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -450,10 +438,10 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         keyCombo.setEditable(true);
         keyCombo.addActionListener(formListener);
 
-        invalidLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/swingapp/resources/invalid.gif")));
+        invalidLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/swingapp/resources/invalid.gif"))); // NOI18N
         invalidLabel.setToolTipText(org.openide.util.NbBundle.getMessage(ResourcePanelImpl.class, "ResourcePanelImpl.invalidLabel.toolTipText")); // NOI18N
 
-        hintLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/swingapp/resources/help.gif")));
+        hintLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/swingapp/resources/help.png"))); // NOI18N
         hintLabel.addMouseListener(formListener);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -470,8 +458,6 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(classRadio)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(packageRadio)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(applicationRadio))
                     .add(keyCombo, 0, 270, Short.MAX_VALUE)
@@ -514,9 +500,8 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(classRadio)
-                    .add(packageRadio)
-                    .add(applicationRadio)
-                    .add(levelLabel))
+                    .add(levelLabel)
+                    .add(applicationRadio))
                 .addContainerGap())
         );
     }
@@ -534,9 +519,6 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
             }
             else if (evt.getSource() == classRadio) {
                 ResourcePanelImpl.this.classRadioActionPerformed(evt);
-            }
-            else if (evt.getSource() == packageRadio) {
-                ResourcePanelImpl.this.packageRadioActionPerformed(evt);
             }
             else if (evt.getSource() == applicationRadio) {
                 ResourcePanelImpl.this.applicationRadioActionPerformed(evt);
@@ -615,12 +597,6 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         updateControls();
     }//GEN-LAST:event_applicationRadioActionPerformed
 
-    private void packageRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_packageRadioActionPerformed
-        setStorageLevelToValue(DesignResourceMap.PACKAGE_LEVEL);
-        loadKeys();
-        updateControls();
-    }//GEN-LAST:event_packageRadioActionPerformed
-
     private void classRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classRadioActionPerformed
         setStorageLevelToValue(DesignResourceMap.CLASS_LEVEL);
         loadKeys();
@@ -680,7 +656,6 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
     private javax.swing.JLabel keyLabel;
     private javax.swing.JLabel layoutBugWorkaroundLabel;
     private javax.swing.JLabel levelLabel;
-    private javax.swing.JRadioButton packageRadio;
     private javax.swing.JCheckBox resourceCheckBox;
     private javax.swing.JLabel valueLabel;
     private javax.swing.JTextField valueTextField;

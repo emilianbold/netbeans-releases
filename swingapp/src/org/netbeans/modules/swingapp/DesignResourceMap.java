@@ -54,7 +54,6 @@ import org.openide.loaders.MultiDataObject;
 final class DesignResourceMap extends ResourceMap {
 
     static final int APP_LEVEL = 0;
-    static final int PACKAGE_LEVEL = 1;
     static final int CLASS_LEVEL = 2;
 
     private static final String NOI18N_COMMENT = "NOI18N"; // NOI18N

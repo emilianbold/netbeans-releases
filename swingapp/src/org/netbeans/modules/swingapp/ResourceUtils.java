@@ -80,11 +80,6 @@ class ResourceUtils {
         }
 
         String srcClassName = cp.getResourceName(srcFile, '.', false);
-        bundleName = getPackageBundleName(srcClassName);
-        resMap = new DesignResourceMap(resMap, classLoader, srcFile,
-                                       new String[] { bundleName },
-                                       DesignResourceMap.PACKAGE_LEVEL);
-
         bundleName = getBundleName(srcClassName);
         resMap = new DesignResourceMap(resMap, classLoader, srcFile,
                                        new String[] { bundleName },
@@ -192,13 +187,6 @@ class ResourceUtils {
         return i > 0 ?
             className.substring(0, i) + ".resources" + className.substring(i) : // NOI18N
             "resources." + className; // NOI18N
-    }
-
-    private static String getPackageBundleName(String className) {
-        int i = className.lastIndexOf('.');
-        return i > 0 ?
-            className.substring(0, i) + ".resources.PackageResources" : // NOI18N
-            "resources.PackageResources"; // NOI18N
     }
 
     /**
