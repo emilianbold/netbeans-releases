@@ -163,11 +163,11 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         addRemovePopUpMenu(aListener);
         
         // Show properties
-     /*   popUpMenu.addSeparator();
+        popUpMenu.addSeparator();
         String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
         propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
         propertiesItem.addActionListener(aListener);
-        popUpMenu.add(propertiesItem);*/
+        popUpMenu.add(propertiesItem);
         
         // Auto map action
         autoMapItem = new JMenuItem("Auto Map", new ImageIcon(autoMapImgUrl));
@@ -319,13 +319,12 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     }
     
     public boolean doMouseClick(int modifiers, Point dc, Point vc, JGoView view1) {
-        //java.util.logging.Logger.getLogger(SQLSourceTableArea.class.getName()).info("ETLActivatedNodes in doMouseClick in PropertyChangeListener ------------ ");
         Node node = null;
         if(node != null){
             if (node instanceof SourceTableNode) {
                 WindowManager.getDefault().getRegistry().getActivated().
                         setActivatedNodes(new Node[]{new SourceTableNode((SourceTable)node)});
-                java.util.logging.Logger.getLogger(SQLSourceTableArea.class.getName()).info("ETLNewPropertySheet  in MouseClick in Property Sheet ------------ "+node.getName());
+              // java.util.logging.Logger.getLogger(SQLSourceTableArea.class.getName()).info("ETLNewPropertySheet  in MouseClick in Property Sheet ------------ "+node.getName());
             }
         }
         IGraphView gView = this.getGraphView();
@@ -419,26 +418,6 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             //ignore
         }
     }
-    
-    
-    private void setActivatedNodes(final Node[] nodes) {
-        try {
-            TopComponent targetTopComponent = null;
-            Container container = (Container)designView;
-            while (container != null) { // Find TopComponent
-                if (container instanceof TopComponent) {
-                    targetTopComponent = (TopComponent) container;
-                    break;
-                    
-                }
-                container = container.getParent();
-            }
-            if(targetTopComponent != null) {
-                targetTopComponent.setActivatedNodes(nodes);
-            }
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-    }
+
 }
 

@@ -82,9 +82,6 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
      *
      * @param tgttable
      *
-     *
-     *
-     *
      */
     public SQLTargetTableArea(TargetTable tgttable) {
         super();
@@ -138,11 +135,11 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
         addRemovePopUpMenu(aListener);
         
         // Properties
-     /*   popUpMenu.addSeparator();
+        popUpMenu.addSeparator();
         String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
         propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
         propertiesItem.addActionListener(aListener);
-        popUpMenu.add(propertiesItem);*/
+        popUpMenu.add(propertiesItem);
     }
     
     Icon createIcon() {
@@ -230,6 +227,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     }
     
     /**
+     * @return 
      * @see org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea#getDefaultTitleBrush()
      */
     protected JGoBrush getDefaultTitleBrush() {
@@ -237,6 +235,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     }
     
     /**
+     * @return 
      * @see org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea#getDefaultBackgroundColor()
      */
     protected Color getDefaultBackgroundColor() {
