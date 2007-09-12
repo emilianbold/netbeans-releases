@@ -234,11 +234,11 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     public void replaceTokens(TokenListChange<T> change, int removeTokenCount, int diffLength) {
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
-        Object[] removedTokensOrBranches = new Object[removeTokenCount];
-        copyElements(index, index + removeTokenCount, removedTokensOrBranches, 0);
+        Object[] removedTokensOrEmbeddingContainers = new Object[removeTokenCount];
+        copyElements(index, index + removeTokenCount, removedTokensOrEmbeddingContainers, 0);
         int offset = change.offset();
         for (int i = 0; i < removeTokenCount; i++) {
-            Object tokenOrEmbeddingContainer = removedTokensOrBranches[i];
+            Object tokenOrEmbeddingContainer = removedTokensOrEmbeddingContainers[i];
             AbstractToken<T> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
             if (!token.isFlyweight()) {
                 updateElementOffsetRemove(token);
@@ -248,7 +248,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         }
         remove(index, removeTokenCount); // Retain original offsets
         laState.remove(index, removeTokenCount); // Remove lookaheads and states
-        change.setRemovedTokens(removedTokensOrBranches);
+        change.setRemovedTokens(removedTokensOrEmbeddingContainers);
         change.setRemovedEndOffset(offset);
 
         // Move and fix the gap according to the performed modification.
@@ -271,10 +271,14 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
             change.syncAddedTokenCount();
             // Check for bounds change only
             if (removeTokenCount == 1 && addedTokensOrBranches.size() == 1) {
-                // Compare removed and added token ids
-                TokenId id = LexerUtilsConstants.token(removedTokensOrBranches[0]).id();
-                if (id == change.addedToken(0).id())
+                // Compare removed and added token ids and part types
+                AbstractToken<T> removedToken = LexerUtilsConstants.token(removedTokensOrEmbeddingContainers[0]);
+                AbstractToken<T> addedToken = change.addedToken(0);
+                if (removedToken.id() == addedToken.id()
+                    && removedToken.partType() == addedToken.partType()
+                ) {
                     change.markBoundsChange();
+                }
             }
         }
     }

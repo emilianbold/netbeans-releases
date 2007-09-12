@@ -380,10 +380,14 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
             change.syncAddedTokenCount();
             // Check for bounds change only
             if (removeTokenCount == 1 && addedTokensOrBranches.size() == 1) {
-                // Compare removed and added token ids
-                TokenId id = LexerUtilsConstants.token(removedTokensOrEmbeddingContainers[0]).id();
-                if (id == change.addedToken(0).id())
+                // Compare removed and added token ids and part types
+                AbstractToken<T> removedToken = LexerUtilsConstants.token(removedTokensOrEmbeddingContainers[0]);
+                AbstractToken<T> addedToken = change.addedToken(0);
+                if (removedToken.id() == addedToken.id()
+                    && removedToken.partType() == addedToken.partType()
+                ) {
                     change.markBoundsChange();
+                }
             }
         }
     }

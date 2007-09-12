@@ -26,6 +26,7 @@ import java.util.Map;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.java.lexer.JavaLexer;
@@ -228,9 +229,11 @@ public enum JavaTokenId implements TokenId {
             // Test language embedding in the block comment
             switch (token.id()) {
                 case JAVADOC_COMMENT:
-                    return LanguageEmbedding.create(JavadocTokenId.language(), 3, 2);
+                    return LanguageEmbedding.create(JavadocTokenId.language(), 3,
+                            (token.partType() == PartType.COMPLETE) ? 2 : 0);
                 case STRING_LITERAL:
-                    return LanguageEmbedding.create(JavaStringTokenId.language(), 1, 1);
+                    return LanguageEmbedding.create(JavaStringTokenId.language(), 1,
+                            (token.partType() == PartType.COMPLETE) ? 1 : 0);
             }
             return null; // No embedding
         }

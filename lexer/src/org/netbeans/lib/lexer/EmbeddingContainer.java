@@ -125,6 +125,16 @@ public final class EmbeddingContainer<T extends TokenId> {
                         embeddingPresence(token.id());
             }
             if (embedding != null) {
+                // Update the embedding presence ALWAYS_QUERY
+                if (ep == EmbeddingPresence.CACHED_FIRST_QUERY) {
+                    LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).
+                            setEmbeddingPresence(token.id(), EmbeddingPresence.ALWAYS_QUERY);
+                }
+                // Check whether the token contains enough text to satisfy embedding's start and end skip lengths
+                CharSequence text = token.text(); // Should not be null here but rather check
+                if (token.text() == null || embedding.startSkipLength() + embedding.endSkipLength() > text.length()) {
+                    return null;
+                }
                 if (ec == null) {
                     ec = new EmbeddingContainer<T>(token, rootTokenList);
                     tokenList.wrapToken(index, ec);
@@ -139,12 +149,9 @@ public final class EmbeddingContainer<T extends TokenId> {
                     ec.setFirstEmbeddedTokenList(etl);
                 }
                 ec.setDefaultEmbeddedTokenList(etl);
-                if (ep == EmbeddingPresence.CACHED_FIRST_QUERY) {
-                    LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).
-                            setEmbeddingPresence(token.id(), EmbeddingPresence.ALWAYS_QUERY);
-                }
                 return (embeddedLanguage == null || embeddedLanguage == embedding.language()) ? etl : null;
             }
+            // Update embedding presence to NONE
             if (ep == EmbeddingPresence.CACHED_FIRST_QUERY) {
                 LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).
                         setEmbeddingPresence(token.id(), EmbeddingPresence.NONE);
