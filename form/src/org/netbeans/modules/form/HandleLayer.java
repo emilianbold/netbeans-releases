@@ -361,7 +361,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 return;
             }
         }
-        else if (keyCode == KeyEvent.VK_SPACE) {
+        else if (keyCode == KeyEvent.VK_SPACE || keyCode == KeyEvent.VK_F2) {
             if (!viewOnly && e.getID() == KeyEvent.KEY_RELEASED) {
                 java.util.List selected = formDesigner.getSelectedComponents();
                 if (selected.size() == 1) { // just one component is selected
