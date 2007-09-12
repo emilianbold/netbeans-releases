@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Templates">
         <folder name="MIDP">
-            <file name="EmptyJ2MEUnitTest.java" url="resources/templates/EmptyJ2MEUnitTest.java.template">
+            <file name="EmptyJMUnitTest.java" url="resources/templates/EmptyJ2MEUnitTest.java.template">
                 <attr name="position" intvalue="590"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.j2meunit.Bundle"/> 
