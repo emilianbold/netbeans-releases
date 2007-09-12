@@ -34,6 +34,8 @@ basename=$2
 
 progdir=`dirname $0`
 
+dmgname=$basename
+
 ant -f $progdir/build.xml distclean
 
 # build GF package.  The GF dir image must already exists as $progdir/glassfish/glassfish
