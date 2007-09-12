@@ -24,6 +24,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.Timer;
 import javax.swing.text.Caret;
@@ -54,7 +55,12 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private CsmUID<CsmFile> uid;
     private NavigatorPanelUI ui;
     private NavigatorComponent busyListener;
-    private AbstractNode root = new AbstractNode(new Children.Array());
+    private AbstractNode root = new AbstractNode(new Children.Array()) {
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+    };
     private List<IndexOffsetNode> lineNumberIndex = new ArrayList<IndexOffsetNode>(5);
     private Timer checkModifiedTimer;
     private long lastModified = -1;
