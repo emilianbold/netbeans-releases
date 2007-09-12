@@ -1068,7 +1068,7 @@ public class Installer extends ModuleInstall implements Runnable {
             Throwable t = getThrown();
             if ((t != null)&&(reportPanel !=null)){
                 reportPanel.setSummary(t.toString());
-                dim = new Dimension(450, 350);
+                dim = new Dimension(450, 450);
             }
             browser = new JEditorPane();
             try {
