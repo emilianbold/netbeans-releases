@@ -265,6 +265,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
             case PREFIX: indexNameKind = NameKind.PREFIX; break;
             case REGEXP: indexNameKind = NameKind.REGEXP; break;
             case EXACT_NAME: indexNameKind = NameKind.EXACT_NAME; break;
+	    case CASE_INSENSITIVE_EXACT_NAME: indexNameKind = NameKind.EXACT_NAME; break;
             default: throw new RuntimeException("Unexpected name kind: " + nameKind);
             }
             
