@@ -176,13 +176,15 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                     || J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName) ) {
                 return true;
             }
-            if ("org.hibernate.ejb.HibernatePersistence".equals(toolName) ||
-                "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider".equals(toolName) ||
-                "kodo.persistence.PersistenceProviderImpl".equals(toolName))
-            {
+            if ("org.hibernate.ejb.HibernatePersistence".equals(toolName)
+                    || "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider".equals(toolName)
+                    || "kodo.persistence.PersistenceProviderImpl".equals(toolName)) {
                 return containsPersistenceProvider(toolName);
             }
             if ("hibernatePersistenceProviderIsDefault".equals(toolName)) {
+                return true;
+            }
+            if ("defaultPersistenceProviderJavaEE5".equals(toolName)) {
                 return true;
             }
 

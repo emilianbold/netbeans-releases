@@ -581,6 +581,9 @@ public class PlatformImpl extends J2eePlatformImpl {
                 "org.apache.openjpa.persistence.PersistenceProviderImpl".equals(toolName)) { //NOI18N
                 return true;
             }
+            if ("defaultPersistenceProviderJavaEE5".equals(toolName)) {
+                return true;
+            }
             
         //}
         return false;

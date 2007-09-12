@@ -105,6 +105,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if (J2eePlatform.TOOL_JSR109.equals(toolName)) {
                 return false; // to explicitelly emphasise that JSR 109 is not supported
             }
+            if ("defaultPersistenceProviderJavaEE5".equals(toolName)) {
+                return true;
+            }
             return false;
         }
         

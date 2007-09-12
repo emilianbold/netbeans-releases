@@ -88,7 +88,8 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         
         Set<String> supportedVersions = platform.getSupportedSpecVersions(j2eeModuleProvider.getJ2eeModule().getModuleType());
         
-        return supportedVersions.contains(J2eeModule.JAVA_EE_5);
+        return supportedVersions.contains(J2eeModule.JAVA_EE_5)
+                && platform.isToolSupported("defaultPersistenceProviderJavaEE5");
     }
     
 
