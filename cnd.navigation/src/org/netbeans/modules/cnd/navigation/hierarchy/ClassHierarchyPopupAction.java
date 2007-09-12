@@ -53,7 +53,7 @@ public class ClassHierarchyPopupAction extends CookieAction {
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

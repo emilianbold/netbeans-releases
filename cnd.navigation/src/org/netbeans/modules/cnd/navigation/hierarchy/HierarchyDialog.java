@@ -50,7 +50,7 @@ class HierarchyDialog {
     public static void show(CsmClass decl) {
         if (decl != null) {
             JDialog dialog = ResizablePopup.getDialog();
-            dialog.setTitle(NbBundle.getMessage(HierarchyDialog.class, "CTL_ClassHierarchyPopupAction")); // NOI18N
+            dialog.setTitle(decl.getName() + " - " + NbBundle.getMessage(HierarchyDialog.class, "CTL_ClassHierarchyDialogTitle")); // NOI18N
             ClassHierarchyPopupPanel panel = new ClassHierarchyPopupPanel();
             panel.setClass(decl);
             dialog.setContentPane(panel);
@@ -64,7 +64,7 @@ class HierarchyDialog {
     public static void show(CsmFile decl) {
         if (decl != null) {
             JDialog dialog = ResizablePopup.getDialog();
-            dialog.setTitle(NbBundle.getMessage(HierarchyDialog.class, "CTL_IncludeHierarchyPopupAction")); // NOI18N
+            dialog.setTitle(decl.getName() + " - " + NbBundle.getMessage(HierarchyDialog.class, "CTL_IncludeHierarchyDialogTitle")); // NOI18N
             IncludeHierarchyPopupPanel panel = new IncludeHierarchyPopupPanel();
             panel.setFile(decl);
             dialog.setContentPane(panel);
