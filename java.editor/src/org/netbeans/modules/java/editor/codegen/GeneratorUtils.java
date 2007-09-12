@@ -455,11 +455,11 @@ public class GeneratorUtils {
             StatementTree statement = wc.getTypes().getNoType(TypeKind.VOID) == element.getReturnType() ?
                 make.ExpressionStatement(inv) : make.Return(inv);
             body = make.Block(Collections.singletonList(statement), false);
+        }
             
-            //add @Override annotation if developing for 1.5:
-            if (GeneratorUtils.supportsOverride(wc.getFileObject())) {
-                annotations.add(make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList())); //NOI18N
-            }
+        //add @Override annotation if developing for 1.5:
+        if (GeneratorUtils.supportsOverride(wc.getFileObject())) {
+            annotations.add(make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList())); //NOI18N
         }
 
         return make.Method(make.Modifiers(flags, annotations), element.getSimpleName(), returnType, typeParams, params, throwsList, body, null);
