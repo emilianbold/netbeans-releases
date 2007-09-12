@@ -88,7 +88,11 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     }
     
     public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, boolean includeSelfDeclarations) {
+        CsmFile scopeFile = getScopedElementFile(target);
         if (!(file instanceof FileImpl)) {
+            return Collections.<CsmReference>emptyList();
+        } else if (scopeFile != null && !scopeFile.equals(file)) {
+            // asked file is not scope file for target object
             return Collections.<CsmReference>emptyList();
         } else {
             CsmObject[] decDef = getDefinitionDeclaration(target);
@@ -271,22 +275,28 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
 
     private Collection<FileImpl> getFiles(CsmObject decl, ProjectBase basePrj) {
         assert decl != null;
-        boolean retFile = false; // fake flag
-        if (retFile && CsmKindUtilities.isOffsetable(decl)) {
-            return Collections.<FileImpl>singleton((FileImpl)(((CsmOffsetable)decl).getContainingFile()));
+        CsmFile scopeFile = getScopedElementFile(decl);
+        if (scopeFile != null) {
+            return Collections.singleton((FileImpl)scopeFile);
+        } else {
+            return basePrj.getAllFileImpls();
         }
+    }
+    
+    private CsmFile getScopedElementFile(CsmObject decl) {
+        assert decl != null;
         CsmObject scopeElem = decl;
         while (CsmKindUtilities.isScopeElement(scopeElem)) {
             CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
             if (CsmKindUtilities.isFunction(scope)) {
                 CsmFile file = ((CsmFunction)scope).getContainingFile();
-                return Collections.<FileImpl>singleton((FileImpl)file);
+                return file;
             } else if (CsmKindUtilities.isScopeElement(scope)) {
                 scopeElem = ((CsmScopeElement)scope);
             } else {
                 break;
             }
         }
-        return basePrj.getAllFileImpls();
+        return null;
     }
 }
