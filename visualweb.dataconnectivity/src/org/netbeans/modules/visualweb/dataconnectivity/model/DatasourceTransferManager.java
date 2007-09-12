@@ -43,6 +43,7 @@ import java.sql.SQLException;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.DataSourceNamePanel;
@@ -152,12 +153,13 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 dsName = dbConnection.getSchema() + "_" + databaseProductName;
             
             // Check if target server supports data source creation.  If not then cancel drop
-            if (!DataSourceResolver.getInstance().isDatasourceCreationSupported(CurrentProject.getInstance().getProject())) {
+            Project currentProj = CurrentProject.getInstance().getCurrentProject(designBeans);
+            if (!DataSourceResolver.getInstance().isDatasourceCreationSupported(currentProj)) {
                 cancel = true;
             }
             
             // ensure data source name is unique
-            if (!DataSourceResolver.getInstance().isDataSourceUnique(CurrentProject.getInstance().getProject(), dsName, url)) {
+            if (!DataSourceResolver.getInstance().isDataSourceUnique(currentProj, dsName, url)) {
                 dsName = getUniqueName(dsName);
             }
             
