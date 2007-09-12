@@ -48,6 +48,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 
 /**
@@ -64,11 +65,13 @@ public class ImportAnalysis2 {
     private Map<String, Element> simpleNames2Elements;
     private PackageElement unnamedPackage;
     private PackageElement pack;
+    private ASTService model;
 
     public ImportAnalysis2(Context env) {
         elements = JavacElements.instance(env);
         make = TreeFactory.instance(env);
         unnamedPackage = Symtab.instance(env).unnamedPackage;
+        model = ASTService.instance(env);
     }
 
     public void setPackage(ExpressionTree packageNameTree) {
@@ -105,6 +108,16 @@ public class ImportAnalysis2 {
 
         for (Tree t : clazz.getImplementsClause()) {
             addAll(t, visible);
+        }
+        
+        for (Tree t : clazz.getMembers()) {
+            if (t.getKind() == Kind.CLASS) {
+                Element e = model.getElement(t);
+                
+                if (e != null) {
+                    visible.add(e);
+                }
+            }
         }
 
         visibleThroughClasses.push(visible);
