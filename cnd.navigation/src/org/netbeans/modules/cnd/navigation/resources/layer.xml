@@ -99,13 +99,11 @@
             </folder>
         </folder>
     </folder>
-    <!--
     <folder name="Shortcuts">
-        <file name="DS-A.shadow">
+        <file name="DS-Z.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
         </file>
     </folder>
-    -->
     <folder name="Menu">
         <!--
         <folder name="GoTo">
