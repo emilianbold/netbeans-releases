@@ -680,20 +680,22 @@ PREPROC_DIRECTIVE :
                     }
                     (options{greedy = true;}:Space)*
                     (  // lexer has no token labels
-                      ("include") => "include"{ $setType(INCLUDE); setAfterInclude(true); } 
-                                ( {LA(1)=='_' && LA(2)=='n'&&LA(3)=='e'&&LA(4)=='x'&&LA(5)=='t'}? 
-                                "_next" { $setType(INCLUDE_NEXT); })?
-                    | ("define") => "define" { $setType(DEFINE); setAfterDefine(true); }
-                    | ("ifdef") => "ifdef" { $setType(IFDEF); }
-                    | ("ifndef") => "ifndef" { $setType(IFNDEF); }
-                    | ("if") =>  "if"   { $setType(IF); }
-                    | ("undef") => "undef"  { $setType(UNDEF);  }
-                    | ("elif") => "elif"  { $setType(ELIF);  }
-                    | ("else") =>  "else" { $setType(ELSE); }
-                    | ("endif") => "endif" { $setType(ENDIF); }
-                    | ("pragma") => "pragma" { $setType(PRAGMA); } DirectiveBody
-                    | ("error") => "error" { $setType(ERROR); } DirectiveBody
-                    | ("line") => "line" { $setType(LINE); } DirectiveBody
+                      ("include" PostInclChar) => "include" { $setType(INCLUDE); setAfterInclude(true); } 
+                    | ("include_next" PostInclChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); } 
+/*                                ( {LA(1)=='_' && LA(2)=='n'&&LA(3)=='e'&&LA(4)=='x'&&LA(5)=='t'}? 
+                                "_next" { $setType(INCLUDE_NEXT); })? */
+                    | ("define" PostPPKwdChar) => "define" { $setType(DEFINE); setAfterDefine(true); }
+                    | ("ifdef" PostPPKwdChar) => "ifdef" { $setType(IFDEF); }
+                    | ("ifndef" PostPPKwdChar) => "ifndef" { $setType(IFNDEF); }
+                    | ("if" PostPPKwdChar) =>  "if"   { $setType(IF); }
+                    | ("undef" PostPPKwdChar) => "undef"  { $setType(UNDEF);  }
+                    | ("elif" PostPPKwdChar) => "elif"  { $setType(ELIF);  }
+                    | ("elseif" PostPPKwdChar) => "elseif"  { $setType(ELIF);  }
+                    | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
+                    | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
+                    | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); } DirectiveBody
+                    | ("error" PostPPKwdChar) => "error" { $setType(ERROR); } DirectiveBody
+                    | ("line" PostPPKwdChar) => "line" { $setType(LINE); } DirectiveBody
                     | DirectiveBody)
                     // Do not need this here, can be skipped
                     (options{greedy = true;}:Space)*
@@ -849,7 +851,7 @@ ID_LIKE:
         {isPreprocPending()}?
         ("defined")=> "defined" 
            ( 
-             (Space | EndOfLine | "(") => {setAfterPPDefined(true); $setType(DEFINED);}
+             (PostPPKwdChar | "(") => {setAfterPPDefined(true); $setType(DEFINED);}
            | 
                 {
                     if (isAfterPPDefined()) {
@@ -894,3 +896,10 @@ Identifier
 		(options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9')*
             )
         ;
+
+protected
+PostPPKwdChar: Space | EndOfLine | { LA(1) == EOF_CHAR}? ;
+
+protected
+PostInclChar: PostPPKwdChar | '\"' | '<' ;
+
