@@ -23,6 +23,8 @@ class Xyz < Test::Unit::TestCase
 class Xyz < Test::Unit::TestCase
                 ^Test,Test
 class Xyz < Test::Unit::TestCase
+                  ^"",Unit
+class Xyz < Test::Unit::TestCase
                    ^U,Unit
 class Xyz < Test::Unit::TestCase
                     ^Un,Unit
@@ -30,6 +32,8 @@ class Xyz < Test::Unit::TestCase
                      ^Uni,Unit
 class Xyz < Test::Unit::TestCase
                       ^Unit,Unit
+class Xyz < Test::Unit::TestCase
+                        ^"",TestCase
 class Xyz < Test::Unit::TestCase
                          ^T,TestCase
 class Xyz < Test::Unit::TestCase

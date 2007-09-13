@@ -21,6 +21,8 @@ FooBar::Baz
 FooBar::Baz
       ^FooBar,FooBar
 FooBar::Baz
+        ^"",Baz
+FooBar::Baz
          ^B,Baz
 FooBar::Baz
           ^Ba,Baz
