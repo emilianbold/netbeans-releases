@@ -88,7 +88,7 @@
             <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${xtest.perf.commandline.suffix}"/>
 
             <!-- Property for repeatedly used userdir with opened files -->
-            <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
+            <property name="xtest.userdata|org.netbeans.performance.repeat" value="4"/>
         </executeTests>
         
         <copy todir="${xtest.sketchpad}">
