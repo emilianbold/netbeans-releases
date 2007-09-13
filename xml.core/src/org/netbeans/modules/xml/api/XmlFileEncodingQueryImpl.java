@@ -22,16 +22,9 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.xml.core.lib.EncodingHelper;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 
 /**
  * This implementation of the FileEncodingQueryImplementation can be used
@@ -56,7 +49,7 @@ public class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementation {
                     EncodingHelper.EXPECTED_PROLOG_LENGTH);
             encoding = EncodingHelper.detectEncoding(in);
             if(encoding == null) {
-                encoding = getProjectEncoding(file);
+                encoding = EncodingUtil.getProjectEncoding(file);
             }
         } catch (Exception ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
@@ -80,37 +73,5 @@ public class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementation {
         
         //if nothing works, UTF8 will be the default encoding
         return Charset.forName("UTF8"); //NOI18N
-    }
-    
-    
-    /**
-     * Finds the encoding at the project level.
-     */
-    private String getProjectEncoding(final FileObject file) throws IOException {
-        try {
-            final Project project = FileOwnerQuery.getOwner(file);
-            return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
-                public String run() throws IOException {
-                    FileObject propertiesFo = project.getProjectDirectory().
-                            getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    EditableProperties ep = null;
-                    if (propertiesFo != null) {
-                        InputStream is = null;
-                        ep = new EditableProperties();
-                        try {
-                            is = propertiesFo.getInputStream();
-                            ep.load(is);
-                        } finally {
-                            if (is != null) {
-                                is.close();
-                            }
-                        }
-                    }
-                    return ep.getProperty("source.encoding"); //NOI18N
-                }
-            });
-        } catch (MutexException ex) {
-            return null;
-        }
-    }
+    }        
 }

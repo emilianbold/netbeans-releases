@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/XMLWizard.html"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.xml.core.wizard.XMLWizardIterator.singleton"/>            
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.xml.core.wizard.XMLWizardIterator.singleton"/>
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
             
@@ -51,10 +51,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/dtdObject.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/emptyDTD.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.core.wizard.DTDWizardIterator"/>
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
-            
-            
+                        
             <file name="xml_entity.ent" url="templates/xml_entity.ent.template">
                 <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
