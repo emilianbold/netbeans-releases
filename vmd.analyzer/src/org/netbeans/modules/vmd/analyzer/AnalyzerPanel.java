@@ -83,9 +83,6 @@ public class AnalyzerPanel extends JPanel {
 
         constraints.insets = INSETS;
         add (visualRepresentation, constraints);
-
-        // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
     }
 
     public void paint (Graphics g) {
