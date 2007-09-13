@@ -32,7 +32,6 @@ import javax.tools.JavaFileObject;
 
 import java.util.List;
 import java.util.Set;
-import java.util.EnumSet;
 
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -2487,12 +2486,6 @@ public final class TreeMaker {
     }
     
     private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments) {
-        final EnumSet<JavaTokenId> nonRelevant = EnumSet.of(
-                JavaTokenId.LINE_COMMENT,
-                JavaTokenId.BLOCK_COMMENT,
-                JavaTokenId.JAVADOC_COMMENT,
-                JavaTokenId.WHITESPACE
-            );
         TokenSequence<JavaTokenId> seq = TokenHierarchy.create(inputText, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         List<? extends StatementTree> trees = block.getStatements();
         SourcePositions pos = copy.getTrees().getSourcePositions();
