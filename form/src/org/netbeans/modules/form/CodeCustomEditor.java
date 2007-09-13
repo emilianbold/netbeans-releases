@@ -48,47 +48,32 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
     private JEditorPane codePane;
     private boolean ignoreUpdate;
 
+    private JLabel headerLabel = new JLabel();
+    private JLabel footerLabel = new JLabel();
+    private JTextField typeField = new JTextField();
+    private JScrollPane jScrollPane = new JScrollPane() {
+        // We want the editor pane's height to accommodate to the actual number
+        // of lines. For that we also need to include the horizontal scrollbar
+        // height into the preferred height. See also invokeUpdate method.
+        public Dimension getPreferredSize() {
+            Dimension prefSize = super.getPreferredSize();
+            Component hBar = getHorizontalScrollBar();
+            if (hBar != null && hBar.isVisible()) {
+                prefSize = new Dimension(prefSize.width, prefSize.height + hBar.getPreferredSize().height);
+            }
+            return prefSize;
+        }
+    };
+        
     public CodeCustomEditor(RADConnectionPropertyEditor propertyEditor,
                             FormModel formModel, FormProperty property)
     {
         this.propertyEditor = propertyEditor;
-        JScrollPane jScrollPane = new JScrollPane() {
-            // We want the editor pane's height to accommodate to the actual number
-            // of lines. For that we also need to include the horizontal scrollbar
-            // height into the preferred height. See also invokeUpdate method.
-            public Dimension getPreferredSize() {
-                Dimension prefSize = super.getPreferredSize();
-                Component hBar = getHorizontalScrollBar();
-                if (hBar != null && hBar.isVisible()) {
-                    prefSize = new Dimension(prefSize.width, prefSize.height + hBar.getPreferredSize().height);
-                }
-                return prefSize;
-            }
-        };
+        
         codePane = new JEditorPane();
         jScrollPane.setViewportView(codePane);
-        JLabel headerLabel = new JLabel();
-        JLabel footerLabel = new JLabel();
-        JTextField typeField = new JTextField();
-
-        GroupLayout layout = new GroupLayout(this);
-        this.setLayout(layout);
-        layout.setAutocreateContainerGaps(true);
-        layout.setHorizontalGroup(layout.createSequentialGroup()
-            .add(headerLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-            .add(3)
-            .add(layout.createParallelGroup(GroupLayout.LEADING)
-                .add(jScrollPane, GroupLayout.PREFERRED_SIZE, 320, Short.MAX_VALUE)
-                .add(typeField))
-            .add(3)
-            .add(footerLabel));
-        layout.setVerticalGroup(layout.createSequentialGroup()
-            .add(layout.createParallelGroup(GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                    .add(jScrollPane.getInsets().top)
-                    .add(layout.createParallelGroup().add(headerLabel).add(footerLabel)))
-                .add(jScrollPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-            .add(typeField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
+        
+        resetLayout();
 
         int codePos = -1;
         FormDataObject dobj = FormEditor.getFormDataObject(formModel);
@@ -136,11 +121,46 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
         });
     }
 
+    private void resetLayout() {
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
+        layout.setAutocreateContainerGaps(true);
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+            .add(headerLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+            .add(3)
+            .add(layout.createParallelGroup(GroupLayout.LEADING)
+                .add(jScrollPane, GroupLayout.PREFERRED_SIZE, 320, Short.MAX_VALUE)
+                .add(typeField))
+            .add(3)
+            .add(footerLabel));        
+        
+               
+        int prefHeight;
+        int maxHeight;
+        if(jScrollPane.getPreferredSize().getHeight() > 300) {
+            prefHeight = 300;
+            maxHeight = GroupLayout.DEFAULT_SIZE;
+        } else {
+            prefHeight = GroupLayout.DEFAULT_SIZE;
+            maxHeight = GroupLayout.PREFERRED_SIZE;
+        }
+        
+        layout.setVerticalGroup(layout.createSequentialGroup()
+            .add(layout.createParallelGroup(GroupLayout.LEADING)
+                .add(layout.createSequentialGroup()
+                    .add(jScrollPane.getInsets().top)
+                    .add(layout.createParallelGroup().add(headerLabel).add(footerLabel)))
+                .add(jScrollPane, GroupLayout.DEFAULT_SIZE, prefHeight, maxHeight))
+            .add(typeField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
+    }
+    
     void setValue(RADConnectionPropertyEditor.RADConnectionDesignValue value) {
         if (value != null && value.getType() == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_CODE) {
             ignoreUpdate = true;
             codePane.setText(value.getCode());
             ignoreUpdate = false;
+            
+            resetLayout();
         }
     }
 
