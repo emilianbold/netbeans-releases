@@ -119,8 +119,6 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         if (component != null) {
             lookupContent.add(component);
             setWSDLComponent(component);
-            weakModelListener = WeakListeners.propertyChange(this, component.getModel());
-            component.getModel().addPropertyChangeListener(weakModelListener);
         }
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
     }
@@ -139,10 +137,6 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         }
         // Remove our compopnent listener.
         registerListener(null);
-        
-        if (weakModelListener != null) {
-        	wsdlComponent.getModel().removePropertyChangeListener(weakModelListener);
-        }
         
         try {
             if (model.startTransaction()) {
@@ -301,13 +295,23 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
      * @param  component  the component to listen to.
      */
     protected void registerListener(T component) {
-        if (wsdlComponent != null) {
-            wsdlComponent.getModel().removeComponentListener(weakComponentListener);
-            weakComponentListener = null;
+        WSDLModel compModel = null;
+        if (wsdlComponent != null && 
+                (compModel = wsdlComponent.getModel()) != null) {
+            if (weakComponentListener != null) {
+                compModel.removeComponentListener(weakComponentListener);
+                weakComponentListener = null;
+            }
+            if (weakModelListener != null) {
+                compModel.removePropertyChangeListener(weakModelListener);
+                weakModelListener = null;
+            }
         }
         if (component != null) {
             weakComponentListener = WeakListeners.create(ComponentListener.class, this, model);
             model.addComponentListener(weakComponentListener);
+            weakModelListener = WeakListeners.propertyChange(this, model);
+            model.addPropertyChangeListener(weakModelListener);
         }
     }
 
@@ -436,6 +440,18 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
+    }
+    
+    @Override
+    protected void notifyAdded() {
+        super.notifyAdded();
+        registerListener(getWSDLComponent());
+    }
+    
+    @Override
+    protected void notifyRemoved() {
+        super.notifyRemoved();
+        registerListener(null);
     }
     
 }

@@ -44,4 +44,9 @@ public class OperationOutputNode extends OperationParameterNode<Output> {
     public String getTypeDisplayName() {
         return NbBundle.getMessage(OperationOutputNode.class, "LBL_OperationOutputNode_TypeDisplayName");
     }
+    
+    @Override
+    public boolean canDestroy() {
+        return false;
+    }
 }

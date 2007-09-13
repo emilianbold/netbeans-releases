@@ -67,13 +67,10 @@ import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.LabelWidget.VerticalAlignment;
-
-
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Input;
@@ -105,10 +102,8 @@ import org.openide.util.NbBundle;
  * @author radval
  */
 public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandler {
-    private LayerWidget mHotSpotLayer;
     private LabelWidget mNameWidget;
     private Role mRole;
-    private RectangleWidget mHotspot;
     private PartnerLinkTypeContentWidget mPLTContentWidget;
     private ButtonWidget showComboBoxBtnWidget;
     private Widget nameHolderWidget;
@@ -205,10 +200,6 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
 
     private void init() {
         setLayout(LayoutFactory.createVerticalFlowLayout());
-        
-        mHotspot = new RectangleWidget(getScene(), 12, 70);
-        mHotspot.setThickness(4);
-        mHotspot.setColor(WidgetConstants.HIT_POINT_BORDER);
         
         nameHolderWidget = new Widget(getScene());
         nameHolderWidget.setLayout(new PortTypeLayout());
@@ -380,8 +371,6 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         nameHolderWidget.addChild(showComboBoxBtnWidget);
         
         addChild(nameHolderWidget);
-        mHotSpotLayer = new LayerWidget(getScene());
-        addChild(mHotSpotLayer);
         setMinimumSize(new Dimension(0, 250));
         if (getWSDLComponent() != null) {
             getActions().addAction(((PartnerScene) getScene()).getDnDAction());
@@ -405,6 +394,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     private void showComboBoxBtnWidget() {
         if (!showComboBoxBtnWidget.isVisible()) {
             showComboBoxBtnWidget.setVisible(true);
+            getParentWidget().getParentWidget().revalidate();
             getScene().validate();
         }
     }
@@ -460,121 +450,9 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         return pt.getName();
     }
     
-    /* returning -1 doesnt show the hotspot*/
-    public int getEffectiveOperationCount() {
-        int count = 0;
-        DirectionCookie dc = getLookup().lookup(DirectionCookie.class);
-        if (dc != null && dc.isLeftSided()) {
-            PartnerLinkType plt = (PartnerLinkType) mRole.getParent();
-            if (plt != null) {
-                Role role1 = plt.getRole1();
-                if (role1 != null && role1.getPortType() != null) {
-                    PortType pt = role1.getPortType().get();
-                    if (pt != null) {
-                        count += pt.getOperations().size();
-                    }
-                }
-            }
-            
-        }
-        if (mRole != null && mRole.getPortType() != null) {
-            PortType pt = mRole.getPortType().get();
-            if (pt != null) {
-                if (pt.getOperations() != null) {
-                    count += pt.getOperations().size();
-                }
-            } else {
-                return -1;
-            }
-        } else {
-            return -1;
-        }
-        return count;
-    }
     
-    public Point getLastAnchor() {
-        int count = getEffectiveOperationCount();
-       // int oslayerCount = mContext.getContentWidget().getOperationSceneLayer().getChildren().size();
-/*        if (oslayerCount != 1 && oslayerCount > count) {
-            if (!mRightSided) {
-                count ++;
-            }
-        }*/
-        if (count == 0 || count == -1) {
-            return null;
-        }
-        int height = 67 + 20; //15 = operation name height
-        int y = (height + 25) * count;//25 = gap between operations
-        if (mHotspot.getParentWidget() == null) {
-            return new Point(0, y);
-        }
-        return mHotspot.getParentWidget().convertLocalToScene(new Point(0, y));//we dont need to find x.
-    }
-    
-    public Point getMidPoint() {
-        Rectangle clientArea = getBounds();
-        if (clientArea == null) return new Point();
-        
-        int x = clientArea.x;
-        int y = clientArea.y;
-
-        return new Point(x+clientArea.width/2, y + 70);
-    }
-    
-    public void showHotSpot() {
-        if (mHotSpotLayer.getChildren() != null && mHotSpotLayer.getChildren().size() == 0) {
-        	mPLTContentWidget.revalidate();
-            mPLTContentWidget.getOperationSceneLayer().showBlankWidget(getEffectiveOperationCount());
-            mHotSpotLayer.addChild(mHotspot);
-            mHotspot.setPreferredLocation(getHotSpotLocation());
-            getScene().getView().scrollRectToVisible(getScene().getView().getVisibleRect());
-        }
-    }
-    
-    
-    public void clearHotSpot() {
-        if(mHotSpotLayer.getChildren().contains(mHotspot)) {
-        	mPLTContentWidget.revalidate();
-            mHotSpotLayer.removeChild(mHotspot);
-            mHotSpotLayer.setPreferredLocation(null);
-            mPLTContentWidget.getOperationSceneLayer().removeBlankWidget();
-       }
-    }
-    
-    
-    private Point getHotSpotLocation() {
-        Point p = getLastAnchor();
-        if(p == null) {
-            Rectangle clientArea = getBounds();
-            int x = clientArea.x;
-            int y = clientArea.y;
-            return new Point((x + getMidPoint().x) - 4, y + mNameWidget.getBounds().height + 10);
-        }
-        
-        p = convertSceneToLocal(p);
-        return new Point(getMidPoint().x - 6, p.y + mNameWidget.getBounds().height + 10);
-        
-    }
     
 
-    @Override
-    protected Rectangle calculateClientArea() {
-        Rectangle bounds = getBounds();
-        if (bounds == null) return super.calculateClientArea();
-        
-        int y = bounds.y;
-        
-        int newY = y + bounds.height;
-        if (mPLTContentWidget.getBounds() != null) {
-            int tempY = mPLTContentWidget.getBounds().y + mPLTContentWidget.getBounds().height;
-            Point scenePoint = mPLTContentWidget.convertLocalToScene(new Point(0, tempY));
-            newY = convertSceneToLocal(scenePoint).y;
-        }
-        int height = newY - y;
-        Rectangle clientArea = super.calculateClientArea();
-        clientArea.height = height;
-        return clientArea;
-    }
 
     /**
      * Paints the label widget.
@@ -589,11 +467,6 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         int y = clientArea.y;
         
         int newY = y + clientArea.height;
-        if (mPLTContentWidget.getBounds() != null) {
-            int tempY = mPLTContentWidget.getBounds().y + mPLTContentWidget.getBounds().height;
-            Point scenePoint = mPLTContentWidget.convertLocalToScene(new Point(0, tempY));
-            newY = convertSceneToLocal(scenePoint).y;
-        }
         Stroke oldStroke = gr.getStroke();
         Color oldColor = gr.getColor();
         Font font = gr.getFont();
@@ -817,7 +690,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     }
 
     private void setPortTypeToRole(PortTypeNode node) {
-        PortType pt = (PortType) node.getWSDLComponent();
+        PortType pt = node.getWSDLComponent();
         if (mRole.getModel().startTransaction()) {
             try {
                 mRole.setPortType(mRole.createReferenceTo(pt, PortType.class));
@@ -1010,6 +883,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                 if (bottom) {
                     rectangle.height = size.height;
                 } else {
+                    //nothing
                 }
             }
 
@@ -1028,6 +902,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                 if (right) {
                     rectangle.width = size.width;
                 } else {
+                    //nothing
                 }
             }
 
@@ -1112,9 +987,20 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         }
 
         public boolean requiresJustification(Widget widget) {
-            // TODO Auto-generated method stub
             return true;
         }
 
+    }
+
+    public void showHotSpot() {
+        DirectionCookie dc = getLookup().lookup(DirectionCookie.class);
+        if (dc != null) {
+            mPLTContentWidget.getOperationSceneLayer().showHotSpot(dc.isRightSided());
+        }
+    }
+
+    public void clearHotSpot() {
+        mPLTContentWidget.getOperationSceneLayer().clearHotSpot();
+        
     }
 }

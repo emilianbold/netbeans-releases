@@ -98,7 +98,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
 
     private void init() {
         setMinimumSize(new Dimension(MINIMUM_WIDTH, 0));
-        setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, GAP));
+        setLayout(new RoleWidgetLayout(GAP));
         setOpaque(true);
         editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
 
@@ -206,13 +206,6 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         return leftSided;
     }
     
-    public void showHotSpot(boolean show) {
-        if (show) {
-            mPortTypeWidget.showHotSpot();
-        } else {
-            mPortTypeWidget.clearHotSpot();
-        }
-    }
 
     @Override
     public void updateContent() {
@@ -319,6 +312,8 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         }
         
         public void justify(Widget widget) {
+            vertLayout.justify(widget);
+            
             List<Widget> children = widget.getChildren();
             
             if (children.size() < 2) return;
@@ -328,31 +323,11 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
             Widget nameWidget = children.get(0);
             Widget portTypeWidget = children.get(1);
             
-            Point nameWLocation = nameWidget.getLocation();
             Rectangle nameBounds = nameWidget.getBounds();
-            
-            int parentX1 = parentBounds.x;
-            int parentX2 = parentX1 + parentBounds.width;
-            int nameX1 = nameWLocation.x + nameBounds.x;
-            int nameX2 = nameX1 + nameBounds.width;
-            
-
-            nameBounds.x = Math.min (parentX1, nameX1);
-            nameBounds.width = Math.max (parentX2, nameX2) - nameBounds.x;
-            nameBounds.x -= nameWLocation.x;
-            nameWidget.resolveBounds (nameWLocation, nameBounds);
-            
             
             Point portTypeWLocation = portTypeWidget.getLocation();
             Rectangle portTypeBounds = portTypeWidget.getBounds();
             
-            int portTypeX1 = portTypeWLocation.x + portTypeBounds.x;
-            int portTypeX2 = portTypeX1 + portTypeBounds.width;
-            
-
-            portTypeBounds.x = Math.min (parentX1, portTypeX1);
-            portTypeBounds.width = Math.max (parentX2, portTypeX2) - portTypeBounds.x;
-            portTypeBounds.x -= portTypeWLocation.x;
             portTypeBounds.height = parentBounds.height - (nameBounds.height + mGap);
             
             portTypeWidget.resolveBounds (portTypeWLocation, portTypeBounds);
@@ -419,7 +394,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     }
 
     private void setPortType(PortTypeNode node) {
-        PortType pt = (PortType) node.getWSDLComponent();
+        PortType pt = node.getWSDLComponent();
         if (getWSDLComponent().getModel().startTransaction()) {
             try {
                 getWSDLComponent().setPortType(getWSDLComponent().createReferenceTo(pt, PortType.class));
@@ -475,4 +450,5 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         g.setColor(old);
         g.setStroke(stk);
     }
+
 }

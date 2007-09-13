@@ -20,6 +20,7 @@ package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -77,6 +78,8 @@ public class WSDLDesignMultiViewElement extends TopComponent
     private transient MultiViewElementCallback multiViewObserver;
     private transient javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     private transient JToolBar mToolbar;
+    private ActivatedNodesMediator nodesMediator;
+    private CookieProxyLookup cpl;
     
     public WSDLDesignMultiViewElement() {
         super();
@@ -120,10 +123,10 @@ public class WSDLDesignMultiViewElement extends TopComponent
         };
 
         Node delegate = wsdlDataObject.getNodeDelegate();
-        ActivatedNodesMediator nodesMediator =
+        nodesMediator =
                 new ActivatedNodesMediator(delegate);
         nodesMediator.setExplorerManager(this);
-        CookieProxyLookup cpl = new CookieProxyLookup(new Lookup[] {
+        cpl = new CookieProxyLookup(new Lookup[] {
             Lookups.fixed(new Object[] {
                     //For the explorer actions to be enabled.
                     map,
@@ -145,9 +148,26 @@ public class WSDLDesignMultiViewElement extends TopComponent
         addPropertyChangeListener(ACTIVATED_NODES, nodesMediator);
         addPropertyChangeListener(ACTIVATED_NODES, cpl);
         setLayout(new BorderLayout());
-        initUI();
     }
 
+    private void cleanup() {
+        try {
+            explorerManager.setSelectedNodes(new Node[0]);
+        } catch (PropertyVetoException e) {
+        }
+        removePropertyChangeListener(ACTIVATED_NODES, nodesMediator);
+        removePropertyChangeListener(ACTIVATED_NODES, cpl);
+        nodesMediator = null;
+        cpl = null;
+        
+        
+        graphComponent = null;
+        
+        if (mToolbar != null) mToolbar.removeAll();
+        mToolbar = null;
+        removeAll();
+    }
+    
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -188,11 +208,13 @@ public class WSDLDesignMultiViewElement extends TopComponent
     @Override
     public void componentClosed() {
         super.componentClosed();
+        cleanup();
     }
     
     @Override
     public void componentOpened() {
         super.componentOpened();
+        initUI();
     }
     
     @Override
@@ -218,7 +240,6 @@ public class WSDLDesignMultiViewElement extends TopComponent
     @Override
     public void componentShowing() {
         super.componentShowing();
-        initUI();
     }
     
     @Override
@@ -271,7 +292,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
                 mToolbar = new JToolBar();
                 mToolbar.setFloatable(false);
                 mToolbar.addSeparator();
-                graphComponent.addToolbarActions(mToolbar);
+                if (graphComponent != null) graphComponent.addToolbarActions(mToolbar);
 
                 // vlv: print
 //              mToolbar.addSeparator();
@@ -311,6 +332,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
         if (obj instanceof WSDLDataObject) {
             wsdlDataObject = (WSDLDataObject) obj;
             initialize();
+            if (graphComponent == null) initUI();
         }
         try {
             // By default the widgets are visible, so only need to make
@@ -334,4 +356,5 @@ public class WSDLDesignMultiViewElement extends TopComponent
         out.writeBoolean(graphComponent.isCollaborationsShowing());
         out.writeBoolean(graphComponent.isMessagesShowing());
     }
+
 }

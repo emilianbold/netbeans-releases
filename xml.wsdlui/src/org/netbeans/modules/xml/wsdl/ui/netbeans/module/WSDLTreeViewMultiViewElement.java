@@ -169,6 +169,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         mToolbar = null;
         removeAll();
     }
+    
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -245,7 +246,6 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     @Override
     public void componentShowing() {
         super.componentShowing();
-        initUI();
 
         if (categoryPane != null) {
             Category cat = categoryPane.getCategory();

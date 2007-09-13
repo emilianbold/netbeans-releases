@@ -59,12 +59,12 @@ public class PartnerLinkTypeContentLayout implements Layout {
         
         height = Math.max(height, realHeight);
         
-        int totalWidth = width + bounds3.width;
+        int totalWidth = width + bounds3.width  - 10;
 
         Rectangle roleBounds = new Rectangle(width, realHeight);
         firstRole.resolveBounds(new Point(), roleBounds);
         secondRole.resolveBounds(new Point(totalWidth - width, 0), roleBounds);
-        operationLayer.resolveBounds(new Point(width / 2 + 1, mGap), bounds3);
+        operationLayer.resolveBounds(new Point(width / 2 - 5, mGap), bounds3);
     }
 
     public boolean requiresJustification(Widget widget) {

@@ -390,8 +390,9 @@ public class WSDLEditorSupport extends DataEditorSupport
         // which indicates that we are switching from the source view.
         // Update the tree with the modified text.
         try {
-            if(getModel() != null) {
-                getModel().sync();
+            WSDLModel model = getModel();
+            if(model != null) {
+                model.sync();
             }
         } catch (Throwable ioe) {
             // The document cannot be parsed

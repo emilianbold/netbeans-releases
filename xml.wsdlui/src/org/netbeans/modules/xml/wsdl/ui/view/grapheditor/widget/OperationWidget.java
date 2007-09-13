@@ -28,6 +28,7 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -100,7 +101,7 @@ public abstract class OperationWidget<T extends Operation>
         mOperationRectangleWidget = new RectangleWidget(getScene(), 10, 67);
         
         if (isImported()) mOperationRectangleWidget.setColor(Color.GRAY);
-        //setBorder(BorderFactory.createLineBorder(2, Color.BLUE));
+        setBorder(BorderFactory.createEmptyBorder(3));
     }
     
     /**
@@ -121,7 +122,7 @@ public abstract class OperationWidget<T extends Operation>
      */
     public void setRightSided(boolean rightSided) {
         Lookup lookup = getLookup();
-        DirectionCookie dc = (DirectionCookie) lookup.lookup(DirectionCookie.class);
+        DirectionCookie dc = lookup.lookup(DirectionCookie.class);
         if (dc == null) {
             dc = new DirectionCookie(rightSided);
             getLookupContent().add(dc);

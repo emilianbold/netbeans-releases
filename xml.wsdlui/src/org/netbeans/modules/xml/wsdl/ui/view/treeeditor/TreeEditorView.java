@@ -209,4 +209,14 @@ public class TreeEditorView extends JPanel
         super.requestFocusInWindow();
         return btv.requestFocusInWindow();
     }
+    
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        explorerManager.removePropertyChangeListener(this);
+        removeAll();
+        btv = null;
+        mRootNode = null;
+        
+    }
 }

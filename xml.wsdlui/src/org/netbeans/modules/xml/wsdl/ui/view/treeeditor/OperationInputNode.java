@@ -44,4 +44,10 @@ public class OperationInputNode extends OperationParameterNode<Input> {
     public String getTypeDisplayName() {
         return NbBundle.getMessage(OperationInputNode.class, "LBL_OperationInputNode_TypeDisplayName");
     }
+    
+    @Override
+    public boolean canDestroy() {
+       return false;
+    }
+    
 }

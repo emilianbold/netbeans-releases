@@ -32,11 +32,13 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.Scene;
@@ -46,10 +48,13 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.OneSideJustifiedLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.OperationWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerLinkTypeContentWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerScene;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.RectangleWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.RoleWidget;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.WidgetConstants;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.WidgetFactory;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
@@ -69,6 +74,9 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
     private PortType rightPortType;
     private Widget dummyEndWidget;
     private PropertyChangeListener weakModelListener;
+    private Widget rightsideWidgetsHolder;
+    private Widget leftsideWidgetsHolder;
+    private Widget dummyRightEndWidget;
     
     public OperationSceneLayer(Scene scene, PartnerLinkTypeContentWidget outerWidget) {
         super(scene);
@@ -86,11 +94,26 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
     }
     
     private void init() {
-        setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, OPERATION_GAP));
+        Layout layout = LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, OPERATION_GAP);
+        setLayout(LayoutFactory.createVerticalFlowLayout());
+        rightsideWidgetsHolder = new Widget(getScene());
+        rightsideWidgetsHolder.setLayout(layout);
+        addChild(rightsideWidgetsHolder);
+        leftsideWidgetsHolder = new Widget(getScene());
+        leftsideWidgetsHolder.setLayout(layout);
+        addChild(leftsideWidgetsHolder);
+        
         dummyOperationWidget = new Widget(getScene());
-        dummyOperationWidget.setPreferredBounds(new Rectangle(0, 67));//67 = height of a operation widget
+        
+        RectangleWidget rectangleWidget = new RectangleWidget(getScene(), 12, 70);
+        rectangleWidget.setThickness(4);
+        rectangleWidget.setColor(WidgetConstants.HIT_POINT_BORDER);
+        dummyOperationWidget.addChild(new Widget(getScene()));
+        dummyOperationWidget.addChild(rectangleWidget);
         dummyEndWidget = new Widget(getScene());
-        dummyEndWidget.setPreferredBounds(new Rectangle(0, 105));//67 = height of a operation widget
+        dummyEndWidget.setPreferredBounds(new Rectangle(0, OPERATION_GAP));//67 = height of a operation widget
+        dummyRightEndWidget = new Widget(getScene());
+        dummyRightEndWidget.setPreferredBounds(new Rectangle(0, OPERATION_GAP));//67 = height of a operation widget
         refreshOperations();
         setMinimumSize(new Dimension(400, 0));
     }
@@ -123,11 +146,12 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
     private void refreshOperations() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                removeChildren();
-                mOuterWidget.getRightRoleWidget().showHotSpot(false);
+                rightsideWidgetsHolder.removeChildren();
+                leftsideWidgetsHolder.removeChildren();
+                dummyEndWidget.removeFromParent();
+                clearHotSpot();
                 mOuterWidget.revalidate();
                 renderOperations(true);
-                mOuterWidget.getLeftRoleWidget().showHotSpot(false);
                 renderOperations(false);
                 addChild(dummyEndWidget);
                 getScene().validate();
@@ -136,6 +160,15 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
 
     }
     
+    public void showHotSpot(boolean right) {
+        showBlankWidget(right);
+    }
+    
+    
+    public void clearHotSpot() {
+        removeBlankWidget();
+    }
+   
 
     /**
      * Renders the operations..
@@ -147,15 +180,29 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
         if (pt != null) {
             Collection<Operation> operations = pt.getOperations();
             WidgetFactory factory = WidgetFactory.getInstance();
+            List<Widget> widgets = new ArrayList<Widget>();
             for (Operation operation : operations) {
                 OperationWidget operationWidget =
                     (OperationWidget) factory.createWidget(getScene(), operation);
                 operationWidget.setRightSided(right);
-                addChild(operationWidget);
+                widgets.add(operationWidget);
             }
+            addChildren(widgets, right);
         }
     }
 
+    private void addChildren(Collection<? extends Widget> operationChildren, boolean right) {
+        Widget parent = null;
+        if (right) {
+            parent = rightsideWidgetsHolder;
+        } else {
+            parent = leftsideWidgetsHolder;
+        }
+        if (parent == null) return;
+        for (Widget w : operationChildren) {
+            parent.addChild(w);
+        }
+    }
 
 
     /**
@@ -184,17 +231,25 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
 
 
 
-    public void showBlankWidget(int i) {
-        if (i == -1) return;
-        
-        removeBlankWidget();
-        addChild(i, dummyOperationWidget);
+    public void showBlankWidget(boolean right) {
+        dummyOperationWidget.removeFromParent();
+        dummyRightEndWidget.removeFromParent();
+        dummyEndWidget.removeFromParent();
+        dummyOperationWidget.setLayout(new OneSideJustifiedLayout(right));
+        if (right) {
+            rightsideWidgetsHolder.addChild(dummyOperationWidget);
+            if (leftsideWidgetsHolder.getChildren().size() > 0) {
+                rightsideWidgetsHolder.addChild(dummyRightEndWidget);
+            }
+        } else {
+            leftsideWidgetsHolder.addChild(dummyOperationWidget);
+        }
+        addChild(dummyEndWidget);
     }
 
     public void removeBlankWidget() {
-        if (getChildren().contains(dummyOperationWidget)) {
-            removeChild(dummyOperationWidget);
-        }
+        dummyOperationWidget.removeFromParent();
+        dummyRightEndWidget.removeFromParent();
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -202,8 +257,7 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
             boolean isRight = evt.getSource() == rightPortType;
             boolean isLeft = evt.getSource() == leftPortType;
             if (isRight || isLeft) {
-                mOuterWidget.getRightRoleWidget().showHotSpot(false);
-                mOuterWidget.getLeftRoleWidget().showHotSpot(false);
+                clearHotSpot();
                 mOuterWidget.revalidate();
                 mOuterWidget.getRightRoleWidget().revalidate();
                 mOuterWidget.getLeftRoleWidget().revalidate();
@@ -214,20 +268,12 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
                         OperationWidget operationWidget =
                             (OperationWidget) factory.createWidget(getScene(), (Operation) value);
                         operationWidget.setRightSided(isRight);
+                        if (isRight) {
+                            rightsideWidgetsHolder.addChild(operationWidget);
+                        }
+                        
                         if (isLeft) {
-                            addChild(getChildren().size() - 1, operationWidget);
-                        } else {
-                            List<Widget> children = getChildren();
-                            for (int i = 0; i < children.size(); i++) {
-                                Widget w = children.get(i);
-                                if (w instanceof OperationWidget) {
-                                    if (((OperationWidget)w).isRightSided()) {
-                                        continue;
-                                    }
-                                }
-                                addChild(i, operationWidget);
-                                break;
-                            }
+                            leftsideWidgetsHolder.addChild(operationWidget);
                         }
                         getScene().validate();
                         ActionHelper.selectNode((Operation) value);

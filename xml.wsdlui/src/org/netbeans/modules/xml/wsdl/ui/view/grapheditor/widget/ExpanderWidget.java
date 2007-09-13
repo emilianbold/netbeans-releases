@@ -189,6 +189,7 @@ public class ExpanderWidget extends ButtonWidget implements ActionListener {
      * @param  expanded  true to expand, false to collapse.
      */
     public void setExpanded(boolean expanded) {
+        if (!(isExpanded ^ expanded)) return;
         // Save the state of the expandable in case it gets recreated later.
         expandedCache.put(expandable.hashKey(), Boolean.valueOf(expanded));
         isExpanded = expanded;
