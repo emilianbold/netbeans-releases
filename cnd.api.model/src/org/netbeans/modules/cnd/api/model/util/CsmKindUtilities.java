@@ -39,6 +39,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
@@ -59,11 +60,15 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
  * @author Vladimir Voskresensky
  */
 public class CsmKindUtilities {
-    
+
     private CsmKindUtilities() {
         
     }
 
+    public static boolean isProject(Object obj) {
+        return obj instanceof CsmProject;
+    }
+    
     public static boolean isCsmObject(Object obj) {
         if (obj instanceof CsmObject) {
             return true;
