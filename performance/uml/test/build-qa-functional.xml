@@ -44,14 +44,36 @@
     <!-- Compilers -->
     <!-- ========= -->
 
-    <target name="qa-functional-compiler" depends="build-performance, init, init-cp">
-        <ant antfile="${nball.dir}/nbbuild/templates/xtest-qa-functional.xml" target="qa-functional-compiler">
-            <property name="permit.jdk6.builds" value="true"/>
-        </ant>
-            
-        <packageTests/>
+    <target name="qa-functional-compiler" depends="init, init-cp, build-performance">
+        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
+            <classpath>
+                <path refid="test.qa-functional.compile.cp"/>
+           </classpath>
+        </buildTests>
     </target>
-        
+
+    <target name="check-perf-classes">
+        <available file="../../../performance/build/test/qa-functional/classes" property="perf.classes.exist" type="dir"/>
+    </target>
+    
+    <target name="build-performance" unless="perf.classes.exist" depends="check-perf-classes">
+	<java classname="org.apache.tools.ant.Main" dir="../../../performance/test" failonerror="true" fork="true">
+          <jvmarg value="-Dant.home=${ant.home}"/>
+          <arg value="buildtests"/>
+          <arg value="-Dxtest.testtype=qa-functional"/>
+          <arg value="-Dxtest.attribs=all"/>
+          <arg value="-Dxtest.home=${xtest.home}"/>
+          <arg value="-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
+	  <classpath path="${java.class.path}"/>
+        </java>
+          
+	<mkdir dir="lib"/> 
+	<jar jarfile="lib/util.jar"
+	     basedir="../../../performance/build/test/qa-functional/classes"
+	     includes="**/*.class"/>
+    </target>
+
+       
     
     <!-- ================ -->
     <!-- Global Executors -->
