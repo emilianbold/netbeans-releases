@@ -71,9 +71,8 @@ public class BrandingSupportTest extends TestBase {
     
     public void testBranding3() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
-        // XXX this key no longer exists...
         implOfBundleKeyTest("org.netbeans.core",
-                "org/netbeans/core/ui/Bundle.properties", Collections.singleton("LBL_ProductInformation"), "NetBeans Product Information");
+                "org/netbeans/core/ui/Bundle.properties", Collections.singleton("LBL_SwingBrowserDescription"), "Simple HTML Browser based on a Swing component");
     }
 
     public void testBranding4() throws IOException {
