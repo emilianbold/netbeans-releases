@@ -144,7 +144,14 @@ public final class Product extends RegistryNode {
         if (getInstallationLocation() == null) {
             throw new InstallationException(
                     ResourceUtils.getString(Product.class,
-                    ERROR_INSTALLATION_LOCATION_NOT_SET_KEY, getDisplayName()));
+                    ERROR_INSTALLATION_LOCATION_NOT_SET_KEY, 
+                    getDisplayName()));
+        } else  if (getInstallationLocation().equals(
+                new File(StringUtils.EMPTY_STRING))) {
+            throw new InstallationException(
+                    ResourceUtils.getString(Product.class,
+                    ERROR_INSTALLATION_LOCATION_SET_EMPTY_KEY, 
+                    getDisplayName()));
         }
         
         // initialize the local cache directory
@@ -1143,6 +1150,8 @@ public final class Product extends RegistryNode {
             "P.error.cannot.load.logic";//NOI18N
     private static final String ERROR_INSTALLATION_LOCATION_NOT_SET_KEY =
             "P.error.installdir.not.set";//NOI18N
+    private static final String ERROR_INSTALLATION_LOCATION_SET_EMPTY_KEY = 
+            "P.error.installdir.set.empty";//NOI18N
     private static final String ERROR_CANNOT_CREATE_PRODUCT_CACHE_DIR_KEY =
             "P.error.cannot.create.cache.dir";//NOI18N
     private static final String ERROR_CACHE_NOT_DIRECTORY_KEY =
