@@ -34,7 +34,6 @@ import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -102,6 +101,7 @@ import org.openide.util.Exceptions;
  *   
  * 
  * @todo Handle this case:  {@code class HTTPBadResponse &lt; StandardError; end}
+ * @todo Code completion should automatically suggest "initialize()" for def completion! (if I'm in a class)
  * @todo It would be nice if you select a method that takes a block, such as Array.each, if we could
  *   insert a { ^ } suffix
  * @todo Use lexical tokens to avoid attempting code completion within comments,
@@ -590,6 +590,9 @@ public class CodeCompleter implements Completable {
                 }
                 
                 if (prefix.length() > 0) {
+                    if (prefix.endsWith("::")) {
+                        return "";
+                    }
 
                     if (prefix.endsWith(":") && prefix.length() > 1) {
                         return null;
@@ -998,7 +1001,19 @@ public class CodeCompleter implements Completable {
             fullPrefix = type + "::" + prefix;
         }
 
-        for (IndexedClass cls : index.getClasses(fullPrefix, kind, false, false, false)) {
+        AstPath path = request.path;
+        String ctx = AstUtilities.getFqnName(path);
+
+        Set<IndexedClass> classes = index.getClasses(fullPrefix, kind, false, false, false);
+
+        // Also try looking or classes scoped by the current class
+        if ((ctx != null) && (ctx.length() > 0)) {
+            Set<IndexedClass> extraClasses = index.getClasses(ctx + "::" + fullPrefix, kind, false, false, false);
+            classes.addAll(extraClasses);
+        }
+
+        // Prefix the current class if necessary
+        for (IndexedClass cls : classes) {
             ClassItem item = new ClassItem(cls, classAnchor, request);
             item.setSmart(true);
 
@@ -1375,6 +1390,8 @@ public class CodeCompleter implements Completable {
             return proposals;
         }
         
+        Call call = Call.getCallType(doc, th, lexOffset);
+
         // Fields
         // This is a bit stupid at the moment, not looking at the current typing context etc.
         Node root = AstUtilities.getRoot(info);
@@ -1408,8 +1425,6 @@ public class CodeCompleter implements Completable {
 
         final Node closest = path.leaf();
         request.node = closest;
-
-        Call call = Call.getCallType(doc, th, lexOffset);
 
         // Don't try to add local vars, globals etc. as part of calls or class fqns
         if (call.getLhs() == null) {
@@ -2876,6 +2891,10 @@ public class CodeCompleter implements Completable {
             return keywordIcon;
         }
 
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+        
         @Override
         public Element getElement() {
             // For completion documentation
