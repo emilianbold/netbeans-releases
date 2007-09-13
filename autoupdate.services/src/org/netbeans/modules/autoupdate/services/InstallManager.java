@@ -134,7 +134,7 @@ public class InstallManager extends InstalledFileLocator{
                     res = cluster;
                     break;
                 } else {
-                    ERR.log(Level.WARNING, "No write permision in target cluster " + targetCluster + " for " + update.getUpdateElement());
+                    ERR.log(Level.WARNING, "No write permission in target cluster " + targetCluster + " for " + update.getUpdateElement());
                 }
             }
         }
@@ -248,7 +248,7 @@ public class InstallManager extends InstalledFileLocator{
 
         if (res == null || ! res.canWrite ()) {
             // go to userdir if no writable cluster is known
-            ERR.log (Level.WARNING, "No write permision in target cluster " + res + 
+            ERR.log (Level.WARNING, "No write permission in target cluster " + res + 
                     " for " + update.getUpdateElement ());
             res = UpdateTracking.getUserDir ();
         }
