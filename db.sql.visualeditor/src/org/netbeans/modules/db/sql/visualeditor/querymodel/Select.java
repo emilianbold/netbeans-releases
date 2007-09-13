@@ -20,5 +20,6 @@ package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
 // A SELECT clause
 public interface Select extends QueryItem {
+    public int getSize();
 }
 

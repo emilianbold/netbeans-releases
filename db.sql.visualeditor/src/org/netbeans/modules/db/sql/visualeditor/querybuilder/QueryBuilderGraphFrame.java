@@ -203,37 +203,7 @@ public class QueryBuilderGraphFrame extends JPanel
         _fsl = new FrameSelectionListener();
         // _fcl = new FrameComponentListener();
         _cl = new CompListener();
-        
-        // Create the new JGraph, with its model
-//         _graphModel = new DefaultGraphModel();
-//         _graph = new JGraph(_graphModel);
-//         _graph.setEditable(false);
-//         _graph.addKeyListener(this);
-        
-        // Create a JPanel (a lightweight container), and add the JGraph to it
-//         _canvas = new QBGFJPanel();
-//         _canvas.setBackground(Color.white);
-//         _canvas.add(_graph, BorderLayout.CENTER);
-//         _canvas.addKeyListener(this);
-        
-        
-        // Create the JDesktopPane (a container used to contain internal frame objects)
-//         _desktopPane = new JDesktopPane();
-//         _desktopPane.setBackground(Color.white);
-//         _desktopPane.setDragMode(JDesktopPane.LIVE_DRAG_MODE);
-//         _desktopPane.addComponentListener(_cl);
-//         _desktopPane.addKeyListener(this);
-        
-        // Add the canvas panel to the desktop
-//         _desktopPane.add(_canvas,JLayeredPane.FRAME_CONTENT_LAYER);
-        
-        // Create a JScrollPane, which contains a JViewport, which contains the desktopPane
-//         _desktopScrollPane =  new JScrollPane();
-//         viewport = new JViewport();
-//         viewport.setView(_desktopPane);
-//         _desktopScrollPane.setViewportView(viewport);
-//         _desktopScrollPane.setPreferredSize(new Dimension(175,120)); //very important
-        
+                
         // Create two popup menus
         _backgroundPopup = createBackgroundPopup();
         _tableTitlePopup = createTableTitlePopup();
@@ -448,7 +418,7 @@ public class QueryBuilderGraphFrame extends JPanel
     // changes the sql query.
     public boolean checkTableColumnValidity() {
         return ( _checkTableColumnValidity &&
-                _queryBuilder.getQueryBuilderPane().getQueryBuilderSqlTextArea().queryChanged() );
+                 _queryBuilder.getQueryBuilderPane().getQueryBuilderSqlTextArea().queryChanged() );
     }
     
     // Adding a method to access _graph as per QE request
@@ -625,8 +595,11 @@ public class QueryBuilderGraphFrame extends JPanel
     }
     
     
-    // Called when we have received a change in the input table.
-    
+    /**
+     * Called when we have received a change in the input table (grid pane)
+     * either interactively or because the model was updated from somewhere else
+     * @param e the event
+     */
     private void inputTableModelChanged(TableModelEvent e) {
         
         Log.getLogger().entering("QueryBuilderGraphFrame", "inputTableModelChanged");
@@ -651,6 +624,7 @@ public class QueryBuilderGraphFrame extends JPanel
         int row = e.getFirstRow();   // the first row that changed
         QueryBuilderInputTableModel model = (QueryBuilderInputTableModel) e.getSource();
         
+        // Column -1 indicates ...
         if (column!=-1) {
             
             String columnName = (String) model.getValueAt(row, QueryBuilderInputTable.Column_COLUMN);
@@ -668,21 +642,15 @@ public class QueryBuilderGraphFrame extends JPanel
                     _queryBuilder.getQueryModel().removeDerivedColName( tableSpec, columnName );
                 else
                     _queryBuilder.getQueryModel().setDerivedColName(tableSpec, columnName, result);
-                
-                // Regenerate the query, if someone else isn't doing it
-                if (_queryBuilder._updateText)
-                    _queryBuilder.generateText();
             }
             if (column==QueryBuilderInputTable.Output_COLUMN) {
                 
                 Boolean value = (Boolean) model.getValueAt(row, column);  // Selected/deselected
-//                DefaultGraphCell dgc = findNode(tableSpec);
-//                 QueryBuilderInternalFrame qbif =
-//                         (QueryBuilderInternalFrame) dgc.getUserObject();
-//                QueryBuilderTableModel qbtm = qbif.getQueryBuilderTableModel();
 		QBNodeComponent node = findGraphNode(tableSpec);
                 QueryBuilderTableModel qbtm = node.getQueryBuilderTableModel();
                 qbtm.selectColumn(columnName, value);
+                // Don't regenerate query, since selectColumn will cause that to happen
+                return;
             } else if (column==QueryBuilderInputTable.Criteria_COLUMN) {
                 
                 String result = ((String) model.getValueAt(row,
@@ -733,17 +701,14 @@ public class QueryBuilderGraphFrame extends JPanel
                 // Is this necessary?  May be required to get Criteria Order right
                 _queryBuilderInputTable.generateTableWhere(_queryBuilder.getQueryModel());
                 _inputTableAddCriteria = false;
-                // Regenerate the query, if someone else isn't doing it
-                if (_queryBuilder._updateText)
-                    _queryBuilder.generateText();
             } else if (column==QueryBuilderInputTable.CriteriaOrder_COLUMN) {
                 
                 String criteria = ( (String) model.getValueAt(row,
                         QueryBuilderInputTable.Criteria_COLUMN ) ).trim();
                 String order = (String) model.getValueAt(row,column );
                 
-                if (order != null && order.trim().length() !=0 &&
-                        order.trim().equals(QueryBuilderInputTable.CriteriaOrder_Uneditable_String )) {
+                if ( (order != null && order.trim().length() !=0) &&
+                     (order.trim().equals(QueryBuilderInputTable.CriteriaOrder_Uneditable_String ) ) ) {
                     return;
                 }
                 // remove the old criteria first anyway
@@ -755,27 +720,21 @@ public class QueryBuilderGraphFrame extends JPanel
                     _inputTableAddCriteria = false;
                 } else {
                     int orderNum = Integer.parseInt(order);
-                    
-                    Predicate pred = checkCriteria( tableSpec, columnName,
-                            criteria ) ;
+                    Predicate pred = checkCriteria( tableSpec, columnName, criteria ) ;
                     if ( pred == null )  {
                         _queryBuilderInputTable.getModel().setValueAt("",row, column);      // NOI18N
                         return;
                     }
-                    
                     if (criteria.trim().length() != 0 ) {
                         _queryBuilder.getQueryModel().addCriteria(tableSpec, columnName, pred, orderNum);
                     }
                 }
-                
                 _queryBuilderInputTable.clearSelection();
                 _inputTableAddCriteria = true;
                 _queryBuilderInputTable.generateTableWhere(_queryBuilder.getQueryModel());
                 _inputTableAddCriteria = false;
-                if (_queryBuilder._updateText)
-                    _queryBuilder.generateText();
-                return;
             }
+            // Regenerate the query, if someone else isn't doing it
             if (_queryBuilder._updateText) {
                 _queryBuilder.generateText();
             }
@@ -852,7 +811,7 @@ public class QueryBuilderGraphFrame extends JPanel
         if ( ( _queryBuilder.getQueryModel() == null ) ||
 	     ( _queryBuilder.getQueryModel().genText() == null ) ) {
             String query = new String("select * from " + fullTableName);
-            _queryBuilder.populate(query);
+            _queryBuilder.populate(query, false);
             _queryBuilder.setSqlCommand(query);
             return;
         }

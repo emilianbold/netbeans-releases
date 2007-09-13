@@ -238,14 +238,6 @@ public class QueryBuilderPane extends JSplitPane {
 
 
     /**
-     * Return the current query text
-     */
-    String getSqlTextAreaText()
-    {
-        return _queryBuilderSqlTextArea.getText();
-    }
-
-    /**
      * Return the query builder result table
      */
     QueryBuilderResultTable getQueryBuilderResultTable()

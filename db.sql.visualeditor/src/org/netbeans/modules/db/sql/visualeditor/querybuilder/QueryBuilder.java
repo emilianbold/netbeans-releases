@@ -19,20 +19,14 @@
 package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -56,7 +50,6 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.actions.DeleteAction;
@@ -75,7 +68,6 @@ import org.netbeans.modules.db.sql.visualeditor.querymodel.OrderBy;
 import org.netbeans.modules.db.sql.visualeditor.parser.ParseException;
 import org.netbeans.modules.db.sql.visualeditor.parser.TokenMgrError;
 
-import org.netbeans.modules.db.sql.visualeditor.ui.ConnectionStatusPanel;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditor;
 
@@ -98,58 +90,118 @@ public class QueryBuilder extends TopComponent
         ClipboardOwner,
         KeyListener,
         ColumnProvider {
-
-    // this stores the cache of query build objects
-    private static Map                  qbMap = new HashMap();
-
-    private String lastQuery;
-
-    // DO NOT CHANGE the next line.  Caching should not be implemented in this class.
-    private static final boolean        CACHE_QueryBulderInstances = false ;
-
-    // the boolean below is used to determine if we need to store
-    // the query in the backing file. First time when 'generateText' is
-    // called we avoid saving the query in the backing file as
-    // this unnecessarily sets the save buttons ON.
-    private boolean                     firstTimeGenerateText = true;
+    
 
     // Provide package access on these, for use by other classes in the Query Builder
+    
     QueryBuilderPane                    _queryBuilderPane;
     QueryModel                          _queryModel;
     boolean                             _updateModel = true;
-    boolean                             _updateText = true;
     boolean                             _graphicsEnabled = true;
+    
+    // Used to delay updating text pane until all changes have been made
+    boolean                             _updateText = true;
 
+    
     // Private variables
 
-    private boolean                     DEBUG = false;
+    // this stores the cache of query build objects
+    private static Map                  qbMap = new HashMap();
+    private String lastQuery;
 
-    // private DatabaseMetaData            _databaseMetaData;
-    // private DatabaseMetaDataHelper      _dbmdh;
-    
-    //  --- changes for designtime/insync avoidance.
-    // private SqlStatement                    sqlStatement = null ;
+    // the boolean below is used to determine if we need to store the query in the 
+    // backing file. The first time that generateText is called, we avoid saving
+    // the query in the backing file as this unnecessarily sets the save buttons ON.
+    private boolean                     firstTimeGenerateText = true;
+
+    private String                      _parseErrorMessage = null ;
+    private boolean                     DEBUG = false;
     private DatabaseConnection              dbconn;
     private String                          statement;
-
     private QueryBuilderMetaData	    qbMetaData;
     // private VisualSQLEditorMetaData         metaDataCache = null ;
     private VisualSQLEditor         	    vse ;
+    private SQLException lastException = null ;
+
+
     
-    // private Connection   connection = null ;
+    /**
+     * Static factory method, added for access from RowSet
+     * @Return a QueryBuilder instance, either new or retrieved from the Map
+     */
+    public static Component open( DatabaseConnection dbconn, String statement, VisualSQLEditorMetaData metadata, VisualSQLEditor vse)
+    {
+        Log.getLogger().entering("QueryBuilder", "open"); // NOI18N
 
-    // all the schema names in the datasource.
-    // private List                        _schemaNames    = null;
-    // all the table/view names in the datasource.
-    // private List                        _tableNames     = null;
-    // all the column names for each table/view name in the datasource.
-    // private List                        _columnNames    = null;
+	showBusyCursor( true );
 
-    // used to make sure that the _tableNames is initialized only once.
-    // private List                        _tableColumns ;
+        QueryBuilder qb ;
+        try {
+            qb = new QueryBuilder(dbconn, statement, metadata, vse);
+        } catch (SQLException sqle ) {
+            qb = null ;
+            // JDTODO: restore this dialog
+//            // TODO:  popup an error dialog.
+//            ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
+//            csp.configureDisplay(sqlStatement.getConnectionInfo(), false,sqle.getLocalizedMessage(),  "", 0, false ) ;
+//            // csp.setGeneralInfo("") ;
+//            csp.displayDialog( sqlStatement.getConnectionInfo() ) ;
+        }
+        final QueryBuilder queryBuilder = qb ;
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                if ( queryBuilder != null) {
+                    queryBuilder.open();
+                    queryBuilder.requestActive();
+                }
+                showBusyCursor( false );
+            }
+        }) ;
 
-    private String                      _parseErrorMessage = null ;
+        queryBuilder.getTextAreaFocusInvokeLater();
+        return queryBuilder;
+    }
 
+    /**
+     * Private constructor, invoked only from the open() factory method
+     */ 
+    private QueryBuilder(DatabaseConnection dbconn, String statement, VisualSQLEditorMetaData metadata, VisualSQLEditor vse)
+            throws  SQLException
+    {
+	Log.getLogger().entering("QueryBuilder", "constructor");
+        this.dbconn = dbconn;
+        this.statement = statement;
+	this.vse = vse;
+	// Either pass in metadata, or have it created from db
+	this.qbMetaData = 
+ 	    (metadata==null) ?
+            new QueryBuilderMetaData(dbconn, this) :
+	    new QueryBuilderMetaData(metadata, this) ;
+
+	
+	// It would be nice to have a short title, but there isn't a convenient one
+        String title = dbconn.getName();
+     
+        // Set the name to display
+        setName(title);
+        setDisplayName(title);
+
+        setLayout(new java.awt.BorderLayout());
+
+        ImageIcon imgIcon =
+                new ImageIcon(getClass().getResource("/org/netbeans/modules/db/sql/visualeditor/resources/query-editor-tab.png")); // NOI18N
+        if (imgIcon != null)
+            setIcon(imgIcon.getImage());
+
+        _queryBuilderPane = new QueryBuilderPane(this);
+
+        // Add the pane to the end of the QueryBuilder container
+        add(_queryBuilderPane);
+
+        addKeyListener(this);
+    }
+    
+    
     // used for syntax highlighting
     public boolean isSchemaName( String schemaName ) {
 	return qbMetaData.isSchemaName( schemaName ) ;
@@ -163,12 +215,7 @@ public class QueryBuilder extends TopComponent
 	return qbMetaData.isColumnName( columnName );
     }
 
-    // Provide access to metadata object (currently used during text generation)
 
-    public QueryBuilderMetaData getMetaData() {
-	return qbMetaData;
-    }
-    
     /////////////////////////////////////////////////////////////////////////
     // Delete support
     /////////////////////////////////////////////////////////////////////////
@@ -249,7 +296,7 @@ public class QueryBuilder extends TopComponent
             return;
         }
         deleteActionPerformer.setEnabled(false);
-        DeleteAction da = (DeleteAction)SystemAction.get(DeleteAction.class);
+        DeleteAction da = SystemAction.get(DeleteAction.class);
         da.setEnabled(false);
     }
 
@@ -303,7 +350,7 @@ public class QueryBuilder extends TopComponent
 
 
     /** Remove the currently selected components */
-    void deleteSelection() {
+    private void deleteSelection() {
         if ( DEBUG )
             System.out.println(" deleteSelection called. " + "\n" ); // NOI18N
         java.awt.KeyboardFocusManager kbfm = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager();
@@ -332,7 +379,7 @@ public class QueryBuilder extends TopComponent
         }
     }
 
-    protected void installActions(ActionMap map, InputMap keys) {
+    private void installActions(ActionMap map, InputMap keys) {
        /*
         map.put(DefaultEditorKit.copyAction, copyActionPerformer);
         map.put(DefaultEditorKit.cutAction, cutActionPerformer);
@@ -364,149 +411,6 @@ public class QueryBuilder extends TopComponent
     }
 
 
-//    /**
-//     * Static factory method, added for access from RowSet
-//     * @Return a QueryBuilder instance, either new or retrieved from the Map
-//     */
-//    public static Component openCustomizerPanel( SqlStatement sqlStatement) {
-//
-//        Log.err.log(ErrorManager.INFORMATIONAL,
-//                "Entering QueryBuilder.openCustomizerPanel"); // NOI18N
-//
-//	showBusyCursor( true );
-//
-//        QueryBuilder qb ;
-//        try {
-//            qb = new QueryBuilder(sqlStatement);
-//        } catch (SQLException sqle ) {
-//            qb = null ;
-//            // TODO:  popup an error dialog.
-//            ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
-//            csp.configureDisplay(sqlStatement.getConnectionInfo(), false,sqle.getLocalizedMessage(),  "", 0, false ) ;
-//            // csp.setGeneralInfo("") ;
-//            csp.displayDialog( sqlStatement.getConnectionInfo() ) ;
-//        }
-//        final QueryBuilder queryBuilder = qb ;
-//        SwingUtilities.invokeLater( new Runnable() {
-//            public void run() {
-//                if ( queryBuilder != null) {
-//                    queryBuilder.open();
-//                    queryBuilder.requestActive();
-//                }
-//                showBusyCursor( false );
-//            }
-//        }) ;
-//
-//        queryBuilder.getTextAreaFocusInvokeLater();
-//
-//        return queryBuilder;
-//    }
-    
-    
-    /**
-     * Static factory method, added for access from RowSet
-     * @Return a QueryBuilder instance, either new or retrieved from the Map
-     */
-    public static Component open( DatabaseConnection dbconn, String statement, VisualSQLEditorMetaData metadata, VisualSQLEditor vse)
-    {
-        Log.getLogger().entering("QueryBuilder", "open"); // NOI18N
-
-	showBusyCursor( true );
-
-        QueryBuilder qb ;
-        try {
-            qb = new QueryBuilder(dbconn, statement, metadata, vse);
-        } catch (SQLException sqle ) {
-            qb = null ;
-            // JDTODO: restore this dialog
-//            // TODO:  popup an error dialog.
-//            ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
-//            csp.configureDisplay(sqlStatement.getConnectionInfo(), false,sqle.getLocalizedMessage(),  "", 0, false ) ;
-//            // csp.setGeneralInfo("") ;
-//            csp.displayDialog( sqlStatement.getConnectionInfo() ) ;
-        }
-        final QueryBuilder queryBuilder = qb ;
-        SwingUtilities.invokeLater( new Runnable() {
-            public void run() {
-                if ( queryBuilder != null) {
-                    queryBuilder.open();
-                    queryBuilder.requestActive();
-                }
-                showBusyCursor( false );
-            }
-        }) ;
-
-        queryBuilder.getTextAreaFocusInvokeLater();
-        return queryBuilder;
-    }
-
-    // private constructors
-    
-    private QueryBuilder(DatabaseConnection dbconn, String statement, VisualSQLEditorMetaData metadata, VisualSQLEditor vse)
-            throws  SQLException
-    {
-	Log.getLogger().entering("QueryBuilder", "constructor");
-        this.dbconn = dbconn;
-        this.statement = statement;
-	this.vse = vse;
-	// Either pass in metadata, or have it created from db
-	this.qbMetaData = 
- 	    (metadata==null) ?
-            new QueryBuilderMetaData(dbconn, this) :
-	    new QueryBuilderMetaData(metadata, this) ;
-
-	
-	// It would be nice to have a short title, but there isn't a convenient one
-        String title = dbconn.getName();
-     
-        // Set the name to display
-        setName(title);
-        setDisplayName(title);
-
-        setLayout(new java.awt.BorderLayout());
-
-        ImageIcon imgIcon =
-                new ImageIcon(getClass().getResource("/org/netbeans/modules/db/sql/visualeditor/resources/query-editor-tab.png")); // NOI18N
-        if (imgIcon != null)
-            setIcon(imgIcon.getImage());
-
-        _queryBuilderPane = new QueryBuilderPane(this);
-
-        // Add the pane to the end of the QueryBuilder container
-        add(_queryBuilderPane);
-
-        addKeyListener(this);
-    }
-    
-//     private QueryBuilder(SqlStatement sqlStatement) throws SQLException {
-
-//         Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryBuilder ctor"); // NOI18N
-
-//         // Record the bean that created us, and the unique name
-//         this.sqlStatement = sqlStatement ;
-       
-//         this.metaDataCache = sqlStatement.getMetaDataCache() ;
-        
-//         String title = sqlStatement.getTitle() ;
-        
-//         // Set the name to display
-//         setName(title);
-//         setDisplayName(title);
-
-//         setLayout(new java.awt.BorderLayout());
-
-//         ImageIcon imgIcon =
-//                 new ImageIcon(getClass().getResource("/org/netbeans/modules/db/sql/visualeditor/resources/query-editor-tab.png")); // NOI18N
-//         if (imgIcon != null)
-//             setIcon(imgIcon.getImage());
-
-//         _queryBuilderPane = new QueryBuilderPane(this);
-
-//         // Add the pane to the end of the QueryBuilder container
-//         add(_queryBuilderPane);
-
-//         addKeyListener(this);
-//     }
 
     void getGraphFrameCanvasFocus() {
         _queryBuilderPane.getQueryBuilderGraphFrame().getCanvasFocus ();
@@ -520,6 +424,7 @@ public class QueryBuilder extends TopComponent
             }
         }) ;
     }
+    
     /** ignore */
     public void keyTyped(KeyEvent e) {
     }
@@ -571,20 +476,6 @@ public class QueryBuilder extends TopComponent
         }
     }
 
-//     public SqlStatement getSqlStatement() {
-//         return this.sqlStatement ;
-//     }
-    
-//     List getCachedAllTablesInDataSource() throws SQLException {
-//         return metaDataCache.getTables() ;
-//         /*
-//         if (_tableNames == null ) {
-//             _tableColumns = createTableColumns() ;
-//         }
-//         return _tableNames;
-//          **/
-//     }
-
     String checkTableName( String tableName ) throws SQLException {
 	return qbMetaData.checkTableName( tableName );
     }
@@ -631,11 +522,8 @@ public class QueryBuilder extends TopComponent
      * If parsing fails, raise an notification and do nothing else
      * If parsing succeeds, return true, false otherwise.
      * @param text query to parse
+     * @param forceParse force a parse even if query hasn't changed
      */
-    boolean populate(String query) {
-        return populate( query, false) ;
-    }
-
     boolean populate(String query, boolean forceParse ) {
 
         Log.getLogger().entering("QueryBuilder", "populate", query); // NOI18N
@@ -678,7 +566,8 @@ public class QueryBuilder extends TopComponent
             _queryBuilderPane.getQueryBuilderGraphFrame().setTableColumnValidity(false) ;
             _queryBuilderPane.getQueryBuilderGraphFrame().setGroupBy(_queryModel.hasGroupBy() );
             _graphicsEnabled=true;
-            _queryBuilderPane.getQueryBuilderSqlTextArea().setQueryText(query);
+            // Will be done later by generate()
+            // setSqlText(query);
         } catch (ParseException pe)	{
             Log.getLogger().severe("Parse error: " + pe.getLocalizedMessage());  // NOI18N
             promptForContinuation(pe.getMessage(), query);
@@ -696,13 +585,14 @@ public class QueryBuilder extends TopComponent
         }
 
         _parseErrorMessage = null ;
+        
         // If parsing was successful...
 
         // ...generate the editor panes
         this.generate();
 
         // ...save the sql command.
-        saveSqlCommand(query);
+        saveSqlCommand();
 
         _queryBuilderPane.getQueryBuilderSqlTextArea().requestFocus();
 
@@ -710,8 +600,9 @@ public class QueryBuilder extends TopComponent
     }
 
 
-    // Ask the user whether to Retry&Continue or Cancel&Continue
-
+    /**
+     * Ask the user whether to Retry&Continue or Cancel&Continue
+     */
     private boolean promptForContinuation(String msg, String query) {
 
         // There could be an error or the typed SQL may not be SQL-92
@@ -760,7 +651,7 @@ public class QueryBuilder extends TopComponent
 
     // Disable the graph and grid panes, leaving only the text pane.
     // Used when either a parse fails, or the database is down
-    void disableVisualEditing(String query)    {
+    private void disableVisualEditing(String query)    {
         _graphicsEnabled=false;
         _queryBuilderPane.clear();
         _queryBuilderPane.getQueryBuilderGraphFrame().setQBGFEnabled( false ) ;
@@ -768,56 +659,52 @@ public class QueryBuilder extends TopComponent
 
         String command = getSqlCommand();
         if ( query != null && query.trim().length() != 0) {
-            _queryBuilderPane.getQueryBuilderSqlTextArea().setQueryText(query);
+            setSqlText(query);
             setSqlCommand(query) ;
         }
         else {
-            _queryBuilderPane.getQueryBuilderSqlTextArea().setQueryText(command);
+            setSqlText(command);
         }
     }
+    
+    
 
-    void showTableColumnNameError( String error ) {
-        String msg = NbBundle.getMessage(QueryBuilder.class, "TABLE_COLUMN_NAME_ERROR");
-        NotifyDescriptor d =
-            new NotifyDescriptor.Message( error + " : " + msg + "\n\n", NotifyDescriptor.ERROR_MESSAGE);
-        DialogDisplayer.getDefault().notify(d);
-        _parseErrorMessage = error + " : " + msg + "\n\n" ;
-        String query = getUnformattedSqlString();
-        disableVisualEditing(query);
-    }
+    /***************************************************************************
+     * Code for checking validity of queries
+     **************************************************************************/
 
+    /**
+     * Check the various parts of the query for valid table/column names
+     */
+    private boolean checkQuery()  throws SQLException {
 
-    boolean checkQuery()  throws SQLException {
-
-        if ( ( getUnformattedSqlString()  != null ) ||
-             ( _queryBuilderPane.getQueryBuilderGraphFrame().checkTableColumnValidity() ) ) {
+        if ( ( getSqlText()  != null ) ||
+             ( _queryBuilderPane.getQueryBuilderGraphFrame().checkTableColumnValidity() ) ) 
+        {
 
             // from
             if ( ! checkFrom() ) return false;
 
-            // We  were calling a function to replace the "*" with the
-            // column names of the tables immediately after parsing the
-            // query. With the introduction of routines to check the
-            // table and column names and to resolve them properly,
-            // if the from clause contains the table names not as they
-            // appear in database, we change them to match with those
-            // in the database. e.g. trip becomes "TRAVEL.TRIP". This
-            // is done in function checkFrom which gets called after
-            // parsing is done. In the case of replaceStar being called
-            // immediately after parsing, the column names and table
-            // names were resolved without checking for their validity
-            // in the database. I have changed this sequence as follows:
+            // We  were calling a function to replace the "*" with the column 
+            // names of the tables immediately after parsing the query. With the
+            // introduction of routines to check the table and column names and 
+            // to resolve them properly, if the from clause contains the table 
+            // names not as they appear in database, we change them to match 
+            // with those in the database. e.g. trip becomes "TRAVEL.TRIP". This
+            // is done in function checkFrom which gets called after parsing is 
+            // done. In the case of replaceStar being called immediately after 
+            // parsing, the column names and table names were resolved without 
+            // checking for their validity in the database. I have changed this 
+            // sequence as follows:
             // 1. First parse the query.
             // 2. Check for table names in the from clause. If the names
             //    only differ in case or if they are missing schema name
             //    then they are corrected in the datamodel.
-            // 3. These corrected table names are used to resolve the
-            // column names in SQLs like "select * from trip" when we
-            // call replaceStar() function.  This should fix the problem
-            // where "select * from TRIP" was parsed properly but
-            // "select * from trip" used to give errors.
+            // 3. These corrected table names are used to resolve the column 
+            // names in SQLs like "select * from trip" when we call replaceStar()
+            // function.  This should fix the problem where "select * from TRIP" 
+            // was parsed properly but "select * from trip" used to give errors.
             // Bug Id : 4962093
-
 
             // we need to replace star after we validate all the table names
             // in the from list.
@@ -847,10 +734,11 @@ public class QueryBuilder extends TopComponent
     }
 
 
-    // Check the tables specified in the FROM clause (plus any columns
-    // specified in join conditions), against the DB Schema
-
-    boolean checkFrom() throws SQLException {
+    /**
+     * Check the tables specified in the FROM clause (plus any columns
+     * specified in join conditions), against the DB Schema
+     */
+    private boolean checkFrom() throws SQLException {
 
         if (DEBUG)
             System.out.println("checkFrom called... \n " ); // NOI18N
@@ -864,10 +752,8 @@ public class QueryBuilder extends TopComponent
             fromTables = _queryModel.getFrom().getTableList();
             for ( int i = 0; i < fromTables.size(); i++ ) {
 
-                String fromTableName = (String)
-                ( (JoinTable) fromTables.get(i) ).getFullTableName();
-                String fromTableSpec = (String)
-                ( (JoinTable) fromTables.get(i) ).getTableSpec();
+                String fromTableName = ( (JoinTable) fromTables.get(i) ).getFullTableName();
+                String fromTableSpec = ( (JoinTable) fromTables.get(i) ).getTableSpec();
                 String checkedFullTableName = checkFullTableName( fromTableName ) ;
 
                 if (DEBUG)
@@ -904,9 +790,10 @@ public class QueryBuilder extends TopComponent
         return true;
     }
 
-    // Check the tables specified in the SELECT clause, against the DB Schema
-
-    boolean checkSelect()  throws SQLException  {
+    /**
+     * Check the tables specified in the SELECT clause, against the DB Schema
+     */
+    private boolean checkSelect()  throws SQLException  {
         if (DEBUG)
             System.out.println("checkSelect called. _queryModel.getSelect() = " + _queryModel.getSelect() ); // NOI18N
         if ( _queryModel.getSelect() != null ) {
@@ -918,18 +805,25 @@ public class QueryBuilder extends TopComponent
         return true;
     }
 
-    boolean checkWhere()  throws SQLException {
+    /**
+     * Check the tables specified in the WHERE clause against the DB schema
+     */
+    private boolean checkWhere()  throws SQLException {
         if (DEBUG)
             System.out.println("checkWhere called... " ); // NOI18N
         if ( _queryModel.getWhere() != null ) {
             ArrayList whereColumns = new ArrayList();
             _queryModel.getWhere().getReferencedColumns(whereColumns);
-            if ( ! checkColumns( whereColumns ) ) return false;
+            if ( ! checkColumns( whereColumns ) ) 
+                return false;
         }
         return true;
     }
 
-    boolean checkGroupBy()  throws SQLException {
+    /**
+     * Check the tables specified in the GROUP BY clause against the DB schema
+     */
+    private boolean checkGroupBy()  throws SQLException {
         if (DEBUG)
             System.out.println("checkGroupBy called... " ); // NOI18N
         if ( _queryModel.getGroupBy() != null ) {
@@ -940,8 +834,10 @@ public class QueryBuilder extends TopComponent
         return true;
     }
 
-
-    boolean checkHaving()  throws SQLException {
+    /**
+     * Check the tables specified in the HAVING clause against the DB schema
+     */
+    private boolean checkHaving()  throws SQLException {
         if (DEBUG)
             System.out.println("checkHaving called... " ); // NOI18N
         if ( _queryModel.getHaving() != null ) {
@@ -952,8 +848,10 @@ public class QueryBuilder extends TopComponent
         return true;
     }
 
-
-    boolean checkOrderBy()  throws SQLException {
+    /**
+     * Check the tables specified in the ORDER BY clause against the DB schema
+     */
+    private boolean checkOrderBy()  throws SQLException {
         if (DEBUG)
             System.out.println("checkOrderBy called... " ); // NOI18N
         OrderBy orderBy = _queryModel.getOrderBy();
@@ -978,8 +876,7 @@ public class QueryBuilder extends TopComponent
     //    case 3 : <alias_table_name>.<column_name>
     //    case 4 : <column_name>
     //
-
-    boolean checkColumns( ArrayList columns )  throws SQLException {
+    private boolean checkColumns( ArrayList columns )  throws SQLException {
 	Log.getLogger().entering("QueryBuilder", "checkColumns"); // NOI18N
         for ( int i = 0; i < columns.size(); i++ ) {
             Column column = (Column) columns.get(i);
@@ -997,10 +894,9 @@ public class QueryBuilder extends TopComponent
                 List fromTables = _queryModel.getFrom().getTableList();
                 boolean found=false;
                 for ( int j = 0; j < fromTables.size(); j++ ) {
-                    String fromTableName = (String) ( (JoinTable) fromTables.get(j) ).getFullTableName();
+                    String fromTableName = ( (JoinTable) fromTables.get(j) ).getFullTableName();
                     // this could be an alias
-                    String fromTableSpec = (String)
-                    ( (JoinTable) fromTables.get(j) ).getTableSpec();
+                    String fromTableSpec = ( (JoinTable) fromTables.get(j) ).getTableSpec();
 
                     if (DEBUG)
                         System.out.println(
@@ -1038,10 +934,24 @@ public class QueryBuilder extends TopComponent
     }
 
     /**
+     * Report an unrecognized table/column name
+     */
+    private void showTableColumnNameError( String error ) {
+        String msg = NbBundle.getMessage(QueryBuilder.class, "TABLE_COLUMN_NAME_ERROR");
+        NotifyDescriptor d =
+            new NotifyDescriptor.Message( error + " : " + msg + "\n\n", NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notify(d);
+        _parseErrorMessage = error + " : " + msg + "\n\n" ;
+        String query = getSqlText();
+        disableVisualEditing(query);
+    }
+    
+
+    /**
      * Parse the current query (obtained from the RowSet).
      * @param the current query
      */
-    void parseQuery(String query) throws ParseException {
+    private void parseQuery(String query) throws ParseException {
 
         Log.getLogger().entering("QueryBuilder", "parseQuery", query); // NOI18N
 
@@ -1053,25 +963,28 @@ public class QueryBuilder extends TopComponent
     }
 
 
-    // Update the command property of the calling thingy.
+    /**
+     * Update the command property of the calling VSE, using the current
+     * contents of the Sql Text.
+     * Also, record this as the last valid query, for rollback purposes.
+     */
+    private void saveSqlCommand() {
+        
+        // Done in setText now?
+        // _queryBuilderPane.getQueryBuilderSqlTextArea().saveLastGoodQuery();
 
-    public void saveSqlCommand(String query) {
-
-        _queryBuilderPane.getQueryBuilderSqlTextArea().saveLastGoodQuery (_queryBuilderPane.getSqlTextAreaText());
-
-        // Comapare the new query to the existing property value; don't do the
+        // Comapare the current SQL text to the existing Command value; don't do the
         // setValue operation if there has been no change
-
-        String newQuery = getUnformattedSqlString();
-        if (!newQuery.equals( getSqlCommand())) {
-	    Log.getLogger().finest("QB:  setting sql command to: " + newQuery) ; //NOI18N
-            setSqlCommand( newQuery ) ;
+        String query = getSqlText();
+        if (!query.equals( getSqlCommand())) {
+	    Log.getLogger().finest("QB:  setting sql command to: " + query) ; //NOI18N
+            setSqlCommand( query ) ;
         }
     }
 
 
-    // Wrapper for SqlStatement methods, which are now handled by a combination of VisualSqlEditor
-    // and DatabaseConnection
+    // Wrappers for SqlStatement methods, which are now handled by a combination of 
+    // VisualSqlEditor and DatabaseConnection
 
     void setSqlCommand(String query) {
 //        sqlStatement.setCommand(query) ;
@@ -1137,29 +1050,15 @@ public class QueryBuilder extends TopComponent
 	return qbMetaData.findForeignKey( fullTableName1, colName1, fullTableName2, colName2 );
     }
 
-/***
-    private void refreshDataBaseMetaData() {
-        if (DEBUG) {
-            System.out.println(" refreshDataBaseMetaData() called " + "\n" ); // NOI18N
-        }
-        try {
-            _databaseMetaData = null;
-            checkMetaData();
-        } catch (SQLException e) {
-            reportDatabaseError("DATABASE_ERROR", e); // NOI18N
-        }
-    }
-***/
     /**
-     * Executes the specified query against the database
-     *
+     * Execute the specified query against the database
+     * @param query the query to execute
      */
-
-    public void executeQuery(String query) {
+    void executeQuery(String query) {
 
         Log.getLogger().entering("QueryBuilder", "executeQuery", query); // NOI18N
 
-        String sqlCommand = _queryBuilderPane.getSqlTextAreaText() ; // why not "query"?
+        String sqlCommand = getSqlText() ; // why not "query"?
         ResultSet result = null ;  // value to be returned.
 
         Connection connection = null ;
@@ -1218,8 +1117,7 @@ public class QueryBuilder extends TopComponent
                                 System.out.println(" command  = " + sqlCommand);
                                 System.out.println("PreparedStatement i = " + i + " values = " + values[i]);
                             }
-                            myStatement.setObject(i+1, ((String)values[i]),
-                                                  pmd.getParameterType(i+1) );
+                            myStatement.setObject(i+1, values[i], pmd.getParameterType(i+1) );
                         }
     
                     } catch ( SQLException e) {
@@ -1266,8 +1164,7 @@ public class QueryBuilder extends TopComponent
                                 System.out.println(" command  = " + sqlCommand );
                                 System.out.println("PreparedStatement i = " + i + " values = " + values[i] );
                             }
-                            myStatement.setObject(i+1, ((String)values[i]),
-                                                  pmd.getParameterType(i+1) );
+                            myStatement.setObject(i+1, values[i], pmd.getParameterType(i+1) );
                         }
     
                     } catch ( SQLException e) {
@@ -1352,7 +1249,7 @@ public class QueryBuilder extends TopComponent
     /**
      * Generate the query graph and tables that correspond to the current query model
      */
-    void generateGraph() {
+    private void generateGraph() {
         // If this is false, graphics and model are disabled.  Don't build graph/table.
         if (_graphicsEnabled)
             _queryBuilderPane.getQueryBuilderGraphFrame().generateGraph(_queryModel);
@@ -1364,18 +1261,15 @@ public class QueryBuilder extends TopComponent
     void generateText() {
         // If this is false, graphics and model are disabled.  Don't generate text.
         if (_graphicsEnabled) {
-            _queryBuilderPane.getQueryBuilderSqlTextArea().setQueryText(_queryModel.genText());
+            setSqlText(_queryModel.genText());
+            
+            // Update command property except on first time through
             if ( ! firstTimeGenerateText ) {
-                saveSqlCommand(_queryBuilderPane.getSqlTextAreaText());
+                saveSqlCommand();
             } else  {
                 firstTimeGenerateText = false;
             }
         }
-    }
-
-
-    void displayResultSet(ResultSet rs) {
-        _queryBuilderPane.getQueryBuilderResultTable().displayResultSet(rs);
     }
 
 
@@ -1392,7 +1286,9 @@ public class QueryBuilder extends TopComponent
 //     }
 
 
-    // Accessors/Mutators
+    /***************************************************************************
+     * Accessors/Mutators
+     **************************************************************************/
 
     /**
      * Return the current query model
@@ -1409,19 +1305,43 @@ public class QueryBuilder extends TopComponent
     {
         return ( _queryBuilderPane );        
     }
+    
+    public VisualSQLEditor getVisualSQLEditor () {
+        return vse;
+    }
 
+    /**
+     * Get the current SQL Text from the SqlTextArea
+     */
+    private String getSqlText() {
+        return _queryBuilderPane.getQueryBuilderSqlTextArea().getText() ;
+    }
+
+    /**
+     * Set text in the SqlTextArea
+     * @param text the new text
+     */
+    private void setSqlText(String text) {
+        _queryBuilderPane.getQueryBuilderSqlTextArea().setText(text) ;
+    }
+    
     /**
      * Returns true if the current query is parameterized
      */
-    boolean isParameterized() {
+    private boolean isParameterized() {
         return _queryModel.isParameterized();
     }
-
+    
+    // Provide access to metadata object (currently used during text generation)
+    public QueryBuilderMetaData getMetaData() {
+	return qbMetaData;
+    }
+    
 
     // Methods inherited from org.openide.windows.TopComponent
 
     /**
-     * About to shown.  Could have been previously hidden ( e.g.,
+     * About to show.  Could have been previously hidden ( e.g.,
      * when the user tabs back to the QueryEditor) or on first showing.
      *
      * We need to flush all the current information (model, graph, metadata),
@@ -1456,17 +1376,10 @@ public class QueryBuilder extends TopComponent
 
         } else {
 
-            /* TODO JOEL:  why get column names here?  why now in the
-             * else for populate?
-
-            if (_tableNames == null ) {
-                _tableColumns = createTableColumns() ;
-            }
-             **/
-            String queryText = getUnformattedSqlString();
+            String queryText = getSqlText();
             // parse and populate only if the query has changed.
             if ( queryText == null || (! command.trim().equalsIgnoreCase( queryText.trim() ) ) ) {
-                this.populate(command);
+                this.populate(command, false);
                 setVisible(true);
                 this.repaint();
             }
@@ -1485,11 +1398,12 @@ public class QueryBuilder extends TopComponent
      * Called when the user moves to another tab.
      * If we have an associated rowset, update it with current text query.
      */
+    @Override
     protected void componentHidden() {
 	Log.getLogger().entering("QueryBuilder", "componentHidden");
         String command = getSqlCommand();
         if ((command!=null) && (command.trim().length()!=0)) {
-            String queryText = getUnformattedSqlString();
+            String queryText = getSqlText();
 
             // parse and populate only if the query has changed.
             if ( queryText == null || (! command.trim().equalsIgnoreCase( queryText.trim() ) ) ) {
@@ -1506,12 +1420,9 @@ public class QueryBuilder extends TopComponent
         deactivateActions();
     }
 
-    private String getUnformattedSqlString() {
-        return _queryBuilderPane.getQueryBuilderSqlTextArea().getText() ;
-        // return (_queryBuilderPane.getQueryBuilderSqlTextArea().getText().replace('\n', ' ').replaceAll("  "," ") ); // NOI18N
-    }
-
+    
     /** Opened for the first time */
+    @Override
     protected void componentOpened() {
 
 	Log.getLogger().entering("QueryBuilder", "componentOpened");
@@ -1520,18 +1431,20 @@ public class QueryBuilder extends TopComponent
         ActionMap map = getActionMap();
         InputMap keys = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         installActions(map, keys);
-// JDTODO - I don't think the QueryBuilder needs to listen to VSE, because it will notify us
-// directly if something changes. The SqlCommandCustomizer needs to listen to VSE, because that's the only way
-// it is notified of changes to the command 
-//        sqlStatement.addPropertyChangeListener(sqlStatementListener) ;
-//        vse.addPropertyChangeListener(sqlStatementListener) ;
+        
+        // QueryBuilder does not need to listen to VSE, because it will notify us
+        // directly if something changes. The SqlCommandCustomizer needs to listen 
+        // to VSE, because that's the only way it is notified of changes to the command 
+        // sqlStatement.addPropertyChangeListener(sqlStatementListener) ;
+        // vse.addPropertyChangeListener(sqlStatementListener) ;
 
-        // do NOT force a parse here.  It's done componentShowing().
+        // do NOT force a parse here.  It's done in componentShowing().
         // populate( sqlStatement.getCommand()) ;
     }
 
     /* closed - not visible anywhere)
      */
+    @Override
     protected void componentClosed() {
 	Log.getLogger().entering("QueryBuilder", "componentClosed");
 
@@ -1546,23 +1459,18 @@ public class QueryBuilder extends TopComponent
      * listener for changes in the sqlStatement - either the
      * command changed or the connection changed (e.g., datasource changed).
      */
-    // JDTODO
-    // May no longer be needed, since the customizer will just call vse.setStatement,
-    // which can in turn update the QueryEditor (?)
-    private PropertyChangeListener sqlStatementListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            // what property?
-            String propName = evt.getPropertyName() ;
-            Log.getLogger().finest("QB sqlStatement property change: " + propName ) ;
-            if ( propName.equals(VisualSQLEditor.PROP_STATEMENT)) {
-                Log.getLogger().finest(" newValue=" + getSqlCommand()) ;
-                populate( getSqlCommand() ) ;
-                _queryBuilderPane.getQueryBuilderSqlTextArea().requestFocus();
-
-//             } else if ( propName.equals(SqlStatement.CONNECTION_INFO)) {
-//                 Log.getLogger().finest(" resetting connections") ;
-//                 // _dbmdh.refresh() ;
-
+    // No longer needed, since the customizer will just call vse.setStatement,
+    // which can in turn update the QueryEditor
+//    private PropertyChangeListener sqlStatementListener = new PropertyChangeListener() {
+//        public void propertyChange(PropertyChangeEvent evt) {
+//            // what property?
+//            String propName = evt.getPropertyName() ;
+//            Log.getLogger().finest("QB sqlStatement property change: " + propName ) ;
+//            if ( propName.equals(VisualSQLEditor.PROP_STATEMENT)) {
+//                Log.getLogger().finest(" newValue=" + getSqlCommand()) ;
+//                populate( getSqlCommand() ) ;
+//                _queryBuilderPane.getQueryBuilderSqlTextArea().requestFocus();
+//
 //             } else if ( propName.equals(SqlStatement.TITLE) ) { 
 //                 Log.getLogger().finest(" title to " + sqlStatement.getTitle()) ; // NOI18N
 //                 SwingUtilities.invokeLater(new Runnable() {
@@ -1578,43 +1486,10 @@ public class QueryBuilder extends TopComponent
 //                         close() ;
 //                     }
 //                 }) ;
-             }
-        }
-    } ;
-
-    // Return true if there is a connection to the database, false otherwise
-    private SQLException lastException = null ;
-
-
-// JD: Disabled for now; we will eventually adopt a consistent approach to error handling
-//     // Return true if we have a database connection, false otherwise.
-//     // If connection is down, allow user to Retry (loop) or Cancel&Continue
-//     protected boolean checkDatabaseConnection() {
-
-// 	Log.getLogger().entering("QueryBuilder", "checkDatabaseConnection");
-//         boolean keepChecking = true ;
-//         boolean connected = false ;
-//         while ( keepChecking ) {
-
-//             try {
-//                 qbMetaData.checkDatabaseConnection() ;
-//                 connected = true ;
-//             } catch (SQLException sqle ) {
-//                 lastException = sqle ;
-//                 connected = false ;
 //             }
-            
-//             if ( ! connected ) {
-//                 // either the verify failed or the connect failed.
-//                 boolean retry = showRetryDialog() ;
-//                 if (! retry) {
-//                     keepChecking = false ;
-//                 }
-//             } else keepChecking = false ;
-//         }
-//         return connected ;
-//     }
-    
+//        }
+//    } ;
+
     /***
     private final JButton retryButton = new JButton(NbBundle.getMessage(QueryBuilder.class, "RETRY_AND_CONTINUE")) ;
     private final JButton cancelButton = new JButton(NbBundle.getMessage(QueryBuilder.class, "CANCEL_AND_CONTINUE")) ;
@@ -1624,55 +1499,55 @@ public class QueryBuilder extends TopComponent
      * It has a Retry and Cancel button.
      * returns true if the Retry is the closing action.
      */
-    int ii = 0 ;
-    public boolean showRetryDialog() {
-	Log.getLogger().entering("QueryBuilder", "showRetryDialog", ii++);
-        ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
-        csp.configureDisplay(getConnectionInfo(), false, lastException.getLocalizedMessage(),  "", 0, false ) ;
-        csp.setGeneralInfo(NbBundle.getMessage(QueryBuilder.class, "DATABASE_CONNECTION_ERROR") ) ;    // NOI18N
-        csp.setFooterInfo(NbBundle.getMessage(QueryBuilder.class, "NO_DATABASE_CONNECTION") ) ;      // NOI18N
+//    int ii = 0 ;
+//    private boolean showRetryDialog() {
+//	Log.getLogger().entering("QueryBuilder", "showRetryDialog", ii++);
+//        ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
+//        csp.configureDisplay(getConnectionInfo(), false, lastException.getLocalizedMessage(),  "", 0, false ) ;
+//        csp.setGeneralInfo(NbBundle.getMessage(QueryBuilder.class, "DATABASE_CONNECTION_ERROR") ) ;    // NOI18N
+//        csp.setFooterInfo(NbBundle.getMessage(QueryBuilder.class, "NO_DATABASE_CONNECTION") ) ;      // NOI18N
+//
+//        final JButton retryButton = new JButton(NbBundle.getMessage(QueryBuilder.class, "RETRY_AND_CONTINUE")) ;
+//        final JButton cancelButton = new JButton(NbBundle.getMessage(QueryBuilder.class, "CANCEL_AND_CONTINUE")) ;
+//
+//        // this listener is for the dialog.
+//        final Object[] retVal = new Object[1] ;
+//        ActionListener listener = new ActionListener() {
+//            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                Log.getLogger().finest("  retry dialog event: " + evt) ;
+//                retVal[0] = evt.getSource() ;
+//            }
+//
+//        };
+//
+//        DialogDescriptor dlg = new DialogDescriptor(csp,
+//                NbBundle.getMessage(ConnectionStatusPanel.class, "ConStat_title", getConnectionInfo()), // NOI18N
+//                true/*modal*/,
+//                new Object[] {retryButton, cancelButton}, cancelButton,
+//                        DialogDescriptor.DEFAULT_ALIGN, null, listener);
+//
+//        dlg.setClosingOptions( null );
+//
+//        Dialog dialog = DialogDisplayer.getDefault().createDialog(dlg);
+//        dialog.setResizable(true);
+//        dialog.pack() ;
+//
+//        // present dialog, waits for it to be disposed.
+//        dialog.show();
+//
+//        boolean val = ( retVal[0] == retryButton ) ;
+//        Log.getLogger().finest("  * dlg says:  Retry=" + val ) ;
+//        return val ;
+//    }
 
-        final JButton retryButton = new JButton(NbBundle.getMessage(QueryBuilder.class, "RETRY_AND_CONTINUE")) ;
-        final JButton cancelButton = new JButton(NbBundle.getMessage(QueryBuilder.class, "CANCEL_AND_CONTINUE")) ;
 
-        // this listener is for the dialog.
-        final Object[] retVal = new Object[1] ;
-        ActionListener listener = new ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Log.getLogger().finest("  retry dialog event: " + evt) ;
-                retVal[0] = evt.getSource() ;
-            }
-
-        };
-
-        DialogDescriptor dlg = new DialogDescriptor(csp,
-                NbBundle.getMessage(ConnectionStatusPanel.class, "ConStat_title", getConnectionInfo()), // NOI18N
-                true/*modal*/,
-                new Object[] {retryButton, cancelButton}, cancelButton,
-                        DialogDescriptor.DEFAULT_ALIGN, null, listener);
-
-        dlg.setClosingOptions( null );
-
-        Dialog dialog = (Dialog) DialogDisplayer.getDefault().createDialog(dlg);
-        dialog.setResizable(true);
-        dialog.pack() ;
-
-        // present dialog, waits for it to be disposed.
-        dialog.show();
-
-        boolean val = ( retVal[0] == retryButton ) ;
-        Log.getLogger().finest("  * dlg says:  Retry=" + val ) ;
-        return val ;
-    }
-
-
-    public void reportDatabaseError(SQLException e) {
+    private void reportDatabaseError(SQLException e) {
 
         Log.getLogger().finest("Error occurred when trying to retrieve table information: " + e); // NOI18N
 
         String msg = 
-            ((e.getErrorCode() == 17023) // Oracle "Unsupported feature" error
-	     || ("S1C00".equals(e.getSQLState())))  // MySQL "Optional feature not supported" error
+            ((e.getErrorCode() == 17023) ||      // Oracle "Unsupported feature" error
+	     ("S1C00".equals(e.getSQLState())))  // MySQL "Optional feature not supported" error
 	    ? NbBundle.getMessage(QueryBuilder.class, "UNSUPPORTED_FEATURE")
 	    : e.getLocalizedMessage();
 

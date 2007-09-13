@@ -22,7 +22,6 @@ import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaDat
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class SelectNode implements Select {
 
@@ -86,6 +85,10 @@ public class SelectNode implements Select {
             columns.add(((ColumnItem)_selectItemList.get(i)).getReferencedColumn());
     }
 
+    public int getSize() {
+        return _selectItemList.size();
+    }
+    
     public void addColumn(Column col) {
         _selectItemList.add(col);
     }
