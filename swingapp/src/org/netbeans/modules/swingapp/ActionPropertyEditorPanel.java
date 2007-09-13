@@ -1414,6 +1414,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
                     largeIconName = iconName;
                 }
                 action.putValue(iconKey+".IconName", iconName); // NOI18N
+                actionPropertiesUpdated = true;
             }
         }
     }
