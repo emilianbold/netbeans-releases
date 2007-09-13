@@ -71,7 +71,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-ruby-rubyproject/Customizer"; //NOI18N
     
-    private static Map /*<Project,Dialog>*/project2Dialog = new HashMap(); 
+    private static Map <Project, Dialog> project2Dialog = new HashMap<Project, Dialog>(); 
     
     public CustomizerProviderImpl(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper) {
         this.project = project;
@@ -92,7 +92,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
         
-        Dialog dialog = (Dialog)project2Dialog.get (project);
+        Dialog dialog = project2Dialog.get(project);
         if ( dialog != null ) {            
             dialog.setVisible(true);
             return;
@@ -135,7 +135,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             uiProperties.save();
             
             // Close & dispose the the dialog
-            Dialog dialog = (Dialog)project2Dialog.get( project );
+            Dialog dialog = project2Dialog.get(project);
             if ( dialog != null ) {
                 dialog.setVisible(false);
                 dialog.dispose();
@@ -144,14 +144,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         
         // Listening to window events ------------------------------------------------------
                 
-        public void windowClosed( WindowEvent e) {
+        public @Override void windowClosed( WindowEvent e) {
             project2Dialog.remove( project );
         }    
         
-        public void windowClosing (WindowEvent e) {
+        public @Override void windowClosing (WindowEvent e) {
             //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
             //may not be called
-            Dialog dialog = (Dialog)project2Dialog.get( project );
+            Dialog dialog = project2Dialog.get(project);
             if ( dialog != null ) {
                 dialog.setVisible(false);
                 dialog.dispose();

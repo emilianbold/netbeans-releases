@@ -218,7 +218,7 @@ public final class FolderList extends javax.swing.JPanel {
             File[] files = chooser.getSelectedFiles();
             int[] indecesToSelect = new int[files.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
-            Set invalidRoots = new HashSet ();
+            Set<File> invalidRoots = new HashSet<File>();
             File[] relatedFolders = this.relatedFolderList == null ? 
                 new File[0] : this.relatedFolderList.getFiles();
             for (int i=0, index=model.size(); i<files.length; i++, index++) {
@@ -254,7 +254,7 @@ public final class FolderList extends javax.swing.JPanel {
         Project p;
         if ((p = FileOwnerQuery.getOwner(file.toURI()))!=null 
             && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {
-            final Sources sources = (Sources) p.getLookup().lookup(Sources.class);
+            final Sources sources = p.getLookup().lookup(Sources.class);
             if (sources == null) {
                 return false;
             }

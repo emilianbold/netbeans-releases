@@ -50,6 +50,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.rubyproject.JavaClassPathUi;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
+import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender.Item;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -212,7 +213,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         CLASS_PATH_LIST_RENDERER = new JavaClassPathUi.ClassPathListCellRenderer( evaluator );
 
         EditableProperties projectProperties = updateHelper.getProperties( RakeProjectHelper.PROJECT_PROPERTIES_PATH );         
-        String cp = (String)projectProperties.get( JAVAC_CLASSPATH )  ;
+        String cp = projectProperties.get(JAVAC_CLASSPATH)  ;
         JAVAC_CLASSPATH_MODEL = /*ClassPathUiSupport.*/createListModel(cs.itemsIterator(cp) );
 
         INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
@@ -241,34 +242,34 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
     }
 
     // From ClassPathUiSupport:
-    public static Iterator getIterator( DefaultListModel model ) {        
+    public static Iterator<Item> getIterator( DefaultListModel model ) {        
         // XXX Better performing impl. would be nice
         return getList( model ).iterator();        
     }
     
     // From ClassPathUiSupport:
-    public static List getList( DefaultListModel model ) {
-        return Collections.list( model.elements() );
+    @SuppressWarnings("unchecked")
+    public static List<Item> getList( DefaultListModel model ) {
+        return (List<Item>) Collections.list( model.elements() );
     }
     
     public void save() {
         try {                        
             // Store properties 
-            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 final FileObject projectDir = updateHelper.getRakeProjectHelper().getProjectDirectory();
-                public Object run() throws IOException {
+                public Boolean run() throws IOException {
                     if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        RubyProject.class.getResource("resources/build-impl.xsl") //NOI18N
-                        )
-                        & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                        if (showModifiedMessage (NbBundle.getMessage(RubyProjectProperties.class,"TXT_ModifiedTitle"))) {
+                            RubyProject.class.getResource("resources/build-impl.xsl")) // NOI18N
+                            & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {
+                        if (showModifiedMessage(NbBundle.getMessage(RubyProjectProperties.class,
+                                "TXT_ModifiedTitle"))) {
                             //Delete user modified build-impl.xml
                             FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
                             if (fo != null) {
                                 fo.delete();
                             }
-                        }
-                        else {
+                        } else {
                             return Boolean.FALSE;
                         }
                     }

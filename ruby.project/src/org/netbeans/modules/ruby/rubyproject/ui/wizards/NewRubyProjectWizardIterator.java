@@ -107,7 +107,7 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
     public Set/*<FileObject>*/ instantiate (ProgressHandle handle) throws IOException {
         handle.start (4);
         //handle.progress (NbBundle.getMessage (NewRubyProjectWizardIterator.class, "LBL_NewRubyProjectWizardIterator_WizardProgress_ReadingProperties"));
-        Set resultSet = new HashSet ();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File)wiz.getProperty("projdir");        //NOI18N
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);

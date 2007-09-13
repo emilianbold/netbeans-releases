@@ -22,10 +22,8 @@ package org.netbeans.modules.ruby.rubyproject.ui.wizards;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
@@ -33,7 +31,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -273,7 +270,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     
     static class Panel implements WizardDescriptor.ValidatingPanel {
         
-        private ArrayList listeners;        
+        private ArrayList<ChangeListener> listeners;        
         private PanelSourceFolders component;
         private WizardDescriptor settings;
         
@@ -286,7 +283,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
         public void addChangeListener(ChangeListener l) {
             if (this.listeners == null) {
-                this.listeners = new ArrayList ();
+                this.listeners = new ArrayList<ChangeListener>();
             }
             this.listeners.add (l);
         }
@@ -331,7 +328,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
                if (this.listeners == null) {
                    return;
                }
-               it = ((ArrayList)this.listeners.clone()).iterator();
+               it = ((ArrayList) this.listeners.clone()).iterator();
            }
            ChangeEvent event = new ChangeEvent (this);
            while (it.hasNext()) {

@@ -37,7 +37,10 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public class BootClassPathProvider implements ClassPathProvider {
-    private /*WeakHash*/Map/*<FileObject,WeakReference<ClassPath>>*/ sourceClassPathsCache = new WeakHashMap();
+    
+    private Map<FileObject, WeakReference<ClassPath>> sourceClassPathsCache =
+            new WeakHashMap<FileObject, WeakReference<ClassPath>>();
+    
     //private /*WeakHash*/Map/*<FileObject,WeakReference<FileObject>>*/ sourceRootsCache = new WeakHashMap ();
     //private Reference/*<ClassPath>*/ compiledClassPath;
     
@@ -68,7 +71,7 @@ public class BootClassPathProvider implements ClassPathProvider {
                         Reference ref = (Reference) this.sourceClassPathsCache.get (file);
                         if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
                             cp = ClassPathSupport.createClassPath(new FileObject[] {file});
-                            this.sourceClassPathsCache.put (file, new WeakReference(cp));
+                            this.sourceClassPathsCache.put(file, new WeakReference<ClassPath>(cp));
                         }
                     }
                     else {

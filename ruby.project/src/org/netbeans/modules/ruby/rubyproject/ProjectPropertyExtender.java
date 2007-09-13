@@ -326,7 +326,7 @@ public class ProjectPropertyExtender {
      */
     public String[] encodeToStrings(Iterator<Item> classpath) {
         
-        ArrayList result = new ArrayList();
+        List<String> result = new ArrayList<String>();
         
         while( classpath.hasNext() ) {
 
@@ -390,7 +390,7 @@ public class ProjectPropertyExtender {
                 items[i] = result.get( i ) + ":";
             }
             else  {       
-                items[i] = (String)result.get( i );    //NOI18N
+                items[i] = result.get(i);
             }
         }
         

@@ -73,7 +73,8 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
         return component.valid( wizardDescriptor );
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -84,10 +85,11 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
             listeners.remove(l);
         }
     }
+    
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
@@ -110,7 +112,7 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor)settings;
         component.store(d);
-        ((WizardDescriptor)d).putProperty ("NewProjectWizard_Title", null); // NOI18N
+        d.putProperty ("NewProjectWizard_Title", null); // NOI18N
     }
 
     public boolean isFinishPanel() {

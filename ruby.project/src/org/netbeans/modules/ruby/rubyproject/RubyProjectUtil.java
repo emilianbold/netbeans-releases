@@ -48,7 +48,7 @@ public class RubyProjectUtil {
         if (value == null) {
             return null;
         }
-        RubyProject j2seprj = (RubyProject) p.getLookup().lookup(RubyProject.class);
+        RubyProject j2seprj = p.getLookup().lookup(RubyProject.class);
         if (j2seprj != null) {
             return j2seprj.evaluator().evaluate(value);
         } else {
@@ -93,15 +93,15 @@ public class RubyProjectUtil {
      * @param roots the classpath roots of source to start find
      * @return list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
-    public static List/*String*/ getMainClasses (FileObject[] roots) {
-        List result = new ArrayList ();
+    public static List<String> getMainClasses (FileObject[] roots) {
+        List<String> result = new ArrayList<String>();
         for (int i=0; i<roots.length; i++) {
             getMainClasses(roots[i], result);
         }
         return result;
     }
 
-    public static void getAllScripts(String prefix, FileObject sourcesRoot, List/*<String>*/ result) {
+    public static void getAllScripts(String prefix, FileObject sourcesRoot, List<String> result) {
         FileObject children[] = sourcesRoot.getChildren();
         if (!"".equals(prefix)) {
             prefix += "/";
@@ -125,7 +125,7 @@ public class RubyProjectUtil {
      * @param root the root of source to start find
      * @param addInto list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
-    private static void getMainClasses (FileObject root, List/*<String>*/ addInto) {
+    private static void getMainClasses (FileObject root, List<String> addInto) {
           getAllScripts("", root, addInto);
         
 //        JMManager.getManager().waitScanFinished();

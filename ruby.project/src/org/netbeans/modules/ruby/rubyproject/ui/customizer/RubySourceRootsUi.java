@@ -25,7 +25,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,18 +42,15 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
-import org.netbeans.modules.ruby.rubyproject.ui.FoldersListSettings;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.rubyproject.SourceRoots;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
 
 /** Handles adding, removing, reordering of source roots.
  *
@@ -158,7 +154,7 @@ public final class RubySourceRootsUi {
         final JButton downButton;
         private final Project project;
         private final SourceRoots sourceRoots;
-        private final Set ownedFolders;
+        private final Set<File> ownedFolders;
         private DefaultTableModel rootsModel;
         private EditMediator relatedEditMediator;
         private File lastUsedDir;       //Last used current folder in JFileChooser  
@@ -181,7 +177,7 @@ public final class RubySourceRootsUi {
             this.removeButton = removeButton;
             this.upButton = upButton;
             this.downButton = downButton;
-            this.ownedFolders = new HashSet();
+            this.ownedFolders = new HashSet<File>();
 
             this.project = master;
             this.sourceRoots = sourceRoots;
@@ -304,8 +300,8 @@ public final class RubySourceRootsUi {
             int lastIndex = si == null || si.length == 0 ? -1 : si[si.length - 1];
             ListSelectionModel selectionModel = this.rootsList.getSelectionModel();
             selectionModel.clearSelection();
-            Set rootsFromOtherProjects = new HashSet ();
-            Set rootsFromRelatedSourceRoots = new HashSet();
+            Set<File> rootsFromOtherProjects = new HashSet<File>();
+            Set<File> rootsFromRelatedSourceRoots = new HashSet<File>();
 out:        for( int i = 0; i < files.length; i++ ) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
                 Project p;
@@ -324,7 +320,7 @@ out:        for( int i = 0; i < files.length; i++ ) {
                     continue;
                 }
                 if ((p=FileOwnerQuery.getOwner(normalizedFile.toURI()))!=null && !p.getProjectDirectory().equals(project.getProjectDirectory())) {
-                    final Sources sources = (Sources) p.getLookup().lookup (Sources.class);
+                    final Sources sources = p.getLookup().lookup(Sources.class);
                     if (sources == null) {
                         rootsFromOtherProjects.add (normalizedFile);
                         continue;

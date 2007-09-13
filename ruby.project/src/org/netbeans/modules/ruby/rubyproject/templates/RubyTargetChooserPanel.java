@@ -44,21 +44,21 @@ import org.openide.util.Utilities;
  *
  * @author  Petr Hrebejk
  */
-public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {    
+public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {    
 
     private static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
 
     //private final SpecificationVersion JDK_14 = new SpecificationVersion ("1.4");   //NOI18N
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private RubyTargetChooserPanelGUI gui;
-    private WizardDescriptor.Panel bottomPanel;
+    private WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
     private WizardDescriptor wizard;
 
     private Project project;
     private SourceGroup folders[];
     private int type;
     
-    public RubyTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel, int type) {
+    public RubyTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel<WizardDescriptor> bottomPanel, int type) {
         this.project = project;
         this.folders = folders;
         this.bottomPanel = bottomPanel;
@@ -202,9 +202,8 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
         }
     }
 
-    public void readSettings( Object settings ) {
-        
-        wizard = (WizardDescriptor)settings;
+    public void readSettings(WizardDescriptor settings ) {
+        wizard = settings;
         
         if ( gui != null ) {
             // Try to preselect a folder
@@ -227,8 +226,8 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
         }
     }
 
-    public void storeSettings(Object settings) { 
-        Object value = ((WizardDescriptor)settings).getValue();
+    public void storeSettings(WizardDescriptor settings) { 
+        Object value = settings.getValue();
         if (WizardDescriptor.PREVIOUS_OPTION.equals(value) || WizardDescriptor.CANCEL_OPTION.equals(value) ||
                 WizardDescriptor.CLOSED_OPTION.equals(value)) {
             return;
@@ -237,8 +236,8 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }
-            Templates.setTargetFolder( (WizardDescriptor)settings, getTargetFolderFromGUI ((WizardDescriptor)settings));
-            Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
+            Templates.setTargetFolder(settings, getTargetFolderFromGUI(settings));
+            Templates.setTargetName(settings, gui.getTargetName());
             
             if (type == NewRubyFileWizardIterator.TYPE_SPEC) {
                 wizard.putProperty("classname", gui.getClassName()); // NOI18N
@@ -265,7 +264,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
                 wizard.putProperty("outermodules", gui.getModuleName()); // NOI18N
             }
         }
-        ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
+        settings.putProperty ("NewFileWizard_Title", null); // NOI18N
         
         if (WizardDescriptor.FINISH_OPTION.equals(value)) {
             wizard.putProperty(FOLDER_TO_DELETE, null);

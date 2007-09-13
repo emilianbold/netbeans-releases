@@ -52,7 +52,7 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
         this.project = project;
     }
     
-    private static void addFile(FileObject projectDirectory, String fileName, List/*<FileObject>*/ result) {
+    private static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
         FileObject file = projectDirectory.getFileObject(fileName);
         
         if (file != null) {
