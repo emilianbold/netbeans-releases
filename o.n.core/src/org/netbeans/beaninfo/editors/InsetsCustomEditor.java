@@ -105,14 +105,14 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyCh
             int y = Integer.parseInt (yField.getText ());
             int width = Integer.parseInt (widthField.getText ());
             int height = Integer.parseInt (heightField.getText ());
-            if ((x < 0) || (y < 0) || (width < 0) || (height < 0)) {
-                IllegalStateException ise = new IllegalStateException();
-                UIExceptions.annotateUser(ise, null,
-                                         NbBundle.getMessage(InsetsCustomEditor.class,
-                                                             "CTL_NegativeSize"),
-                                         null, null);
-                throw ise;
-            }
+//            if ((x < 0) || (y < 0) || (width < 0) || (height < 0)) {
+//                IllegalStateException ise = new IllegalStateException();
+//                UIExceptions.annotateUser(ise, null,
+//                                         NbBundle.getMessage(InsetsCustomEditor.class,
+//                                                             "CTL_NegativeSize"),
+//                                         null, null);
+//                throw ise;
+//            }
             return new Insets (x, y, width, height);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
