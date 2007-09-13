@@ -19,12 +19,10 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.util.Collection;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -138,6 +136,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     //@Override
     public Problem prepare(final RefactoringElementsBag elements) {
         CsmObject referencedObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
+        if (referencedObject == null) {
+            return null;
+        }
         Collection<CsmFile> files = getRelevantFiles(startReferenceObject, referencedObject);
         fireProgressListenerStart(ProgressEvent.START, files.size());
         processQuery(referencedObject, elements, files);
