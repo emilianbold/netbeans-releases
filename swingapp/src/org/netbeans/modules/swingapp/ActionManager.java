@@ -18,11 +18,13 @@
  */
 package org.netbeans.modules.swingapp;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.*;
+import javax.swing.Timer;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -34,8 +36,6 @@ import org.netbeans.modules.form.RADProperty;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
@@ -49,6 +49,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Toolkit;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -227,6 +228,7 @@ public class ActionManager {
         pcls = new ArrayList<PropertyChangeListener>();
         acls = new ArrayList<ActionChangedListener>();
         actions = new HashMap<String, List<ProxyAction>>();
+        rescanTimer.start();
     }
     
     public FileObject getRoot() {
@@ -267,7 +269,31 @@ public class ActionManager {
         fireStructureChanged();
     }
     
-    
+    /** request the specified file be rescanned in the near future. */
+    public void lazyRescan(FileObject fo) {
+        if(!scanQueue.contains(fo)) {
+            scanQueue.add(fo);
+        }
+    }
+    //the scan queue is traversed every 5 seconds to look for new files that must
+    //be scanned. they are removed from the queue after scanning.
+    //this ensures a file is never scanned more than once every five seconds
+    private List<FileObject> scanQueue = Collections.synchronizedList(new ArrayList<FileObject>());
+    private Timer rescanTimer = new Timer(5*1000, new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if(scanQueue.isEmpty()) return;
+            
+            synchronized(scanQueue) {
+                Iterator<FileObject> it = scanQueue.iterator();
+                while(it.hasNext()) {
+                    FileObject fo = it.next();
+                    it.remove();
+                    getActionsFromFile(fo, actions);
+                    fireStructureChanged();
+                }
+            }
+        }
+    });
     
     
     
