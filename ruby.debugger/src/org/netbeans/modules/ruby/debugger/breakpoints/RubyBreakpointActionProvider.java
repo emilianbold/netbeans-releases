@@ -63,10 +63,10 @@ public final class RubyBreakpointActionProvider extends ActionsProviderSupport
         }
         
         boolean removed = false;
-        for (RubyBreakpoint breakpoint : RubyBreakpoint.getBreakpoints()) {
+        for (RubyBreakpoint breakpoint : RubyBreakpointManager.getBreakpoints()) {
             if (breakpoint.getLine().equals(line)) {
                 // breakpoint is already there, remove it (toggle)
-                RubyBreakpoint.removeBreakpoint(breakpoint);
+                RubyBreakpointManager.removeBreakpoint(breakpoint);
                 removed = true;
                 break;
             }
@@ -74,7 +74,7 @@ public final class RubyBreakpointActionProvider extends ActionsProviderSupport
         
         if (!removed) { // new breakpoint
             try {
-                RubyBreakpoint.addBreakpoint(line);
+                RubyBreakpointManager.addBreakpoint(line);
             } catch (RubyDebuggerException e) {
                 Util.LOGGER.log(Level.WARNING, "Unable to add breakpoint.", e);
             }

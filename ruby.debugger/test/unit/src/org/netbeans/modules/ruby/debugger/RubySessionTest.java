@@ -22,6 +22,7 @@ package org.netbeans.modules.ruby.debugger;
 import java.io.File;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.rubyforge.debugcommons.model.RubyThreadInfo;
@@ -142,7 +143,7 @@ public final class RubySessionTest extends TestBase {
         RubyBreakpoint bp = addBreakpoint(testFO, 10);
         Process p = startDebugging(testF);
         doContinue();
-        RubyBreakpoint.removeBreakpoint(bp);
+        RubyBreakpointManager.removeBreakpoint(bp);
         doContinue();
         p.waitFor();
     }

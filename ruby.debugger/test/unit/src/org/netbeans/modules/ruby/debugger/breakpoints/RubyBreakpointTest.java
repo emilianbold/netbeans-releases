@@ -50,10 +50,10 @@ public final class RubyBreakpointTest extends TestBase {
         addBreakpoint(vegetableFO, 1);
         addBreakpoint(fruitFO, 2);
         // all
-        assertEquals("two Ruby breakpoints", 3, RubyBreakpoint.getBreakpoints().length);
+        assertEquals("two Ruby breakpoints", 3, RubyBreakpointManager.getBreakpoints().length);
         // by files
-        assertEquals("two Ruby breakpoints for fruit.rb", 2, RubyBreakpoint.getBreakpoints(fruitFO).length);
-        assertEquals("one Ruby breakpoint for vegetable.rb", 1, RubyBreakpoint.getBreakpoints(vegetableFO).length);
+        assertEquals("two Ruby breakpoints for fruit.rb", 2, RubyBreakpointManager.getBreakpoints(fruitFO).length);
+        assertEquals("one Ruby breakpoint for vegetable.rb", 1, RubyBreakpointManager.getBreakpoints(vegetableFO).length);
     }
     
 }

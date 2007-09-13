@@ -29,8 +29,8 @@ import java.util.Map;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
@@ -142,7 +142,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         }
         
         intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
-        proxy.startDebugging(RubyBreakpoint.getBreakpoints());
+        proxy.startDebugging(RubyBreakpointManager.getBreakpoints());
         return proxy.getDebugTarged().getProcess();
     }
 

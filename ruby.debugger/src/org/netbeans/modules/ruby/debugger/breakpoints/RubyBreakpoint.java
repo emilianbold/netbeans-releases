@@ -19,11 +19,8 @@
 
 package org.netbeans.modules.ruby.debugger.breakpoints;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ruby.debugger.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -36,66 +33,15 @@ import org.rubyforge.debugcommons.model.IRubyBreakpoint;
  * @author Martin Krauskopf
  */
 public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint {
-    
+
     private boolean enabled;
     private final Line line;
-    
-    public static void removeBreakpoint(final RubyBreakpoint breakpoint) {
-        DebuggerManager.getDebuggerManager().removeBreakpoint(breakpoint);
-        for (RubyDebuggerProxy proxy : RubyDebuggerProxy.PROXIES) {
-            proxy.removeBreakpoint(breakpoint);
-        }
+
+    RubyBreakpoint(final Line line) {
+        this.line = line;
+        this.enabled = true;
     }
-    
-    public static RubyBreakpoint addBreakpoint(final Line line) throws RubyDebuggerException {
-        RubyBreakpoint breakpoint = new RubyBreakpoint(line);
-        DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
-        for (RubyDebuggerProxy proxy : RubyDebuggerProxy.PROXIES) {
-            proxy.addBreakpoint(breakpoint);
-        }
-        return breakpoint;
-    }
-    
-    /**
-     * Uses {@link DebuggerManager#getBreakpoints()} filtering out all non-Ruby
-     * breakpoints.
-     */
-    public static RubyBreakpoint[] getBreakpoints() {
-        Breakpoint[] bps = DebuggerManager.getDebuggerManager().getBreakpoints();
-        List<RubyBreakpoint> rubyBPs = new ArrayList<RubyBreakpoint>();
-        for (Breakpoint bp : bps) {
-            if (bp instanceof RubyBreakpoint) {
-                rubyBPs.add((RubyBreakpoint) bp);
-            }
-        }
-        return rubyBPs.toArray(new RubyBreakpoint[rubyBPs.size()]);
-    }
-    
-    /**
-     * Uses {@link DebuggerManager#getBreakpoints()} filtering out all non-Ruby
-     * breakpoints. Returns only breakpoints associated with the given script.
-     */
-    public static IRubyBreakpoint[] getBreakpoints(final FileObject script) {
-        assert script != null;
-        List<RubyBreakpoint> scriptBPs = new ArrayList<RubyBreakpoint>();
-        for (RubyBreakpoint bp : getBreakpoints()) {
-            FileObject fo = bp.getFileObject();
-            if (script.equals(fo)) {
-                scriptBPs.add(bp);
-            }
-        }
-        return scriptBPs.toArray(new RubyBreakpoint[scriptBPs.size()]);
-    }
-    
-    public static boolean isBreakpointOnLine(final FileObject file, final int line) {
-        for (RubyBreakpoint bp : getBreakpoints()) {
-            if (file.equals(bp.getFileObject()) && line == bp.getLineNumber()) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
+
     private void updateBreakpoint() {
         for (RubyDebuggerProxy proxy : RubyDebuggerProxy.PROXIES) {
             try {
@@ -105,16 +51,11 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
             }
         }
     }
-    
-    public RubyBreakpoint(final Line line) {
-        this.line = line;
-        this.enabled = true;
-    }
-    
+
     public boolean isEnabled() {
         return enabled;
     }
-    
+
     public void disable() {
         if (enabled) {
             enabled = false;
@@ -122,7 +63,7 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
             firePropertyChange(PROP_ENABLED, true, false);
         }
     }
-    
+
     public void enable() {
         if (!enabled) {
             enabled = true;
@@ -130,24 +71,24 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
             firePropertyChange(PROP_ENABLED, false, true);
         }
     }
-    
+
     public Line getLine() {
         return line;
     }
-    
+
     public FileObject getFileObject() {
         return getLine().getLookup().lookup(FileObject.class);
     }
-    
+
     public String getFilePath() {
         return FileUtil.toFile(getFileObject()).getAbsolutePath();
     }
-    
+
     public int getLineNumber() {
         // Note that Line.getLineNumber() starts at zero
         return getLine().getLineNumber() + 1;
     }
-    
+
     public @Override String toString() {
         return getFilePath() + ":" + getLineNumber();
     }

@@ -52,7 +52,7 @@ public final class BreakpointsReader implements Properties.Reader {
         if (line == null) {
             return null;
         }
-        return new RubyBreakpoint(line);
+        return RubyBreakpointManager.createBreakpoint(line);
     }
     
     public void write(final Object object, final Properties props) {

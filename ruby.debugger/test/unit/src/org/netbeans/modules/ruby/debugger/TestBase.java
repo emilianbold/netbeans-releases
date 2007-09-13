@@ -34,9 +34,9 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.rubyproject.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.openide.filesystems.FileObject;
@@ -85,8 +85,8 @@ public abstract class TestBase extends RubyTestBase {
     }
 
     private void doCleanUp() {
-        for (RubyBreakpoint bp : RubyBreakpoint.getBreakpoints()) {
-            RubyBreakpoint.removeBreakpoint(bp);
+        for (RubyBreakpoint bp : RubyBreakpointManager.getBreakpoints()) {
+            RubyBreakpointManager.removeBreakpoint(bp);
         }
         DebuggerManager.getDebuggerManager().finishAllSessions();
     }
@@ -186,7 +186,7 @@ public abstract class TestBase extends RubyTestBase {
     }
     
     protected static RubyBreakpoint addBreakpoint(final FileObject fo, final int line) throws RubyDebuggerException {
-        return RubyBreakpoint.addBreakpoint(createDummyLine(fo, line - 1));
+        return RubyBreakpointManager.addBreakpoint(createDummyLine(fo, line - 1));
     }
     
     static void doAction(final Object action) throws InterruptedException {

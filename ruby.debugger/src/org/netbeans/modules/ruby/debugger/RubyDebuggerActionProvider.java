@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -164,7 +164,8 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             if (absPath != null) {
                 File file = new File(absPath);
                 FileObject fo = FileUtil.toFileObject(file);
-                if (event.isStepping() || rubySession.isRunningTo(file, event.getLine()) || (fo != null && RubyBreakpoint.isBreakpointOnLine(fo, event.getLine()))) {
+                if (event.isStepping() || rubySession.isRunningTo(file, event.getLine()) ||
+                        (fo != null && RubyBreakpointManager.isBreakpointOnLine(fo, event.getLine()))) {
                     stopHere(event);
                 } else {
                     event.getRubyThread().resume();

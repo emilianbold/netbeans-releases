@@ -84,7 +84,7 @@ public final class PersistenceManager extends DebuggerManagerAdapter {
     }
     
     private void storeBreakpoints() {
-        loadBreakpointProperties().setArray(RUBY_PROPERTY, RubyBreakpoint.getBreakpoints());
+        loadBreakpointProperties().setArray(RUBY_PROPERTY, RubyBreakpointManager.getBreakpoints());
     }
     
     private Properties loadBreakpointProperties() {

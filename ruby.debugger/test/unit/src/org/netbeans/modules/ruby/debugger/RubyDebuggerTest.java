@@ -23,8 +23,8 @@ import java.io.File;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -124,7 +124,7 @@ public final class RubyDebuggerTest extends TestBase {
         Process p = startDebugging(testF);
         doContinue(); // 2 -> 4
         doContinue(); // 4 -> 2
-        RubyBreakpoint.removeBreakpoint(bp4);
+        RubyBreakpointManager.removeBreakpoint(bp4);
         doContinue(); // 2 -> 2
         doContinue(); // 2 -> finish
         p.waitFor();
@@ -145,7 +145,7 @@ public final class RubyDebuggerTest extends TestBase {
         Process p = startDebugging(testF);
         doContinue(); // 2 -> 4
         doContinue(); // 4 -> 2
-        RubyBreakpoint.removeBreakpoint(bp4);
+        RubyBreakpointManager.removeBreakpoint(bp4);
         doContinue(); // 2 -> 2
         doContinue(); // 2 -> finish
         p.waitFor();
@@ -180,7 +180,7 @@ public final class RubyDebuggerTest extends TestBase {
         Process p = startDebugging(testF);
         doContinue(); // 2 -> 3
         doContinue(); // 3 -> 2
-        RubyBreakpoint.removeBreakpoint(bp2);
+        RubyBreakpointManager.removeBreakpoint(bp2);
         doContinue(); // 2 -> 3
         doContinue(); // 3 -> 3
         doContinue(); // 3 -> finish
