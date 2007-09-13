@@ -68,6 +68,9 @@ public class FlowViewController implements DesignDocumentAwareness {
                     return super.requestFocusInWindow();
             }
         };
+        // vlv: print
+        visual.putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+
         toolbar = new JToolBar ();
         toolbar.setFloatable (false);
         toolbar.setRollover (true);
