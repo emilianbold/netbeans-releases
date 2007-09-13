@@ -143,21 +143,21 @@ Entitlement(s).
 (d) Unless enforcement is prohibited by applicable law, you may not decompile,
     or reverse engineer Software.
 
- (e) The terms and conditions of this Agreement will apply to any Software
-     updates, provided to you at Sun's discretion, that replace and/or
-     supplement the original Software, unless such update contains a separate
-     license.
+(e) The terms and conditions of this Agreement will apply to any Software
+    updates, provided to you at Sun's discretion, that replace and/or
+    supplement the original Software, unless such update contains a separate
+    license.
 
- (f) You may not publish or provide the results of any benchmark or comparison
-     tests run on Software to any third party without the prior written consent
-     of Sun.
+(f) You may not publish or provide the results of any benchmark or comparison
+    tests run on Software to any third party without the prior written consent
+    of Sun.
 
- (g) Software is confidential and copyrighted.
+(g) Software is confidential and copyrighted.
 
- (h) Unless otherwise specified, if Software is delivered with embedded or
-     bundled software that enables functionality of Software, you may not use
-     such software on a stand-alone basis or use any portion of such software
-     to interoperate with any program(s) other than Software.
+(h) Unless otherwise specified, if Software is delivered with embedded or
+    bundled software that enables functionality of Software, you may not use
+    such software on a stand-alone basis or use any portion of such software to
+    interoperate with any program(s) other than Software.
 
 (i) Software may contain programs that perform automated collection of system
     data and/or automated software updating services. System data collected
