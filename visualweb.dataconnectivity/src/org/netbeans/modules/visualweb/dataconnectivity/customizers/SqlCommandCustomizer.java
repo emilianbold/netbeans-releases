@@ -58,7 +58,7 @@ import org.openide.windows.TopComponent;
  */
 public class SqlCommandCustomizer extends BasicCustomizer2 {
     
-    public String customerizerClassName = "" ; // NOI18N
+    public String customizerClassName = "" ; // NOI18N
     
     private OpenProjectsListener openProjectsListener = new OpenProjectsListener();
     
@@ -73,11 +73,11 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
 
     // Constructor
     
-    public SqlCommandCustomizer(String customerizerClassName )  {
+    public SqlCommandCustomizer(String customizerClassName )  {
         super(null, NbBundle.getMessage(SqlCommandCustomizer.class, "EDIT_QUERY"));        // NOI18N
-        this.customerizerClassName = customerizerClassName ; 
+        this.customizerClassName = customizerClassName ; 
         OpenProjects.getDefault().addPropertyChangeListener(openProjectsListener);
-        Log.err.log("Customizer for "+customerizerClassName) ;
+        Log.err.log("Customizer for "+customizerClassName) ;
     }
     
 
