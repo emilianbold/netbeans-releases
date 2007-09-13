@@ -332,12 +332,30 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             return false;
         }
 
-        Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, offset);
+        
+        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+
+        if (ts == null) {
+            return false;
+        }
+        ts.move(offset);
+
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return false;
+        }
+
+        Token<?extends GsfTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
             
-            boolean isContinuationOperator = id == RubyTokenId.NONUNARY_OP;
+            // http://www.netbeans.org/issues/show_bug.cgi?id=115279
+            boolean isContinuationOperator = (id == RubyTokenId.NONUNARY_OP || id == RubyTokenId.DOT);
+            
+            if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
+                // Continued lines have different token types
+                isContinuationOperator = true;
+            }
             
             if (token.length() == 1 && id == RubyTokenId.IDENTIFIER && token.text().toString().equals(",")) {
                 // If there's a comma it's a continuation operator, but inside arrays, hashes or parentheses

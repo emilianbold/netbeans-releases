@@ -319,6 +319,14 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         insertNewline("puts foo,^", "puts foo,\n  ^", null);
     }
     
+    public void testBackslashIndent() throws Exception {
+        insertNewline("puts foo\\^", "puts foo\\\n  ^", null);
+    }
+
+    public void testDotIndent() throws Exception {
+        insertNewline("puts foo.^", "puts foo.\n  ^", null);
+    }
+
     public void testLineContinuationParens() throws Exception {
         format("foo(1,2\n3,4)\nx",
                "foo(1,2\n  3,4)\nx", null);
