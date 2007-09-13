@@ -25,11 +25,13 @@ import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import org.netbeans.api.java.source.Comment.Style;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.save.PositionEstimator;
 import org.openide.filesystems.FileUtil;
 /**
  *
@@ -443,6 +445,67 @@ public class CommentsTest extends GeneratorTest {
                         "}";
                 BlockTree block = make.createMethodBody(method, bodyText);
                 workingCopy.rewrite(method.getBody(), block);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    /*
+     * http://www.netbeans.org/issues/show_bug.cgi?id=113315
+     */
+    public void testAddJavaDoc113315() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    void method() {\n" +
+            "    }\n" +
+            "\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    void method() {\n" +
+            "    }\n" +
+            "\n" +
+            "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = make.Method(
+                        make.Modifiers(Collections.<Modifier>emptySet()),
+                        "metoda",
+                        make.Identifier("void"),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        "{}",
+                        null
+                );
+                int no = PositionEstimator.NOPOS;
+                make.addComment(method, Comment.create(Style.BLOCK, no, no, no, "What's up?\n"), true);
+                ClassTree copy = make.addClassMember(clazz, method);
+                workingCopy.rewrite(clazz, copy);
             }
 
         };
