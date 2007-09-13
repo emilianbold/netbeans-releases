@@ -585,7 +585,8 @@ public class CasaWrapperModel extends CasaModelImpl {
             final Port port, final QName interfaceQName, String bType) {
         
         CasaWrapperModel casaWrapperModel = (CasaWrapperModel) casaPort.getModel();
-        PortType portType = casaWrapperModel.getPortType(interfaceQName);         
+        PortType portType = casaWrapperModel.getPortType(interfaceQName); 
+        assert portType != null;
         String wsdlLocation = casaWrapperModel.getWSDLLocation(interfaceQName);
         
         ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
@@ -863,8 +864,20 @@ public class CasaWrapperModel extends CasaModelImpl {
                         "MSG_CANNOT_CONNECT_TWO_EXTERNAL_ENDPOINTS"); // NOI18N
         }
         
-        boolean endpoint1Defined = isEndpointDefined(endpointRef1);
+        boolean endpoint1Defined = isEndpointDefined(endpointRef1);        
+        if (endpoint1Defined && !isEndpointPortTypeAvailable(endpointRef1)) {
+            return NbBundle.getMessage(this.getClass(), 
+                        "MSG_PORTTYPE_NOT_AVAILABLE", // NOI18N
+                        endpointRef1.getFullyQualifiedEndpointName());
+        }
+        
         boolean endpoint2Defined = isEndpointDefined(endpointRef2);
+        if (endpoint2Defined && !isEndpointPortTypeAvailable(endpointRef2)) {
+            return NbBundle.getMessage(this.getClass(), 
+                        "MSG_PORTTYPE_NOT_AVAILABLE", // NOI18N
+                        endpointRef2.getFullyQualifiedEndpointName());
+        }
+        
         if (endpoint1Defined && endpoint2Defined) {
             QName consumesInterfaceQName = endpointRef1.getInterfaceQName();
             QName providesInterfaceQName = endpointRef2.getInterfaceQName();
@@ -892,11 +905,30 @@ public class CasaWrapperModel extends CasaModelImpl {
         return null;
     }
     
+    /**
+     * Checks whether the given endpoint has a defined interface QName.
+     * A defined interface QName is a one that is not the dummy placeholder 
+     * interface.
+     */
+    // Note that an defined endpoint doesn't necessarily mean that the WSDL
+    // PortType is available in CASA. The PortType availability checking is
+    // separated to provide fine-grained error message. 
+    // See isEndpointPortTypeAvailable().
     private boolean isEndpointDefined(final CasaEndpointRef endpointRef) {
         QName interfaceQName = endpointRef.getInterfaceQName();
         String compAppWSDLTns = getCompAppWSDLTargetNamespace();
         return interfaceQName.getLocalPart().trim().length() > 0
                 && !interfaceQName.equals(new QName(compAppWSDLTns, DUMMY_PORTTYPE_NAME)); 
+    }
+    
+    /**
+     * Checks if the WSDL PortType for the given endpoint is availabe in CASA.
+     * For example, if a new WSDL file is added into CompApp, without a rebuild,
+     * the PortType is not available for CASA to use.
+     */
+    private boolean isEndpointPortTypeAvailable(final CasaEndpointRef endpointRef) {
+        QName interfaceQName = endpointRef.getInterfaceQName();
+        return getPortType(interfaceQName) != null;
     }
     
     /**
