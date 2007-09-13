@@ -1129,4 +1129,64 @@ public class BracketCompleterTest extends RubyTestBase {
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
+    
+    public void testPipes1() throws Exception {
+        insertChar("5.each { ^", '|', "5.each { |^|");
+    }
+
+    public void testPipes2() throws Exception {
+        insertChar("5.each { ^}", '|', "5.each { |^|}");
+    }
+    
+    public void testPipes3() throws Exception {
+        insertChar("5.each { |^|}", '|', "5.each { ||^}");
+    }
+    
+    public void testPipes4() throws Exception {
+        insertChar("5.each { |foo^|}", '|', "5.each { |foo|^}");
+    }
+
+    public void testNegativePipes1() throws Exception {
+        insertChar("'^'", '|', "'|^'");
+    }
+
+    public void testNegativePipes2() throws Exception {
+        insertChar("/^/", '|', "/|^/");
+    }
+
+    public void testNegativePipes3() throws Exception {
+        insertChar("#^", '|', "#|^");
+    }
+
+    public void testNegativePipes4() throws Exception {
+        insertChar("\"^\"", '|', "\"|^\"");
+    }
+
+    public void testNegativePipes5() throws Exception {
+        insertChar("5.each { |f^oo|}", '|', "5.each { |f|^oo|}");
+    }
+
+    public void testNegativePipes6() throws Exception {
+        insertChar("5.each { |^|foo|}", '|', "5.each { ||^foo|}");
+    }
+
+    public void testNegativePipes7() throws Exception {
+        insertChar("x = true ^", '|', "x = true |^");
+    }
+
+    public void testNegativePipes8() throws Exception {
+        insertChar("x = true |^", '|', "x = true ||^");
+    }
+
+    public void testBackspacePipes() throws Exception {
+        deleteChar("x=|^|", "x=^");
+    }
+
+    public void testBackspacePipes2() throws Exception {
+        deleteChar("x=|^x", "x=^x");
+    }
+    
+    public void testBackspacePipes3() throws Exception {
+        deleteChar("x=|^", "x=^");
+    }
 }

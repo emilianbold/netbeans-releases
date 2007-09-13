@@ -31,8 +31,6 @@ import javax.swing.text.JTextComponent;
 
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.EditorOptions;
 import org.netbeans.api.gsf.GsfTokenId;
@@ -903,10 +901,80 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 
                 return inserted;
             }
+            break;
+        }
+        case '|': {
+            if (!isInsertMatchingEnabled(doc)) {
+                return false;
+            }
+
+            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
+            TokenId id = token.id();
+
+            // Ensure that we're not in a comment, strings etc.
+            if (id == RubyTokenId.NONUNARY_OP && token.length() == 2 && "||".equals(token.text().toString())) {
+                // Type through: |^| and type |
+                // See if we're in a do or { block
+                if (isBlockDefinition(doc, dotPos)) {
+                    // It's a block so this should be a variable declaration of the form { |foo| }
+                    // Did you type "|" in the middle? If so, should type through!
+                    // TODO - check that we were typing in the middle, not in the front!
+                    doc.remove(dotPos, 1);
+                    caret.setDot(dotPos+1);
+                        
+                    return true;
+                }
+                
+            } else if (id == RubyTokenId.IDENTIFIER && token.length() == 1 && "|".equals(token.text().toString())) {
+                // Only insert a matching | if there aren't any others on this line AND we're in a block
+                if (isBlockDefinition(doc, dotPos)) {
+                    boolean found = false;
+                    int lineEnd = Utilities.getRowEnd(doc, dotPos);
+                    if (lineEnd > dotPos+1) {
+                        TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos+1);
+                        ts.move(dotPos+1);
+                        while (ts.moveNext() && ts.offset() < lineEnd) {
+                            Token<? extends GsfTokenId> t = ts.token();
+                            if (t.id() == RubyTokenId.IDENTIFIER && t.length() == 1 && "|".equals(t.text().toString())) {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!found) {
+                        doc.insertString(dotPos+1, "|", null);
+                        caret.setDot(dotPos + 1);
+                    }
+                }
+                
+                return true;
+            }
+            break;
         }
         }
 
         return true;
+    }
+    
+    private boolean isBlockDefinition(BaseDocument doc, int dotPos) throws BadLocationException {
+        TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
+        int lineStart = Utilities.getRowStart(doc, dotPos);
+        ts.move(dotPos+1);
+        while (ts.movePrevious() && ts.offset() >= lineStart) {
+            TokenId tid = ts.token().id();
+            if (tid == RubyTokenId.DO || tid == RubyTokenId.LBRACE) {
+                return true;
+//                    } else if (tid == RubyTokenId.IDENTIFIER && ts.token().length() == 1 && "|".equals(ts.token().text().toString())) {
+//                        continue;
+//                    } else if (tid == RubyTokenId.NONUNARY_OP && "||".equals(ts.token().text().toString())) {
+//                        continue;
+            } else if (tid == RubyTokenId.END || tid == RubyTokenId.RBRACE) {
+                break;
+            }
+        }
+        
+        return false;
     }
 
     private void reindent(BaseDocument doc, int offset, TokenId id, Caret caret)
@@ -1058,12 +1126,14 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     * @param caret caret
     * @param ch the character that was deleted
     */
+    @SuppressWarnings("fallthrough")
     public boolean charBackspaced(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
         BaseDocument doc = (BaseDocument)document;
         
+        switch (ch) {
+        case ' ': {
         // Backspacing over "# " ? Delete the "#" too!
-        if (ch == ' ') {
             TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
             ts.move(dotPos);
             if ((ts.moveNext() || ts.movePrevious()) && (ts.offset() == dotPos-1 && ts.token().id() == RubyTokenId.LINE_COMMENT)) {
@@ -1072,9 +1142,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 
                 return true;
             }
+            break;
         }
-        
-        if (ch == '{') {
+
+        case '{': {
             // Attempt to fix #{} in chars
             Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos-1);
             if (token != null && (token.id() == RubyTokenId.QUOTED_STRING_LITERAL || token.id() == RubyTokenId.REGEXP_LITERAL)) {
@@ -1085,9 +1156,12 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     target.getCaret().setDot(dotPos);
                 }
             }
+            
+            // Fall through to handle '{' typethrough as well
         }
 
-        if ((ch == '(') || (ch == '[') || ch == '{') {
+        case '(':
+        case '[': { // and '{' via fallthrough
             char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
 
             if (((tokenAtDot == ']') &&
@@ -1098,14 +1172,19 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     (LexUtilities.getTokenBalance(doc, RubyTokenId.LBRACE, RubyTokenId.RBRACE, dotPos) != 0))) {
                 doc.remove(dotPos, 1);
             }
-        } else if (ch == '\"' || ch == '\'' || ch == '/') {
+            break;
+        }
+        case '|':
+        case '\"':
+        case '\'':
+        case '/': {
             char[] match = doc.getChars(dotPos, 1);
 
             if ((match != null) && (match[0] == ch)) {
                 doc.remove(dotPos, 1);
             }
         } // TODO: Test other auto-completion chars, like %q-foo-
-
+        }
         return true;
     }
 
