@@ -95,6 +95,9 @@ FacesDndSupport.UpdateSuspender {
 
     /** If not TYPE_NONE, the type of pending update we're waiting for */
     private int pendingEventType = TYPE_NONE;
+    
+    // XXX #112216.
+    private boolean inlineEditingUpdate;
 
     /**
      * Create a new DomSynchronizer for the given webform
@@ -378,6 +381,7 @@ FacesDndSupport.UpdateSuspender {
      */
     private void requestUpdate(final int type, final MarkupDesignBean bean) {
         if (!SwingUtilities.isEventDispatchThread()) {
+            inlineEditingUpdate = jsfForm.isInlineEditing();
             SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         requestUpdate(type, bean);
@@ -442,6 +446,7 @@ FacesDndSupport.UpdateSuspender {
             pendingBean = null;
             pendingEventType = TYPE_REFRESH;
             timeOutPending = true;
+            inlineEditingUpdate = jsfForm.isInlineEditing();
             SwingUtilities.invokeLater(this);
         } else {
             // A refresh supercedes all other types of events since if we're going
@@ -482,6 +487,7 @@ FacesDndSupport.UpdateSuspender {
             pendingEventType = TYPE_CHANGE;
             timeOutPending = true;
             adjustRequestIfRoot();
+            inlineEditingUpdate = jsfForm.isInlineEditing();
             SwingUtilities.invokeLater(this);
         } else {
             if ((pendingEventType == TYPE_REFRESH) || (bean == pendingBean) ||
@@ -564,6 +570,7 @@ FacesDndSupport.UpdateSuspender {
             pendingEventType = TYPE_INSERT;
             timeOutPending = true;
             adjustRequestIfRoot();
+            inlineEditingUpdate = jsfForm.isInlineEditing();
             SwingUtilities.invokeLater(this);
         } else {
             if ((pendingEventType == TYPE_REFRESH) || (bean == pendingBean) || // is bean==pendingBean even possible?
@@ -613,6 +620,7 @@ FacesDndSupport.UpdateSuspender {
             pendingEventType = TYPE_DELETE;
             timeOutPending = true;
             adjustRequestIfRoot();
+            inlineEditingUpdate = jsfForm.isInlineEditing();
             SwingUtilities.invokeLater(this);
         } else {
             if (pendingEventType == TYPE_REFRESH) {
@@ -961,16 +969,21 @@ FacesDndSupport.UpdateSuspender {
             Node originalNode = originalNodes.get(0);
             Node newNode = newNodes.get(0);
             // XXX #110662 Doesn't work for inline editing (the newly created elements need to be used).
-            if (!jsfForm.isInlineEditing() && tryUpdateOriginalNode(originalNode, newNode, changedElements)) {
-                // XXX The original nodes are updated, do not mark the new as rendered, they are not used.
-                return true;
-            } else {
-                // XXX Clear possibly added elements.
-                changedElements.clear();
-                
-                // XXX Mark the newly used nodes as rendered.
-                MarkupService.markRenderedNodes(df);
-                parent.replaceChild(newNode, originalNode);
+            // XXX #112216 Improved the check.
+            try {
+                if (!inlineEditingUpdate && tryUpdateOriginalNode(originalNode, newNode, changedElements)) {
+                    // XXX The original nodes are updated, do not mark the new as rendered, they are not used.
+                    return true;
+                } else {
+                    // XXX Clear possibly added elements.
+                    changedElements.clear();
+
+                    // XXX Mark the newly used nodes as rendered.
+                    MarkupService.markRenderedNodes(df);
+                    parent.replaceChild(newNode, originalNode);
+                }
+            } finally {
+                inlineEditingUpdate = false;
             }
         } else {
             // XXX Mark the newly used nodes as rendered.
