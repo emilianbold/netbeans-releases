@@ -190,18 +190,20 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         }
 
         private void fixFilter() {
-            if (filterPrefix != null) {
-                int origSlash = filterPrefix.lastIndexOf(CsmIncludeCompletionItem.SLASH);
+            String pref = filterPrefix;
+            if (pref != null) {
+                int origSlash = pref.lastIndexOf(CsmIncludeCompletionItem.SLASH);
                 resultSetAnchorOffset = queryAnchorOffset;
                 if (origSlash != -1) {
                     resultSetAnchorOffset += origSlash + 1;
                 }
-                filterPrefix = trimIncludeSigns(filterPrefix);
-                int slash = filterPrefix.lastIndexOf(CsmIncludeCompletionItem.SLASH);
+                pref = trimIncludeSigns(pref);
+                int slash = pref.lastIndexOf(CsmIncludeCompletionItem.SLASH);
                 if (slash != -1) {
-                    dirPrefix = filterPrefix.substring(0, slash + 1);
-                    filterPrefix = filterPrefix.substring(slash + 1);
+                    dirPrefix = pref.substring(0, slash + 1);
+                    pref = pref.substring(slash + 1);
                 }
+                filterPrefix = pref;
             }
         }
 
