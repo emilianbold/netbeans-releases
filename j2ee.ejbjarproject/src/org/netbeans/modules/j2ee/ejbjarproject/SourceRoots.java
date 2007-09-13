@@ -33,8 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.Mutex;
@@ -60,6 +63,7 @@ public final class SourceRoots {
 
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
+    private static final String PROP_BUILD_DIR = "build.dir";   //NOI18N
 
     public static final String DEFAULT_SOURCE_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_src.dir");
     public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
@@ -160,6 +164,36 @@ public final class SourceRoots {
                                         f = FileUtil.getArchiveRoot(f);
                                     }
                                     result.add(f);
+                                }
+                            }
+                            
+                            String buildDir = evaluator.getProperty(PROP_BUILD_DIR);
+                            if (buildDir != null) {
+                                try {
+                                    // generated/wsimport/client
+                                    File f =  new File (helper.getAntProjectHelper().resolveFile (buildDir),"generated/wsimport/client"); //NOI18N
+                                    URL url = f.toURI().toURL();
+                                    if (!f.exists()) {  //NOI18N
+                                        assert !url.toExternalForm().endsWith("/");  //NOI18N
+                                        url = new URL (url.toExternalForm()+'/');   //NOI18N
+                                    }
+                                    FileObject root = URLMapper.findFileObject(url);
+                                    if (root != null) {
+                                        result.add(root);
+                                    }
+                                    // generated/wsimport/service
+                                    f = new File (helper.getAntProjectHelper().resolveFile(buildDir),"generated/wsimport/service"); //NOI18N
+                                    url = f.toURI().toURL();
+                                    if (!f.exists()) {  //NOI18N
+                                        assert !url.toExternalForm().endsWith("/");  //NOI18N
+                                        url = new URL (url.toExternalForm()+'/');   //NOI18N
+                                    }
+                                    root = URLMapper.findFileObject(url);
+                                    if (root != null) {
+                                        result.add(root);
+                                    }
+                                } catch (MalformedURLException ex) {
+                                     Logger.getLogger("global").log(Level.INFO, null, ex);
                                 }
                             }
                             sourceRoots = Collections.unmodifiableList(result);
