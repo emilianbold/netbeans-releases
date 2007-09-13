@@ -903,3 +903,8 @@ PostPPKwdChar: Space | EndOfLine | { LA(1) == EOF_CHAR}? ;
 protected
 PostInclChar: PostPPKwdChar | '\"' | '<' ;
 
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!! ALL NEW RULES MUST BE ADDED BEFORE THIS LINE !!
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+protected
+LAST_LEXER_FAKE_RULE : ;
