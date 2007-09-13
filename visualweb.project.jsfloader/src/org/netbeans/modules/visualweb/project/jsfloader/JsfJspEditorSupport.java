@@ -78,7 +78,7 @@ import org.netbeans.modules.visualweb.palette.api.CodeClipDragAndDropHandler;
  * @author  Tor Norbye (part copied from formerly changed HTMLEditorSupport + strange designer stuff)
  */
 public final class JsfJspEditorSupport extends DataEditorSupport
-        implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
+        implements EditorCookie.Observable, PrintCookie {
 
     private String encoding;
     private static final String defaultEncoding = "UTF-8"; // NOI18N

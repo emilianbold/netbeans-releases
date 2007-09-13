@@ -272,12 +272,9 @@ Microsystems, Inc. All Rights Reserved.
                   <!-- </RAVE> -->
 
                   <file name="OpenAction.instance">
-                    <!-- <RAVE> Replacing the original open action instance by open designer impl -->
-                    <!-- <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" /> -->
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.JsfJspOpenAction"/>
-                    <!-- </RAVE> -->
-                      <attr name="position" intvalue="300"/>
-                        </file>
+                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
+                    <attr name="position" intvalue="300"/>
+                  </file>
                   <file name="EditAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.EditAction"/>
                       <attr name="position" intvalue="400"/>
