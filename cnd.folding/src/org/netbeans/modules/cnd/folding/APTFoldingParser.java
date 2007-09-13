@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     private static final int FUNCTION_FOLD = CppFoldRecord.FUNCTION_FOLD;
     
     private static final int FIRST_TOKEN = APTTokenTypes.FLOATONE;
-    private static final int LAST_TOKEN = APTTokenTypes.Identifier;
+    private static final int LAST_TOKEN = APTTokenTypes.LAST_LEXER_FAKE_RULE; 
     
     //private int curCurlyLevel = 0;
     
