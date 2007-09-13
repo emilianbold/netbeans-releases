@@ -58,6 +58,11 @@ public class CsmImageLoader implements CsmImageName {
         }
         return Utilities.loadImage(iconPath);
     }
+
+    public static ImageIcon getIcon(CsmObject o) {
+        String iconPath = getImagePath(o);
+        return getCachedImageIcon(iconPath); 
+    }
     
     public static ImageIcon getIcon(CsmDeclaration.Kind kind, int modifiers) {
         String iconPath = getImagePath(kind, modifiers);
