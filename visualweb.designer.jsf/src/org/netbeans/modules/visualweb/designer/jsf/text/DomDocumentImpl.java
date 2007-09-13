@@ -748,17 +748,21 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             //final String NBSP_STRING = "\u00A0";
             final String NBSP_STRING;
 
-//            if (((RaveRenderNode)node).isJspx()) {
-            if (MarkupService.isJspxNode(node)) {
-                NBSP_STRING = "&nbsp;"; // JSPX source is "escaped"
-            } else { // html - put it right into source. Should I try to insert
+            // XXX #115195 This is not OK for inline editing.
+            if (!jsfForm.isInlineEditing()) {
+    //            if (((RaveRenderNode)node).isJspx()) {
+                if (MarkupService.isJspxNode(node)) {
+                    NBSP_STRING = "&nbsp;"; // JSPX source is "escaped"
+                } else { // html - put it right into source. Should I try to insert
 
-                // an entity reference here instead? Might not serialize well.
-                // Make sure AttributeInlineEditor checks for this!
-                NBSP_STRING = "\u00A0";
+                    // an entity reference here instead? Might not serialize well.
+                    // Make sure AttributeInlineEditor checks for this!
+                    NBSP_STRING = "\u00A0";
+                }
+
+                str = NBSP_STRING;
             }
-
-            str = NBSP_STRING;
+            
             text.insertData(offset, str);
             targetNode = text;
             targetOffset += str.length();
