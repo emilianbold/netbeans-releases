@@ -179,13 +179,16 @@ public class AddWSDLPortsAction extends NodeAction {
         {
             public void actionPerformed(ActionEvent evt) {
                 if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                    String selectedItem = panel.getSelectedItem();
-                    JbiBindingInfo info = portMap.get(selectedItem);
-                    model.addCasaPort(
-                            info.getBindingName(),
-                            info.getBcName(),
-                            location.x,
-                            location.y);
+                    int x = location.x;
+                    int y = location.y;
+                    for (String selectedItem : panel.getSelectedItems()) {
+                        JbiBindingInfo info = portMap.get(selectedItem);
+                        model.addCasaPort(
+                                info.getBindingName(),
+                                info.getBcName(),
+                                x,
+                                y);
+                    }
                 }
             }
         });

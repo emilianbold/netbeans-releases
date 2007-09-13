@@ -118,13 +118,13 @@ public class LoadWSDLPortsAction extends NodeAction {
     
     private void showDialog(ServiceUnitNode node) {
         final CasaWrapperModel model = node.getModel();
-        CasaServiceEngineServiceUnit csu = (CasaServiceEngineServiceUnit) node.getData();
-        final String suname = csu.getUnitName();
+        CasaServiceEngineServiceUnit sesu = (CasaServiceEngineServiceUnit) node.getData();
+        final String suName = sesu.getUnitName();
         ModelSource ms = model.getModelSource();
         Lookup lookup = ms.getLookup();
-        CatalogModel catalogModel = (CatalogModel) lookup.lookup(CatalogModel.class);
-        String casaPath = ((FileObject) lookup.lookup(FileObject.class)).getPath();
-        File suRoot = new File(casaPath + "/../../jbiServiceUnits/"+suname); // NOI18N
+        CatalogModel catalogModel = lookup.lookup(CatalogModel.class);
+        String casaPath = lookup.lookup(FileObject.class).getPath();
+        File suRoot = new File(casaPath + "/../../jbiServiceUnits/" + suName); // NOI18N
         List<File> fs = new ArrayList<File>();
         List<Port> portList = new ArrayList<Port>();
         Map<Port, File> fileMap = new HashMap<Port, File>();
@@ -168,7 +168,7 @@ public class LoadWSDLPortsAction extends NodeAction {
             }
             
             final LoadWsdlPortPanel panel = new LoadWsdlPortPanel(
-                    NbBundle.getMessage(getClass(), "LBL_AvailableWSDLPortsFor", suname),
+                    NbBundle.getMessage(getClass(), "LBL_AvailableWSDLPortsFor", suName),
                     slist);
             DialogDescriptor descriptor = new DialogDescriptor(
                     panel,
@@ -177,11 +177,11 @@ public class LoadWSDLPortsAction extends NodeAction {
                     new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                        int sel = panel.getSelectedIndex();
-                        
-                        Port port = plist.get(sel);
-                        File f = fmap.get(port);
-                        model.addCasaPortFromWsdlPort(port, f);
+                        for (int index : panel.getSelectedIndices()) {                        
+                            Port port = plist.get(index);
+                            File f = fmap.get(port);
+                            model.addCasaPortFromWsdlPort(port, f);
+                        }
                     }
                 }
             }

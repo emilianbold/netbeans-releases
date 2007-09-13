@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.nodes.actions;
 
+import java.util.Arrays;
 import javax.swing.*;
 
 /**
@@ -60,7 +61,7 @@ public class LoadWsdlPortPanel extends javax.swing.JPanel {
             model.addElement(p);
         }
         listPorts.setModel(model);
-        listPorts.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //listPorts.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         labelAvailablePorts.setText(headerText);
     }
 
@@ -110,12 +111,13 @@ public class LoadWsdlPortPanel extends javax.swing.JPanel {
     private void portSelectionHandler(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_portSelectionHandler
     }//GEN-LAST:event_portSelectionHandler
 
-    public int getSelectedIndex() {
-        return listPorts.getSelectedIndex();
+    public int[] getSelectedIndices() {
+        return listPorts.getSelectedIndices();
     }
     
-    public String getSelectedItem() {
-        return (String) listPorts.getSelectedValue();
+    public String[] getSelectedItems() {
+        Object[] values = listPorts.getSelectedValues();
+        return Arrays.asList(values).toArray(new String[values.length]);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
