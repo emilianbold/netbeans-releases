@@ -124,7 +124,7 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
 
         jTextFieldSelectedWSDL.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelWSDLDocuments, "&WSDL Documents:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelWSDLDocuments, org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "LBL_WSDL_Documents")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
