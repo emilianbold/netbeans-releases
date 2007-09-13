@@ -1368,7 +1368,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             MetaBinding binding = bindingProperty.getValue();
             if (binding != null) {
                 TableModel model = table.getModel();
-                ensureColumnCount(binding.getSubBindings().size());
+                ensureColumnCount(binding.hasSubBindings() ? binding.getSubBindings().size() : 0);
                 int index = 0;
                 if (binding.hasSubBindings()) {
                     for (MetaBinding subBinding : binding.getSubBindings()) {
