@@ -573,7 +573,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             casaConnections.addConnection(-1, casaConnection);
         } finally {
             if (isIntransaction()) {
-                fireConnectionAdded(casaConnection);
+                fireChangeEvent(casaConnection, PROPERTY_CONNECTION_ADDED);
                 endTransaction();
             }
         }
@@ -759,7 +759,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 casaConnections.removeConnection(connection);
             } finally {
                 if (isIntransaction()) {
-                    fireConnectionRemoved(connection);
+                    fireChangeEvent(connection, PROPERTY_CONNECTION_REMOVED);
                     endTransaction();
                 }
             }
@@ -778,10 +778,10 @@ public class CasaWrapperModel extends CasaModelImpl {
             if (isIntransaction()) {
                 if (ConnectionState.UNCHANGED.getState().equals(initialState) &&
                         ConnectionState.DELETED.equals(state)) { // FIXME
-                    fireConnectionRemoved(casaConnection);
+                    fireChangeEvent(casaConnection, PROPERTY_CONNECTION_REMOVED);
                 } else if (ConnectionState.DELETED.getState().equals(initialState) &&
                         ConnectionState.UNCHANGED.equals(state)) {
-                    fireConnectionAdded(casaConnection);
+                    fireChangeEvent(casaConnection, PROPERTY_CONNECTION_ADDED);
                 } else {
                     assert false : "Uh? setConnectionState: " + initialState + "->" + state.getState(); // NOI18N
                 }
@@ -790,92 +790,10 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
     }
     
-    private void fireConnectionRemoved(final CasaConnection connection) {
+    // TODO: replace PropertyChangeListener by ChangeListener 
+    private void fireChangeEvent(final CasaComponent component, String type) {
         firePropertyChangeEvent(new PropertyChangeEvent(
-                connection,
-                PROPERTY_CONNECTION_REMOVED,
-                null, null));
-    }
-    
-    private void fireConnectionAdded(final CasaConnection connection) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                connection,
-                PROPERTY_CONNECTION_ADDED,
-                null, null));
-    }
-    
-    private void fireCasaPortAdded(final CasaPort casaPort) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                casaPort,
-                PROPERTY_CASA_PORT_ADDED,
-                null, null));
-    }
-    
-    private void fireCasaPortRemoved(final CasaPort casaPort) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                casaPort,
-                PROPERTY_CASA_PORT_REMOVED,
-                null, null));
-    }
-    
-    private void fireCasaEndpointAdded(CasaEndpointRef casaEndpointRef) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                casaEndpointRef,
-                PROPERTY_ENDPOINT_ADDED,
-                null, null));
-    }
-    
-    private void fireCasaEndpointRemoved(final CasaEndpointRef endpointRef) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                endpointRef,
-                PROPERTY_ENDPOINT_REMOVED,
-                null, null));
-    }
-    
-    private void fireCasaEndpointRenamed(final CasaComponent component) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                component,
-                PROPERTY_ENDPOINT_NAME_CHANGED,
-                null, null));
-    }
-    
-    private void fireCasaEndpointInterfaceQNameChanged(
-            final CasaComponent component) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                component,
-                PROPERTY_ENDPOINT_INTERFACE_QNAME_CHANGED,
-                null, null));
-    }
-    
-    private void fireCasaEndpointServiceQNameChanged(
-            final CasaComponent component) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                component,
-                PROPERTY_ENDPOINT_SERVICE_QNAME_CHANGED,
-                null, null));
-    }
-    
-    private void fireServiceUnitRenamed(final CasaServiceUnit su) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                su,
-                PROPERTY_SERVICE_UNIT_RENAMED,
-                null, null));
-    }
-    
-    private void fireServiceEngineServiceUnitAdded(
-            final CasaServiceEngineServiceUnit seSU) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                seSU,
-                PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_ADDED,
-                null, null));
-    }
-    
-    private void fireServiceEngineServiceUnitRemoved(
-            final CasaServiceEngineServiceUnit seSU) {
-        firePropertyChangeEvent(new PropertyChangeEvent(
-                seSU,
-                PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED,
-                null, null));
+                component, type, null, null));
     }
     
     /**
@@ -1211,7 +1129,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             sus.addServiceEngineServiceUnit(-1, seSU);
         } finally {
             if (isIntransaction()) {
-                fireServiceEngineServiceUnitAdded(seSU);
+                fireChangeEvent(seSU, PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_ADDED);
                 endTransaction();
             }
         }
@@ -1526,7 +1444,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         } finally {
             if (isIntransaction()) {
-                fireCasaPortAdded(casaPort);
+                fireChangeEvent(casaPort, PROPERTY_CASA_PORT_ADDED);
                 endTransaction();
             }
         }
@@ -1592,7 +1510,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 }
             } finally {
                 if (isIntransaction()) {
-                    fireCasaPortRemoved(casaPort);
+                    fireChangeEvent(casaPort, PROPERTY_CASA_PORT_REMOVED);
                     endTransaction();
                 }
             }
@@ -1623,9 +1541,18 @@ public class CasaWrapperModel extends CasaModelImpl {
                     WSDLModel compAppWSDLModel = port.getModel();
                     compAppWSDLModel.startTransaction();
                     try {
-                        service.removePort(port);
-                        definitions.removeService(service);
-                        definitions.removeBinding(binding);
+                        // Added null-checking to avoid exception when dealing 
+                        // with corrupted WSDL model (for example, a port w/o 
+                        // binding).
+                        if (service != null) {
+                            if (port != null ) {
+                                service.removePort(port);
+                            }
+                            definitions.removeService(service);
+                        }
+                        if (binding != null) { 
+                            definitions.removeBinding(binding);
+                        }
                     } finally {
                         if (compAppWSDLModel.isIntransaction()) {
                             compAppWSDLModel.endTransaction();
@@ -1681,11 +1608,11 @@ public class CasaWrapperModel extends CasaModelImpl {
             if (isIntransaction()) {
                 if (//CasaPortState.UNCHANGED.getState().equals(initialState) &&
                         CasaPortState.DELETED.equals(state)) { // FIXME
-                    fireCasaPortRemoved(casaPort);
+                    fireChangeEvent(casaPort, PROPERTY_CASA_PORT_REMOVED);
                 } else if (CasaPortState.DELETED.getState().equals(initialState) //&&
                         //ConnectionState.UNCHANGED.equals(state)
                         ) {
-                    fireCasaPortAdded(casaPort);
+                    fireChangeEvent(casaPort, PROPERTY_CASA_PORT_ADDED);
                 } else {
                     assert false : "Uh? setCasaPortState: " + initialState + "->" + state.getState(); // NOI18N
                 }
@@ -1727,7 +1654,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         } finally {
             if (isIntransaction()) {
-                fireCasaEndpointRemoved(endpointRef);
+                fireChangeEvent(endpointRef, PROPERTY_ENDPOINT_REMOVED);
                 endTransaction();
             }
         }
@@ -2010,7 +1937,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         } finally {
             if (isIntransaction()) {
-                fireCasaEndpointAdded(endpointRef);
+                fireChangeEvent(endpointRef, PROPERTY_ENDPOINT_ADDED);
                 endTransaction();
             }
         }
@@ -2223,7 +2150,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             casaSUs.removeServiceEngineServiceUnit(seSU);
         } finally {
             if (isIntransaction()) {
-                fireServiceEngineServiceUnitRemoved(seSU);
+                fireChangeEvent(seSU, PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED);
                 endTransaction();
             }
         }
@@ -2693,7 +2620,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             casaEndpoint.setEndpointName(endpointName);
         } finally {
             if (isIntransaction()) {
-                fireCasaEndpointRenamed(component);
+                fireChangeEvent(component, PROPERTY_ENDPOINT_NAME_CHANGED);
                 endTransaction();
             }
         }
@@ -2785,7 +2712,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         } finally {
             if (isIntransaction()) {
-                fireCasaEndpointInterfaceQNameChanged(endpointRef);
+                fireChangeEvent(endpointRef, PROPERTY_ENDPOINT_INTERFACE_QNAME_CHANGED);
                 endTransaction();
             }
         }
@@ -2837,7 +2764,8 @@ public class CasaWrapperModel extends CasaModelImpl {
                         endpoint.setInterfaceQName(oldInterfaceQName);
                     } finally {
                         if (isIntransaction()) {
-                            fireCasaEndpointInterfaceQNameChanged(endpointRef);
+                            fireChangeEvent(endpointRef,
+                                    PROPERTY_ENDPOINT_INTERFACE_QNAME_CHANGED);
                             endTransaction();
                         }
                     }
@@ -2865,7 +2793,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             endpoint.setServiceQName(serviceQName);
         } finally {
             if (isIntransaction()) {
-                fireCasaEndpointServiceQNameChanged(endpointRef);
+                fireChangeEvent(endpointRef, PROPERTY_ENDPOINT_SERVICE_QNAME_CHANGED);
                 endTransaction();
             }
         }
@@ -2917,7 +2845,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             su.setUnitName(unitName);
         } finally {
             if (isIntransaction()) {
-                fireServiceUnitRenamed(su);
+                fireChangeEvent(su, PROPERTY_SERVICE_UNIT_RENAMED);
                 endTransaction();
             }
         }
