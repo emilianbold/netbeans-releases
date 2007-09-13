@@ -59,7 +59,10 @@ import org.openide.util.lookup.Lookups;
     }
 
     public Lookup getLookup() {
-        Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
+        Object composite = null;
+        if (bounds!=null) {
+            composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
+        }
         if (composite==null) 
             composite = parentFile;
         return Lookups.fixed(composite, diff);
@@ -115,7 +118,9 @@ import org.openide.util.lookup.Lookups;
     public static DiffElement create(Difference diff, FileObject fileObject, ModificationResult modification) {
         PositionRef start = diff.getStartPosition();
         PositionRef end = diff.getEndPosition();
-        PositionBounds bounds = new PositionBounds(start, end);
+        PositionBounds bounds = null;
+        if (diff.getKind() != Difference.Kind.CREATE)
+            bounds = new PositionBounds(start, end);
         return new DiffElement(diff, bounds, fileObject, modification);
     }    
 }
