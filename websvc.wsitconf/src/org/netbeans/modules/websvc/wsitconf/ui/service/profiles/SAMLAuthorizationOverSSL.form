@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
@@ -13,13 +13,13 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" max="-2" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="reqClientCertChBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="encryptSignatureChBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="reqSigConfChBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" max="-2" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="samlVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="wssVersionLabel" min="-2" max="-2" attributes="0"/>
@@ -27,11 +27,11 @@
                           <Component id="layoutLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="samlVersionCombo" linkSize="4" pref="126" max="32767" attributes="1"/>
-                          <Component id="wssVersionCombo" linkSize="4" alignment="1" pref="126" max="32767" attributes="1"/>
-                          <Component id="algoSuiteCombo" linkSize="4" alignment="0" min="-2" pref="126" max="-2" attributes="0"/>
-                          <Component id="layoutCombo" linkSize="4" alignment="0" min="-2" pref="126" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="samlVersionCombo" pref="126" max="32767" attributes="2"/>
+                          <Component id="wssVersionCombo" alignment="1" pref="126" max="32767" attributes="2"/>
+                          <Component id="algoSuiteCombo" alignment="0" pref="126" max="32767" attributes="0"/>
+                          <Component id="layoutCombo" alignment="0" pref="126" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

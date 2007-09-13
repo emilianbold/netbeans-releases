@@ -96,7 +96,7 @@ public class STSIssuedProfile extends SecurityProfile {
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
 
         dlg.setVisible(true); 
-        if (dlgDesc.getValue() == dlgDesc.CANCEL_OPTION) {
+        if (dlgDesc.getValue() == DialogDescriptor.CANCEL_OPTION) {
             for (int i=0; i<undoCounter.getCounter();i++) {
                 if (undoManager.canUndo()) {
                     undoManager.undo();

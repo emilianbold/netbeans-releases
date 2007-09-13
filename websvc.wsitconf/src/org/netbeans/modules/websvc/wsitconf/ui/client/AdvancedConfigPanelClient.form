@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
@@ -16,26 +16,23 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Component id="renewExpiredChBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="requireCancelChBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="rmResendLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="rmCloseTimeoutLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="rmAckRequestLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lifeTimeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lifeTimeTextField" alignment="0" pref="69" max="32767" attributes="2"/>
                           <Component id="rmResendField" alignment="0" pref="69" max="32767" attributes="2"/>
                           <Component id="rmCloseTimeoutField" alignment="0" pref="69" max="32767" attributes="0"/>
                           <Component id="rmAckRequestField" alignment="0" pref="69" max="32767" attributes="2"/>
                       </Group>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="lifeTimeLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                      <Component id="lifeTimeTextField" pref="69" max="32767" attributes="2"/>
-                  </Group>
-                  <Component id="renewExpiredChBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="requireCancelChBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
