@@ -1123,15 +1123,32 @@ expr
    ;
 
 conditionalExpr
-   : #(q:QUESTION 	// trinary operator
+   : #(q:QUESTION 	// trinary operator  [condition, ifTrue, ifFalse]
        {
           mController.stateBegin("Conditional Expression");
-          mController.tokenFound(#q, "Operator");
+          mController.tokenFound(#q, "Operation");
+          mController.stateBegin("Test Condition");
        }
 
-       expr expr expr
+       expr 
+       {
+         mController.stateEnd(); // Test Condition State
+         mController.stateBegin("Body");
+       } 
 
-       {  mController.stateEnd(); }
+       expr 
+       {
+         mController.stateEnd(); // The Body part. 
+         mController.stateBegin("Else Conditional");
+         mController.stateBegin("Body");
+       }
+
+       expr
+       {
+         mController.stateEnd(); // The Else Body
+         mController.stateEnd(); // Else Conditional
+         mController.stateEnd(); // Conditional Expression
+       }
       )
    | #(lor:LOR 
         {

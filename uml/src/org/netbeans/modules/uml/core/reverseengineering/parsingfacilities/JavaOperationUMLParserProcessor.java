@@ -78,6 +78,13 @@ public class JavaOperationUMLParserProcessor
     }
     
     private static int indent = 0;
+    private final boolean DEBUG = false ;
+    
+    //used only debugging parser tree, or reacting to it.
+    private void echo (String s) {
+        if (DEBUG)
+            System.out.println (s);
+    }
     
     //used only debugging parser tree, or reacting to it.
     //there are System.out.println method calls commented out. To see the
@@ -89,6 +96,7 @@ public class JavaOperationUMLParserProcessor
         
         return sb.toString() ;
     }
+    
     //used only debugging parser tree, or reacting to it.
     private synchronized int addIndent() {
         return indent++;
@@ -123,7 +131,9 @@ public class JavaOperationUMLParserProcessor
             // is a way to filter out an entire state (and all of the 
             // tokens in the state).
             
-            //System.out.println(getIndent(addIndent())+ "<"+ stateName +" handler="+ getName(data)+">" );
+            //debugging statement - only effective if local DEBUG is true. Used to echo 
+            //parsing structure.
+            echo(getIndent(addIndent())+ "<"+ stateName +" handler="+ getName(data)+">" );
             m_StateHandlers.push( data );
         }
         else
@@ -141,7 +151,10 @@ public class JavaOperationUMLParserProcessor
             
                 // I only want to add NON-NULL state handlers to the 
                 // list.
-                //System.out.println(getIndent(addIndent()) +"<"+ stateName +" handler="+ getName(data) +">" );
+                
+                //debugging statement - only effective if local DEBUG is true. Used to echo 
+                //parsing structure.
+                echo(getIndent(addIndent()) +"<"+ stateName +" handler="+ getName(data) +">" );
                 m_StateHandlers.push(data);
             }
         }
@@ -159,7 +172,10 @@ public class JavaOperationUMLParserProcessor
             // Remove the hander from the stack and notify the handler that
             // the state has ended.
             OperationHandlerData oldData = m_StateHandlers.pop();
-            //System.out.println(getIndent(removeIndent()) + "</"+ stateName +">" );
+            
+            //debugging statement - only effective if local DEBUG is true. Used to echo 
+            //parsing structure.
+            echo(getIndent(removeIndent()) + "</"+ stateName +">" );
 
             if (oldData.handler != null)
                 oldData.handler.stateComplete(stateName);
@@ -168,7 +184,7 @@ public class JavaOperationUMLParserProcessor
     
     private String getName(OperationHandlerData data)
     {
-    	String res = data.handler == null? "null" : data.handler.getClass().getName();
+    	String res = data.handler == null ? "null" : data.handler.getClass().getName();
         int dot = res.lastIndexOf('.');
         return res.substring(dot + 1);
     }
@@ -198,6 +214,9 @@ public class JavaOperationUMLParserProcessor
      */
     public void processToken(ITokenDescriptor token, String language)
     {
+        
+        //the "echo" calls are debugging statements - only effective if local DEBUG is true. Used to echo 
+        //parsing structure.
         if (m_StateHandlers.size() > 0)
         {
             try
@@ -205,16 +224,16 @@ public class JavaOperationUMLParserProcessor
                 OperationHandlerData data = m_StateHandlers.peek();
                 if (data.handler != null) {
                     data.handler.processToken(token, language);
-                    //System.out.println(getIndent(indent) + "<token value="+token.getValue() +" handler="+ getName(data)+"/>" );
-                } //else
-                    //System.out.println(getIndent(indent) + "<token value="+token.getValue() +" handler="+ getName(data)+"/>" );
+                    echo(getIndent(indent) + "<token value="+token.getValue() +" handler="+ getName(data)+"/>" );
+                } else
+                    echo(getIndent(indent) + "<token value="+token.getValue() +" handler="+ getName(data)+"/>" );
             }
             catch (Exception e)
             {
                 e.printStackTrace();
             }
-        } //else
-            //System.out.println(getIndent(indent) + "<token value="+token.getValue() +" handler=NO_STATE_HANDLER/>" );
+        } else
+            echo(getIndent(indent) + "<token value="+token.getValue() +" handler=NO_STATE_HANDLER/>" );
     }
 
     /**

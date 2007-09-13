@@ -26,7 +26,9 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression;
 
+import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.ElseConditionalStateHandler;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.ExpressionStateHandler;
+import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.MethodConditionalStateHandler;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.MethodVariableStateHandler;
 
 public class ExpressionFactory
@@ -94,8 +96,16 @@ public class ExpressionFactory
       }
       else if ("Conditional Expression".equals(stateName))
       {
-         retVal = new ConditionalExpression();
-      }
+          
+          //kris richards - should never get here.
+          // It is now assumed that the "Conditional Expression" state
+          // will occur as a substate of the MethodVariableStateHandler. Therefore
+          // the state is trap in the MethodVariableStateHandler.createSubStateHandler 
+          // which in turn instantiates a MethodConditionalStateHandler instead of a 
+          // ConditionalExpression. Essentially we are making the trinary ('?') operator
+          // look like a basic if-else statement for SQD-REOperation.
+         
+      }      
       else if ("Method Call".equals(stateName))
       {
          retVal = new MethodCallExpression();

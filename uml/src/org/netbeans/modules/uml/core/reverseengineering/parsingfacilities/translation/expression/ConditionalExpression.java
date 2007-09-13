@@ -34,17 +34,27 @@ import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.Instan
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.ObjectInstanceInformation;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.SymbolTable;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.ExpressionStateHandler;
+import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.MethodConditionalStateHandler;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IREClass;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ITokenDescriptor;
 
 
-public class ConditionalExpression  extends ExpressionStateHandler
+public class ConditionalExpression  extends MethodConditionalStateHandler
 {
 	private ITokenDescriptor  m_pPrecedenceStart     = null;
-	private ITokenDescriptor  m_pPrecedenceEnd 	     = null;
+	private ITokenDescriptor  m_pPrecedenceEnd 	 = null;
 	private ITokenDescriptor  m_pQuestionOperator    = null;
 	private ITokenDescriptor  m_pConditionalOperator = null;
 	
+        public ConditionalExpression () {
+            this ("Java", true) ;
+        }
+        
+        public ConditionalExpression(String language, boolean forceClause)
+    {
+        super(language, forceClause);
+    }
+        
 	public void clear()
 	{
 		m_pPrecedenceStart     = null;
@@ -110,10 +120,10 @@ public class ConditionalExpression  extends ExpressionStateHandler
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.IConditionalExpression#initialize()
 	 */
-	public void initialize()
-	{
-		// No any code in C++
-	}
+//	public void initialize()
+//	{
+//		// No any code in C++
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.IConditionalExpression#processToken(org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ITokenDescriptor, java.lang.String)

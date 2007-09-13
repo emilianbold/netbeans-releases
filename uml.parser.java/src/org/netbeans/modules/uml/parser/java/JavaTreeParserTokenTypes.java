@@ -1,7 +1,8 @@
 // $ANTLR 2.7.2: "java15.tree.g" -> "JavaTreeParser.java"$
 
-package org.netbeans.modules.uml.parser.java;
+  package org.netbeans.modules.uml.parser.java;
 
+  import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ParserEventController;
 
 public interface JavaTreeParserTokenTypes {
 	int EOF = 1;

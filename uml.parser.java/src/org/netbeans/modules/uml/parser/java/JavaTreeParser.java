@@ -1,7 +1,8 @@
 // $ANTLR 2.7.2: "java15.tree.g" -> "JavaTreeParser.java"$
 
-package org.netbeans.modules.uml.parser.java;
+  package org.netbeans.modules.uml.parser.java;
 
+  import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ParserEventController;
 
 import antlr.TreeParser;
 import antlr.Token;
@@ -14,7 +15,6 @@ import antlr.SemanticException;
 import antlr.collections.impl.BitSet;
 import antlr.ASTPair;
 import antlr.collections.impl.ASTArray;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ParserEventController;
 
 
 /** Java 1.5 AST Recognizer Grammar
@@ -2003,15 +2003,29 @@ public JavaTreeParser() {
 				_t = _t.getFirstChild();
 				
 				mController.stateBegin("Conditional Expression");
-				mController.tokenFound(q, "Operator");
+				mController.tokenFound(q, "Operation");
+				mController.stateBegin("Test Condition");
 				
 				expr(_t);
 				_t = _retTree;
+				
+				mController.stateEnd(); // Test Condition State
+				mController.stateBegin("Body");
+				
 				expr(_t);
 				_t = _retTree;
+				
+				mController.stateEnd(); // The Body part. 
+				mController.stateBegin("Else Conditional");
+				mController.stateBegin("Body");
+				
 				expr(_t);
 				_t = _retTree;
-				mController.stateEnd();
+				
+				mController.stateEnd(); // The Else Body
+				mController.stateEnd(); // Else Conditional
+				mController.stateEnd(); // Conditional Expression
+				
 				_t = __t252;
 				_t = _t.getNextSibling();
 				break;
