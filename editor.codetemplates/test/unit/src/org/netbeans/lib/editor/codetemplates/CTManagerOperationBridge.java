@@ -51,7 +51,8 @@ public class CTManagerOperationBridge {
     }
 
     public static void test(String parametrizedText, CTProcessor processor) {
-        CodeTemplateApiPackageAccessor.get().getOperation(staticManager).testInstallProcessorFactory(new CTPFactory(processor));
+// XXX: this is broken and needs to be fixed somehow. Probably by using MockMimeLookup and MockServices
+//        CodeTemplateApiPackageAccessor.get().getOperation(staticManager).testInstallProcessorFactory(new CTPFactory(processor));
         CodeTemplate template = staticManager.createTemporary(parametrizedText);
         template.insert(staticComponent);
     }

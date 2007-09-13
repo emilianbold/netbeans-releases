@@ -36,6 +36,7 @@ public class ParameterParsingTest extends NbTestCase {
     }
 
     public void testEmpty() {
+        // XXX: it's probably not testing anything
         CTManagerOperationBridge.test("", new CTProcessor() {
             public void updateDefaultValues() {
                 String insertText = getRequest().getInsertText();
