@@ -28,27 +28,9 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementCollector;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementConnector;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IBackPointer;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IRedefinableElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IConnector;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Behavior;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavior;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ICollaborationOccurrence;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IFeature;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IIncrement;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.INavigableEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
-import org.netbeans.modules.uml.core.support.umlsupport.INamedCollection;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 
@@ -287,13 +269,11 @@ public class Interaction extends Behavior implements IInteraction
      */
     public void resetAutoNumbers(IMessage pMessage)
     {
-        ETList<IMessage> messages = 
-           pMessage != null? 
-						   new ElementCollector<IMessage>( )
-						       .retrieveElementCollection( 
-						           pMessage,
-						       "following-sibling::*[not(@kind='result')]", IMessage.class )
-                        :  getMessages();
+        ETList<IMessage> messages = (pMessage != null ? 
+            new ElementCollector<IMessage>().retrieveElementCollection(
+            pMessage, "following-sibling::*[not(@kind='result')]", IMessage.class) :
+            getMessages());
+        
         if (messages != null && messages.size() > 0)
         {
             for (Iterator<IMessage> iter = messages.iterator(); 

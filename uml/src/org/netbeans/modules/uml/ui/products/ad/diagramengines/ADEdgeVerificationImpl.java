@@ -45,11 +45,11 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramEngine;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import com.tomsawyer.drawing.TSConnector;
 import com.tomsawyer.drawing.TSDEdge;
-import com.tomsawyer.editor.TSEConnector;
 import com.tomsawyer.editor.TSENode;
 import com.tomsawyer.graph.TSEdge;
 import com.tomsawyer.graph.TSGraphObject;
 import com.tomsawyer.graph.TSNode;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationshipEventsHelper;
 
 /**
  * The ADEdgeVerificationImpl provides drawing support for an TSGraphObject.
@@ -156,6 +156,12 @@ public class ADEdgeVerificationImpl extends EdgeVerificationImpl
                      TSEdge returnEdge = createReturnEdge(sqdEngine, returnMessage, tsToNode, tsFromNode);
                      updateReturnEdgeLocation((TSDEdge)pEdge, (TSDEdge)returnEdge);
                   }
+               }
+               
+               if (retVal != null) 
+               {
+                RelationshipEventsHelper helper =  new RelationshipEventsHelper(retVal); 
+                helper.fireRelationCreated();
                }
             }
          }

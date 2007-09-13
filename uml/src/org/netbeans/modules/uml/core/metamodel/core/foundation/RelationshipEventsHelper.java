@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
-import javax.xml.transform.TransformerException;
-
-//import org.apache.xpath.XPathAPI;
 import org.dom4j.Node;
 
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;

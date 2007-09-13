@@ -31,7 +31,6 @@ import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.basic.basicactions.IAction;
-import org.netbeans.modules.uml.core.metamodel.basic.basicactions.IProcedure;
 import org.netbeans.modules.uml.core.metamodel.behavior.ICallAction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementCollector;
@@ -44,7 +43,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableEleme
 import org.netbeans.modules.uml.core.metamodel.core.foundation.NamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.OwnerRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
-import org.netbeans.modules.uml.core.metamodel.core.primitivetypes.IInteractionOperator;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IConnector;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
