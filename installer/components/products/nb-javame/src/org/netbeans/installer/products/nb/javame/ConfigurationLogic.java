@@ -57,10 +57,13 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     private static final String[] MOBILITY_END_2_END =  {
         "config/Modules/org-netbeans-modules-mobility-end2end.xml",
         "config/Modules/org-netbeans-modules-mobility-jsr172.xml",
+	"config/Modules/org-netbeans-modules-mobility-end2end-kit.xml",
         "modules/org-netbeans-modules-mobility-end2end.jar",
         "modules/org-netbeans-modules-mobility-jsr172.jar",
+	"modules/org-netbeans-modules-mobility-end2end-kit.jar",
         "update_tracking/org-netbeans-modules-mobility-end2end.xml",
-        "update_tracking/org-netbeans-modules-mobility-jsr172.xml"
+        "update_tracking/org-netbeans-modules-mobility-jsr172.xml",
+	"update_tracking/org-netbeans-modules-mobility-end2end-kit.xml"
     };
     
     private static final String END2END_CANT_REMOVE_TEXT = ResourceUtils.getString(
