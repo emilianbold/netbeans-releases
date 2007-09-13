@@ -23,11 +23,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
-import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
-import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 
 /**
  * The factory that creates Creator's InitialContext
@@ -75,14 +71,8 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
         
         // Get the open project based on the open page
         Project currentProj = CurrentProject.getInstance().getOpenedProject();
-        
-        //Setup cache of projects per context
-        ProjectContextManager prjCtxManager = ProjectContextManager.getInstance();
-               
+                       
         // Construct a new context object for the current project
-        prjContext = (DesignTimeContext)DesignTimeContext.createDesignTimeContext(currentProj, environment);                         
-        prjCtxManager.addEntry(currentProj, prjContext);
-        
-        return prjContext;
+        return DesignTimeContext.createDesignTimeContext(currentProj, environment);                                 
     }
 }
