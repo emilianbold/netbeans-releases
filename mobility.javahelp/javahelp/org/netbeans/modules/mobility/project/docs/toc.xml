@@ -131,11 +131,13 @@
 				<tocitem text="Deploying a MIDlet Suite Using File Copy" target="me.deploy_copy" />
 				<tocitem text="Deploying a MIDlet Suite Using FTP" target="me.deploy_ftp" />
 				<tocitem text="Deploying a MIDlet Suite Using WebDAV" target="me.deploy_webdav" />
+				<tocitem text="Deploying a MIDlet Suite to a Nokia Mobile Device" target="me.deploy_nokia" />
 				<tocitem text="Deploying a MIDlet Suite using SCP" target="me.deploy_scp" />
 				<tocitem text="Automatically Incrementing the Application's Version Attribute" target="me.deploy_increment" />
 				<tocitem text="Deploying a MIDlet Suite to a Sony Ericsson Phone" target="me.deploy_se" />
+				<tocitem text="Deploying a MIDlet to a Windows Mobile Device" target="me.deploy_winmobile" />
 			</tocitem>
-			<tocitem text="Emulator Platforms">
+    			<tocitem text="Emulator Platforms">
 				<tocitem text="About Emulator Platforms" target="me.emulator_about" />
 				<tocitem text="Adding Emulator Platforms" target="me.emulator_adding" />
 				<tocitem text="Customizing Platform Properties" target="me.prop_setplatform" />
