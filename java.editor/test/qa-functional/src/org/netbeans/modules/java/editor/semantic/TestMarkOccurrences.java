@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -222,8 +225,8 @@ public class TestMarkOccurrences extends NbTestCase {
         closeFile();
         super.tearDown();
     }
-    
-    private OffsetsBag foundMarks;
+        
+    private List<int[]> foundMarks;
     
     class MyTask implements Task<CompilationController> {
         
@@ -237,7 +240,7 @@ public class TestMarkOccurrences extends NbTestCase {
             else return;
             int caretPosition = MarkOccurrencesHighlighterFactory.getLastPosition(fileObject);
             Preferences node = MarkOccurencesSettings.getCurrentNode();
-            OffsetsBag highlights = moh.processImpl(parameter, node, doc, caretPosition);
+            List<int[]> highlights = moh.processImpl(parameter, node, doc, caretPosition);
             foundMarks  = highlights;
         }
     }
@@ -298,9 +301,21 @@ public class TestMarkOccurrences extends NbTestCase {
         if(foundMarks==null) {
             ref = "";
         } else {
-            HighlightsSequence hs = foundMarks.getHighlights(0, editorPane.getDocument().getLength());
-            while (hs.moveNext()) {
-                ref = ref + "[" + hs.getStartOffset() + "," + hs.getEndOffset() + "] ";
+            //HighlightsSequence hs = foundMarks.getHighlights(0, editorPane.getDocument().getLength());
+            //while (hs.moveNext()) {
+            Collections.sort(foundMarks, new Comparator<int[]>(){
+
+                public int compare(int[] o1, int[] o2) {
+                    if(o1[0]<o2[0]) return -1;
+                    if(o1[0]>o2[0]) return 1;
+                    if(o1[1]<o2[1]) return -1;
+                    if(o2[1]>o2[1]) return 1;                    
+                    return 0;
+                }
+            });
+            for(int[] mark:foundMarks) {
+                //ref = ref + "[" + hs.getStartOffset() + "," + hs.getEndOffset() + "] ";
+                ref = ref + "[" + mark[0] + "," + mark[1] + "] ";
             }
         }
         assertEquals(etalon, ref);
