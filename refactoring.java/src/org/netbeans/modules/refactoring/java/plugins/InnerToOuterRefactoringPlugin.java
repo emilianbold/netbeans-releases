@@ -190,22 +190,15 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        final Collection<ModificationResult> results = new ArrayList<ModificationResult>();
-        JavaSource js = JavaSource.forFileObject(RetoucheUtils.getFileObject(refactoring.getRefactoringSource().lookup(TreePathHandle.class)));
-        try {
-            results.add(js.runModificationTask(new AddOuterClass()));
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+       
         
+        TransformTask transform = new TransformTask(new InnerToOuterTransformer(refactoring), refactoring.getSourceType());
+        createAndAddElements(a, transform, refactoringElements, refactoring);
         createAndAddElements(
                 Collections.singleton(RetoucheUtils.getFileObject(refactoring.getRefactoringSource().lookup(TreePathHandle.class))),
                 new AddOuterClass(), 
                 refactoringElements,
                 refactoring);
-        
-        TransformTask transform = new TransformTask(new InnerToOuterTransformer(refactoring), refactoring.getSourceType());
-        createAndAddElements(a, transform, refactoringElements, refactoring);
         fireProgressListenerStop();
         return null;
     }
@@ -266,11 +259,17 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
                         MethodTree m = (MethodTree) member;
                         if (m.getReturnType()==null) {
                             MethodTree newConstructor = tm.addMethodParameter(m, variable);
-                            workingCopy.rewrite(m, newConstructor);
-                            
                             AssignmentTree assign = tm.Assignment(tm.Identifier("this."+referenceName), tm.Identifier(referenceName));
                             BlockTree block = tm.insertBlockStatement(newConstructor.getBody(), 1, tm.ExpressionStatement(assign));
-                            workingCopy.rewrite(newConstructor.getBody(), block);
+                            newConstructor = tm.Constructor(
+                                    newConstructor.getModifiers(),
+                                    newConstructor.getTypeParameters(), 
+                                    newConstructor.getParameters(),
+                                    newConstructor.getThrows(),
+                                    block);
+                            
+                            newInnerClass = tm.removeClassMember(newInnerClass, m);
+                            newInnerClass = tm.addClassMember(newInnerClass, newConstructor);
                         }
                     }
                 }
