@@ -86,10 +86,8 @@ public class CONA {
                                                 // directory by PC-Suite
                 connAPIdllFound = true;
             } catch (UnsatisfiedLinkError ulError) {
-                ulError.printStackTrace();
                 connAPIdllFound = false;
             } catch (Exception ex) {
-                ex.printStackTrace();
                 connAPIdllFound = false;
             }
 
@@ -99,11 +97,9 @@ public class CONA {
 
                 connJNIdllFound = true;
             } catch (UnsatisfiedLinkError ulError) {
-                ulError.printStackTrace();
-                connAPIdllFound = false;
+                connJNIdllFound = false;
             } catch (Exception ex) {
-                ex.printStackTrace();
-                connAPIdllFound = false;
+                connJNIdllFound = false;
             }
         }
 
@@ -115,7 +111,7 @@ public class CONA {
     }
 
     public boolean isConnJNIDllFound() {
-        return connAPIdllFound;
+        return connJNIdllFound;
     }
 
     public boolean isOSSupportsDeployment() {

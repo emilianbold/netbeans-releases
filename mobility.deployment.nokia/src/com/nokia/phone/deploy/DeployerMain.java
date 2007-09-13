@@ -26,8 +26,9 @@ import java.util.List;
 public class DeployerMain {
 
     /**
-     * Main method that deploys the given application to the given devices. The device list must be separated
-     * by new lines ('\n'), this is to simplify the deployment ant script.
+     * Main method that deploys the given application to the given devices.
+     * The device list must be separated by new lines ('\n'), this is to
+     * simplify the deployment ant script.
      */
     public static void main(String[] args) {
         if(args.length < 2) {
@@ -36,17 +37,17 @@ public class DeployerMain {
         } else {
             // Don't continue if OS is not supported
             if (!CONA.getInstance().isOSSupportsDeployment()) {
-                System.out.println("Deployment only supported on Windows operating system");
+                System.err.println("Deployment aborted, only supported on Windows operating system");
                 System.exit(0);
             }
 
             // Don't continue if dll's were not found
             if (!CONA.getInstance().isConnAPIDllFound()) {
-                System.out.println("ConnAPI.dll not found");
+                System.err.println("Deployment aborted, ConnAPI.dll not found.");
                 System.exit(0);
             }
             if (!CONA.getInstance().isConnJNIDllFound()) {
-                System.out.println("ConnJNI.dll not found");
+                System.err.println("Deployment aborted, ConnJNI.dll not found.");
                 System.exit(0);
             }
             
@@ -74,7 +75,7 @@ public class DeployerMain {
             // Open connection, if it doesn't work out, don't continue
             deployer.openConnectionLayer();
             if (!deployer.isConnected()) {
-                System.out.println("Deployment aborted, connection failed");
+                System.err.println("Deployment aborted, connection failed.");
                 System.exit(0);
             }
             
@@ -82,7 +83,7 @@ public class DeployerMain {
             
             // If there are no terminals, don't continue
             if (allConnectedTerminals.size() == 0) {
-                System.out.println("No devices found");
+                System.err.println("Deployment aborted, no devices found.");
                 deployer.closeConnectionLayer();
                 System.exit(0);
             }
@@ -118,6 +119,7 @@ public class DeployerMain {
                 }
                 selectedTerminals.removeAll(notOkTerminals);
             } else {
+                System.out.println("Deploying to all connected terminals.");
                 notOkTerminals = deployer.deployToAllTerminals(jadFile, jarFile);
             }
             

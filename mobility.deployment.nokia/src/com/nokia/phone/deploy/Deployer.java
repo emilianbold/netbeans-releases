@@ -41,7 +41,8 @@ public class Deployer {
         openConnectionLayer();
         
         if (!connected) {
-            System.out.println("connection failed");
+            // nothing to do, only inform the user of missing libraries
+            // when he wants to use Nokia deployment
         }
     }
    
@@ -92,7 +93,7 @@ public class Deployer {
         if (connected) {
             boolean disconnected = CONA.getInstance().disconnect();
             if (!disconnected) {
-                System.out.println("Failed to close service layer");
+                System.err.println("Failed to close service layer");
             }
             connected = !disconnected;
         }
@@ -107,11 +108,17 @@ public class Deployer {
      *         returns a zero-length String array.
      */
     public List<String> getTerminals() {
+        List<String> terminalList = new ArrayList<String>();
+
         if (!connected) {
             openConnectionLayer();
         }
-        
-        List<String> terminalList = new ArrayList<String>();
+
+        // if connection failed, print error and return empty list
+        if (!connected) {
+            System.err.println("Connection opening failed, could not get terminal list.");
+            return terminalList;
+        }
         
         addDevicesToList(CONA.getInstance().getDevices(CONA.CONAPI_MEDIA_BLUETOOTH),
                 terminalList);
