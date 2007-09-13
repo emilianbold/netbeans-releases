@@ -22,14 +22,17 @@ package org.netbeans.modules.cnd.refactoring.ui.tree;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.spi.ui.*;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -46,60 +49,41 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
     }
     
     public TreeElement getTreeElement(Object o) {
-        TreeElement result = null;
-        if (o instanceof SourceGroup) {
-            result = map.get(((SourceGroup)o).getRootFolder());
-        } else {
-            result = map.get(o);
-        }
+        TreeElement result = map.get(o);
         if (result!= null) {
             return result;
         }
-        if (o instanceof CsmProject) {
-            Object prj = ((CsmProject)o).getPlatformProject();
-            if (prj instanceof Project) {
-                result = new ProjectTreeElement((Project) prj);
-            }
-        } else if (o instanceof CsmFile) {
-            FileObject fo = CsmUtilities.getFileObject((CsmFile)o);
-            result = new FileTreeElement(fo, (CsmFile)o);
-        } else if (o instanceof FileObject) {
-            FileObject fo = (FileObject) o;
-//            if (fo.isFolder()) {
-//                SourceGroup sg = FolderTreeElement.getSourceGroup(fo);
-//                if (sg!=null && fo.equals(sg.getRootFolder())) 
-//                    result = new SourceGroupTreeElement(sg);
-//                else 
-//                    result = new FolderTreeElement(fo);
-//            } else {
-//                result = new FileTreeElement(fo);
-//            }
-            result = new FileTreeElement(fo, null);
-//        } else if (o instanceof SourceGroup) {
-//            result = new SourceGroupTreeElement((SourceGroup)o);
-//        } else if (o instanceof ElementGrip) {
-//            result = new ElementGripTreeElement((ElementGrip) o);
-        } else if (o instanceof Project) {
-            result = new ProjectTreeElement((Project) o);
-        } else if (o instanceof RefactoringElement) {
-//            ElementGrip grip = ((RefactoringElement) o).getLookup().lookup(ElementGrip.class);
-            CsmObject csmObject = ((RefactoringElement) o).getLookup().lookup(CsmObject.class);
+        if (o instanceof RefactoringElement) {
+            CsmOffsetable csmObject = ((RefactoringElement) o).getLookup().lookup(CsmOffsetable.class);
             if (csmObject!=null) {
                 result = new RefactoringTreeElement((RefactoringElement) o);
-            } 
+            } else {
+                CsmObject obj = ((RefactoringElement) o).getLookup().lookup(CsmObject.class);
+                if (obj != null) {
+                    System.err.println("unhandled CsmObject: " + obj);
+                }
+            }
+        } else if (CsmKindUtilities.isProject(o)) {
+            Object prj = ((CsmProject)o).getPlatformProject();
+            if (prj instanceof NativeProject && (((NativeProject)prj).getProject() instanceof Project)) {
+                result = new ProjectTreeElement((Project)((NativeProject)prj).getProject());
+            }
+        } else if (CsmKindUtilities.isCsmObject(o)) {
+            CsmObject csm = (CsmObject)o;
+            if (CsmKindUtilities.isFile(csm)) {
+                FileObject fo = CsmUtilities.getFileObject((CsmFile)o);
+                result = new FileTreeElement(fo, (CsmFile)o);
+            } else if (CsmKindUtilities.isScope(csm)) {
+                result = new ScopeTreeElement((CsmScope)csm);
+            }
         }
         if (result != null) {
-            if (o instanceof SourceGroup) {
-                map.put(((SourceGroup)o).getRootFolder(), result);
-            } else {
-                map.put(o, result);
-            }
+            map.put(o, result);
         }
         return result;
     }
 
     public void cleanUp() {
         map.clear();
-//        ElementGripFactory.getDefault().cleanUp();
     }
 }

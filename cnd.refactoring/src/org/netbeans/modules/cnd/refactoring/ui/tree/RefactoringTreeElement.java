@@ -22,8 +22,10 @@ package org.netbeans.modules.cnd.refactoring.ui.tree;
 import javax.swing.Icon;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
@@ -35,20 +37,20 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 public class RefactoringTreeElement implements TreeElement { 
     
     private final RefactoringElement refactoringElement;
-    private final CsmObject thisObject;
-    private CsmObject parent;
+    private final CsmOffsetable thisObject;
+    private CsmScope parent;
     private boolean initedParent = false;
     
     RefactoringTreeElement(RefactoringElement element) {
         this.refactoringElement = element;
-        this.thisObject = element.getLookup().lookup(CsmObject.class);
+        this.thisObject = element.getLookup().lookup(CsmOffsetable.class);
     }
     
     public TreeElement getParent(boolean isLogical) {
         if (isLogical) {
             return TreeElementFactory.getTreeElement(getCsmParent());
         } else {
-            return TreeElementFactory.getTreeElement(refactoringElement.getParentFile());
+            return TreeElementFactory.getTreeElement(thisObject.getContainingFile());
         }
     }
     
@@ -67,9 +69,7 @@ public class RefactoringTreeElement implements TreeElement {
     private CsmObject getCsmParent() {
         if (!initedParent) {
             initedParent = true;
-            if (CsmKindUtilities.isOffsetable(thisObject)) {
-                parent = ((CsmOffsetable)thisObject).getContainingFile();
-            }
+            parent = CsmRefactoringUtils.getEnclosingScopeElement((CsmObject)thisObject);
         }
         return parent;
     }

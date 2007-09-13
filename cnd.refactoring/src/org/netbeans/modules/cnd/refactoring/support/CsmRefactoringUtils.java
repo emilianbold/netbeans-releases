@@ -28,12 +28,19 @@ import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenProcessor;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -57,6 +64,60 @@ public class CsmRefactoringUtils {
     public static boolean isSupportedReference(CsmReference ref) {
         return ref != null;
     }    
+    
+    public static String getHtml(CsmObject obj) {
+        if (CsmKindUtilities.isOffsetable(obj)) {
+            return getHtml((CsmOffsetable)obj);
+        } else if (CsmKindUtilities.isFile(obj)) {
+            return htmlize(((CsmFile)obj).getName());
+        } else {
+            return obj.toString();
+        }
+    }
+    
+    public static CsmScope getEnclosingScopeElement(CsmObject decl) {
+        assert decl != null;
+        CsmObject scopeElem = decl instanceof CsmReference ? ((CsmReference)decl).getOwner() : decl;
+        while (CsmKindUtilities.isScopeElement(scopeElem)) {
+            CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
+            if (CsmKindUtilities.isFunction(scope) ||
+                    CsmKindUtilities.isClass(scope) ||
+                    CsmKindUtilities.isNamespaceDefinition(scope) ||
+                    CsmKindUtilities.isFile(scope)) {
+                return scope;
+            } else if (CsmKindUtilities.isScopeElement(scope)) {
+                scopeElem = ((CsmScopeElement)scope);
+            } else {
+                break;
+            }
+        }
+        if (CsmKindUtilities.isOffsetable(decl)) {
+            return ((CsmOffsetable)decl).getContainingFile();
+        }
+        return null;
+    }
+    
+    private static String getHtml(CsmOffsetable obj) {
+        CsmFile csmFile = obj.getContainingFile();        
+        CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
+        BaseDocument doc = null;
+        String displayText = null;
+        if (ces != null && (ces.getDocument() instanceof BaseDocument)) {
+            doc = (BaseDocument)ces.getDocument();
+            try {            
+                int stOffset = obj.getStartOffset();
+                int endOffset = obj.getEndOffset();
+                int startLine = org.netbeans.editor.Utilities.getRowFirstNonWhite(doc, stOffset);
+                int endLine = org.netbeans.editor.Utilities.getRowLastNonWhite(doc, endOffset)+1;
+                displayText = CsmRefactoringUtils.getHtml(startLine, endLine, -1, -1, doc);
+            } catch (BadLocationException ex) {
+            }            
+        }
+        if (displayText == null) {
+            displayText = htmlize(obj.getText());
+        }
+        return displayText;
+    }
     
     public static String getHtml(int startLine, int endLine, final int stToken, final int endToken, BaseDocument doc) {
         final StringBuffer buf = new StringBuffer();
@@ -115,7 +176,7 @@ public class CsmRefactoringUtils {
         };  
         while (cont) {
             try {
-                sup.tokenizeText(tp, startLine, endLine, true);
+                sup.tokenizeText(tp, startLine, endLine, true); 
                 cont = false;
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
@@ -135,7 +196,7 @@ public class CsmRefactoringUtils {
         if (set==null)
             return string;
         if (string.trim().length() == 0) {
-            return Utilities.replaceString(Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
+            return org.openide.util.Utilities.replaceString(org.openide.util.Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
         } 
         StringBuffer buf = new StringBuffer(string);
         if (StyleConstants.isBold(set)) {

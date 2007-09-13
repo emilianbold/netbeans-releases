@@ -22,8 +22,6 @@ package org.netbeans.modules.cnd.refactoring.ui.tree;
 import java.beans.BeanInfo;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.refactoring.spi.ui.*;
@@ -47,17 +45,7 @@ public class FileTreeElement implements TreeElement {
 
 
     public TreeElement getParent(boolean isLogical) {
-        if (csmFile != null) return TreeElementFactory.getTreeElement(csmFile.getProject());
-
-        if (fo.getParent() == null) {
-            return null;
-        }
-        if (isLogical) {
-            return TreeElementFactory.getTreeElement(fo.getParent());
-        } else {
-            Project p = FileOwnerQuery.getOwner(fo);
-            return TreeElementFactory.getTreeElement(p != null ? p : fo.getParent());
-        }
+        return TreeElementFactory.getTreeElement(csmFile.getProject());
     }
 
     public Icon getIcon() {
@@ -73,6 +61,6 @@ public class FileTreeElement implements TreeElement {
     }
 
     public Object getUserObject() {
-        return fo;
+        return csmFile;
     }
 }

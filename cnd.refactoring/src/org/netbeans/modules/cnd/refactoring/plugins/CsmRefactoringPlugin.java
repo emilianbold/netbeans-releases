@@ -24,13 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.openide.filesystems.FileObject;
@@ -157,22 +156,6 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         return result.values();
     }        
     
-    protected CsmFile getScopedElementFile(CsmObject decl) {
-        assert decl != null;
-        CsmObject scopeElem = decl;
-        while (CsmKindUtilities.isScopeElement(scopeElem)) {
-            CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
-            if (CsmKindUtilities.isFunction(scope)) {
-                CsmFile file = ((CsmFunction)scope).getContainingFile();
-                return file;
-            } else if (CsmKindUtilities.isScopeElement(scope)) {
-                scopeElem = ((CsmScopeElement)scope);
-            } else {
-                break;
-            }
-        }
-        return null;
-    }    
     
     protected final CsmFile getCsmFile(CsmObject csmObject) {
         if (CsmKindUtilities.isFile(csmObject)) {
@@ -185,7 +168,11 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
     
     protected Collection<CsmFile> getRelevantFiles(CsmObject csmObject, CsmObject referencedObject) {
         CsmFile startFile = getCsmFile(csmObject);
-        CsmFile scopeFile = referencedObject == null ? null : this.getScopedElementFile(referencedObject);
+        CsmScope enclScope = referencedObject == null ? null : CsmRefactoringUtils.getEnclosingScopeElement(referencedObject);
+        CsmFile scopeFile = null;
+        if (CsmKindUtilities.isFunction(enclScope)) {
+            scopeFile = ((CsmOffsetable)enclScope).getContainingFile();
+        }
         if (startFile.equals(scopeFile)) {
             return Collections.singleton(scopeFile);
         } else {
