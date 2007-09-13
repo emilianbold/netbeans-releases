@@ -211,7 +211,7 @@ final class NbEvents extends Events {
             }
         } else if (message == EXTENSION_MULTIPLY_LOADED) {
             // Developer-oriented message, no need for I18N.
-            logger.log(Level.WARNING, "The extension " + args[0] + " may be multiply loaded by modules: " + args[1] + "; see: http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#class-path"); // NOI18N
+            logger.log(Level.WARNING, "The extension " + (File)args[0] + " may be multiply loaded by modules: " + (Set/*<File>*/)args[1] + "; see: http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#class-path"); // NOI18N
         } else if (message == MISSING_JAR_FILE) {
             File jar = (File)args[0];
             logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_missing_jar_file", jar.getAbsolutePath()));
