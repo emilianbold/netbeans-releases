@@ -168,6 +168,9 @@ public final class JavadocGenerator {
         return prefix + jdoc.replace("\n *", "\n" + tab2 + " *") + tab2; // NOI18N
     }
     
+    /**
+     * guesses indentation for a given position.
+     */
     public static String guessIndentation(Document doc, Position pos) throws BadLocationException {
         String content = doc.getText(0, doc.getLength());
         int offset;
@@ -192,28 +195,29 @@ public final class JavadocGenerator {
         return content.substring(offset + 1, pos.getOffset());
     }
     
+    /**
+     * guesses indentation inside a javadoc block
+     */
     public static String guessJavadocIndentation(CompilationInfo javac, Document doc, Doc jdoc) throws BadLocationException {
         Position[] jdBounds = JavadocUtilities.findDocBounds(javac, doc, jdoc);
+        String indent = ""; // NOI18N
         if (jdBounds == null) {
-            return ""; // NOI18N
+            return indent;
         }
         
         String txt = doc.getText(0, doc.getLength());
-        int count = 0;
         for (int offset = jdBounds[0].getOffset() - 1; offset >= 0; offset--) {
             char c = txt.charAt(offset);
             if (c == '\n' || !Character.isWhitespace(c)) {
-                count = jdBounds[0].getOffset() - offset;
+                int length = jdBounds[0].getOffset() - offset - 1;
+                if (length > 0) {
+                    indent = doc.getText(offset + 1, length) + ' ';
+                }
                 break;
             }
         }
         
-        char[] indent = new char[count];
-        for (int i = 0; i < indent.length; i++) {
-            indent[i] = ' ';
-        }
-
-        return String.valueOf(indent);
+        return indent;
     }
     
 }
