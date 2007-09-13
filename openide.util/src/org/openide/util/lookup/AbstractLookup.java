@@ -26,10 +26,21 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import java.lang.ref.*;
 import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
-import java.util.*;
 import org.openide.util.Utilities;
 
 
@@ -88,6 +99,7 @@ public class AbstractLookup extends Lookup implements Serializable {
     protected AbstractLookup() {
     }
 
+    @Override
     public String toString() {
         if (tree instanceof Storage) {
             return "AbstractLookup" + lookup(new Lookup.Template<Object>(Object.class)).allItems(); // NOI18N
@@ -344,6 +356,7 @@ public class AbstractLookup extends Lookup implements Serializable {
         return (item == null) ? null : item.getInstance();
     }
 
+    @Override
     public final <T> Lookup.Item<T> lookupItem(Lookup.Template<T> template) {
         AbstractLookup.this.beforeLookup(template);
 
@@ -910,6 +923,7 @@ public class AbstractLookup extends Lookup implements Serializable {
         /** Set of all classes.
          *
          */
+        @Override
         public Set<Class<? extends T>> allClasses() {
             reference.lookup.beforeLookup(reference.template);
 
@@ -937,6 +951,7 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         /** Items are stored directly in the allItems.
          */
+        @Override
         public Collection<? extends Item<T>> allItems() {
             reference.lookup.beforeLookup(reference.template);
 
@@ -1022,6 +1037,7 @@ public class AbstractLookup extends Lookup implements Serializable {
             return obj == this;
         }
         */
+        @Override
         public String toString() {
             return super.toString() + " for " + reference.template;
         }
@@ -1050,13 +1066,10 @@ public class AbstractLookup extends Lookup implements Serializable {
                 this.al = al;
 
                 if (earlyPairs != null) {
-                    // we must just add no override!
-                    for (Pair<?> p : earlyPairs) {
-                        addPair(p);
-                    }
+                    ArrayList<Pair> ep = earlyPairs;
+                    earlyPairs = null;
+                    setPairs(ep);
                 }
-
-                earlyPairs = null;
             } else {
                 throw new IllegalStateException(
                     "Trying to use content for " + al + " but it is already used for " + this.al
@@ -1269,6 +1282,8 @@ public class AbstractLookup extends Lookup implements Serializable {
      * @author  Jaroslav Tulach
      */
     static final class ISE extends IllegalStateException {
+        static final long serialVersionUID = 100L;
+        
         /** list of jobs to execute. */
         private java.util.List<Job> jobs;
 

@@ -53,6 +53,9 @@ public class AbstractLookupBaseHid extends NbTestCase {
     
     protected void setUp () {
         this.ic = new InstanceContent ();
+        
+        beforeActualTest(getName());
+        
         this.instanceLookup = createInstancesLookup (ic);
         this.lookup = createLookup (instanceLookup);
         running = this;
@@ -1605,6 +1608,38 @@ public class AbstractLookupBaseHid extends NbTestCase {
         assertGC("Result can disappear", ref2);
     }
     
+    void beforeActualTest(String n) {
+        if (n.equals("testEqualsIsNotCalledTooMuch")) {
+            CntPair.cnt = 0;
+            CntPair.instances = 0;
+            int how = 1000;
+
+            for(int i = 0; i < how; i++) {
+                this.ic.addPair(new CntPair("x" + i));
+            }
+
+            assertEquals("No equals called", 0, CntPair.cnt);
+            assertEquals("1000 instances ", how, CntPair.instances);
+        }
+    }
+    
+    public void testEqualsIsNotCalledTooMuch() throws Exception {
+        // most of the work done in beforeActualTest
+
+        // desirable: assertEquals("no comparitions", 0, CntPair.cnt);
+        // works for InheritanceTree, but not for ArrayStorage, but array
+        // storages are generally small
+        
+        if (CntPair.cnt > 12000) {
+            fail("Too much comparitions " + CntPair.cnt);
+        }
+        if (CntPair.hashCnt > 40000) {
+            fail("Too much hashes: " + CntPair.hashCnt);
+        }
+        
+        assertEquals("instaces is enough", 1000, CntPair.instances);
+    }
+    
     /** Adds instances to the instance lookup.
      */
     private void addInstances (Object... instances) {
@@ -1710,6 +1745,66 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 throw new InternalError ();
             }
         }
+    }
+    
+    private static final class CntPair extends AbstractLookup.Pair {
+        private static int instances;
+        private String txt;
+        
+        public CntPair(String txt) {
+            this.txt = txt;
+            instances++;
+        }
+
+        public static int hashCnt;
+        @Override
+        public int hashCode() {
+            hashCnt++;
+            return txt.hashCode() + 3777;
+        }
+
+        public static int cnt;
+        @Override
+        public boolean equals(Object obj) {
+            cnt++;
+            
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CntPair other = (CntPair) obj;
+            if (this.txt != other.txt && (this.txt == null || !this.txt.equals(other.txt))) {
+                return false;
+            }
+            return true;
+        }
+
+        protected boolean instanceOf(Class c) {
+            return c.isAssignableFrom(String.class);
+        }
+
+        protected boolean creatorOf(Object obj) {
+            return obj == txt;
+        }
+
+        public Object getInstance() {
+            return txt;
+        }
+
+        public Class getType() {
+            return String.class;
+        }
+
+        public String getId() {
+            return txt;
+        }
+
+        public String getDisplayName() {
+            return txt;
+        }
+        
     }
 
     public static final class SerialPair extends AbstractLookup.Pair

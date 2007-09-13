@@ -1062,7 +1062,7 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
         public ArrayList<Node> children;
 
         /** list of items assigned to this node (suspect to be subclasses) */
-        public List<Pair> items;
+        public Collection<Pair> items;
 
         /** Constructor.
         */
@@ -1074,14 +1074,14 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
          * @return true if so.
          */
         public boolean deserialized() {
-            if ((items == null) || items instanceof ArrayList) {
+            if ((items == null) || items instanceof LinkedHashSet) {
                 return false;
             }
 
             if (items.isEmpty()) {
                 items = null;
             } else {
-                items = new ArrayList<Pair>(items);
+                items = new LinkedHashSet<Pair>(items);
             }
 
             return true;
@@ -1093,7 +1093,7 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
             if (items == null || items == Collections.EMPTY_LIST) {
                 items = Collections.emptyList();
             } else {
-                items = Collections.synchronizedList(items);
+                items = Collections.synchronizedCollection(items);
             }
         }
 
@@ -1133,22 +1133,28 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
         */
         public boolean assignItem(InheritanceTree tree, AbstractLookup.Pair<?> item) {
             if ((items == null) || (items == Collections.EMPTY_LIST)) {
-                items = new ArrayList<Pair>();
+                items = new LinkedHashSet<Pair>();
                 items.add(item);
 
                 return true;
             }
 
             if (items.contains(item)) {
-                int i = items.indexOf(item);
-                AbstractLookup.Pair old = items.get(i);
+                Iterator<Pair> it = items.iterator();
+                Pair old;
+                for (;;) {
+                    old = it.next();
+                    if (item.equals(old)) {
+                        break;
+                    }
+                }
 
                 if (old != item) {
                     // replace the items there
                     item.setIndex(tree, old.getIndex());
                 }
 
-                items.remove(old);
+                it.remove();
                 items.add(item);
 
                 return false;
@@ -1175,16 +1181,16 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
         private String clazzName;
         private transient Class<?> clazz;
         private ArrayList<Node> children;
-        private ArrayList<Pair> items;
+        private Collection<Pair> items;
 
         public R(Node n) {
             this.clazzName = n.getType().getName();
             this.children = n.children;
 
-            if (n.items instanceof ArrayList || (n.items == null)) {
-                this.items = (ArrayList<Pair>) n.items;
+            if (n.items instanceof LinkedHashSet || (n.items == null)) {
+                this.items = n.items;
             } else {
-                this.items = new ArrayList<Pair>(n.items);
+                this.items = new LinkedHashSet<Pair>(n.items);
             }
         }
 
