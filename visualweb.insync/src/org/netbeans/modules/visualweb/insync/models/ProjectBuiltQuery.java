@@ -282,6 +282,9 @@ public class ProjectBuiltQuery {
             Project owner = FileOwnerQuery.getOwner(fileObject);
             if (owner == project) {
                 synchronized (this) {
+                    if (fileObjectBuiltStatusMap == null) {
+                        return;
+                    }
                     String fileObjectPath = fileObject.getPath();
 					fileObjectBuiltStatusMap.remove(fileObjectPath);
 					FileObjectStatusChangeListener fileObjectStatusChangeListener = 
