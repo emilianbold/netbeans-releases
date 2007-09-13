@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -27,6 +27,7 @@ import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
@@ -36,12 +37,25 @@ import org.netbeans.installer.wizard.components.WizardAction;
 public class UninstallAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DEFAULT_TITLE = 
-            ResourceUtils.getString(UninstallAction.class, 
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(UninstallAction.class,
             "UA.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION = 
-            ResourceUtils.getString(UninstallAction.class, 
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(UninstallAction.class,
             "UA.description"); // NOI18N
+    public static final String DEFAULT_PROGRESS_UNINSTALL_TITLE_MESSAGE =
+            ResourceUtils.getString(UninstallAction.class,
+            "UA.progress.uninstall.title");//NOI18N
+    public static final String DEFAULT_UNINSTALL_DEPENDENT_FAILED_MESSAGE =
+            ResourceUtils.getString(UninstallAction.class,
+            "UA.uninstall.dependent.failed");//NOI18N
+    
+    public static final String PROGRESS_UNINSTALL_TITLE_PROPERTY =
+            "progress.uninstall.title";    
+    
+    public static final String UNINSTALL_DEPENDENT_FAILED_PROPERTY =
+            "uninstall.dependent.failed";
+    
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -51,6 +65,10 @@ public class UninstallAction extends WizardAction {
     public UninstallAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(PROGRESS_UNINSTALL_TITLE_PROPERTY,
+                DEFAULT_PROGRESS_UNINSTALL_TITLE_MESSAGE);
+        setProperty(UNINSTALL_DEPENDENT_FAILED_PROPERTY,
+                DEFAULT_UNINSTALL_DEPENDENT_FAILED_MESSAGE);
     }
     
     public void execute() {
@@ -72,7 +90,9 @@ public class UninstallAction extends WizardAction {
             currentProgress = new Progress();
             
             overallProgress.addChild(currentProgress, percentageChunk);
-            overallProgress.setTitle("Uninstalling " + product.getDisplayName());
+            overallProgress.setTitle(StringUtils.format(
+                    getProperty(PROGRESS_UNINSTALL_TITLE_PROPERTY),
+                    product.getDisplayName()));
             try {
                 product.uninstall(currentProgress);
                 
@@ -88,9 +108,14 @@ public class UninstallAction extends WizardAction {
                 // since the product failed to uninstall  - we should remove
                 // the components it depends on from our plans to uninstall
                 for(Product requirement : registry.getProducts()) {
-                    if ((requirement.getStatus() == Status.TO_BE_UNINSTALLED) && 
+                    if ((requirement.getStatus() == Status.TO_BE_UNINSTALLED) &&
                             registry.satisfiesRequirement(requirement, product)) {
-                        UninstallationException requirementError = new UninstallationException("Could not uninstall " + requirement.getDisplayName() + ", since the uninstallation of " + product.getDisplayName() + "failed", e);
+                        UninstallationException requirementError =
+                                new UninstallationException(
+                                StringUtils.format(
+                                getProperty(PROGRESS_UNINSTALL_TITLE_PROPERTY),
+                                requirement.getDisplayName(),
+                                product.getDisplayName()), e);
                         
                         requirement.setStatus(Status.INSTALLED);
                         requirement.setUninstallationError(requirementError);
