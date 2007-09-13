@@ -1067,32 +1067,34 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 if (binding.hasSubBindings()) {
                     binding.clearSubBindings();
                 }
-                for (ColumnInfo info : columns) {
-                    String expression = info.getExpression();
-                    MetaBinding subBinding = binding.addSubBinding(expression, null);
-                    FormProperty titleProp = info.getColumn().getTitle();
-                    Object value = null;
-                    try {
-                        value = titleProp.getValue();
-                    } catch (Exception ex) {
-                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-                    }
-                    if (value instanceof String) {
+                if (tabbedPane.isEnabledAt(1)) {
+                    for (ColumnInfo info : columns) {
+                        String expression = info.getExpression();
+                        MetaBinding subBinding = binding.addSubBinding(expression, null);
+                        FormProperty titleProp = info.getColumn().getTitle();
+                        Object value = null;
                         try {
-                            subBinding.setParameter(MetaBinding.NAME_PARAMETER, (String)value);
-                            titleProp.restoreDefaultValue();
+                            value = titleProp.getValue();
                         } catch (Exception ex) {
                             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                         }
-                    } else {
-                        subBinding.setParameter(MetaBinding.NAME_PARAMETER, null);
-                    }
-                    String clazz = info.getClazz();
-                    if ((clazz != null) && (!clazz.equals("Object"))) { // NOI18N
-                        subBinding.setParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER, clazz + ".class"); // NOI18N
-                    }
-                    if (!info.isEditable()) {
-                        subBinding.setParameter(MetaBinding.EDITABLE_PARAMETER, "false"); // NOI18N
+                        if (value instanceof String) {
+                            try {
+                                subBinding.setParameter(MetaBinding.NAME_PARAMETER, (String)value);
+                                titleProp.restoreDefaultValue();
+                            } catch (Exception ex) {
+                                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+                            }
+                        } else {
+                            subBinding.setParameter(MetaBinding.NAME_PARAMETER, null);
+                        }
+                        String clazz = info.getClazz();
+                        if ((clazz != null) && (!clazz.equals("Object"))) { // NOI18N
+                            subBinding.setParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER, clazz + ".class"); // NOI18N
+                        }
+                        if (!info.isEditable()) {
+                            subBinding.setParameter(MetaBinding.EDITABLE_PARAMETER, "false"); // NOI18N
+                        }
                     }
                 }
             }
@@ -1196,7 +1198,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         bindingProperty = comp.getBindingProperty("elements"); // NOI18N
-        MetaBinding binding = (MetaBinding)bindingProperty.getValue();
+        MetaBinding binding = bindingProperty.getValue();
         modelBoundCustomizer = new BindingCustomizer(bindingProperty);
         modelBoundCustomizer.setBinding(binding);
         if (binding != null) {
@@ -1299,6 +1301,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         FormUtils.TypeHelper type = modelBoundCustomizer.getSelectedType();
         boolean collection = (type != null) && Collection.class.isAssignableFrom(FormUtils.typeToClass(type));
         tabbedPane.setEnabledAt(1, collection);
+        expressionCombo.setEnabled(false);
     }
 
     /**
