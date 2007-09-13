@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+	<title>New Ruby on Rails Application Wizard: Name and Location</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+<h2>New Ruby on Rails Application With Existing Sources Wizard: Name and Location </h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+
+
+<p>In the second panel of the New Ruby on Rails Application With Sources wizard, you must set the project folder to an existing Ruby on Rails project. You can then set the project name and make choices concerning the database to use and whether or not to use Rake. </p>
+<p><i>You get to this panel by choosing File &gt; New Project, and, in the New Project wizard, selecting the category Ruby and the project type Ruby on Rails Application.</i></p>
+<ul class="note">
+  <li>Clicking the Next button will take you to the next panel, which enables you to install or update Rails and to install OpenSSL support. Clicking the Finish button creates the project without these options. </li>
+</ul>
+<p>The panel displays the following options:</p>
+<ul>
+  <li><b>Project Folder.</b> Specifies the folder for an existing Ruby on Rails application. If the application is not a Ruby on Rails application, you see a message in red at the bottom of the panel. </li>
+<li><b>Project Name.</b> Specifies the  name of the project, which is displayed in the Projects window.</li>
+  <li><b>Set as Main Project.</b> Sets the newly created project as the main project in the Projects window.</li>
+<li><b>Database.</b> Specifies the database you will use with the project. If you want use a database other than one of those on the list, you must manually edit your <code>database.yml</code> file.
+  
+</li>
+<li> <b>If Using JRuby.</b> The following two options are useful only if you are using JRuby.
+  <ul>
+    <li> <b>Access Database Using JDBC.</b> Specifies that your application will use the ActiveRecord-JDBC gem, which
+        enables your application to access
+        database servers that provide JDBC 3.0 compliant drivers. 
+<ul class="note">
+    <li>If you choose this option, you must copy the driver file for the database that you choose to the JRuby <code>lib</code> directory. The path to this directory is similar to <code><i>netbeans-install-dir</i>/ruby1/jruby-1.0/lib</code>. To find the location of your JRuby installation, choose Tools > Options from the main menu, click Miscellaneous, and click the Ruby icon.</li>
+  </ul>
+<p>For more information, see "Using Database Servers With JRuby" in
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="viewerActivator" value="javax.help.LinkButton">
+        <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/setting-up.html#glassfish">
+        <param name="text" value=
+        "Installing and Configuring Ruby Support.">
+      </object>
+      &nbsp;
+</p>
+</li>
+  <li> <b>Add Rake Targets to Support App Server Deployment (.war).</b> Choose this option if you want to create a <code>.war</code> file so you can deploy your application to an application server, such as  Glassfish. For more information on deploying Ruby applications, see "Setting Up for Deployment to Glassfish" in 
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/setting-up.html#glassfish">
+    <param name="text" value=
+        "Installing and Configuring Ruby Support.">
+  </object>&nbsp;</li>
+  </ul>
+</li>
+</ul>
+ <dl>
+<dt><a name="seealso">See Also</a></dt>
+           <dd>&nbsp;  </dd>
+<dd><a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New Project Wizard</a></dd>
+</dl>
+
+<hr>
+<p><font size=-2><a href="../../../credits.html">Legal Notices</a></font>
+</p>
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+
+</body>
+</html>
