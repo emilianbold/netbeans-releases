@@ -39,7 +39,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider;
-import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.ErrorManager;
@@ -63,6 +62,7 @@ public class MakeProjectModule extends ModuleInstall {
         
     private CustomizerNode profileCustomizerNode;
     
+    @Override
     public void restored() {
         // Moved to services...
 //	RunProfileProvider profileProvider = new RunProfileProvider();
@@ -78,6 +78,7 @@ public class MakeProjectModule extends ModuleInstall {
     public void uninstall() {
     }
     
+    @Override
     public void close() {
 	CompilerSetManager csm = CompilerSetManager.getDefault(false);
 	if (csm != null) {
@@ -103,6 +104,7 @@ public class MakeProjectModule extends ModuleInstall {
             return (String)action.getValue( Action.NAME );
         }
 
+        @Override
         public String iconResource() {
             return null;
         }
@@ -111,23 +113,28 @@ public class MakeProjectModule extends ModuleInstall {
             return HelpCtx.DEFAULT_HELP;
         }
 
+        @Override
         protected boolean asynchronous() {
             return false;
         }
 
+        @Override
         public void actionPerformed( ActionEvent ev ) {
             action.actionPerformed(ev);
         }
         
+        @Override
         public boolean isEnabled() {
             return action.isEnabled();            
         }
 
+        @Override
         protected void addNotify() {
             this.action.addPropertyChangeListener( this );
             super.addNotify();
         }
         
+        @Override
         protected void removeNotify() {
             this.action.removePropertyChangeListener( this );
             super.removeNotify();
@@ -205,7 +212,7 @@ public class MakeProjectModule extends ModuleInstall {
         }
 
         private MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project p) {
-            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)p.getLookup().lookup(ConfigurationDescriptorProvider.class );
+            ConfigurationDescriptorProvider pdp = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
             
             if (pdp == null) {
                 return null;
@@ -215,12 +222,12 @@ public class MakeProjectModule extends ModuleInstall {
         }
         
         public void operationCreateFromTemplate(OperationEvent.Copy copy) {
-            Folder  folder = (Folder) Utilities.actionsGlobalContext().lookup(Folder.class);
-            Project p      = (Project) Utilities.actionsGlobalContext().lookup(Project.class);
+            Folder  folder = Utilities.actionsGlobalContext().lookup(Folder.class);
+            Project p      = Utilities.actionsGlobalContext().lookup(Project.class);
             
             if (folder == null || p == null) {
                 //maybe a file belonging into a project is selected. Try:
-                DataObject od = (DataObject) Utilities.actionsGlobalContext().lookup(DataObject.class);
+                DataObject od = Utilities.actionsGlobalContext().lookup(DataObject.class);
                 
                 if (od == null) {
                     //no file:
@@ -277,7 +284,7 @@ public class MakeProjectModule extends ModuleInstall {
             }
             
             if (owner != null && owner.getProjectDirectory() == p.getProjectDirectory()) {
-                File ioFile = FileUtil.toFile((FileObject) file);
+                File ioFile = FileUtil.toFile(file);
                 if (ioFile.isDirectory())
                     return; // don't add directories. 
                 String itemPath = IpeUtils.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
