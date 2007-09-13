@@ -105,6 +105,15 @@ class DragOperation {
         menuEditLayer.repaint();
         payloadComponent = item;
     }
+
+    void setTargetVisible(boolean vis) {
+        if(!vis) {
+            menuEditLayer.layers.remove(dragComponent);
+        } else {
+            menuEditLayer.layers.add(dragComponent, JLayeredPane.DRAG_LAYER);
+        }
+        menuEditLayer.repaint();
+    }
     
     private JComponent createDragFeedbackComponent(JMenuItem item, Class type) {
         // get the pre-created component for use as drag feedback

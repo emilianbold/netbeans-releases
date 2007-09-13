@@ -1270,7 +1270,7 @@ public class MenuEditLayer extends JPanel {
             validate();
             popupContainer.repaint();
         } else {
-            p("menu popup not built yet: " + menu.getName());
+            //p("menu popup not built yet: " + menu.getName());
         }
     }
     
@@ -1544,6 +1544,9 @@ public class MenuEditLayer extends JPanel {
                 showMenubarWarning = false;
                 repaint();
             }
+            if(dragop.isStarted()) {
+                 dragop.setTargetVisible(true);
+            }
             if(!dragop.isStarted() || PaletteUtils.getSelectedItem() != dragop.getCurrentItem()) {
                 PaletteItem item = PaletteUtils.getSelectedItem();
                 
@@ -1575,6 +1578,9 @@ public class MenuEditLayer extends JPanel {
         
         public void mouseExited(MouseEvent e) {
             //p("mouse exited: " + e);
+            if(dragop.isStarted()) {
+                 dragop.setTargetVisible(false);
+            }
         }
         
         public void mouseDragged(MouseEvent e) {
