@@ -160,7 +160,7 @@ public class JBIMBeanTaskResultHandler {
         return false;
     }
     
-    public static List<TaskResult> getTaskResultProblems(Document document, boolean framework) {
+    static List<TaskResult> getTaskResultProblems(Document document, boolean framework) {
         List<TaskResult> ret = new ArrayList<TaskResult>();
         
         ret.addAll(getTaskResultExceptions(document, framework));
@@ -171,22 +171,22 @@ public class JBIMBeanTaskResultHandler {
         return ret;
     }
     
-    public static List<TaskResult> getTaskResultExceptions(Document document, boolean framework) {
+    static List<TaskResult> getTaskResultExceptions(Document document, boolean framework) {
         String expression = getMyXPathExpression("EXCEPTION", framework);
         return getMsgLocInfoOfType("ERROR", document, expression, framework);
     }
     
-    public static List<TaskResult> getTaskResultErrors(Document document, boolean framework) {
+    static List<TaskResult> getTaskResultErrors(Document document, boolean framework) {
         String expression = getMyXPathExpression("ERROR", framework);
         return getMsgLocInfoOfType("ERROR", document, expression, framework);
     }
     
-    public static List<TaskResult> getTaskResultWarnings(Document document, boolean framework) {
+    static List<TaskResult> getTaskResultWarnings(Document document, boolean framework) {
         String expression = getMyXPathExpression("WARNING", framework);
         return getMsgLocInfoOfType("WARNING", document, expression, framework);
     }
     
-    public static List<TaskResult> getTaskResultInfos(Document document, boolean framework) {
+    static List<TaskResult> getTaskResultInfos(Document document, boolean framework) {
         String expression = getMyXPathExpression("INFO", framework);
         return getMsgLocInfoOfType("INFO", document, expression, framework);
     }

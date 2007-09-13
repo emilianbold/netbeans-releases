@@ -61,7 +61,7 @@ public class PanelConfigureProjectAppVisual
 ///    private PanelOptionsVisual optionsPanel;
 
     /** Creates new form PanelInitProject */
-    public PanelConfigureProjectAppVisual(PanelConfigureProjectApp panel) {
+    PanelConfigureProjectAppVisual(PanelConfigureProjectApp panel) {
         this.panel = panel;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(WIZARD_BUNDLE).getString("ACS_NWP1_AppOptionPanel_A11YDesc"));  // NOI18N

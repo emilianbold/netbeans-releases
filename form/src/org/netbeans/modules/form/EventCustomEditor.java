@@ -35,7 +35,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
     static final long serialVersionUID =-4825059521634962952L;
 
     /** Creates new form EventCustomEditor */
-    public EventCustomEditor(EventProperty eventProperty) {
+    EventCustomEditor(EventProperty eventProperty) {
         this.eventProperty = eventProperty;
 
         initComponents();

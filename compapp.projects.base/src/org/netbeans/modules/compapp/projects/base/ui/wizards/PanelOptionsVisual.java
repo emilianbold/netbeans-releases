@@ -56,7 +56,7 @@ public class PanelOptionsVisual
     private String j2eeLevel = IcanproProjectProperties.J2EE_1_4;
     
     /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual(PanelConfigureProject panel) {
+    PanelOptionsVisual(PanelConfigureProject panel) {
         initComponents();
         this.panel = panel;
 //B        initJ2EESpecLevels();

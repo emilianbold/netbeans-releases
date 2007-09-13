@@ -68,7 +68,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
     private NamespaceDocListener mListener = new NamespaceDocListener();
     
     /** Creates new form WsdlUIPanel */
-    public WsdlUIPanel(WsdlPanel wizardPanel) {
+    WsdlUIPanel(WsdlPanel wizardPanel) {
         initComponents();
         this.wizardPanel=wizardPanel;
         nsTF.setText(TARGET_URL_PREFIX);

@@ -115,7 +115,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
         return methodName;
     }
     
-    protected FieldInfo getEntityManagerFactoryFieldInfo(){
+    FieldInfo getEntityManagerFactoryFieldInfo(){
         VariableTree existing = getField(ENTITY_MANAGER_FACTORY_FQN);
         if (existing != null){
             return new FieldInfo(existing.getName().toString(), true);
@@ -123,7 +123,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
         return new FieldInfo(ENTITY_MANAGER_FACTORY_DEFAULT_NAME, false);
     }
     
-    protected FieldInfo getEntityManagerFieldInfo(){
+    FieldInfo getEntityManagerFieldInfo(){
         VariableTree existing = getField(ENTITY_MANAGER_FQN);
         if (existing != null){
             return new FieldInfo(existing.getName().toString(), true);

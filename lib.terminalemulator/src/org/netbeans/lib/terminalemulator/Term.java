@@ -4106,14 +4106,14 @@ public class Term extends JComponent implements Accessible {
      * connected to a process, since it's often impossible to advise 
      * the process of the new terminal type.
      */
-    public void setInterp(Interp interp) {
+    void setInterp(Interp interp) {
 	this.interp = interp;
     } 
 
     /**
      * Return the Interpreter assigned to this.
      */
-    public Interp getInterp() {
+    Interp getInterp() {
 	return interp;
     } 
 

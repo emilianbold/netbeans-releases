@@ -60,7 +60,7 @@ public class PanelConfigureProjectVisual
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
 
     /** Creates new form PanelInitProject */
-    public PanelConfigureProjectVisual(PanelConfigureProject panel) {
+    PanelConfigureProjectVisual(PanelConfigureProject panel) {
         this.panel = panel;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(WIZARD_BUNDLE).getString("ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N

@@ -58,7 +58,7 @@ public class PanelProjectAppVisual
     private PanelConfigureProjectApp panel;
 
     /** Creates new form PanelProjectLocationVisual */
-    public PanelProjectAppVisual(PanelConfigureProjectApp panel) {
+    PanelProjectAppVisual(PanelConfigureProjectApp panel) {
         initComponents();
         this.panel = panel;
 

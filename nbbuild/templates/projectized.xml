@@ -611,30 +611,50 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     </target>
 
     <target name="sigtest-init" depends="build-init">
-        <property name="sigtest.basedir" location="nbproject/sigtests"/>
+        <property name="sigtest.basedir" location="nbproject"/>
         <mkdir dir="${sigtest.basedir}"/>
         <property name="sigtest.file" location="${sigtest.basedir}/${code.name.base.dashes}.sig"/>
         <property name="sigtest.public.packages" value="${public.packages}"/>
+        <property name="sigtest.fail.on.error" value="true"/>
         <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <property name="sigtest.jar" location="${nb_all}/nbbuild/external/sigtestdev.jar"/> 
+
+        <property name="cp.extra" value=""/>
+        <path id="sigtest.class.path.ref">
+            <path path="${module.run.classpath}"/>
+            <path path="${cp.extra}"/>
+            <path path="${cluster}/${module.jar}"/>
+            <fileset dir="${java.home}/lib/">
+                <include name="*.jar"/>
+            </fileset>
+        </path>
+        <pathconvert refid="sigtest.class.path.ref" property="sigtest.class.path">
+            
+        </pathconvert>    
+        
         <echo>Checking module: ${module.name}</echo>
     </target>
 
     <target name="gen-sigtest" depends="sigtest-init">
+        <property name="sigtest.gen.fail.on.error" value="${sigtest.fail.on.error}"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
-                 classpath="${module.classpath}:${cluster}/${module.jar}:${java.home}/lib/rt.jar"
+                 classpath="${sigtest.class.path}"
                  additionalArgs="-static"
                  action="Setup"
-                 packages="${sigtest.public.packages}"/>
+                 packages="${sigtest.public.packages}"
+                 failonerror="${sigtest.gen.fail.on.error}"
+        />
     </target>
 
     <target name="check-sigtest" depends="sigtest-init">
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
-                 classpath="${module.classpath}:${cluster}/${module.jar}:${java.home}/lib/rt.jar"
+                 classpath="${sigtest.class.path}"
                  additionalArgs="-static"
                  action="SignatureTest"
-                 packages="${sigtest.public.packages}"/>
+                 packages="${sigtest.public.packages}"
+                 failonerror="${sigtest.fail.on.error}"
+        />
     </target>
 </project>

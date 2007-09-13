@@ -135,7 +135,7 @@ public abstract class NodeImpl implements Node, Cloneable {
         assignNodeId(createUniqueId());
     }
     
-    public void assignNodeId(UniqueId id) {
+    void assignNodeId(UniqueId id) {
         assert ! isInTree();
         setId(id.nextId());
         for (Node n: getChildren()) {

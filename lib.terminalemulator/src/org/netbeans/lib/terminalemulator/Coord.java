@@ -62,12 +62,12 @@ public class Coord implements Comparable {
 	this.col = coord.col;
     } 
 
-    public Coord(BCoord coord, int bias) {
+    Coord(BCoord coord, int bias) {
 	this.row = coord.row + bias;
 	this.col = coord.col;
     }
 
-    public BCoord toBCoord(int bias) {
+    BCoord toBCoord(int bias) {
 	int new_row = row - bias;
 	if (new_row < 0)
 	    return new BCoord(0, 0);	// we're out of history

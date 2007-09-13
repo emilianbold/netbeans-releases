@@ -81,7 +81,7 @@ public class CreationDescriptor {
         addConstructorCreators(descClass, constrParamTypes, constrPropNames, defParams);
     }
     
-    public CreationDescriptor(Class factoryClass, 
+    CreationDescriptor(Class factoryClass, 
                               Class descClass,
                               String methodName,                                
                               Class[][] constrParamTypes,
@@ -113,7 +113,7 @@ public class CreationDescriptor {
         defaultParams = defParams == null ? emptyParams : defParams;
     }
 
-    public void addMethodCreators(Class factoryClass, 
+    void addMethodCreators(Class factoryClass, 
                                   Class descClass,
                                   String methodName,                                
                                   Class[][] constrParamTypes,

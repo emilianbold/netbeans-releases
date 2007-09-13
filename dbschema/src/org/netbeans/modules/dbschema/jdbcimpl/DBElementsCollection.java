@@ -47,7 +47,7 @@ public class DBElementsCollection implements DBElementProperties {
     /**
      * @param owner owner of this array at which to fire changes
      */
-    public DBElementsCollection (DBElementImpl owner, Object[] template) {
+    DBElementsCollection (DBElementImpl owner, Object[] template) {
         this.owner = owner;
         _template = template;
     }
@@ -97,7 +97,7 @@ public class DBElementsCollection implements DBElementProperties {
 		 * @return the element or null
 		 */
         public DBElement find(DBIdentifier id) {
-            DBElement[] me = (DBElement[]) getElements();
+            DBElement[] me = getElements();
 
             if (me == null)            
                 return null;
@@ -115,7 +115,7 @@ public class DBElementsCollection implements DBElementProperties {
 	 * be used internally and for cloning and archiving.
 	 * @return the owner of this collection
 	 */
-	public DBElementImpl getOwner () {
+	DBElementImpl getOwner () {
             return owner;
         }
 
@@ -124,7 +124,7 @@ public class DBElementsCollection implements DBElementProperties {
 	 * archiving.
 	 * @param owner the owner of this collection
 	 */
-	public void setOwner (DBElementImpl owner) {
+	void setOwner (DBElementImpl owner) {
             this.owner = owner;
 	}
 

@@ -24,7 +24,7 @@ package org.netbeans.modules.search;
  *
  * @author Tim Boudreau
  */
-public interface TextDisplayer {
+interface TextDisplayer {
     
     /**
      * Displays the given text and possibly highlights the given range of text.

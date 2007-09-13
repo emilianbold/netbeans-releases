@@ -167,8 +167,7 @@ public final class ParseProjectXml extends Task {
      * Currently identical to the regular class path with the exception
      * that original JARs are used, never public-package-only JARs.
      * XXX In the future should however reflect &lt;run-dependency/&gt;
-     * rather than &lt;compile-dependency/&gt; and should also include
-     * transitive dependencies.
+     * rather than &lt;compile-dependency/&gt; 
      */
     public void setModuleRunClassPathProperty(String s) {
         moduleRunClassPathProperty = s;
@@ -783,6 +782,11 @@ public final class ParseProjectXml extends Task {
 
             List<File> additions = new ArrayList<File>();
             additions.add(depJar);
+            if (runtime) {
+                Set<String> skipCnb = new HashSet<String>();
+                addRecursiveDeps(additions, modules, cnb, includedClusters, excludedClusters, excludedModules, skipCnb);
+            }
+            
             // #52354: look for <class-path-extension>s in dependent modules.
             ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
             if (entry != null) {
@@ -821,6 +825,38 @@ public final class ParseProjectXml extends Task {
             cp.append(f.getAbsolutePath());
         }
         return cp.toString();
+    }
+    
+    private void addRecursiveDeps(List<File> additions, ModuleListParser modules, String cnb, Set<String> includedClusters, 
+        Set<String> excludedClusters, Set<String> excludedModules, Set<String> skipCnb
+    ) {
+        if (!skipCnb.add(cnb)) {
+            return;
+        }
+        log("Processing for recursive deps: " + cnb, Project.MSG_VERBOSE); // NO18N
+        for (String nextModule : modules.findByCodeNameBase(cnb).getRuntimeDependencies()) {
+            log("  Added dep: " + nextModule, Project.MSG_VERBOSE); // NO18N
+            File depJar = computeClasspathModuleLocation(modules, nextModule, includedClusters, excludedClusters, excludedModules);
+            
+            if (!depJar.isFile()) {
+                log("No such classpath entry: " + depJar, Project.MSG_WARN);
+            }
+
+            if (!additions.contains(depJar)) {
+                additions.add(depJar);
+            }
+            
+            ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
+            if (entry != null) {
+                for (File f : entry.getClassPathExtensions()) {
+                    if (!additions.contains(f)) {
+                        additions.add(f);
+                    }
+                }
+            }
+            
+            addRecursiveDeps(additions, modules, nextModule, includedClusters, excludedClusters, excludedModules, skipCnb);
+        }
     }
     
     private File computeClasspathModuleLocation(ModuleListParser modules, String cnb,

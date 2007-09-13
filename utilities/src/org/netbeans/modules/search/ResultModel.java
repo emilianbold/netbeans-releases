@@ -90,7 +90,7 @@ public final class ResultModel {
     private String finishMessage;
 
     /** Creates new <code>ResultModel</code>. */
-    public ResultModel(SpecialSearchGroup searchGroup,
+    ResultModel(SpecialSearchGroup searchGroup,
                        String replaceString) {
         this.searchGroup = searchGroup;
         this.replaceString = replaceString;
@@ -174,7 +174,7 @@ public final class ResultModel {
 
     /**
      */
-    public void objectBecameInvalid(MatchingObject matchingObj) {
+    void objectBecameInvalid(MatchingObject matchingObj) {
         
         /* may be called from non-EDT thread */
         

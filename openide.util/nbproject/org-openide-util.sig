@@ -891,6 +891,8 @@ meth public final java.util.Set[] topologicalSets()
 meth public final java.util.Set[] unsortableSets()
 meth public final void printStackTrace(java.io.PrintStream)
 meth public final void printStackTrace(java.io.PrintWriter)
+meth public java.lang.String getMessage()
+meth public java.lang.String toString()
 supr java.lang.Exception
 hfds counter,dualGraph,edges,result,vertexes
 hcls Vertex

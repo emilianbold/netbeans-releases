@@ -95,8 +95,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.visualweb.libs.commons.fileupload</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>

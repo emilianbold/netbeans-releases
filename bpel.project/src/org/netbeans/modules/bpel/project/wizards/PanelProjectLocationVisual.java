@@ -64,7 +64,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private PanelConfigureProject panel;
 
     /** Creates new form PanelProjectLocationVisual */
-    public PanelProjectLocationVisual(PanelConfigureProject panel) {
+    PanelProjectLocationVisual(PanelConfigureProject panel) {
         initComponents();
         this.panel = panel;
 

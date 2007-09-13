@@ -30,7 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 public class FakeRADProperty extends RADProperty {
 
     /** Creates a new instance of FakeRADProperty */
-    public FakeRADProperty(RADComponent comp, FakePropertyDescriptor desc) throws IntrospectionException {
+    FakeRADProperty(RADComponent comp, FakePropertyDescriptor desc) throws IntrospectionException {
         super(comp, desc);
         setAccessType(NORMAL_RW);
     }
