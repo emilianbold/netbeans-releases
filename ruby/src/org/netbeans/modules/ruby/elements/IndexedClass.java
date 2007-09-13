@@ -79,4 +79,14 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     public Set<String> getIncludes() {
         return null;
     }
+    
+    @Override 
+    public boolean equals(Object o) {
+        return ((IndexedClass)o).fqn.equals(fqn);
+    }
+    
+    @Override
+    public int hashCode() {
+        return fqn.hashCode();
+    }
 }
