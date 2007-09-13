@@ -233,6 +233,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 options += "-dynamiclib -install_name " + libName + " "; // NOI18N
             }
             else if (cs.isGnuCompiler()) {
+                if (cs.getCompilerFlavor() == CompilerSet.CompilerFlavor.Cygwin) {
+                    // For gdb debugging. See IZ 113893 for details.
+                    options += "-mno-cygwin "; // NOI18N
+                }
                 options += "-shared "; // NOI18N
             }
             else
