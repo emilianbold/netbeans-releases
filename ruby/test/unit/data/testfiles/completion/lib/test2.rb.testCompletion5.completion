@@ -1,0 +1,34 @@
+Results for /reg/ with queryType=COMPLETION and nameKind=PREFIX
+------------------------------------
+KEYWORD    $                                          End of line
+KEYWORD    ()                                         Grouping
+KEYWORD    *                                          Zero or more repetitions of the preceding
+KEYWORD    +                                          One or more repetitions of the preceding
+KEYWORD    ?                                          At most one repetition of the preceding; same as {0,1}
+KEYWORD    [:alnum:]                                  Alphanumeric character class
+KEYWORD    [:alpha:]                                  Uppercase or lowercase letter
+KEYWORD    [:blank:]                                  Blank and tab
+KEYWORD    [:cntrl:]                                  Control characters (at least 0x00-0x1f,0x7f)
+KEYWORD    [:digit:]                                  Digit
+KEYWORD    [:graph:]                                  Printable character excluding space
+KEYWORD    [:lower:]                                  Lowecase letter
+KEYWORD    [:print:]                                  Any printable letter (including space)
+KEYWORD    [:punct:]                                  Printable character excluding space and alphanumeric
+KEYWORD    [:space:]                                  Whitespace (same as \s)
+KEYWORD    [:upper:]                                  Uppercase letter
+KEYWORD    [:xdigit:]                                 Hex digit (0-9, a-f, A-F)
+KEYWORD    \A                                         Beginning of string
+KEYWORD    \B                                         Non-word boundary
+KEYWORD    \D                                         Non-digit character
+KEYWORD    \S                                         Non-space character
+KEYWORD    \W                                         Neither letter or digit
+KEYWORD    \Z                                         End of string (except \n)
+KEYWORD    \b                                         Backspace (0x08) (only if in a range specification)
+KEYWORD    \b                                         Word boundary (if not in a range specification)
+KEYWORD    \d                                         Digit character; same as [0-9]
+KEYWORD    \s                                         Space character; same as [ \t\n\r\f]
+KEYWORD    \w                                         Letter or digit; same as [0-9A-Za-z]
+KEYWORD    \z                                         End of string
+KEYWORD    ^                                          Start of line
+KEYWORD    {m,n}                                      At least m and at most n repetitions of the preceding
+KEYWORD    |                                          Either preceding or next expression may match

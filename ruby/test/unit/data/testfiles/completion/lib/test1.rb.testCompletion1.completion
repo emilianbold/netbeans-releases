@@ -1,0 +1,18 @@
+Results for f.e with queryType=COMPLETION and nameKind=PREFIX
+METHOD     executable?(file_name)          [STATIC]   File
+METHOD     executable_real?(file_name)     [STATIC]   File
+METHOD     exist?(file_name)               [STATIC]   File
+METHOD     exists?(file_name)              [STATIC]   File
+METHOD     expand_path(file_name, dir_str  [STATIC]   File
+METHOD     extname(path)                   [STATIC]   File
+------------------------------------
+METHOD     enum_for(method, *args)                    Object
+METHOD     eql?(other)                                Module
+METHOD     equal?(other)                              Module
+METHOD     eval(string, binding, filename             Kernel
+METHOD     exec(command, arg)                         Kernel
+METHOD     exit!(fixnum)                              Kernel
+METHOD     exit(integer)                              Kernel
+METHOD     extend(module_)                            Object
+METHOD     extend_object(obj)                         Module
+METHOD     extended(p1)                               Module
