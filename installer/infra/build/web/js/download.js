@@ -174,7 +174,11 @@ function update() {
 		
 	if (product_properties[i] & PROPERTY_JAVAME) {
             if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_javame").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
+                if( product_uids [i] == "nb-javame" ) {
+			document.getElementById("product_" + i + "_javame").innerHTML = '<img src="img/one_left.gif"/><img src="img/checked_badge_beige.gif"/><img src="img/one.gif"/>';
+		} else {
+                	document.getElementById("product_" + i + "_javame").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
+		}
             } else {
                 document.getElementById("product_" + i + "_javame").innerHTML = '<img src="img/warning_badge_beige_' + platform + '.gif"/>';
             }
@@ -322,8 +326,10 @@ function update() {
     // no Mobility for Solaris and MacOS
     if ((platform == "solaris-x86") || (platform == "solaris-sparc") || (platform == "macosx-ppc") || (platform == "macosx-x86")) {
     	document.getElementById("javame_link").innerHTML = '<img src="img/download_d.gif" style="border: 0;"/><br><a class="bundle_display_name_no">Mobility</a>';
+	document.getElementById("mobility_end2end_message").innerHTML = '<br>';
     } else {
     	document.getElementById("javame_link").innerHTML = '<a href="javascript: download(\'mobility\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a><a class="bundle_display_name">Mobility</a>';
+	document.getElementById("mobility_end2end_message").innerHTML = '<a style="width: 95%; margin: 0px 0px 0px 22px; color:#FF5E08">1</a><a style="width: 95%; margin: 0px auto 0px 8px">Mobility Web Services Connection wizard is only included in All download, not in the Mobility download.</a>';
     }
 }
 
