@@ -296,6 +296,13 @@ public class PersistenceLibrarySupport  {
         for (ProviderLibrary each : createLibraries()){
             providerLibs.add(each.getProvider());
         }
+        Collections.sort(providerLibs, new Comparator<Provider>() {
+            public int compare(Provider p1, Provider p2) {
+                String name1 = p1.getDisplayName();
+                String name2 = p2.getDisplayName();
+                return name1.compareToIgnoreCase(name2);
+            }
+        });
         return providerLibs;
     }
     
