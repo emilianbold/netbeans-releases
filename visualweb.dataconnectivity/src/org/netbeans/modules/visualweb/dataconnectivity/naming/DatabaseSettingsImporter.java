@@ -199,7 +199,7 @@ public class DatabaseSettingsImporter {
      * @param isStartup flag indicates that settings were migrated at startup or not
      * @return
      */
-    public boolean locateAndRegisterConnections(boolean isStartup) {
+    public synchronized boolean locateAndRegisterConnections(boolean isStartup) {
         File contextFile;
         Set <File> contextFiles = new HashSet<File>();
         
@@ -267,14 +267,13 @@ public class DatabaseSettingsImporter {
         return contextReleaseDirFiles;        
     }
     
-    private void registerConnections(File contextFile) {
+    private synchronized void registerConnections(File contextFile) {
         dataSourcesInfo = createDataSourceInfoFromCtx(contextFile);
         
         if (dataSourcesInfo != null) {
             try {
                 Iterator it = dataSourcesInfo.iterator();
                 DataSourceInfo dsInfo = null;
-                boolean isDriverJavaDB = false;
                 DatabaseConnection dbconn = null;
                 JDBCDriver drvs = null;
                 JDBCDriver[] drvsArray = null;
@@ -284,7 +283,6 @@ public class DatabaseSettingsImporter {
                     dsInfo = ((DataSourceInfo)it.next());
                     String username = dsInfo.getUsername();
                     String password = dsInfo.getPassword();
-                    isDriverJavaDB = dsInfo.getDriverClassName().equals(DRIVER_CLASS_NET);
                     
                     // To register a Derby connection, no need to check to see if Java DB driver had been registered
                     if (dsInfo.getDriverClassName().equals(DRIVER_CLASS_NET)) {
@@ -468,7 +466,7 @@ public class DatabaseSettingsImporter {
         dataSources.add(dsItems);
     }
     
-    private void parseContextFile() throws ParserConfigurationException, SAXException, IllegalArgumentException, IOException {
+    private synchronized void parseContextFile() throws ParserConfigurationException, SAXException, IllegalArgumentException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
         factory.setValidating(false);

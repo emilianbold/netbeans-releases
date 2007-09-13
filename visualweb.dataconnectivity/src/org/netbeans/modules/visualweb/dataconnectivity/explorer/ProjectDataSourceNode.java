@@ -49,6 +49,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     org.netbeans.api.project.Project nbProject = null ;
     private static Image brokenDsReferenceBadge = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png" ); // NOI18N
     private static Image dSContainerImage = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png" ); // NOI18N
+    boolean modelingHasStarted;
 
     public ProjectDataSourceNode(org.netbeans.api.project.Project project) {
         super(new ProjectDataSourceNodeChildren(project));
@@ -78,6 +79,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     }
 
     private void initPuppy() {
+        modelingHasStarted = false;
         setIconBaseWithExtension("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png"); // NOI18N
         setName(NbBundle.getMessage(ProjectDataSourceNode.class, "PROJECT_DATA_SOURCES"));
         setDisplayName(NbBundle.getMessage(ProjectDataSourceNode.class, "PROJECT_DATA_SOURCES"));
@@ -103,26 +105,15 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         } catch (CharConversionException ex) {
             // ignore
         }
-        
-        boolean isBroken = false;         
-        
+               
         // Manage the migration of legacy projects
-        ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(nbProject);
-        if (JsfProjectUtils.getProjectVersion(nbProject).equals("2.0") && !projectDataSourceManager.isRequestedJdbcResourceAvailable()) {//NOI18N   
-            if (!ProjectDataSourceTracker.isProjectModeled(nbProject)) {
-                DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
-            } else if (ProjectDataSourceTracker.getDynamicDataSources(nbProject).length > 0) {                
-                DataSourceResolver.getInstance().update(nbProject);
-            }
-        } else if (JsfProjectUtils.getProjectVersion(nbProject).equals("3.0") && !projectDataSourceManager.isRequestedJdbcResourceAvailable()) { //NOI18N
-            if (!ProjectDataSourceTracker.isProjectModeled(nbProject)) {
-                DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
-            }            
-            
-            DataSourceResolver.getInstance().update(nbProject);
-        }                     
+        if (ImportDataSource.isLegacyProject(nbProject) && !modelingHasStarted) {//NOI18N   
+            modelingHasStarted = true;
+            DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
+        }              
         
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
+        boolean isBroken = false;         
         if (this.getChildren().getNodes().length > 0) {
             if (BrokenDataSourceSupport.isBroken(nbProject)) {
                 isBroken = true;

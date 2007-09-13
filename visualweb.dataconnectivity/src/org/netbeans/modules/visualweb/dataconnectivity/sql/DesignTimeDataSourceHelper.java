@@ -88,12 +88,13 @@ public class DesignTimeDataSourceHelper {
     private DesignTimeDataSource[] dataSources;
     private String[]               dataSourceNames;
     private boolean                isDataSourceAdded;
-    private Project                project;
+    private boolean                isUpdated;
 
     public DesignTimeDataSourceHelper() throws NamingException {
         dataSources     = null;
         dataSourceNames = null;
-        isDataSourceAdded = false;        
+        isDataSourceAdded = false;    
+        isUpdated = false;
     }
 
     public DataSourceExport[] getDataSourceExports() throws NamingException {
@@ -494,13 +495,12 @@ public class DesignTimeDataSourceHelper {
     }
     
     
-    public Map updateDataSource(Project currentProj) {
-        
+    public Map updateDataSource(Project currentProj) {       
          // Manage the migration of legacy projects
-        if (ImportDataSource.isLegacyProject(currentProj)) {//NOI18N   
+        if (ImportDataSource.isLegacyProject(currentProj) && !isUpdated) {//NOI18N   
             DataSourceResolver.getInstance().updateSettings();
-        } 
-        
+            isUpdated = true;
+        }  
         // Get the data sources in the project then bind them to the project's context
         String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
         String[] hardCodedDataSources = ProjectDataSourceTracker.getHardcodedDataSources(currentProj);
@@ -508,7 +508,7 @@ public class DesignTimeDataSourceHelper {
         RequestedJdbcResource jdbcResource = null;
         List <DesignTimeDataSource> ds = null;
         Map binding = new HashMap();
-        
+                 
         ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(currentProj);
         
         if (dynamicDataSources.length > 0 || hardCodedDataSources.length > 0) {

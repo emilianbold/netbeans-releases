@@ -258,8 +258,5 @@ public class ImportDataSource {
             }
         });
     }                 
-    
-    public static void registerDatabaseSettings() {
-        DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(false);
-    }
+        
 }
