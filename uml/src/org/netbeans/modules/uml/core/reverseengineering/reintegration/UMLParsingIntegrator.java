@@ -1460,16 +1460,18 @@ public class UMLParsingIntegrator
                     int x = 0;
                     while ((x < num) && !m_CancelDueToConflict)
                     {
-                        String groupMessage = REIntegrationMessages.getString(
-                                "IDS_INJECTING_ELEMENTS", new Object[] // NOI18N
-                        {new Integer(x + 1), new Integer(num)});
-                        
-                        supervisor.log(ITaskSupervisor.VERBOSE,
-                                INDENT + INDENT + groupMessage);
-                        
                         // Note: C++ code does children->get_item( 0, &child ),
                         //       which'll pick up only one class per file.
                         Node child = (Node) children.get(x);
+                        
+                        String groupMessage = REIntegrationMessages.getString(
+                            "IDS_INJECTING_ELEMENTS", new Object[] // NOI18N
+                            {new Integer(x + 1), new Integer(num)}) 
+                            + " - child: " + child.getNodeTypeName() 
+                            + "::" + child.getName();
+                        
+                        supervisor.log(ITaskSupervisor.VERBOSE,
+                                INDENT + INDENT + groupMessage);
                         
                         if (child instanceof Element)
                         {
@@ -3164,6 +3166,7 @@ public class UMLParsingIntegrator
     
     public void analyzeForGeneralizations(Node clazz, IClassifier clazzObj, INamespace classSpace)
     {
+
         try
         {
             // Get all of this Classes attributes and resolve their types...
