@@ -1176,6 +1176,13 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitLiteral(JCLiteral tree) {
+        if (origUnit != null) {
+            TokenSequence<JavaTokenId> ts = cInfo.getTreeUtilities().tokensFor(tree);
+            if (ts.moveNext()) {
+                print(ts.token().text().toString());
+                return;
+            }
+        }
 	switch (tree.typetag) {
 	  case INT:
 	    print(tree.value.toString());
