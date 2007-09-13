@@ -39,13 +39,16 @@ public class ContextProviderWrapper {
     
     private ContextProvider contextProvider;
     
+    // per IDE session
+    private static BreakpointModel breakpointModel;
+    private static SessionsTableModelFilter sessionsModel;
+
+    // per Ruby session
     private RubySession rubySession;
-    private BreakpointModel breakpointModel;
     private CallStackModel callStackModel;
     private VariablesModel variablesModel;
     private WatchesModel watchesModel;
     private ThreadsModel threadsModel;
-    private SessionsTableModelFilter sessionsModel;
     
     public ContextProviderWrapper(final ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
@@ -67,25 +70,11 @@ public class ContextProviderWrapper {
         getCallStackModel().fireChanges();
         getVariablesModel().fireChanges();
         getWatchesModel().fireChanges();
-        getBreakpointModel().fireChanges();
-        getSessionsModel().fireChanges();
+        ContextProviderWrapper.getBreakpointModel().fireChanges();
+        ContextProviderWrapper.getSessionsModel().fireChanges();
     }
-    
-    public RubySession getRubySession() {
-        if (rubySession == null) {
-            rubySession = ContextProviderWrapper.lookupFirst(contextProvider, RubySession.class);
-        }
-        return rubySession;
-    }
-    
-    public ThreadsModel getThreadsModel() {
-        if (threadsModel == null) {
-            threadsModel = (ThreadsModel) contextProvider.lookupFirst("ThreadsView", TreeModel.class);
-        }
-        return threadsModel;
-    }
-    
-    public SessionsTableModelFilter getSessionsModel() {
+
+    public static SessionsTableModelFilter getSessionsModel() {
         if (sessionsModel == null) {
             List<TableModelFilter> tableModels = ContextProviderWrapper.debugLookup("SessionsView", TableModelFilter.class);
             for (TableModelFilter model : tableModels) {
@@ -98,7 +87,7 @@ public class ContextProviderWrapper {
         return sessionsModel;
     }
     
-    public BreakpointModel getBreakpointModel() {
+    public static BreakpointModel getBreakpointModel() {
         if (breakpointModel == null) {
             List<TableModel> tableModels = ContextProviderWrapper.debugLookup("BreakpointsView", TableModel.class);
             for (TableModel model : tableModels) {
@@ -109,6 +98,21 @@ public class ContextProviderWrapper {
             }
         }
         return breakpointModel;
+    }
+    
+
+    public RubySession getRubySession() {
+        if (rubySession == null) {
+            rubySession = ContextProviderWrapper.lookupFirst(contextProvider, RubySession.class);
+        }
+        return rubySession;
+    }
+    
+    public ThreadsModel getThreadsModel() {
+        if (threadsModel == null) {
+            threadsModel = (ThreadsModel) contextProvider.lookupFirst("ThreadsView", TreeModel.class);
+        }
+        return threadsModel;
     }
     
     public CallStackModel getCallStackModel() {
