@@ -257,29 +257,28 @@ public class PersistenceLibrarySupport  {
      * is defined, or null none could be found.
      */
     public static Library getLibrary(Provider provider){
-        List<Library> libraries = createLibraries();
-        for (Library each : libraries){
-            ClassPath cp = getLibraryClassPath(each);
-            if (provider.equals(extractProvider(cp))) {
-                return each;
+        List<ProviderLibrary> libraries = createLibraries();
+        for (ProviderLibrary each : libraries){
+            if (provider.equals(each.getProvider())){
+                return each.getLibrary();
             }
         }
         return null;
     }
     
-    private static List<Library> createLibraries() {
-        List<Library> providerLibs = new ArrayList<Library>();
+    private static List<ProviderLibrary> createLibraries() {
+        List<ProviderLibrary> providerLibs = new ArrayList<ProviderLibrary>();
         for (Library each : LibraryManager.getDefault().getLibraries()){
             ClassPath cp = getLibraryClassPath(each);
-            if (PersistenceLibrarySupport.containsClass(cp, "javax.persistence.EntityManager") && extractProvider(cp) != null) {
-                providerLibs.add(each);
+            Provider provider = extractProvider(cp);
+            if (provider != null && containsClass(cp, "javax.persistence.EntityManager")){ //NO18N
+                providerLibs.add(new ProviderLibrary(each, cp, provider));
             }
         }
-        Collections.sort(providerLibs, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                assert (o1 instanceof Library) && (o2 instanceof Library);
-                String name1 = ((Library)o1).getDisplayName();
-                String name2 = ((Library)o2).getDisplayName();
+        Collections.sort(providerLibs, new Comparator<ProviderLibrary>() {
+            public int compare(ProviderLibrary l1, ProviderLibrary l2) {
+                String name1 = l1.getLibrary().getDisplayName();
+                String name2 = l2.getLibrary().getDisplayName();
                 return name1.compareToIgnoreCase(name2);
             }
         });
@@ -294,33 +293,23 @@ public class PersistenceLibrarySupport  {
      */
     public static List<Provider> getProvidersFromLibraries() {
         List<Provider> providerLibs = new ArrayList<Provider>();
-        Library[] libs = LibraryManager.getDefault().getLibraries();
-        for (Library each : libs){
-            ClassPath cp = getLibraryClassPath(each);
-            Provider provider = extractProvider(cp);
-            if (provider != null && PersistenceLibrarySupport.containsClass(cp, "javax.persistence.EntityManager")) {
-                providerLibs.add(provider);
-            }
+        for (ProviderLibrary each : createLibraries()){
+            providerLibs.add(each.getProvider());
         }
-        Collections.sort(providerLibs, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                String name1 = ((Provider)o1).getDisplayName();
-                String name2 = ((Provider)o2).getDisplayName();
-                return name1.compareToIgnoreCase(name2);
-            }
-        });
-        
         return providerLibs;
     }
     
     /**
-     * @return the first library in the IDE's libraries which contains
-     * a persistence provider.
+     * Gets the first library from the libraries registered in 
+     * the IDE that contains a persistence provider.
+     * 
+     * @return the first library containing a persistence provider or null
+     * if there were no libraries containing a provider.
      */
     public static Library getFirstProviderLibrary() {
-        List<Library> libraries = createLibraries();
-        if (libraries.size() > 0) {
-            return libraries.iterator().next();
+        List<ProviderLibrary> libraries = createLibraries();
+        if (!libraries.isEmpty()) {
+            return libraries.get(0).getLibrary();
         }
         return null;
     }
@@ -334,5 +323,38 @@ public class PersistenceLibrarySupport  {
         }
         return null;
     }
-    
+
+    /**
+     * Encapsulates info on a library representing a persistence provider.
+     */ 
+    private static class ProviderLibrary{
+   
+        private final Library library;
+        // the cp of the library
+        private final ClassPath classPath;
+        // the provider that the library contains
+        private final Provider provider;
+
+        public ProviderLibrary(Library library, ClassPath classPath, Provider provider) {
+            assert library != null;
+            assert classPath != null;
+            assert provider != null;
+            this.library = library;
+            this.classPath = classPath;
+            this.provider = provider;
+        }
+
+        public ClassPath getClassPath() {
+            return classPath;
+        }
+
+        public Library getLibrary() {
+            return library;
+        }
+
+        public Provider getProvider() {
+            return provider;
+        }
+        
+    }
 }
