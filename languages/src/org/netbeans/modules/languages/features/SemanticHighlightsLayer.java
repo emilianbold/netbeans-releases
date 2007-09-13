@@ -119,34 +119,33 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
                 startOffset1 = endOffset1;
                 if (startOffset1 >= document.getLength () - 1) return false;
                 ASTPath path = ast.findPath (startOffset1);
-                if (path != null) {
-                    boolean isTrailing = isTrailing (path);
-                    ASTNode splitNode = isTrailing ? splitNode (path) : null;
-                    int i, k = path.size ();
-                    for ( i = 0; i < k; i++) {
-                        ASTItem item = path.get (i);
-                        if (isTrailing && splitNode == item) {
-                            break;
-                        }
-                        try {
-                            Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
-                            AttributeSet as = null;
-                            List<AttributeSet> colors = ColorsManager.getColors (language, path.subPath (i), document);
-                            if (colors != null && !colors.isEmpty ()) {
-                                for (Iterator<AttributeSet> it = colors.iterator (); it.hasNext ();) {
-                                    as = it.next ();
-                                    attributeSet.addAttributes (as);
-                                }
-                                endOffset1 = path.get (i).getEndOffset ();
-                            }
-                            as = highlighting.get (item);
-                            if (as != null) {
+                if (path == null) return false;
+                boolean isTrailing = isTrailing (path);
+                ASTNode splitNode = isTrailing ? splitNode (path) : null;
+                int i, k = path.size ();
+                for ( i = 0; i < k; i++) {
+                    ASTItem item = path.get (i);
+                    if (isTrailing && splitNode == item) {
+                        break;
+                    }
+                    try {
+                        Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
+                        AttributeSet as = null;
+                        List<AttributeSet> colors = ColorsManager.getColors (language, path.subPath (i), document);
+                        if (colors != null && !colors.isEmpty ()) {
+                            for (Iterator<AttributeSet> it = colors.iterator (); it.hasNext ();) {
+                                as = it.next ();
                                 attributeSet.addAttributes (as);
-                                endOffset1 = path.get (i).getEndOffset ();
                             }
-                        } catch (ParseException ex) {
-                            ex.printStackTrace();
+                            endOffset1 = path.get (i).getEndOffset ();
                         }
+                        as = highlighting.get (item);
+                        if (as != null) {
+                            attributeSet.addAttributes (as);
+                            endOffset1 = path.get (i).getEndOffset ();
+                        }
+                    } catch (ParseException ex) {
+                        ex.printStackTrace();
                     }
                 }
                 if (endOffset1 > startOffset1)
