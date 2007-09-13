@@ -54,6 +54,7 @@ public class TableEditorPanel extends ListEditorPanel {
     private JTable targetList;
     private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
 
+    @Override
     public char getDownButtonMnemonics() {
         return getString("DOWN_OPTION_BUTTON_MN").charAt(0);
     }
@@ -70,6 +71,7 @@ public class TableEditorPanel extends ListEditorPanel {
     }
 
     // Overrides ListEditorPanel
+    @Override
     public int getSelectedIndex() {
 	int index = getTargetList().getSelectedRow();
 	if (index >= 0 && index < listData.size())
@@ -78,18 +80,20 @@ public class TableEditorPanel extends ListEditorPanel {
 	    return 0;
     }
 
+    @Override
     protected void setSelectedIndex(int i) {
 	getTargetList().getSelectionModel().setSelectionInterval(i, i);
     }
 
+    @Override
     protected void setData(Vector data) {
 	getTargetList().setModel(new MyTableModel());
 	// Set column sizes
 	getTargetList().getColumnModel().getColumn(1).setPreferredWidth(100);
 	getTargetList().getColumnModel().getColumn(1).setMaxWidth(200);
 	//getTargetList().getColumnModel().getColumn(1).setResizable(true);
-	getTargetList().getColumnModel().getColumn(2).setPreferredWidth(35);
-	getTargetList().getColumnModel().getColumn(2).setMaxWidth(35);
+	getTargetList().getColumnModel().getColumn(2).setPreferredWidth(40);
+	getTargetList().getColumnModel().getColumn(2).setMaxWidth(40);
 	getTargetList().getColumnModel().getColumn(2).setResizable(false);
 	//
 	getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -106,6 +110,7 @@ public class TableEditorPanel extends ListEditorPanel {
         }
     }
 
+    @Override
     protected void ensureIndexIsVisible(int selectedIndex) {
 	// FIXUP...
 	//targetList.ensureIndexIsVisible(selectedIndex);
@@ -113,6 +118,7 @@ public class TableEditorPanel extends ListEditorPanel {
 	//targetList.scrollRectToVisible(rect);
     }
 
+    @Override
     protected Component getViewComponent() {
 	return getTargetList();
     }
@@ -135,18 +141,22 @@ public class TableEditorPanel extends ListEditorPanel {
             getAccessibleContext().setAccessibleName(""); // NOI18N
 	}
 
+        @Override
 	public boolean getShowHorizontalLines() {
 	    return false;
 	}
 
+        @Override
 	public boolean getShowVerticalLines() {
 	    return false;
 	}
 
+        @Override
 	public TableCellRenderer getCellRenderer(int row, int column) {
 	    return myTableCellRenderer;
 	}
 
+        @Override
 	public TableCellEditor getCellEditor(int row, int col) {
 	    //TableColumn col = getTargetList().getColumnModel().getColumn(1);
 	    if (col == 0) {
@@ -192,12 +202,14 @@ public class TableEditorPanel extends ListEditorPanel {
 	    return makeArtifact;
 	}
 
+        @Override
 	public String toString() {
 	    return getMakeArtifact().getConfigurationName();
 	}
     }
 
     class MyTableCellRenderer extends DefaultTableCellRenderer {
+        @Override
 	public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
 	    JLabel label = (JLabel)super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
 	    Object element = listData.elementAt(row);
@@ -249,24 +261,29 @@ public class TableEditorPanel extends ListEditorPanel {
            
 
     class MyTableModel extends DefaultTableModel {
-	private String[] columnNames = {"", getString("CONFIGURATION"), getString("BUILD")}; // NOI18N
+	private String[] columnNames = {getString("ITEM"), getString("CONFIGURATION"), getString("BUILD")}; // NOI18N
 
+        @Override
 	public String getColumnName(int col) {
 	    return columnNames[col];
 	}
 
+        @Override
         public int getColumnCount() {
             return 3;
         }
 
+        @Override
         public int getRowCount() {
             return listData.size();
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
             return listData.elementAt(row);
         }
 
+        @Override
         public boolean isCellEditable(int row, int col) {
 	    Object element = listData.elementAt(row);
 	    LibraryItem libraryItem = (LibraryItem)element;
@@ -292,6 +309,7 @@ public class TableEditorPanel extends ListEditorPanel {
 	    }
         }
 
+        @Override
         public void setValueAt(Object value, int row, int col) {
 	    LibraryItem libraryItem = (LibraryItem)listData.elementAt(row);
             if (col == 0) {
