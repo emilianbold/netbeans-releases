@@ -87,6 +87,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     private MakeConfiguration getMakeConfiguration() {
         return (MakeConfiguration)getMakeConfigurationDescriptor().getConfs().getActive();
     }
+
+    public Object getProject() {
+        return this.project;
+    }
     
     public String getProjectRoot() {
         return FileUtil.toFile(project.getProjectDirectory()).getPath();
