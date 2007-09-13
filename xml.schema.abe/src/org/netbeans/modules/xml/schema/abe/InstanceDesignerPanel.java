@@ -143,12 +143,12 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
         scrollPane.setAutoscrolls(true);
         add(scrollPane,BorderLayout.CENTER);
         
-        
         context.getComponentSelectionManager().setSelectedComponent(namespacePanel);
-        
         context.setFocusTraversalManager(new FocusTraversalManager(context));
+
+        // vlv: print
+        wrapperPanel.putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
     }
-    
     
     private static String globalElementsStr = NbBundle.getMessage(InstanceDesignerPanel.class,"" +
             "LBL_GLOBAL_ELEMENTS");
