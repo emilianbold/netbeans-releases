@@ -283,6 +283,10 @@ public class KeymapModelTest extends TestCase {
         public boolean isCustomProfile(String profileName) {
             return false;
         }
+
+        public Map<ShortcutAction, Set<String>> getDefaultKeymap(String profileName) {
+            return getKeymap(profileName);
+        }
     }
     
     private static class KeymapManager2 extends KeymapManager {
@@ -351,5 +355,9 @@ public class KeymapModelTest extends TestCase {
         public boolean isCustomProfile(String profileName) {
             return false;
         }
+        
+        public Map<ShortcutAction, Set<String>> getDefaultKeymap(String profileName) {
+            return getKeymap(profileName);
+        }        
     }
 }
