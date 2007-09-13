@@ -173,7 +173,7 @@ public final class ModificationResult {
             }
             int offset = 0;                
             for (Difference diff : differences) {
-                if (diff.isExcluded())
+                if (diff.isExcluded() || Difference.Kind.CREATE == diff.getKind())
                     continue;
                 int pos = diff.getStartPosition().getOffset();
                 int toread = pos - offset;
