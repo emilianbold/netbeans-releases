@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,22 +35,25 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.spi.project.ui.support.NodeFactorySupport;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.FindAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author mkleint
  */
 public final class SourceNodeFactory implements NodeFactory {
-    public SourceNodeFactory() {
-    }
     
     public NodeList createNodes(Project p) {
         RubyProject project = p.getLookup().lookup(RubyProject.class);
@@ -140,11 +143,11 @@ public final class SourceNodeFactory implements NodeFactory {
             this.fileObject = group.getRootFolder();
         }
         
-        public int hashCode() {
+        public @Override int hashCode() {
             return fileObject.hashCode();
         }
         
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (!(obj instanceof SourceGroupKey)) {
                 return false;
             } else {
@@ -208,31 +211,31 @@ public final class SourceNodeFactory implements NodeFactory {
         
         private String nodeName;
         private Project project;
-        
-        Action[] actions;
+        private Action[] actions;
         
         public PackageViewFilterNode(SourceGroup sourceGroup, Project project) {
             //super(PackageView.createPackageView(sourceGroup));
             super(new RootNode(sourceGroup));
-            
             this.project = project;
             this.nodeName = "Sources";
         }
         
-        
-        public Action[] getActions(boolean context) {
-            if (!context) {
-                if (actions == null) {
-                    Action superActions[] = super.getActions(context);
-                    actions = new Action[superActions.length + 2];
-                    System.arraycopy(superActions, 0, actions, 0, superActions.length);
-                    actions[superActions.length] = null;
-                    actions[superActions.length + 1] = new PreselectPropertiesAction(project, nodeName);
-                }
-                return actions;
-            } else {
-                return super.getActions(context);
+        public @Override Action[] getActions(boolean context) {
+            if (actions == null) {
+                actions = new Action[] {
+                    CommonProjectActions.newFileAction(),
+                    null,
+                    SystemAction.get(FileSystemAction.class),
+                    null,
+                    SystemAction.get(FindAction.class),
+                    null,
+                    SystemAction.get(PasteAction.class),
+                    null,
+                    SystemAction.get(ToolsAction.class),
+                    null,
+                    new PreselectPropertiesAction(project, nodeName)};
             }
+            return actions;
         }
         
     }
