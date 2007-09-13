@@ -42,6 +42,10 @@ public class APTFoldingProviderTestCase extends BaseTestCase {
         super(testName);
     }
     
+    public void testIfdefFolding() throws Exception {
+        performTest("ifdef.cc");
+    }
+    
     public void testSimpleFolding() throws Exception {
         performTest("simpleFolding.cc");
     }
