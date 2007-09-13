@@ -48,9 +48,6 @@ public class EditorTopComponent extends TopComponent {
         else
             this.lookup = new ProxyLookup (lookup, /*new AbstractLookup(ic),*/ Lookups.singleton(getActionMap()));
         getActionMap ().remove ("cloneWindow"); // NOI18N
-
-        // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
     }
 
     public Lookup getLookup () {
