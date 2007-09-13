@@ -128,6 +128,7 @@ public class SunCCompiler extends CCCCompiler {
             return false;
         }
         systemIncludeDirectoriesList = new PersistentList(values);
+        normalizePaths(systemIncludeDirectoriesList);
         return true;
     }
     
@@ -156,7 +157,6 @@ public class SunCCompiler extends CCCCompiler {
             return systemIncludeDirectoriesList;
         
         getSystemIncludesAndDefines();
-        normalizePaths(systemIncludeDirectoriesList);
         return systemIncludeDirectoriesList;
     }
     
@@ -215,6 +215,7 @@ public class SunCCompiler extends CCCCompiler {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;
         }
+        normalizePaths(systemIncludeDirectoriesList);
     }
     
     @Override

@@ -311,12 +311,12 @@ public class ConfigurationMakefileWriter {
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
                 if (itemConfiguration.getExcluded().getValue())
                     continue;
-                file = escapeDriveLetter(IpeUtils.escapeOddCharacters(items[i].getPath())); // FIXUP: cygdrive hard-coded...
+                CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+                file = IpeUtils.escapeOddCharacters(compilerSet.normalizeDriveLetter(items[i].getPath()));
                 command = ""; // NOI18N
                 comment = null;
 		additionalDep = null;
                 if (itemConfiguration.isCompilerToolConfiguration()) {
-                    CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
                     BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i].getPath(true), conf, false);
@@ -520,12 +520,4 @@ public class ConfigurationMakefileWriter {
         }
 	return false;
     }
-    
-    private static String escapeDriveLetter(String s) {
-        if (s.length() > 1 && s.charAt(1) == ':') {
-            return "/cygdrive/" + s.charAt(0) + s.substring(2); // NOI18N
         }
-        else
-            return s;
-    }
-}

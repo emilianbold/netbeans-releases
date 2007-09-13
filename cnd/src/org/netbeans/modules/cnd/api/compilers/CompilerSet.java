@@ -131,6 +131,7 @@ public class CompilerSet {
     private String dynamicLibrarySearchOption;
     private String libraryOption;
     private CompilerProvider compilerProvider;
+    private String driveLetterPrefix = "/"; // NOI18N
     
     private String[] noCompDNames = {
         NbBundle.getMessage(CompilerSet.class, "LBL_NoCCompiler"), // NOI18N
@@ -151,6 +152,15 @@ public class CompilerSet {
         switch (flavor) {
             case Interix:
                 basemap.put(getBase(directory), this);
+                driveLetterPrefix = "/dev/fs/"; // NOI18N
+                break;
+                
+            case Cygwin:
+                driveLetterPrefix = "/cygdrive/"; // NOI18N
+                break;
+                
+            case MinGW:
+                driveLetterPrefix = "/"; // NOI18N
                 break;
                 
             case Sun:
@@ -568,6 +578,22 @@ public class CompilerSet {
 
     public void setLibraryOption(String libraryOption) {
         this.libraryOption = libraryOption;
+    }
+    
+    public String getDriveLetterPrefix() {
+        return driveLetterPrefix;
+    }
+    
+    /**
+     * Converts absolute Windows paths to paths without the ':'.
+     * Example: C:/abc/def.c -> /cygdrive/c/def/c
+     */
+    public String normalizeDriveLetter(String path) {
+        if (path.length() > 1 && path.charAt(1) == ':') {
+            return getDriveLetterPrefix() + path.charAt(0) + path.substring(2); // NOI18N
+        }
+        else
+            return path;
     }
     
     public String toString() {
