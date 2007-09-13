@@ -67,9 +67,9 @@ public final class EditorRegistry {
      * <br/>
      * The focused component will become the first in the components list.
      * <br/>
-     * The {@link PropertyEvent#getOldValue()} will be the a component
+     * The {@link java.beans.PropertyChangeEvent#getOldValue()} will be the a component
      * losing the focus {@link FocusEvent#getOppositeComponent()}.
-     * The {@link PropertyEvent#getNewValue()} will be the text component gaining the focus.
+     * The {@link java.beans.PropertyChangeEvent#getNewValue()} will be the text component gaining the focus.
      */
     public static final String FOCUS_GAINED_PROPERTY = "focusGained";
     
@@ -78,8 +78,8 @@ public final class EditorRegistry {
      * <br/>
      * The focused component will remain the first in the components list.
      * <br/>
-     * The {@link PropertyEvent#getOldValue()} will be the text component
-     * losing the focus and the {@link PropertyEvent#getNewValue()}
+     * The {@link java.beans.PropertyChangeEvent#getOldValue()} will be the text component
+     * losing the focus and the {@link java.beans.PropertyChangeEvent#getNewValue()}
      * will be the component gaining the focus {@link FocusEvent#getOppositeComponent()}.
      */
     public static final String FOCUS_LOST_PROPERTY = "focusLost";
@@ -88,8 +88,8 @@ public final class EditorRegistry {
      * Fired when document property of the focused component changes
      * i.e. someone has called {@link JTextComponent#setDocument(Document)}.
      * <br/>
-     * The {@link PropertyEvent#getOldValue()} will be the original document
-     * of the focused text component and the {@link PropertyEvent#getNewValue()}
+     * The {@link java.beans.PropertyChangeEvent#getOldValue()} will be the original document
+     * of the focused text component and the {@link java.beans.PropertyChangeEvent#getNewValue()}
      * will be the new document set to the focused text component.
      */
     public static final String FOCUSED_DOCUMENT_PROPERTY = "focusedDocument";
