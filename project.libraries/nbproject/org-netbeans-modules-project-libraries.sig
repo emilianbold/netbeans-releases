@@ -1,0 +1,112 @@
+#Signature file v4.0
+#Version 
+
+CLSS public java.lang.Object
+cons public Object()
+meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected void finalize() throws java.lang.Throwable
+meth public boolean equals(java.lang.Object)
+meth public final java.lang.Class<?> getClass()
+meth public final void notify()
+meth public final void notifyAll()
+meth public final void wait() throws java.lang.InterruptedException
+meth public final void wait(long) throws java.lang.InterruptedException
+meth public final void wait(long,int) throws java.lang.InterruptedException
+meth public int hashCode()
+meth public java.lang.String toString()
+
+CLSS public final org.netbeans.api.project.libraries.LibrariesCustomizer
+meth public static boolean showCustomizer(org.netbeans.api.project.libraries.Library)
+supr java.lang.Object
+
+CLSS public final org.netbeans.api.project.libraries.Library
+fld public final static java.lang.String PROP_CONTENT = "content"
+fld public final static java.lang.String PROP_DESCRIPTION = "description"
+fld public final static java.lang.String PROP_NAME = "name"
+meth public boolean equals(java.lang.Object)
+meth public int hashCode()
+meth public java.lang.String getDescription()
+meth public java.lang.String getDisplayName()
+meth public java.lang.String getName()
+meth public java.lang.String getType()
+meth public java.lang.String toString()
+meth public java.util.List<java.net.URL> getContent(java.lang.String)
+meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr java.lang.Object
+hfds impl,listeners
+
+CLSS public final org.netbeans.api.project.libraries.LibraryManager
+fld public final static java.lang.String PROP_LIBRARIES = "libraries"
+meth public org.netbeans.api.project.libraries.Library getLibrary(java.lang.String)
+meth public org.netbeans.api.project.libraries.Library[] getLibraries()
+meth public static org.netbeans.api.project.libraries.LibraryManager getDefault()
+meth public void addLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
+meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void removeLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
+meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr java.lang.Object
+hfds cache,currentStorages,instance,listeners,plistener,result
+
+CLSS public org.netbeans.spi.project.libraries.LibraryFactory
+meth public static org.netbeans.api.project.libraries.Library createLibrary(org.netbeans.spi.project.libraries.LibraryImplementation)
+supr java.lang.Object
+
+CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryImplementation
+fld public final static java.lang.String PROP_CONTENT = "content"
+fld public final static java.lang.String PROP_DESCRIPTION = "description"
+fld public final static java.lang.String PROP_NAME = "name"
+meth public abstract java.lang.String getDescription()
+meth public abstract java.lang.String getLocalizingBundle()
+meth public abstract java.lang.String getName()
+meth public abstract java.lang.String getType()
+meth public abstract java.util.List<java.net.URL> getContent(java.lang.String)
+meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void setContent(java.lang.String,java.util.List<java.net.URL>)
+meth public abstract void setDescription(java.lang.String)
+meth public abstract void setLocalizingBundle(java.lang.String)
+meth public abstract void setName(java.lang.String)
+
+CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryProvider
+fld public final static java.lang.String PROP_LIBRARIES = "libraries"
+meth public abstract org.netbeans.spi.project.libraries.LibraryImplementation[] getLibraries()
+meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
+
+CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryTypeProvider
+intf org.openide.util.Lookup$Provider
+meth public abstract java.beans.Customizer getCustomizer(java.lang.String)
+meth public abstract java.lang.String getDisplayName()
+meth public abstract java.lang.String getLibraryType()
+meth public abstract java.lang.String[] getSupportedVolumeTypes()
+meth public abstract org.netbeans.spi.project.libraries.LibraryImplementation createLibrary()
+meth public abstract void libraryCreated(org.netbeans.spi.project.libraries.LibraryImplementation)
+meth public abstract void libraryDeleted(org.netbeans.spi.project.libraries.LibraryImplementation)
+
+CLSS public final org.netbeans.spi.project.libraries.support.LibrariesSupport
+meth public static org.netbeans.spi.project.libraries.LibraryImplementation createLibraryImplementation(java.lang.String,java.lang.String[])
+meth public static org.netbeans.spi.project.libraries.LibraryTypeProvider getLibraryTypeProvider(java.lang.String)
+meth public static org.netbeans.spi.project.libraries.LibraryTypeProvider[] getLibraryTypeProviders()
+supr java.lang.Object
+
+CLSS public abstract org.openide.util.Lookup
+cons public Lookup()
+fld public final static org.openide.util.Lookup EMPTY
+innr public abstract interface static Provider
+innr public abstract static Item
+innr public abstract static Result
+innr public final static Template
+meth public <%0 extends java.lang.Object> java.util.Collection<? extends {%%0}> lookupAll(java.lang.Class<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookupResult(java.lang.Class<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
+meth public static org.openide.util.Lookup getDefault()
+supr java.lang.Object
+hfds defaultLookup
+hcls DefLookup,Empty
+
+CLSS public abstract interface static org.openide.util.Lookup$Provider
+meth public abstract org.openide.util.Lookup getLookup()
+
