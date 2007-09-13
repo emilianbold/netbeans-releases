@@ -21,6 +21,7 @@ package org.netbeans.modules.ruby.debugger.breakpoints;
 
 import java.util.logging.Level;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.ruby.debugger.ContextProviderWrapper;
 import org.netbeans.modules.ruby.debugger.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -33,6 +34,8 @@ import org.rubyforge.debugcommons.model.IRubyBreakpoint;
  * @author Martin Krauskopf
  */
 public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint {
+    
+    static final String PROP_UPDATED = "updated"; // NOI18N
 
     private boolean enabled;
     private final Line line;
@@ -50,6 +53,11 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
                 Util.LOGGER.log(Level.WARNING, "Exception during breakpoint update.", e);
             }
         }
+    }
+    
+    public void notifyUpdated() {
+        ContextProviderWrapper.getBreakpointModel().fireChanges();
+        firePropertyChange(RubyBreakpoint.PROP_UPDATED, null, null);
     }
 
     public boolean isEnabled() {
@@ -90,6 +98,6 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
     }
 
     public @Override String toString() {
-        return getFilePath() + ":" + getLineNumber();
+        return getFilePath() + ':' + getLineNumber();
     }
 }

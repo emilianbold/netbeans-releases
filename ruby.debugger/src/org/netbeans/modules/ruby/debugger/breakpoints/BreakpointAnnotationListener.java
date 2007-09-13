@@ -57,9 +57,11 @@ public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
     
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
-        if (evt.getPropertyName() != Breakpoint.PROP_ENABLED) return;
-        removeAnnotation((Breakpoint) evt.getSource());
-        addAnnotation((Breakpoint) evt.getSource());
+        String propName = evt.getPropertyName();
+        if (propName == Breakpoint.PROP_ENABLED || propName == RubyBreakpoint.PROP_UPDATED) {
+            removeAnnotation((Breakpoint) evt.getSource());
+            addAnnotation((Breakpoint) evt.getSource());
+        }
     }
     
     private void addAnnotation(final Breakpoint b) {
@@ -67,14 +69,14 @@ public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
                 b.isEnabled() ? DebuggerAnnotation.BREAKPOINT_ANNOTATION_TYPE : DebuggerAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE,
                 ((RubyBreakpoint) b).getLine());
         breakpointToAnnotation.put(b, debugAnnotation);
-        b.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
+        b.addPropertyChangeListener(this);
     }
     
     private void removeAnnotation(Breakpoint b) {
         Annotation annotation = breakpointToAnnotation.remove(b);
         if (annotation == null) return;
         annotation.detach();
-        b.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
+        b.removePropertyChangeListener(this);
     }
     
 }

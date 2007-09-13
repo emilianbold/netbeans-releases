@@ -63,13 +63,9 @@ final class BreakpointLineUpdater implements PropertyChangeListener {
         }
     }
 
-    private synchronized void update() {
-        ContextProviderWrapper.getBreakpointModel().fireChanges();
-    }
-
     public synchronized void propertyChange(PropertyChangeEvent evt) {
         if (Line.PROP_LINE_NUMBER.equals(evt.getPropertyName()) && line == evt.getSource()) {
-            update();
+            breakpoint.notifyUpdated();
             return;
         }
     }
