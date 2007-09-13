@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
 compliance with the License.
@@ -19,7 +18,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="end2end/jsr172/test" basedir="." default="all">
-    <import file="${harness.dir}/xtest-unit.xml"/>
+<project name="mobility/end2end/jsr172/test-unit" basedir="." default="all">    
 
+    <import file="${xtest.home}/lib/templates/xtest-unit.xml"/>
 </project>
+

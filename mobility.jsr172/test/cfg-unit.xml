@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
 compliance with the License.
@@ -19,16 +18,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="end2end/jsr172">
+<mconfig name="JUnit test config">
 
-    <testbag testattribs="stable" executor="unit-executor" name="end2end/jsr172">
+    <testbag testattribs="stable" executor="unit-executor" name="J2ME JSR172 tests">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
-
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
 
