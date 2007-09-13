@@ -829,7 +829,7 @@ public class RubyInstallation {
 
         return rubylibFo;
     }
-
+    
     public FileObject getRubyStubs() {
         if (rubyStubsFo == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
@@ -845,6 +845,15 @@ public class RubyInstallation {
                     "rubystubs" + File.separator + RUBYSTUBS_VERSION); // NOI18N
                 assert rubyStubs.exists() && rubyStubs.isDirectory();
                 rubyStubsFo = FileUtil.toFileObject(rubyStubs);
+            } else {
+                // During test?
+                String ruby = getRuby();
+                if (ruby != null) {
+                    FileObject fo = FileUtil.toFileObject(new File(ruby));
+                    if (fo != null) {
+                        rubyStubsFo = fo.getParent().getParent().getParent().getFileObject("rubystubs/" + RUBYSTUBS_VERSION);
+                    }
+                }
             }
         }
 
