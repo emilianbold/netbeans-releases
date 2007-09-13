@@ -26,6 +26,7 @@ import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.DomainCreator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -86,7 +87,7 @@ public class Installer extends ModuleInstall {
                     // There is a possible root directory for the AS
                     File platformRoot = new File(prop);
                     ClassLoader cl = ServerLocationManager.getNetBeansAndServerClassLoader(platformRoot);
-                    if (null != cl && !platformRoot.canWrite()) {
+                    if (null != cl && !Utils.canWrite(platformRoot)) {
                         createDomainAndRecord(platformRoot);
                     } 
                     RegisterPointbase.getDefault().register(platformRoot);

@@ -165,7 +165,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         } else {
             domainDirectory = new File(domainDir,domain);
             ret =((SunDeploymentManagerInterface)dm).isLocal();
-            ret &= domainDirectory.canWrite();
+            ret &= Utils.canWrite(domainDirectory);
         }
         return ret;
     }

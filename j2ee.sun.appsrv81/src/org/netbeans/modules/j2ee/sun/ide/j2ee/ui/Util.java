@@ -34,6 +34,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -165,7 +166,7 @@ public class Util {
         
         File[] possibles = domainsDir.listFiles(new java.io.FileFilter() {
             public boolean accept(File pathname) {
-                if (pathname.isDirectory() && pathname.canWrite())
+                if (pathname.isDirectory() && Utils.canWrite(pathname))
                     return true;
                 return false;
             }
@@ -204,12 +205,12 @@ public class Util {
         File testFile2 = new File(testFile,"domain.xml");
         if (!testFile2.exists())
             return NbBundle.getMessage(Util.class, "ERROR_CANNOT_FIND_DOMAIN");
-        if (!testFile2.canWrite())
+        if (!Utils.canWrite(testFile2))
             return NbBundle.getMessage(Util.class, "ERROR_CANNOT_WRITE_TO_DOMAIN");
-        if (!testFile.exists() || !testFile.isDirectory() || !testFile.canWrite())
+        if (!testFile.exists() || !testFile.isDirectory() || !Utils.canWrite(testFile))
             return NbBundle.getMessage(Util.class, "ERROR_CANNOT_WRITE_TO_CONFIG");
         testFile = new File(f,"logs");
-        if (!testFile.exists() || !testFile.isDirectory() || !testFile.canWrite())
+        if (!testFile.exists() || !testFile.isDirectory() || !Utils.canWrite(testFile))
             return NbBundle.getMessage(Util.class, "ERROR_CANNOT_WRITE_TO_LOG");
         return null;
     }

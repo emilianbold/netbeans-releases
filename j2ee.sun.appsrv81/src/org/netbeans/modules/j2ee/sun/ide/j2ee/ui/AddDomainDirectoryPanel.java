@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -127,7 +128,7 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
                         parent.getAbsolutePath()));
                 return false;
             }
-            if (!parent.canWrite()) {
+            if (!Utils.canWrite(parent)) {
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddDomainDirectoryPanel.class,
                         "Msg_InValidDomainDirParent",                                 //NOI18N

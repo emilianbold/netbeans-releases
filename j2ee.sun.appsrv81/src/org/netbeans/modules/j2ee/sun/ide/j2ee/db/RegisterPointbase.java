@@ -55,6 +55,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Lookup;
@@ -311,7 +312,7 @@ public class RegisterPointbase implements DatabaseRuntime {
             // Go to the conf dir
             File dbFile = new File(installRoot+"/pointbase/databases/sample.dbn");  //NOI18N
             // if it is writable
-            if (dbFile.exists()  && (dbFile.canWrite()==false)) {
+            if (dbFile.exists()  && (Utils.canWrite(dbFile)==false)) {
                 //no write access to the dbs. so we copy them in a location where the ide can RW them
                 createLocalInstallation();
             }

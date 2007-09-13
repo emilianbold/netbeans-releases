@@ -28,6 +28,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -135,7 +136,7 @@ public final class DomainCreator {
                 }
                 
                 // if domainRoot parent is not writable inform user and return null
-                if(domainRoot.getParentFile().canWrite()) {
+                if(Utils.canWrite(domainRoot.getParentFile())) {
                     
                     // Creates domain factory
                     DomainCreator factory = new DomainCreator();

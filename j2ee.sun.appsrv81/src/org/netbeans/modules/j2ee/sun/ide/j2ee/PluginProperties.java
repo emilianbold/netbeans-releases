@@ -509,7 +509,7 @@ public class PluginProperties  {
                     
                     File confDir = new File(domainsList[i].getAbsolutePath()+"/config");//NOI18N
                     // if it is writable
-                    if (confDir.exists() && confDir.isDirectory() && confDir.canWrite()) {
+                    if (confDir.exists() && confDir.isDirectory() && Utils.canWrite(confDir)) {
                         // try to get the host/port data
                         String hp = Util.getHostPort(domainsList[i],platformRoot);
                         if (hp!=null){

@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,6 +30,8 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -318,5 +321,54 @@ public class Utils {
         return resources;
     }
     
-    
+    /**
+     * A canWrite test that may tell the truth on Windows.
+     * 
+     * This is a work around for http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+     * @param f the file or directory to test
+     * @return true when the file is writable...
+     */
+    public static boolean canWrite(File f) {
+        if (org.openide.util.Utilities.isWindows()) {
+            // File.canWrite() has lots of bogus return cases associated with 
+            // read-only directories and files... 
+            boolean retVal = true;
+            java.io.File tmp = null;
+            if (f.isDirectory()) {
+                try             {
+                    tmp = java.io.File.createTempFile("foo", ".tmp", f);
+                }
+                catch (IOException ex) {
+                    // I hate using exceptions for flow of control
+                    retVal = false;
+                } finally {
+                    if (null != tmp) {
+                        tmp.delete();
+                    }
+                }
+            } else {
+                java.io.FileOutputStream fos = null;
+                try {
+                    fos = new java.io.FileOutputStream(f, true);
+                }
+                catch (FileNotFoundException ex) {
+                    // I hate using exceptions for flow of control
+                    retVal = false;
+                } finally {
+                    if (null != fos) {
+                        try {
+                            fos.close();
+                        } catch (java.io.IOException ioe) {
+                            Logger.getLogger(Utils.class.getName()).log(Level.FINEST,
+                                    null, ioe);
+                        }
+                    }
+                }                
+            }
+            return retVal;
+        } else {
+            // we can actually trust the canWrite() implementation...
+            return f.canWrite();
+        }
+    }
 }
