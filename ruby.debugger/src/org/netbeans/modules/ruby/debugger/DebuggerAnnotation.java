@@ -32,8 +32,8 @@ public final class DebuggerAnnotation extends Annotation {
     
     public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";
     public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint";
-    public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "CondBreakpoint";
-    public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "DisabledCondBreakpoint";
+//    public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "CondBreakpoint";
+//    public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "DisabledCondBreakpoint";
     public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
     public static final String CURRENT_LINE_ANNOTATION_TYPE2 = "CurrentPC2";
     public static final String CURRENT_LINE_PART_ANNOTATION_TYPE = "CurrentPCLinePart";
@@ -58,15 +58,17 @@ public final class DebuggerAnnotation extends Annotation {
             return getMessage("TOOLTIP_BREAKPOINT"); // NOI18N
         } else if (type == DISABLED_BREAKPOINT_ANNOTATION_TYPE) {
             return getMessage("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        } else if (type == CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
-            return getMessage("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
-        } else if (type == DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
-            return getMessage("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
+//        } else if (type == CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+//            return getMessage("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
+//        } else if (type == DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+//            return getMessage("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
         } else if (type == CURRENT_LINE_ANNOTATION_TYPE) {
             return getMessage("TOOLTIP_CURRENT_LINE"); // NOI18N
         } else if (type == CURRENT_LINE_ANNOTATION_TYPE2) {
             return getMessage("TOOLTIP_CURRENT_LINE_2"); // NOI18N
         } else if (type == CURRENT_LINE_PART_ANNOTATION_TYPE) {
+            return getMessage("TOOLTIP_CURRENT_LINE"); // NOI18N
+        } else if (type == CURRENT_LINE_PART_ANNOTATION_TYPE2) {
             return getMessage("TOOLTIP_CURRENT_LINE"); // NOI18N
         } else if (type == CALL_STACK_FRAME_ANNOTATION_TYPE) {
             return getMessage("TOOLTIP_CALL_STACK_FRAME"); // NOI18N
