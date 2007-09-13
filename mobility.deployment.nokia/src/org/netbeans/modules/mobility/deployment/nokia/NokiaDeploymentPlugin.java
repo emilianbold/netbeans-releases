@@ -65,6 +65,10 @@ public class NokiaDeploymentPlugin implements DeploymentPlugin {
     }
 
     public Component createProjectCustomizerPanel() {
+        return null;
+    }
+
+    public Component createGlobalCustomizerPanel() {
         if(!deployer.isOSSupportsDeployment()) {
               return new JLabel(org.openide.util.NbBundle.getMessage(NokiaDeploymentPlugin.class,
                                                                      "NokiaDeploymentPlugin.OSNotSupported"));
@@ -74,9 +78,5 @@ public class NokiaDeploymentPlugin implements DeploymentPlugin {
         } else {
             return new NokiaProjectCustomizerPanel(deployer);
         }
-    }
-
-    public Component createGlobalCustomizerPanel() {
-        return createProjectCustomizerPanel();
     }
 }
