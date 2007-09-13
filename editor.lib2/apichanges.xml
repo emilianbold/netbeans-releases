@@ -82,6 +82,20 @@ is the proper place.
 
     <changes>
 
+        <change id="added-HighlightAttributeValue">
+            <summary>HighlightAttributeValue interface added</summary>
+            <version major="1" minor="5"/>
+            <date day="13" month="9" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                The <code>HighlightAttributeValue</code> allows specifying highlights
+                with attributes, which value is lazily evaluated at the time when
+                the attrbute is used. For example when specifying tooltips.
+            </description>
+            <issue number="107107"/>
+        </change>
+
         <change id="added-EditorRegistry">
             <summary>EditorRegistry added</summary>
             <version major="1" minor="4"/>

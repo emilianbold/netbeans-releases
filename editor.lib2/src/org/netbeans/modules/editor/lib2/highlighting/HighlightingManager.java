@@ -71,7 +71,7 @@ public final class HighlightingManager {
             h = new Highlighting(pane);
             pane.putClientProperty(Highlighting.class, h);
         }
-        return h.getContainer(filter);
+        return h.getContainer(filter == null ? HighlightsLayerFilter.IDENTITY : filter);
     }
     
     // ----------------------------------------------------------------------

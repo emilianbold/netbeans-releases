@@ -28,7 +28,7 @@ public final class EditorStyleConstants {
 
     private String representation;
 
-    EditorStyleConstants(String representation) {
+    private EditorStyleConstants(String representation) {
         this.representation = representation;
     }
 
@@ -46,6 +46,14 @@ public final class EditorStyleConstants {
      * Name of the default fonts and colots attribute.
      */
     public static final Object Default = new EditorStyleConstants ("default"); //NOI18N
+
+    /**
+     * Name of the tooltip attribute. It's value can be either <code>String</code> or
+     * <code>HighlightAttributeValue</code> returning <code>String</code>.
+     * 
+     * @since 1.12
+     */
+    public static final Object Tooltip = new EditorStyleConstants ("tooltip"); //NOI18N
     
     public String toString() {
         return representation;
