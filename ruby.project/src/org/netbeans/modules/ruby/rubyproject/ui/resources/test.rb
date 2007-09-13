@@ -10,6 +10,7 @@
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
 require 'test/unit'
+require '${classfile}'
 
 <#assign indent = "">
 <#-- If the "module" parameter is set, emit a series of module Name lines -->
@@ -22,20 +23,10 @@ ${indent}module ${modulename}
 </#if>
 <#-- If the "extend" parameter is set, add < Superclass to the class definition -->
 ${indent}class ${class}<#if extend?? && extend != ""> < ${extend}</#if>
-${indent}  def test_fail
-${indent}    assert(false, 'Assertion was false.')
-${indent}  end
-${indent}   
 ${indent}  def test_foo
-${indent}    # assert_equal("foo", bar)
-${indent}
-${indent}    # assert, assert_block, assert_equal, assert_in_delta, assert_instance_of,
-${indent}    # assert_kind_of, assert_match, assert_nil, assert_no_match, assert_not_equal,
-${indent}    # assert_not_nil, assert_not_same, assert_nothing_raised, assert_nothing_thrown,
-${indent}    # assert_operator, assert_raise, assert_raises, assert_respond_to, assert_same,
-${indent}    # assert_send, assert_throws
-${indent}
+${indent}    assert(false, 'Assertion was false.')
 ${indent}    flunk "TODO: Write test"
+${indent}    # assert_equal("foo", bar)
 ${indent}  end
 ${indent}end
 <#if modulelist??>

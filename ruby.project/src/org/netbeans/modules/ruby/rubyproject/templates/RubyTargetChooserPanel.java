@@ -248,6 +248,13 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
             } else if (type == NewRubyFileWizardIterator.TYPE_CLASS || 
                     type == NewRubyFileWizardIterator.TYPE_TEST) {
                 wizard.putProperty("class", gui.getClassName()); // NOI18N
+                String name = RubyUtils.camelToUnderlinedName(gui.getClassName());
+                if (name.startsWith("test_")) {
+                    name = name.substring("test_".length());
+                } else if (name.endsWith("_test")) {
+                    name = name.substring(0, name.length()-"_test".length());
+                }
+                wizard.putProperty("classfile", name); // NOI18N
                 wizard.putProperty("module", gui.getModuleName()); // NOI18N
                 wizard.putProperty("extend", gui.getExtends()); // NOI18N
             } else if (type == NewRubyFileWizardIterator.TYPE_MODULE) {
