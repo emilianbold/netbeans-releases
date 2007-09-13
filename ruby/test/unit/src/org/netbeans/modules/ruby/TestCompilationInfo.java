@@ -18,6 +18,7 @@ package org.netbeans.modules.ruby;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.gsf.CompilationInfo;
@@ -54,7 +55,9 @@ class TestCompilationInfo extends CompilationInfo {
         this.doc = doc;
         setParser(new RubyParser());
         if (fileObject != null) {
-            source = Source.forFileObject(fileObject);
+            //source = Source.forFileObject(fileObject);
+            ClasspathInfo cpInfo = ClasspathInfo.create(fileObject);
+            source = Source.create(cpInfo, Collections.singletonList(fileObject));
         }
     }
     

@@ -21,32 +21,28 @@ package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
-import junit.framework.TestCase;
-import org.jruby.ast.Node;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Completable.QueryType;
 import org.netbeans.api.gsf.CompletionProposal;
-import org.netbeans.api.gsf.Element;
+import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsf.ParameterInfo;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.api.retouche.source.Source;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.retouche.source.usages.Index;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -58,39 +54,210 @@ public class CodeCompleterTest extends RubyTestBase {
         super(testName);
     }
 
-//    public void testCompletion1() throws Exception {
-//        System.setProperty("ruby.interpreter", FileUtil.toFile(findJRuby().getFileObject("bin/jruby")).getAbsolutePath());
-//        LanguageRegistry registry = LanguageRegistry.getInstance();
-//        List<Action> actions = Collections.emptyList();
-//        List<String> extensions = Collections.singletonList("rb");
-//        Language dl = new DefaultLanguage("Ruby", "org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", extensions, 
-//                actions, new RubyLanguage(), 
-//                new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), 
-//                new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null);
-//        List<Language> languages = new ArrayList<Language>();
-//        languages.add(dl);
-//        registry.addLanguages(languages);
-//        List<ClassPath.Entry> entries = RubyInstallation.getInstance().getClassPathEntries();
-//        for (ClassPath.Entry entry : entries) {
-//            System.out.println(entry.getURL());
-//        }
-//        
-//        CompilationInfo ci = getInfo("testfiles/completion1.rb");
-//        assertEquals("completion1.rb", ci.getFileObject().getNameExt());
-//        assertNotNull(ci.getText());
-//        assertNotNull(ci.getParserResult());
-//        
-//        int offset = 16;
-//        
-//        CodeCompleter cc = new CodeCompleter();
-//        boolean caseSensitive = false;
-//        String prefix = "e";
-//        
-//        HtmlFormatter formatter = null;
-//        List<CompletionProposal> proposals = cc.complete(ci, offset, prefix, NameKind.CASE_INSENSITIVE_PREFIX, QueryType.COMPLETION, caseSensitive, formatter);
-//        assertTrue(proposals.size() > 8);
-//    }
+    private String describe(String caretLine, NameKind kind, QueryType type, List<CompletionProposal> proposals) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Results for " + caretLine + " with queryType=" + type + " and nameKind=" + kind);
+        sb.append("\n");
 
+        // Sort to make test more stable
+        Collections.sort(proposals, new Comparator<CompletionProposal>() {
+
+            public int compare(CompletionProposal p1, CompletionProposal p2) {
+                // Smart items first
+                if (p1.isSmart() != p2.isSmart()) {
+                    return p1.isSmart() ? -1 : 1;
+                }
+
+                if (p1.getKind() != p2.getKind()) {
+                    return p1.getKind().compareTo(p2.getKind());
+                }
+                
+                if (!p1.getLhsHtml().equals(p2.getLhsHtml())) {
+                    return p1.getLhsHtml().compareTo(p2.getLhsHtml());
+                }
+
+                if (!p1.getRhsHtml().equals(p2.getRhsHtml())) {
+                    return p1.getRhsHtml().compareTo(p2.getRhsHtml());
+                }
+
+                // Yuck - tostring comparison of sets!!
+                if (!p1.getModifiers().toString().equals(p2.getModifiers().toString())) {
+                    return p1.getModifiers().toString().compareTo(p2.getModifiers().toString());
+                }
+                
+                return 0;
+            }
+        });
+        
+        boolean isSmart = true;
+        for (CompletionProposal proposal : proposals) {
+            if (isSmart && !proposal.isSmart()) {
+                sb.append("------------------------------------\n");
+                isSmart = false;
+            }
+            
+            String n = proposal.getKind().toString();
+            int MAX_KIND = 10;
+            if (n.length() > MAX_KIND) {
+                sb.append(n.substring(0, MAX_KIND));
+            } else {
+                sb.append(n);
+                for (int i = n.length(); i < MAX_KIND; i++) {
+                    sb.append(" ");
+                }
+            }
+
+            sb.append(" ");
+            
+            n = proposal.getLhsHtml();
+            int MAX_LHS = 30;
+            if (n.length() > MAX_LHS) {
+                sb.append(n.substring(0, MAX_LHS));
+            } else {
+                sb.append(n);
+                for (int i = n.length(); i < MAX_LHS; i++) {
+                    sb.append(" ");
+                }
+            }
+
+            sb.append("  ");
+
+            if (proposal.getModifiers().isEmpty()) {
+                n = "";
+            } else {
+                n = proposal.getModifiers().toString();
+            }
+            int MAX_MOD = 9;
+            if (n.length() > MAX_MOD) {
+                sb.append(n.substring(0, MAX_MOD));
+            } else {
+                sb.append(n);
+                for (int i = n.length(); i < MAX_MOD; i++) {
+                    sb.append(" ");
+                }
+            }
+
+            sb.append("  ");
+            
+            sb.append(proposal.getRhsHtml());
+            sb.append("\n");
+            
+            isSmart = proposal.isSmart();
+        }
+        
+        return sb.toString();
+    }
+    
+    public void checkCompletion(String file, String caretLine) throws Exception {
+        QueryType type = QueryType.COMPLETION;
+        boolean caseSensitive = true;
+        NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+
+        System.setProperty("netbeans.user", getWorkDirPath());
+        FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
+        assertNotNull(jrubyHome);
+        FileObject clusterLoc = jrubyHome.getParent();
+        Index.setClusterLoc(clusterLoc);
+        LanguageRegistry registry = LanguageRegistry.getInstance();
+        List<Action> actions = Collections.emptyList();
+        if (!LanguageRegistry.getInstance().isSupported(RubyInstallation.RUBY_MIME_TYPE)) {
+            List<String> extensions = Collections.singletonList("rb");
+            Language dl = new DefaultLanguage("Ruby", "org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", extensions, 
+                    actions, new RubyLanguage(), 
+                    new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), 
+                    new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null);
+            List<Language> languages = new ArrayList<Language>();
+            languages.add(dl);
+            registry.addLanguages(languages);
+        }
+        // Force classpath initialization
+        List<ClassPath.Entry> entries = RubyInstallation.getInstance().getClassPathEntries();
+        
+        CompilationInfo ci = getInfo(file);
+        String text = ci.getText();
+        assertNotNull(text);
+        assertNotNull(ci.getParserResult());
+        
+        int caretOffset = -1;
+        if (caretLine != null) {
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = text.indexOf(caretLine);
+            assertTrue(lineOffset != -1);
+
+            caretOffset = lineOffset + caretDelta;
+        }
+
+        
+        CodeCompleter cc = new CodeCompleter();
+        
+        HtmlFormatter formatter = new HtmlFormatter() {
+            private StringBuilder sb = new StringBuilder();
+            
+            public void reset() {
+                sb.setLength(0);
+            }
+
+            public void appendHtml(String html) {
+                sb.append(html);
+            }
+
+            public void appendText(String text) {
+                sb.append(text);
+            }
+
+            public void name(ElementKind kind, boolean start) {
+            }
+
+            public void parameters(boolean start) {
+            }
+
+            public void type(boolean start) {
+            }
+
+            public void deprecated(boolean start) {
+            }
+
+            public String getText() {
+                return sb.toString();
+            }
+            
+        };
+        boolean upToOffset = type == QueryType.COMPLETION;
+        String prefix = cc.getPrefix(ci, caretOffset, upToOffset);
+        if (prefix == null) {
+            if (prefix == null) {
+                int[] blk =
+                    org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)ci.getDocument(),
+                        caretOffset);
+
+                if (blk != null) {
+                    int start = blk[0];
+
+                    if (start < caretOffset ) {
+                        if (upToOffset) {
+                            prefix = ci.getDocument().getText(start, caretOffset - start);
+                        } else {
+                            prefix = ci.getDocument().getText(start, blk[1]-start);
+                        }
+                    }
+                }
+            }
+        }
+
+        Source js = Source.forFileObject(ci.getFileObject());
+        assertNotNull(js);
+        //ci.getIndex();
+        //index.setDirty(js);
+        js.testUpdateIndex();
+        
+        List<CompletionProposal> proposals = cc.complete(ci, caretOffset, prefix, kind, type, caseSensitive, formatter);
+        
+        String described = describe(caretLine, kind, type, proposals);
+        assertDescriptionMatches(file, described, true, ".completion");
+    }
+    
     
     public void checkPrefix(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
@@ -234,4 +401,33 @@ public class CodeCompleterTest extends RubyTestBase {
         assertAutoQuery(QueryType.NONE, "x..^", ".");
         assertAutoQuery(QueryType.NONE, "x..^5", ".");
     }
+
+//    public void testCompletion1() throws Exception {
+//        checkCompletion("testfiles/completion/lib/test1.rb", "f.e^");
+//    }
+//    
+//    public void testCompletion2() throws Exception {
+//        // This test doesn't pass yet because we need to index the -current- file
+//        // before resuming
+//        checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@^myfield} and #@another.");
+//    }
+//    
+//    public void testCompletion3() throws Exception {
+//        checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@myfield} and #@a^nother.");
+//    }
+//    
+//    public void testCompletion4() throws Exception {
+//        checkCompletion("testfiles/completion/lib/test2.rb", "Hell^o World");
+//    }
+//    
+//    public void testCompletion5() throws Exception {
+//        checkCompletion("testfiles/completion/lib/test2.rb", "/re^g/");
+//    }
+//
+//    public void testCompletion6() throws Exception {
+//        checkCompletion("testfiles/completion/lib/test2.rb", "class My^Test");
+//    }
+//    
+//    // TODO: Test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
+    
 }
