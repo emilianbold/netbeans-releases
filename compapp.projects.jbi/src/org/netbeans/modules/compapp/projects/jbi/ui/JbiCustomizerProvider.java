@@ -122,6 +122,12 @@ public class JbiCustomizerProvider implements CustomizerProvider {
         // Set commands
         options[OPTION_OK].setActionCommand(COMMAND_OK);
         options[OPTION_CANCEL].setActionCommand(COMMAND_CANCEL);
+        
+        //A11Y
+        options[OPTION_OK].getAccessibleContext().setAccessibleDescription ( 
+                NbBundle.getMessage(JbiCustomizerProvider.class, "AD_Customizer_Ok_Option")); // NOI18N
+        options[OPTION_CANCEL].getAccessibleContext().setAccessibleDescription ( 
+                NbBundle.getMessage(JbiCustomizerProvider.class, "AD_Customizer_Cancel_Option")); // NOI18N
 
         // RegisterListener
         webProperties = new JbiProjectProperties(project, antProjectHelper, refHelper);
@@ -152,7 +158,7 @@ public class JbiCustomizerProvider implements CustomizerProvider {
         );
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.setVisible(true);
+        dialog.setVisible(true);        
     }
 
     /**
