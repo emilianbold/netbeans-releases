@@ -481,6 +481,12 @@ public class CommentsTest extends GeneratorTest {
             "    void method() {\n" +
             "    }\n" +
             "\n" +
+            "    /**\n" +
+            "     * What's up?\n" +
+            "     */\n" +
+            "    void methoda() {\n" +
+            "    }\n" +
+            "\n" +
             "}\n";
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
@@ -494,7 +500,7 @@ public class CommentsTest extends GeneratorTest {
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 MethodTree method = make.Method(
                         make.Modifiers(Collections.<Modifier>emptySet()),
-                        "metoda",
+                        "methoda",
                         make.Identifier("void"),
                         Collections.<TypeParameterTree>emptyList(),
                         Collections.<VariableTree>emptyList(),
@@ -503,7 +509,7 @@ public class CommentsTest extends GeneratorTest {
                         null
                 );
                 int no = PositionEstimator.NOPOS;
-                make.addComment(method, Comment.create(Style.BLOCK, no, no, no, "What's up?\n"), true);
+                make.addComment(method, Comment.create(Style.JAVADOC, no, no, no, "What's up?\n"), true);
                 ClassTree copy = make.addClassMember(clazz, method);
                 workingCopy.rewrite(clazz, copy);
             }
