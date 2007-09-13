@@ -185,7 +185,7 @@ public class RailsDeprecations implements AstRule {
     }
 
     public boolean getDefaultEnabled() {
-        return false;
+        return true;
     }
 
     public HintSeverity getDefaultSeverity() {
