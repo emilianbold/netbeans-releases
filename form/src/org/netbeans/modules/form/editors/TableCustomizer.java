@@ -1127,8 +1127,10 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
 
         // columnModel
         TableColumnModelEditor.FormTableColumnModel model = new TableColumnModelEditor.FormTableColumnModel(columnModelProperty);
-        for (ColumnInfo column : columns) {
-            model.getColumns().add(column.getColumn());
+        if (!modelCustomChoice.isSelected()) {
+            for (ColumnInfo column : columns) {
+                model.getColumns().add(column.getColumn());
+            }
         }
         int selectionModel = selectionModelCombo.getSelectedIndex();
         model.setSelectionModel(selectionModel);
