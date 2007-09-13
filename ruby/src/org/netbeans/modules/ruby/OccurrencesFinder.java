@@ -154,6 +154,10 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
 
             try {
                 BaseDocument doc = (BaseDocument)info.getDocument();
+                if (doc == null) {
+                    // Document was just closed
+                    return;
+                }
 
                 int length = doc.getLength();
                 int startPos = pos.getStartOffset();
