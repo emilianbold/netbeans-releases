@@ -73,6 +73,7 @@ public class VerifyLibsAndLicenses extends Task {
     private Set<String> modules;
 
     public @Override void execute() throws BuildException {
+        try { // XXX workaround for http://issues.apache.org/bugzilla/show_bug.cgi?id=43398
         pseudoTests = new LinkedHashMap<String,String>();
         modules = new TreeSet<String>();
         modules.add("nbbuild");
@@ -88,6 +89,7 @@ public class VerifyLibsAndLicenses extends Task {
             throw new BuildException(x, getLocation());
         }
         JUnitReportWriter.writeReport(this, reportFile, pseudoTests);
+        } catch (NullPointerException x) {x.printStackTrace(); throw x;}
     }
 
     private void testBinaryUniqueness() throws IOException {
