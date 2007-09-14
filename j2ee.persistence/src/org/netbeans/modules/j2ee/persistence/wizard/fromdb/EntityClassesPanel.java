@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
@@ -36,6 +37,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
@@ -428,6 +430,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         private Project project;
         private boolean cmp;
 
+        private List<Provider> providers;
+
         public EntityClassesPanel getComponent() {
             if (component == null) {
                 component = new EntityClassesPanel();
@@ -520,10 +524,15 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 LOGGER.log(Level.WARNING, null, e);
             }
             if (classPath != null) {
-                if (classPath.findResource("javax/persistence/EntityManager.class") == null && // NOI18N
-                        PersistenceLibrarySupport.getProvidersFromLibraries().size() == 0) {
-                    setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_NoJavaPersistenceAPI")); // NOI18N
-                    return false;
+                if (classPath.findResource("javax/persistence/EntityManager.class") == null) { // NOI18N
+                    // initialize the provider list lazily
+                    if (providers == null) {
+                        providers = PersistenceLibrarySupport.getProvidersFromLibraries();
+                    }
+                    if (providers.size() == 0) {
+                        setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_NoJavaPersistenceAPI")); // NOI18N
+                        return false;
+                    }
                 }
             } else {
                 LOGGER.warning("Cannot get a classpath for package " + packageName + " in " + sourceGroup); // NOI18N
