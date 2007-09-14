@@ -172,6 +172,15 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
                     backEndSemaphore.release();
                     return;
                 }
+            } else {
+                try {
+                    // trying to step into file which we are not able to resolve, step back
+                    event.getRubyThread().stepReturn();
+                    backEndSemaphore.release();
+                    return;
+                } catch (RubyDebuggerException e) {
+                    Util.severe(e);
+                }
             }
         } else {
             assert false : "Unkown event type: " + event;

@@ -153,6 +153,10 @@ public abstract class TestBase extends RubyTestBase {
         RubyInstallation.getInstance().setRuby(rubyExecutable.getAbsolutePath());
     }
 
+    protected void switchToJRuby() {
+        RubyInstallation.getInstance().setRuby(RubyInstallation.getInstance().getJRuby());
+    }
+
     private File getRDebugExecutable(boolean failIfNotAvailable) {
         return TestBase.getFile("rdebug.executable", failIfNotAvailable);
     }
