@@ -294,10 +294,6 @@ public class WSDLDesignMultiViewElement extends TopComponent
                 mToolbar.addSeparator();
                 if (graphComponent != null) graphComponent.addToolbarActions(mToolbar);
 
-                // vlv: print
-//              mToolbar.addSeparator();
-//              mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());
-
                 mToolbar.addSeparator();
                 mToolbar.add(new ValidateAction(model));
             }
