@@ -23,6 +23,8 @@ import java.io.*;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.multiview.MultiViewModel.ActionRequestObserverFactory;
@@ -30,6 +32,7 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.SourceViewMarker;
 import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
@@ -218,6 +221,20 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
                 // fingers crossed and hope for the best... could result in bad results once
                 // we have multiple editors in the multiview component.
                 return el;
+            }
+        }
+        
+        MultiViewDescription[] descs = peer.model.getDescriptions();
+        for (MultiViewDescription desc : descs) {
+            if (desc instanceof SourceViewMarker) {
+                peer.tabs.changeVisibleManually(desc);
+                el = peer.model.getActiveElement();
+                if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
+                    return el;
+                } else {
+                    Logger.getLogger(getClass().getName()).info("MultiViewDescription " + desc.getDisplayName() + "(" + desc.getClass() + 
+                            ") claimed to contain sources, but it's MutliViewElement.getVisualRepresentation() didn't return a valid CloeanbleEditorSupport.Pane instance.");
+                }
             }
         }
         // hopeless case, don't try to create new elements. it's users responsibility to

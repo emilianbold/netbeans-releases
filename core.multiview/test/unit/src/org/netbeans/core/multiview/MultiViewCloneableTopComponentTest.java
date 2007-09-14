@@ -20,6 +20,7 @@
 
 package org.netbeans.core.multiview;
 
+import javax.swing.JComponent;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
@@ -36,6 +37,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
@@ -43,8 +45,10 @@ import junit.framework.*;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.SourceViewMarker;
 import org.netbeans.junit.*;
 import org.openide.awt.UndoRedo;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.lookup.Lookups;
@@ -140,6 +144,64 @@ public class MultiViewCloneableTopComponentTest extends AbstractMultiViewTopComp
         
     }    
     
+    
+    public void testSourceViewMarker() throws Exception {
+        MVElem elem1 = new MVElem();
+        MVElem elem2 = new MVElem();
+        MVElem elem3 = new SourceMVElem();
+        MultiViewDescription desc1 = new MVDesc("desc1", null, 0, elem1);
+        MultiViewDescription desc2 = new MVDesc("desc2", null, 0, elem2);
+        MultiViewDescription desc3 = new SourceMVDesc("desc3", null, 0, elem3);
+        MultiViewDescription[] descs = new MultiViewDescription[] { desc1, desc2, desc3 };
+        CloneableTopComponent tc = MultiViewFactory.createCloneableMultiView(descs, desc1);
+        
+        tc.open();
+        tc.requestActive();
+        
+        CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)tc;
+        JEditorPane editor = pane.getEditorPane();
+        assertNotNull(editor);
+        
+        MultiViewHandler hand = MultiViews.findMultiViewHandler(tc);
+        assertEquals(desc3, Accessor.DEFAULT.extractDescription(hand.getSelectedPerspective()));
+        
+    }
+    
+    private class SourceMVDesc extends MVDesc implements SourceViewMarker {
+        public SourceMVDesc(String name, Image img, int persType, MultiViewElement element) {
+            super(name, img, persType, element);
+        }
+        
+    }
+    
+    private class SourceMVElem extends MVElem {
+
+        @Override
+        public JComponent getVisualRepresentation() {
+            return new Pane();
+        }
+        
+    }
+    
+    private class Pane extends JEditorPane implements CloneableEditorSupport.Pane {
+
+        public JEditorPane getEditorPane() {
+            return this;
+        }
+
+        public CloneableTopComponent getComponent() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void updateName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void ensureVisible() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    }
     
 }
 
