@@ -21,11 +21,13 @@ package org.netbeans.core;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /** Basic tests on NbClipboard
@@ -63,6 +65,21 @@ public class NbClipboardTest extends NbTestCase {
         NbClipboard ec = new NbClipboard();
         assertFalse("Property overrides default", ec.slowSystemClipboard);
         assertEquals("sun.awt.datatransfer.timeout is now 1000", "1000", System.getProperty("sun.awt.datatransfer.timeout"));
+    }
+    public void testOnMacOSX() throws Exception {
+        String prev = System.getProperty("os.name");
+        try {
+            System.setProperty("os.name", "Darwin");
+            Field f = Class.forName(Utilities.class.getName()).getDeclaredField("operatingSystem");
+            f.setAccessible(true);
+            f.set(null, -1);
+            assertTrue("Is mac", Utilities.isMac());
+
+            NbClipboard ec = new NbClipboard();
+            assertFalse("MAC seems to have fast clipboard", ec.slowSystemClipboard);
+        } finally {
+            System.setProperty("os.name", prev);
+        }
     }
     
     public void testMemoryLeak89844() throws Exception {

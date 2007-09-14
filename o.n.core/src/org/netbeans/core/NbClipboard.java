@@ -41,6 +41,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExClipboard;
 
 public final class NbClipboard extends ExClipboard
@@ -68,10 +69,14 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
 
         resultChanged(null);
 
-        if (System.getProperty("netbeans.slow.system.clipboard.hack") != null) // NOI18N
+        if (System.getProperty("netbeans.slow.system.clipboard.hack") != null) {
             slowSystemClipboard = Boolean.getBoolean("netbeans.slow.system.clipboard.hack"); // NOI18N
-        else
+        } else if (Utilities.isMac()) {
+            slowSystemClipboard = false;
+        }
+        else {
             slowSystemClipboard = true;
+        }
 
 
 
