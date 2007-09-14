@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.websvc.manager.nodes;
 
-import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.util.Collection;
 
 import org.netbeans.modules.websvc.manager.WebServiceManager;

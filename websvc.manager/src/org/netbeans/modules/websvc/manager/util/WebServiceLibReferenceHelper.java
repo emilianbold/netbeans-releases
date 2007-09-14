@@ -191,7 +191,7 @@ public class WebServiceLibReferenceHelper {
             return ManagerUtil.hasLibraryReference(project, library, null);
         }
         public void addLibraryReferences(Project project, Library[] libraries) throws IOException {
-            ManagerUtil.addLibraryReferences(project, libraries, null);
+            ManagerUtil.addLibraryReferences(project, libraries);
         }
     }
     

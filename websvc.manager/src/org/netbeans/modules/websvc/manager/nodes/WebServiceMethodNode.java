@@ -19,12 +19,10 @@
 
 package org.netbeans.modules.websvc.manager.nodes;
 
-import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
 import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
 
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
