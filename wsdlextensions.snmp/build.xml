@@ -4,5 +4,6 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="snmp" basedir=".">
     <description>Builds the module suite snmp.</description>
-    <import file="nbproject/build-impl.xml"/>
+    <!-- <import file="nbproject/build-impl.xml"/> -->
+	<import file="../../../nbbuild/templates/projectized.xml"/>
 </project>
