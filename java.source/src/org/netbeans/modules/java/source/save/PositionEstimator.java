@@ -256,7 +256,6 @@ public abstract class PositionEstimator {
             CompilationUnitTree cut = copy.getCompilationUnit();
             int resultPos = 0;
             if (cut.getTypeDecls().isEmpty()) {
-                aHead.append('\n');
                 return copy.getText().length();
             } else {
                 Tree t = cut.getTypeDecls().get(0);
@@ -266,7 +265,6 @@ public abstract class PositionEstimator {
                 if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
                     resultPos = seq.offset() + seq.token().length();
                 } else {
-                    aTail.append('\n');
                     return 0;
                 }
             }
@@ -291,14 +289,6 @@ public abstract class PositionEstimator {
                     // do not continue when javadoc comment was found!
                     break;
                 }
-            }
-            if (counter < 3) {
-                if (counter == 0) {
-                    aHead.append("\n\n");
-                } else if (counter == 1) {
-                    aHead.append('\n');
-                }
-                aTail.append('\n');
             }
             return resultPos;
         }
