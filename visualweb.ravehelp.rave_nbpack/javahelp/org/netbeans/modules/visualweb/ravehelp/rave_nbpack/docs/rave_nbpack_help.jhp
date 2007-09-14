@@ -422,7 +422,6 @@
 					<file title="config_virtual_forms_db.html"/>
 					<file title="currencycodepopup.html"/>
 					<file title="data_table_layout_db.html"/>
-					<file title="findinfiles.html"/>
 					<file title="import_components_db.html"/>
 					<file title="new_database_connection_db.html"/>
 					<file title="new_jdbc_driver_db.html"/>
@@ -901,7 +900,6 @@
 					</directory>
 					<file title="add_new_data_provider.html"/>
 					<file title="run_query.html"/>
-					<file title="run_query_options_dialog.html"/>
 					<file title="runtime_nav_driver_node_popup.html"/>
 					<file title="runtime_navigator.html"/>
 					<file title="services_win_popup.html"/>
@@ -1017,7 +1015,6 @@
 							<file title="taghandler_edit.html"/>
 						</directory>
 						<directory title="taglib">
-							<file title="csh_library_manager.html"/>
 							<file title="taglib_create_separate.html"/>
 						</directory>
 						<directory title="tld">
