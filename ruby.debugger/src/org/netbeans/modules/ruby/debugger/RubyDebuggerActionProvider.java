@@ -163,7 +163,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             String absPath = rubySession.resolveAbsolutePath(path);
             if (absPath != null) {
                 File file = new File(absPath);
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 if (event.isStepping() || rubySession.isRunningTo(file, event.getLine()) ||
                         (fo != null && RubyBreakpointManager.isBreakpointOnLine(fo, event.getLine()))) {
                     stopHere(event);
