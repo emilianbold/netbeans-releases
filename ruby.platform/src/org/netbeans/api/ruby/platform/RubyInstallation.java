@@ -200,13 +200,13 @@ public class RubyInstallation {
         return ruby;
     }
     
-    private String getJRuby() {
+    public String getJRuby() {
         String binDir = getJRubyBin();
         if (binDir == null) {
             return null;
         }
 
-        String binary = org.openide.util.Utilities.isWindows() ? "jruby.bat" : "jruby"; // NOI18N
+        String binary = Utilities.isWindows() ? "jruby.bat" : "jruby"; // NOI18N
         String jruby = binDir + File.separator + binary;
 
         // Normalize path
