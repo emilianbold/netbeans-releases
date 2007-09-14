@@ -306,7 +306,6 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         }
 
         public final JMenuItem getPopupPresenter() {
-            menuItem.setSelected(subDirection);
             return menuItem;
         }
     }

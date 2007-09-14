@@ -438,7 +438,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private javax.swing.JToggleButton whoIsIncludedButton;
     // End of variables declaration//GEN-END:variables
     
-    private class RefreshAction extends AbstractAction {
+    private class RefreshAction extends AbstractAction implements Presenter.Popup {
         private JMenuItem menuItem;
         public RefreshAction() {
             putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.refreshButton.toolTipText")); //NOI18N
@@ -446,8 +446,13 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             menuItem = new JMenuItem((String)getValue(Action.NAME)); 
             menuItem.setAction(this);
         }
-        public void actionPerformed (ActionEvent e) {
+
+        public void actionPerformed(ActionEvent e) {
             refreshButtonActionPerformed(e);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
         }
     }
 
