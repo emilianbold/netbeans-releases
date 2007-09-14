@@ -92,6 +92,7 @@ public class MenuEditLayer extends JPanel {
     
     /* === private constants === */
     private static final boolean DEBUG = false;
+    private static final boolean USE_NEW_ITEM_COLOR_SWITCHING = false;
     
     /* === public and package level fields. these should probably become getters and setters  ===*/
     public VisualDesignerPopupFactory hackedPopupFactory = null;
@@ -368,7 +369,9 @@ public class MenuEditLayer extends JPanel {
                             }
                             if(evt.getChangeType() == evt.COMPONENT_ADDED) {
                                 if(evt.getCreatedDeleted()) {
-                                    configureNewComponent(evt.getComponent());
+                                    if(USE_NEW_ITEM_COLOR_SWITCHING) {
+                                        configureNewComponent(evt.getComponent());
+                                    }
                                 }
                             }
                             
@@ -753,7 +756,7 @@ public class MenuEditLayer extends JPanel {
                 if(isMenuRelatedRADComponent(rad) && !isMenuBarContainer(rad)) { // don't mess w/ the menubar's background
                     JComponent c = (JComponent) formDesigner.getComponent(rad);
                     if(c != null) { // could be null if comp was just deleted
-                            c.setBackground(getNormalBackground(c));
+                        c.setBackground(getNormalBackground(c));
                     }
                 }
             }
@@ -1130,8 +1133,10 @@ public class MenuEditLayer extends JPanel {
     private void configureEditedComponent(JComponent c) {
         //p("configuring an edited component");
         if(c == null) return;
-        if(c.getForeground() == Color.LIGHT_GRAY) {
-            c.setForeground(getNormalForeground(c));
+        if(USE_NEW_ITEM_COLOR_SWITCHING) {
+            if(c.getForeground() == Color.LIGHT_GRAY) {
+                c.setForeground(getNormalForeground(c));
+            }
         }
     }
     
