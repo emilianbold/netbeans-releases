@@ -273,9 +273,8 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
                     int startOffset = DocUtils.getRowStart(document, caretOffset, 0);
                     int endOffset = DocUtils.getRowEnd(document, caretOffset);
 
-                    if (endOffset < document.getLength()) {
-                        endOffset++; // include the new-line character
-                    }
+                    // include the new-line character or the end of the document
+                    endOffset++;
 
                     return new Position [] {
                         document.createPosition(startOffset),
