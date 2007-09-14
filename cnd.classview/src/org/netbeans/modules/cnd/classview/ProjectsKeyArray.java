@@ -191,6 +191,9 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     
     private static final class ProjectComparator implements Comparator<java.util.Map.Entry<CsmProject,SortedName>> {
         public int compare(java.util.Map.Entry<CsmProject, SortedName> o1, java.util.Map.Entry<CsmProject, SortedName> o2) {
+            if (o1.getKey().isArtificial() != o2.getKey().isArtificial()){
+                return o1.getKey().isArtificial()?1:-1;
+            }
             return o1.getValue().compareTo(o2.getValue());
         }
     }
