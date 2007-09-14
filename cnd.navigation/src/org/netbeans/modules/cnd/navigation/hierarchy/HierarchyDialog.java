@@ -32,6 +32,7 @@
 
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cnd.navigation.includeview.IncludeHierarchyPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -80,11 +82,12 @@ class HierarchyDialog {
      */
     public static void show(CsmClass decl) {
         if (decl != null) {
-            ClassHierarchyPanel panel = new ClassHierarchyPanel();
+            ClassHierarchyPanel panel = new ClassHierarchyPanel(false);
             String title = decl.getName() + " - " + NbBundle.getMessage(HierarchyDialog.class, "CTL_ClassHierarchyDialogTitle"); // NOI18N
             Dialog dialog = createDialog(panel, title);
             panel.setClose(new DialogClose(panel));
             panel.setClass(decl);
+            addKeyListeners(panel.getTreeView(), (ExplorerManager.Provider)panel);
             dialog.setVisible(true);
         }
     }    
@@ -94,14 +97,29 @@ class HierarchyDialog {
      */
     public static void show(CsmFile decl) {
         if (decl != null) {
-            IncludeHierarchyPanel panel = new IncludeHierarchyPanel();
+            IncludeHierarchyPanel panel = new IncludeHierarchyPanel(false);
             String title = decl.getName() + " - " + NbBundle.getMessage(HierarchyDialog.class, "CTL_IncludeHierarchyDialogTitle"); // NOI18N
             Dialog dialog = createDialog(panel, title);
             panel.setClose(new DialogClose(panel));
             panel.setFile(decl);
+            addKeyListeners(panel.getTreeView(), (ExplorerManager.Provider)panel);
             dialog.setVisible(true);
         }
     }    
+    
+    private static void addKeyListeners(final BeanTreeView tree, final ExplorerManager.Provider panel){
+// This is a fix context menu by Shift+F10.
+// This code does not work right. Because pop up menu is shown after editor context menu.
+//        tree.registerKeyboardAction(new ActionListener(){
+//            public void actionPerformed(ActionEvent e) {
+//                Node[] nodes = panel.getExplorerManager().getSelectedNodes();
+//                    JPopupMenu popup = NodeOp.findContextMenu(nodes);
+//                    if (popup != null){
+//                        popup.show(tree, 10, 10);
+//                    }
+//            }
+//        }, KeyStroke.getKeyStroke(KeyEvent.VK_F10,KeyEvent.SHIFT_MASK,true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    }
     
     private static JPanel createPanel(JPanel panel){
         JPanel outter = new JPanel();
@@ -113,11 +131,15 @@ class HierarchyDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new Insets(10, 10, 0, 10);
-        outter.add(panel, gridBagConstraints);
+        JPanel border = new JPanel();
+        border.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow"))); // NOI18N
+        outter.add(border, gridBagConstraints);
+        border.setLayout(new java.awt.BorderLayout());
+        border.add(panel, BorderLayout.CENTER);
         return outter;
     }
     
-    private static Dialog createDialog(JPanel panel, String title) {
+    private static Dialog createDialog(final JPanel panel, String title) {
         JButton okButton = new JButton (NbBundle.getMessage(HierarchyDialog.class, "CTL_OK")); // NOI18N
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
             createPanel(panel), // innerPane

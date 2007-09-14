@@ -21,10 +21,10 @@ package org.netbeans.modules.cnd.navigation.hierarchy;
 
 import org.netbeans.modules.cnd.navigation.classhierarchy.*;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.cnd.loaders.CCDataObject;
+import org.netbeans.modules.cnd.loaders.HDataObject;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -40,24 +40,12 @@ public final class ShowClassHierarchyAction extends CookieAction {
             view.setClass(decl);
             view.open();
             view.requestActive();
+        } else {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                  NbBundle.getMessage(getClass(), "MESSAGE_NoContextClass"))); // NOI18N
         }
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length > 0){
-            if (ContextUtils.USE_REFERENCE_RESOLVER) {
-                CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
-                return ContextUtils.isSupportedReference(ref);
-            }
-            CsmDeclaration decl = ContextUtils.findDeclaration(activatedNodes[0]);
-            if (decl != null && CsmKindUtilities.isClass(decl)){
-                return true;
-            }
-        }
-        return false;
-    }
-    
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
@@ -67,9 +55,7 @@ public final class ShowClassHierarchyAction extends CookieAction {
     }
     
     protected Class[] cookieClasses() {
-        return new Class[] {
-            EditorCookie.class
-        };
+        return new Class[]{CCDataObject.class, HDataObject.class};
     }
     
     @Override

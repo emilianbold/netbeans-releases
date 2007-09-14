@@ -19,6 +19,8 @@ package org.netbeans.modules.cnd.navigation.hierarchy;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -34,6 +36,9 @@ public class ClassHierarchyPopupAction extends CookieAction {
         CsmClass decl = ContextUtils.getContextClass(activatedNodes);
         if (decl != null){
             HierarchyDialog.show(decl);
+        } else {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                  NbBundle.getMessage(getClass(), "MESSAGE_NoContextClass"))); // NOI18N
         }
     }
 

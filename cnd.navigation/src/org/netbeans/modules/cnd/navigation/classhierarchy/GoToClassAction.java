@@ -41,9 +41,9 @@ public class GoToClassAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
-        CsmUtilities.openSource(csmObject);
         if (delegate != null){
             delegate.actionPerformed(e);
         }
+        CsmUtilities.openSource(csmObject);
     }
 }

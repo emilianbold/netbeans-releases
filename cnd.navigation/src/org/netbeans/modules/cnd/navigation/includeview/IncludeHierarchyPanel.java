@@ -56,19 +56,21 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private Action close;
     
     /** Creates new form IncludeHierarchyPanel */
-    public IncludeHierarchyPanel() {
+    public IncludeHierarchyPanel(boolean isView) {
         initComponents();
+        if (!isView){
+            toolBar.remove(0);
+        }
         setName(NbBundle.getMessage(getClass(), "CTL_IncludeViewTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_IncludeViewTopComponent")); // NOI18N
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
-        ((BeanTreeView)hierarchyPane).setRootVisible(false);
+        getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
-        actions = new Action[]{
-            new RefreshAction(), null,
-            new RecursiveAction(), new DirectOnlyAction(), null,
-            new TreeAction(), new ListAction(), null,
-            new WhoIncludesAction(), new WhoIsIncludedAction()
-        };
+        if (isView) {
+            actions = new Action[]{new RefreshAction(), null, new RecursiveAction(), new DirectOnlyAction(), null, new TreeAction(), new ListAction(), null, new WhoIncludesAction(), new WhoIsIncludedAction()};
+        } else {
+            actions = new Action[]{new RecursiveAction(), new DirectOnlyAction(), null, new TreeAction(), new ListAction(), null, new WhoIncludesAction(), new WhoIsIncludedAction()};            
+        }
         root = new AbstractNode(children){
             @Override
             public Action[] getActions(boolean context) {
@@ -80,6 +82,10 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
 
     public void setClose(Action close) {
         this.close = close;
+    }
+
+    public BeanTreeView getTreeView(){
+        return (BeanTreeView)hierarchyPane;
     }
     
     /** This method is called from within the constructor to
@@ -102,8 +108,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         listButton = new javax.swing.JToggleButton();
         whoIncludesButton = new javax.swing.JToggleButton();
         whoIsIncludedButton = new javax.swing.JToggleButton();
+        jPanel2 = new javax.swing.JPanel();
         hierarchyPane = new BeanTreeView();
-        jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -227,6 +233,16 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         add(toolBar, gridBagConstraints);
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow")));
+        jPanel2.setMinimumSize(new java.awt.Dimension(1, 1));
+        jPanel2.setPreferredSize(new java.awt.Dimension(1, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(jPanel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -234,17 +250,6 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(hierarchyPane, gridBagConstraints);
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Separator.shadow")));
-        jPanel1.setMinimumSize(new java.awt.Dimension(1, 1));
-        jPanel1.setOpaque(false);
-        jPanel1.setPreferredSize(new java.awt.Dimension(1, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
@@ -421,7 +426,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private javax.swing.JToggleButton directOnlyButton;
     private javax.swing.JScrollPane hierarchyPane;
     private javax.swing.ButtonGroup includesGroup;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JToggleButton listButton;
     private javax.swing.ButtonGroup plainGroup;
     private javax.swing.JToggleButton recursiveButton;
