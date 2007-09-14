@@ -623,7 +623,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     // readings.
                     //
                     // See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6573254
-                    if (exitValue == 0 && eos.size() < 1) {
+                    //
+                    // Note: CLI156 is the error code for start-domain failure message
+                    //   in SJSAS 8.2 and in the GlassFish codebase.
+                    //
+                    if (exitValue == 0 && (eos.size() < 1 || !eos.toString().contains("CLI156"))) {
 //                        if (hasCommandSucceeded()){
                             return 0;
 //                        } else {
