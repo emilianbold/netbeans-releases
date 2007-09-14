@@ -103,6 +103,7 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
             Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
             imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
             if (imageFileObject != null) {
+                imageLabel.setText(null);
                 imageFileObject.removeFileChangeListener(imageFileListener);
                 imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
                 imageFileObject.addFileChangeListener(imageFileListener);
