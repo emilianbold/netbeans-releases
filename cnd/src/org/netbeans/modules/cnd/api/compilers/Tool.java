@@ -106,6 +106,8 @@ public class Tool {
                     getFlavor() == CompilerFlavor.DJGPP ||
                     getFlavor() == CompilerFlavor.Interix) {
                 int i = getPath().indexOf("\\bin"); // NOI18N
+                if (i < 0)
+                    i = getPath().indexOf("/bin"); // NOI18N
                 if (i > 0) {
                     includeFilePrefix = getPath().substring(0, i);
                     includeFilePrefix = includeFilePrefix.replaceAll("\\\\", "/"); // NOI18N
