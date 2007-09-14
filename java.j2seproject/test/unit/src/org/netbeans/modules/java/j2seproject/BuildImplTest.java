@@ -65,7 +65,7 @@ public final class BuildImplTest extends NbTestCase {
     
     private File junitJar;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
         output.clear();
@@ -547,7 +547,7 @@ public final class BuildImplTest extends NbTestCase {
         AntArtifactProvider aap = proj2.getLookup().lookup(AntArtifactProvider.class);
         AntArtifact[] aa = aap.getBuildArtifacts();
         assertTrue("Project should have an artifact", aa.length > 0);
-        assertTrue("Reference was not added?", refHelper.addReference(aa[0]));
+        refHelper.addReference(aa[0], aa[0].getArtifactLocations()[0]);
         ProjectManager.getDefault().saveAllProjects();
         FileObject fo = aph1.getProjectDirectory();
         assertNull("build folder cannot exist", fo.getFileObject("build"));
@@ -636,7 +636,6 @@ public final class BuildImplTest extends NbTestCase {
     }
 
     private void dumpOutput() {
-        List<String> output = new ArrayList<String>(this.output);
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         for (String line : output) {
             System.out.println(line);
@@ -730,7 +729,7 @@ public final class BuildImplTest extends NbTestCase {
             message(s, l != null);
         }
 
-        public void println(String x) {
+        public @Override void println(String x) {
             message(x, false);
         }
         
