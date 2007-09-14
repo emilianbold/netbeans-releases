@@ -76,7 +76,7 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
     private int          testSQLRowsReturned ;
     private ArrayList    objectChangeListeners;
     private Driver       driver;
-
+    private static boolean isConnectionAttempted = false;
     private DatabaseConnection dbConn;    
     private static URL[]  urls;
     
@@ -247,6 +247,11 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
          * so let's catch everything and "wrap" any non-SQLException exceptions
          */
         try {
+            if (driverClassName.equals(DRIVER_CLASS_NET) && !isConnectionAttempted) {
+                isConnectionAttempted = true;
+                ensureConnection();                  
+            }
+            
             Connection conn = driver.connect(url, props);
             /*
              * See Driver.connect spec.  connect is supposed to return null if it realizes
@@ -263,19 +268,14 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
             return new DesignTimeConnection(this, conn);
 
         } catch (Exception e) {
-            if (driverClassName.equals(DRIVER_CLASS_NET)) {
-                ensureConnection();
-                return driver.connect(url, props);                
-            } else {
-                if (e instanceof SQLException) {
-                    setLastConnectFail((SQLException) e);
-                    throw (SQLException) e;
-                }
-                SQLException sqlEx = new SQLException(e.getLocalizedMessage());
-                sqlEx.initCause(e);
-                setLastConnectFail(sqlEx);
-                throw sqlEx;
+            if (e instanceof SQLException) {
+                setLastConnectFail((SQLException) e);
+                throw (SQLException) e;
             }
+            SQLException sqlEx = new SQLException(e.getLocalizedMessage());
+            sqlEx.initCause(e);
+            setLastConnectFail(sqlEx);
+            throw sqlEx;
         }
     }
 
