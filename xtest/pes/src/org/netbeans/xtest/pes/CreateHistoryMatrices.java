@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -123,7 +123,7 @@ public class CreateHistoryMatrices {
                 File failuresReportFile = new File(ResultsUtils.getXMLResultDir(reportRootDir),PEConstants.TESTREPORT_FAILURES_XML_FILE);
                 debugInfo("createMatrix(): gathering, processing information from "+failuresReportFile);
                 XTestResultsReport failuresReport = ResultsUtils.getXTestResultsReport(failuresReportFile);
-                // add all failures/errors to our test list
+                // add all failures/errors/unknown to our test list
                 addFailedIDs(gatheredTests,failuresReport);
             }
         }
@@ -177,7 +177,7 @@ public class CreateHistoryMatrices {
     
     // add all failures/errors from this report
     public void addFailedIDs(UniqueTestList testList, XTestResultsReport xtr) {
-        debugInfo("addFailedIDs(): adding failures/errors");
+        debugInfo("addFailedIDs(): adding failures/errors/unknown");
         if (xtr.xmlel_TestRun != null) {
             for (int i=0; i < xtr.xmlel_TestRun.length ; i++) {
                 TestRun run = xtr.xmlel_TestRun[i];
@@ -194,7 +194,8 @@ public class CreateHistoryMatrices {
                                         if (UnitTestCase.TEST_FAIL.equals(testCase.xmlat_result)|
                                             UnitTestCase.TEST_ERROR.equals(testCase.xmlat_result)|
                                             UnitTestCase.TEST_EXPECTED_FAIL.equals(testCase.xmlat_result)|
-                                            UnitTestCase.TEST_UNEXPECTED_PASS.equals(testCase.xmlat_result)) {
+                                            UnitTestCase.TEST_UNEXPECTED_PASS.equals(testCase.xmlat_result)|
+                                            UnitTestCase.TEST_UNKNOWN.equals(testCase.xmlat_result)) {
                                             // failure is here !!!
                                             TestID newID = new TestID();
                                             newID.setRepositoryName(run.xmlat_name);
