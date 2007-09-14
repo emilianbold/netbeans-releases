@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.db.explorer.ConnectionManager;
 
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -116,12 +117,12 @@ public class QueryBuilder extends TopComponent
 
     private String                      _parseErrorMessage = null ;
     private boolean                     DEBUG = false;
-    private DatabaseConnection              dbconn;
-    private String                          statement;
-    private QueryBuilderMetaData	    qbMetaData;
+    private DatabaseConnection          dbconn;
+    private String                      statement;
+    private QueryBuilderMetaData	qbMetaData;
     // private VisualSQLEditorMetaData         metaDataCache = null ;
-    private VisualSQLEditor         	    vse ;
-    private SQLException lastException = null ;
+    private VisualSQLEditor         	vse ;
+    private SQLException                lastException = null ;
 
 
     
@@ -1002,12 +1003,30 @@ public class QueryBuilder extends TopComponent
 	return null;
     }
     
-    // JDTODO - use dbconn
+    /**
+     * Return the java.sql.Connection associated with this dbconn, after opening 
+     * it if necessary.
+     */
     Connection getConnection() {
-//	return sqlStatement.getConnection();
-        return dbconn.getJDBCConnection();
+
+        Connection conn = dbconn.getJDBCConnection();
+        if (conn== null) {
+            // Try to (re-) open the connection
+            ConnectionManager.getDefault().showConnectionDialog(dbconn);
+            conn = dbconn.getJDBCConnection();
+            if (conn==null) {
+                // Connection failed for some reason.  User may have cancelled.
+                // If there's an exception, ConnectionDialog already reported it.
+                String msg = NbBundle.getMessage(QueryBuilder.class, "CANNOT_ESTABLISH_CONNECTION");     // NOI18N
+                NotifyDescriptor d =
+                    new NotifyDescriptor.Message(msg + "\n\n", NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+                DialogDisplayer.getDefault().notify(d);
+            }
+        }
+        return conn;
     }
     
+     
     // JDTODO - use dbconn, which requires ConnectionManager.disconnect
     void closeQB() {
 //	sqlStatement.close();
@@ -1072,14 +1091,20 @@ public class QueryBuilder extends TopComponent
         int paramCount =  0;
         try {
             connection = getConnection() ;
-            myStatement = connection.prepareStatement(sqlCommand) ;
-            pmd = myStatement.getParameterMetaData();
-            paramCount =  pmd.getParameterCount();
-            if (DEBUG) {
-                System.out.println(" Parameter Count  = " + paramCount);
-                for (int i = 1; i <= paramCount; i++) {
-                    System.out.println(" Parameter Type  = " + pmd.getParameterType(i));
-                    System.out.println(" Parameter Type Name = " + pmd.getParameterTypeName(i));
+            if (connection==null) {
+                canExecute=false;
+               
+            } else {
+
+                myStatement = connection.prepareStatement(sqlCommand) ;
+                pmd = myStatement.getParameterMetaData();
+                paramCount =  pmd.getParameterCount();
+                if (DEBUG) {
+                    System.out.println(" Parameter Count  = " + paramCount);
+                    for (int i = 1; i <= paramCount; i++) {
+                        System.out.println(" Parameter Type  = " + pmd.getParameterType(i));
+                        System.out.println(" Parameter Type Name = " + pmd.getParameterTypeName(i));
+                    }
                 }
             }
         } catch ( SQLException e) {
@@ -1202,15 +1227,6 @@ public class QueryBuilder extends TopComponent
         } catch( SQLException se) {
             Log.getLogger().finest("Error Closing statement: " + se.getLocalizedMessage()); // NOI18N
         }
-
-	// Do not close Connections that are managed by DatabaseConnection
-        // try {
-        //    if ( connection != null ) {
-        //        connection.close() ;
-        //    }
-        // } catch( SQLException se) {
-        //    Log.getLogger().finest("Error Closing connection: " + se.getLocalizedMessage()); // NOI18N
-        // }
         
         showBusyCursor ( false );
         Log.getLogger().finest("Returning from QueryBuilder.executeQuery"); // NOI18N
