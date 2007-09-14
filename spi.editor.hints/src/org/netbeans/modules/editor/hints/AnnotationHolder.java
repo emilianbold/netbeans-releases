@@ -53,6 +53,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledDocument;
@@ -60,6 +61,7 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -74,6 +76,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileUtil;
+import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 
 /**
@@ -86,12 +89,12 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
     
     static {
         COLORINGS = new EnumMap<Severity, AttributeSet>(Severity.class);
-        COLORINGS.put(Severity.DISABLED,  AttributesUtilities.createImmutable());
-        COLORINGS.put(Severity.ERROR, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0x00, 0x00)));
-        COLORINGS.put(Severity.WARNING, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xC0, 0xC0, 0x00)));
-        COLORINGS.put(Severity.VERIFIER, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0xD5, 0x55)));
-        COLORINGS.put(Severity.HINT, AttributesUtilities.createImmutable());
-        COLORINGS.put(Severity.TODO, AttributesUtilities.createImmutable());
+        COLORINGS.put(Severity.DISABLED,  AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver()));
+        COLORINGS.put(Severity.ERROR, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0x00, 0x00), EditorStyleConstants.Tooltip, new TooltipResolver()));
+        COLORINGS.put(Severity.WARNING, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xC0, 0xC0, 0x00), EditorStyleConstants.Tooltip, new TooltipResolver()));
+        COLORINGS.put(Severity.VERIFIER, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0xD5, 0x55), EditorStyleConstants.Tooltip, new TooltipResolver()));
+        COLORINGS.put(Severity.HINT, AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver()));
+        COLORINGS.put(Severity.TODO, AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver()));
     };
     
     private Map<ErrorDescription, List<Position>> errors2Lines;
@@ -529,7 +532,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         return errors;
     }
     
-    private List<ErrorDescription> filter(List<ErrorDescription> errors, boolean onlyErrors) {
+    private static List<ErrorDescription> filter(List<ErrorDescription> errors, boolean onlyErrors) {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
         for (ErrorDescription e : errors) {
@@ -545,7 +548,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         return result;
     }
     
-    private void concatDescription(List<ErrorDescription> errors, StringBuffer description) {
+    private static void concatDescription(List<ErrorDescription> errors, StringBuffer description) {
         boolean first = true;
         
         for (ErrorDescription e : errors) {
@@ -989,4 +992,85 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             return left - right;
         }
     }
+    
+    private static final class TooltipResolver implements HighlightAttributeValue<String> {
+
+        public String getValue(final JTextComponent component, final Document document, Object attributeKey, final int startOffset, final int endOffset) {
+            final Object source = document.getProperty(Document.StreamDescriptionProperty);
+            
+            if (!(source instanceof DataObject) || !(document instanceof BaseDocument)) {
+                return null;
+            }
+    
+            final String[] result = new String[1];
+            
+            document.render(new Runnable() {
+                public void run() {
+                    try {
+                        int lineNumber = Utilities.getLineOffset((BaseDocument) document, startOffset);
+
+                        if (lineNumber < 0) {
+                            return;
+                        }
+
+                        AnnotationHolder h = AnnotationHolder.getInstance(((DataObject) source).getPrimaryFile());
+
+                        synchronized (h) {
+                            Position p = h.getPosition(lineNumber, false);
+                            
+                            if (p == null) {
+                                return ;
+                            }
+                            
+                            List<ErrorDescription> errors = h.line2Errors.get(p);
+
+                            if (errors == null || errors.isEmpty()) {
+                                return;
+                            }
+
+                            List<ErrorDescription> trueErrors = new LinkedList<ErrorDescription>();
+                            List<ErrorDescription> others = new LinkedList<ErrorDescription>();
+                            
+                            for (ErrorDescription ed : errors) {
+                                if (ed == null) continue;
+                                
+                                PositionBounds pb = ed.getRange();
+                                
+                                if (startOffset > pb.getEnd().getOffset() || pb.getBegin().getOffset() > endOffset) {
+                                    continue;
+                                }
+                                
+                                if (ed.getSeverity() == Severity.ERROR) {
+                                    trueErrors.add(ed);
+                                } else {
+                                    if (ed.getSeverity() != Severity.DISABLED) {
+                                        others.add(ed);
+                                    }
+                                }
+                            }
+
+                            //build up the description of the annotation:
+                            StringBuffer description = new StringBuffer();
+
+                            concatDescription(trueErrors, description);
+
+                            if (!trueErrors.isEmpty() && !others.isEmpty()) {
+                                description.append("\n\n");
+                            }
+
+                            concatDescription(others, description);
+
+                            result[0] = description.toString();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+            
+            return result[0];
+        }
+        
+    }
+    
 }
