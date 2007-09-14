@@ -48,6 +48,7 @@ import org.openide.util.Utilities;
 public class ToggleMethodFieldBreakpointAction extends AbstractAction {//implements PropertyChangeListener {
     
     private Object action;
+    private RequestProcessor postponedToggleRP;
 
     public ToggleMethodFieldBreakpointAction () {
         //EditorContextBridge.addPropertyChangeListener (this);
@@ -158,7 +159,12 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             final String url = EditorContextBridge.getContext().getCurrentURL ();
             final java.awt.IllegalComponentStateException[] exs = new java.awt.IllegalComponentStateException[]
                     { cex, fex, mex };
-            RequestProcessor.getDefault().post(new Runnable() {
+            synchronized (this) {
+                if (postponedToggleRP == null) {
+                    postponedToggleRP = new RequestProcessor("Postponed ToggleMethodFieldBreakpointAction", 1);
+                }
+            }
+            postponedToggleRP.post(new Runnable() {
                 public void run() {
                     // Re-try to submit the field or method breakpoint again
                     String cn = (exs[0] != null) ? exs[0].getMessage() : className[0];
