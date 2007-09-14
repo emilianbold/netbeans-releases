@@ -76,8 +76,8 @@ class AppFrameworkSupport {
      * @return true if the project of given file uses app framework
      */
     static boolean isFrameworkEnabledProject(FileObject fileInProject) {
-        return getApplicationClassName(fileInProject) != null
-                && isFrameworkLibAvailable(fileInProject);
+        return isFrameworkLibAvailable(fileInProject)
+                && getApplicationClassName(fileInProject) != null;
     }
     
     private static boolean isFrameworkLibAvailable(FileObject fileInProject) {
