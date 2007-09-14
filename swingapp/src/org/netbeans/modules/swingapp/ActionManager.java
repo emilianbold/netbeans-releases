@@ -288,7 +288,27 @@ public class ActionManager {
                 while(it.hasNext()) {
                     FileObject fo = it.next();
                     it.remove();
+                    //clear all of the actions for this file out of the master list
+                    String className = AppFrameworkSupport.getClassNameForFile(fo);
+                    if(actions.containsKey(className)) {
+                        List<ProxyAction> oldActions = actions.get(className);
+                        for(ProxyAction oldAct : oldActions) {
+                            Iterator<ProxyAction> ait = actionList.iterator();
+                            while(ait.hasNext()) {
+                                if(actionsMatch(ait.next(),oldAct)) {
+                                    ait.remove();
+                                }
+                            }
+                        }
+                        //then remove the actions for this file from the master hashtable
+                        actions.remove(className);
+                    }
+                    //rescans this file and replaces the list of actions for this file
                     getActionsFromFile(fo, actions);
+                    if(actions.containsKey(className)) {
+                        List<ProxyAction> newActions = actions.get(className);
+                        actionList.addAll(newActions);
+                    }
                     fireStructureChanged();
                 }
             }
