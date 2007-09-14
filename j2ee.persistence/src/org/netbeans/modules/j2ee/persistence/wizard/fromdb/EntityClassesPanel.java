@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -59,6 +58,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
     private final static Logger LOGGER = Logger.getLogger(EntityClassesPanel.class.getName());
 
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
     private JTextComponent packageComboBoxEditor;
 
     private PersistenceGenerator persistenceGen;
@@ -67,8 +68,6 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private String tableSourceName; //either Datasource or a connection
 
     private SelectedTables selectedTables;
-
-    private ChangeSupport changeSupport = new ChangeSupport(this);
 
     private PersistenceUnit persistenceUnit;
 
@@ -420,14 +419,14 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
     public static final class WizardPanel implements WizardDescriptor.Panel, ChangeListener {
 
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+
         private EntityClassesPanel component;
         private boolean componentInitialized;
 
         private WizardDescriptor wizardDescriptor;
         private Project project;
         private boolean cmp;
-
-        private ChangeSupport changeSupport = new ChangeSupport(this);
 
         public EntityClassesPanel getComponent() {
             if (component == null) {

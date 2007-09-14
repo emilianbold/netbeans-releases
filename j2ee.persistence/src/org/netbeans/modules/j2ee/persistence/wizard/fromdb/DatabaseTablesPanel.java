@@ -66,7 +66,8 @@ import org.openide.util.RequestProcessor;
  */
 public class DatabaseTablesPanel extends javax.swing.JPanel {
 
-    private DBSchemaManager dbschemaManager = new DBSchemaManager();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final DBSchemaManager dbschemaManager = new DBSchemaManager();
 
     private PersistenceGenerator persistenceGen;
 
@@ -75,8 +76,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private FileObject dbschemaFile;
     private String datasourceName;
     private TableClosure tableClosure;
-
-    private ChangeSupport changeSupport = new ChangeSupport(this);
 
     private boolean sourceSchemaUpdateEnabled;
 
@@ -790,14 +789,14 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
     public static final class WizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+
         private DatabaseTablesPanel component;
         private boolean componentInitialized;
 
         private WizardDescriptor wizardDescriptor;
         private Project project;
         private boolean cmp;
-
-        private ChangeSupport changeSupport = new ChangeSupport(this);
 
         boolean waitingForScan;
 
