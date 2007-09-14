@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.refactoring.ui.tree;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.Icon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -38,7 +39,7 @@ public class ProjectTreeElement implements TreeElement {
 
     private final String name;
     private final Icon icon;
-    private final WeakReference<Project> prj;
+    private final Reference<Project> prj;
     private final FileObject prjDir;
     /** Creates a new instance of ProjectTreeElement */
     public ProjectTreeElement(Project prj) {

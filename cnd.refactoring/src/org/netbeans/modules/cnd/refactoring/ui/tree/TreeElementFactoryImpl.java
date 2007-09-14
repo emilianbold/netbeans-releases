@@ -30,6 +30,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmObjectBoxFactory;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
@@ -85,5 +86,6 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
 
     public void cleanUp() {
         map.clear();
+        CsmObjectBoxFactory.getDefault().cleanUp();
     }
 }

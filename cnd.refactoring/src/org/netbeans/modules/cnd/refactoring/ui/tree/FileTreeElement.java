@@ -23,6 +23,7 @@ import java.beans.BeanInfo;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
@@ -37,15 +38,16 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class FileTreeElement implements TreeElement {
 
     private final FileObject fo;
-    private final CsmFile csmFile;
+    private final CsmUID<CsmFile> csmFile;
     FileTreeElement(FileObject fo, CsmFile csmFile) {
         this.fo = fo;
-        this.csmFile = csmFile;
+        this.csmFile = csmFile.getUID();
     }
 
 
     public TreeElement getParent(boolean isLogical) {
-        return TreeElementFactory.getTreeElement(csmFile.getProject());
+        CsmFile file = csmFile.getObject();
+        return TreeElementFactory.getTreeElement(file == null ? null : file.getProject());
     }
 
     public Icon getIcon() {
@@ -61,6 +63,6 @@ public class FileTreeElement implements TreeElement {
     }
 
     public Object getUserObject() {
-        return csmFile;
+        return csmFile.getObject();
     }
 }

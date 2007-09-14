@@ -23,8 +23,7 @@ import javax.swing.Icon;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
@@ -37,21 +36,23 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 public class RefactoringTreeElement implements TreeElement { 
     
     private final RefactoringElement refactoringElement;
-    private final CsmOffsetable thisObject;
-    private CsmScope parent;
-    private boolean initedParent = false;
+    private final CsmUID<CsmOffsetable> thisObject;
     
     RefactoringTreeElement(RefactoringElement element) {
         this.refactoringElement = element;
-        this.thisObject = element.getLookup().lookup(CsmOffsetable.class);
+        this.thisObject = CsmRefactoringUtils.getHandler(element.getLookup().lookup(CsmOffsetable.class));
     }
     
     public TreeElement getParent(boolean isLogical) {
         if (isLogical) {
             return TreeElementFactory.getTreeElement(getCsmParent());
         } else {
-            return TreeElementFactory.getTreeElement(thisObject.getContainingFile());
+            CsmOffsetable obj = thisObject.getObject();
+            if (obj != null) {
+                return TreeElementFactory.getTreeElement(obj.getContainingFile());
+            }            
         }
+        return null;
     }
     
     public Icon getIcon() {
@@ -67,22 +68,11 @@ public class RefactoringTreeElement implements TreeElement {
     }
     
     private CsmObject getCsmParent() {
-        if (!initedParent) {
-            initedParent = true;
-            parent = CsmRefactoringUtils.getEnclosingScopeElement((CsmObject)thisObject);
+        CsmOffsetable obj = thisObject.getObject();
+        CsmScope enclosing = null;
+        if (obj != null) {
+            enclosing = CsmRefactoringUtils.getEnclosingScopeElement((CsmObject)obj);
         }
-        return parent;
-    }
-
-    private CsmObject getFeature(CsmObject lookupObject) {
-        if (CsmKindUtilities.isInclude(lookupObject)) {
-            return lookupObject;
-        } else if (lookupObject instanceof CsmReference) {
-            CsmObject referenced = ((CsmReference)lookupObject).getReferencedObject();
-            return referenced;
-        } else {
-            System.err.println("getFeature for " + lookupObject);
-            return lookupObject;
-        }
+        return enclosing;
     }
 }
