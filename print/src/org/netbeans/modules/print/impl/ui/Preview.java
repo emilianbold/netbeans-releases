@@ -351,6 +351,7 @@ public class Preview extends PrintUI implements Percent.Listener {
     c.insets = new Insets(0, 0, 0, 0);
     panel.setBackground(Color.lightGray);
     panel.add(myPaperPanel, c);
+
 //  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.yellow));
 //  optionPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
 //  myPaperPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
