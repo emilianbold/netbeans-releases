@@ -229,8 +229,21 @@ public class DesignView extends JPanel implements
         setFocusTraversalKeysEnabled(false);
 
         // vlv: print
-        String name = getBPELModel().getProcess().getName() + ""; // NOI18N
-        putClientProperty(java.awt.print.Printable.class, name);
+        putClientProperty(java.awt.print.Printable.class, getProcessName());
+    }
+
+    private String getProcessName() {
+      BpelModel model = getBPELModel();
+
+      if (model == null) {
+        return null;
+      }
+      Process process = model.getProcess();
+
+      if (process == null) {
+        return null;
+      }
+      return process.getName();
     }
     
     public NavigationTools getNavigationTools() {
