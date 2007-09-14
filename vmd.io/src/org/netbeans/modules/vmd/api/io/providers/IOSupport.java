@@ -22,6 +22,7 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.DocumentInterface;
@@ -29,19 +30,20 @@ import org.netbeans.modules.vmd.io.CodeResolver;
 import org.netbeans.modules.vmd.io.DataObjectContextImpl;
 import org.netbeans.modules.vmd.io.DocumentLoad;
 import org.netbeans.modules.vmd.io.editor.EditorViewDescription;
-import org.netbeans.modules.vmd.io.editor.EditorViewFactorySupport;
 import org.netbeans.modules.vmd.io.editor.EditorViewElement;
+import org.netbeans.modules.vmd.io.editor.EditorViewFactorySupport;
+import org.netbeans.modules.vmd.io.editor.CodeEditorViewDescription;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.NbBundle;
+
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.WeakHashMap;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 
 
 /**
@@ -168,9 +170,8 @@ public final class IOSupport {
     public static MultiViewDescription[] createEditorSupportPane(DataObjectContext context) {
         Collection<DataEditorView> views = EditorViewFactorySupport.createEditorViews(context);
         ArrayList<EditorViewDescription> descriptions = new ArrayList<EditorViewDescription>();
-        for (DataEditorView view : views) {
-            descriptions.add(new EditorViewDescription(context, view));
-        }
+        for (DataEditorView view : views)
+            descriptions.add(view.getKind () == DataEditorView.Kind.CODE ? new CodeEditorViewDescription (context, view) : new EditorViewDescription(context, view));
         return descriptions.toArray(new MultiViewDescription[descriptions.size()]);
     }
 
