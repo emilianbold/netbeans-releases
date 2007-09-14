@@ -36,10 +36,12 @@ import  org.netbeans.modules.cnd.api.model.*;
  */
 public class ProjectNode extends NPNode {
     public static final boolean EXPORT = Boolean.getBoolean("cnd.classview.export"); // NOI18N
+    private boolean isLibrary;
     
     public ProjectNode(final CsmProject project, Children.Array key) {
         super(key);
         this.project = project;
+        isLibrary = project.isArtificial();
         init(project);
     }
     
@@ -58,12 +60,20 @@ public class ProjectNode extends NPNode {
     
     @Override
     public Image getIcon(int param) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project_explorer/Project.png"); // NOI18N
+        if (isLibrary) {
+            return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Libraries.gif"); // NOI18N
+        } else {
+            return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project.gif"); // NOI18N
+        }
     }
     
     @Override
     public Image getOpenedIcon(int param) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project_explorer/Project_open.png"); // NOI18N
+        if (isLibrary) {
+            return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Libraries.gif"); // NOI18N
+        } else {
+            return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project_open.gif"); // NOI18N
+        }
     }
     
     public CsmProject getProject() {
