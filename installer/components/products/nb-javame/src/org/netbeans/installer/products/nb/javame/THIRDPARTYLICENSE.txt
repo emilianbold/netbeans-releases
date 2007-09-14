@@ -1879,3 +1879,8 @@ Use of any of this software is governed by the terms of the license below:
 %% Use of any of this software is governed by the Apache License Version 2.0.
 %% The terms of the Apache License Version 2.0 are available at 
 %% http://apache.org/licenses/LICENSE-2.0
+
+%% The following software may be included in this product: NetBeans Data Binding ME.
+%% Use of any of this software is governed by the Apache License Version 2.0.
+%% The terms of the Apache License Version 2.0 are available at 
+%% http://apache.org/licenses/LICENSE-2.0

@@ -2,7 +2,6 @@ DistributionREADME for components identified below covered under the
 Sun Microsystems, Inc. ("Sun") SOFTWARE LICENSE AGREEMENT.
 
 Software:
--Sun Java Wireless Toolkit 2.5.2 for CLDC (SJWTK)
 -SVG Renderer Library
 
 Subject to the terms and conditions of the Software License Agreement
