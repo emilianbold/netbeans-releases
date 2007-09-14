@@ -260,7 +260,12 @@ public class PaletteKit implements Runnable {
             }
             checkValidityCore(validationQueue.remove());
         }
-        refreshPalette();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                refreshPalette();
+            }
+        });
+        
     }
     
     private void checkValidityCore(Lookup lookup) {
