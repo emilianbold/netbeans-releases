@@ -76,6 +76,7 @@ public abstract class TestBase extends RubyTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("ruby.interpreter", TestBase.getFile("ruby.executable", true).getAbsolutePath());
         engines = new Stack<Engine>();
         engines.push(Engine.CLASSIC);
         if (isRDebugExecutableCorrectlySet()) {
