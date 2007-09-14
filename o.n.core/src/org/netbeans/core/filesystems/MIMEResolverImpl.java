@@ -19,6 +19,8 @@
 
 package org.netbeans.core.filesystems;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
@@ -563,7 +565,15 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                     }
                 } catch (IOException openex) {
                     unexpectedEnd = true;
-                    if (fo.canRead() == true) {
+                    boolean isBug114976 = false;
+                    if (Utilities.isWindows() && fo.canRead()  && (openex instanceof FileNotFoundException)) {
+                        File f = FileUtil.toFile(fo);
+                        if (f != null && f.exists() && f.isHidden()) {
+                            isBug114976 = true;
+                        }
+                    }
+                    
+                    if (fo.canRead() == true && !isBug114976) {
                         throw openex;
                     } else {
                         // #26521  silently do not recognize it
