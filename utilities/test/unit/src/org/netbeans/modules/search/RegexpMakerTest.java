@@ -17,6 +17,9 @@
 
 package org.netbeans.modules.search;
 
+import java.lang.reflect.Field;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -29,21 +32,128 @@ public class RegexpMakerTest extends NbTestCase {
         super("SimpleRegexpParserTest");
     }
 
-    public void testMakeRegexp() {
+    private static String getClassField(String name) throws Exception {
+        Field field = RegexpMaker.class.getDeclaredField(name);
+        field.setAccessible(true);
+        return (String) field.get(null);
+    }
+
+    public void testMakeRegexp() throws Exception {
+
+        /* basics: */
         assertEquals("", RegexpMaker.makeRegexp(""));
         assertEquals("a", RegexpMaker.makeRegexp("a"));
         assertEquals("ab", RegexpMaker.makeRegexp("ab"));
         assertEquals("abc", RegexpMaker.makeRegexp("abc"));
-        assertEquals("a.", RegexpMaker.makeRegexp("a?"));
-        assertEquals("a.*", RegexpMaker.makeRegexp("a*"));
+
+        /* special chars in the middle: */
+        assertEquals("a.*?b.c", RegexpMaker.makeRegexp("a*b?c"));
+        assertEquals("a..+?b", RegexpMaker.makeRegexp("a?*?b"));
+        assertEquals("a.+?b", RegexpMaker.makeRegexp("a*?*b"));
+
+        /* ignore stars in the begining: */
+        assertEquals("a", RegexpMaker.makeRegexp("*a"));
         assertEquals(".a", RegexpMaker.makeRegexp("?a"));
-        assertEquals(".*a", RegexpMaker.makeRegexp("*a"));
-        assertEquals("a.b", RegexpMaker.makeRegexp("a?b"));
-        assertEquals(".a.", RegexpMaker.makeRegexp("?a?"));
-        assertEquals("a.*b.c", RegexpMaker.makeRegexp("a*b?c"));
-        assertEquals("a...*b", RegexpMaker.makeRegexp("a?*?b"));
-        assertEquals("a..*b", RegexpMaker.makeRegexp("a*?*b"));
-        
+        assertEquals("a", RegexpMaker.makeRegexp("**a"));
+        assertEquals(".a", RegexpMaker.makeRegexp("*?a"));
+        assertEquals(".a", RegexpMaker.makeRegexp("?*a"));
+        assertEquals("..a", RegexpMaker.makeRegexp("??a"));
+
+        /* ignore stars at the end: */
+        assertEquals("a", RegexpMaker.makeRegexp("a*"));
+        assertEquals("a.", RegexpMaker.makeRegexp("a?"));
+        assertEquals("a", RegexpMaker.makeRegexp("a**"));
+        assertEquals("a.", RegexpMaker.makeRegexp("a*?"));
+        assertEquals("a.", RegexpMaker.makeRegexp("a?*"));
+        assertEquals("a..", RegexpMaker.makeRegexp("a??"));
+
+        /* other usage of '*' and '?': */
+        assertEquals(" .*?a", RegexpMaker.makeRegexp(" *a"));
+        assertEquals(" .a", RegexpMaker.makeRegexp(" ?a"));
+        assertEquals(" a", RegexpMaker.makeRegexp("* a"));
+        assertEquals(". a", RegexpMaker.makeRegexp("? a"));
+        assertEquals("\\,a", RegexpMaker.makeRegexp("*,a"));
+        assertEquals(".\\,a", RegexpMaker.makeRegexp("?,a"));
+        assertEquals("a.*? ", RegexpMaker.makeRegexp("a* "));
+        assertEquals("a. ", RegexpMaker.makeRegexp("a? "));
+        assertEquals("a ", RegexpMaker.makeRegexp("a *"));
+        assertEquals("a .", RegexpMaker.makeRegexp("a ?"));
+        assertEquals("a\\,", RegexpMaker.makeRegexp("a,*"));
+        assertEquals("a\\,.", RegexpMaker.makeRegexp("a,?"));
+
+        /* whole words: */
+
+        final String wordCharsExpr = getClassField("wordCharsExpr");
+        final String checkNotAfterWordChar = getClassField("checkNotAfterWordChar");
+        final String checkNotBeforeWordChar = getClassField("checkNotBeforeWordChar");
+
+        assertEquals("", RegexpMaker.makeRegexp("", true));
+        assertEquals(checkNotAfterWordChar + "a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("a", true));
+        assertEquals(checkNotAfterWordChar
+                     + "a" + wordCharsExpr + "*?b" + wordCharsExpr + "c"
+                     + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("a*b?c", true));
+        assertEquals(checkNotAfterWordChar
+                     + "a" + wordCharsExpr + "{2,}?b"
+                     + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("a?*?b", true));
+        assertEquals(checkNotAfterWordChar
+                     + "a" + wordCharsExpr + "+?b"
+                     + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("a*?*b", true));
+
+        assertEquals(wordCharsExpr + "*a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("*a", true));
+        assertEquals(checkNotAfterWordChar + wordCharsExpr + "a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("?a", true));
+        assertEquals(wordCharsExpr + "*a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("**a", true));
+        assertEquals(wordCharsExpr + "+a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("*?a", true));
+        assertEquals(wordCharsExpr + "+a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("?*a", true));
+        assertEquals(checkNotAfterWordChar + wordCharsExpr + "{2}a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("??a", true));
+
+        assertEquals(checkNotAfterWordChar + "a" + wordCharsExpr + "*",
+                     RegexpMaker.makeRegexp("a*", true));
+        assertEquals(checkNotAfterWordChar + "a" + wordCharsExpr + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("a?", true));
+        assertEquals(checkNotAfterWordChar + "a" + wordCharsExpr + "*",
+                     RegexpMaker.makeRegexp("a**", true));
+        assertEquals(checkNotAfterWordChar + "a" + wordCharsExpr + "+",
+                     RegexpMaker.makeRegexp("a*?", true));
+        assertEquals(checkNotAfterWordChar + "a" + wordCharsExpr + "+",
+                     RegexpMaker.makeRegexp("a?*", true));
+        assertEquals(checkNotAfterWordChar + "a" + wordCharsExpr + "{2}" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("a??", true));
+
+        assertEquals(" " + wordCharsExpr + "*?a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp(" *a", true));
+        assertEquals(" " + wordCharsExpr + "a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp(" ?a", true));
+        assertEquals(wordCharsExpr + "* a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("* a", true));
+        assertEquals(checkNotAfterWordChar + wordCharsExpr + " a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("? a", true));
+        assertEquals(wordCharsExpr + "*\\,a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("*,a", true));
+        assertEquals(checkNotAfterWordChar + wordCharsExpr + "\\,a" + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("?,a", true));
+        assertEquals(checkNotAfterWordChar + "a" + wordCharsExpr + "*? ",
+                     RegexpMaker.makeRegexp("a* ", true));
+        assertEquals(checkNotAfterWordChar + "a" + wordCharsExpr + " ",
+                     RegexpMaker.makeRegexp("a? ", true));
+        assertEquals(checkNotAfterWordChar + "a " + wordCharsExpr + "*",
+                     RegexpMaker.makeRegexp("a *", true));
+        assertEquals(checkNotAfterWordChar + "a " + wordCharsExpr + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("a ?", true));
+        assertEquals(checkNotAfterWordChar + "a\\," + wordCharsExpr + "*",
+                     RegexpMaker.makeRegexp("a,*", true));
+        assertEquals(checkNotAfterWordChar + "a\\," + wordCharsExpr + checkNotBeforeWordChar,
+                     RegexpMaker.makeRegexp("a,?", true));
+
         assertEquals("a b", RegexpMaker.makeRegexp("a b"));
         assertEquals("a\\!b", RegexpMaker.makeRegexp("a!b"));
         assertEquals("a\\\"b", RegexpMaker.makeRegexp("a\"b"));
@@ -93,6 +203,61 @@ public class RegexpMakerTest extends NbTestCase {
         assertEquals("a\u00c1b", RegexpMaker.makeRegexp("a\u00c1b"));
         
         assertEquals("abc\\\\", RegexpMaker.makeRegexp("abc\\"));
+    }
+
+    public void testRegexpMatches() {
+        checkMatch("public", "x", null);
+        checkMatch("public", "li", "li");
+        checkMatch("public", "*li", "li");
+        checkMatch("public", "li*", "li");
+        checkMatch("public", "*li*", "li");
+
+        checkMatchWW("public", "x", null);
+        checkMatchWW("public", "li", null);
+        checkMatchWW("public", "*li", null);
+        checkMatchWW("public", "li*", null);
+        checkMatchWW("public", "*li*", "public");
+        checkMatchWW("public poklice", "*li*", "public");
+        checkMatchWW("public poklice", "*lic", "public");
+        checkMatchWW("poklice public", "*lic", "public");
+        checkMatchWW("public", "??lic", null);
+        checkMatchWW("public", "pub??", null);
+    }
+
+    private void checkMatch(String testString,
+                            String simpleExpr,
+                            String expectedMatch) {
+        checkMatch(testString, simpleExpr, expectedMatch, false);
+    }
+
+    private void checkMatchWW(String testString,
+                              String simpleExpr,
+                              String expectedMatch) {
+        checkMatch(testString, simpleExpr, expectedMatch, true);
+    }
+
+    /**
+     * Checks whether the given simple expression matches the expected substring
+     * of the given string.
+     * 
+     * @param  simpleExpr  simple search expression to be tested
+     * @param  expectedMatch  substring that should be matched by the expression
+     * @param  testString  test string to be searched
+     * @param  wholeWords  whether to search with the <i>Whole Words</i> option
+     */
+    private void checkMatch(String testString,
+                            String simpleExpr,
+                            String expectedMatch,
+                            boolean wholeWords) {
+        String regexp = RegexpMaker.makeRegexp(simpleExpr, wholeWords);
+        Matcher matcher = Pattern.compile(regexp).matcher(testString);
+
+        if (expectedMatch == null) {
+            assertFalse(matcher.find());
+        } else {
+            assertTrue(matcher.find());
+            assertEquals(expectedMatch, matcher.group());
+        }
     }
     
     public void testMakeMultiRegexp() {
