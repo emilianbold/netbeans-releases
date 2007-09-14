@@ -172,8 +172,10 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
         rootComboBox.setModel(new DefaultComboBoxModel(groups));
         SourceGroup preselectedGroup = getPreselectedGroup( preselectedFolder );
         //ignoreRootCombo = true;
-        rootComboBox.setSelectedItem( preselectedGroup );                       
-        folderTextField.setText(FileUtil.toFile(preselectedFolder).getPath());
+        rootComboBox.setSelectedItem(preselectedGroup);
+        if (preselectedFolder != null) {
+            folderTextField.setText(FileUtil.toFile(preselectedFolder).getPath());
+        }
         
         //ignoreRootCombo = false;
 
