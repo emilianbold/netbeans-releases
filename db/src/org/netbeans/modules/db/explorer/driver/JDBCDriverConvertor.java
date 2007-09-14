@@ -175,6 +175,10 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         }
     }
     
+    private XMLDataObject getHolder() {
+        return (XMLDataObject)holder.get();
+    }
+    
     private static JDBCDriver readDriverFromFile(FileObject fo) throws IOException, MalformedURLException {
         Handler handler = new Handler();
         
@@ -438,9 +442,5 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             }
         }
         return true;
-    }
-
-    private XMLDataObject getHolder() {
-        return (XMLDataObject)holder.get();
     }
 }

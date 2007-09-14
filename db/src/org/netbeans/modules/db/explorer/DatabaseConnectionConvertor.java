@@ -27,6 +27,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
@@ -75,10 +76,10 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
      */
     private static final int DELAY = 2000;
     
-    private static FileObject newlyCreated = null;
-    private static DatabaseConnection newlyCreatedInstance = null;
+    private static FileObject newlyCreated;
+    private static DatabaseConnection newlyCreatedInstance;
     
-    private XMLDataObject holder = null;
+    private final Reference holder;
 
     /**
      * The lookup provided through Environment.Provider.
@@ -94,10 +95,11 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     }
     
     private DatabaseConnectionConvertor() {
+        holder = new WeakReference(null);
     }
 
     private DatabaseConnectionConvertor(XMLDataObject object) {
-        this.holder = object;
+        holder = new WeakReference(object);
         InstanceContent cookies = new InstanceContent();
         cookies.add(this);
         lookup = new AbstractLookup(cookies);
@@ -122,7 +124,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     // InstanceCookie.Of methods
 
     public String instanceName() {
-        return holder.getName();
+        XMLDataObject obj = getHolder();
+        return obj == null ? "" : obj.getName();
     }
     
     public Class instanceClass() {
@@ -136,13 +139,19 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     public Object instanceCreate() throws java.io.IOException, ClassNotFoundException {
         synchronized (this) {
             Object o = refConnection.get();
-            if (o != null)
+            if (o != null) {
                 return o;
+            }
+
+            XMLDataObject obj = getHolder();
+            if (obj == null) {
+                return null;
+            }
             Handler handler = new Handler();
             try {
                 XMLReader reader = XMLUtil.createXMLReader();
-                InputSource is = new InputSource(holder.getPrimaryFile().getInputStream());
-                is.setSystemId(holder.getPrimaryFile().getURL().toExternalForm());
+                InputSource is = new InputSource(obj.getPrimaryFile().getInputStream());
+                is.setSystemId(obj.getPrimaryFile().getURL().toExternalForm());
                 reader.setContentHandler(handler);
                 reader.setErrorHandler(handler);
                 reader.setEntityResolver(EntityCatalog.getDefault());
@@ -161,6 +170,10 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             attachListener();
             return inst;
         }
+    }
+    
+    private XMLDataObject getHolder() {
+        return (XMLDataObject)holder.get();
     }
 
     private void attachListener() {
@@ -394,8 +407,12 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 e = (PropertyChangeEvent)keepAlive.removeFirst();
             }
             DatabaseConnection dbconn = (DatabaseConnection)e.getSource();
+            XMLDataObject obj = getHolder();
+            if (obj == null) {
+                return;
+            }
             try {
-                holder.getPrimaryFile().getFileSystem().runAtomicAction(new AtomicWriter(dbconn, holder));
+                obj.getPrimaryFile().getFileSystem().runAtomicAction(new AtomicWriter(dbconn, obj));
             } catch (IOException ex) {
                 Logger.getLogger("global").log(Level.INFO, null, ex);
             }
