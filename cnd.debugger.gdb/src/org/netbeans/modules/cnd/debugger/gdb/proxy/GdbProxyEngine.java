@@ -130,7 +130,7 @@ public class GdbProxyEngine {
                 try {
                     rc = waitProc.waitFor();
                     if (rc == 0) {
-                        gdi.finish();
+                        gdi.finish(false);
                     } else {
                         gdi.unexpectedGdbExit(rc);
                     }

@@ -49,7 +49,9 @@ public class GdbLogger {
         File tmpfile;
         try {
             tmpfile = File.createTempFile("gdb-cmds", ".log"); // NOI18N
-            tmpfile.deleteOnExit();
+	    if (!Boolean.getBoolean("gdb.console.savelog")) { // NOI18N - This lets me save logs
+		tmpfile.deleteOnExit();
+	    }
             logFile = new FileWriter(tmpfile);
         } catch (IOException ex) {
             logFile = null;

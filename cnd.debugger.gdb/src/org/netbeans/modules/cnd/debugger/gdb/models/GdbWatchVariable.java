@@ -24,7 +24,6 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
-import org.netbeans.spi.debugger.ui.Constants;
 
 /**
  * The variable type used in Gdb watches.

@@ -36,47 +36,47 @@ import org.openide.windows.InputOutput;
 
 public class GdbActionHandler implements CustomProjectActionHandler {
     
-    private ArrayList listeners = new ArrayList();
+    private ArrayList<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
     
     public void execute(final ProjectActionEvent ev, InputOutput io) {
         GdbProfile profile = (GdbProfile) ev.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
         if (profile != null) { // profile can be null if dbxgui is enabled
-        String gdb = profile.getGdbPath(profile.getGdbCommand(), ev.getProfile().getRunDirectory());
-        if (gdb != null) {
-            executionStarted();
-            Runnable loadProgram = new Runnable() {
-                public void run() {
-                    if (ev.getID() == ProjectActionEvent.DEBUG) {
-                        DebuggerManager.getDebuggerManager().startDebugging(
-                                DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
-                    } else if (ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
-                        DebuggerManager.getDebuggerManager().startDebugging(
-                                DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
+            String gdb = profile.getGdbPath(profile.getGdbCommand(), ev.getProfile().getRunDirectory());
+            if (gdb != null) {
+                executionStarted();
+                Runnable loadProgram = new Runnable() {
+                    public void run() {
+                        if (ev.getID() == ProjectActionEvent.DEBUG) {
+                            DebuggerManager.getDebuggerManager().startDebugging(
+                                    DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
+                        } else if (ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
+                            DebuggerManager.getDebuggerManager().startDebugging(
+                                    DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
+                        }
                     }
-                }
-            };
-            SwingUtilities.invokeLater(loadProgram);
+                };
+                SwingUtilities.invokeLater(loadProgram);
 
-            executionFinished(0);
-        } else {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                NbBundle.getMessage(GdbActionHandler.class, "Err_NoGdbFound"))); // NOI18N
+                executionFinished(0);
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(GdbActionHandler.class, "Err_NoGdbFound"))); // NOI18N
 
+            }
         }
     }
-    }
-    
+
     public void addExecutionListener(ExecutionListener l) {
         listeners.add(l);
     }
-    
+
     public void removeExecutionListener(ExecutionListener l) {
         listeners.remove(listeners.indexOf(l));
     }
     
     public void executionStarted() {
         for (int i = 0; i < listeners.size(); i++) {
-            ExecutionListener listener = (ExecutionListener) listeners.get(i);
+            ExecutionListener listener = listeners.get(i);
             listener.executionStarted();
         }
     }

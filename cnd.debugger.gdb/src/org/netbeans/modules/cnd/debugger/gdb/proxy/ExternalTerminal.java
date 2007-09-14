@@ -45,11 +45,13 @@ public class ExternalTerminal implements PropertyChangeListener {
     private long pid;
     private File gdbHelperLog = null;
     private File gdbHelperScript = null;
+    private GdbDebugger debugger;
     
     /** Creates a new instance of ExternalTerminal */
     public ExternalTerminal(GdbDebugger debugger, String termpath, String[] env) throws IOException {
         initGdbHelpers();
         debugger.addPropertyChangeListener(this);
+        this.debugger = debugger;
         
         ProcessBuilder pb = new ProcessBuilder(getTermOptions(termpath));
         
@@ -142,7 +144,7 @@ public class ExternalTerminal implements PropertyChangeListener {
     }
     
     private List<String> getTermOptions(String path) {
-        List<String> options = new ArrayList();
+        List<String> options = new ArrayList<String>();
         
         options.add(path);
         if (path.contains("gnome-terminal")) {
@@ -161,12 +163,15 @@ public class ExternalTerminal implements PropertyChangeListener {
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
-        if (ev.getPropertyName() == GdbDebugger.PROP_STATE) {
+        if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE)) {
             Object state = ev.getNewValue();
             if (state == GdbDebugger.STATE_NONE) {
                 gdbHelperScript.delete();
                 gdbHelperLog.delete();
             }
+	} else if (ev.getPropertyName().equals(GdbDebugger.PROP_KILLTERM)) {
+            debugger.kill(15, pid);
+            
         }
     }
 }

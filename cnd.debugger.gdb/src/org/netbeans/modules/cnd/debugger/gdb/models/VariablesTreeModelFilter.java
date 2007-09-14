@@ -19,20 +19,11 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.AbstractSet;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
@@ -49,11 +40,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.Queue;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakSet;
-
-//import org.netbeans.modules.cnd.debugger.gdb.ObjectVariable;
 import org.netbeans.modules.cnd.debugger.gdb.Variable;
 import org.netbeans.modules.cnd.debugger.gdb.VariablesFilter;
 

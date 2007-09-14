@@ -44,28 +44,32 @@ public class LineBreakpointImpl extends BreakpointImpl {
         set();
     }
     
+    @Override
     void fixed() {
         lineNumber = breakpoint.getLineNumber();
         super.fixed();
     }
     
     protected void setRequests() {
-        if (getDebugger().getState() == GdbDebugger.STATE_RUNNING) {
+        if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING)) {
             getDebugger().setSilentStop();
         }
-        if (getState() == BPSTATE_UNVALIDATED) {
+        if (getState().equals(BPSTATE_UNVALIDATED)) {
+            setState(BPSTATE_VALIDATION_PENDING);
             lineNumber = breakpoint.getLineNumber();
             String path = getDebugger().getProjectRelativePath(breakpoint.getPath());
             int token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
             getDebugger().addPendingBreakpoint(token, this);
 	} else {
-	    if (getState() == BPSTATE_DELETION_PENDING) {
+	    if (getState().equals(BPSTATE_DELETION_PENDING)) {
 		getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
-	    } else if (breakpoint.isEnabled()) {
-		getDebugger().getGdbProxy().break_enable(getBreakpointNumber());
-	    } else {
-		getDebugger().getGdbProxy().break_disable(getBreakpointNumber());
-	    }
+	    } else if (getState().equals(BPSTATE_VALIDATED)) {
+                if (breakpoint.isEnabled()) {
+                    getDebugger().getGdbProxy().break_enable(getBreakpointNumber());
+                } else {
+                    getDebugger().getGdbProxy().break_disable(getBreakpointNumber());
+                }
+            }
 	}
     }
 }
