@@ -49,8 +49,7 @@ public final class APTSystemStorage {
     public APTMacroMap getMacroMap(List<String> sysMacros) {
         synchronized (allMacroMaps) {
             // look for the equal map in values
-            APTMacroMap map = new APTSystemMacroMap();
-            APTMacroUtils.fillMacroMap(map, sysMacros);            
+            APTMacroMap map = new APTSystemMacroMap(sysMacros);
             for (Iterator<APTMacroMap> it = allMacroMaps.values().iterator(); it.hasNext();) {
                 APTMacroMap curMap = it.next();
                 if (map.equals(curMap)) {
@@ -67,8 +66,7 @@ public final class APTSystemStorage {
             APTMacroMap map = allMacroMaps.get(configID);
             if (map == null) {
                 // create new one and put in map
-                map = new APTSystemMacroMap();
-                APTMacroUtils.fillMacroMap(map, sysMacros);
+                map = new APTSystemMacroMap(sysMacros);
                 allMacroMaps.put(configID, map);
                 APTUtils.LOG.log(Level.FINE, 
                         "new system macro map was added\n {0}", // NOI18N

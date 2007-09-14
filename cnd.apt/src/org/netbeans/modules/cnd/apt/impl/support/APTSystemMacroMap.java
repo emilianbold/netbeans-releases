@@ -25,22 +25,32 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class APTSystemMacroMap extends APTBaseMacroMap {    
-    private APTMacroMap preMacroMap;
+public class APTSystemMacroMap extends APTBaseMacroMap {
     
-    /** Creates a new instance of APTSystemMacroMap */
-    public APTSystemMacroMap() {           
+    private APTMacroMap preMacroMap;
+    private boolean mutable = false;
+    
+//    /** Creates a new instance of APTSystemMacroMap */
+    protected APTSystemMacroMap() {           
         preMacroMap = new APTPredefinedMacroMap();
     }
+//    
+//    public APTSystemMacroMap(APTMacroMap preMacroMap) {
+//         this.preMacroMap = preMacroMap;
+//    }
     
-    public APTSystemMacroMap(APTMacroMap preMacroMap) {
-         this.preMacroMap = preMacroMap;
+    public APTSystemMacroMap(List<String> sysMacros) {
+        this();
+        mutable = true;
+        APTMacroUtils.fillMacroMap(this, sysMacros);
+        mutable = false;
     }
     
     protected APTMacro createMacro(Token name, Collection<Token> params, List<Token> value) {
@@ -62,6 +72,7 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
         return false;
     }  
     
+    @Override
     public APTMacro getMacro(Token token) {
         APTMacro res = super.getMacro(token);
         
@@ -75,4 +86,24 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
         assert parent == null : "parent must be null";
         return new APTMacroMapSnapshot(parent);
     }
+
+    @Override
+    public void define(Token name, Collection<Token> params, List<Token> value) {
+        if( mutable ) {
+            super.define(name, params, value);
+        } else {
+            assert false : "define should not be called for system macro map";
+        }
+    }
+
+    @Override
+    public void undef(Token name) {
+        if( mutable ) {
+            super.undef(name);
+        } else {
+            assert false : "undef should not be called for system macro map";
+        }
+    }
+    
+    
 }

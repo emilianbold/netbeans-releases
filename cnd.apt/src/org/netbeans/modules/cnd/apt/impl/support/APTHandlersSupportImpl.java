@@ -52,7 +52,7 @@ public class APTHandlersSupportImpl {
 
     public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
         APTMacroMap fileMap = new APTFileMacroMap(sysMap);
-        APTMacroUtils.fillMacroMap(sysMap, userMacros);
+        APTMacroUtils.fillMacroMap(fileMap, userMacros);
         return fileMap;
     }
 
