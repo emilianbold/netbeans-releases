@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -63,6 +63,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.xml.XMLUtil;
+import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
 
@@ -434,12 +435,20 @@ public class ProjectsRootNode extends AbstractNode {
         private final SearchInfo delegate;
         
         public AlwaysSearchableSearchInfo(Project prj) {
-            SourceGroup groups[] = ProjectUtils.getSources(prj).getSourceGroups(Sources.TYPE_GENERIC);
-            FileObject folders[] = new FileObject[groups.length];
-            for (int i = 0; i < groups.length; i++) {
-                folders[i] = groups[i].getRootFolder();
+            SearchInfo projectSearchInfo = prj.getLookup().lookup(SearchInfo.class);
+            if (projectSearchInfo != null) {
+                delegate = projectSearchInfo;
+            } else {
+                SourceGroup groups[] = ProjectUtils.getSources(prj).getSourceGroups(Sources.TYPE_GENERIC);
+                FileObject folders[] = new FileObject[groups.length];
+                for (int i = 0; i < groups.length; i++) {
+                    folders[i] = groups[i].getRootFolder();
+                }
+                delegate = SearchInfoFactory.createSearchInfo(
+                        folders,
+                        true,
+                        new FileObjectFilter[] {SearchInfoFactory.VISIBILITY_FILTER});
             }
-            delegate = SearchInfoFactory.createSearchInfo(folders, true, null);
         }
 
         public boolean canSearch() {
