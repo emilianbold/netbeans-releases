@@ -73,7 +73,7 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                 // APTFile aptLight = fileImpl.getProjectImpl().getAPTLight(fileImpl);
                 if (apt != null) {
                     APTFindUnusedBlocksWalker walker = 
-                        new APTFindUnusedBlocksWalker(apt, fileImpl.getCreatePreprocHandler());
+                        new APTFindUnusedBlocksWalker(apt, fileImpl, fileImpl.getCreatePreprocHandler());
                     walker.visit();
                     out = walker.getBlocks();
                 }

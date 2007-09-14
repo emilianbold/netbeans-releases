@@ -18,6 +18,7 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -32,11 +33,13 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
  */
 public class APTFindUnusedBlocksWalker extends APTSelfWalker {
 
-    public APTFindUnusedBlocksWalker(APTFile apt, APTPreprocHandler preprocHandler) {
+    public APTFindUnusedBlocksWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
         super(apt, preprocHandler);
+        this.csmFile = csmFile;
     }
     
-    private List<CsmOffsetable> blocks = new ArrayList<CsmOffsetable>();
+    private final List<CsmOffsetable> blocks = new ArrayList<CsmOffsetable>();
+    private final CsmFile csmFile;
 
     public List<CsmOffsetable> getBlocks() {
         return blocks;
@@ -60,36 +63,22 @@ public class APTFindUnusedBlocksWalker extends APTSelfWalker {
         return val;
     }
 
-    private void handleIf(APT opener, boolean value) {
-        handleIf(opener, value, true);
-    }
-    
-    private void handleIf(APT opener, boolean value, boolean evaluateElif) {
-        APT closer = opener.getNextSibling();
-        if (closer == null) {
-            return; // malformed file -- giveup
-        }
-        if (!value || !evaluateElif) {
-            addBlock(opener.getEndOffset(), closer.getOffset()-1);
-        } 
-        if (closer.getType()==APT.Type.ELSE) {
-            APT closer2 = closer.getNextSibling();
-            if (closer2 == null || closer2.getType()!=APT.Type.ENDIF) {
-                return; // malformed file -- giveup
-            }
-            if (value || !evaluateElif) {
-                addBlock(closer.getEndOffset(), closer2.getOffset()-1);
-            }
-        }
-        if (closer.getType()==APT.Type.ELIF) {
-            // once we are entering sequence of elif's while value==true we never 
-            // interested in real elif value, that's what evaluateElif is about
-            handleIf(closer, super.onElif(closer, value), evaluateElif && !value);
-        }
-        // closer.getType()==APT.Type.ENDIF or malformed code
+    protected @Override boolean onElif(APT apt, boolean wasInPrevBranch) {
+        boolean val = super.onElif(apt, wasInPrevBranch);
+        handleIf(apt, val);
+        return val;
     }
 
-   private void addBlock(int start, int end) {
-        blocks.add(Utils.createOffsetable(null, start, end));
+    protected @Override boolean onElse(APT apt, boolean wasInPrevBranch) {
+        boolean val = super.onElse(apt, wasInPrevBranch);
+        handleIf(apt, val);
+        return val;
+    }
+    
+    private void handleIf(APT opener, boolean value) {
+        APT closer = opener.getNextSibling();
+        if (closer != null && !value) {
+            blocks.add(Utils.createOffsetable(csmFile, opener.getEndOffset(), closer.getOffset()-1));
+        } 
     }
 }
