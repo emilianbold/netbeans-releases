@@ -25,10 +25,14 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -109,6 +113,36 @@ public class OutputWindowWriter extends Writer {
 
     private static FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
         if (IpeUtils.isPathAbsolute(relativePath)){ // NOI18N
+            if (Utilities.isWindows()) {
+                // See IZ 106841 for details.
+                // On Windows the file path for system header files comes in as /usr/lib/abc/def.h
+                // but the real path is something like D:/cygwin/lib/abc/def.h (for Cygwin installed
+                // on D: drive). We need the exact compiler that produced this output to safely 
+                // convert the path but the compiler has been lost at this point. To work-around this problem
+                // iterate over all defined compiler sets and test whether the file existst in a set.
+                // If it does, convert it to a FileObject and return it.
+                // FIXUP: pass exact compiler used to this method (would require API changes we
+                // don't want to do now). Error/warning regular expressions should also be moved into
+                // the compiler(set) and the output should only be scanned for those patterns.
+                String absPath1 = relativePath;
+                String absPath2 = null;
+                if (absPath1.startsWith("/usr/lib")) // NOI18N
+                    absPath2 = absPath1.substring(4);
+                List<CompilerSet> compilerSets = CompilerSetManager.getDefault().getCompilerSets();
+                for (CompilerSet set : compilerSets) {
+                    Tool cCompiler = set.getTool(Tool.CCompiler);
+                    if (cCompiler != null) {
+                        String includePrefix = cCompiler.getIncludeFilePathPrefix();
+                        File file = new File(includePrefix + absPath1);
+                        if (!file.exists() && absPath2 != null)
+                            file = new File(includePrefix + absPath2);
+                        if (file.exists()) {
+                            FileObject fo = FileUtil.toFileObject(file);
+                            return fo;
+                        }
+                    }
+                }
+            }
             if (relativePath.startsWith(File.separator)){ // NOI18N
                 relativePath = relativePath.substring(1);
             }

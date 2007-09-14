@@ -45,6 +45,7 @@ public class Tool {
     private String name;
     private String displayName;
     private String path;
+    private String includeFilePrefix = null;
     
     /** Creates a new instance of GenericCompiler */
     public Tool(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
@@ -95,6 +96,24 @@ public class Tool {
         } else {
             return name;
         }
+    }
+    
+    public String getIncludeFilePathPrefix() {
+        if (includeFilePrefix == null) {
+            includeFilePrefix = ""; // NOI18N
+            if (getFlavor() == CompilerFlavor.Cygwin ||
+                    getFlavor() == CompilerFlavor.MinGW ||
+                    getFlavor() == CompilerFlavor.DJGPP ||
+                    getFlavor() == CompilerFlavor.Interix) {
+                int i = getPath().indexOf("\\bin"); // NOI18N
+                if (i > 0) {
+                    includeFilePrefix = getPath().substring(0, i);
+                    includeFilePrefix = includeFilePrefix.replaceAll("\\\\", "/"); // NOI18N
+                    //includeFilePrefix = FilePathAdaptor.normalize(includeFilePrefix);
+                }
+            }
+        }
+        return includeFilePrefix;
     }
     
     private static ResourceBundle bundle = null;
