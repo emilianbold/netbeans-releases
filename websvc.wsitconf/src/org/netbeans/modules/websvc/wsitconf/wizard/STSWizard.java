@@ -226,13 +226,14 @@ public class STSWizard implements TemplateWizard.Iterator {
         
         project = Templates.getProject(wiz);
         
+        boolean wizardEnabled = Util.isJavaEE5orHigher(project);
+        
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         WizardDescriptor.Panel firstPanel; //special case: use Java Chooser
         if (sourceGroups.length == 0)
-            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, null));
+            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, null), wizardEnabled);
         else
-            firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, null, true));
-        
+            firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, null), wizardEnabled);
         JComponent comp = (JComponent) firstPanel.getComponent();
         Util.changeLabelInComponent(comp, NbBundle.getMessage(STSWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"),
                 NbBundle.getMessage(STSWizard.class, "LBL_Webservice_Name") );

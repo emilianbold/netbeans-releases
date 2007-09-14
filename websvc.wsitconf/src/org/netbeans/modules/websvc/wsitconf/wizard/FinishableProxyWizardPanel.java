@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.wsitconf.wizard;
 
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * FinishableProxyWizardPanel.java - used decorator pattern to enable to finish 
@@ -30,11 +31,14 @@ import org.openide.WizardDescriptor;
  */
 public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
     
+    private boolean enableFinish = false;        
     private WizardDescriptor.Panel original;
+    private WizardDescriptor wizard;
+    
     /** Creates a new instance of ProxyWizardPanel */
-    public FinishableProxyWizardPanel(WizardDescriptor.Panel original) {
+    public FinishableProxyWizardPanel(WizardDescriptor.Panel original, boolean enableFinish) {
         this.original=original;
-        
+        this.enableFinish = enableFinish;
     }
 
     public void addChangeListener(javax.swing.event.ChangeListener l) {
@@ -50,18 +54,22 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, Wizar
     }
 
     public void readSettings(Object settings) {
+        wizard = (WizardDescriptor)settings;
         original.readSettings(settings);
     }
 
     public boolean isValid() {
-        return original.isValid();
+        setErrorMessage();
+        return original.isValid() && enableFinish;
     }
 
     public boolean isFinishPanel() {
-        return true;
+        setErrorMessage();
+        return enableFinish;
     }
 
     public java.awt.Component getComponent() {
+        setErrorMessage();
         return original.getComponent();
     }
 
@@ -69,4 +77,11 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, Wizar
         return original.getHelp();
     }
     
+    private void setErrorMessage() {
+        if (!enableFinish) {
+            if (wizard != null) {
+                wizard.putProperty ("WizardPanel_errorMessage", NbBundle.getMessage(FinishableProxyWizardPanel.class, "ERR_NotSupportedInbJavaEE4")); // NOI18N
+            }
+        }
+    }
 }
