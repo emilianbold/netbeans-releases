@@ -36,6 +36,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -162,12 +163,12 @@ public class AnalyzeModel implements DiscoveryProvider {
             return;
         }
         if (d.isDirectory()){
+            if (ProjectUtil.ignoreFolder(d)){
+                return;
+            }
             String path = d.getAbsolutePath();
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
-            }
-            if (path.endsWith("/SCCS") || path.endsWith("/CVS")) { // NOI18N
-                return;
             }
             if (!set.contains(path)){
                 set.add(path);

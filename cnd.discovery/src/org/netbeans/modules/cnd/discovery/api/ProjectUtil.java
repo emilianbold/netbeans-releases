@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.discovery.api;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
@@ -44,5 +45,12 @@ public class ProjectUtil {
             return new ProjectBridge((Project)p).getSystemMacroDefinitions(isCPP);
         }
         return null;
+    }
+    public static boolean ignoreFolder(File file){
+        if (file.isDirectory()) {
+            String name = file.getName();
+            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache");
+        }
+        return false;
     }
 }

@@ -149,7 +149,7 @@ public class CsmIncludeCompletionQuery {
         } else if (name.endsWith("~")) { // NOI18N
             return true;
         } else if (file.isDirectory()) {
-            if (name.equals("CVS") || name.equals("SCCS")) { // NOI8N
+            if (name.equals("CVS") || name.equals("SCCS") || name.equals(".hg")) { // NOI8N
                 return true;
             }
         }

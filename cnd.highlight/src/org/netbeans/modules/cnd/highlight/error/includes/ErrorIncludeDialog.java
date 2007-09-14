@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
@@ -635,10 +636,10 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     
     private void gatherSubFolders(File d, HashSet<String> set){
         if (d.isDirectory()){
-            String path = d.getAbsolutePath();
-            if (path.endsWith("/SCCS") || path.endsWith("/CVS")) {  // NOI18N
+            if (ProjectUtil.ignoreFolder(d)){
                 return;
             }
+            String path = d.getAbsolutePath();
             if (!set.contains(path)){
                 set.add(d.getAbsolutePath());
                 File[] ff = d.listFiles();

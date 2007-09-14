@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
@@ -89,12 +90,12 @@ public class FileSystemFactory {
     
     private static void gatherSubFolders(File d, HashSet<String> set){
         if (d.isDirectory()){
+            if (ProjectUtil.ignoreFolder(d)){
+                return;
+            }
             String path = d.getAbsolutePath();
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
-            }
-            if (path.endsWith("/SCCS") || path.endsWith("/CVS")) {  // NOI18N
-                return;
             }
             if (!set.contains(path)){
                 set.add(path);

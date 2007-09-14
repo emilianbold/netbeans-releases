@@ -30,6 +30,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
@@ -226,12 +227,12 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             return;
         }
         if (d.isDirectory()){
+            if (ProjectUtil.ignoreFolder(d)){
+                return;
+            }
             String path = d.getAbsolutePath();
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
-            }
-            if (path.endsWith("/SCCS") || path.endsWith("/CVS") || path.endsWith("/SunWS_cache")) { // NOI18N
-                return;
             }
             if (!set.contains(path)){
                 set.add(path);

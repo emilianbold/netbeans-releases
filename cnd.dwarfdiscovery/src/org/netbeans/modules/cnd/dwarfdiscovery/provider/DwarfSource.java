@@ -326,6 +326,10 @@ public class DwarfSource implements SourceFileProperties{
         }
     }
     
+    private void addUserIncludePath(String path){
+        userIncludes.add(path);
+    }
+    
     private void gatherLine(String line) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         StringTokenizer st = new StringTokenizer(line);
@@ -351,7 +355,7 @@ public class DwarfSource implements SourceFileProperties{
                     path = st.nextToken();
                 }
                 String include = PathCache.getString(path);
-                userIncludes.add(include);
+                addUserIncludePath(include);
             } else if (option.startsWith("-Y")){ // NOI18N
                 String defaultSearchPath = option.substring(2);
                 if (defaultSearchPath.length()==0 && st.hasMoreTokens()){
@@ -360,7 +364,7 @@ public class DwarfSource implements SourceFileProperties{
                 if (defaultSearchPath.startsWith("I,")){ // NOI18N
                     defaultSearchPath = defaultSearchPath.substring(2);
                     String include = PathCache.getString(defaultSearchPath);
-                    userIncludes.add(include);
+                    addUserIncludePath(include);
                 }
             }
         }
@@ -400,7 +404,7 @@ public class DwarfSource implements SourceFileProperties{
     private void addpath(String path){
         if (haveSystemIncludes) {
             if (!isSystemPath(path)){
-                userIncludes.add(PathCache.getString(path));
+                addUserIncludePath(PathCache.getString(path));
             }
         } else {
             if (path.startsWith("/usr")) { // NOI18N
@@ -410,7 +414,7 @@ public class DwarfSource implements SourceFileProperties{
             } else {
                 path = fixCygwinPath(path);
                 path = normalizePath(path);
-                userIncludes.add(PathCache.getString(path));
+                addUserIncludePath(PathCache.getString(path));
             }
         }
     }
@@ -454,9 +458,11 @@ public class DwarfSource implements SourceFileProperties{
             if (Utilities.isWindows()) {
                 includeFullName = includeFullName.replace('\\', '/');
             }
-            list = grepSourceFile(includeFullName);
-            for(String included : list){
-                cutFolderPrefix(included, dwarfTable);
+            if (!isSystemPath(includeFullName)) {
+                list = grepSourceFile(includeFullName);
+                for(String included : list){
+                    cutFolderPrefix(included, dwarfTable);
+                }
             }
             includedFiles.add(PathCache.getString(includeFullName));
         }
@@ -482,11 +488,11 @@ public class DwarfSource implements SourceFileProperties{
                                 system = systemIncludes.contains(found);
                             }
                             if (!system){
-                                userIncludes.add(PathCache.getString(found));
+                                addUserIncludePath(PathCache.getString(found));
                             }
                         } else {
                             if (!dwarfPath.startsWith("/usr")){ // NOI18N
-                                userIncludes.add(PathCache.getString(found));
+                                addUserIncludePath(PathCache.getString(found));
                             }
                         }
                     }
@@ -494,7 +500,7 @@ public class DwarfSource implements SourceFileProperties{
                 } else if (dwarfPath.equals(relativeDir)){
                     String found = "."; // NOI18N
                     if (!userIncludes.contains(found)) {
-                        userIncludes.add(PathCache.getString(found));
+                        addUserIncludePath(PathCache.getString(found));
                     }
                     break;
                 }
