@@ -217,6 +217,14 @@ public final class StandardLogger extends AntLogger {
             }
             if (!session.isExceptionConsumed(t)) {
                 session.consumeException(t);
+                while (t.getClass().getName().equals("org.apache.tools.ant.BuildException")) { // http://issues.apache.org/bugzilla/show_bug.cgi?id=43398
+                    Throwable cause = t.getCause();
+                    if (cause != null && cause.toString().equals(t.getMessage())) {
+                        t = cause;
+                    } else {
+                        break;
+                    }
+                }
                 if (t.getClass().getName().equals("org.apache.tools.ant.BuildException") && session.getVerbosity() < AntEvent.LOG_VERBOSE) { // NOI18N
                     // Stack trace probably not required.
                     // Check for hyperlink to handle e.g. <fail>
