@@ -4033,13 +4033,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         if (err != null) {
                             HashSet<TypeMirror> st = new HashSet<TypeMirror>();
+                            Types types = controller.getTypes();
                             TypeElement te = (TypeElement) ((ErrorType)err).asElement();
                             if (te.getQualifiedName() == te.getSimpleName()) {
                                 ClassIndex ci = controller.getClasspathInfo().getClassIndex();
                                 for (ElementHandle<TypeElement> eh : ci.getDeclaredTypes(te.getSimpleName().toString(), ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                                     te = eh.resolve(controller);
                                     if (te != null) {
-                                        st.add(te.asType());
+                                        st.add(types.erasure(te.asType()));
                                     }
                                 }
                             }
