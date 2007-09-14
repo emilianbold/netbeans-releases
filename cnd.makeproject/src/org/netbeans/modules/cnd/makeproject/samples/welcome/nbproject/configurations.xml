@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="27">
+<configurationDescriptor version="39">
   <logicalFolder name="root" displayName="root" projectFiles="true">
-    <logicalFolder name="ExternalFiles"
-                   displayName="Important Files"
-                   projectFiles="false">
-      <itemPath>Makefile</itemPath>
-    </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
@@ -20,15 +15,16 @@
                    displayName="Resource Files"
                    projectFiles="true">
     </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
   </logicalFolder>
-  <defaultConf>0</defaultConf>
+  <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Debug" type="1">
       <compileType>
-        <cCompilerTool>
-        </cCompilerTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
         <linkerTool>
           <output>dist/Debug/welcome</output>
           <linkerLibItems>
@@ -37,8 +33,6 @@
       </compileType>
       <item path="welcome.cc">
         <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
       </item>
       <item path="welcome.h">
         <itemTool>3</itemTool>
@@ -60,8 +54,6 @@
       </compileType>
       <item path="welcome.cc">
         <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
       </item>
       <item path="welcome.h">
         <itemTool>3</itemTool>

@@ -3,8 +3,9 @@
     <type>org.netbeans.modules.cnd.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>Args1</name>
+            <name>Args</name>
             <make-project-type>0</make-project-type>
+            <make-dep-projects/>
         </data>
     </configuration>
 </project>
