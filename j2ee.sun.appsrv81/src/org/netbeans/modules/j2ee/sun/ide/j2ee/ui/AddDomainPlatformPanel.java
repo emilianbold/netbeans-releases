@@ -79,7 +79,7 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                     }
                 }
                 if (null == defaultLoc) {
-                    defaultLoc = new File(System.getProperty("user.home"));//NOI18N
+                    defaultLoc = new File(guessDefaultInstall());//NOI18N
                 }
             } else {
                 defaultLoc = f;
@@ -88,6 +88,14 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             component.addChangeListener(this);
         }
         return component;
+    }
+    
+    private String guessDefaultInstall() {
+        if (org.openide.util.Utilities.isWindows()) {
+            return "C:\\Sun\\AppServer";    // NOI18N
+        } else {
+            return System.getProperty("user.home") + File.separator + "SUNWappserver";  // NOI18N
+        }
     }
     
     public HelpCtx getHelp() {
