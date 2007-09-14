@@ -346,7 +346,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             whoIncludes = true;
         } else {
             recursive = true;
-            plain = true;
+            plain = false;
             whoIncludes = false;
         }
         updateButtons();
