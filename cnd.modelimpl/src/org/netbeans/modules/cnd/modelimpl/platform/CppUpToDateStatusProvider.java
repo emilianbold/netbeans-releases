@@ -60,12 +60,12 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
 	    public void run() {
 		CsmFile file = getCsmFile(null);
 		if (file == null){
-		    current = UpToDateStatus.UP_TO_DATE_DIRTY;
+		    changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
 		} else {
 		    if (file.isParsed()){
-			current = UpToDateStatus.UP_TO_DATE_OK;
+			changeStatus(UpToDateStatus.UP_TO_DATE_OK);
 		    } else {
-			current = UpToDateStatus.UP_TO_DATE_PROCESSING;
+			changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
 		    }
 		}
 	    }

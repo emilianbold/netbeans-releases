@@ -399,26 +399,50 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     /*package-local*/ void fireProjectOpened(final ProjectBase csmProject) {
         csmProject.onAddedToModel();
         for ( CsmModelListener listener : modelListeners ) {
-            listener.projectOpened(csmProject);
+            try {
+                listener.projectOpened(csmProject);
+            } catch (AssertionError ex){
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
     
     private void fireProjectClosed(CsmProject csmProject) {
         for ( CsmModelListener listener : modelListeners ) {
-            listener.projectClosed(csmProject);
+            try {
+                listener.projectClosed(csmProject);
+            } catch (AssertionError ex){
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
     
     /**  */
     void fireModelChanged(CsmChangeEvent e) {
         for ( CsmModelListener listener : modelListeners ) {
-            listener.modelChanged(e);
+            try {
+                listener.modelChanged(e);
+            } catch (AssertionError ex){
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
     
     void fireModelStateChanged(CsmModelState newState, CsmModelState oldState) {
         for ( CsmModelStateListener listener : modelStateListeners ) {
-            listener.modelStateChanged(newState, oldState);
+            try {
+                listener.modelStateChanged(newState, oldState);
+            } catch (AssertionError ex){
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
     
