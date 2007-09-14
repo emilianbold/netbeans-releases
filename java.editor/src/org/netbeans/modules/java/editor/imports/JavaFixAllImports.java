@@ -147,7 +147,7 @@ public class JavaFixAllImports {
 
                     boolean fixImports = false;
                     String[] selections = null;
-                    boolean removeUnusedImports = true;
+                    boolean removeUnusedImports;
                     
                     if( shouldShowImportsPanel ) {
                         FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
@@ -167,6 +167,7 @@ public class JavaFixAllImports {
                     } else {
                         fixImports = true;
                         selections = defaults;
+                        removeUnusedImports = prefs.getBoolean(KEY_REMOVE_UNUSED_IMPORTS, true);
                     }
 
                     if ( fixImports ) {
