@@ -694,7 +694,32 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             }
             
             for (int[] h : currentHighlights) {
-                bag.addHighlight(h[0], h[1], COLORINGS.get(s));
+                if (h[0] <= h[1]) {
+                    bag.addHighlight(h[0], h[1], COLORINGS.get(s));
+                } else {
+                    //see issue #112566
+                    StringBuilder sb = new StringBuilder();
+                    
+                    for (ErrorDescription e : filteredDescriptions) {
+                        sb.append("[");
+                        sb.append(e.getRange().getBegin().getOffset());
+                        sb.append("-");
+                        sb.append(e.getRange().getEnd().getOffset());
+                        sb.append("]");
+                    }
+                    
+                    sb.append("=>");
+                    
+                    for (int[] h2 : currentHighlights) {
+                        sb.append("[");
+                        sb.append(h2[0]);
+                        sb.append("-");
+                        sb.append(h2[1]);
+                        sb.append("]");
+                    }
+                    
+                    Logger.getLogger(AnnotationHolder.class.getName()).warning("Incorrect highlight computed, please reopen issue #112566 and attach the following output: " + sb.toString());
+                }
             }
         }
         
