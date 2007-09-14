@@ -39,7 +39,9 @@ run_sanity() {
 	# Run Sanity test on VisualWeb build
         cd $TEST_ROOT/../ravebuild
 	ant build-test-tools
-        ant commit-validation -Dxtest.no.cleanresults=true -Dxtest.results=$TEST_ROOT/../../xtest/instance/results
+        ## XXX temporarily for debugging reasons store results separately
+        # ant commit-validation -Dxtest.no.cleanresults=true -Dxtest.results=$TEST_ROOT/../../xtest/instance/results
+	ant commit-validation -Dxtest.no.cleanresults=true -Dxtest.results=$TEST_ROOT/../../xtest/instance/results/vw
 
 	ERROR_CODE=$?
 	if [ $ERROR_CODE != 0 ]; then
