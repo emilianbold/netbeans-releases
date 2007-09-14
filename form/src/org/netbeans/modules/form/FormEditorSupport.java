@@ -60,6 +60,7 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.core.spi.multiview.SourceViewMarker;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
@@ -1017,7 +1018,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     // -------
     
     /** A descriptor for the java editor as an element in multiview. */
-    private static class JavaDesc implements MultiViewDescription, Serializable {
+    private static class JavaDesc implements MultiViewDescription, SourceViewMarker, Serializable {
         
         private static final long serialVersionUID =-3126744316624172415L;
         
