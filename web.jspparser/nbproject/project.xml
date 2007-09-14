@@ -103,6 +103,21 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+              <test-type>
+                  <name>unit</name>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.api.web.webmodule</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.web.core</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+              </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.web.jsps.parserapi</package>
             </public-packages>
