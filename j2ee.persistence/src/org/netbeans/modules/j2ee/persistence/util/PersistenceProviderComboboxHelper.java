@@ -162,15 +162,23 @@ public final class PersistenceProviderComboboxHelper {
         providerCombo.addItem(SEPARATOR);
         providerCombo.addItem(new NewPersistenceLibraryItem());
         providerCombo.addItem(new ManageLibrariesItem());
-        providerCombo.setRenderer(new PersistenceProviderCellRenderer(getFirstElement(providers)));
+        providerCombo.setRenderer(new PersistenceProviderCellRenderer(getDefaultProvider(providers)));
         providerCombo.setSelectedIndex(0);
     }
     
+    
+    
     /**
-     * @return the first element of the given ComboBoxModel if it 
-     * is an instance of <code>Provider</code>, null otherwise.
+     * Gets the provider representing the default provider from
+     * the given <code>providers</code>.
+     * @param providers the providers. if the default provider is supported,
+     * it has to be the first element in the model.
+     * @return the default provider or null if is not supported.
      */ 
-    private Provider getFirstElement(ComboBoxModel providers){
+    private Provider getDefaultProvider(ComboBoxModel providers){
+        if (!providerSupplier.supportsDefaultProvider()){
+            return null;
+        }
         if (providers.getElementAt(0) instanceof Provider){
             return (Provider) providers.getElementAt(0);
         }
