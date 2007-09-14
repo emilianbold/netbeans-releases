@@ -33,6 +33,11 @@
     <!-- Custom properties -->
     <property name="xtest.tmpdir.createproject" location="${xtest.tmpdir}/createdProjects"/>
 
+    <path id="perf.util">
+        <pathelement location="lib/util.jar"/>
+    </path>
+
+
     <!-- ==================== -->
     <!-- Setting command line -->
     <!-- ==================== -->
@@ -52,8 +57,8 @@
 <!--                <path location="${j2ee.appserver.path}/lib/j2ee.jar"/>
                 <path location="${j2ee.appserver.path}/lib/appserv-rt.jar"/>
                 <path location="${java.home}/lib/rt.jar"/>-->
-                <!--path refid="performance.testutilities.path"/>
-                <path refid="perf.util"/-->
+                <path refid="perf.util"/>
+
            </classpath>
         </buildTests>
 <!--
