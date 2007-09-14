@@ -28,6 +28,9 @@ import java.util.regex.Pattern;
  */
 final class RegexpMaker {
     
+    private RegexpMaker() {
+    }
+
     /**
      * Translates the given simple pattern to a regular expression.
      * 
