@@ -1,0 +1,14 @@
+/*
+ * TestInterface.java
+ *
+ */
+
+package org.netbeans.test.java.gui.copypaste.test2;
+
+/**
+ *
+ */
+public interface TestInterface {
+        
+}
+

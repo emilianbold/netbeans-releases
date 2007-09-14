@@ -1,0 +1,24 @@
+/*
+ * TestClass.java
+ *
+ */
+
+package org.netbeans.test.java.gui.fiximports.test;
+
+import java.util.List;
+import java.util.Vector;
+
+/**
+ *
+ */
+public class TestClass {
+    
+    /** Creates a new instance of TestClass */
+    public TestClass() {
+List l = new List();
+Vector v = new Vector();
+        
+    }
+    
+}
+

@@ -1,0 +1,20 @@
+Type Element: testCreateConstructor 148 365
+public class testCreateConstructor {
+    
+    /** Creates a new instance of testCreateConstructor */
+    public testCreateConstructor() {
+    }
+    
+public testCreateConstructor(String param) { }
+    
+    
+    
+    
+}
+Executable Element: <init> 253 291
+public testCreateConstructor() {
+    }
+Executable Element: <init> 297 343
+public testCreateConstructor(String param) { }
+Variable Element: param 326 338
+String param

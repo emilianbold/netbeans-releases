@@ -1,0 +1,13 @@
+Type Element: testCreateOuterInterface 148 307
+public class testCreateOuterInterface {
+    
+    /** Creates a new instance of testCreateOuterInterface */
+    public testCreateOuterInterface() {
+    }
+    
+}
+Executable Element: <init> 259 300
+public testCreateOuterInterface() {
+    }
+Type Element: Iface 311 329
+interface Iface{ }

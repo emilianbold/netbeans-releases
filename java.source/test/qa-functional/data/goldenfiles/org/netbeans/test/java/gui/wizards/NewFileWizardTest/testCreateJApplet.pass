@@ -1,0 +1,30 @@
+/*
+ * MyJApplet.java
+ * 
+ * Created on Apr 2, 2007, 1:15:29 PM
+ * 
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package test;
+
+import javax.swing.JApplet;
+
+/**
+ *
+ * @author jp159440
+ */
+public class MyJApplet extends JApplet {
+
+    /**
+     * Initialization method that will be called after the applet is loaded
+     * into the browser.
+     */
+    public void init() {
+        // TODO start asynchronous download of heavy resources
+    }
+
+    // TODO overwrite start(), stop() and destroy() methods
+
+}

@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="java">
-           
+    
     <testbag testattribs="codegen,full" name="Code Generation" executor="ide">
         <testset dir="qa-functional/src">
             <patternset>
@@ -27,7 +27,60 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-        
+    
+    <testbag testattribs="gui" name="GUI Validation">
+        <testset dir="qa-functional/src">
+            <patternset>                              
+                <include name="org/netbeans/test/java/gui/fiximports/FixImportsTest.class"/>                                                
+                <include name="org/netbeans/test/java/gui/wizards/NewFileWizardTest.class"/>                                
+                <include name="org/netbeans/test/java/gui/errorannotations/*.class"/>                                
+                <include name="org/netbeans/test/java/gui/copypaste/ClassNodeTest.class"/>                
+                <include name="org/netbeans/test/java/gui/copypaste/PackageNodeTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="full,copy_paste" name="copy_paste">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/java/gui/copypaste/ClassNodeTest.class"/>
+                <include name="org/netbeans/test/java/gui/copypaste/PackageNodeTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="full,error_annotations" name="error_annotations">
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="org/netbeans/test/java/gui/errorannotations/*.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="full,wizards" name="wizards">
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="org/netbeans/test/java/gui/wizards/NewFileWizardTest.class"/>                
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="parser,full" name="parser">
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="org/netbeans/test/java/gui/parser/ParserTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="full,fiximports" name="fiximports">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/java/gui/fiximports/FixImportsTest.class"/>                                                
+            </patternset>
+        </testset>
+    </testbag>
+    
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide_module_classloader" antfile="build-qa-functional.xml" target="runidetestusingmoduleclassloader" default="false"/>
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>

@@ -1,0 +1,32 @@
+/*
+ * MyExp.java
+ * 
+ * Created on Apr 2, 2007, 1:16:17 PM
+ * 
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package test;
+
+/**
+ *
+ * @author jp159440
+ */
+public class MyExp extends Exception {
+
+    /**
+     * Creates a new instance of <code>MyExp</code> without detail message.
+     */
+    public MyExp() {
+    }
+
+
+    /**
+     * Constructs an instance of <code>MyExp</code> with the specified detail message.
+     * @param msg the detail message.
+     */
+    public MyExp(String msg) {
+        super(msg);
+    }
+}

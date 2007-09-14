@@ -1,0 +1,11 @@
+Type Element: testCreateOuterClass 148 295
+public class testCreateOuterClass {
+    
+    /** Creates a new instance of testCreateOuterClass */
+    public testCreateOuterClass() {
+    }
+    
+}
+Executable Element: <init> 251 288
+public testCreateOuterClass() {
+    }

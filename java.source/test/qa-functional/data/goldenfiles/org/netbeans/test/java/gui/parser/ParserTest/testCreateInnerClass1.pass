@@ -1,0 +1,33 @@
+Type Element: testCreateInnerClass 269 543
+public class testCreateInnerClass {
+    
+    public class InnerClass {
+        int a;
+    }
+    /** Creates a new instance of testCreateInnerClass */
+    public testCreateInnerClass() {
+    }
+    
+    public String name;
+    
+    public void method() {
+        
+    }
+    
+}
+Type Element: InnerClass 314 360
+public class InnerClass {
+        int a;
+    }
+Executable Element: <init> 321 -1
+Variable Element: a 348 354
+int a;
+Executable Element: <init> 423 460
+public testCreateInnerClass() {
+    }
+Variable Element: name 470 489
+public String name;
+Executable Element: method 499 536
+public void method() {
+        
+    }

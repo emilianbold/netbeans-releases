@@ -1,0 +1,15 @@
+Type Element: testCreateConstructor 148 318
+public class testCreateConstructor {
+    
+    /** Creates a new instance of testCreateConstructor */
+    public testCreateConstructor() {
+    }
+    
+    
+    
+    
+    
+}
+Executable Element: <init> 253 291
+public testCreateConstructor() {
+    }
