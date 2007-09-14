@@ -136,8 +136,8 @@ public class UMLModelRootNode extends UMLModelElementNode
         
         try
         {
-            final DataObject dobj = DataObject.find(FileUtil.toFileObject(
-                    new File(mHelper.getProject().getFileName())));
+	    File f = new File(new File(mHelper.getProject().getFileName()).getCanonicalPath());
+	    final DataObject dobj = DataObject.find(FileUtil.toFileObject(f));
             
             if (dobj!=null)
             {
