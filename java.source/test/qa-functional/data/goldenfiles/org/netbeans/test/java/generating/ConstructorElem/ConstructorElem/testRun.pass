@@ -1,0 +1,35 @@
+/*
+ * JavaTestSourceConstructorElem.java
+ * 
+ * Created on
+ * 
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.netbeans.test.java.testsources;
+
+/**
+ *
+ * @author
+ */
+public class JavaTestSourceConstructorElem {
+
+    public JavaTestSourceConstructorElem() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public JavaTestSourceConstructorElem(int param1) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public JavaTestSourceConstructorElem(int param2, int param1) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public JavaTestSourceConstructorElem(int param2, float param1, String param3) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+}
+

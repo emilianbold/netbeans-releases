@@ -1,0 +1,34 @@
+/*
+ * JavaTestSourceSourceElem.java
+ * 
+ * Created on
+ * 
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package newpack;
+
+import java.awt.image.RGBImageFilter;
+import java.util.List;
+import javax.swing.event.HyperlinkEvent;
+import static java.awt.Color.BLACK;
+
+/**
+ *
+ * @author
+ */
+public class JavaTestSourceSourceElem {
+
+}
+
+class TopLevel extends List {
+
+    public void method(String param1) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    protected double variable;
+    {
+    }
+}
+
