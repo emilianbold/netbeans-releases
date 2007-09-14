@@ -58,7 +58,7 @@ public class UMLParserRegistrar
         }
     }
 
-    public void finalize()
+    public void revokeOperationDetailsSink()
     {
         m_cpUMLParserEventDispatcher
             .revokeOperationDetailsSink(m_lRegistrationCookie);

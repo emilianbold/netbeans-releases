@@ -92,12 +92,11 @@ public class OperationHandler
             }
             
             if (!bCancel)
-            {
-               UMLParserRegistrar reg = new UMLParserRegistrar();
-            
+            {  
                int count = m_OperationElements.size();
                for (int i = 0; i < count; ++i)
                {
+                   UMLParserRegistrar reg = new UMLParserRegistrar();
                    IElement el = m_OperationElements.get(i);
                    if (!(el instanceof IOperation)) continue;
                 
@@ -118,6 +117,8 @@ public class OperationHandler
                    // Clear the interaction so that another will be created
                    // for the next operation being processed
                    m_Interaction = null;
+                   // 114831, remove listener after operation is processed
+                   reg.revokeOperationDetailsSink();
                }
             }
             
