@@ -586,7 +586,7 @@ public class DesignTimeDataSourceHelper {
     }
     
     public static DataSourceInfo getDsInfo(String dsName) {
-        ProjectDataSourceManager projectDataSourceManager  = new ProjectDataSourceManager(CurrentProject.getInstance().getProject());
+        ProjectDataSourceManager projectDataSourceManager  = new ProjectDataSourceManager(CurrentProject.getInstance().getOpenedProject());
         RequestedJdbcResource jdbcResource = projectDataSourceManager.getDataSourceWithName(dsName);
         
         return new DataSourceInfo(dsName, jdbcResource.getDriverClassName(), jdbcResource.getUrl(), null, jdbcResource.getUsername(), jdbcResource.getPassword());

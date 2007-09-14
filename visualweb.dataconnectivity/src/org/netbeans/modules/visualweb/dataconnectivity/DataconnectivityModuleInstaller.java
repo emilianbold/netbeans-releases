@@ -92,7 +92,7 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run() {
                 // code to be invoked when system UI is ready
-                CurrentProject.getInstance().setup();
+//                CurrentProject.getInstance().setup();
                 
                 // Dataconnectivity implementation to support Project migration of previous releases projects
                 // For previous release userdir migration, if no context file then settings haven't been migrated
