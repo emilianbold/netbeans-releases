@@ -618,6 +618,13 @@ public class ClassInfo extends ElementInfo
                 }
             }
         }
+	
+	Iterator fs = mMembers.iterator();	
+	while(fs.hasNext()) 
+	{
+	    MemberInfo m = (MemberInfo)fs.next(); 
+	    m.checkGenerateName();
+	}
 
 	List<INamedElement> owned = clazz.getOwnedElements();
 	if (owned != null) 
@@ -2710,7 +2717,37 @@ public class ClassInfo extends ElementInfo
 	return res;
     }
 
-
+    // used to check uniquety of attribute names for 
+    // auto generated names
+    private HashSet<String> attrNames = null;
+    
+    boolean checkAddAttributeName(String aName) 
+    {
+	if (attrNames == null) 
+	{
+	    attrNames = new HashSet<String>();
+	    Iterator fs = mMembers.iterator();	
+	    while(fs.hasNext()) 
+	    {
+		MemberInfo m = (MemberInfo)fs.next(); 
+		if (m != null) 
+		{
+		    String name = m.getName();
+		    if (name != null && ! name.trim().equals("")) 
+		    {
+			//System.out.println("adding name = "+name);
+			attrNames.add(name);
+		    }
+		}
+	    }
+	}
+	if (!attrNames.contains(aName)) 
+	{
+	    attrNames.add(aName);
+	    return true;
+	}
+	return false;
+    }
 
 }
 

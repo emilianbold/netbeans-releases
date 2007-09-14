@@ -33,6 +33,7 @@ import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.roundtripframework.RTMode;
 import org.netbeans.modules.uml.core.roundtripframework.RoundTripModeRestorer;
 import org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaAttributeChangeFacility;
+import org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaChangeHandlerUtilities;
 import org.netbeans.modules.uml.integration.ide.ChangeUtils;
 import org.netbeans.modules.uml.integration.ide.JavaClassUtils;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
@@ -911,6 +912,48 @@ public class MemberInfo extends ElementInfo
     //
     // added for template codegen
     //
+
+    void checkGenerateName() 
+    {  
+	String name = getName();
+	if (name != null && ! name.trim().equals(""))
+	{
+	    return;
+	}		    
+	String attrName = "";
+	IAttribute attr = getAttribute();
+	if (attr instanceof INavigableEnd)
+	{
+	    INavigableEnd nav = (INavigableEnd)  attr;
+            IClassifier pClass = nav.getParticipant();
+            if (pClass != null)
+            {
+		String typeName = pClass.getName();
+		String prefix = new JavaChangeHandlerUtilities().attributePrefix();
+		attrName = prefix + stripGenericBrackets(typeName);
+		ClassInfo owner = getContainingClass();
+		if (owner != null) 
+		{
+		    String aName = attrName;
+		    int i = 0;
+		    while(!owner.checkAddAttributeName(aName)) 
+		    {
+			aName = attrName + (++i);
+		    }
+		    attrName = aName;
+		}
+            }
+        }
+        setName(attrName);
+    }
+    
+    private String stripGenericBrackets(String type)
+    {
+        int begin = type.indexOf("<");
+        if (begin > -1)
+            return type.substring(0, begin).trim();
+        return type;
+    }
 
     // see getCodeGenType() for how the type string is formed 
     public ArrayList<String[]> getReferredCodeGenTypes()
