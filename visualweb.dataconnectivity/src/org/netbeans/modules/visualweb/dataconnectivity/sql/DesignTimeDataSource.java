@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.SortedSet;
@@ -46,10 +47,9 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
-import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 
 /**
  * DataSource adapter for java.sql.Driver classes.  Used at designtime for all datasources.
@@ -81,7 +81,7 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
     private static URL[]  urls;
     
     private static final String alphabet = "abcdefghijklmnopqrstuvwxyz"; // NOI18N
-
+    private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N 
     private static final String SELECT_PHRASE = "select * from " ;
     private static final String SELECT_PHRASE_APPSERVER8 = "select count(*) from " ;
     public static final int SQL_NOT_RUN = -1 ;
@@ -263,15 +263,19 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
             return new DesignTimeConnection(this, conn);
 
         } catch (Exception e) {
-            
-            if (e instanceof SQLException) {
-                setLastConnectFail( (SQLException)e ) ;
-                throw (SQLException)e;
+            if (driverClassName.equals(DRIVER_CLASS_NET)) {
+                ensureConnection();
+                return driver.connect(url, props);                
+            } else {
+                if (e instanceof SQLException) {
+                    setLastConnectFail((SQLException) e);
+                    throw (SQLException) e;
+                }
+                SQLException sqlEx = new SQLException(e.getLocalizedMessage());
+                sqlEx.initCause(e);
+                setLastConnectFail(sqlEx);
+                throw sqlEx;
             }
-            SQLException sqlEx = new SQLException(e.getLocalizedMessage());
-            sqlEx.initCause(e);
-            setLastConnectFail( sqlEx ) ;
-            throw sqlEx;
         }
     }
 
@@ -779,5 +783,11 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
 
     public Object unwrap(Class iface) throws SQLException {
         throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+    
+    public void ensureConnection() {        
+        JDBCDriver jdbcDriver = DataSourceResolver.getInstance().findMatchingDriver(driverClassName);
+        DatabaseConnection conn = DatabaseConnection.create(jdbcDriver, url, username, username.toUpperCase(), password, true);                
+        ConnectionManager.getDefault().showConnectionDialog(conn);
     }
 }
