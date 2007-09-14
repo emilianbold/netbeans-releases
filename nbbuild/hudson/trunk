@@ -92,7 +92,7 @@ if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
     ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar check-sigtests > $sigtest_gen.log
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
-        (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_gen.log"; echo; cat $sigtest_gen.log) | mail -s "Signature changes in $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org jglick@netbeans.org
+        (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_gen.log"; echo; cat $sigtest_gen.log) | mail -s "Signature changes in $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
     fi
 
 fi
