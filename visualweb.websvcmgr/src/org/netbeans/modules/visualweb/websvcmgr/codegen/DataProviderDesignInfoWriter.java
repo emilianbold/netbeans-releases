@@ -19,10 +19,9 @@
 
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
-import org.netbeans.modules.visualweb.websvcmgr.util.Util;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Date;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 
 /**
  *
@@ -72,8 +71,8 @@ public class DataProviderDesignInfoWriter extends java.io.PrintWriter {
         String fullPackageWrapperClassName = dataProviderInfo.getPackageName() + "." + clientWrapperName;
 
         String clientWrapperBeanPropName = clientWrapperName;
-        if( !Util.isAcronyn( clientWrapperName ) )
-            clientWrapperBeanPropName = Util.decapitalize(clientWrapperName);
+        if( ! ManagerUtil.isAcronyn( clientWrapperName ) )
+            clientWrapperBeanPropName = ManagerUtil.decapitalize(clientWrapperName);
 
         println( "    public Result beanCreatedSetup( DesignBean designBean ) {" );
         println( "        String currentScope = (String)designBean.getDesignContext().getContextData( Constants.ContextData.SCOPE );" );

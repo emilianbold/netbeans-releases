@@ -33,11 +33,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
-import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor.JarEntry;
-import org.netbeans.modules.visualweb.websvcmgr.WebServiceManager;
-import org.netbeans.modules.visualweb.websvcmgr.WebServiceManagerExt;
+import org.netbeans.modules.visualweb.websvcmgr.actions.AddDataProviderToFormAction;
+import org.netbeans.modules.visualweb.websvcmgr.actions.AddToFormAction;
+import org.netbeans.modules.visualweb.websvcmgr.actions.TestMethodAction;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderBeanInfoWriter;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderDesignInfoWriter;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderInfo;
@@ -46,13 +46,20 @@ import org.netbeans.modules.visualweb.websvcmgr.codegen.WrapperClientBeanInfoWri
 import org.netbeans.modules.visualweb.websvcmgr.codegen.WrapperClientWriter;
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor.JarEntry;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  * WebServiceManagerExt implementation for the Visualweb page designer
@@ -155,7 +162,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         
         Properties properties = new Properties();
         
-        properties.put(WEBSVC_HOME_PROP, WebServiceManager.WEBSVC_HOME);
+        properties.put(WEBSVC_HOME_PROP, WebServiceDescriptor.WEBSVC_HOME);
         // INFO - This build properties file contains the classpath information
         // about all the library reference in the IDE
         properties.put(USER_FILE_PROP, userDir+"/build.properties");
@@ -192,7 +199,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         
         int portsCreated = 0;
         List<WsdlPort> ports = wsMetadataDesc.getModel().getPorts();
-        
+        assert ports.size() > 0 : "ports.size = "+ports.size();
         for(WsdlPort port: ports) {
             // There will be one client wrapper class per web service port. All the classes (client wrapper class,
             // data provider classes) for the port will live in a sub-package with the port display name (in lower cases)
@@ -236,7 +243,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 
                 
                 URLClassLoader classLoader = new URLClassLoader(
-                    Util.buildClasspath(tmpProxy, 
+                        ManagerUtil.buildClasspath(tmpProxy, 
                                         wsMetadataDesc.getWsType() == WebServiceDescriptor.JAX_WS_TYPE).toArray(new URL[0]), 
                     this.getClass().getClassLoader());
                 
@@ -244,7 +251,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 // Verify that the port getter method exists in the Service class, otherwise
                 // the code generation in WrapperClientWriter will fail
                 try {
-                    String portImplMethod = "get" + Util.getProperPortName(port.getName());
+                    String portImplMethod = "get" + ManagerUtil.getProperPortName(port.getName());
                     Class serviceClass = classLoader.loadClass(serviceClassName);
                     serviceClass.getMethod(portImplMethod);
                 }catch (Exception ex) {
@@ -346,13 +353,47 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 return false;
             }
         }
-        
+
         boolean result = portsCreated > 0;
         if (result) {
             wsMetadataDesc.addConsumerData(CONSUMER_ID, data);
         }
         
         return result;
+    }
+    
+    public static final Action[] EMPTY_ACTIONS = new Action[0];
+    public Action[] getWebServicesRootActions(Node node) {
+        return EMPTY_ACTIONS;
+    }
+
+    public Action[] getGroupActions(Node node) {
+        return EMPTY_ACTIONS;
+    }
+
+    public Action[] getWebServiceActions(Node node) {
+        Node[] children = node.getChildren().getNodes();
+        WebServiceData wsData = node.getLookup().lookup(WebServiceData.class);
+        if (children != null && children.length == 1 && wsData != null && wsData.isCompiled()) {
+            return new Action[] {
+                SystemAction.get(AddToFormAction.class),
+            };
+        } else {
+            return EMPTY_ACTIONS;
+        }
+    }
+
+    public Action[] getPortActions(Node node) {
+        return new Action[] {
+            SystemAction.get(AddToFormAction.class)
+        };
+    }
+
+    public Action[] getMethodActions(Node node) {
+        return new Action[] {
+            SystemAction.get(AddDataProviderToFormAction.class),
+            SystemAction.get(TestMethodAction.class)
+        };
     }
     
     private void copyIcons(File dtSourceDir){
@@ -363,13 +404,11 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         try {
             // Copy the Image contents from the URL  into the new file craeted in the backing folder.
             URL[] imageUrls = new URL[] {
-                Util.class.getResource("/org/netbeans/modules/visualweb/websvcmgr/resources/webservice.png"),
-                Util.class.getResource("/org/netbeans/modules/visualweb/websvcmgr/resources/methodicon.png"),
-                Util.class.getResource("/org/netbeans/modules/visualweb/websvcmgr/resources/table_dp_badge.png")
+                ManagerUtil.class.getResource("/org/netbeans/modules/websvc/manager/resources/webservice.png"),
+                ManagerUtil.class.getResource("/org/netbeans/modules/websvc/manager/resources/methodicon.png"),
+                ManagerUtil.class.getResource("/org/netbeans/modules/websvc/manager/resources/table_dp_badge.png")
             };
-            String[] imageFileNames = new String[] { Util.getFileName(WrapperClientBeanInfoWriter.WEBSERVICE_ICON_FILENAME),
-            Util.getFileName(DataProviderBeanInfoWriter.DATA_PROVIDER_ICON_FILE_NAME),
-            Util.getFileName(DataProviderBeanInfoWriter.DATA_PROVIDER_ICON_FILE_NAME2)
+            String[] imageFileNames = new String[] { ManagerUtil.getFileName(WrapperClientBeanInfoWriter.WEBSERVICE_ICON_FILENAME),ManagerUtil.getFileName(org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderBeanInfoWriter.DATA_PROVIDER_ICON_FILE_NAME),ManagerUtil.getFileName(org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderBeanInfoWriter.DATA_PROVIDER_ICON_FILE_NAME2)
             };
             
             for( int i = 0; i < imageUrls.length; i ++ ) {

@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 
 /**
  * Creates the DataProvider Java source code for the given method
@@ -96,7 +97,7 @@ public class DataProviderWriter extends java.io.PrintWriter {
         
         // Memeber variables
         String clientWrapperClassName = dataProviderInfo.getClientWrapperClassName();
-        String clientWrapperClassVar = Util.decapitalize( clientWrapperClassName );
+        String clientWrapperClassVar = ManagerUtil.decapitalize( clientWrapperClassName );
         println( "    protected " + clientWrapperClassName + " " + clientWrapperClassVar + ";" );
         println( "    protected ArrayList methodArgumentNames = new ArrayList();" );
         println( "    // Properties. One per method parameter." );
@@ -156,13 +157,13 @@ public class DataProviderWriter extends java.io.PrintWriter {
         
         for (DataProviderParameter param : dataProviderInfo.getMethod().getParameters()) {
             // Getter
-            println( "    public " + param.getType() + " get" + Util.upperCaseFirstChar( param.getName() ) + "() {" );
+            println( "    public " + param.getType() + " get" + ManagerUtil.upperCaseFirstChar( param.getName() ) + "() {" );
             println( "        return " + param.getName() + ";");
             println( "    }" );
             println();
             
             // Setter
-            println( "    public void set" + Util.upperCaseFirstChar( param.getName() ) + "( " + param.getType() + " " + param.getName() + " ) { " );
+            println( "    public void set" + ManagerUtil.upperCaseFirstChar( param.getName() ) + "( " + param.getType() + " " + param.getName() + " ) { " );
             println( "        this." + param.getName() + " = " + param.getName() + ";" );
             println( "    }" );
             println();
@@ -293,11 +294,11 @@ public class DataProviderWriter extends java.io.PrintWriter {
     
     private void writeOutputHolderMethodWrapper(String clientVar, String holderValueType) {
         int outputHolderIndex = dataProviderInfo.getOutputHolderIndex();
-        String getter = "get" + Util.upperCaseFirstChar(dataProviderInfo.getMethod().getParameters().get(outputHolderIndex).getName()) + "()";
+        String getter = "get" + ManagerUtil.upperCaseFirstChar(dataProviderInfo.getMethod().getParameters().get(outputHolderIndex).getName()) + "()";
 
         String exceptionReturnValue = "null";
         
-        if (Util.isJavaPrimitive(holderValueType)) {
+        if (ManagerUtil.isJavaPrimitive(holderValueType)) {
             exceptionReturnValue = getDefaultPrimitiveRepresentation(holderValueType);
         }
         

@@ -31,20 +31,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
-import org.netbeans.modules.visualweb.websvcmgr.WebServiceMetaDataTransfer;
-import org.netbeans.modules.visualweb.websvcmgr.WebServiceTransferManager;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderJavaMethod;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderModelMethod;
-import org.netbeans.modules.visualweb.websvcmgr.model.WebServiceData;
-import org.netbeans.modules.visualweb.websvcmgr.nodes.WebServiceLibReferenceHelper;
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
+import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -78,51 +80,57 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
     public Transferable addDataFlavors(Transferable transferable) {
         try {
             ExTransferable result = ExTransferable.create(transferable);
-            
             if (transferable.isDataFlavorSupported(WebServiceMetaDataTransfer.METHOD_FLAVOR) &&
                 !transferable.isDataFlavorSupported(FLAVOR_METHOD_DISPLAY_ITEM)) {
                 final WebServiceMetaDataTransfer.Method method = 
                         (WebServiceMetaDataTransfer.Method)transferable.getTransferData(WebServiceMetaDataTransfer.METHOD_FLAVOR);
-                
                 if (method != null) {
-                    ExTransferable.Single methodTransferable = new ExTransferable.Single(FLAVOR_METHOD_DISPLAY_ITEM) {
+                    JavaMethod javaMethod = method.getMethod();
+                    if (javaMethod != null && !Util.hasOutput(javaMethod)) { // NOI18N
+                        result.put(new ExTransferable.Single(FLAVOR_PORT_DISPLAY_ITEM) {
                         protected Object getData() throws IOException, UnsupportedFlavorException {
+                                return new PortBeanCreateInfo(
+                                        method.getWebServiceData(),
+                                        method.getWebServiceData().getWsdlService().getPortByName(method.getPortName()));
+                            }
+                        });
+                    } else {
+                        result.put(new ExTransferable.Single(FLAVOR_METHOD_DISPLAY_ITEM) {
+                            protected Object getData() throws IOException, UnsupportedFlavorException {
                             return new MethodBeanCreateInfo(
                                     method.getWebServiceData(),
                                     method.getWebServiceData().getWsdlService().getPortByName(method.getPortName()),
                                     method.getMethod());
                         }  
-                    };
-                    
-                    result.put(methodTransferable);
+                        });
+                    }
                     return result;
                 }
-            }else if (transferable.isDataFlavorSupported(WebServiceMetaDataTransfer.PORT_FLAVOR) &&
+            } else if (transferable.isDataFlavorSupported(WebServiceMetaDataTransfer.PORT_FLAVOR) &&
                       !transferable.isDataFlavorSupported(FLAVOR_PORT_DISPLAY_ITEM)) {
                 final WebServiceMetaDataTransfer.Port port =
                         (WebServiceMetaDataTransfer.Port)transferable.getTransferData(WebServiceMetaDataTransfer.PORT_FLAVOR);
                 
                 if (port != null) {
-                    ExTransferable.Single portTransferable = new ExTransferable.Single(FLAVOR_PORT_DISPLAY_ITEM) {
+                    result.put(new ExTransferable.Single(FLAVOR_PORT_DISPLAY_ITEM) {
                         protected Object getData() throws IOException, UnsupportedFlavorException {
                             return new PortBeanCreateInfo(
                                     port.getWebServiceData(),
                                     port.getWebServiceData().getWsdlService().getPortByName(port.getPortName()));
                         }
-                    };
-                    
-                    result.put(portTransferable);
+                    });
                     return result;
                 }
             }
-        }catch (Exception ex) {
+        } catch (Exception ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
         
         return transferable;
     }
 
     private static WebServiceDescriptor getProxyDescriptorForProject(WebServiceData wsData) {
-        boolean isJ2EE_15 = JsfProjectUtils.isJavaEE5Project(WebServiceLibReferenceHelper.getActiveProject());
+        boolean isJ2EE_15 = JsfProjectUtils.isJavaEE5Project(Util.getActiveProject());
         
         if (isJ2EE_15) {
             return wsData.getJaxWsDescriptor();
@@ -212,12 +220,11 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             }
             
             if (beanClassName != null) {
-                addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), WebServiceLibReferenceHelper.getActiveProject(), wsDescriptor);
+                addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), Util.getActiveProject(), wsDescriptor);
                 return beanClassName;
             }else {
                 return "x";
             }
-            
             
         }
         
@@ -279,10 +286,16 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             }
             DesignerWebServiceExtData data = 
                     (DesignerWebServiceExtData)wsDescriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
-            String beanClassName = data.getPortToDataProviderMap().get(port.getName()).get(methodSig);
+            
+            String beanClassName;
+            if (data == null || data.getPortToDataProviderMap().get(port.getName()) == null) {
+                beanClassName = null;
+            }else {
+                beanClassName = data.getPortToDataProviderMap().get(port.getName()).get(methodSig);
+            }
             
             if (beanClassName != null) {
-                addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), WebServiceLibReferenceHelper.getActiveProject(), wsDescriptor);
+                addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), Util.getActiveProject(), wsDescriptor);
                 return beanClassName;
             }else {
                 // XXX return something that cannot be instantiated by the designer so the drop will be rejected

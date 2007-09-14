@@ -16,13 +16,11 @@
  */
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.visualweb.websvcmgr.util.Util;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 
 /**
  *
@@ -36,7 +34,7 @@ public class DataProviderJavaMethod implements DataProviderMethod {
     
     public DataProviderJavaMethod(Method method) {
         this.name = method.getName();
-        this.returnType = Util.typeToString(method.getGenericReturnType());
+        this.returnType = ManagerUtil.typeToString(method.getGenericReturnType());
         if (returnType == null) {
             returnType = method.getReturnType().getCanonicalName();
         }
@@ -45,7 +43,7 @@ public class DataProviderJavaMethod implements DataProviderMethod {
         Type[] methodParameters = method.getGenericParameterTypes();
         Class[] methodClassParameters = method.getParameterTypes();
         for (int i = 0; i < methodParameters.length; i++) {
-            String nextParamType = Util.typeToString(methodParameters[i]);
+            String nextParamType = ManagerUtil.typeToString(methodParameters[i]);
             if (nextParamType == null) {
                 nextParamType = methodClassParameters[i].getCanonicalName();
             }
@@ -57,7 +55,7 @@ public class DataProviderJavaMethod implements DataProviderMethod {
         Type[] methodExceptions = method.getGenericExceptionTypes();
         Class[] methodClassExceptions = method.getExceptionTypes();
         for (int i = 0; i < methodExceptions.length; i++) {
-            String nextException = Util.typeToString(methodExceptions[i]);
+            String nextException = ManagerUtil.typeToString(methodExceptions[i]);
             if (nextException == null) {
                 nextException = methodClassExceptions[i].getCanonicalName();
             }

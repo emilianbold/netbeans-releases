@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
-import org.netbeans.modules.visualweb.websvcmgr.util.Util;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 
 /**
  *
@@ -68,7 +68,7 @@ public class DataProviderInfo {
     public String getClassName() 
     { 
         int lastIndex = clientWrapperClassName.lastIndexOf( "Client" ); // NOI18N
-        return clientWrapperClassName.substring( 0, lastIndex ) + Util.upperCaseFirstChar( methodName4DPClass );
+        return clientWrapperClassName.substring( 0, lastIndex ) + ManagerUtil.upperCaseFirstChar( methodName4DPClass );
     }
     
     public String getClientWrapperClassName()

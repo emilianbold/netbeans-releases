@@ -26,8 +26,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
-import javax.xml.bind.annotation.XmlType;
-import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
 
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import java.io.Writer;
@@ -36,8 +34,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import javax.xml.bind.annotation.XmlType;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 
 /**
  * A simple writer to write the Java Source.
@@ -168,7 +169,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         // write a variable for the port
 
         // get the Java class name for the port
-        String portImplName = Util.getProperPortName(port.getName());
+        String portImplName = ManagerUtil.getProperPortName(port.getName());
         String portInterfaceName = port.getJavaName();
         /**
          * Strip off the leading package qualification since we don't need it.
@@ -185,7 +186,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         /**
          * Apparently, the compiletool uppercases the first letter of the port name to make it a proper getter so we need to do the same.
          */
-        String modifiedPortName = Util.upperCaseFirstChar(portInterfaceName);
+        String modifiedPortName = ManagerUtil.upperCaseFirstChar(portInterfaceName);
 
         println("  private " + portInterfaceName + " " + portInterfaceVariable +  ";");
         println();
@@ -491,7 +492,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             String name = properties.get(0);
             Method getter = Util.getPropertyGetter(typeClass, name, wsClassLoader);
             if (getter != null) {
-                String type = Util.typeToString(getter.getGenericReturnType());
+                String type = ManagerUtil.typeToString(getter.getGenericReturnType());
                 return new DataProviderParameter(type, name);
             }else {
                 return null;
