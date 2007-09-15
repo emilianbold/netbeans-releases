@@ -231,7 +231,7 @@ public class WSDLNavigatorContent extends JPanel
     public void propertyChange(PropertyChangeEvent event) {
         Object source = event.getSource();
         String property = event.getPropertyName();
-        Logger.getLogger(getClass().getName()).info("\n\nTopComponent=" + TopComponent.getRegistry().getActivated() + "\nProperty Name=" + property + "\nSource=" + event.getSource() + "\noldValue=" + event.getOldValue() + "\nnewValue=" + event.getNewValue());
+        //Logger.getLogger(getClass().getName()).info("\n\nTopComponent=" + TopComponent.getRegistry().getActivated() + "\nProperty Name=" + property + "\nSource=" + event.getSource() + "\noldValue=" + event.getOldValue() + "\nnewValue=" + event.getNewValue());
         if (WSDLModel.STATE_PROPERTY.equals(property) && source instanceof WSDLModel) {
             State newState = (State) event.getNewValue();
             if (newState == WSDLModel.State.VALID) {
