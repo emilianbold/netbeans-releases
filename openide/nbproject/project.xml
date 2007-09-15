@@ -24,23 +24,7 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.openide</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.bootstrap</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <implementation-version/>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.core</code-name-base>
-                    <run-dependency>
-                        <implementation-version/>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.core.startup</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <implementation-version/>
                     </run-dependency>
