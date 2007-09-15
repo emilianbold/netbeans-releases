@@ -173,6 +173,7 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
     public void testNewTest() throws Exception {
         Map<String,String> map = new HashMap<String,String>();
         map.put("class", "TestClass");
+        map.put("classfile", "foo");
         map.put("module", "OutermostModule::OtherModule::InnerModule");
         map.put("extend", "Test::Unit::TestCase");
         createTemplate("createdtest", "test.rb", NewRubyFileWizardIterator.TYPE_TEST, map);
