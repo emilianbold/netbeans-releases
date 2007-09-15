@@ -1,0 +1,77 @@
+Loaded suite C:/InstantRails/rails_apps/rfs/test/unit/rest_phone/phone_call_test
+
+Started
+
+...................
+
+--- !ruby/object:RestPhone::PhoneMenu 
+
+menu_items: 
+
+- !ruby/object:RestPhone::PhoneAction::Play 
+
+  on_key: :use_next_key
+
+  play_text: press $on_key
+
+  submenu: !ruby/object:RestPhone::PhoneMenu 
+
+    is_submenu: true
+
+    menu_items: 
+
+    - !ruby/object:RestPhone::PhoneAction::Play 
+
+      on_key: :none
+
+      play_text: in submenu
+
+    name: __default_menu_1
+
+name: default_menu
+
+
+
+
+
+--- !ruby/object:RestPhone::PhoneMenu 
+
+menu_items: 
+
+- !ruby/object:RestPhone::PhoneAction::Play 
+
+  current_key: 1
+
+  keypress_length: 1
+
+  on_key: :use_next_key
+
+  play_text: press $on_key
+
+  submenu: !ruby/object:RestPhone::PhoneMenu 
+
+    is_submenu: true
+
+    menu_items: 
+
+    - !ruby/object:RestPhone::PhoneAction::Play 
+
+      on_key: :none
+
+      play_text: in submenu
+
+    name: __default_menu_1
+
+name: default_menu
+
+
+
+......
+
+Finished in 1.674 seconds.
+
+
+
+25 tests, 46 assertions, 0 failures, 0 errors
+
+

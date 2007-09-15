@@ -243,4 +243,16 @@ public class TestNotifierTest extends RubyTestBase {
         assertEquals("313 tests, 504 assertions, 1 failure, 0 errors", notifier.getSummary());
         assertTrue(notifier.isError());
     }
+
+    public void testOutputLog2() throws Exception {
+        TestNotifier notifier = new TestNotifier(true, false);
+        FileObject fileObject = getTestFile("testfiles/testoutput2.txt");
+        String s = readFile(fileObject);
+        String[] lines = s.split("\n");
+        for (String line : lines) {
+            notifier.processLine(line);
+        }
+        assertEquals("25 tests, 46 assertions, 0 failures, 0 errors", notifier.getSummary());
+        assertFalse(notifier.isError());
+    }
 }
