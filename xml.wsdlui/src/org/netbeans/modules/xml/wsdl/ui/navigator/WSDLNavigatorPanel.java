@@ -21,7 +21,9 @@ package org.netbeans.modules.xml.wsdl.ui.navigator;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
+
 import javax.swing.JComponent;
+
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -29,7 +31,6 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponent.Registry;
 
 /**
  * An implementation of NavigatorPanel for WSDL navigator.
@@ -69,10 +70,10 @@ public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
         TopComponent.getRegistry().addPropertyChangeListener(WSDLNavigatorContent.getDefault());
         selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
         selection.addLookupListener(this);
-        resultChanged(null);
+        navigate();
         // hack to init selection if any
         WSDLNavigatorContent.getDefault().propertyChange(new PropertyChangeEvent(this,
-                Registry.PROP_ACTIVATED_NODES, false, true));
+                WSDLNavigatorContent.CURRENT_NODES, false, true));
     }
 
     public void panelDeactivated() {
@@ -88,6 +89,10 @@ public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
     }
 
     public void resultChanged(LookupEvent ev) {
+        navigate();
+    }
+    
+    private void navigate() {
         if (selection == null) return;
         Collection selected = selection.allInstances();
         if (selected.size() == 1) {

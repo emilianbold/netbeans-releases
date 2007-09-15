@@ -28,6 +28,7 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,6 +62,7 @@ public class WSDLNavigatorContent extends JPanel
         implements ExplorerManager.Provider, Runnable, PropertyChangeListener {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
+    public static final String CURRENT_NODES = "WSDLEDITOR_CURRENT_SELECTION";
 //    /** The lookup for our component tree. */
 //    private static Lookup lookup;
     /** Explorer manager for the tree view. */
@@ -69,6 +71,7 @@ public class WSDLNavigatorContent extends JPanel
     private TreeView treeView;
     /** Root node of the tree. */
     private Node rootNode;
+    private DataObject dataobject;
     
     private final JLabel notAvailableLabel = new JLabel(
             NbBundle.getMessage(WSDLNavigatorContent.class, "MSG_NotAvailable"));
@@ -169,9 +172,12 @@ public class WSDLNavigatorContent extends JPanel
      * @param  dobj  data object to show.
      */
     public void navigate(DataObject dobj) {
+        if (dobj == dataobject) return;
+        cleanModel(dataobject);
+        dataobject = dobj;
         WSDLModel model = null;
         try {
-            WSDLModelCookie modelCookie = dobj.getCookie(WSDLModelCookie.class);
+            WSDLModelCookie modelCookie = dataobject.getCookie(WSDLModelCookie.class);
             if (modelCookie != null) {
                 model = modelCookie.getModel();
                 if (model != null) {
@@ -190,6 +196,22 @@ public class WSDLNavigatorContent extends JPanel
         repaint();
     }
 
+    private void cleanModel(DataObject dataobject) {
+        if (dataobject == null) return;
+        WSDLModel model = null;
+        try {
+            WSDLModelCookie modelCookie = dataobject.getCookie(WSDLModelCookie.class);
+            if (modelCookie != null) {
+                model = modelCookie.getModel();
+                if (model != null) {
+                    model.removePropertyChangeListener(this);
+                }
+            }
+        } catch (IOException ioe) {
+            // Show a blank page if there is an error.
+        }
+    }
+
     @Override
     public boolean requestFocusInWindow() {
         return treeView.requestFocusInWindow();
@@ -197,16 +219,20 @@ public class WSDLNavigatorContent extends JPanel
 
     public void run() {
         // Initially expand root node and the folder nodes below it.
-        treeView.expandNode(rootNode);
-        Utility.expandNodes(treeView, 1, rootNode);
-        selectActivatedNodes();
-        validate();
-        repaint();
+        if (treeView != null && rootNode != null) {
+            treeView.expandNode(rootNode);
+            Utility.expandNodes(treeView, 1, rootNode);
+            selectActivatedNodes();
+            validate();
+            repaint();
+        }
     }
 
     public void propertyChange(PropertyChangeEvent event) {
+        Object source = event.getSource();
         String property = event.getPropertyName();
-        if (WSDLModel.STATE_PROPERTY.equals(property)) {
+        Logger.getLogger(getClass().getName()).info("\n\nTopComponent=" + TopComponent.getRegistry().getActivated() + "\nProperty Name=" + property + "\nSource=" + event.getSource() + "\noldValue=" + event.getOldValue() + "\nnewValue=" + event.getNewValue());
+        if (WSDLModel.STATE_PROPERTY.equals(property) && source instanceof WSDLModel) {
             State newState = (State) event.getNewValue();
             if (newState == WSDLModel.State.VALID) {
                 WSDLModel model = (WSDLModel) event.getSource();
@@ -216,33 +242,32 @@ public class WSDLNavigatorContent extends JPanel
             }
             return;
         }
-        TopComponent tc = (TopComponent) SwingUtilities.
-                getAncestorOfClass(TopComponent.class, this);
-        if (tc != null) {
-            boolean isActivatedTC = (tc == TopComponent.getRegistry().getActivated());
-            if (ExplorerManager.PROP_SELECTED_NODES.equals(property) &&
-                    isActivatedTC) {
-                Node[] filteredNodes = (Node[])event.getNewValue();
-                if (filteredNodes != null && filteredNodes.length >= 1) {
-                    // Set the active nodes for the parent TopComponent.
-                    tc.setActivatedNodes(filteredNodes);
+        if (source instanceof TopComponent.Registry || 
+                source instanceof ExplorerManager) {
+
+            TopComponent tc = 
+                (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
+            if (tc != null) {
+                boolean isActivatedTC = (tc == TopComponent.getRegistry().getActivated());
+                if (CURRENT_NODES.equals(property) && !isActivatedTC) {
+                    selectActivatedNodes();
                     validate();
-                    repaint();
-                }
-            } else if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(property) &&
-                    !isActivatedTC) {
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        selectActivatedNodes();
+                } else if (ExplorerManager.PROP_SELECTED_NODES.equals(property)) {
+                    Node[] filteredNodes = (Node[])event.getNewValue();
+                    if (filteredNodes != null && filteredNodes.length >= 1) {
+                        // Set the active nodes for the parent TopComponent.
+                        tc.setActivatedNodes(filteredNodes);
                         validate();
-                        repaint();
                     }
-                });
-            } else if (TopComponent.Registry.PROP_ACTIVATED.equals(property) &&
-                    isActivatedTC) {
-                tc.setActivatedNodes(getExplorerManager().getSelectedNodes());
-                validate();
-                repaint();
+                } else if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(property) &&
+                        !isActivatedTC) {
+                    selectActivatedNodes();
+                    validate();
+                } else if (TopComponent.Registry.PROP_ACTIVATED.equals(property) &&
+                        isActivatedTC) {
+                    tc.setActivatedNodes(getExplorerManager().getSelectedNodes());
+                    validate();
+                }
             }
         }
     }
@@ -263,7 +288,7 @@ public class WSDLNavigatorContent extends JPanel
         revalidate();
         try {
             getExplorerManager().setSelectedNodes(
-                    selNodes.toArray(new Node[0]));
+                    selNodes.toArray(new Node[selNodes.size()]));
         } catch (PropertyVetoException pve) {
         }
     }
@@ -306,5 +331,6 @@ public class WSDLNavigatorContent extends JPanel
         
         rootNode = null;
         treeView = null;
+        dataobject = null;
     }
 }

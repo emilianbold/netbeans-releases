@@ -378,7 +378,13 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
                                 @Override
                                 public void nodeDestroyed(NodeEvent ev) {
                                     if(ev.getNode()==selectedNode) {
-                                        selectElementsAtOffset();
+                                        EventQueue.invokeLater(new Runnable() {
+                                        
+                                            public void run() {
+                                                selectElementsAtOffset();
+                                            }
+                                        
+                                        });
                                     }
                                 }
                             };

@@ -156,14 +156,14 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie {
             case DESIGN:
                 if (WSDLDesignMultiViewDesc.PREFERRED_ID.equals(
                         getMultiviewActive())) {
-                    return false;
-                }
-                // Determine if this type of component is displayed
-                // in the partner view or not.
-                boolean okay = false;
-                for (Class type : DESIGNABLE_COMPONENTS) {
-                    if (type.isInstance(component)) {
-                        return true;
+
+                    // Determine if this type of component is displayed
+                    // in the partner view or not.
+                    boolean okay = false;
+                    for (Class type : DESIGNABLE_COMPONENTS) {
+                        if (type.isInstance(component)) {
+                            return true;
+                        }
                     }
                 }
                 break;
@@ -173,7 +173,6 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie {
     }
         
     public void show(ResultItem resultItem) {
-        View view = View.STRUCTURE;
         Component component = resultItem.getComponents();
         if (component == null || component.getModel() == null ||
                 component.getModel().getState() == WSDLModel.State.NOT_WELL_FORMED) {
@@ -184,20 +183,17 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie {
                         resultItem.getDescription(), false);
             }
 
-            TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
-            MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
-
-            if (mvh == null) {
-                return;
-            }
-
-            MultiViewPerspective mvp = mvh.getSelectedPerspective();
-            if (mvp.preferredID().equals(WSDLTreeViewMultiViewDesc.PREFERRED_ID)) {
+            String activeMultiviewPreferredId = getMultiviewActive();
+            if (WSDLTreeViewMultiViewDesc.PREFERRED_ID.equals(activeMultiviewPreferredId)) {
                 view(View.STRUCTURE, component, resultItem);
-            } else if (mvp.preferredID().equals(WSDLSourceMultiviewDesc.PREFERRED_ID)) {
+            } else if (WSDLSourceMultiviewDesc.PREFERRED_ID.equals(activeMultiviewPreferredId)) {
                 view(View.SOURCE, component, resultItem);
-            } else if (mvp.preferredID().equals(WSDLDesignMultiViewDesc.PREFERRED_ID)) {
-                view(View.DESIGN, component, resultItem);
+            } else if (WSDLDesignMultiViewDesc.PREFERRED_ID.equals(activeMultiviewPreferredId)) {
+                if (canView(View.DESIGN, component)) {
+                    view(View.DESIGN, component, resultItem);
+                } else {
+                    view(View.STRUCTURE, component, resultItem);
+                }
             }
         }
     }
