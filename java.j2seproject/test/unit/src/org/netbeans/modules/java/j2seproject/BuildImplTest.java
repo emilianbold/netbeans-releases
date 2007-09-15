@@ -21,8 +21,6 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -45,6 +43,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
 import org.openide.windows.IOProvider;
@@ -58,13 +57,13 @@ import org.openide.windows.OutputWriter;
  * @author Jesse Glick, David Konecny
  */
 public final class BuildImplTest extends NbTestCase {
-    
+
     public BuildImplTest(String name) {
         super(name);
     }
-    
+
     private File junitJar;
-    
+
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
@@ -77,7 +76,7 @@ public final class BuildImplTest extends NbTestCase {
         assertTrue("file " + junitJar + " exists", junitJar.isFile());
         MockServices.setServices(IOP.class, IFL.class);
     }
-    
+
     private AntProjectHelper setupProject(String subFolder, int numberOfSourceFiles, boolean generateTests) throws Exception {
         File proj = getWorkDir();
         if (subFolder != null) {
@@ -95,7 +94,7 @@ public final class BuildImplTest extends NbTestCase {
         }
         return aph;
     }
-    
+
     private AntProjectHelper setupProject(int numberOfSourceFiles, boolean generateTests) throws Exception {
         clearWorkDir();
         return setupProject(null, numberOfSourceFiles, generateTests);
@@ -104,7 +103,7 @@ public final class BuildImplTest extends NbTestCase {
     private void generateJava(FileObject root, String path, boolean test) throws Exception {
         String name = path.replaceFirst("^.+/", "").replaceFirst("\\..+$", "");
         if (test) {
-            writeFile(root, path,
+            TestFileUtils.writeFile(root, path,
                 "package pkg;\n" +
                 "import junit.framework.TestCase;\n" +
                 "public class " + name + " extends TestCase {\n" +
@@ -112,7 +111,7 @@ public final class BuildImplTest extends NbTestCase {
                 "public void testDoSomething() { System.out.println(\"" + name + " test executed\"); }\n" +
                 "}\n");
         } else {
-            writeFile(root, path,
+            TestFileUtils.writeFile(root, path,
                 "package pkg;\n" +
                 "public class " + name + " {\n" +
                 "public boolean doSomething() { return true; }\n" +
@@ -121,22 +120,12 @@ public final class BuildImplTest extends NbTestCase {
         }
     }
 
-    private FileObject writeFile(FileObject root, String path, String body) throws Exception {
-        FileObject fo = FileUtil.createData(root, path);
-        OutputStream os = fo.getOutputStream();
-        PrintWriter pw = new PrintWriter(os);
-        pw.print(body);
-        pw.flush();
-        os.close();
-        return fo;
-    }
-
     private Properties getProperties() {
         Properties p = new Properties();
         p.setProperty("libs.junit.classpath", junitJar.getAbsolutePath());
         return p;
     }
-    
+
     public void testDefaultTargets() throws Exception {
         AntProjectHelper aph = setupProject(1, true);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -146,14 +135,14 @@ public final class BuildImplTest extends NbTestCase {
         assertTrue("Default target must test project", output.contains("test:"));
         assertTrue("Default target must jar project", output.contains("jar:"));
         assertTrue("Default target must build javadoc", output.contains("javadoc:"));
-        
+
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source0.class must exist", fo.getFileObject("build/classes/pkg/Source0.class"));
         assertNotNull("build/test/classes/pkg/Source0Test.class must exist", fo.getFileObject("build/test/classes/pkg/Source0Test.class"));
         assertNotNull("dist/testDefaultTargets.jar must exist", fo.getFileObject("dist/testDefaultTargets.jar"));
         assertNotNull("dist/javadoc/index.html must exist", fo.getFileObject("dist/javadoc/index.html"));
     }
-    
+
     public void testCompile() throws Exception {
         AntProjectHelper aph = setupProject(2, true);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -161,14 +150,14 @@ public final class BuildImplTest extends NbTestCase {
         Properties p = getProperties();
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"compile"}, p));
         assertTrue("compile target was not executed", output.contains("compile:"));
-        
+
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source0.class must exist", fo.getFileObject("build/classes/pkg/Source0.class"));
         assertNotNull("build/classes/pkg/Source1.class must exist", fo.getFileObject("build/classes/pkg/Source1.class"));
         assertNull("build/test folder should not be created", fo.getFileObject("build/test"));
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
     }
-    
+
     public void testCompileSingle() throws Exception {
         AntProjectHelper aph = setupProject(3, true);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -177,7 +166,7 @@ public final class BuildImplTest extends NbTestCase {
         p.setProperty("javac.includes", "pkg/Source2.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"compile-single"}, p));
         assertTrue("compile-single target was not executed", output.contains("compile-single:"));
-        
+
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source2.class must exist", fo.getFileObject("build/classes/pkg/Source2.class"));
         assertEquals("Only one class should be compiled", 1, fo.getFileObject("build/classes/pkg").getChildren().length);
@@ -190,11 +179,11 @@ public final class BuildImplTest extends NbTestCase {
         FileObject root = aph.getProjectDirectory();
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
         Properties p = getProperties();
-        FileObject s1 = writeFile(root, "src/pack/age/Source1.java", "package pack.age; class Source1 {}");
+        FileObject s1 = TestFileUtils.writeFile(root, "src/pack/age/Source1.java", "package pack.age; class Source1 {}");
         // Oddly, "class Source2 {Source1 s;}" does not trigger a dep Source2 -> Source1
         // ...which is technically correct (contents of Source1 cannot affect Source2's compilability)
         // but is <depend> really this clever?
-        writeFile(root, "src/pack/age/Source2.java", "package pack.age; class Source2 {{new Source1();}}");
+        TestFileUtils.writeFile(root, "src/pack/age/Source2.java", "package pack.age; class Source2 {{new Source1();}}");
         p.setProperty("javac.includes", "pack/age/Source1.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
         File classes = new File(new File(getWorkDir(), "build"), "classes");
@@ -218,15 +207,15 @@ public final class BuildImplTest extends NbTestCase {
         // But <depend> is not run:
         long oldTimestamp = s1.lastModified().getTime();
         Thread.sleep(1500); // try to force new timestamp
-        s1 = writeFile(root, "src/pack/age/Source1.java", "package pack.age; class Source1 {} // modified");
+        s1 = TestFileUtils.writeFile(root, "src/pack/age/Source1.java", "package pack.age; class Source1 {} // modified");
         assertTrue(s1.lastModified().getTime() > oldTimestamp); // if this fails, try increasing delay above!
         p.setProperty("javac.includes", "pack/age/Source1.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
         assertOutput("Compiling 1 source file to " + classes);
         assertEquals(2, classesPackage.list().length);
         // Same for tests:
-        FileObject t1 = writeFile(root, "test/pack/age/Test1.java", "package pack.age; class Test1 {}");
-        writeFile(root, "test/pack/age/Test2.java", "package pack.age; class Test2 {{new Test1();}}");
+        FileObject t1 = TestFileUtils.writeFile(root, "test/pack/age/Test1.java", "package pack.age; class Test1 {}");
+        TestFileUtils.writeFile(root, "test/pack/age/Test2.java", "package pack.age; class Test2 {{new Test1();}}");
         p.setProperty("javac.includes", "pack/age/Test1.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test-single"}, p));
         classes = new File(new File(new File(getWorkDir(), "build"), "test"), "classes");
@@ -247,7 +236,7 @@ public final class BuildImplTest extends NbTestCase {
         assertEquals(2, classesPackage.list().length);
         oldTimestamp = t1.lastModified().getTime();
         Thread.sleep(1500);
-        t1 = writeFile(root, "src/pack/age/Test1.java", "package pack.age; class Test1 {} // modified");
+        t1 = TestFileUtils.writeFile(root, "src/pack/age/Test1.java", "package pack.age; class Test1 {} // modified");
         assertTrue(t1.lastModified().getTime() > oldTimestamp);
         p.setProperty("javac.includes", "pack/age/Test1.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test-single"}, p));
@@ -312,18 +301,18 @@ public final class BuildImplTest extends NbTestCase {
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"test-single"}, p));
         assertNotNull(dir.getFileObject("build/test/classes/pkg/Source7Test.class"));
         assertTrue(output.contains("Source7Test test executed"));
-        writeFile(dir, "src/RefersToExcluded1a.java", "class RefersToExcluded1a {{new pkg.Source11();}}");
+        TestFileUtils.writeFile(dir, "src/RefersToExcluded1a.java", "class RefersToExcluded1a {{new pkg.Source11();}}");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile"}, p));
-        writeFile(dir, "src/RefersToExcluded1b.java", "class RefersToExcluded1b {{new pkg.Source10();}}");
+        TestFileUtils.writeFile(dir, "src/RefersToExcluded1b.java", "class RefersToExcluded1b {{new pkg.Source10();}}");
         assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile"}, p));
     }
-    
+
     private void touch(FileObject f, FileObject ref) throws Exception {
         File ff = FileUtil.toFile(f);
         long older = ff.lastModified();
         if (ref != null) {
             older = Math.max(older, FileUtil.toFile(ref).lastModified());
-        } 
+        }
         for (long pause = 1; pause < 9999; pause *= 2) {
             Thread.sleep(pause);
             ff.setLastModified(System.currentTimeMillis());
@@ -333,33 +322,33 @@ public final class BuildImplTest extends NbTestCase {
         }
         fail("Did not manage to touch " + ff);
     }
-    
+
     /** @see "issue #36033" */
     public void testCompileWithDependencyAnalysis() throws Exception {
         AntProjectHelper aph = setupProject(0, false);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
         FileObject d = aph.getProjectDirectory();
-        FileObject x = writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y1();}}");
-        FileObject y = writeFile(d, "src/p/Y.java", "package p; public class Y {static void y1() {}}");
+        FileObject x = TestFileUtils.writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y1();}}");
+        FileObject y = TestFileUtils.writeFile(d, "src/p/Y.java", "package p; public class Y {static void y1() {}}");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile"}, getProperties()));
-        writeFile(d, "src/p/Y.java", "package p; public class Y {static void y2() {}}");
+        TestFileUtils.writeFile(d, "src/p/Y.java", "package p; public class Y {static void y2() {}}");
         touch(y, d.getFileObject("build/classes/p/Y.class"));
         assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile"}, getProperties()));
-        writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y2();}}");
+        TestFileUtils.writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y2();}}");
         touch(x, null);
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile"}, getProperties()));
-        FileObject yt = writeFile(d, "test/p/YTest.java", "package p; public class YTest extends junit.framework.TestCase {public void testY() {Y.y2();}}");
+        FileObject yt = TestFileUtils.writeFile(d, "test/p/YTest.java", "package p; public class YTest extends junit.framework.TestCase {public void testY() {Y.y2();}}");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()));
-        writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y1();}}");
+        TestFileUtils.writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y1();}}");
         touch(x, d.getFileObject("build/classes/p/X.class"));
-        writeFile(d, "src/p/Y.java", "package p; public class Y {static void y1() {}}");
+        TestFileUtils.writeFile(d, "src/p/Y.java", "package p; public class Y {static void y1() {}}");
         touch(y, d.getFileObject("build/classes/p/Y.class"));
         assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()));
-        writeFile(d, "test/p/YTest.java", "package p; public class YTest extends junit.framework.TestCase {public void testY() {Y.y1();}}");
+        TestFileUtils.writeFile(d, "test/p/YTest.java", "package p; public class YTest extends junit.framework.TestCase {public void testY() {Y.y1();}}");
         touch(yt, null);
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()));
     }
-    
+
     public void testRun() throws Exception {
         AntProjectHelper aph = setupProject(3, true);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -370,7 +359,7 @@ public final class BuildImplTest extends NbTestCase {
         assertTrue("compile target was not executed", output.contains("compile:"));
         assertTrue("run target was not executed", output.contains("run:"));
         assertTrue("main class was not executed", output.contains("Source1 main class executed"));
-       
+
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source0.class must exist", fo.getFileObject("build/classes/pkg/Source0.class"));
         assertNotNull("build/classes/pkg/Source1.class must exist", fo.getFileObject("build/classes/pkg/Source1.class"));
@@ -378,7 +367,7 @@ public final class BuildImplTest extends NbTestCase {
         assertNull("build/test folder should not be created", fo.getFileObject("build/test"));
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
     }
-    
+
     public void testRunSingle() throws Exception {
         AntProjectHelper aph = setupProject(3, true);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -391,14 +380,14 @@ public final class BuildImplTest extends NbTestCase {
         assertTrue("compile target was not executed", output.contains(/*85707*/"compile:"));
         assertTrue("run target was not executed", output.contains("run-single:"));
         assertTrue("main class was not executed", output.contains("Source2 main class executed"));
-       
+
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source2.class must exist", fo.getFileObject("build/classes/pkg/Source2.class"));
         assertEquals("Only one class should be compiled", /*85707*/3, fo.getFileObject("build/classes/pkg").getChildren().length);
         assertNull("build/test folder should not be created", fo.getFileObject("build/test"));
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
     }
-    
+
     public void testJar() throws Exception {
         AntProjectHelper aph = setupProject(2, true);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -407,7 +396,7 @@ public final class BuildImplTest extends NbTestCase {
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"jar"}, p));
         assertTrue("compile target was not executed", output.contains("compile:"));
         assertTrue("jar target was not executed", output.contains("jar:"));
-        
+
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source0.class must exist", fo.getFileObject("build/classes/pkg/Source0.class"));
         assertNotNull("build/classes/pkg/Source1.class must exist", fo.getFileObject("build/classes/pkg/Source1.class"));
@@ -418,8 +407,8 @@ public final class BuildImplTest extends NbTestCase {
         assertNull("Main-class was not set", mf.getValue("Main-class"));
 
         // set a manifest
-        
-        writeFile(aph.getProjectDirectory(), "manifest/manifest.mf",
+
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "manifest/manifest.mf",
             "Manifest-Version: 1.0\n" +
             "Something: s.o.m.e\n\n");
         p.setProperty("manifest.file", "manifest/manifest.mf");
@@ -434,7 +423,7 @@ public final class BuildImplTest extends NbTestCase {
         assertNull("Main-class was not set", mf.getValue("Main-class"));
 
         // set a mainclass
-        
+
         p.setProperty("main.class", "some.clazz.Main");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"jar"}, p));
         assertTrue("compile target was not executed", output.contains("compile:"));
@@ -446,7 +435,7 @@ public final class BuildImplTest extends NbTestCase {
         assertEquals("Specified manifest was not used", "s.o.m.e", mf.getValue("Something"));
         assertEquals("Main-class was not set", "some.clazz.Main", mf.getValue("Main-class"));
     }
-    
+
     public void testJavadoc() throws Exception {
         AntProjectHelper aph = setupProject(3, true);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -454,12 +443,23 @@ public final class BuildImplTest extends NbTestCase {
         Properties p = getProperties();
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"javadoc"}, p));
         assertTrue("javadoc target was not executed", output.contains("javadoc:"));
-       
+
         FileObject fo = aph.getProjectDirectory();
         assertNull("build folder should not be created", fo.getFileObject("build"));
         assertNull("dist/testJavadoc.jar should not exist", fo.getFileObject("dist/testJavadoc.jar"));
         assertNotNull("dist/javadoc/index.html must exist", fo.getFileObject("dist/javadoc/index.html"));
     }
+    public void testJavadocPackagesDocumented() throws Exception {
+        AntProjectHelper aph = setupProject(0, false);
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/pkg1/A.java", "package pkg1; public class A {}");
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/pkg1/package.html", "<html><body>Floopy blint.</body></html>");
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/pkg2/B.java", "package pkg2; public class B {}");
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/pkg2/package-info.java", "/** Floppy blunt. */ package pkg2;");
+        assertBuildSuccess(ActionUtils.runTarget(aph.getProjectDirectory().getFileObject("build.xml"), new String[] {"javadoc"}, getProperties()));
+        TestFileUtils.assertContains(aph.resolveFileObject("dist/javadoc/pkg1/package-summary.html"), "Floopy blint.");
+        TestFileUtils.assertContains(aph.resolveFileObject("dist/javadoc/pkg2/package-summary.html"), "Floppy blunt.");
+    }
+    // XXX test: no duplicated class names in index; excluded packages not documented; excluded classes not documented; @see works on packages
 
     public void testTest() throws Exception {
         AntProjectHelper aph = setupProject(2, true);
@@ -472,7 +472,7 @@ public final class BuildImplTest extends NbTestCase {
         assertTrue("test target was not executed", output.contains("test:"));
         assertTrue("test 0 was not executed", output.contains("Source0Test test executed"));
         assertTrue("test 1 was not executed", output.contains("Source1Test test executed"));
-        
+
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source0.class must exist", fo.getFileObject("build/classes/pkg/Source0.class"));
         assertNotNull("build/classes/pkg/Source1.class must exist", fo.getFileObject("build/classes/pkg/Source1.class"));
@@ -480,7 +480,7 @@ public final class BuildImplTest extends NbTestCase {
         assertNotNull("build/test/classes/pkg/Source1Test.class must exist", fo.getFileObject("build/test/classes/pkg/Source1Test.class"));
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
     }
-    
+
     public void testCompileSingleTest() throws Exception {
         AntProjectHelper aph = setupProject(3, true);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -490,7 +490,7 @@ public final class BuildImplTest extends NbTestCase {
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"compile-test-single"}, p));
         assertTrue("compile-single target was not executed", output.contains("compile:"));
         assertTrue("compile-single target was not executed", output.contains("compile-test-single:"));
-        
+
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source0.class must exist", fo.getFileObject("build/classes/pkg/Source0.class"));
         assertNotNull("build/classes/pkg/Source1.class must exist", fo.getFileObject("build/classes/pkg/Source1.class"));
@@ -499,7 +499,7 @@ public final class BuildImplTest extends NbTestCase {
         assertEquals("Only one test class should be compiled", 1, fo.getFileObject("build/test/classes/pkg").getChildren().length);
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
     }
-    
+
     public void testRunSingleTest() throws Exception {
         AntProjectHelper aph = setupProject(3, true);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -512,7 +512,7 @@ public final class BuildImplTest extends NbTestCase {
         assertTrue("run target was not executed", output.contains("compile-test-single:"));
         assertTrue("run target was not executed", output.contains("test-single:"));
         assertTrue("test was not executed", output.contains("Source2Test test executed"));
-       
+
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source0.class must exist", fo.getFileObject("build/classes/pkg/Source0.class"));
         assertNotNull("build/classes/pkg/Source1.class must exist", fo.getFileObject("build/classes/pkg/Source1.class"));
@@ -527,8 +527,8 @@ public final class BuildImplTest extends NbTestCase {
     public void testRunSingleTestWithDep() throws Exception { // #97053
         AntProjectHelper aph = setupProject(1, false);
         FileObject root = aph.getProjectDirectory();
-        writeFile(root, "test/pkg/TestUtil.java", "package pkg; class TestUtil {}");
-        writeFile(root, "test/pkg/SomeTest.java", "package pkg; public class SomeTest extends junit.framework.TestCase {public void testX() {new Source0(); new TestUtil();}}");
+        TestFileUtils.writeFile(root, "test/pkg/TestUtil.java", "package pkg; class TestUtil {}");
+        TestFileUtils.writeFile(root, "test/pkg/SomeTest.java", "package pkg; public class SomeTest extends junit.framework.TestCase {public void testX() {new Source0(); new TestUtil();}}");
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
         Properties p = getProperties();
         p.setProperty("javac.includes", "pkg/SomeTest.java");
@@ -536,7 +536,7 @@ public final class BuildImplTest extends NbTestCase {
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"test-single"}, p));
         assertOutput("Testsuite: pkg.SomeTest");
     }
-    
+
     public void testSubprojects() throws Exception {
         clearWorkDir();
         AntProjectHelper aph1 = setupProject("p1", 1, false);
@@ -570,7 +570,7 @@ public final class BuildImplTest extends NbTestCase {
         fo = aph2.getProjectDirectory();
         assertNull("build folder cannot exist", fo.getFileObject("build"));
         assertNull("dist folder cannot exist", fo.getFileObject("dist"));
-        
+
         p.setProperty("no.dependencies", "false");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"jar"}, p));
         assertTrue("jar target was not executed", output.contains("jar:"));
@@ -596,7 +596,7 @@ public final class BuildImplTest extends NbTestCase {
         fo.refresh();
         assertNotNull("build folder must exist", fo.getFileObject("build"));
         assertNotNull("dist folder must exist", fo.getFileObject("dist"));
-        
+
         p.setProperty("no.dependencies", "false");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"clean"}, p));
         assertTrue("clean target was not executed", output.contains("clean:"));
@@ -611,8 +611,8 @@ public final class BuildImplTest extends NbTestCase {
         assertNull("build folder must be removed", fo.getFileObject("build"));
         assertNull("dist folder must be removed", fo.getFileObject("dist"));
     }
-    
-    
+
+
     private Attributes getJarManifest(FileObject fo) throws Exception {
         File f = FileUtil.toFile(fo);
         JarFile jf = new JarFile(f);
@@ -620,7 +620,7 @@ public final class BuildImplTest extends NbTestCase {
         jf.close();
         return attrs;
     }
-    
+
     private void assertBuildSuccess(ExecutorTask task) {
         if (task.result() != 0) {
             dumpOutput();
@@ -654,7 +654,7 @@ public final class BuildImplTest extends NbTestCase {
 
     @SuppressWarnings("deprecation")
     public static final class IOP extends IOProvider implements InputOutput {
-        
+
         public IOP() {}
 
         public InputOutput getIO(String name, boolean newIO) {
@@ -706,20 +706,20 @@ public final class BuildImplTest extends NbTestCase {
         public void setInputVisible(boolean value) {}
 
         public void setOutputVisible(boolean value) {}
-        
+
     }
-    
+
     private static final List<String> output = new ArrayList<String>();
     private static int outputPosition;
     private static final List<String> outputType = new ArrayList<String>();
-    
+
     private static final String TYPE_ERR = "err";
     private static final String TYPE_OK = "ok";
-    
+
     private static final class OW extends OutputWriter {
-        
+
         private final boolean err;
-        
+
         public OW(boolean err) {
             super(new StringWriter());
             this.err = err;
@@ -732,13 +732,13 @@ public final class BuildImplTest extends NbTestCase {
         public @Override void println(String x) {
             message(x, false);
         }
-        
+
         private void message(String msg, boolean hyperlinked) {
             output.add(msg);
             String type = err ? TYPE_ERR : TYPE_OK;
             outputType.add(type);
         }
-        
+
         public void reset() throws IOException {}
 
     }
