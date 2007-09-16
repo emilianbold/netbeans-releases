@@ -1,5 +1,7 @@
 Name: Tom Sawyer Visualization Library
 Version: 6.0
+OSR: 139749
+License: SLA
 
 TOM SAWYER 6.0 IN NETBEANS 6.0
 

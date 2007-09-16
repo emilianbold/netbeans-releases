@@ -1,6 +1,7 @@
 Name: ANTLR
 Version: 2.7.2
 OSR: 6877
+License: BSD
 
 ANTLR 2 License
 
