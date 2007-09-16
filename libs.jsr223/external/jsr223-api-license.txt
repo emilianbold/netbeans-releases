@@ -1,6 +1,7 @@
 Name: JSR 223 - Scripting API
 Source: http://libs.netbeans.org/files/documents/128/1496/jsr223-api-src.zip
 License: GPL-2-CP
+OSR: Sun
 
 The GNU General Public License (GPL)
 
