@@ -264,8 +264,12 @@ public class VerifyLibsAndLicenses extends Task {
                 } else {
                     for (String header : requiredHeaders) {
                         if (!headers.containsKey(header)) {
-			    if (header.equals("OSR") && (headers.get("License") != null && headers.get("License").startsWith("CDDL")))
-				continue;
+			    			if (header.equals("OSR") && (headers.get("License") != null)){ 
+								if (headers.get("License").startsWith("CDDL")) //CDDL does not require OSR
+									continue;
+								if (headers.get("License").startsWith("SLA")) //SLA does not require OSR
+									continue;
+			    			}
                             msg.append("\n" + path + " is missing a required header: " + header);
                         }
                     }
