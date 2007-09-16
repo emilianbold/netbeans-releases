@@ -342,6 +342,10 @@ public class DatabaseSettingsImporter {
                         if (drvs != null) {
                             dbconn = DatabaseConnection.create(drvs, dsInfo.getUrl(), username,  username.toUpperCase(), password,  true);
                             ConnectionManager.getDefault().addConnection(dbconn);
+                        } else if (dsInfo.getDriverClassName().equals("oracle.jdbc.driver.OracleDriver")) {  //NOI18N
+                            drvs = DataSourceResolver.getInstance().findMatchingDriver("oracle.jdbc.OracleDriver");  //NOI18N
+                            dbconn = DatabaseConnection.create(drvs, dsInfo.getUrl(), username,  username.toUpperCase(), password,  true);
+                            ConnectionManager.getDefault().addConnection(dbconn);
                         }
                     }
                 }
