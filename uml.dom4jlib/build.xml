@@ -25,9 +25,13 @@ Microsystems, Inc. All Rights Reserved.
     <description>Builds, tests, and runs the project org.jaxen.</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <target name="release" depends="init">
-    	<mkdir dir="${cluster}/modules/ext/dom4j/"/>
-        <unzip dest="${cluster}/modules/ext/dom4j/" src="external/dom4j-1.2.zip"/>
+	<target name="common-init" depends="default.init">
+		<mkdir dir="build/external"/>
+		<unzip dest="build/external" src="external/dom4j-1.2.zip"/>    	
+		<mkdir dir="${cluster}/modules/ext/dom4j/"/>
+		<copy todir="${cluster}/modules/ext/dom4j/">
+			<fileset dir="build/external/"/>
+		</copy>
     </target>
 
 </project>
