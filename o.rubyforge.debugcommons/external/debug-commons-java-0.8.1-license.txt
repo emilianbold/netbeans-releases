@@ -1,4 +1,8 @@
-The file lib/classic-debug.rb is based on the debug.rb file from Ruby
+Name: Debug Commons
+Version: 0.8.1
+License: MIT
+OSR: 5813
+Comment: The file lib/classic-debug.rb is based on the debug.rb file from Ruby
 project.
 
 Copyright (c) 2007 debug-commons team
