@@ -34,11 +34,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.SettingsDefaults;
+import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import static org.netbeans.modules.java.editor.semantic.ColoringAttributes.*;
 
 /**
@@ -48,9 +52,6 @@ import static org.netbeans.modules.java.editor.semantic.ColoringAttributes.*;
 public final class ColoringManager {
 
     private static final Map<Set<ColoringAttributes>, String> type2Coloring;
-    
-    private static final Font ITALIC = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
-    private static final Font BOLD = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
     
     static {
         type2Coloring = new LinkedHashMap<Set<ColoringAttributes>, String>();
@@ -108,6 +109,10 @@ public final class ColoringManager {
         EnumSet<ColoringAttributes> es = EnumSet.noneOf(ColoringAttributes.class);
         
         es.addAll(colorings);
+        
+        if (colorings.contains(UNUSED)) {
+            attribs.add(AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new UnusedTooltipResolver()));
+        }
         
 //        colorings = colorings.size() > 0 ? EnumSet.copyOf(colorings) : EnumSet.noneOf(ColoringAttributes.class);
         
