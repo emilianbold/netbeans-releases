@@ -25,11 +25,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -46,7 +43,9 @@ import org.netbeans.editor.ext.ExtFormatter;
 public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
     private static final Logger logger = Logger.getLogger(TagBasedLexerFormatter.class.getName());
-
+    
+    private enum LineFormattingType{NORMAL, RELATIVE, NONE};
+    
     /** Creates a new instance of TagBases */
     public TagBasedLexerFormatter(Class kitClass) {
         super(kitClass);
@@ -74,8 +73,8 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
     protected abstract LanguagePath supportedLanguagePath();
 
-    protected boolean isWSTag(Token tag) {
-        char[] chars = tag.text().toString().toCharArray();
+    protected boolean isWSToken(Token token) {
+        char[] chars = token.text().toString().toCharArray();
 
         for (char c : chars) {
             if (!Character.isWhitespace(c)) {
@@ -100,8 +99,8 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         while (tokenSequence.moveNext()) {
             token = tokenSequence.token();
             tokenOffset = tokenSequence.offset();
-            if (!isWSTag(token) || tagStartLine != Utilities.getLineOffset(doc, tokenOffset)) {
-                if (!isWSTag(token) && tagStartLine == Utilities.getLineOffset(doc, tokenOffset)) {
+            if (!isWSToken(token) || tagStartLine != Utilities.getLineOffset(doc, tokenOffset)) {
+                if (!isWSToken(token) && tagStartLine == Utilities.getLineOffset(doc, tokenOffset)) {
                     return tokenOffset - Utilities.getRowIndent(doc, tokenOffset) - Utilities.getRowStart(doc, tokenOffset);
                 }
                 break;
@@ -117,17 +116,17 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             final BaseDocument doc,
             final TokenSequence tokenSequence,
             final String tagName,
-            final int tagEndOffset,
-            final int lastTagLine, 
             final Collection<TagIndentationData> unprocessedOpeningTags,
             final int[] indentsWithinTags) throws BadLocationException {
 
         boolean thereAreMoreTokens = true;
-        TagIndentationData tagData = new TagIndentationData(tagName, lastTagLine);
-        unprocessedOpeningTags.add(tagData);
-
         // format content of a tag that spans across multiple lines
         int firstTagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
+        int tagEndOffset = getTagEndOffset(tokenSequence, tokenSequence.offset());
+        int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
+        
+        TagIndentationData tagData = new TagIndentationData(tagName, lastTagLine);
+        unprocessedOpeningTags.add(tagData);
 
         if (firstTagLine < lastTagLine) {
             // performance!
@@ -140,7 +139,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             // if there is only the closing symbol on the last line of tag do not indent it
             thereAreMoreTokens &= tokenSequence.moveNext();
 
-            while (Utilities.getLineOffset(doc, tokenSequence.offset()) < lastTagLine || isWSTag(tokenSequence.token())) {
+            while (Utilities.getLineOffset(doc, tokenSequence.offset()) < lastTagLine || isWSToken(tokenSequence.token())) {
 
                 tokenSequence.moveNext();
             }
@@ -154,11 +153,9 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
     }
     
     private void calcIndents_processClosingTag(
-                final BaseDocument doc,
-                final TokenSequence tokenSequence,
                 final String tagName,
-                final int lastTagLine, 
-                final boolean unformattableLines[],
+                final int tagClosedOnLine, 
+                final LineFormattingType lineFormatting[],
                 final LinkedList<TagIndentationData> unprocessedOpeningTags,
                 final Collection<TagIndentationData> matchedOpeningTags
             )  throws BadLocationException {
@@ -168,13 +165,13 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             TagIndentationData processedTD = unprocessedOpeningTags.removeLast();
 
             if (areTagNamesEqual(tagName, processedTD.getTagName())) {
-                processedTD.setClosedOnLine(lastTagLine);
+                processedTD.setClosedOnLine(tagClosedOnLine);
                 matchedOpeningTags.add(processedTD);
 
                 // mark all the stuff between unformattable tag as unformattable
                 if (isUnformattableTag(tagName)) {
-                    for (int i = lastTagLine - 1; i > processedTD.getLine(); i--) {
-                        unformattableLines[i] = true;
+                    for (int i = tagClosedOnLine - 1; i > processedTD.getLine(); i--) {
+                        lineFormatting[i] = LineFormattingType.NONE;
                     }
                 }
 
@@ -210,13 +207,25 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
             int firstUnformattableLine = -1;
 
-            boolean[] unformattableLines = new boolean[lastLine + 1];
+            LineFormattingType[] lineFormatting = new LineFormattingType[lastLine + 1];
+            int blockShiftOffsets[] = new int[lastLine + 1];
             // Only reindent lines that start with tokens of current language
-            Arrays.fill(unformattableLines, true);
+            Arrays.fill(lineFormatting, LineFormattingType.RELATIVE);
             int[] indentsWithinTags = new int[lastLine + 1];
 
             for (TokenSequence tokenSequence : tokenSequences) {
-                markCurrentLanguageLinesAsFormattable(doc, tokenSequence, unformattableLines);
+                TextBounds languageBounds = findTokenSequenceBounds(doc, tokenSequence);
+                
+                if (languageBounds == null){
+                    continue; // tokenSequence contained only white spaces, unlikely to happen
+                }
+                
+                markCurrentLanguageLinesAsFormattable(doc, languageBounds, lineFormatting);
+                int blockShiftOffset = findLanguageBlockShiftOffset(doc, languageBounds);
+                
+                for (int i = languageBounds.getStartLine(); i <= languageBounds.getEndLine(); i ++){
+                    blockShiftOffsets[i] = blockShiftOffset;
+                }
                 
                 boolean thereAreMoreTokens = true;
 
@@ -229,18 +238,15 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                         if (isOpenTag || isCloseTag) {
 
                             String tagName = extractTagName(tokenSequence, tokenSequence.offset());
-                            int tagEndOffset = getTagEndOffset(tokenSequence, tokenSequence.offset());
-                            int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
-
+                            
                             if (isOpenTag) {
                                 
                                 thereAreMoreTokens &= calcIndents_processOpeningTag(doc, tokenSequence, tagName,
-                                        tagEndOffset, lastTagLine, unprocessedOpeningTags, indentsWithinTags);
+                                        unprocessedOpeningTags, indentsWithinTags);
 
                             } else {
-                                
-                                calcIndents_processClosingTag(doc, tokenSequence, tagName, lastTagLine,
-                                        unformattableLines, unprocessedOpeningTags, matchedOpeningTags);
+                                int tagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
+                                calcIndents_processClosingTag(tagName, tagLine, lineFormatting, unprocessedOpeningTags, matchedOpeningTags);
                             }
                         }
 
@@ -259,7 +265,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                             int lastUnformattableLine = thereAreMoreTokens ? Utilities.getLineOffset(doc, tokenSequence.offset() - 1) : lastLine;
 
                             for (int i = firstUnformattableLine + 1; i < lastUnformattableLine; i++) {
-                                unformattableLines[i] = true;
+                                lineFormatting[i] = LineFormattingType.NONE;
                             }
 
                             firstUnformattableLine = -1;
@@ -286,11 +292,36 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             InitialIndentData initialIndentData = new InitialIndentData(doc, indentLevels, indentsWithinTags, firstRefBlockLine, lastRefBlockLine);
 
             // apply line indents
+            int blockOfRelativeLinesOffset = -1;
+                    
             for (int line = firstRefBlockLine; line <= lastRefBlockLine; line++) {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
 
-                if (!unformattableLines[line] && initialIndentData.isEligibleToIndent(line)) {
-                    changeRowIndent(doc, lineStart, initialIndentData.getIndent(line));
+                if (lineFormatting[line] == LineFormattingType.RELATIVE){
+                    if (blockOfRelativeLinesOffset == -1){
+                        // the first line of a relative formatting block, remember the offset
+                        blockOfRelativeLinesOffset = Utilities.getFirstNonWhiteFwd(doc, lineStart) - lineStart;
+                    }
+                    
+                } else {
+                    // the end of a relative formatting block
+                    blockOfRelativeLinesOffset = -1;
+                }
+                
+                if (lineFormatting[line] != LineFormattingType.NONE
+                        && initialIndentData.isEligibleToIndent(line)) {
+                    
+                    int relativeShift = 0;
+                    
+                    if (lineFormatting[line] == LineFormattingType.RELATIVE){
+                        int existingIndent = Utilities.getFirstNonWhiteFwd(doc, lineStart) - lineStart;
+                        
+                        relativeShift = existingIndent > blockOfRelativeLinesOffset ?
+                            existingIndent - blockOfRelativeLinesOffset : 0;
+                    }
+                    
+                    changeRowIndent(doc, lineStart, initialIndentData.getIndent(line)
+                            + blockShiftOffsets[line] + relativeShift);
                 }
             }
         } finally {
@@ -458,6 +489,12 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         return initialIndent;
     }
 
+    private int findLanguageBlockShiftOffset(BaseDocument doc, TextBounds languageBounds) throws BadLocationException {
+        // basic impl: simply return the offset from the first line
+        int lineStart = Utilities.getRowStartFromLineOffset(doc, languageBounds.getStartLine());
+        return languageBounds.getStartPos() - lineStart;
+    }
+
     private int getInitialIndentFromNextLine(final BaseDocument doc, final int line) throws BadLocationException {
 
         // get initial indent from the next line
@@ -523,28 +560,97 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         return null;
     }
     
-        private void markCurrentLanguageLinesAsFormattable(
-            BaseDocument doc,
-            TokenSequence tokenSequence,
-            boolean[] unformattableLines) throws BadLocationException{
-        
+    
+    private TextBounds findTokenSequenceBounds(BaseDocument doc, TokenSequence tokenSequence) throws BadLocationException{
         tokenSequence.moveEnd();
-        tokenSequence.movePrevious();
-        int languageBlockEnd = tokenSequence.offset();
+        
+        // trim whitespaces from both ends
+        do {
+            if (!tokenSequence.movePrevious()){
+                return null; // very unlikely to happen
+            }
+        }
+        while (isWSToken(tokenSequence.token()));
+        
+        int whiteSpaceSuffixLen = 0;
+        
+        while (Character.isWhitespace(tokenSequence.token().text().charAt(
+                tokenSequence.token().length() - 1 - whiteSpaceSuffixLen))){
+            whiteSpaceSuffixLen ++;
+        }
+        
+        int languageBlockEnd = tokenSequence.offset() 
+                + tokenSequence.token().length() - whiteSpaceSuffixLen;
+        
         tokenSequence.moveStart();
-        tokenSequence.moveNext();
-        int languageBlockStart = tokenSequence.offset();
-
+        
+        do {
+            tokenSequence.moveNext();
+        }
+        while (isWSToken(tokenSequence.token()));
+        
+        int whiteSpacePrefixLen = 0;
+        
+        while (Character.isWhitespace(tokenSequence.token().text().charAt(whiteSpacePrefixLen))){
+            whiteSpacePrefixLen ++;
+        }
+        
+        int languageBlockStart = tokenSequence.offset() + whiteSpacePrefixLen;
         int firstLineOfTheLanguageBlock = Utilities.getLineOffset(doc, languageBlockStart);
-
-        if (Utilities.getRowStartFromLineOffset(doc, firstLineOfTheLanguageBlock) < languageBlockStart) {
+        int lastLineOfTheLanguageBlock = Utilities.getLineOffset(doc, languageBlockEnd);
+        return new TextBounds(languageBlockStart, languageBlockEnd, firstLineOfTheLanguageBlock, lastLineOfTheLanguageBlock);
+    }
+    
+    private void markCurrentLanguageLinesAsFormattable(        
+            BaseDocument doc,
+            TextBounds languageBounds,
+            LineFormattingType[] lineFormatting) throws BadLocationException{
+        
+        int firstLineOfTheLanguageBlock = languageBounds.getStartLine();
+        
+        int lineStart = Utilities.getRowStartFromLineOffset(doc, firstLineOfTheLanguageBlock);
+        
+        if (Utilities.getFirstNonWhiteFwd(doc, lineStart) < languageBounds.getStartPos()) {
             firstLineOfTheLanguageBlock++;
         }
 
-        int lastLineOfTheLanguageBlock = Utilities.getLineOffset(doc, languageBlockEnd);
+        for (int i = firstLineOfTheLanguageBlock; i <= languageBounds.getEndLine(); i++) {
+            lineFormatting[i] = LineFormattingType.NORMAL;
+        }
+    }
+        
+    //TODO: replace TextBounds with some generic class
+    protected class TextBounds{
+        private int startPos;
+        private int endPos;
+        private int startLine;
+        private int endLine;
 
-        for (int i = firstLineOfTheLanguageBlock; i <= lastLineOfTheLanguageBlock; i++) {
-            unformattableLines[i] = false;
+        public TextBounds(int startPos, int endPos, int startLine, int endLine) {
+            this.startPos = startPos;
+            this.endPos = endPos;
+            this.startLine = startLine;
+            this.endLine = endLine;
+        }
+
+        public int getEndPos() {
+            return endPos;
+        }
+
+        public int getStartPos() {
+            return startPos;
+        }
+        
+        public int getEndLine() {
+            return endLine;
+        }
+
+        public int getStartLine() {
+            return startLine;
+        }
+        
+        @Override public String toString(){
+            return "pos " + startPos + "-" + endPos + ", lines " + startLine + "-" + endLine; //NOI18N
         }
     }
 

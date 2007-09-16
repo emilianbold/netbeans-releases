@@ -20,11 +20,9 @@
 package org.netbeans.modules.web.core.syntax.formatting;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
@@ -76,14 +74,24 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
         int originalOffset = tokenSequence.offset();
         tokenSequence.move(tagStartOffset);
         tokenSequence.moveNext();
-        tokenSequence.moveNext();
+        
+        String tokenTxt = tokenSequence.token().text().toString();
+        
+        int r = -1;
         boolean thereAreMoreTokens = true;
+        
+        if (tokenTxt.endsWith(">")) { //NOI18N
+            r = tokenTxt.length() + tagStartOffset;
+        } else {
+            
+            do {
+                thereAreMoreTokens &= tokenSequence.moveNext();
+            }
+            while (thereAreMoreTokens && !isJSPTagCloseSymbol(tokenSequence.token()));
 
-        while (thereAreMoreTokens && !isJSPTagCloseSymbol(tokenSequence.token())) {
-            thereAreMoreTokens &= tokenSequence.moveNext();
+            r = tokenSequence.offset() + tokenSequence.token().length();
         }
-
-        int r = tokenSequence.offset();
+        
         tokenSequence.move(originalOffset);
         tokenSequence.moveNext();
         return thereAreMoreTokens ? r : -1;
@@ -111,8 +119,16 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
     protected String extractTagName(TokenSequence tokenSequence, int tagOffset) {
         Token token = getTokenAtOffset(tokenSequence, tagOffset);
         String tokenTxt = token.text().toString();
-        int startInd = (token.id() == JspTokenId.ENDTAG) ? "</".length() : "<".length(); //NOI18N
-        return tokenTxt.substring(startInd);
+        
+        int startInd = 1; // ">".length();
+        
+        if (token.id() == JspTokenId.ENDTAG){
+            startInd = 2; // "/>".length()
+        } 
+        
+        int cut = tokenTxt.endsWith(">") ? 1 : 0;
+        
+        return tokenTxt.substring(startInd, tokenTxt.length() - cut);
     }
 
     @Override
