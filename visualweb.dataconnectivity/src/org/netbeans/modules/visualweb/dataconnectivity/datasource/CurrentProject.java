@@ -72,8 +72,12 @@ public class CurrentProject {
             if (obj != null) {
                 FileObject fileObject = obj.getPrimaryFile();
                 project = FileOwnerQuery.getOwner(fileObject);
-//                setPreviousProject(project);
             }
+        }
+        
+        // When a project is opened, get the main project if Projects window is not in focus
+        if (project == null) {
+            project = OpenProjects.getDefault().getMainProject();
         }
 
         return project;
