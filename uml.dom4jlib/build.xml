@@ -26,8 +26,8 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="release" depends="init">
-    	<mkdir dir="${cluster}/modules/ext/"/>
-        <unzip dest="${cluster}/modules/ext/" src="external/dom4j-1.2.zip"/>
+    	<mkdir dir="${cluster}/modules/ext/dom4j/"/>
+        <unzip dest="${cluster}/modules/ext/dom4j/" src="external/dom4j-1.2.zip"/>
     </target>
 
 </project>
