@@ -133,6 +133,9 @@ final class RegexpMaker {
             bufIsEmpty = false;
             quoted = false;
         } else if (starPresent || (minCount != 0)) {
+            if (wholeWords && !starPresent && bufIsEmpty) {
+                buf.append(checkNotAfterWordChar);
+            }
             bufIsEmpty &= !addMetachars(buf, starPresent, minCount, wholeWords, false);
             if (wholeWords && !starPresent) {
                 buf.append(checkNotBeforeWordChar);

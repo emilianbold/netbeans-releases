@@ -222,6 +222,10 @@ public class RegexpMakerTest extends NbTestCase {
         checkMatchWW("poklice public", "*lic", "public");
         checkMatchWW("public", "??lic", null);
         checkMatchWW("public", "pub??", null);
+        checkMatchWW("", "???", null);
+        checkMatchWW("p", "???", null);
+        checkMatchWW("pub", "???", "pub");
+        checkMatchWW("public", "???", null);
     }
 
     private void checkMatch(String testString,
