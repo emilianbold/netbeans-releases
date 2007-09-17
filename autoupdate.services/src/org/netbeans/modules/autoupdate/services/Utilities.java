@@ -615,9 +615,14 @@ public class Utilities {
         return ((ModuleUpdateElementImpl) impl).getModuleInfo ();
     }
     
+    private static String productVersion = null;
+    
     public static String getProductVersion () {
-        String buildNumber = System.getProperty ("netbeans.buildnumber"); // NOI18N
-        return  NbBundle.getMessage (TopLogging.class, "currentVersion", buildNumber ); // NOI18N
+        if (productVersion == null) {
+            String buildNumber = System.getProperty ("netbeans.buildnumber"); // NOI18N
+            productVersion = NbBundle.getMessage (TopLogging.class, "currentVersion", buildNumber); // NOI18N
+        }
+        return productVersion;
     }
     
     private static Node getModuleConfiguration (File moduleUpdateTracking) {
