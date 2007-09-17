@@ -816,7 +816,9 @@ public class EditorContextImpl extends EditorContext {
         if (js == null) return null;
         // TODO: Can be called outside of AWT? Probably need invokeAndWait()
         EditorCookie ec = nodes[0].getCookie(EditorCookie.class);
-        final int currentOffset = (ec == null) ? 0 : ec.getOpenedPanes()[0].getCaretPosition();
+        JEditorPane[] op = ec.getOpenedPanes ();
+        JEditorPane ep = (op != null && op.length >= 1) ? op[0] : null;
+        final int currentOffset = (ep == null) ? 0 : ep.getCaretPosition();
         //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentMethodPtr = new String[] { null, null, null };
         final Future<Void> scanFinished;
@@ -1402,13 +1404,14 @@ public class EditorContextImpl extends EditorContext {
         if (js == null) return null;
         // TODO: Can be called outside of AWT? Probably need invokeAndWait()
         EditorCookie ec = nodes[0].getCookie(EditorCookie.class);
-        final int currentOffset = (ec == null) ? 0 : ec.getOpenedPanes()[0].getCaretPosition();
+        final int currentOffset;
         
         JEditorPane[] op = ec.getOpenedPanes ();
-        JEditorPane ep = (op != null && op.length == 1) ? op[0] : null;
+        JEditorPane ep = (op != null && op.length >= 1) ? op[0] : null;
         final String selectedIdentifier;
         if (ep != null) {
             String s = ep.getSelectedText ();
+            currentOffset = ep.getCaretPosition();
             if (ep.getSelectionStart() > currentOffset || ep.getSelectionEnd() < currentOffset) {
                 s = null; // caret outside of the selection
             }
@@ -1419,6 +1422,7 @@ public class EditorContextImpl extends EditorContext {
             }
         } else {
             selectedIdentifier = null;
+            currentOffset = 0;
         }
         
         //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
