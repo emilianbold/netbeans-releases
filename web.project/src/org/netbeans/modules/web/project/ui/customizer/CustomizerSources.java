@@ -285,6 +285,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         sourceRootsPanel.add(jLabel2, gridBagConstraints);
 
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(450, 150));
+
         sourceRoots.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null},
@@ -394,6 +396,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         testRootsPanel.add(jLabel3, gridBagConstraints);
+
+        jScrollPane2.setPreferredSize(new java.awt.Dimension(450, 150));
 
         testRoots.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
