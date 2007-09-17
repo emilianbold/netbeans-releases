@@ -1,7 +1,11 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
-<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN" "http://java.sun.com/products/javahelp/toc_1_0.dtd">
-<toc version="1.0">
-<tocitem text="IDE Basics" >
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+<toc version="2.0">
+<tocitem text="IDE Basics" expand="false">
     <tocitem text="Servers and Databases">
         <tocitem text="Servers">
             <tocitem text="Sun Java System Application Server/GlassFish">
@@ -26,7 +30,7 @@
         </tocitem>
     </tocitem>
 </tocitem>
-<tocitem text="Enterprise Applications" >
+<tocitem text="Enterprise Applications" expand="false">
     <tocitem text="Developing Enterprise Beans" >
         <tocitem text="Developing EJB 2.1 Entity Beans" >
             <tocitem text="Configuring CMP Mappings" target="map_bean_to_db" />
