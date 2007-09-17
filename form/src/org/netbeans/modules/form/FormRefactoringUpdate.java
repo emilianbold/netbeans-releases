@@ -369,9 +369,9 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                     replaced |= replaceShortClassName(oldName, newName);
                     break;
                 }
-                if (replaced) {
+                if (replaced) { // need to regenerate the code
                     final FormEditorSupport fes = formDataObject.getFormEditorSupport();
-                    if (fes.isOpened()) { // need to regenerate the code
+                    if (fes.isOpened() || (formEditor != null && formEditor.isFormLoaded())) { // need to reload the form from file
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
                                 formEditor = fes.reloadFormEditor();
@@ -604,10 +604,10 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                         rep.append("\n"); // NOI18N
                     }
                 }
+                outString = rep.getResult(); // will also process the last char
                 if (!rep.anythingChanged()) {
                     return false;
                 }
-                outString = rep.toString();
             } else {
                 // The replaced name is short with no '.', so it is too risky
                 // to do plain search/replace over the entire file content.
@@ -637,10 +637,11 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                                 if (idx1 < line.length() && idx2 < line.length()) {
                                     String sub = line.substring(idx1, idx2);
                                     if (sub.contains(oldName)) {
-                                        NameReplacer rep = new NameReplacer(oldStr, newStr, idx2 - idx1);
+                                        NameReplacer rep = new NameReplacer(oldStr, newStr, sub.length());
                                         rep.append(sub);
+                                        sub = rep.getResult(); // will also process the last char
                                         if (rep.anythingChanged()) {
-                                            line = line.substring(0, idx1) + rep.toString() + line.substring(idx2);
+                                            line = line.substring(0, idx1) + sub + line.substring(idx2);
                                             anyChange = true;
                                         }
                                     }
@@ -696,6 +697,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         private char lastChar;
 
         private boolean anyChange;
+        private boolean ended;
 
         public NameReplacer(String[] toReplace, String[] replaceWith, int len) {
             this.toReplace = toReplace;
@@ -712,12 +714,13 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         }
 
         public void append(String str) {
+            assert !ended;
             for (int i=0; i < str.length(); i++) {
                 append(str.charAt(i));
             }
         }
 
-        public String toString() {
+        public String getResult() {
             for (int i=0; i < toReplace.length; i++) {
                String template = toReplace[i];
                int count = matchCounts[i];
@@ -727,9 +730,18 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                }
             }
             writePendingChars();
+            ended = true;
             return buffer.toString();
         }
 
+        /**
+         * Returns whether any replacement happened in written characters, i.e.
+         * whether the output differs from the input. Note this method should be
+         * called after all is written and getResult() called - to be sure the
+         * last character was processed properly.
+         * @return true if some chars were replaced in the text passed in via
+         *         append method
+         */
         public boolean anythingChanged() {
             return anyChange;
         }

@@ -430,28 +430,20 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         if (formDesigner == null) {
             formDesigner = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
         }
-        if(formDesigner==null) {
-            // if formDesigner is null then it haven't been activated yet...
-            return null;
-        }
 
         getFormEditor().closeForm();
         formEditor = null;
-
-        formDesigner.reset(getFormEditor(true));
-        getFormEditor().setFormDesigner(formDesigner);
-        if(formDesigner.isShowing()) {
-            // load the form only if its open
-            loadForm();
-            FormEditor formEditor = getFormEditor();
-            formEditor.reportErrors(FormEditor.LOADING);
-            if (!formEditor.isFormLoaded()) { // there was a loading error
-                formDesigner.removeAll();
-            } else {
-                formDesigner.initialize();
-            }
+        formEditor = getFormEditor(true); // new FormEditor instance
+        if (formDesigner != null) {
+            formDesigner.reset(formEditor);
+            formEditor.setFormDesigner(formDesigner);
         }
-        return getFormEditor();
+        loadForm();
+        formEditor.reportErrors(FormEditor.LOADING);
+        if (formEditor.isFormLoaded() && formDesigner != null && formDesigner.isShowing()) {
+            formDesigner.initialize();
+        }
+        return formEditor;
     }
 
     public void closeFormEditor() {
