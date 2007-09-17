@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
+import org.netbeans.modules.form.editors2.TableColumnModelEditor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -58,9 +59,9 @@ public class ResourceSupport {
     private I18nService i18nService;
 
     private String designLocale = ""; // locale suffix (including initial _)
-    private static Map<DataObject, String> rememberedLocales = new WeakHashMap();
+    private static Map<DataObject, String> rememberedLocales = new WeakHashMap<DataObject, String>();
 
-    private Map droppedValues;
+    private Map<String,Object> droppedValues;
 
     /** Marks property that should be excluded from resourcing (explicitly set
      * to plain value). */
@@ -110,14 +111,14 @@ public class ResourceSupport {
 
     private ResourceService getResourceService() {
         if (resourceService == null) {
-            resourceService = (ResourceService)Lookup.getDefault().lookup(ResourceService.class);
+            resourceService = Lookup.getDefault().lookup(ResourceService.class);
         }
         return resourceService;
     }
 
     private I18nService getI18nService() {
         if (i18nService == null) {
-            i18nService = (I18nService)Lookup.getDefault().lookup(I18nService.class);
+            i18nService = Lookup.getDefault().lookup(I18nService.class);
         }
         return i18nService;
     }
@@ -432,7 +433,7 @@ public class ResourceSupport {
 
     private void addDroppedValue(FormProperty property, Object value) {
         if (droppedValues == null) {
-            droppedValues = new HashMap();
+            droppedValues = new HashMap<String,Object>();
         }
         droppedValues.put(getPropertyPath(property, null), value);
     }
@@ -912,7 +913,7 @@ public class ResourceSupport {
     private void updateDesignLocale() {
         Collection<FormProperty> props = getAllResourceProperties(VALID_RESOURCE_VALUE);
         // read all values in advance - setting certain properties might reset others (e.g. action and text)
-        List values = new ArrayList(props.size());
+        List<Object> values = new ArrayList<Object>(props.size());
         for (FormProperty prop : props) {
             try {
                 values.add(prop.getValue());
@@ -985,7 +986,7 @@ public class ResourceSupport {
         } else if (isResourceAutoMode()) {
             return getResourceService().getResourceFiles(getSourceFile());
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
 
@@ -1184,6 +1185,14 @@ public class ResourceSupport {
     private static Node.Property[] getNestedProperties(Object value) {
         if (value instanceof BorderDesignSupport) {
             return ((BorderDesignSupport)value).getProperties();
+        } else if (value instanceof TableColumnModelEditor.FormTableColumnModel) {
+            TableColumnModelEditor.FormTableColumnModel columnModel =
+                    (TableColumnModelEditor.FormTableColumnModel)value;
+            List<Node.Property> props = new ArrayList<Node.Property>(columnModel.getColumns().size());
+            for (TableColumnModelEditor.FormTableColumn column : columnModel.getColumns()) {
+                props.add(column.getTitle());
+            }
+            return props.toArray(new Node.Property[props.size()]);
         }
         // [An alternative would be to use BeanPropertyEditor, but calling
         //  getCurrentEditor() forces searching for the PropertyEditor.
@@ -1245,7 +1254,7 @@ public class ResourceSupport {
 
     private String getPropertyPath(FormProperty property, String compName) {
         String propertyName = property.getName();
-        List parents = new ArrayList();
+        List<Object> parents = new ArrayList<Object>();
         do {
             FormPropertyContext propContext = property.getPropertyContext();
             Object parent = propContext.getOwner();
@@ -1435,16 +1444,16 @@ public class ResourceSupport {
     // -----
 
     Node.Property[] createFormProperties() {
-        Node.Property autoNamingProp = new PropertySupport.ReadWrite(
+        Node.Property autoNamingProp = new PropertySupport.ReadWrite<Boolean>(
             FormLoaderSettings.PROP_AUTO_SET_COMPONENT_NAME,
             Boolean.TYPE,
             FormUtils.getBundleString("PROP_AUTO_SET_COMPONENT_NAME"), // NOI18N
             FormUtils.getBundleString("HINT_AUTO_SET_COMPONENT_NAME")) // NOI18N
         {
-            public void setValue(Object value) {
-                Object oldValue = getValue();
+            public void setValue(Boolean value) {
+                Boolean oldValue = getValue();
                 if (!oldValue.equals(value)) {
-                    boolean autoName = ((Boolean)value).booleanValue();
+                    boolean autoName = value.booleanValue();
                     formModel.getSettings().setAutoSetComponentName(autoName);
 
                     setupNameProperty(autoName);
@@ -1456,7 +1465,7 @@ public class ResourceSupport {
                 }
             }
 
-            public Object getValue() {
+            public Boolean getValue() {
                 return Boolean.valueOf(formModel.getSettings().getAutoSetComponentName());
             }
         };
@@ -1464,18 +1473,18 @@ public class ResourceSupport {
         Node.Property autoModeProp;
         int mode = getAutoMode();
         if (projectUsesResources() || mode == AUTO_RESOURCING || mode == AUTO_INJECTION) {
-            autoModeProp = new PropertySupport.ReadWrite(
+            autoModeProp = new PropertySupport.ReadWrite<Integer>(
                 PROP_AUTO_RESOURCING,
                 Integer.TYPE,
                 FormUtils.getBundleString("PROP_AUTO_RESOURCE"), // NOI18N
                 FormUtils.getBundleString("HINT_AUTO_RESOURCE_LOCAL")) // NOI18N
             {
-                public void setValue(Object value) {
+                public void setValue(Integer value) {
                     int oldMode = getAutoMode();
                     if (value == null || value.equals(oldMode)) {
                         return;
                     }
-                    int newMode = ((Integer)value).intValue();
+                    int newMode = value.intValue();
                     FormSettings settings = formModel.getSettings();
                     boolean i18nResChange // changing between i18n and resourcing?
                         = (oldMode == AUTO_I18N && (newMode == AUTO_RESOURCING || newMode == AUTO_INJECTION))
@@ -1501,10 +1510,11 @@ public class ResourceSupport {
                         .firePropertyChangeHelper(PROP_AUTO_RESOURCING, oldMode, newMode);
                 }
 
-                public Object getValue() {
+                public Integer getValue() {
                     return getAutoMode();
                 }
 
+                @Override
                 public PropertyEditor getPropertyEditor() {
                     return new org.netbeans.modules.form.editors.EnumEditor(new Object[] {
                         FormUtils.getBundleString("CTL_AUTO_OFF"), AUTO_OFF, "", // NOI18N
@@ -1515,17 +1525,17 @@ public class ResourceSupport {
                 }
             };
         } else { // only offer automatic internationalization
-            autoModeProp = new PropertySupport.ReadWrite(
+            autoModeProp = new PropertySupport.ReadWrite<Boolean>(
                 PROP_AUTO_RESOURCING,
                 Boolean.TYPE,
                 FormUtils.getBundleString("PROP_AUTO_I18N"), // NOI18N
                 FormUtils.getBundleString("HINT_AUTO_I18N")) // NOI18N
             {
-                public void setValue(Object value) {
+                public void setValue(Boolean value) {
                     boolean oldAutoI18n = getAutoMode() == AUTO_I18N;
                     Boolean oldValue = Boolean.valueOf(oldAutoI18n);
                     if (!oldValue.equals(value)) {
-                        boolean newAutoI18n = ((Boolean)value).booleanValue();
+                        boolean newAutoI18n = value.booleanValue();
                         FormSettings settings = formModel.getSettings();
                         // set the setting itself so it is "on" during processing the
                         // resource values (to correctly determine names of components
@@ -1545,22 +1555,22 @@ public class ResourceSupport {
                     }
                 }
 
-                public Object getValue() {
+                public Boolean getValue() {
                     return getAutoMode() == AUTO_I18N;
                 }
             };
         }
 
-        Node.Property formBundleProp = new PropertySupport.ReadWrite(
+        Node.Property formBundleProp = new PropertySupport.ReadWrite<String>(
             PROP_FORM_BUNDLE,
             String.class,
             FormUtils.getBundleString("PROP_FORM_BUNDLE"), // NOI18N
             FormUtils.getBundleString("HINT_FORM_BUNDLE")) // NOI18N
         {
-            public void setValue(Object value) {
+            public void setValue(String value) {
                 String oldValue = getI18nBundleName();
                 if ((oldValue == null && value != null) || !oldValue.equals(value)) {
-                    String resourceName = (String) value;
+                    String resourceName = value;
                     if (resourceName != null && resourceName.toLowerCase().endsWith(".properties")) { // NOI18N
                         resourceName = resourceName.substring(
                                 0, resourceName.length()-".properties".length()); // NOI18N
@@ -1572,34 +1582,36 @@ public class ResourceSupport {
                             .firePropertyChangeHelper(PROP_FORM_BUNDLE, oldValue, value);
                 }
             }
-            public Object getValue() {
+            public String getValue() {
                 return getI18nBundleName();
             }
 
+            @Override
             public PropertyEditor getPropertyEditor() {
                 return new BundleFilePropertyEditor();
             }
         };
 
-        Node.Property localeProp = new PropertySupport.ReadWrite(
+        Node.Property localeProp = new PropertySupport.ReadWrite<String>(
             PROP_DESIGN_LOCALE,
             String.class,
             FormUtils.getBundleString("PROP_DESIGN_LOCALE"), // NOI18N
             FormUtils.getBundleString("HINT_DESIGN_LOCALE")) // NOI18N
         {
-            public void setValue(Object value) {
+            public void setValue(String value) {
                 // this property is not persistent (not stored in .form file)
                 String oldValue = designLocale;
-                changeDesignLocale((String)value);
+                changeDesignLocale(value);
                 formModel.fireSyntheticPropertyChanged(null, PROP_DESIGN_LOCALE, oldValue, value);
                 FormEditor.getFormEditor(formModel).getFormRootNode()
                         .firePropertyChangeHelper(PROP_DESIGN_LOCALE, oldValue, value);
             }
 
-            public Object getValue() {
+            public String getValue() {
                 return designLocale;
             }
 
+            @Override
             public PropertyEditor getPropertyEditor() {
                 return new LocalePropertyEditor();
             }
@@ -1612,10 +1624,12 @@ public class ResourceSupport {
     }
 
     private class BundleFilePropertyEditor extends PropertyEditorSupport {
+        @Override
         public boolean supportsCustomEditor() {
             return getI18nService() != null;
         }
 
+        @Override
         public Component getCustomEditor() {
             return getI18nService() != null ?
                 i18nService.getBundleSelectionComponent(this, getSourceFile()) :
@@ -1626,6 +1640,7 @@ public class ResourceSupport {
     private class LocalePropertyEditor extends PropertyEditorSupport {
         private String[][] tags;
 
+        @Override
         public String[] getTags() {
             if (tags == null) {
                 FileObject srcFile = getSourceFile();
@@ -1639,6 +1654,7 @@ public class ResourceSupport {
             return tags != null ? tags[1] : null;
         }
 
+        @Override
         public void setAsText(String text) {
             getTags();
             if (tags != null) {
@@ -1652,6 +1668,7 @@ public class ResourceSupport {
             setValue(text);
         }
 
+        @Override
         public String getAsText() {
             Object value = getValue();
             getTags();
@@ -1664,10 +1681,12 @@ public class ResourceSupport {
             return value != null ? value.toString() : null;
         }
 
+        @Override
         public boolean supportsCustomEditor() {
             return getTags() != null;
         }
 
+        @Override
         public Component getCustomEditor() {
             if (isI18nAutoMode())
                 return i18nService.getCreateLocaleComponent(this, getSourceFile(), getI18nBundleName());
