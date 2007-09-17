@@ -1933,6 +1933,11 @@ public class InteractionManager {
 //                MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //                CssBox box = mapper.findBox(bean);
                 CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
+                if (box == null) {
+                    // XXX 115639 Fixing possible NPE.
+                    return;
+                }
+                
 //                ArrayList bounds = mapper.getComponentRectangles(bean);
 //                List bounds = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(), bean);
                 List bounds = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(), componentRootElement);

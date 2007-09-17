@@ -73,7 +73,7 @@ public class Resizer extends Interaction implements KeyListener {
     private int prevMouseX = -500;
     private int prevMouseY = -500;
     private boolean preserveAspect;
-    private CssBox box;
+    private final CssBox box;
 
     /** Current size of the rectangle being resized. */
     private Rectangle currentSize = null;
