@@ -264,12 +264,14 @@ public class VerifyLibsAndLicenses extends Task {
                 } else {
                     for (String header : requiredHeaders) {
                         if (!headers.containsKey(header)) {
-			    			if (header.equals("OSR") && (headers.get("License") != null)){ 
-								if (headers.get("License").startsWith("CDDL")) //CDDL does not require OSR
-									continue;
-								if (headers.get("License").startsWith("SLA")) //SLA does not require OSR
-									continue;
-			    			}
+                            if (header.equals("OSR") && (headers.get("License") != null)) {
+                                if (headers.get("License").startsWith("CDDL")) { // CDDL does not require OSR
+                                    continue;
+                                }
+                                if (headers.get("License").startsWith("SLA")) { // SLA does not require OSR
+                                    continue;
+                                }
+                            }
                             msg.append("\n" + path + " is missing a required header: " + header);
                         }
                     }
@@ -428,14 +430,15 @@ public class VerifyLibsAndLicenses extends Task {
         if (!efile.isFile() && !elfile.isFile()) {
             return Collections.emptySet();
         }
-	List<File> files = new ArrayList<File>(2);
-	if (efile.isFile())
-	    files.add(efile);
-        if (elfile.isFile())
+        List<File> files = new ArrayList<File>(2);
+        if (efile.isFile()) {
+            files.add(efile);
+        }
+        if (elfile.isFile()) {
             files.add(elfile);
-
+        }
         Set<String> entries = new TreeSet<String>();
-	for (File f : files){
+        for (File f : files){
             Reader r = new FileReader(f);
             try {
                 BufferedReader buf = new BufferedReader(r);
@@ -444,15 +447,15 @@ public class VerifyLibsAndLicenses extends Task {
                     String[] components = line.split("/");
                     if (components.length > 1) {
                         String n = components[1];
-                    	if (new File(dir, n).exists() && !(textOnly && line.matches(".*/-kb/.*"))) {
+                        if (new File(dir, n).exists() && !(textOnly && line.matches(".*/-kb/.*"))) {
                             entries.add(n);
-                    	}
+                        }
                     }
-            	}
+                }
             } finally {
                 r.close();
             }
-	}
+        }
         return entries;
     }
 
