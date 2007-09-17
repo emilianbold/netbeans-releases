@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   The Database Explorer module provides the 
+   The Database module provides the 
    <api group="java" name="DatabaseExplorerAPI" type="export" category="devel" url="@TOP@index.html"/>
    which allows access to the database connections and drivers
    defined in the Database Explorer. It allows a client to retrieve the
@@ -76,6 +76,11 @@ Microsystems, Inc. All Rights Reserved.
    allows extending <code>.sql</code> files with own actions by registering them in the 
    <code>Loaders/text/x-sql/Actions</code> folder. Note that this folder is actually provided by the
    <code>org-netbeans-modules-db-core.jar</code> module.
+  </p>
+  <p>
+   This module also provides a <api group="java" name="SQLSupportAPI" type="export"
+     category="devel" url="@TOP@org/netbeans/api/db/sql/support/package-summary.html"/>
+     which provides utilities for working with SQL such as quoting identifiers.
   </p>
  </answer>
 
@@ -295,6 +300,14 @@ Microsystems, Inc. All Rights Reserved.
     containing <code>DataFlavor</code>s for database objects and nested classes
     encapsulating those database objects during a drag and drop transfer.
    </p>
+  </usecase>
+  <usecase id="sql-identifier-support" name="Get support for working with SQL identifiers">
+   <p>
+       A component might need support for working with SQL identifiers. In particular,
+       it's important to know when to quote a SQL identifier.  The
+       <a href="@TOP@org/netbeans/api/db/sql/support/SQLIdentifiers.Quoter.html">
+           SQLIdentifiers.Quoter</a> class is provided for this.
+   </p> 
   </usecase>
  </answer>
 

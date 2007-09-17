@@ -187,6 +187,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.netbeans.api.db.explorer</package>
                 <package>org.netbeans.api.db.explorer.support</package>
+                <package>org.netbeans.api.db.sql.support</package>
                 <package>org.netbeans.spi.db.explorer</package>
             </public-packages>
             <class-path-extension>

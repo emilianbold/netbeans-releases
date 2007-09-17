@@ -78,8 +78,8 @@ public abstract class DBTestBase extends TestBase {
     public static final int MC_RULE = 2; // mixed case remains mixed case
     public static final int QUOTE_RETAINS_CASE = 3; // quoted idents retain case
 
-    private static int    identRule = RULE_UNDEFINED;
-    private static int    quotedIdentRule = RULE_UNDEFINED;
+    private static int    unquotedCaseRule = RULE_UNDEFINED;
+    private static int    quotedCaseRule = RULE_UNDEFINED;
 
     protected static SpecificationFactory specfactory;
     
@@ -442,12 +442,12 @@ public abstract class DBTestBase extends TestBase {
      * require identifiers to be in proper case
      */
     public String fixIdentifier(String ident) throws Exception {
-        if ( identRule == RULE_UNDEFINED ) {
-            getIdentRules();
+        if ( unquotedCaseRule == RULE_UNDEFINED ) {
+            getCaseRules();
         }
         
         if ( isQuoted(ident) ) {
-            switch ( quotedIdentRule ) {
+            switch ( quotedCaseRule ) {
                 case QUOTE_RETAINS_CASE:
                     break;
                 case UC_RULE:
@@ -460,12 +460,12 @@ public abstract class DBTestBase extends TestBase {
                     break;
                 default:
                     LOGGER.log(Level.WARNING, "Unexpected identifier rule: +" +
-                            identRule + ", assuming case is retained");
+                            unquotedCaseRule + ", assuming case is retained");
             }
             
             return ident.substring(1, ident.length() -1);
         } else {
-            switch ( identRule ) {
+            switch ( unquotedCaseRule ) {
                 case UC_RULE:
                     return ident.toUpperCase();
                 case LC_RULE:
@@ -474,7 +474,7 @@ public abstract class DBTestBase extends TestBase {
                     return ident;
                 default:
                     LOGGER.log(Level.WARNING, "Unexpected identifier rule: +" +
-                            identRule + ", assuming upper case");
+                            unquotedCaseRule + ", assuming upper case");
                     return ident.toUpperCase();
             }            
         }
@@ -486,7 +486,12 @@ public abstract class DBTestBase extends TestBase {
         return ident.startsWith(quoteString) && ident.endsWith(quoteString);
     }
     
-    private void getIdentRules() throws Exception {
+    public int getUnquotedCaseRule() throws Exception {
+        getCaseRules();
+        return unquotedCaseRule;
+    }
+    
+    private void getCaseRules() throws Exception {
         assert conn != null;
 
         DatabaseMetaData md;
@@ -494,13 +499,13 @@ public abstract class DBTestBase extends TestBase {
         try {
             md = conn.getMetaData();
             if ( md.storesUpperCaseIdentifiers() ) {
-                identRule = UC_RULE;
+                unquotedCaseRule = UC_RULE;
             } else if ( md.storesLowerCaseIdentifiers() ) {
-                identRule = LC_RULE;
+                unquotedCaseRule = LC_RULE;
             } else if ( md.storesMixedCaseIdentifiers() ) {
-                identRule = MC_RULE;
+                unquotedCaseRule = MC_RULE;
             } else {
-                identRule = UC_RULE;
+                unquotedCaseRule = UC_RULE;
             }
         } catch ( SQLException sqle ) {
             LOGGER.log(Level.INFO, "Exception trying to find out how " +
@@ -508,20 +513,20 @@ public abstract class DBTestBase extends TestBase {
                     sqle.getMessage());
             LOGGER.log(Level.FINE, null, sqle);
             
-            identRule = UC_RULE;
+            unquotedCaseRule = UC_RULE;
         }
 
         try {
             md = conn.getMetaData();
             
             if ( md.storesLowerCaseQuotedIdentifiers() ) {
-                quotedIdentRule = LC_RULE;
+                quotedCaseRule = LC_RULE;
             } else if ( md.storesUpperCaseQuotedIdentifiers() ) {
-                quotedIdentRule = UC_RULE;
+                quotedCaseRule = UC_RULE;
             } else if ( md.storesMixedCaseQuotedIdentifiers() ) {
-                quotedIdentRule = MC_RULE;
+                quotedCaseRule = MC_RULE;
             } else {
-                quotedIdentRule = QUOTE_RETAINS_CASE;
+                quotedCaseRule = QUOTE_RETAINS_CASE;
             }
         } catch ( SQLException sqle ) {
             LOGGER.log(Level.INFO, "Exception trying to find out how " +
@@ -529,7 +534,7 @@ public abstract class DBTestBase extends TestBase {
                     sqle.getMessage());
             LOGGER.log(Level.FINE, null, sqle);
             
-            quotedIdentRule = QUOTE_RETAINS_CASE;
+            quotedCaseRule = QUOTE_RETAINS_CASE;
         }
     }
     

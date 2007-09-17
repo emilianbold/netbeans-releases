@@ -84,6 +84,20 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Added utility class for working with SQL identifiers</summary>
+            <version major="1" minor="22"/>
+            <date day="12" month="9" year="2007"/>
+            <author login="davidvc"/>
+            <compatibility addition="yes"/>
+            <description>
+                This change adds a <code>SQLIdentifiers.Quoter</code> class which
+                provides a utility method for quoting SQL identifiers.
+            </description>
+            <class package="org.netbeans.api.db.sql.support" name="SQLIdentifiers"/>
+            <issue number="115075"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Added support for dragging and dropping nodes from the Database Explorer</summary>
             <version major="1" minor="21"/>
             <date day="17" month="6" year="2007"/>
