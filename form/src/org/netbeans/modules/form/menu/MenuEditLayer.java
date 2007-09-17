@@ -1260,6 +1260,7 @@ public class MenuEditLayer extends JPanel {
         JMenu menu = (JMenu) formDesigner.getComponent(menuRAD);
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
             JPanel popupContainer = hackedPopupFactory.containerMap.get(menu);
+            if(popupContainer == null) return;
             //p("looking over components left");
             for(Component c : popupContainer.getComponents()) {
                 //p("found comp: " + c);
