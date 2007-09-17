@@ -22,6 +22,7 @@ package org.netbeans.modules.db.explorer.actions;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 import org.openide.nodes.Node;
 import org.openide.DialogDisplayer;
@@ -71,14 +72,11 @@ public class QueryAction extends DatabaseAction {
         
         org.openide.nodes.Node node = activatedNodes[0];
         DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
+        SQLIdentifiers.Quoter quoter;
         
         try {
             DatabaseMetaData dmd = info.getConnection().getMetaData();
-            quoteStr = dmd.getIdentifierQuoteString();
-            if (quoteStr == null)
-                quoteStr = ""; //NOI18N
-            else
-                quoteStr.trim();
+            quoter = SQLIdentifiers.createQuoter(dmd);
         } catch (SQLException ex) {
             String message = MessageFormat.format(bundle().getString("ShowDataError"), new String[] {ex.getMessage()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
@@ -96,15 +94,16 @@ public class QueryAction extends DatabaseAction {
         
         java.lang.String onome;
         if (info instanceof TableNodeInfo || info instanceof ViewNodeInfo) {
-            onome = quote(info.getName());
+            onome = quoter.quoteIfNeeded(info.getName());
             if (!schema.equals("")) {
-                onome = quote(schema) + "." + onome;
+                onome = quoter.quoteIfNeeded(schema) + "." + onome;
             }
             return "select * from " + onome;
         } else if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
-            onome = quote((info instanceof ViewColumnNodeInfo) ? info.getView() : info.getTable());
+            onome = quoter.quoteIfNeeded((info instanceof ViewColumnNodeInfo) ? 
+                info.getView() : info.getTable());
             if (!schema.equals("")) {
-                onome = quote(schema) + "." + onome;
+                onome = quoter.quoteIfNeeded(schema) + "." + onome;
             }
             for (int i = 0; i < activatedNodes.length; i++) {
                 node = activatedNodes[i];
@@ -113,16 +112,12 @@ public class QueryAction extends DatabaseAction {
                     if (cols.length() > 0) {
                         cols.append(", ");
                     }
-                    cols.append(quote(info.getName()));
+                    cols.append(quoter.quoteIfNeeded(info.getName()));
                 }
             }
             return "select " + cols.toString() + " from " + onome;
         }
         return "";
-    }
-    
-    private String quote(String name) {
-        return quoteStr + name + quoteStr;
-    }
+    }    
 }
 
