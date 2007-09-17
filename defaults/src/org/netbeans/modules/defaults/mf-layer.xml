@@ -1126,7 +1126,7 @@ Microsystems, Inc. All Rights Reserved.
 <!--            <file name="AS-C.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ChangeParametersAction.instance"/>
             </file>-->
-            <file name="OS-O.shadow">
+            <file name="DS-R.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
             <file name="D-O.shadow">
