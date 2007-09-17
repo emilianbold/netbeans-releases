@@ -142,6 +142,11 @@ public class TaskCache {
     }
     
     public Set<URL> dumpErrors(URL root, URL file, File fileFile, List<? extends Diagnostic> errors) throws IOException {
+        if (!fileFile.canRead()) {
+            //make sure unreadable (non-existing) files do not have any associated errors:
+            errors = Collections.<Diagnostic>emptyList();
+        }
+        
         File[] output = computePersistentFile(root, file);
         boolean containsErrors = false;
         

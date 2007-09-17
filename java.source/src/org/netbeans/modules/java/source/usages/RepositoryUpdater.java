@@ -1532,6 +1532,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             Set<ElementHandle<TypeElement>> added =   isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
             Set<URL> errorBadgesToRefresh = new HashSet<URL>();
             for (File child : children) {
+                if (!child.canRead()) {
+                    //the file is not readable, ignore it:
+                    if (compiledFiles != null) {
+                        compiledFiles.add(child);
+                    }
+                    continue;
+                }
                 String offset = FileObjects.getRelativePath(rootFile,child);
                 if (entry == null || entry.includes(offset.replace(File.separatorChar,'/'))) {
                     if (invalidIndex || clean || dirtyCrossFiles.remove(child.toURI())) {
