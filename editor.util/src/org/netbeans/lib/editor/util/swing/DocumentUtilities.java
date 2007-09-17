@@ -188,6 +188,26 @@ public final class DocumentUtilities {
         doc.putProperty(PriorityDocumentListenerList.class, listener);
         return listener;
     }
+    
+    /**
+     * Get total count of document listeners attached to a particular document
+     * (useful e.g. for logging).
+     * <br/>
+     * If the document uses priority listening then get the count of listeners
+     * at all levels. If the document is not {@link AbstractDocument} the method
+     * returns zero.
+     * 
+     * @param doc non-null document.
+     * @return total count of document listeners attached to the document.
+     */
+    public static int getDocumentListenerCount(Document doc) {
+        PriorityDocumentListenerList pdll;
+        return (pdll = (PriorityDocumentListenerList)doc.getProperty(PriorityDocumentListenerList.class)) != null
+                ? pdll.getListenerCount()
+                : ((doc instanceof AbstractDocument)
+                        ? ((AbstractDocument)doc).getListeners(DocumentListener.class).length
+                        : 0);
+    }
 
     /**
      * Mark that the ongoing document modification(s) will be caused

@@ -186,7 +186,7 @@ public final class NonLexerSyntaxHighlighting extends AbstractHighlightsContaine
                 init = true;
 
                 try {
-                    ExtSyntaxSupport ess = new ExtSyntaxSupport(baseDocument);
+                    ExtSyntaxSupport ess = (ExtSyntaxSupport)baseDocument.getSyntaxSupport();
                     tokenItem = ess.getTokenChain(startOffset, endOffset);
                 } catch (BadLocationException e) {
                     LOG.log(Level.WARNING, "Can't get token sequence: document " + baseDocument + //NOI18N

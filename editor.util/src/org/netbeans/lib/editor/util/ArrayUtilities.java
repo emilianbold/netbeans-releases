@@ -296,8 +296,8 @@ public final class ArrayUtilities {
      * @since 1.18
      */
     public static int binarySearch(int[] array, int start, int end, int key) {
-        assert start >= 0 && start < array.length : "Invalid start index " + start + " (lenght = " + array.length + ")"; //NOI18N
-        assert end >= start && end < array.length : "Invalid end index " + end + " (start = " + start + ", lenght = " + array.length + ")"; //NOI18N
+        assert start >= 0 && start < array.length : "Invalid start index " + start + " (length = " + array.length + ")"; //NOI18N
+        assert end >= start && end < array.length : "Invalid end index " + end + " (start = " + start + ", length = " + array.length + ")"; //NOI18N
         
 	int low = start;
 	int high = end;

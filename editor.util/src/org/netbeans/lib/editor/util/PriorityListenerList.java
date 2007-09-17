@@ -48,6 +48,8 @@ public class PriorityListenerList<T extends EventListener> implements Serializab
 
     private transient T[][] listenersArray;
     
+    private int listenerCount;
+    
     public PriorityListenerList() {
         listenersArray = emptyTArrayArray();
     }
@@ -85,7 +87,7 @@ public class PriorityListenerList<T extends EventListener> implements Serializab
 
         } else { // Add into existing listeners
             @SuppressWarnings("unchecked")
-            T[][] newListenersArray = (T[][])listenersArray.clone();
+            T[][] newListenersArray = listenersArray.clone();
             T[] listeners = listenersArray[priority];
             T[] newListeners = allocateTArray(listeners.length + 1);
             System.arraycopy(listeners, 0, newListeners, 1, listeners.length);
@@ -93,6 +95,7 @@ public class PriorityListenerList<T extends EventListener> implements Serializab
             newListenersArray[priority] = newListeners;
             listenersArray = newListenersArray;
         }
+        listenerCount++;
     }
     
     /**
@@ -118,6 +121,7 @@ public class PriorityListenerList<T extends EventListener> implements Serializab
                 index++;
             }
             if (index < listeners.length) {
+                listenerCount--;
                 T[] newListeners;
                 boolean removeHighestPriorityLevel;
                 if (listeners.length == 1) {
@@ -138,7 +142,7 @@ public class PriorityListenerList<T extends EventListener> implements Serializab
                     listenersArray = newListenersArray;
                 } else { // levels count stays the same
                     @SuppressWarnings("unchecked")
-                    T[][] newListenersArray = (T[][])listenersArray.clone();
+                    T[][] newListenersArray = listenersArray.clone();
                     newListenersArray[priority] = newListeners;
                     listenersArray = newListenersArray;
                 }
@@ -172,6 +176,15 @@ public class PriorityListenerList<T extends EventListener> implements Serializab
      */
     public T[][] getListenersArray() {
         return listenersArray;
+    }
+    
+    
+    
+    /**
+     * Get total count of listeners contained in this list at all priority levels.
+     */
+    public int getListenerCount() {
+        return listenerCount;
     }
 
     // Serialization support.
