@@ -276,35 +276,35 @@ class LuceneIndex extends Index {
             case CAMEL_CASE:
                 if (name.length() == 0) {
                     throw new IllegalArgumentException ();
-                }        
+                } 
                 {
-                final StringBuilder patternString = new StringBuilder ();                        
-                char startChar = 0;
-                for (int i=0; i<name.length(); i++) {
-                    char c = name.charAt(i);
-                    //todo: maybe check for upper case, I18N????
-                    if (i == 0) {
-                        startChar = c;
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = null;
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(name, lastIndex + 1);
+                        String token = name.substring(lastIndex, index == -1 ? name.length(): index);
+                        if ( lastIndex == 0 ) {
+                            prefix = token;
+                        }
+                        sb.append(token); 
+                        sb.append("[\\p{javaLowerCase}\\p{Digit}_\\$]*"); // NOI18N         
+                        lastIndex = index;
                     }
-                    patternString.append(c);
-                    if (i == name.length()-1) {
-                        patternString.append("\\w*");  // NOI18N
-                    }
-                    else {
-                        patternString.append("[\\p{Lower}\\p{Digit}]*");  // NOI18N
-                    }
+                    while(index != -1);
+
+                    final Pattern pattern = Pattern.compile(sb.toString());
+                    regExpSearch(pattern,DocumentUtil.simpleNameTerm(prefix),in,toSearch,cancel, true);
                 }
-                final Pattern pattern = Pattern.compile(patternString.toString());
-                regExpSearch(pattern,DocumentUtil.simpleNameTerm(Character.toString(startChar)),in,toSearch,cancel);
                 break;
-                }
             case CASE_INSENSITIVE_REGEXP:
                 if (name.length() == 0 || !Character.isJavaIdentifierStart(name.charAt(0))) {
                     throw new IllegalArgumentException ();
                 }
                 {   
                     final Pattern pattern = Pattern.compile(name,Pattern.CASE_INSENSITIVE);
-                    regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase()), in, toSearch,cancel);      //XXX: Locale
+                    regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase()), in, toSearch,cancel, false);      //XXX: Locale
                     break;
                 }
             case REGEXP:
@@ -313,7 +313,7 @@ class LuceneIndex extends Index {
                 }                
                 {   
                     final Pattern pattern = Pattern.compile(name);                    
-                    regExpSearch(pattern, DocumentUtil.simpleNameTerm(name), in, toSearch, cancel);
+                    regExpSearch(pattern, DocumentUtil.simpleNameTerm(name), in, toSearch, cancel, true);
                     break;
                 }
             default:
@@ -343,7 +343,17 @@ class LuceneIndex extends Index {
         }        
     }
     
-    private void regExpSearch (final Pattern pattern, final Term startTerm, final IndexReader in, final Set<Term> toSearch, final AtomicBoolean cancel) throws IOException, InterruptedException {        
+    private static int findNextUpper(String text, int offset ) {
+        
+        for( int i = offset; i < text.length(); i++ ) {
+            if ( Character.isUpperCase(text.charAt(i)) ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    private void regExpSearch (final Pattern pattern, Term startTerm, final IndexReader in, final Set<Term> toSearch, final AtomicBoolean cancel, boolean caseSensitive) throws IOException, InterruptedException {        
         final String startText = startTerm.text();
         final StringBuilder startBuilder = new StringBuilder ();
         startBuilder.append(startText.charAt(0));
@@ -355,6 +365,7 @@ class LuceneIndex extends Index {
             startBuilder.append(c);
         }
         final String startPrefix = startBuilder.toString();
+        startTerm = caseSensitive ? DocumentUtil.simpleNameTerm(startPrefix) : DocumentUtil.caseInsensitiveNameTerm(startPrefix);
         final String camelField = startTerm.field();
         final TermEnum en = in.terms(startTerm);
         try {

@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import javax.lang.model.element.*;
 import org.netbeans.api.editor.EditorRegistry;
 import static javax.lang.model.element.ElementKind.*;
@@ -3959,6 +3960,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
                 
+        private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
+        
         private class Env {
             private int offset;
             private String prefix;
@@ -3970,11 +3973,14 @@ public class JavaCompletionProvider implements CompletionProvider {
             private Collection<? extends Element> refs = null;
             private boolean insideForEachExpressiion = false;
             private Set<? extends TypeMirror> smartTypes = null;
+     
+    
             
             private Env(int offset, String prefix, CompilationController controller, TreePath path, SourcePositions sourcePositions, Scope scope) {
                 this.offset = offset;
                 this.prefix = prefix;
-                this.isCamelCasePrefix = prefix != null && prefix.length() > 1 && prefix.equals(prefix.toUpperCase());
+                // this.isCamelCasePrefix = prefix != null && prefix.length() > 1 && prefix.equals(prefix.toUpperCase());
+                this.isCamelCasePrefix = prefix != null && prefix.length() > 1 && camelCasePattern.matcher(prefix).matches();
                 this.controller = controller;
                 this.path = path;
                 this.sourcePositions = sourcePositions;

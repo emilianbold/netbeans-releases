@@ -265,7 +265,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         return -1;
     }
     
-    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{Upper}(?:\\p{Lower}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
+    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
     
     private static boolean isCamelCase(String text) {
          return camelCasePattern.matcher(text).matches();
