@@ -21,14 +21,11 @@ package org.netbeans.modules.cnd.refactoring.ui.tree;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmObjectBoxFactory;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
@@ -65,17 +62,14 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
                 }
             }
         } else if (CsmKindUtilities.isProject(o)) {
-            Object prj = ((CsmProject)o).getPlatformProject();
-            if (prj instanceof NativeProject && (((NativeProject)prj).getProject() instanceof Project)) {
-                result = new ProjectTreeElement((Project)((NativeProject)prj).getProject());
-            }
+            result = new ProjectTreeElement((CsmProject)o);
         } else if (CsmKindUtilities.isCsmObject(o)) {
             CsmObject csm = (CsmObject)o;
             if (CsmKindUtilities.isFile(csm)) {
                 FileObject fo = CsmUtilities.getFileObject((CsmFile)o);
                 result = new FileTreeElement(fo, (CsmFile)o);
-            } else if (CsmKindUtilities.isScope(csm)) {
-                result = new ScopeTreeElement((CsmScope)csm);
+            } else {
+                result = new ParentTreeElement(csm);
             }
         }
         if (result != null) {

@@ -21,6 +21,8 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
@@ -192,33 +194,24 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             final RefactoringElementsBag elements,
             final Collection<CsmFile> files) {
         if (isFindUsages()) {
-            CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
-            for (CsmFile file : files) {
-                if (cancelRequest) {
-                    break;
-                }
-                Collection<CsmReference> refs = xRef.getReferences(csmObject, file, true);
+            if (CsmKindUtilities.isFile(csmObject)) {
+                Collection<CsmReference> refs = CsmIncludeHierarchyResolver.getDefault().getIncludes((CsmFile)csmObject);
                 for (CsmReference csmReference : refs) {
                     elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference));
                 }      
-                fireProgressListenerStep();
+            } else {
+                CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
+                for (CsmFile file : files) {
+                    if (cancelRequest) {
+                        break;
+                    }
+                    Collection<CsmReference> refs = xRef.getReferences(csmObject, file, true);
+                    for (CsmReference csmReference : refs) {
+                        elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference));
+                    }      
+                    fireProgressListenerStep();
+                }
             }
-
-//            if (files != null) {
-//                Collection<CsmReference> refs;
-//                if (file.getProject() != null) {
-//                    refs = xRef.getReferences(csmObject, file.getProject(), true);
-//                } else {
-//                    refs = xRef.getReferences(csmObject, file, true);
-//                }
-//                refs = TraceXRef.sortRefs(refs);
-//                CsmObject[] decDef = TraceXRef.getDefinitionDeclaration(csmObject);
-//                CsmObject decl = decDef[0];
-//                CsmObject def = decDef[1];                
-//                for (CsmReference csmReference : refs) {
-//                    elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, decl, def));
-//                }
-//            }
         }
     }
     

@@ -16,11 +16,14 @@
  */
 package org.netbeans.modules.cnd.refactoring.elements;
 
+import java.io.IOException;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
@@ -97,23 +100,31 @@ public class CsmRefactoringElementImpl extends
     }
     
     public static RefactoringElementImplementation create(CsmReference ref) {
-        CsmFile csmFile = ref.getContainingFile();        
-        FileObject fo = CsmUtilities.getFileObject(csmFile);  
+        CsmFile csmFile = ref.getContainingFile();
+        FileObject fo = CsmUtilities.getFileObject(csmFile);
         PositionBounds bounds = CsmUtilities.createPositionBounds(ref);
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
-        BaseDocument doc = null;
+        StyledDocument stDoc = null;
+        try {
+            stDoc = ces.openDocument();
+        } catch (IOException iOException) {
+        }
+
         String displayText = null;
-        if (ces != null && (ces.getDocument() instanceof BaseDocument)) {
-            doc = (BaseDocument)ces.getDocument();
-            try {            
+        if (stDoc instanceof BaseDocument) {
+            BaseDocument doc = (BaseDocument) stDoc;
+            try {
                 int stOffset = ref.getStartOffset();
                 int endOffset = ref.getEndOffset();
                 int startLine = Utilities.getRowFirstNonWhite(doc, stOffset);
-                int endLine = Utilities.getRowLastNonWhite(doc, endOffset)+1;
+                int endLine = Utilities.getRowLastNonWhite(doc, endOffset) + 1;
+                if (CsmKindUtilities.isInclude(ref.getOwner()) && (stOffset == startLine)) {
+                    stOffset = -1;
+                    endOffset = -1;
+                }
                 displayText = CsmRefactoringUtils.getHtml(startLine, endLine, stOffset, endOffset, doc);
             } catch (BadLocationException ex) {
-
-            }            
+            }
         }
         return new CsmRefactoringElementImpl(bounds, ref, fo, displayText);
     }

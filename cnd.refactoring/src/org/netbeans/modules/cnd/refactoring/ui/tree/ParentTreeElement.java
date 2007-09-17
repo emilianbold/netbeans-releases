@@ -13,49 +13,44 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.cnd.refactoring.ui.tree;
 
 import javax.swing.Icon;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
-import org.netbeans.modules.refactoring.spi.ui.*;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 
 /**
- * presentation of element for Project in C/C++ refactorings
  * 
  * @author Vladimir Voskresensky
  */
-public class ProjectTreeElement implements TreeElement {
-
-    private final String name;
-    private final Icon icon;
-    private final CsmUID<CsmProject> prjUID;
-    public ProjectTreeElement(CsmProject csmPrj) {
-        Object prj = csmPrj.getPlatformProject();
-        if (prj instanceof NativeProject && (((NativeProject)prj).getProject() instanceof Project)) {
-            Project p = (Project) ((NativeProject)prj).getProject();
-            ProjectInformation pi = ProjectUtils.getInformation(p);
-            this.name = pi.getDisplayName();
-            this.icon = pi.getIcon();
-        } else {
-            this.icon = CsmImageLoader.getProjectIcon(csmPrj, false);
-            this.name = csmPrj.getName();
-        }
-        prjUID = CsmRefactoringUtils.getHandler(csmPrj);
-    }
+public class ParentTreeElement implements TreeElement {
     
+    private final CsmUID<CsmObject> element;
+    private final Icon icon;
+    private final String text;
+    /** Creates a new instance of ParentTreeElement */
+    public ParentTreeElement(CsmObject element) {
+        this.element = CsmRefactoringUtils.getHandler(element);
+        this.icon = CsmImageLoader.getIcon(element);
+        this.text = CsmRefactoringUtils.getHtml(element);
+    }
+
     public TreeElement getParent(boolean isLogical) {
-        return null;
+        CsmObject enclosing = getParent();
+        if (enclosing != null) {
+            return TreeElementFactory.getTreeElement(enclosing);
+        } else {
+            System.err.println("element without parent " + getUserObject());
+            return null;
+        }
     }
 
     public Icon getIcon() {
@@ -63,11 +58,20 @@ public class ProjectTreeElement implements TreeElement {
     }
 
     public String getText(boolean isLogical) {
-        return name;
+        return text;
     }
 
     public Object getUserObject() {
-        return prjUID.getObject();
+        return element.getObject();
     }
     
+    private CsmObject getParent() {
+        CsmObject obj = (CsmObject) getUserObject();
+        CsmObject enclosing = null;
+        if (obj != null) {
+            enclosing = CsmRefactoringUtils.getEnclosingElement(obj);
+        }
+        return enclosing;
+    }
+
 }

@@ -168,7 +168,7 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
     
     protected Collection<CsmFile> getRelevantFiles(CsmObject csmObject, CsmObject referencedObject) {
         CsmFile startFile = getCsmFile(csmObject);
-        CsmScope enclScope = referencedObject == null ? null : CsmRefactoringUtils.getEnclosingScopeElement(referencedObject);
+        CsmObject enclScope = referencedObject == null ? null : CsmRefactoringUtils.getEnclosingElement(referencedObject);
         CsmFile scopeFile = null;
         if (CsmKindUtilities.isFunction(enclScope)) {
             scopeFile = ((CsmOffsetable)enclScope).getContainingFile();

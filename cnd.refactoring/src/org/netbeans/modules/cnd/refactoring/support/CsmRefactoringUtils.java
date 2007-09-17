@@ -18,7 +18,6 @@ package org.netbeans.modules.cnd.refactoring.support;
 
 import java.awt.Color;
 import java.util.Iterator;
-import java.util.List;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyleConstants;
@@ -34,7 +33,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -58,6 +57,7 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public class CsmRefactoringUtils {
+
     private CsmRefactoringUtils() {}
     
     static FileObject getFileObject(CsmObject object) {
@@ -118,8 +118,15 @@ public class CsmRefactoringUtils {
         }
     }
     
-    public static CsmScope getEnclosingScopeElement(CsmObject decl) {
+    public static CsmObject getEnclosingElement(CsmObject decl) {
         assert decl != null;
+        if (decl instanceof CsmReference) {
+            decl = ((CsmReference)decl).getOwner();
+        }
+        if (CsmKindUtilities.isOffsetable(decl)) {
+            return findInnerFileObject((CsmOffsetable)decl);
+        }
+        
         CsmObject scopeElem = decl instanceof CsmReference ? ((CsmReference)decl).getOwner() : decl;
         while (CsmKindUtilities.isScopeElement(scopeElem)) {
             CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
@@ -147,14 +154,6 @@ public class CsmRefactoringUtils {
                     CsmKindUtilities.isFile(obj);
     }
     
-    private static CsmObject getEnclosingFeature(CsmFile file, int offset) {
-        CsmObject out = null;
-        if (offset > 0) {
-            
-        }
-        return out;
-    }
-    
     private static String getHtml(CsmOffsetable obj) {
         CsmFile csmFile = obj.getContainingFile();        
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
@@ -165,8 +164,18 @@ public class CsmRefactoringUtils {
             try {            
                 int stOffset = obj.getStartOffset();
                 int endOffset = obj.getEndOffset();
+                int endLineOffset = 1;
+                if (CsmKindUtilities.isNamespaceDefinition((CsmObject)obj) ||
+                        CsmKindUtilities.isEnum((CsmObject)obj)) {
+                    endOffset = stOffset;
+                    endLineOffset = 0;
+                } else if (CsmKindUtilities.isFunctionDefinition((CsmObject)obj)) {
+                    endOffset = ((CsmFunctionDefinition)obj).getBody().getStartOffset()-1;
+                } else if (CsmKindUtilities.isClass((CsmObject)obj)) {
+                    endOffset = ((CsmClass)obj).getLeftBracketOffset()-1;
+                }
                 int startLine = org.netbeans.editor.Utilities.getRowFirstNonWhite(doc, stOffset);
-                int endLine = org.netbeans.editor.Utilities.getRowLastNonWhite(doc, endOffset)+1;
+                int endLine = org.netbeans.editor.Utilities.getRowLastNonWhite(doc, endOffset) + endLineOffset;
                 displayText = CsmRefactoringUtils.getHtml(startLine, endLine, -1, -1, doc);
             } catch (BadLocationException ex) {
             }            
@@ -288,7 +297,7 @@ public class CsmRefactoringUtils {
     ////////////////////////////////////////////////////////////////////////////
     // by-offset methods
     
-    public static boolean isInObject(CsmObject obj, int offset) {
+    private static boolean isInObject(CsmObject obj, int offset) {
         if (!CsmKindUtilities.isOffsetable(obj)) {
             return false;
         }
@@ -301,80 +310,74 @@ public class CsmRefactoringUtils {
         }
     }
     
-    // list is ordered by offsettable elements
-    public static <T extends CsmObject> T findObject(List<T> list, int offset) {
-        assert (list != null) : "expect not null list";
-        for (Iterator<T> it = list.iterator(); it.hasNext();) {
-            T obj = it.next();
-            assert (obj != null) : "can't be null declaration";
-            if (isInObject((CsmObject)obj, offset)) {
-                // we are inside csm element
-                return obj;
-            }
+    public static boolean isBeforeObject(CsmObject obj, int offset) {
+        if (!CsmKindUtilities.isOffsetable(obj)) {
+            return false;
         }
-        return null;
-    }   
+        CsmOffsetable offs = (CsmOffsetable)obj;
+        if (offset < offs.getStartOffset()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     
-//    public static CsmObject findInnerFileObject(CsmFile file, int offset, CsmContext context) {
-//        assert (file != null) : "can't be null file in findInnerFileObject";
-//        // check file declarations
-//        CsmObject lastObject = findInnerDeclaration(file.getDeclarations().iterator(), context, offset);
-//        // check includes if needed
-//        lastObject = lastObject != null ? lastObject : findObject(file.getIncludes(), context, offset);
+    public static CsmObject findInnerFileObject(CsmFile file, int offset) {
+        assert (file != null) : "can't be null file in findInnerFileObject";
+        // check file declarations
+        CsmObject lastObject = findInnerDeclaration(file.getDeclarations().iterator(), offset);
 //        // check macros if needed
 //        lastObject = lastObject != null ? lastObject : findObject(file.getMacros(), context, offset);
-//        return lastObject;
-//    }
-//    
-//    private static CsmDeclaration findInnerDeclaration(final Iterator<? extends CsmDeclaration> it, final int offset) {
-//        CsmDeclaration innerDecl = null;
-//        if (it != null) {
-//            // continue till has next and not yet found
-//            while (it.hasNext()) {
-//                CsmDeclaration decl = (CsmDeclaration) it.next();
-//                assert (decl != null) : "can't be null declaration";
-//                if (isInObject(decl, offset)) {
-//                    if (!CsmKindUtilities.isFunction(decl) || isInFunctionScope((CsmFunction)decl, offset)) {
-//                        // add declaration scope to context
-//                        CsmContextUtilities.updateContext(decl, offset, context);
-//                        // we are inside declaration, but try to search deeper
-//                        innerDecl = findInnerDeclaration(decl, offset, context);
-//                    } else {
-//                        context.setLastObject(decl);
-//                    }
-//                    innerDecl = innerDecl != null ? innerDecl : decl;
-//                    // we can break loop, because list of declarations is sorted
-//                    // by offset and we found already one of container declaration
-//                    break;
-//                }
-//            }
-//        }
-//        return innerDecl;
-//    }
-//        
-//    // must check before call, that offset is inside outDecl
-//    private static CsmDeclaration findInnerDeclaration(CsmDeclaration outDecl, int offset, CsmContext context) {
-//        assert (isInObject(outDecl, offset)) : "must be in outDecl object!";
-//        Iterator<? extends CsmDeclaration> it = null;
-//        if (CsmKindUtilities.isNamespace(outDecl)) { 
-//            CsmNamespace ns = (CsmNamespace)outDecl;
-//            it = ns.getDeclarations().iterator();
-//        } else if (CsmKindUtilities.isNamespaceDefinition(outDecl)) {
-//            it = ((CsmNamespaceDefinition) outDecl).getDeclarations().iterator();
-//        } else if (CsmKindUtilities.isClass(outDecl)) {
-//            CsmClass cl  = (CsmClass)outDecl;
-//            List list = cl.getMembers();
-//            if (cl.getFriends().size() > 0) {
-//                // combine friends with members for search
-//                list.addAll(cl.getFriends());
-//            }
-//            it = list.iterator();
-//        } else if (CsmKindUtilities.isEnum(outDecl)) {
-//            CsmEnum en = (CsmEnum)outDecl;
-//            it = en.getEnumerators().iterator();
-//        }
-//        return findInnerDeclaration(it, context, offset);
-//    }      
+        return lastObject;
+    }
     
+    private static CsmDeclaration findInnerDeclaration(final Iterator<? extends CsmDeclaration> it, final int offset) {
+        CsmDeclaration innerDecl = null;
+        if (it != null) {
+            // continue till has next and not yet found
+            while (it.hasNext()) {
+                CsmDeclaration decl = (CsmDeclaration) it.next();
+                assert (decl != null) : "can't be null declaration";
+                if (isInObject(decl, offset) && isLangContainerFeature(decl)) {
+                    // we are inside declaration, but try to search deeper
+                    innerDecl = findInnerDeclaration(decl, offset);
+                    if (innerDecl != null) {
+                        return innerDecl;
+                    } else {
+                        return decl;
+                    }
+                } else if (isBeforeObject(decl, offset)) {
+                    break;
+                }
+            }
+        }
+        return innerDecl;
+    }
+        
+    // must check before call, that offset is inside outDecl
+    private static CsmDeclaration findInnerDeclaration(CsmDeclaration outDecl, int offset) {
+        assert (isInObject(outDecl, offset)) : "must be in outDecl object!";
+        Iterator<? extends CsmDeclaration> it = null;
+        if (CsmKindUtilities.isNamespace(outDecl)) { 
+            CsmNamespace ns = (CsmNamespace)outDecl;
+            it = ns.getDeclarations().iterator();
+        } else if (CsmKindUtilities.isNamespaceDefinition(outDecl)) {
+            it = ((CsmNamespaceDefinition) outDecl).getDeclarations().iterator();
+        } else if (CsmKindUtilities.isClass(outDecl)) {
+            CsmClass cl  = (CsmClass)outDecl;
+            it = cl.getMembers().iterator();
+        } else if (CsmKindUtilities.isEnum(outDecl)) {
+            CsmEnum en = (CsmEnum)outDecl;
+            it = en.getEnumerators().iterator();
+        }
+        return findInnerDeclaration(it, offset);
+    }      
     
+    private static CsmObject findInnerFileObject(CsmOffsetable csmOffsetable) {
+        CsmObject obj = findInnerFileObject(csmOffsetable.getContainingFile(), csmOffsetable.getStartOffset()-1);
+        if (obj == null) {
+            obj = csmOffsetable.getContainingFile();
+        }
+        return obj;
+    }
 }

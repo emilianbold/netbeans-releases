@@ -69,9 +69,9 @@ public class RefactoringTreeElement implements TreeElement {
     
     private CsmObject getCsmParent() {
         CsmOffsetable obj = thisObject.getObject();
-        CsmScope enclosing = null;
+        CsmObject enclosing = null;
         if (obj != null) {
-            enclosing = CsmRefactoringUtils.getEnclosingScopeElement((CsmObject)obj);
+            enclosing = CsmRefactoringUtils.getEnclosingElement((CsmObject)obj);
         }
         return enclosing;
     }
