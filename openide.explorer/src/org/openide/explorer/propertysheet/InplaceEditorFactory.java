@@ -34,6 +34,7 @@ import java.beans.PropertyEditor;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import org.openide.util.WeakListeners;
 
 /** Factory providing inplace editor implementations.  Provides appropriate
  *  InplaceEditor implementations, depending on the type of the property, the
@@ -58,15 +59,15 @@ final class InplaceEditorFactory {
         this.reusableEnv = env;
         
         //reset editors when windows theme is changing (classic <-> xp)
-        Toolkit.getDefaultToolkit().addPropertyChangeListener( "win.xpstyle.themeActive", new PropertyChangeListener() { //NOI18N
+        PropertyChangeListener weakListener = WeakListeners.propertyChange( new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 checkbox = null;
                 text = null;
                 combo = null;
                 radio = null;
             }
-        });
-
+        }, Toolkit.getDefaultToolkit() );
+        Toolkit.getDefaultToolkit().addPropertyChangeListener( "win.xpstyle.themeActive", weakListener ); //NOI18N
     }
 
     /** Set a threshold number of tags below which a radio button, not a
