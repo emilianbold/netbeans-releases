@@ -113,7 +113,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
 
         lbl = new JLabel("Label"); //NOI18N
 
-        lbl.setFont(new Font(lbl.getFont().getName(), Font.BOLD, lbl.getFont().getSize()));
+        lbl.setFont(new Font(null, Font.BOLD, lbl.getFont().getSize()));
 
         add(jsc);
         add(lbl);
