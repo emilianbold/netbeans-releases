@@ -111,6 +111,11 @@ public class DataSourceResolver implements DataSourceInfoListener {
 
         return missing;
     }
+    
+    public Set<RequestedJdbcResource> getProjectDataSources(Project project) {
+        DesignTimeDataSourceService dataSourceService = Lookup.getDefault().lookup(DesignTimeDataSourceService.class);
+        return dataSourceService.getProjectDataSources(project);
+    }
 
     public boolean isDataSourceUnique(Project currentProj, String dsName, String url) {        
         String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
