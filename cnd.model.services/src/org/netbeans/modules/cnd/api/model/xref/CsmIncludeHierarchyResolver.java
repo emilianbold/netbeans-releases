@@ -22,7 +22,6 @@ package org.netbeans.modules.cnd.api.model.xref;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.openide.util.Lookup;
 
 /**
@@ -61,7 +60,7 @@ public abstract class CsmIncludeHierarchyResolver {
      * Search for usage of referenced file in include directives.
      * Return collection of include directives that direct include referenced file.
      */
-    public abstract Collection<CsmInclude> getIncldes(CsmFile referencedFile);
+    public abstract Collection<CsmReference> getIncludes(CsmFile referencedFile);
     
     //
     // Implementation of the default resolver
@@ -74,8 +73,8 @@ public abstract class CsmIncludeHierarchyResolver {
             return Collections.<CsmFile>emptyList();
         }
 
-        public Collection<CsmInclude> getIncldes(CsmFile referencedFile) {
-            return Collections.<CsmInclude>emptyList();
+        public Collection<CsmReference> getIncludes(CsmFile referencedFile) {
+            return Collections.<CsmReference>emptyList();
         }
     }    
 }
