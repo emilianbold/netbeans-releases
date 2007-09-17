@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -36,7 +36,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 </xsl:comment>
 </xsl:template>
@@ -82,36 +82,36 @@ Microsystems, Inc. All Rights Reserved.
 			}
     		.error {
 	    		font-weight:bold; background:#EEEEE0; color:purple;
-	    		}
+	    	}
 	    	.fail {
-			    font-weight:bold; background:#EEEEE0; color:red;
+			font-weight:bold; background:#EEEEE0; color:red;
     		}
 	    	.unexpected-pass {
-			    font-weight:bold; background:#EEEEE0; color:#FFB200;
+			font-weight:bold; background:#EEEEE0; color:#FFB200;
     		}
     		.unknown {
-			    font-weight:bold; background:#EEEEE0; color:red;
+			font-weight:bold; background:#EEEEE0; color:purple;
     		}
 	    	.expected-fail {
-			    font-weight:bold; background:#EEEEE0; color:brown;
+			font-weight:bold; background:#EEEEE0; color:brown;
     		}
     		.pass {
 		    	background:#EEEEE0;
 	    	}
     		.error-matrix {
 	    		font-weight:bold; background:#e0a8e0; color:purple;
-	    		}
+	    	}
 	    	.fail-matrix {
-			    font-weight:bold; background:#ffa0a0; color:red;
+			font-weight:bold; background:#ffa0a0; color:red;
     		}
 	    	.unexpected-pass-matrix {
-			    font-weight:bold; background:#FFF0B3; color:#FFB200;
+			font-weight:bold; background:#FFF0B3; color:#FFB200;
     		}
     		.unknown-matrix {
-			    font-weight:bold; background:#EEEEE0; color:red;
+			font-weight:bold; background:#e0a8e0; color:purple;
     		}    		
 	    	.expected-fail-matrix {
-			    font-weight:bold; background:#F0D48A; color:brown;
+			font-weight:bold; background:#F0D48A; color:brown;
     		}
     		.pass-matrix {
 		    	background:#EEEEE0;
