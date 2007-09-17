@@ -28,7 +28,6 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -273,24 +272,30 @@ public class WSDLNavigatorContent extends JPanel
     }
 
     private void selectActivatedNodes() {
-        Node[] activated = TopComponent.getRegistry().getActivatedNodes();
-        List<Node> selNodes = new ArrayList<Node>();
-        for (Node n : activated) {
-            WSDLComponent wc = n.getLookup().lookup(WSDLComponent.class);
-            if (wc != null) {
-                List<Node> path = UIUtilities.findPathFromRoot(
-                        getExplorerManager().getRootContext(), wc);
-                if (path != null && !path.isEmpty()) {
-                    selNodes.add(path.get(path.size() - 1));
+        final Node[] activated = TopComponent.getRegistry().getActivatedNodes();
+        SwingUtilities.invokeLater(new Runnable() {
+        
+            public void run() {
+                List<Node> selNodes = new ArrayList<Node>();
+                for (Node n : activated) {
+                    WSDLComponent wc = n.getLookup().lookup(WSDLComponent.class);
+                    if (wc != null) {
+                        List<Node> path = UIUtilities.findPathFromRoot(
+                                getExplorerManager().getRootContext(), wc);
+                        if (path != null && !path.isEmpty()) {
+                            selNodes.add(path.get(path.size() - 1));
+                        }
+                    }
+                }
+                revalidate();
+                try {
+                    getExplorerManager().setSelectedNodes(
+                            selNodes.toArray(new Node[selNodes.size()]));
+                } catch (PropertyVetoException pve) {
                 }
             }
-        }
-        revalidate();
-        try {
-            getExplorerManager().setSelectedNodes(
-                    selNodes.toArray(new Node[selNodes.size()]));
-        } catch (PropertyVetoException pve) {
-        }
+        
+        });
     }
 
     /**
