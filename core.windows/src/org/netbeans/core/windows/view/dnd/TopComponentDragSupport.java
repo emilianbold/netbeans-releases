@@ -189,6 +189,9 @@ implements AWTEventListener, DragSourceListener {
             //do not initiate topcomponent drag when the mouse is dragged out of a tabcontrol button
             return;
         }
+        if(!windowDnDManager.isDnDEnabled()) {
+            return;
+        }
 
         Component srcComp = startingComponent;
         if(srcComp == null) {
