@@ -23,6 +23,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -57,10 +59,13 @@ import org.openide.util.NbBundle;
  * @author Jaroslav tulach
  */
 public class StaticAccess extends AbstractHint {
+    
+    private static final String SUPPRESS_WARNINGS_KEY = "static-access";
+    
     private transient volatile boolean stop;
     /** Creates a new instance of AddOverrideAnnotation */
     public StaticAccess() {
-        super( true, true, AbstractHint.HintSeverity.WARNING);
+        super( true, true, AbstractHint.HintSeverity.WARNING, SUPPRESS_WARNINGS_KEY);
     }
     
     public Set<Kind> getTreeKinds() {
@@ -121,11 +126,13 @@ public class StaticAccess extends AbstractHint {
             return null;
         }
         
-        List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+        List<Fix> fixes = new ArrayList<Fix>(2);
+        fixes.add( new FixImpl(
             TreePathHandle.create(expr, info),
             TreePathHandle.create(type, info),
             info.getFileObject()
         ));
+        fixes.add(FixFactory.createSuppressWarnings(info, treePath, SUPPRESS_WARNINGS_KEY));
 
 
         bounds[0] = span[0];

@@ -18,16 +18,29 @@
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 import java.util.prefs.Preferences;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.management.AttributeValueExp;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
@@ -73,6 +86,7 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
     
     private static final class ScannerImpl extends CancellableTreePathScanner<Void, List<ErrorDescription>> {
         
+        private Stack<Set<String>> suppresWarnings = new Stack<Set<String>>();
         private CompilationInfo info;
         private Map<Kind, List<TreeRule>> hints;
         
@@ -89,9 +103,19 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
                     }
                     
                     boolean enabled = true;
+                    String[] suppressedBy = null;
                     
                     if (tr instanceof AbstractHint) {
-                        enabled = HintsSettings.isEnabled((AbstractHint)tr);                        
+                        enabled = HintsSettings.isEnabled((AbstractHint)tr);
+                        suppressedBy = HintsSettings.getSuppressedBy((AbstractHint)tr);
+                    }
+                    
+                    if ( suppressedBy != null && suppressedBy.length != 0 ) {
+                        for (String wname : suppressedBy) {
+                            if( !suppresWarnings.empty() && suppresWarnings.peek().contains(wname)) {
+                                return;
+                            }
+                        }
                     }
                     
                     if (enabled) {
@@ -133,7 +157,65 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
             
             return super.scan(path, p);
         }
+
+        @Override
+        public Void visitMethod(MethodTree tree, List<ErrorDescription> arg1) {
+            pushSuppressWarrnings();
+            Void r = super.visitMethod(tree, arg1);
+            suppresWarnings.pop();
+            return r;
+        }
+
+        @Override
+        public Void visitClass(ClassTree tree, List<ErrorDescription> arg1) {
+            pushSuppressWarrnings();
+            Void r = super.visitClass(tree, arg1);
+            suppresWarnings.pop();
+            return r;
+        }
+
+        @Override
+        public Void visitVariable(VariableTree tree, List<ErrorDescription> arg1) {
+            pushSuppressWarrnings();
+            Void r = super.visitVariable(tree, arg1);
+            suppresWarnings.pop();
+            return r;
+        }
         
+        private void pushSuppressWarrnings( ) {
+            Set<String> current = suppresWarnings.size() == 0 ? null : suppresWarnings.peek();
+            Set<String> nju = current == null ? new HashSet<String>() : new HashSet<String>(current);
+            
+            Element e = info.getTrees().getElement(getCurrentPath());
+            
+            if ( e != null) {
+                for (AnnotationMirror am : e.getAnnotationMirrors()) {
+                    String name = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
+                    if ( "java.lang.SuppressWarnings".equals(name) ) { // NOI18N
+                        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = am.getElementValues();
+                        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : elementValues.entrySet()) {
+                            if( "value".equals(entry.getKey().getSimpleName().toString()) ) { // NOI18N
+                                Object value = entry.getValue().getValue();
+                                if ( value instanceof List) {
+                                    for (Object av : (List)value) {
+                                        if( av instanceof AnnotationValue ) {
+                                            Object wname = ((AnnotationValue)av).getValue();
+                                            if ( wname instanceof String ) {
+                                                nju.add((String)wname);
+                                            }
+                                        }
+                                    }
+                                    
+                                }                                                                
+                            }
+                        }
+
+                    }
+                }                
+            }
+            
+            suppresWarnings.push(nju);
+        }
     }
 
     static boolean isInGuarded(CompilationInfo info, TreePath tree) {

@@ -88,6 +88,10 @@ public class HintsSettings {
         p.put(SEVERITY_KEY, severity.name());
     }
     
+    public static String[] getSuppressedBy(AbstractHint ah) {
+        return HINTS_ACCESSOR.getSuppressBy(ah);
+    }
+    
     public static interface HintsAccessor {
         
         public boolean isEnabledDefault( AbstractHint hint );
@@ -95,6 +99,8 @@ public class HintsSettings {
         public boolean isShowInTaskListDefault( AbstractHint hint );
         
         public AbstractHint.HintSeverity severiryDefault( AbstractHint hint );
+        
+        public String[] getSuppressBy(AbstractHint hint);
     }
     
 }

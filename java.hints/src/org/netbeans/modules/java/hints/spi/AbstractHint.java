@@ -34,15 +34,17 @@ public abstract class AbstractHint implements TreeRule {
     private boolean enableDefault;
     private boolean showInTaskListDefault;
     private HintSeverity severityDefault;
-            
+    private String suppressBy[];        
+    
     static {
         HintsSettings.HINTS_ACCESSOR = new HintAccessorImpl();
     }
     
-    public AbstractHint(  boolean enableDefault, boolean showInTaskListDefault,HintSeverity severityDefault) {
+    public AbstractHint(  boolean enableDefault, boolean showInTaskListDefault,HintSeverity severityDefault, String... suppressBy) {
         this.enableDefault = enableDefault;
         this.showInTaskListDefault = showInTaskListDefault;
         this.severityDefault = severityDefault;
+        this.suppressBy = suppressBy;
     }
     
     
@@ -125,6 +127,10 @@ public abstract class AbstractHint implements TreeRule {
 
         public HintSeverity severiryDefault(AbstractHint hint) {
             return hint.severityDefault;
+        }
+        
+        public String[] getSuppressBy(AbstractHint hint) {
+            return hint.suppressBy;
         }
         
     }

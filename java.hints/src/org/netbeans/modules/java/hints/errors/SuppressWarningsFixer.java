@@ -22,6 +22,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
@@ -112,7 +113,7 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
 	}
 	
         if (suppressKey != null && treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
-            return Collections.singletonList((Fix) new FixImpl(suppressKey, TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject()));
+            return Collections.singletonList((Fix) new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject(), suppressKey));
         }
         
         return Collections.<Fix>emptyList();
@@ -133,20 +134,35 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
         return NbBundle.getMessage(SuppressWarningsFixer.class, "LBL_Suppress_Waning");  // NOI18N
     }
 
-    private static final class FixImpl implements Fix {
+    public static final class FixImpl implements Fix {
         
-        private String key;
+        private String keys[];
         private TreePathHandle handle;
         private FileObject file;
         
-        public FixImpl(String key, TreePathHandle handle, FileObject file) {
-            this.key = key;
+//        public FixImpl(String key, TreePathHandle handle, FileObject file) {
+//            this.key = key;
+//            this.handle = handle;
+//            this.file = file;
+//        }
+        
+        public FixImpl(TreePathHandle handle, FileObject file, String... keys) {
+            this.keys = keys;
             this.handle = handle;
             this.file = file;
         }
     
         public String getText() {
-            return NbBundle.getMessage(SuppressWarningsFixer.class, "LBL_FIX_Suppress_Waning",  key );  // NOI18N
+            StringBuilder keyNames = new StringBuilder();
+            for (int i = 0; i < keys.length; i++) {
+                String string = keys[i];
+                keyNames.append(string);
+                if ( i < keys.length - 1) {
+                    keyNames.append(", "); // NOI18N
+                }
+            }
+
+            return NbBundle.getMessage(SuppressWarningsFixer.class, "LBL_FIX_Suppress_Waning",  keyNames.toString() );  // NOI18N
         }
         
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
@@ -229,7 +245,10 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
                                 
                                 List<ExpressionTree> values = new ArrayList<ExpressionTree>(currentValues);
                                 
-                                values.add(copy.getTreeMaker().Literal(key));
+                                for (String key : keys) {
+                                    values.add(copy.getTreeMaker().Literal(key));
+                                }
+
                                 
                                 copy.rewrite(assignment.getExpression(), copy.getTreeMaker().NewArray(null, Collections.<ExpressionTree>emptyList(), values));
                                 return ;
@@ -237,8 +256,20 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
                         }
                         
                         List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
-                        annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), Collections.singletonList(copy.getTreeMaker().Literal(key))));
                         
+                        
+                        if ( keys.length > 1 ) {
+                            List<LiteralTree> keyLiterals = new ArrayList<LiteralTree>(keys.length);
+                            for (String key : keys) {
+                                keyLiterals.add(copy.getTreeMaker().Literal(key));
+                            }
+                            annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), 
+                                    Collections.singletonList( 
+                                        copy.getTreeMaker().NewArray(null, Collections.<ExpressionTree>emptyList(), keyLiterals))));
+                        }
+                        else {
+                            annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), Collections.singletonList(copy.getTreeMaker().Literal(keys[0]))));
+                        }
                         ModifiersTree nueMods = copy.getTreeMaker().Modifiers(modifiers, annotations);
                         
                         copy.rewrite(modifiers, nueMods);

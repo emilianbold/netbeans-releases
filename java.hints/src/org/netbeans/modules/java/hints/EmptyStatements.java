@@ -33,6 +33,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -47,14 +48,14 @@ import org.openide.util.NbBundle;
  */
 public class EmptyStatements extends AbstractHint {
 
+    private static final String SUPPRESS_WARNINGS_KEY = "empty-statement";
+    
     static final EnumSet<JavaTokenId> nonRelevant = EnumSet.<JavaTokenId>of(
             JavaTokenId.LINE_COMMENT, 
             JavaTokenId.BLOCK_COMMENT,
             JavaTokenId.JAVADOC_COMMENT,
             JavaTokenId.WHITESPACE
     );
-    
-    private static final List<Fix> NO_FIXES = Collections.<Fix>emptyList();
     
     private String EMPTY_STATEMENTS_ID = "EmptyStatements_"; // NOI18N
     
@@ -70,7 +71,7 @@ public class EmptyStatements extends AbstractHint {
     private static EmptyStatements esBlock;
     
     private EmptyStatements( Tree.Kind treeKind ) {
-        super( treeKind == Tree.Kind.IF ? false : true, true, HintSeverity.WARNING );
+        super( treeKind == Tree.Kind.IF ? false : true, true, HintSeverity.WARNING, SUPPRESS_WARNINGS_KEY );
         this.treeKind = treeKind;                
     }
 
@@ -200,7 +201,7 @@ public class EmptyStatements extends AbstractHint {
                     // getDisplayName(),
                     NbBundle.getMessage(EmptyStatements.class, "LBL_Empty_" + kind.toString()),
                     // Collections.<Fix>singletonList(new EmptyStatementFix( info.getFileObject(), TreePathHandle.create(tp, info) ) ), 
-                    NO_FIXES,    
+                    Collections.<Fix>singletonList(FixFactory.createSuppressWarnings( info, tp, SUPPRESS_WARNINGS_KEY)), 
                     info.getFileObject(),
                     (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tp.getLeaf()),
                     (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tp.getLeaf()));
