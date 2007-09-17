@@ -91,13 +91,6 @@ final class Tree extends JTree implements SearchListener {
   Tree() {
     super(new DefaultTreeModel(new DefaultMutableTreeNode()));
     myRoot = (DefaultMutableTreeNode) getModel().getRoot();
-
-    // vlv: print
-    putClientProperty(java.awt.print.Printable.class, getRootName());
-  }
-
-  private String getRootName() {
-    return i18n(Tree.class, "LBL_Tree_Name", getModel().getRoot().toString()); // NOI18N
   }
 
   public void searchStarted(SearchEvent event) {
@@ -124,10 +117,17 @@ final class Tree extends JTree implements SearchListener {
       title, title, icon(Util.class, "find"), null)); // NOI18N
 
     createOccurences();
-
     updateRoot();
+
+    // vlv: print
+    putClientProperty(java.awt.print.Printable.class, getRootName());
+
     View view = (View) WindowManager.getDefault().findTopComponent(View.NAME);
     view.show(this);
+  }
+
+  private String getRootName() {
+    return i18n(Tree.class, "LBL_Tree_Name", myRoot.toString()); // NOI18N
   }
 
   private void createOccurences() {
