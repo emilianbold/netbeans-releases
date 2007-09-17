@@ -180,6 +180,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
         }
         
+        TopComponent activeTopComponentOverride = null;
         // Then fill them with TopComponents.
         for(Iterator it = mode2config.keySet().iterator(); it.hasNext(); ) {
             ModeImpl mode = (ModeImpl)it.next();
@@ -193,6 +194,14 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
             if(mc.previousSelectedTopComponentID != null) {
                 mode.setUnloadedPreviousSelectedTopComponent(mc.previousSelectedTopComponentID);
+            }
+            //some TopComponents want to be always active when the window system starts (e.g. welcome screen)
+            for( TopComponent tc : mode.getOpenedTopComponents() ) {
+                Object val = tc.getClientProperty( "activateAtStartup" ); //NOI18N
+                if( null != val && val instanceof Boolean && ((Boolean)val).booleanValue() ) {
+                    activeTopComponentOverride = tc;
+                    break;
+                }
             }
         }
         
@@ -266,6 +275,8 @@ final public class PersistenceHandler implements PersistenceObserver {
         wm.setEditorAreaBounds(bounds);
         wm.setEditorAreaFrameState(wmc.editorAreaFrameState);
         wm.setToolbarConfigName(wmc.toolbarConfiguration);
+        if( null != activeTopComponentOverride )
+            activeTopComponentOverride.requestActive();
     }
     
     

@@ -29,12 +29,6 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     public void run() {
-        if( WelcomeOptions.getDefault().isShowOnStartup() ) {
-            WelcomeComponent.findComp().open();
-            WelcomeComponent.findComp().requestActive();
-        } else {
-            WelcomeComponent.findComp().close();
-        }
         FeedbackSurvey.start();
     }
 }

@@ -43,9 +43,10 @@ public class WelcomeComponent extends TopComponent {
     
     private WelcomeComponent(){
         setLayout(new BorderLayout());
-        setName(NbBundle.getMessage(WelcomeComponent.class, "LBL_Tab_Title"));   //NOI18N             
+        setName(NbBundle.getMessage(WelcomeComponent.class, "LBL_Tab_Title"));   //NOI18N
         content = null;
         initialized = false;
+        putClientProperty( "activateAtStartup", Boolean.TRUE ); //NOI18N
     }
     
     @Override protected String preferredID(){
@@ -153,6 +154,18 @@ public class WelcomeComponent extends TopComponent {
         setActivatedNodes( new Node[] {} );
     }
 
+    private static boolean firstTimeOpen = true;
+    @Override 
+    protected void componentOpened() {
+        super.componentOpened();
+        if( firstTimeOpen ) {
+            firstTimeOpen = false;
+            if( !WelcomeOptions.getDefault().isShowOnStartup() ) {
+                close();
+            }
+        }
+    }
+    
     @Override protected void componentHidden() {
         super.componentHidden();
         if( null != content ) {
