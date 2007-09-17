@@ -22,6 +22,7 @@ import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignProperty;
 import java.awt.Component;
+import java.nio.CharBuffer;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,23 +81,71 @@ public class StyleClassPropertyEditor extends PropertyEditorBase implements
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
-        if (text == null || text.trim().length() == 0) {
+        text = text.trim();
+        if (text == null || text.length() == 0) {
             this.styleClassList = null;
-        } else {
-            String[] styleClasses = text.trim().split("\\s");
-            String[] styleClassesInContext = getAvailableStyleClasses();
-            this.styleClassList = new ArrayList();
-            List notFoundStyleClassList = new ArrayList();
-            for (int i = 0; i < styleClasses.length; i++) {
-                int index = Arrays.binarySearch(styleClassesInContext, styleClasses[i]);
-                if (index >= 0)
-                    this.styleClassList.add(styleClassesInContext[index]);
-                else
-                    notFoundStyleClassList.add(styleClasses[i]);
-            }
-            if (notFoundStyleClassList.size() > 0) {
-                throw new IllegalTextArgumentException(
-                        bundle.getMessage("StyleClassPropertyEditor.classNotFound", notFoundStyleClassList.toString()));
+        } else {            
+            String[] styleClasses = null;
+            String styleClass = null;
+            if (text.contains(",")) {            
+                 // text is comma delimited.
+                 int size = text.length();
+                 CharBuffer charBuff = CharBuffer.allocate(size);
+                 char c;
+                 boolean commaFound = false;
+                 for (int index = 0; index < size; index++) {
+                     c = text.charAt(index);
+                     if (c == ',') {
+                         commaFound = true;                         
+                         // Check if the previous charecters are space.
+                         // If so, set the position to the first non-space
+                         // charecter.
+                         int pos = charBuff.position() - 1;                         
+                         while (charBuff.get(pos) == ' ') {                                                 
+                             pos--;
+                         }
+                         charBuff.position(++pos);
+                         
+                     }
+                     if (commaFound && c != ',') {
+                         if (c == ' ') {
+                             // Don't add spaces that are
+                             // followed the comma.
+                             continue;
+                         } else {
+                            commaFound = false;
+                         }
+                     }
+                     charBuff.append(c);
+                 }
+                 // rewind the buffer.
+                 charBuff.rewind();
+                 String newText = charBuff.toString();
+                 styleClasses = newText.trim().split(" ");
+                 this.styleClassList = new ArrayList();
+                 for (int i = 0; i < styleClasses.length; i++) {
+                     styleClass = styleClasses[i];
+                     if (styleClass.length() != 0) {
+                         this.styleClassList.add(styleClass);
+                     }
+                 }
+            } else {
+                // text is space separated.
+                styleClasses = text.split("\\s");
+                String[] styleClassesInContext = getAvailableStyleClasses();
+                this.styleClassList = new ArrayList();
+                List notFoundStyleClassList = new ArrayList();                          
+                for (int i = 0; i < styleClasses.length; i++) {
+                    int index = Arrays.binarySearch(styleClassesInContext, styleClasses[i]);
+                    if (index >= 0)
+                        this.styleClassList.add(styleClassesInContext[index]);
+                    else
+                        notFoundStyleClassList.add(styleClasses[i]);
+                }            
+                if (notFoundStyleClassList.size() > 0) {
+                    throw new IllegalTextArgumentException(
+                            bundle.getMessage("StyleClassPropertyEditor.classNotFound", notFoundStyleClassList.toString()));
+                }
             }
         }
     }
