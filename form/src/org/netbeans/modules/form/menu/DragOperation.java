@@ -66,9 +66,17 @@ class DragOperation {
     private List<JMenuItem> payloadComponents;
     private PaletteItem currentItem;
     
+    public boolean isPickAndPlop() {
+        return op == Op.PICK_AND_PLOP_FROM_PALETTE;
+    }
+    
     public DragOperation(MenuEditLayer menuEditLayer) {
         this.menuEditLayer = menuEditLayer;
         this.started = false;
+    }
+    
+    public JComponent getDragComponent() {
+        return dragComponent;
     }
     
     // start a drag from one menu item to another

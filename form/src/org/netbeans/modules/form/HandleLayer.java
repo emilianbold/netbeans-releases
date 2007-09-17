@@ -1507,6 +1507,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             formDesigner.requestActive();
             PaletteItem item = PaletteUtils.getSelectedItem();
             if(formDesigner.getMenuEditLayer().isPossibleNewMenuComponent(item)) {
+                formDesigner.getMenuEditLayer().handleLayer = this;
                 formDesigner.getMenuEditLayer().startNewMenuComponentPickAndPlop(item,e.getPoint());
                 return;
             }
@@ -2014,8 +2015,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 // if  have a menu component over a menu container then do a highlight
                 // hack: this only works for new comps, not moving existing comps
                 if(newDrag && formDesigner.getMenuEditLayer().canHighlightContainer(targetContainer,moveComp)) {
+                    formDesigner.getMenuEditLayer().handleLayer = HandleLayer.this;
                     formDesigner.getMenuEditLayer().rolloverContainer(targetContainer);
                 } else {
+                    formDesigner.getMenuEditLayer().handleLayer = HandleLayer.this;
                     formDesigner.getMenuEditLayer().rolloverContainer(null);
                 }
             }

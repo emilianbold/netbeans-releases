@@ -115,7 +115,9 @@ public class MenuEditLayer extends JPanel {
     private FormModelListener menuBarFormListener;
     private PropertyChangeListener selectionListener;
     private boolean isAlive = true;
-
+    public HandleLayer handleLayer = null;
+    private static final boolean USE_JSEPARATOR_FIX = false;
+    
     /** Creates a new instance of MenuEditLayer */
     public MenuEditLayer(final FormDesigner formDesigner) {
         this.formDesigner = formDesigner;
@@ -185,6 +187,19 @@ public class MenuEditLayer extends JPanel {
         if(comp == null) return false;
         return isMenuRelatedComponentClass(comp.getBeanClass());
     }
+    
+    public static boolean isNonMenuJSeparator(RADComponent comp) {
+        if(comp == null) return false;
+        if(JSeparator.class.isAssignableFrom(comp.getBeanClass())) {
+            RADComponent parent = comp.getParentComponent();
+            if(parent != null && JMenu.class.isAssignableFrom(parent.getBeanClass())) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+    
         
     public static boolean isMenuBarContainer(RADComponent comp) {
         if(comp == null) return false;
@@ -307,6 +322,9 @@ public class MenuEditLayer extends JPanel {
         }
         backgroundMap.clear();
         //hackedPopupFactory.containerMap.clear();
+        if(handleLayer != null) {
+            handleLayer.requestFocusInWindow();
+        }
     }
     
     //josh: all this key listener stuff should go into a separate class
@@ -766,7 +784,7 @@ public class MenuEditLayer extends JPanel {
 
             //check for non-menu comps
             for(RADComponent c : selectedComponents) {
-                if (!isMenuRelatedRADComponent(c)) {
+                if (!isMenuRelatedRADComponent(c) || isNonMenuJSeparator(c)) {
                     setVisible(false);
                     return;
                 }
@@ -1206,7 +1224,7 @@ public class MenuEditLayer extends JPanel {
                                     evt.getChangeType() == evt.COMPONENTS_REORDERED ||
                                     evt.getChangeType() == evt.COMPONENT_REMOVED) {
                                 if(evt.getContainer() == metacomp) {
-                                    // then rebuild the menu*/
+                                    // then rebuild the menu
                                     rebuildOnScreenMenu(metacomp);
                                     return;
                                 }
@@ -1401,6 +1419,11 @@ public class MenuEditLayer extends JPanel {
         }
         
         public void mousePressed(MouseEvent e) {
+            if(shouldRedispatchToHandle()) {
+                dragop.fastEnd();
+                handleLayer.dispatchEvent(e);
+                return;
+            }
             // drag drag ops
             if(dragop.isStarted()) {
                 dragop.end(e.getPoint());
@@ -1603,14 +1626,30 @@ public class MenuEditLayer extends JPanel {
         }
         
         public void mouseMoved(MouseEvent e) {
-            //p("mouse moved: " + e);
+            if(shouldRedispatchToHandle()) {
+                handleLayer.dispatchEvent(e);
+                //hideMenuLayer();
+                //return;
+            }
             if(dragop.isStarted()) {
                 dragop.move(e.getPoint());
             }                
+            
         }
                 
     }
     
+    private boolean shouldRedispatchToHandle() {
+        if(!USE_JSEPARATOR_FIX) return false;
+        if(handleLayer == null) return false;
+        if(dragop.isStarted() && dragop.isPickAndPlop()) {
+            if(dragop.getDragComponent() instanceof JSeparator /*&&
+                    dropTargetLayer.getDropTargetComponent() == null*/) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     private class GlassLayerDropTargetListener implements DropTargetListener {
         public void dragEnter(DropTargetDragEvent dtde) {

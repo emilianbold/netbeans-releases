@@ -102,6 +102,10 @@ class DropTargetLayer extends JComponent {
         repaint();
     }
     
+    public JComponent getDropTargetComponent() {
+        return currentTargetComponent;
+    }
+    
     public void clearDropTarget() {
         currentTargetComponent = null;
         currentTargetType = DropTargetType.NONE;
