@@ -632,7 +632,10 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             
         </pathconvert>    
         <condition property="sigtest.skip.check.condition">
-            <equals arg1="${sigtest.skip.check}" arg2="true"/>
+            <or>
+                <equals arg1="${sigtest.skip.check}" arg2="true"/>
+                <equals arg1="${sigtest.gen.fail.on.error}" arg2="false"/>
+            </or>
         </condition>
         
         <echo>Checking module: ${module.name}</echo>
