@@ -258,7 +258,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     public NativeFileItem findFileItem(File file) {
-        return (NativeFileItem)getMakeConfigurationDescriptor().findItemByFile(file);
+        MakeConfigurationDescriptor descr = getMakeConfigurationDescriptor();
+        if (descr != null) {
+            return (NativeFileItem)descr.findItemByFile(file);
+        }
+        return null;
     }
     
     private void checkConfigurationChanged(final Configuration oldConf, final Configuration newConf) {
