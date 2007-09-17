@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -117,6 +118,8 @@ public final class CreateMethodFix implements Fix {
     }
     
     public String getText() {
+        if(target.getKind() == ElementKind.ANNOTATION_TYPE)
+            return NbBundle.getMessage(CreateMethodFix.class, "LBL_FIX_Create_Annotation_Element", methodDisplayName, inFQN );
         if (returnType != null) {
             return NbBundle.getMessage(CreateMethodFix.class, "LBL_FIX_Create_Method", methodDisplayName, inFQN );
         } else {
