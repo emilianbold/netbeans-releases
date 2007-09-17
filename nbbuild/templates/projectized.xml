@@ -472,8 +472,8 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     <target name="do-test-build-qa-functional" depends="init,test-init-qa-functional">
         <fail>
           Missing test dependency
-          Runtime classpath: ${test.unit.runtime.cp}
-          Compile classpath: ${test.unit.compile.cp}
+          Runtime classpath: ${test.qa-functional.runtime.cp}
+          Compile classpath: ${test.qa-functional.cp}
          <condition>
             <or>
              <contains string="${test.qa-functional.runtime.cp}" substring="-missing-Module-Entries-:" />
