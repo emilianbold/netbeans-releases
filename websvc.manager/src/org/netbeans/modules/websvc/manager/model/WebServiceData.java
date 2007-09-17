@@ -96,6 +96,14 @@ public class WebServiceData {
     
     public void setWsdlService(WsdlService svc){
         wsdlService = svc;
+
+        if (jaxRpcDescriptor != null) {
+            jaxRpcDescriptor.setModel(wsdlService);
+        }
+
+        if (jaxWsDescriptor != null) {
+            jaxWsDescriptor.setModel(wsdlService);
+        }
     }
     
     public WsdlService getWsdlService( ) {
