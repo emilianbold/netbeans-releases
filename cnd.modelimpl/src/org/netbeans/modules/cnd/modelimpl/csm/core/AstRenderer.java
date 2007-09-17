@@ -304,6 +304,9 @@ public class AstRenderer {
                                     ((TypedefImpl)typedef).setTypeUnnamed();
                                 }
                                 if( typedef != null ) {
+                                    if (cls instanceof ClassEnumBase) {
+                                        ((ClassEnumBase)cls).addEnclosingTypedef(typedef);
+                                    }
                                     results.add(typedef);
                                 }
                                 ptrOperator = null;
@@ -400,6 +403,11 @@ public class AstRenderer {
                                         ((TypedefImpl)typedef).setTypeUnnamed();
                                     }
                                     results.add(typedef);
+                                    if (classifier instanceof ClassEnumBase) {
+                                        ((ClassEnumBase)classifier).addEnclosingTypedef(typedef);
+                                    } else if (ei instanceof ClassEnumBase){
+                                        ((ClassEnumBase)ei).addEnclosingTypedef(typedef);
+                                    }
                                 }
                             }
                             ptrOperator = null;

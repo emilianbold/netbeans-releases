@@ -23,6 +23,10 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
@@ -52,6 +56,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     private boolean _static = false;
     private CsmVisibility visibility = CsmVisibility.PRIVATE;
+    private final List<CsmUID<CsmTypedef>> enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>());
     
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(ast, file);
@@ -213,6 +218,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         if (getName().length() == 0) {
             super.writeUID(output);
         }
+        UIDObjectFactory.getDefaultFactory().writeUIDCollection(enclosingTypdefs, output, true);
     }  
     
     protected ClassEnumBase(DataInput input) throws IOException {
@@ -239,6 +245,14 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         if (getName().length() == 0) {
             super.readUID(input);
         }
-        
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(enclosingTypdefs, input);
+    }
+
+    public Collection<CsmTypedef> getEnclosingTypedefs() {
+        return UIDCsmConverter.UIDsToDeclarations(enclosingTypdefs);
+    }
+
+    public void addEnclosingTypedef(CsmTypedef typedef) {
+        enclosingTypdefs.add(typedef.getUID());
     }
 }

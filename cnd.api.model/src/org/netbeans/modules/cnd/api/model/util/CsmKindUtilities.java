@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.api.model.util;
 
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -184,6 +185,14 @@ public class CsmKindUtilities {
     
     public static boolean isClassifier(CsmObject obj) {
         if (obj instanceof CsmClassifier) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean isCompoundClassifier(CsmObject obj) {
+        if (obj instanceof CsmCompoundClassifier) {
             return true;
         } else {
             return false;

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.classview;
 
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
@@ -26,6 +27,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.*;
 
@@ -35,30 +37,40 @@ import org.netbeans.modules.cnd.api.model.util.*;
  */
 public final class PersistentKey {
     private static final boolean USE_REPOSITORY = Boolean.getBoolean("cnd.modelimpl.use.repository"); // NOI18N
-    private static final byte PROXY = 0;
-    private static final byte UID = 1;
-    private static final byte NAMESPACE = 2;
-    private static final byte DECLARATION = 3;
-    private static final byte PROJECT = 4;
+    private static final byte PROXY = 1;
+    private static final byte UID = 2;
+    private static final byte NAMESPACE = 4;
+    private static final byte DECLARATION = 8;
+    private static final byte PROJECT = 16;
+    private static final byte STATE = 32;
     
     private Object key;
     private CsmProject project;
     private byte kind;
     
-    private PersistentKey(CsmIdentifiable id) {
+    private PersistentKey(CsmIdentifiable id, boolean state) {
         key = id;
         kind = PROXY;
+        if (state) {
+            kind |= STATE;
+        }
     }
     
-    private PersistentKey(CsmUID id) {
+    private PersistentKey(CsmUID id, boolean state) {
         key = id;
         kind = UID;
+        if (state) {
+            kind |= STATE;
+        }
     }
     
-    private PersistentKey(String id, CsmProject host,  byte type) {
+    private PersistentKey(String id, CsmProject host, byte type, boolean state) {
         key = id;
         project = host;
         kind = type;
+        if (state) {
+            kind |= STATE;
+        }
     }
     
     public static PersistentKey createKey(CsmIdentifiable object){
@@ -67,7 +79,7 @@ public final class PersistentKey {
             String uniq = ns.getQualifiedName();
             CsmProject project = ns.getProject();
             if (project != null) {
-                return new PersistentKey(NameCache.getString(uniq), project, NAMESPACE);
+                return new PersistentKey(NameCache.getString(uniq), project, NAMESPACE, false);
             }
         } else if (object instanceof CsmEnumerator){
             // special hack.
@@ -82,22 +94,37 @@ public final class PersistentKey {
             }
             CsmProject project = decl.getContainingFile().getProject();
             if (name.length() > 0 && uniq.indexOf("::::") < 0 && project != null){ // NOI18N
-                return new PersistentKey(NameCache.getString(uniq), project, DECLARATION);
+                return new PersistentKey(NameCache.getString(uniq), project, DECLARATION, getStateBit(object));
             } else {
                 //System.out.println("Skip "+uniq);
             }
         } else if (object instanceof CsmProject){
-            return new PersistentKey(null, (CsmProject)object, PROJECT);
+            return new PersistentKey(null, (CsmProject)object, PROJECT, false);
         }
         if (USE_REPOSITORY){
-            return new PersistentKey(object.getUID());
+            return new PersistentKey(object.getUID(), getStateBit(object));
         } else {
-            return new PersistentKey(object);
+            return new PersistentKey(object, getStateBit(object));
         }
     }
     
+    private static boolean getStateBit(CsmIdentifiable object){
+        if (object instanceof CsmTypedef){
+            CsmTypedef typedef = (CsmTypedef) object;
+            if (((CsmTypedef)object).isTypeUnnamed()){
+                CsmClassifier cls = typedef.getType().getClassifier();
+                if (cls != null && cls.getName().length()==0 &&
+                   (cls instanceof CsmCompoundClassifier)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public CsmIdentifiable getObject(){
-        switch(kind){
+        int maskKind = kind & 31;
+        switch(maskKind){
             case UID:
                 return (CsmIdentifiable) ((CsmUID)key).getObject();
             case PROXY:
@@ -119,7 +146,8 @@ public final class PersistentKey {
             if (kind != what.kind) {
                 return false;
             }
-            switch(kind){
+            int maskKind = kind & 31;
+            switch(maskKind){
                 case PROXY:
                 case UID:
                     return key.equals(what.key);
@@ -135,22 +163,28 @@ public final class PersistentKey {
     
     @Override
     public int hashCode() {
-        switch(kind){
+        int maskKind = kind & 31;
+        int res = 0;
+        if ((kind & 32) == 32) {
+            res = 17;
+        }
+        switch(maskKind){
             case PROXY:
             case UID:
-                return key.hashCode();
+                return key.hashCode() + res;
             case NAMESPACE:
             case DECLARATION:
-                return project.hashCode() ^ key.hashCode();
+                return project.hashCode() ^ key.hashCode() + res;
             case PROJECT:
-                return project.hashCode();
+                return project.hashCode() +  res;
         }
         return 0;
     }
     
     @Override
     public String toString() {
-        switch(kind){
+        int maskKind = kind & 31;
+        switch(maskKind){
             case PROXY:
                 return "Proxy "+key.toString(); // NOI18N
             case UID:

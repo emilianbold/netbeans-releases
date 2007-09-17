@@ -19,9 +19,12 @@
 
 package org.netbeans.modules.cnd.api.model;
 
+import java.util.Collection;
+
 /**
  * Common ancestor for compound types - classes and enums
  * @author Vladimir Kvashin
  */
 public interface CsmCompoundClassifier<T> extends CsmClassifier<T>, CsmOffsetableDeclaration<T>, CsmScope, CsmValidable  {
+    Collection<CsmTypedef> getEnclosingTypedefs();
 }
