@@ -423,7 +423,7 @@ class CopySupport {
                 autoUndo = false;
             } finally {
                 if (layoutUndoMark != null && !layoutUndoMark.equals(targetLayout.getChangeMark())) {
-                    sourceForm.addUndoableEdit(layoutEdit);
+                    targetForm.addUndoableEdit(layoutEdit);
                 }
                 if (autoUndo) {
                     targetForm.forceUndoOfCompoundEdit();
