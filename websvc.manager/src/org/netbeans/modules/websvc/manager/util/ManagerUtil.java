@@ -24,7 +24,6 @@ import java.net.URL;
 import java.util.*;
 import java.text.*;
 import java.io.*;
-import org.openide.ErrorManager;
 
 import org.w3c.dom.*;
 
@@ -54,7 +53,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 // BEGIN_NOI18N
 /**
@@ -269,296 +267,6 @@ public class ManagerUtil {
             return false;
     }
     
-    /**
-     * Take an XML Schema data type and make a Java type out of it.
-     *    eg: 'xsd:string' -> 'java.lang.String'
-     */
-    /*
-    public static String xmlSchemaType2JavaType(String typeName) {
-        if ((xsdNamespace+":string").equals(typeName))
-            return "java.lang.String";
-        if ("char_lb_rb".equals(typeName))
-            return "char[]";
-        if (typeName.startsWith(xsdNamespace+":"))
-            return typeName.substring(xsdNamespace.length()+1);
-        return typeName;
-    }
-     */
-    public static void insertSimpleTypes(Map typeMapping) {
-        typeMapping.put("java.lang.Integer", "java.lang.Integer");
-        typeMapping.put("java.lang.Short", "java.lang.Short");
-        typeMapping.put("java.lang.Long", "java.lang.Long");
-        typeMapping.put("java.lang.Double", "java.lang.Double");
-        typeMapping.put("java.lang.Boolean", "java.lang.Boolean");
-        typeMapping.put("java.lang.Character", "java.lang.Character");
-        typeMapping.put("java.lang.Float", "java.lang.Float");
-        typeMapping.put("java.lang.StringBuffer", "java.lang.StringBuffer");
-        typeMapping.put("java.lang.Byte", "java.lang.Byte");
-        typeMapping.put("java.lang.String", "java.lang.String");
-        typeMapping.put("java.math.BigInteger", "java.math.BigInteger");
-        typeMapping.put("char_lb_rb", "char[]");
-        typeMapping.put("string", "java.lang.String");
-        typeMapping.put("int", "int");
-        typeMapping.put("short", "short");
-        typeMapping.put("long", "long");
-        typeMapping.put("double", "double");
-        typeMapping.put("boolean", "boolean");
-        typeMapping.put("char", "char");
-        typeMapping.put("float", "float");
-        typeMapping.put("byte", "byte");
-        typeMapping.put("decimal", "java.math.BigDecimal");
-        typeMapping.put("dateTime", "java.util.Date");
-        typeMapping.put((xsdNamespace+":string").intern(), "java.lang.String");
-        typeMapping.put((xsdNamespace+":int").intern(), "int");
-        typeMapping.put((xsdNamespace+":short").intern(), "short");
-        typeMapping.put((xsdNamespace+":long").intern(), "long");
-        typeMapping.put((xsdNamespace+":double").intern(), "double");
-        typeMapping.put((xsdNamespace+":boolean").intern(), "boolean");
-        typeMapping.put((xsdNamespace+":char").intern(), "char");
-        typeMapping.put((xsdNamespace+":float").intern(), "float");
-        typeMapping.put((xsdNamespace+":byte").intern(), "byte");
-        typeMapping.put((xsdNamespace+":decimal").intern(), "java.math.BigDecimal");
-        typeMapping.put((xsdNamespace+":dateTime").intern(), "java.util.Date");
-    }
-    
-    private static Map baseTypes = null;
-    public static boolean isSerializerNeeded(String type) {
-        if (baseTypes == null) {
-            baseTypes = new HashMap();
-            insertSimpleTypes(baseTypes);
-        }
-        return !baseTypes.containsKey(type);
-    }
-    
-    /**
-     * Given an XML Schema Element, figure out the java type to use.
-     * @param el
-     * @param typeMapping
-     * @param elementTypeMapping
-     * @return
-     */
-    public static String getType(Element el, Map typeMapping,
-            Map elementTypeMapping) {
-        if (el == null)
-            return null;
-        String elementName = el.getAttribute("name");
-        String type = null;
-        if ((xsdNamespace+":element").equals(el.getNodeName())) {
-            //System.out.println("element name="+elementName);
-            String typeAttribute = el.getAttribute("type");
-            if (typeAttribute != null && !typeAttribute.equals("") &&
-                    !typeAttribute.equals("SOAP-ENC:Array")) {
-                type = (String) typeMapping.get(typeAttribute);
-            } else {
-                // Recurse in and see what kind of type this thing is.
-                type = getType(findFirstNode(el), typeMapping, elementTypeMapping);
-            }
-        } else if ((xsdNamespace+":simpleType").equals(el.getNodeName())) {
-            type = (String) typeMapping.get(elementName);
-            if (type == null) {
-                try {
-                    Element restrictionNode = findFirstNodeByName(el, xsdNamespace+":restriction");
-                    type = (String) typeMapping.get(restrictionNode.getAttribute("base"));
-                } catch (NotFoundException e) {
-                    Logger.getLogger(ManagerUtil.class.getName()).log(Level.INFO, e.getLocalizedMessage(), e);
-                    // It's okay (for now), just go with our default.
-                }
-            }
-        } else if ((xsdNamespace+":complexType").equals(el.getNodeName())) {
-            Element annotationNode = null;
-            try {
-                annotationNode = findFirstNodeByName(el, xsdNamespace+":annotation");
-                Element appInfoNode = findFirstNodeByName(annotationNode,
-                        xsdNamespace+":appinfo");
-                try {
-                    Node bindingNode = findFirstNodeByName(appInfoNode, "BINDING_TYPE");
-                    type = bindingNode.getFirstChild().getNodeValue();
-                } catch (NotFoundException e1) {
-                    try {
-                        Node oldbindingNode = findFirstNodeByName(appInfoNode, "OLDBINDING_TYPE");
-                        type = oldbindingNode.getFirstChild().getNodeValue();
-                        /*if (elementName != null) {
-                            String baseName = GenPresentation.baseName(type).intern();
-                            if (typeMapping.get(baseName) == null) {
-                                // Put our baseName in there too, since
-                                // we might look for it later by that name.
-                                //System.out.println("Putting in "+baseName+" as "+type);
-                                typeMapping.put(baseName, type);
-                            }
-                        }*/
-                    } catch (NotFoundException e2) {
-                        Node beanNode = findFirstNodeByName(appInfoNode, "BEAN_TYPE");
-                        type = beanNode.getFirstChild().getNodeValue();
-                    }
-                }
-            } catch (NotFoundException e) {
-                Logger.getLogger(ManagerUtil.class.getName()).log(Level.INFO, e.getLocalizedMessage(), e);
-                type = "void";   // NOI18N
-            }
-            NodeList nodes = el.getChildNodes();
-            for (int i = 0; i < nodes.getLength(); ++i) {
-                Node node = nodes.item(i);
-                if (!(node instanceof Element))
-                    continue;
-                Element childEl = (Element) node;
-                if (childEl == annotationNode)
-                    continue;
-                // Insert our children's types into our mapping.
-                getType(childEl, typeMapping, elementTypeMapping);
-            }
-        } else if ((xsdNamespace+":sequence").equals(el.getNodeName())) {
-            NodeList nodes = el.getChildNodes();
-            for (int i = 0; i < nodes.getLength(); ++i) {
-                Node node = nodes.item(i);
-                if (!(node instanceof Element))
-                    continue;
-                Element childEl = (Element) node;
-                // Insert our children's types into our mapping.
-                getType(childEl, typeMapping, elementTypeMapping);
-            }
-        } else if ((xsdNamespace+":import").equals(el.getNodeName())) {
-            // Nothing for us to do here....
-        } else {
-            //System.out.println("Unfamiliar XML Schema element: "+el.getNodeName());	// NOI18N
-            return null;
-        }
-        if (type == null)
-            type = "void";
-        //System.out.println("Found type: elementName="+elementName+" type="+type);
-        type = type.intern();
-        if (elementName != null) {
-            typeMapping.put(elementName.intern(), type);
-        }
-        elementTypeMapping.put(el, type);
-        return type;
-    }
-    
-    /**
-     * Return a Collection of all child Elements
-     */
-    public static Collection getChildElements(Element parent) {
-        Collection result = new LinkedList();
-        NodeList children = parent.getChildNodes();
-        for (int i = 0; i < children.getLength(); ++i) {
-            Node child = children.item(i);
-            if (!(child instanceof Element))
-                continue;
-            result.add(child);
-        }
-        return result;
-    }
-    
-    public static Element findFirstNode(Element node) {
-        NodeList nodes = node.getChildNodes();
-        for (int i = 0; i < nodes.getLength(); ++i) {
-            Node n = nodes.item(i);
-            if (n instanceof Element)
-                return (Element) n;
-        }
-        return null;
-    }
-    
-    public static Element findFirstNodeByName(Element node, String name) throws NotFoundException {
-        return findFirstNodeByName(node.getChildNodes(), name);
-    }
-    
-    /**
-     * Search for a node named @param name.  Namespace is ignored.
-     */
-    public static Element findFirstNodeByName(NodeList nodes, String name) throws NotFoundException {
-        name = removeNamespace(name);
-        for (int i = 0; i < nodes.getLength(); ++i) {
-            Node n = nodes.item(i);
-            String localNodeName = n.getLocalName();
-            if (localNodeName == null) {
-                localNodeName = removeNamespace(n.getNodeName());
-            }
-            if (name.equals(localNodeName))
-                return (Element) n;
-        }
-        
-        
-        throw new NotFoundException(MessageFormat.format(
-                NbBundle.getMessage(ManagerUtil.class,
-                "MSG_UnableToFindNode"),
-                new Object[] {name}), name);
-    }
-    
-    public static Element findFirstNodeByNames(Element node, String[] names) throws NotFoundException {
-        for (int i = 0; i < names.length; ++i)
-            node = findFirstNodeByName(node, names[i]);
-        return node;
-    }
-    
-    public static Element findFirstNodeByName(Document doc, String name) throws NotFoundException {
-        return findFirstNodeByName(doc.getChildNodes(), name);
-    }
-    
-    //Following methods were copied from com.sun.forte4j.webdesigner.xmlcomponent.Util
-    //because the wsdl module cannot be dependent on jwd.
-    
-    public static Class getClass(String className) {
-        Class cls;
-        if (className == null)
-            return null;
-        if (isClassArray(className)) {
-            // Recursively figure out what our type is.
-            // Is this the best way for getting an Array type?
-            cls = getClass(className.substring(0, className.length()-2));
-            Object arrayObject = java.lang.reflect.Array.newInstance(cls, 0);
-            return arrayObject.getClass();
-        }
-        //ClassLoader cl = Top Manager.getDefault().currentClassLoader();
-        //
-        // Removing Top Manager calls (see Issuezilla 31753). Replace above with:
-        ClassLoader cl = ClassPath.getClassPath(null, ClassPath.EXECUTE).getClassLoader(false);
-        
-        // BEGIN_NOI18N
-        if ("int".equals(className))
-            cls = Integer.TYPE;
-        else if ("long".equals(className))
-            cls = Long.TYPE;
-        else if ("char".equals(className))
-            cls = Character.TYPE;
-        else if ("short".equals(className))
-            cls = Short.TYPE;
-        else if ("double".equals(className))
-            cls = Double.TYPE;
-        else if ("float".equals(className))
-            cls = Float.TYPE;
-        else if ("byte".equals(className))
-            cls = Byte.TYPE;
-        else if ("boolean".equals(className))
-            cls = Boolean.TYPE;
-        else if ("void".equals(className))
-            cls= Void.TYPE;
-        else {
-            try {
-                cls = cl.loadClass(className);
-            } catch (java.lang.ClassNotFoundException exc) {
-               ErrorManager.getDefault().notify(exc);
-                cls = null;
-            }
-        }
-        // END_NOI18N
-        return cls;
-    }
-    
-    static public boolean isClassArray(String returnClassName) {
-        return returnClassName.endsWith("[]");                                  // NOI18N
-    }
-    
-    static public boolean isCollectionType(String bindingType) {
-        boolean isCollection = false;
-        Class c = getClass(bindingType);
-        if(c != null){
-            if (java.util.Collection.class.isAssignableFrom(c))
-                isCollection = true;
-        }
-        
-        return isCollection;
-    }
-    
     // change all occurrences of oldSubString to newSubString
     public static String changeString(String inString, String oldSubString, String newSubString) {
         if (oldSubString.trim().equals(""))
@@ -665,7 +373,7 @@ public class ManagerUtil {
         if(tokenizer.hasMoreTokens()) {
             String currentLevel = null;
             while(tokenizer.hasMoreTokens()) {
-                currentLevel = (String)tokenizer.nextToken();
+                currentLevel = tokenizer.nextToken();
                 if(!Character.isJavaIdentifierStart(currentLevel.charAt(0))) {
                     return false;
                 }
@@ -874,15 +582,15 @@ public class ManagerUtil {
      * @throws an IOException if there was a problem adding the reference
      */
     public static boolean addLibraryReferences(Project project, Library[] libraries, String type) throws IOException {
-        WebProjectLibrariesModifier wplm = (WebProjectLibrariesModifier) project.getLookup().lookup(WebProjectLibrariesModifier.class);
+        WebProjectLibrariesModifier wplm = project.getLookup().lookup(WebProjectLibrariesModifier.class);
         if (wplm == null) {
             // Something is wrong, shouldn't be here.
             return addLibraryReferences(project, libraries);
         }
 
-        if (type == ClassPath.COMPILE) {
+        if (type.equals(ClassPath.COMPILE)) {
             return wplm.addCompileLibraries(libraries);
-        } else if (type == ClassPath.EXECUTE) {
+        } else if (type.equals(ClassPath.EXECUTE)) {
             return wplm.addPackageLibraries(libraries, PATH_IN_WAR_LIB);
         }
 

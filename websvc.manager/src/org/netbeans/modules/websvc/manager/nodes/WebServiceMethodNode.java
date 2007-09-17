@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.manager.nodes;
 
+import org.netbeans.modules.websvc.manager.actions.TestMethodAction;
 import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
 
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
@@ -43,9 +44,7 @@ import com.sun.tools.ws.processor.model.java.JavaMethod;
 import com.sun.tools.ws.processor.model.java.JavaParameter;
 
 import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +54,7 @@ import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.MethodTransferable;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -144,6 +144,7 @@ public class WebServiceMethodNode extends AbstractNode {
                 actions.add(a);
             }
         }
+        actions.add(SystemAction.get(TestMethodAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
     
