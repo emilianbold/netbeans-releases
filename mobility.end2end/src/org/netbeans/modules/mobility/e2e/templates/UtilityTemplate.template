@@ -48,7 +48,6 @@ public class Utility {
             output.writeShort( NULL_TYPE );
             return;
         }
-        Object[] array;
         switch( id ) {
         <#list returnTypes as type>
             case ${registry.getRegisteredTypeId( type )?c}:
@@ -57,7 +56,7 @@ public class Utility {
                 output.writeShort(${registry.getRegisteredTypeId( type )?c});                    
                 <#if type.getName() != "void">
                     <#if type.isPrimitive()>
-                        ${serializer.toStream( mapping, type, "output", serializer.fromObject( type, "o" ))}
+                        ${serializer.toStream( mapping, type, "output", serializer.fromObject( mapping, type, "o" ))}
                     <#else>
                         ${serializer.toStream( mapping, type, "output", "o" )}
                     </#if>
@@ -86,7 +85,7 @@ public class Utility {
                 // ${type.getName()}
                 <#if type.isPrimitive() && !type.isArray()>
                     <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
-                    return ${serializer.toObject( type, typeFromStream )};
+                    return ${serializer.toObject( mapping, type, typeFromStream )};
                 <#else>
                     ${serializer.fromStream( mapping, type, "in", "result" )}
                     return result;

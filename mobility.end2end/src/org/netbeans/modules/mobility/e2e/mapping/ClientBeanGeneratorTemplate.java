@@ -70,6 +70,7 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
 
     public boolean generateTarget( ProgressHandle ph, String target ) {
         if( BEANS_OUTPUT.equals( target )) {
+            mapping.setProperty( "target", "client" );
             ph.progress( NbBundle.getMessage( ClientBeanGeneratorTemplate.class, "MSG_Bean_Generation" )); //NOI18N
             Set<Service> services = mapping.getServiceMappings();
             Map<String, ClassData> types = new HashMap<String, ClassData>();

@@ -61,7 +61,7 @@ public interface JavonSerializer {
      * @param type
      * @return fully qualified name or short name of type
      */
-    public String instanceOf( ClassData type );
+    public String instanceOf( JavonMapping mapping, ClassData type  );
     
     /**
      * 
@@ -69,7 +69,7 @@ public interface JavonSerializer {
      * @param variable 
      * @return 
      */
-    public String toObject( ClassData type, String variable );
+    public String toObject( JavonMapping mapping, ClassData type, String variable  );
     
     /**
      * 
@@ -77,7 +77,7 @@ public interface JavonSerializer {
      * @param object 
      * @return 
      */
-    public String fromObject( ClassData type, String object );
+    public String fromObject( JavonMapping mapping, ClassData type, String object  );
     
     /**
      * 

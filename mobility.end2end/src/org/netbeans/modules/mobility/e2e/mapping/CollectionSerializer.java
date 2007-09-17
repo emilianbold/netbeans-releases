@@ -69,21 +69,21 @@ public class CollectionSerializer implements JavonSerializer {
         return null;
     }
 
-    public String instanceOf( ClassData type ) {
+    public String instanceOf( JavonMapping mapping,ClassData type  ) {
         if( vectorClassData.equals( type )) {
-            return "Vector";
+            return type.getFullyQualifiedName();
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
 
-    public String toObject( ClassData type, String object ) {
+    public String toObject( JavonMapping mapping, ClassData type, String object  ) {
         if( vectorClassData.equals( type )) {
             return "(java.util.Vector)" + object;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
 
-    public String fromObject( ClassData type, String object ) {
+    public String fromObject( JavonMapping mapping, ClassData type, String object  ) {
         if( vectorClassData.equals( type )) {
             return "(java.util.Vector)" + object;
         }

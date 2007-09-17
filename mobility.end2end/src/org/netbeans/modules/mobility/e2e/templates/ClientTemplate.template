@@ -50,12 +50,12 @@ public class ${mapping.getClientMapping().getClassName()} {
     }
 
 <#list service.getMethods() as method>
-    public ${method.getReturnType().getName()} ${method.getName()}(<#rt>
-    <#lt><#list method.getParameters() as parameter>${parameter.getType().getName()} ${parameter.getName()}<#if parameter_has_next>, </#if></#list>) throws IOException {
+    public ${mapping.getRegistry().getTypeSerializer( method.getReturnType()).instanceOf( mapping, method.getReturnType())} ${method.getName()}(<#rt>
+    <#lt><#list method.getParameters() as parameter>${mapping.getRegistry().getTypeSerializer( parameter.getType()).instanceOf( mapping, parameter.getType())} ${parameter.getName()}<#if parameter_has_next>, </#if></#list>) throws IOException {
         <#if method.getParameters()?size != 0>
             Object params[] = new Object[] {
                 <#list method.getParameters() as parameter>
-                ${mapping.getRegistry().getTypeSerializer( parameter.getType()).toObject( parameter.getType(), parameter.getName())}<#if parameter_has_next>, </#if>
+                ${mapping.getRegistry().getTypeSerializer( parameter.getType()).toObject( mapping, parameter.getType(), parameter.getName())}<#if parameter_has_next>, </#if>
                 </#list>
             };
             int paramIDs[] = new int[] {
@@ -74,7 +74,7 @@ public class ${mapping.getClientMapping().getClassName()} {
         <#if method.getReturnType().getName() == "void"><#rt>
             invokeServer(${method.getRequestID()?c}, ${invocationParam}, ${invocationParamIDs});
         <#else><#rt>
-            return ${mapping.getRegistry().getTypeSerializer( method.getReturnType()).fromObject( method.getReturnType(), "invokeServer("+method.getRequestID()+", "+invocationParam+", "+invocationParamIDs+")" )};
+            return ${mapping.getRegistry().getTypeSerializer( method.getReturnType()).fromObject( mapping, method.getReturnType(), "invokeServer("+method.getRequestID()?c+", "+invocationParam+", "+invocationParamIDs+")" )};
         </#if>
     }
 
@@ -166,7 +166,6 @@ public class ${mapping.getClientMapping().getClassName()} {
             out.writeShort( -1 );
             return;
         }
-        Object[] array;
         switch( id ) {
         <#list parameterTypes as type>
             case ${registry.getRegisteredTypeId( type )?c}:
@@ -174,7 +173,7 @@ public class ${mapping.getClientMapping().getClassName()} {
                 <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
                 out.writeShort(${registry.getRegisteredTypeId( type )?c});
                 <#if type.isPrimitive()>
-                ${serializer.toStream( mapping, type, "out", serializer.fromObject( type, "o" ))}
+                ${serializer.toStream( mapping, type, "out", serializer.fromObject( mapping, type, "o" ))}
                 <#else>
                 ${serializer.toStream( mapping, type, "out", "o" )}
                 </#if>
@@ -188,7 +187,6 @@ public class ${mapping.getClientMapping().getClassName()} {
 
     private static Object readObject(DataInput in) throws IOException {
         int type = in.readShort();
-        int length;
         Object result;
         switch (type) {
         <#list returnTypes as type>
@@ -200,7 +198,7 @@ public class ${mapping.getClientMapping().getClassName()} {
                     <#else>    
                     <#if type.isPrimitive() && !type.isArray()>
                         <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
-                        return ${serializer.toObject( type, typeFromStream )};
+                        return ${serializer.toObject( mapping, type, typeFromStream )};
                     <#else>
                         ${serializer.fromStream( mapping, type, "in", "result" )}
                         return result;

@@ -22,11 +22,7 @@ public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualified
 </#if>
     <#list bean.getFields() as field>
 
-    <#if field.getType().getPackage() == "java.lang">
-        <#assign propertyType = field.getType().getClassName()/>
-    <#else>
-        <#assign propertyType = field.getType().getFullyQualifiedName()/>
-    </#if>
+    <#assign propertyType = field.getType().getSerializer().instanceOf( mapping, field.getType())>
     <#if createStubs || field.getModifier() == "PUBLIC">
         public ${propertyType} ${field.getName()};
     <#else>
@@ -44,11 +40,7 @@ public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualified
     <#if databinding>
     public Class getType(String dataItemName) throws DataBindingException {
         <#list bean.getFields() as field>
-        <#if field.getType().getPackage() == "java.lang">
-            <#assign propertyType = field.getType().getClassName()/>
-        <#else>
-            <#assign propertyType = field.getType().getFullyQualifiedName()/>
-        </#if>
+        <#assign propertyType = field.getType().getSerializer().instanceOf( mapping, field.getType())>
         if( "${field.getName()}".equals(dataItemName)) {
             return ${propertyType}.class;
         }
@@ -60,7 +52,7 @@ public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualified
         <#list bean.getFields() as field>
         if( "${field.getName()}".equals( dataItemName )) {
         <#if field.getType().isPrimitive()>
-            return ${mapping.getRegistry().getTypeSerializer( field.getType()).toObject( field.getType(), field.getName())};
+            return ${field.getType().getSerializer().toObject( mapping, field.getType(), field.getName())};
         <#else>
             return ${field.getName()};
         </#if>
@@ -72,7 +64,7 @@ public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualified
     public void setValue(String dataItemName, Object value) throws DataBindingException {
         <#list bean.getFields() as field>
         if( "${field.getName()}".equals( dataItemName )) {
-            ${field.getName()} = ${mapping.getRegistry().getTypeSerializer( field.getType()).fromObject( field.getType(), "value" )};
+            ${field.getName()} = ${field.getType().getSerializer().fromObject( mapping, field.getType(), "value" )};
         }
         </#list>
         throw new IllegalArgumentException( "Invalid data item name " + dataItemName );
@@ -81,7 +73,7 @@ public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualified
     public void setAsString(String dataItemName, String value) throws DataBindingException {
         <#list bean.getFields() as field>
         if( "${field.getName()}".equals( dataItemName )) {
-        <#assign parsedType = utils.parsePrimitiveType( field.getType(), "value" )/>
+        <#assign parsedType = utils.parsePrimitiveType( field.getType().getSerializer().instanceOf( mapping, field.getType()), "value" )/>
         <#if parsedType != "">
             ${field.getName()} = ${parsedType};
             return;

@@ -179,21 +179,21 @@ public class BeanTypeSerializer implements JavonSerializer {
         return null;
     }
         
-    public String instanceOf( ClassData type ) {
+    public String instanceOf( JavonMapping mapping, ClassData type  ) {
         if( beanTypes.get( type.getFullyQualifiedName()) != null ) {
             return type.getFullyQualifiedName();
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
     
-    public String toObject( ClassData type, String variable ) {
+    public String toObject( JavonMapping mapping,ClassData type, String variable  ) {
         if( beanTypes.get( type.getFullyQualifiedName()) != null ) {
             return "(" + type.getFullyQualifiedName() + ")" + ( variable == null ? "" : variable );
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
 
-    public String fromObject( ClassData type, String object ) {
+    public String fromObject( JavonMapping mapping,ClassData type, String object  ) {
         if( beanTypes.get( type.getFullyQualifiedName()) != null ) {
             return "(" + type.getFullyQualifiedName() + ")" + object;
         }
@@ -241,17 +241,18 @@ public class BeanTypeSerializer implements JavonSerializer {
                 if(( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) 
                         || field.getModifier() == ClassData.Modifier.PUBLIC ) {
                     if( field.getType().isPrimitive() && !field.getType().isArray()) {
-                        deserialization += beanInstanceName + " = " + mapping.getRegistry().getTypeSerializer( field.getType()).
-                                fromStream( mapping , field.getType(), stream, null ) + "\n";
+                        deserialization += beanInstanceName + " = " + field.getType().getSerializer().fromStream( mapping , field.getType(), stream, null ) + "\n";
                     } else {
-                        deserialization += beanInstanceName + "." + field.getName() + " = (" + field.getType().getFullyQualifiedName() + ") readObject(" + stream + ");\n";
+                        deserialization += beanInstanceName + "." + field.getName() + " = (" + 
+                                field.getType().getSerializer().instanceOf( mapping, field.getType()) + ") readObject(" + stream + ");\n";
                     }
                 } else {
                     if( field.getType().isPrimitive() && !field.getType().isArray()) {
                         deserialization += beanInstanceName + "." + getSetter( field ) + "(" + mapping.getRegistry().getTypeSerializer( field.getType()).
                                 fromStream( mapping , field.getType(), stream, null ) + ");\n";
                     } else {
-                        deserialization += beanInstanceName + "." + getSetter( field ) + "((" + field.getType().getFullyQualifiedName() + ") readObject(" + stream + "));\n";
+                        deserialization += beanInstanceName + "." + getSetter( field ) + 
+                                "((" + field.getType().getSerializer().instanceOf( mapping, field.getType()) + ") readObject(" + stream + "));\n";
                     }
                 }
             }

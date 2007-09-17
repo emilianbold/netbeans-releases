@@ -56,6 +56,7 @@ import org.netbeans.modules.mobility.end2end.client.config.ConfigurationReader;
 import org.netbeans.modules.mobility.end2end.client.config.ConfigurationWriter;
 import org.netbeans.modules.mobility.end2end.client.config.ServerConfiguration;
 import org.netbeans.modules.mobility.end2end.util.Util;
+import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
@@ -268,10 +269,10 @@ public class E2EDataObject extends XmlMultiViewDataObject {
 //        }
 //        m.setDynamicInvocationSupported( false );
 //        m.setGroupingSupported( cprops.getProperty( "multipleCall" ).equals( TRUE )); // NOI18N
-        mapping.setProperty( "create-stubs", cprops.getProperty( "createStubs" ).equals( TRUE ));     // NOI18N
-        mapping.setProperty( "databinding", cprops.getProperty( "DataBinding" ));
+        mapping.setProperty( JavonMapping.CREATE_STUBS, cprops.getProperty( "createStubs" ).equals( TRUE ));     // NOI18N
+        mapping.setProperty( JavonMapping.DATABINDING, cprops.getProperty( "DataBinding" ));
 //        m.setSynchronousSupported( true );
-//        m.setFloatingPointSupported( true );
+        mapping.setProperty( JavonMapping.FLOATING_POINT_SUPPORT, cprops.getProperty( "floatingPoint" ).equals( TRUE )); // NOI18N
         mapping.setClientMapping( jcc );
         
         /* Server part of the mapping */

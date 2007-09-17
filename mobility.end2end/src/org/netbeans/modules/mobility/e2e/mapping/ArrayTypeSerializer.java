@@ -71,20 +71,21 @@ public class ArrayTypeSerializer implements JavonSerializer {
         return null;
     }
 
-    public String instanceOf( ClassData type ) {
-        return "array";
+    public String instanceOf( JavonMapping mapping, ClassData type  ) {        
+        ClassData componentType = type.getComponentType();
+        return componentType.getSerializer().instanceOf( mapping, componentType ) + "[]";
     }
 
-    public String toObject( ClassData type, String variable ) {
+    public String toObject( JavonMapping mapping, ClassData type, String variable  ) {
         if( arrayTypes.contains( type )) {
             return variable;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());                
     }
 
-    public String fromObject( ClassData type, String object ) {
+    public String fromObject( JavonMapping mapping, ClassData type, String object  ) {
         if( arrayTypes.contains( type )) {
-            return "(" + type.getFullyQualifiedName() + ")" + object;
+            return "(" + mapping.getRegistry().getTypeSerializer( type ).instanceOf( mapping, type ) + ")" + object;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
@@ -93,14 +94,15 @@ public class ArrayTypeSerializer implements JavonSerializer {
         if( arrayTypes.contains( type )) {
             String serializationCode = "";
             String id = "" + mapping.getRegistry().getRegisteredTypeId( type );
-            serializationCode += type.getFullyQualifiedName() + " a_result_" + id + " = (" + 
-                    type.getFullyQualifiedName() + ") o;\n";
+            String instanceOfType = type.getSerializer().instanceOf( mapping, type );
+            serializationCode += instanceOfType + " a_result_" + id + " = (" + 
+                    instanceOfType + ") o;\n";
             serializationCode += stream + ".writeInt( a_result_" + id + ".length );\n";
             serializationCode += "for( int i  = 0; i < a_result_" + id +".length; i++ ) {\n";
             ClassData componentType = type.getComponentType();
             if( componentType.isPrimitive()) {
                 serializationCode += "writeObject( " + stream + ", " + 
-                        componentType.getSerializer().toObject( componentType, "a_result_" + id + "[i]" ) + " , " +
+                        componentType.getSerializer().toObject( mapping, componentType, "a_result_" + id + "[i]"  ) + " , " +
                         mapping.getRegistry().getRegisteredTypeId( componentType ) + " );\n";
             } else {
                 serializationCode += "writeObject( " + stream + ", a_result_" + id + "[i], " + 
@@ -122,17 +124,19 @@ public class ArrayTypeSerializer implements JavonSerializer {
             String appendedBrackets = "";
             for( int i = 0; i < depth; i++ ) appendedBrackets += "[]";
             deserializationCode += "int a_size_" + id + " = " + stream + ".readInt();\n";
-            deserializationCode += type.getFullyQualifiedName() + " a_result_" + id + 
-                    " = new " + leafComponentType.getFullyQualifiedName() + "[ a_size_" + id + " ]" + appendedBrackets + ";\n";
+            String instanceOfType = type.getSerializer().instanceOf( mapping, type );
+            String leafInstanceOfType = leafComponentType.getSerializer().instanceOf( mapping, leafComponentType );
+            deserializationCode += instanceOfType + " a_result_" + id + 
+                    " = new " + leafInstanceOfType + "[ a_size_" + id + " ]" + appendedBrackets + ";\n";
             String i = "a_i_" + id;
             deserializationCode += "for( int " + i + " = 0; " + i + " < a_size_" + id + "; " + i + "++ ) {\n";
             ClassData componentType = type.getComponentType();
             if( componentType.isPrimitive()) {
                 deserializationCode += "a_result_" + id + "[" + i + "] = " + 
-                        componentType.getSerializer().fromObject( componentType, "readObject( " + stream + " )" ) + ";\n";
+                        componentType.getSerializer().fromObject( mapping, componentType, "readObject( " + stream + " )"  ) + ";\n";
             } else {
                 deserializationCode += "a_result_" + id + "[" + i + "] = (" + 
-                        type.getComponentType().getFullyQualifiedName() + ")readObject( " + stream + " );\n";
+                        type.getComponentType().getSerializer().instanceOf( mapping, type.getComponentType()) + ")readObject( " + stream + " );\n";
             }
             deserializationCode += "}\n";
             deserializationCode += ( object == null ? "" :  object + " = a_result_" + id + ";\n" );

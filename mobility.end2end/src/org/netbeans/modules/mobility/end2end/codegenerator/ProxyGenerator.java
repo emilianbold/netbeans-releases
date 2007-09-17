@@ -156,7 +156,6 @@ public class ProxyGenerator {
                     serviceClassName = service.getJavaName();
                     portGetterName = wsdlPort.getPortGetter();
                     portClassName = wsdlPort.getJavaName();
-                    String nnn = wsdlPort.getJavaName();
                     org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
                     servicePackage = cd.getPackage();
                     for( Node operationNode : portNode.getChildren().getNodes()) {

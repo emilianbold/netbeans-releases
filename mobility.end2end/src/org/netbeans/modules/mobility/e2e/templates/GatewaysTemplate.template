@@ -38,7 +38,7 @@ public class JavonGateways {
         public Object invoke(HttpSession session, DataInput input) throws Exception {
             <#list method.getParameters() as parameter>
             <#assign paramType = parameter.getType()>
-            ${paramType.getName()} ${parameter.getName()} = ${registry.getTypeSerializer( paramType ).fromObject( paramType, "Utility.readObject( input )" ) };
+            ${paramType.getSerializer().instanceOf( mapping, paramType )} ${parameter.getName()} = ${paramType.getSerializer().fromObject( mapping, paramType, "Utility.readObject( input )" ) };
             </#list>
              
             ${instanceTypeName} instance = (${instanceTypeName})session .getAttribute("${instanceTypeName}");
@@ -55,7 +55,7 @@ public class JavonGateways {
                     <#assign param = "instance." + method.getName() + "("/>
                     <#list method.getParameters() as parameter><#assign param = param + parameter.getName()><#if parameter_has_next><#assign param = param + ", "></#if></#list><#rt>
                     <#assign param = param + ")"/>
-                    return ${registry.getTypeSerializer( returnType ).toObject( returnType, param )};
+                    return ${returnType.getSerializer().toObject( mapping, returnType, param )};
                 <#else>
                     return instance.${method.getName()}(<@paramList method/>);
                 </#if>

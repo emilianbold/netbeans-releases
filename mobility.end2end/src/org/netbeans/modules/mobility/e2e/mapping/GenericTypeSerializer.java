@@ -81,15 +81,15 @@ public class GenericTypeSerializer implements JavonSerializer {
         return null;
     }
 
-    public String instanceOf( ClassData type ) {        
+    public String instanceOf( JavonMapping mapping, ClassData type  ) {        
         return type.getName() + "<" + /*type.getParameterTypes().get( 0 ).getName() + */ ">";
     }
 
-    public String toObject( ClassData type, String variable ) {
+    public String toObject( JavonMapping mapping, ClassData type, String variable  ) {
         return "";
     }
 
-    public String fromObject( ClassData type, String object ) {
+    public String fromObject( JavonMapping mapping, ClassData type, String object  ) {
         return "";
     }
 

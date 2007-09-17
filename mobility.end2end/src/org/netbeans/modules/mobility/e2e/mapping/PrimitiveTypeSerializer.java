@@ -144,7 +144,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         return null;
     }
 
-    public String instanceOf( ClassData type ) {
+    public String instanceOf( JavonMapping mapping, ClassData type  ) {
         if( booleanClassData.equals( type )) { 
             return "boolean";
         } else if( BooleanClassData.equals( type )) {
@@ -172,12 +172,12 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         } else if( stringClassData.equals( type )) {
             return "String";
         } else if( voidClassData.equals( type )) {
-            return "Void";
+            return "void";
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());
     }
     
-    public String toObject( ClassData type, String variable ) {
+    public String toObject( JavonMapping mapping, ClassData type, String variable  ) {
         if( booleanClassData.equals( type )) {
             return "new Boolean(" + variable + ")";
         } else if( byteClassData.equals( type )) {
@@ -210,7 +210,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
 
-    public String fromObject( ClassData type, String object) {
+    public String fromObject( JavonMapping mapping, ClassData type, String object) {
         if( booleanClassData.equals( type )) {
             return "((Boolean)" + object + ").booleanValue()";
         } else if( byteClassData.equals( type )) {
@@ -257,21 +257,21 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         } else if( shortClassData.equals( type )) {
             return stream + ".writeShort(" + object + ");";
         } else if( stringClassData.equals( type )) {
-            return stream + ".writeUTF(" + fromObject( type, object ) + ");";
+            return stream + ".writeUTF(" + fromObject( mapping, type, object  ) + ");";
         } else if( voidClassData.equals( type )) {
             throw new IllegalArgumentException("Void object is not serializable");//return stream + ".writeShort(" + fromObject( type, object ) + ");";
         } else if( BooleanClassData.equals( type )) {
-            return stream + ".writeBoolean(" + fromObject( booleanClassData, object ) + ");";
+            return stream + ".writeBoolean(" + fromObject( mapping, booleanClassData, object  ) + ");";
         } else if( ByteClassData.equals( type )) {
-            return stream + ".writeByte(" + fromObject( byteClassData, object ) + ");";
+            return stream + ".writeByte(" + fromObject( mapping, byteClassData, object  ) + ");";
         } else if( CharClassData.equals( type )) {
-            return stream + ".writeChar(" + fromObject( charClassData, object ) + ");";
+            return stream + ".writeChar(" + fromObject( mapping, charClassData, object  ) + ");";
         } else if( IntClassData.equals( type )) {
-            return stream + ".writeInt(" + fromObject( intClassData, object ) + ");";
+            return stream + ".writeInt(" + fromObject( mapping, intClassData, object  ) + ");";
         } else if( LongClassData.equals( type )) {
-            return stream + ".writeLong(" + fromObject( longClassData, object ) + ");";
+            return stream + ".writeLong(" + fromObject( mapping, longClassData, object  ) + ");";
         } else if( ShortClassData.equals( type )) {
-            return stream + ".writeShort(" + fromObject( shortClassData, object ) + ");";
+            return stream + ".writeShort(" + fromObject( mapping, shortClassData, object  ) + ");";
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
@@ -285,27 +285,27 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         } else if(booleanClassData.equals( type )) {
             result += stream + ".readBoolean()";
         } else if( BooleanClassData.equals( type )) {
-            result += toObject( booleanClassData, stream + ".readBoolean()" );
+            result += toObject( mapping, booleanClassData, stream + ".readBoolean()"  );
         } else if( byteClassData.equals( type )) {
             result += stream + ".readByte()";
         } else if( ByteClassData.equals( type )) {
-            result += toObject( byteClassData, stream + ".readByte()" );
+            result += toObject( mapping, byteClassData, stream + ".readByte()"  );
         } else if( charClassData.equals( type )) {
             result += stream + ".readChar()";
         } else if( CharClassData.equals( type )) {
-            result += toObject( charClassData, stream + ".readChar()" );
+            result += toObject( mapping, charClassData, stream + ".readChar()"  );
         } else if( intClassData.equals( type )) {
             result += stream + ".readInt()";
         } else if( IntClassData.equals( type )) {
-            result += toObject( intClassData, stream + ".readInt()" );
+            result += toObject( mapping, intClassData, stream + ".readInt()"  );
         } else if( longClassData.equals( type )) {
             result += stream + ".readLong()";
         } else if( LongClassData.equals( type )) {
-            result += toObject( longClassData, stream + ".readLong()" );
+            result += toObject( mapping, longClassData, stream + ".readLong()"  );
         } else if( shortClassData.equals( type )) {
             result += stream + ".readShort()";
         } else if( ShortClassData.equals( type )) {
-            result += toObject( shortClassData, stream + ".readShort()" );
+            result += toObject( mapping, shortClassData, stream + ".readShort()"  );
         } else if( stringClassData.equals( type )) {
             result += stream + ".readUTF()";
         }

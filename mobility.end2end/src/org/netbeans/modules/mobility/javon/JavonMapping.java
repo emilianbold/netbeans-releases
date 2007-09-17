@@ -30,6 +30,15 @@ import org.netbeans.modules.mobility.e2e.classdata.MethodData;
  */
 public interface JavonMapping {
 
+    // Property which defines DataBinding E    
+    public static final String DATABINDING              = "databinding";    
+    public static final String FLOATING_POINT_SUPPORT   = "floatingPoint";
+    public static final String CREATE_STUBS             = "create-stubs";
+    public static final String TARGET                   = "target";    
+    
+    public static final String CLIENT       = "client";
+    public static final String SERVER       = "server";
+    
     public ClassDataRegistry getRegistry();
     
     public Client getClientMapping();

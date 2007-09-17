@@ -226,7 +226,6 @@ public class ClassDataRegistry {
             baseClasses = new HashMap<String, ClassData>();
 
         // Gather all instance names
-        Set<String> instanceNames = new HashSet<String>();
         int id = 1;
         for ( ClasspathInfo cpi : classpaths ) {
             try {
@@ -234,19 +233,9 @@ public class ClassDataRegistry {
                 TraversingTask tt = new TraversingTask( profileProvider, cpi );
                 JavaSource.create( cpi ).runWhenScanFinished( tt, false ).get();
 
-                for ( ClassData cd : typeMap.values()) {
-                    if (cd.getSerializer()!=null)
-                    instanceNames.add(cd.getSerializer().instanceOf( cd));
-                }
                 // Assign id to all types
                 idMapping = new HashMap<ClassData, Integer>();
                 for ( ClassData cd : typeMap.values() ) {
-                    for ( String instanceName : instanceNames ) {
-                        if ( cd.getSerializer().instanceOf( cd ).equals( instanceName ) ) {
-                            break;
-                        }
-                        id++;
-                    }
 //                    System.err.println( " - " + cd.getName() + " = " + id );
                     idMapping.put( cd, id );
                     id++;
@@ -289,7 +278,7 @@ public class ClassDataRegistry {
      */
     public Set<ClassData> getParameterTypes() {
         if (typeMap == null) updateClassDataTree();
-        Set<ClassData> result = new HashSet();
+        Set<ClassData> result = new HashSet<ClassData>();
         for (ClassData clsData:typeMap.values())
             for (MethodData mthData : clsData.getMethods())
                 result.addAll( mthData.getReturnType().getParameterTypes());
@@ -422,6 +411,7 @@ public class ClassDataRegistry {
         }
 
         public JavonSerializer registerType(ClassData type) {
+//            System.err.println("registerType( " + type.getFullyQualifiedName() + " )");
             if (type.getSerializer()==null)
                 return null;
             else {

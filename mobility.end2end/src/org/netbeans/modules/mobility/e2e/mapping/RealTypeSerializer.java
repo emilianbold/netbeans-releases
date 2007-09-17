@@ -88,50 +88,110 @@ public class RealTypeSerializer implements JavonSerializer {
         return null;
     }
 
-    public String instanceOf( ClassData type ) {
-        if( floatClassData.equals( type ) || FloatClassData.equals( type )) {
-            return "Float";
-        } else if( doubleClassData.equals( type ) || DoubleClassData.equals(( type ))) {
-            return "Double";
-        } 
+    public String instanceOf( JavonMapping mapping, ClassData type  ) {        
+        if( mapping.getProperty( JavonMapping.FLOATING_POINT_SUPPORT ).equals( Boolean.FALSE ) &&
+                mapping.getProperty( JavonMapping.TARGET ).equals( JavonMapping.CLIENT )) 
+        {
+            // For no Float and Double support on client side
+            if( floatClassData.equals( type ) || FloatClassData.equals( type )) {
+                return "String";
+            } else if( doubleClassData.equals( type ) || DoubleClassData.equals(( type ))) {
+                return "String";
+            } 
+        } else {
+            if( floatClassData.equals( type )) {
+                return "float";
+            } else if( FloatClassData.equals( type )) {
+                return "Float";
+            } else if( doubleClassData.equals( type )) {
+                return "double";
+            } else if( DoubleClassData.equals( type )) {
+                return "Double";
+            }
+        }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
     
-    public String toObject( ClassData type, String variable ) {
-        if( floatClassData.equals( type )) {
-            return "new Float(" + variable + ")";
-        } else if( doubleClassData.equals( type )) {
-            return "new Double(" + variable + ")";
-        } else if( FloatClassData.equals( type )) {
-            return "(Float)" + variable;
-        } else if( DoubleClassData.equals( type )) {
-            return "(Double)" + variable;
+    public String toObject( JavonMapping mapping, ClassData type, String variable  ) {
+        if( mapping.getProperty( JavonMapping.FLOATING_POINT_SUPPORT ).equals( Boolean.FALSE ) &&
+                mapping.getProperty( JavonMapping.TARGET ).equals( JavonMapping.CLIENT )) 
+        {
+            if( floatClassData.equals( type ) || doubleClassData.equals( type ) ||
+                FloatClassData.equals( type ) || DoubleClassData.equals( type )) 
+            {
+                return "(String)" + variable;
+            }
+        } else {
+            if( floatClassData.equals( type )) {
+                return "new Float(" + variable + ")";
+            } else if( doubleClassData.equals( type )) {
+                return "new Double(" + variable + ")";
+            } else if( FloatClassData.equals( type )) {
+                return "(Float)" + variable;
+            } else if( DoubleClassData.equals( type )) {
+                return "(Double)" + variable;
+            }
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());
     }
 
-    public String fromObject( ClassData type, String object ) {
-        if( floatClassData.equals( type )) {
-            return "((Float)" + object + ").floatValue()";
-        } else if( doubleClassData.equals( type )) {
-            return "((Double)" + object + ").doubleValue()";
-        } else if( FloatClassData.equals( type )) {
-            return "(Float)" + object;
-        } else if( DoubleClassData.equals( type )) {
-            return "(Double)" + object;
+    public String fromObject( JavonMapping mapping, ClassData type, String object  ) {
+        if( mapping.getProperty( JavonMapping.FLOATING_POINT_SUPPORT ).equals( Boolean.FALSE ) &&
+                mapping.getProperty( JavonMapping.TARGET ).equals( JavonMapping.CLIENT )) 
+        {
+            if( floatClassData.equals( type ) || doubleClassData.equals( type ) ||
+                FloatClassData.equals( type ) || DoubleClassData.equals( type )) 
+            {
+                return "(String)" + object;
+            }
+        } else {        
+            if( floatClassData.equals( type )) {
+                return "((Float)" + object + ").floatValue()";
+            } else if( doubleClassData.equals( type )) {
+                return "((Double)" + object + ").doubleValue()";
+            } else if( FloatClassData.equals( type )) {
+                return "(Float)" + object;
+            } else if( DoubleClassData.equals( type )) {
+                return "(Double)" + object;
+            }
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());
     }
 
     public String toStream( JavonMapping mapping, ClassData type, String stream, String object ) {
-        if( floatClassData.equals( type )) {
-            return stream + ".writeFloat( " + object + " );";
-        } else if( FloatClassData.equals( type )) {
-            return stream + ".writeFloat( " + fromObject( floatClassData, object ) + " );";
-        } else if( doubleClassData.equals( type )) {
-            return stream + ".writeDouble( " + object + " );";
-        } else if( DoubleClassData.equals( type )) {
-            return stream + ".writeDouble( " + fromObject( doubleClassData, object ) + " );";
+        if( mapping.getProperty( JavonMapping.FLOATING_POINT_SUPPORT ).equals( Boolean.TRUE )) {
+            if( floatClassData.equals( type )) {
+                return stream + ".writeFloat( " + object + " );";
+            } else if( FloatClassData.equals( type )) {
+                return stream + ".writeFloat( " + fromObject( mapping, floatClassData, object  ) + " );";
+            } else if( doubleClassData.equals( type )) {
+                return stream + ".writeDouble( " + object + " );";
+            } else if( DoubleClassData.equals( type )) {
+                return stream + ".writeDouble( " + fromObject( mapping, doubleClassData, object  ) + " );";
+            }
+        } else {
+            if( mapping.getProperty( JavonMapping.TARGET ).equals( JavonMapping.SERVER )) {
+                if( floatClassData.equals( type )) {
+                    return stream + ".writeUTF(new Float(" + object + ").toString());";
+                } else if( FloatClassData.equals( type )) {
+                    return stream + ".writeUTF(" + object + ".toString());";
+                } else if( doubleClassData.equals( type )) {
+                    return stream + ".writeUTF(new Double(" + object + ").toString());";
+                } else if( DoubleClassData.equals( type )) {
+                    return stream + ".writeUTF( " + object + ".toString());";
+                }
+            } else if( mapping.getProperty( JavonMapping.TARGET ).equals( JavonMapping.CLIENT )){
+                if( floatClassData.equals( type )) {
+                    return stream + ".writeUTF( " + object + " );";
+                } else if( FloatClassData.equals( type )) {
+                    return stream + ".writeUTF( " + object + " );";
+                } else if( doubleClassData.equals( type )) {
+                    return stream + ".writeUTF( " + object + " );";
+                } else if( DoubleClassData.equals( type )) {
+                    return stream + ".writeUTF( " + object + " );";
+                }
+            }
+                    
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
@@ -139,14 +199,38 @@ public class RealTypeSerializer implements JavonSerializer {
     public String fromStream( JavonMapping mapping, ClassData type, String stream, String object ) {
         String result = "";
         if( object != null ) result = object + " = ";
-        if( floatClassData.equals( type )) {
-            result += stream + ".readFloat()";
-        } else if( FloatClassData.equals( type )) {
-            result += toObject( floatClassData, stream + ".readFloat()" );
-        } else if ( doubleClassData.equals( type )) {
-            result += stream + ".readDouble()";
-        } else if( DoubleClassData.equals( type )) {
-            result += toObject( doubleClassData, stream + ".readDouble()" );
+        if( mapping.getProperty( JavonMapping.FLOATING_POINT_SUPPORT ).equals( Boolean.TRUE )) {
+            if( floatClassData.equals( type )) {
+                result += stream + ".readFloat()";
+            } else if( FloatClassData.equals( type )) {
+                result += toObject( null,floatClassData, stream + ".readFloat()"  );
+            } else if ( doubleClassData.equals( type )) {
+                result += stream + ".readDouble()";
+            } else if( DoubleClassData.equals( type )) {
+                result += toObject( null,doubleClassData, stream + ".readDouble()"  );
+            }
+        } else {
+            if( mapping.getProperty( JavonMapping.TARGET ).equals( JavonMapping.SERVER )) {
+                if( floatClassData.equals( type )) {
+                    result += "new Float(" + stream + ".readUTF())";
+                } else if( FloatClassData.equals( type )) {
+                    result += "new Float(" + stream + ".readUTF())";
+                } else if ( doubleClassData.equals( type )) {
+                    result += "new Double(" + stream + ".readUTF())";
+                } else if( DoubleClassData.equals( type )) {
+                    result += "new Double(" + stream + ".readUTF())";
+                }
+            } else if( mapping.getProperty( JavonMapping.TARGET ).equals( JavonMapping.CLIENT )){
+                if( floatClassData.equals( type )) {
+                    result += stream + ".readUTF()";
+                } else if( FloatClassData.equals( type )) {
+                    result += stream + ".readUTF()";
+                } else if ( doubleClassData.equals( type )) {
+                    result += stream + ".readUTF()";
+                } else if( DoubleClassData.equals( type )) {
+                    result += stream + ".readUTF()";
+                }
+            }
         }
         if( "".equals( result ))
             throw new IllegalArgumentException( "Invalid type: " + type.getName());

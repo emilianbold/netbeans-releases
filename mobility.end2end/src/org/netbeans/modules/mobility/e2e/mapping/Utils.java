@@ -46,8 +46,7 @@ public class Utils {
         this.registry = registry;
     }
 
-    public static String parsePrimitiveType( ClassData cd, String variable ) {
-        String typeName = cd.getFullyQualifiedName();
+    public static String parsePrimitiveType( String typeName, String variable ) {
         if( "java.lang.String".equals( typeName )) {
             return variable;
         }
