@@ -74,7 +74,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         Mnemonics.setLocalizedText(methodButton, FormUtils.getBundleString("CTL_CW_Method")); // NOI18N
         Mnemonics.setLocalizedText(codeButton, FormUtils.getBundleString("CTL_CW_UserCode")); // NOI18N
 
-        beansList = new ArrayList();
+        beansList = new ArrayList<RADComponent>();
         for (RADComponent radComp : formModel.getAllComponents()) {
             if (requiredType.isAssignableFrom(radComp.getBeanClass()))
                 beansList.add(radComp);
@@ -98,7 +98,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                     if (index == 0) {
                         selectedComponent = null;
                     } else {
-                        selectedComponent =(RADComponent)beansList.get(index - 1);
+                        selectedComponent = beansList.get(index - 1);
                     }
                     fireStateChange();
                 }
@@ -692,14 +692,12 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     private PropertyDescriptor selectedProperty;
     private MethodDescriptor selectedMethod;
 
-    private java.util.List beansList;
+    private java.util.List<RADComponent> beansList;
 
     // -------
 
-    static class ComponentComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            RADComponent comp1 = (RADComponent) o1;
-            RADComponent comp2 = (RADComponent) o2;
+    static class ComponentComparator implements Comparator<RADComponent> {
+        public int compare(RADComponent comp1, RADComponent comp2) {
             if (comp1 == comp2)
                 return 0;
 
