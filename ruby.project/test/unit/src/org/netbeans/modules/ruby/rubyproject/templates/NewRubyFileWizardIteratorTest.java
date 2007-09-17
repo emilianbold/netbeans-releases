@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
@@ -147,7 +148,11 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         File golden = getGoldenFile();
         assertTrue("Golden file " + golden.getAbsolutePath() + " doesn't exist", 
                 golden.exists());
-        assertFile(FileUtil.toFile(created), golden);
+        File createdF = FileUtil.toFile(created);
+        File differences = new File(getWorkDir(), "template.diff");
+        if (Manager.getSystemDiff().diff(createdF, golden, differences)) {
+            fail("File \"" + createdF + "\" differs from \"" + golden + "\":\n" + RubyProjectTestBase.readFile(differences));
+        }
     }
 
     public void testNewFile() throws Exception {
