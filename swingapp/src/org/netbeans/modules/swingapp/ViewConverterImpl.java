@@ -20,6 +20,7 @@
 package org.netbeans.modules.swingapp;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -47,16 +48,41 @@ public class ViewConverterImpl implements ViewConverter {
     }
 
     public static class AppDesignView extends JRootPane {
+        private JComponent component;
+        private JToolBar toolBar;
+        private JComponent statusBar;
+
         public void setComponent(JComponent component) {
-            getContentPane().add(component, BorderLayout.CENTER);
+            Container contentPane = getContentPane();
+            if (this.component != null && this.component.getParent() == contentPane) {
+                contentPane.remove(this.component);
+            }
+            this.component = component;
+            if (component != null) {
+                contentPane.add(component, BorderLayout.CENTER);
+            }
         }
 
         public void setToolBar(JToolBar toolBar) {
-            getContentPane().add(toolBar, BorderLayout.PAGE_START);
+            Container contentPane = getContentPane();
+            if (this.toolBar != null && this.toolBar.getParent() == contentPane) {
+                contentPane.remove(this.toolBar);
+            }
+            this.toolBar = toolBar;
+            if (toolBar != null) {
+                contentPane.add(toolBar, BorderLayout.PAGE_START);
+            }
         }
 
         public void setStatusBar(JComponent statusBar) {
-            getContentPane().add(statusBar, BorderLayout.PAGE_END);
+            Container contentPane = getContentPane();
+            if (this.statusBar != null && this.statusBar.getParent() == contentPane) {
+                contentPane.remove(this.statusBar);
+            }
+            this.statusBar = statusBar;
+            if (statusBar != null) {
+                contentPane.add(statusBar, BorderLayout.PAGE_END);
+            }
         }
     }
 
