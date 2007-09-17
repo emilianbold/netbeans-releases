@@ -542,8 +542,6 @@ public class UnitTab extends javax.swing.JPanel {
                 });
             }
         };
-        NetworkProblemPanel.setPerformAgain (checkUpdates);
-        
         return Utilities.startAsWorkerThread (checkUpdates);
     }
     

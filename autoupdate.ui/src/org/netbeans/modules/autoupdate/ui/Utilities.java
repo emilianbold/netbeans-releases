@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -48,6 +49,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -186,11 +188,10 @@ public class Utilities {
         return size + getBundle ("Utilities_DownloadSize_B");
     }
     
-    private static String getBundle (String key) {
-        return NbBundle.getMessage (Utilities.class, key);
+    private static String getBundle (String key, Object... params) {
+        return NbBundle.getMessage (Utilities.class, key, params);
     }
     
-    // Call PluginManagerUI.updateUnitsChanged() after refresh to reflect change in model
     public static void presentRefreshProvider (UpdateUnitProvider provider, PluginManagerUI manager, boolean force) {
         assert ! SwingUtilities.isEventDispatchThread () : "Don't presentRefreshProvider() call in EQ!";
         doRefreshProviders (Collections.singleton (provider), manager, force);
@@ -208,8 +209,15 @@ public class Utilities {
         doRefreshProviders (null, manager, force);
     }
     
-    public static void doRefreshProviders (Collection<UpdateUnitProvider> providers, PluginManagerUI manager, boolean force) {
-        ProgressHandle handle = ProgressHandleFactory.createHandle ("refresh-providers-handle"); // NOI18N
+    private static void doRefreshProviders (Collection<UpdateUnitProvider> providers, PluginManagerUI manager, boolean force) {
+        boolean finish = false;
+        while (! finish) {
+            finish = tryRefreshProviders (providers, manager, force);
+        }
+    }
+    
+    private static boolean tryRefreshProviders (Collection<UpdateUnitProvider> providers, PluginManagerUI manager, boolean force) {
+        ProgressHandle handle = ProgressHandleFactory.createHandle (NbBundle.getMessage(SettingsTableModel.class,  ("Utilities_CheckingForUpdates")));
         JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
         JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
         detailLabel.setHorizontalAlignment (SwingConstants.LEFT);
@@ -218,18 +226,34 @@ public class Utilities {
             handle.setInitialDelay (0);
             handle.start ();
             if (providers == null) {
-                UpdateUnitProviderFactory.getDefault ().refreshProviders (handle, force);
-            } else {
-                for (UpdateUnitProvider p : providers) {
+                providers = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true);
+            }
+            for (UpdateUnitProvider p : providers) {
+                try {
                     p.refresh (handle, force);
+                } catch (IOException ioe) {
+                    logger.log (Level.INFO, ioe.getMessage (), ioe);
+                    JButton cancel = new JButton ();
+                    Mnemonics.setLocalizedText (cancel, getBundle ("Utilities_NetworkProblem_Cancel")); // NOI18N
+                    JButton skip = new JButton ();
+                    Mnemonics.setLocalizedText (skip, getBundle ("Utilities_NetworkProblem_Skip")); // NOI18N
+                    skip.setEnabled (providers.size() > 1);
+                    JButton tryAgain = new JButton ();
+                    Mnemonics.setLocalizedText (tryAgain, getBundle ("Utilities_NetworkProblem_Continue")); // NOI18N
+                    NetworkProblemPanel problem = new NetworkProblemPanel (
+                            getBundle ("Utilities_NetworkProblem_Text", p.getDisplayName (), ioe.getLocalizedMessage ()), // NOI18N
+                            new JButton [] { tryAgain, skip, cancel });
+                    Object ret = problem.showNetworkProblemDialog ();
+                    if (skip.equals (ret)) {
+                        // skip UpdateUnitProvider and try next one
+                        continue;
+                    } else if (tryAgain.equals (ret)) {
+                        // try again
+                        return false;
+                    }
+                    return true;
                 }
             }
-        } catch (IOException ioe) {
-            logger.log (Level.FINE, ioe.getMessage(), ioe);
-            if (handle != null) {
-                handle.finish ();
-            }
-            NetworkProblemPanel.showNetworkProblemDialog();
         } finally {
             if (handle != null) {
                 handle.finish ();
@@ -239,6 +263,7 @@ public class Utilities {
             Containers.initNotify ();
             manager.unsetProgressComponent (detailLabel, progressComp);
         }
+        return true;
     }
 
     public static void startAsWorkerThread(final PluginManagerUI manager, final Runnable runnableCode, final String progressDisplayName) {

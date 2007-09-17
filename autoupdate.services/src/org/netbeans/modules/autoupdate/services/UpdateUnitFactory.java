@@ -63,7 +63,7 @@ public class UpdateUnitFactory {
     
     private static final UpdateUnitFactory INSTANCE = new UpdateUnitFactory ();
     private final Logger log = Logger.getLogger (this.getClass ().getName ());
-    private static final DateFormat FMT = new SimpleDateFormat ("mm:ss:SS");
+    private static final DateFormat FMT = new SimpleDateFormat ("mm:ss:SS"); // NOI18N
     private static long runTime = -1;
     private Set<String> scheduledForRestartUE = null;
     private Set<String> scheduledForRestartUU = null;
@@ -77,7 +77,7 @@ public class UpdateUnitFactory {
     }
     
     public Map<String, UpdateUnit> getUpdateUnits () {
-        resetRunTime ("Measuring of UpdateUnitFactory.getUpdateUnits()");
+        resetRunTime ("Measuring of UpdateUnitFactory.getUpdateUnits()"); // NOI18N
         List<UpdateUnitProvider> updates = UpdateUnitProviderImpl.getUpdateUnitProviders (true);
         
 //        // loop installed modules
@@ -123,7 +123,7 @@ public class UpdateUnitFactory {
     }
     
     public Map<String, UpdateUnit> getUpdateUnits (UpdateProvider provider) {
-        resetRunTime ("Measuring UpdateUnitFactory.getUpdateUnits (" + provider.getDisplayName () + ")");
+        resetRunTime ("Measuring UpdateUnitFactory.getUpdateUnits (" + provider.getDisplayName () + ")"); // NOI18N
         
         // prepare items accessible in provider
         Collection<UpdateItem> itemsFromProvider = null;
@@ -311,7 +311,7 @@ public class UpdateUnitFactory {
     private void reportRunTime (String msg) {
         if (log.isLoggable (Level.FINE)) {
             if (msg != null) {
-                log.log (Level.FINE, msg + " === " + FMT.format (new Date (System.currentTimeMillis () - runTime)));
+                log.log (Level.FINE, msg + " === " + FMT.format (new Date (System.currentTimeMillis () - runTime))); // NOI18N
             }
             resetRunTime (null);
         }

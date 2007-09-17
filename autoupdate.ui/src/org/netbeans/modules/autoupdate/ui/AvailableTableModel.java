@@ -222,7 +222,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         if (isTabEnabled()) {
             return super.getTabTooltipText(); 
         }
-        return NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_ToolTip");
+        return NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_ToolTip");
     }
     
     public String getTabTitle() {

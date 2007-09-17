@@ -378,20 +378,21 @@ private class Listener implements ListSelectionListener,  TableModelListener {
                     }
                 });
             } else {
-                // was enabled and won't be more -> add it from model and read its content
                 final boolean force = forceRead;
-                    // was enabled and won't be more -> add it from model and read its content
-                    getSettingsTableModel ().getPluginManager ().setWaitingState (true);
-                    Utilities.startAsWorkerThread (getSettingsTableModel ().getPluginManager (), new Runnable () {
-                        public void run () {
-                            try {
-                                Utilities.doRefreshProviders (Collections.singleton (provider), getSettingsTableModel ().getPluginManager (), force);
-                                getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
-                            } finally {
-                                getSettingsTableModel ().getPluginManager ().setWaitingState (false);
-                            }
+                // was enabled and won't be more -> add it from model and read its content
+                getSettingsTableModel ().getPluginManager ().setWaitingState (true);
+                Utilities.startAsWorkerThread (new Runnable () {
+
+                    public void run () {
+                        try {
+                            Utilities.presentRefreshProviders (Collections.singleton (provider), getSettingsTableModel ().getPluginManager (), force);
+                            getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
+                        } finally {
+                            getSettingsTableModel ().getPluginManager ().setWaitingState (false);
                         }
-                    }, NbBundle.getMessage (SettingsTableModel.class,  ("UnitTab_CheckingForUpdates")));
+                    }
+                    
+                });
             }
         }
     }

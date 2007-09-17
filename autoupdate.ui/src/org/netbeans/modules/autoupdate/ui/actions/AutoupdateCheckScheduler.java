@@ -59,11 +59,13 @@ public class AutoupdateCheckScheduler {
     }
     
     private static void scheduleRefreshProviders () {
-        try {
-            assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
-            UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
-        } catch (IOException ioe) {
-            err.log (Level.INFO, ioe.getMessage (), ioe);
+        assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
+        for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true)) {
+            try {
+                p.refresh (null, true);
+            } catch (IOException ioe) {
+                err.log (Level.INFO, ioe.getMessage (), ioe);
+            }
         }
     }
     

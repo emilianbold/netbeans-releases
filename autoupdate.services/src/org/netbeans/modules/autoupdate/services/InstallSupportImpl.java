@@ -563,7 +563,12 @@ public class InstallSupportImpl {
         boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (NBM_EXTENTSION.toLowerCase (Locale.US));
 
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbmFile);
-        dest.delete ();
+        
+        // skip already downloaded modules
+        if (dest.exists ()) {
+            err.log (Level.FINE, "Target NBM file " + dest + " of " + toUpdateImpl.getUpdateElement () + " already downloaded.");
+            return toUpdateImpl.getDownloadSize ();
+        }
 
         int c = 0;
         

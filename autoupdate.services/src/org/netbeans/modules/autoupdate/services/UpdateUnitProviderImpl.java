@@ -143,7 +143,7 @@ public final class UpdateUnitProviderImpl {
                 ownHandle.finish ();
             }
         }
-        // don't remember clean-up update units
+        // don't remember update units while refreshing the content
         UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
         return res;
     }

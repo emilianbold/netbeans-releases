@@ -131,38 +131,54 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         final InstallSupport support = model.getInstallSupport ();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
-        Runnable performDownload = new Runnable () {
-            public void run () {
-                try {
-                    ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"));
-                    JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
-                    JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent (handle);
-                    JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
-                    
-                    handle.setInitialDelay (0);
-                    panel.waitAndSetProgressComponents (mainLabel, progressComponent, detailLabel);
-
-                    validator = support.doDownload (handle, Utilities.isGlobalInstallation());
-                    if (validator == null) return;
-                    if (model.getAdditionallyInstallSupport () != null) {
-                        handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"));
-                        ProgressHandleFactory.createProgressComponent (handle); // no need to show again
-                        validator = model.getAdditionallyInstallSupport ().doDownload (handle, Utilities.isGlobalInstallation());
-                    }
-                    if (validator == null) return;
-                    panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
-                } catch (OperationException ex) {
-                    assert OperationException.ERROR_TYPE.PROXY.equals (ex.getErrorType ());
-                    log.log (Level.INFO, ex.getMessage (), ex);
-                    NetworkProblemPanel.showNetworkProblemDialog (model.getCancelButton (wd), ex);
-                }
-            }
-        };
-        NetworkProblemPanel.setPerformAgain (performDownload);
         
-        performDownload.run ();
+        boolean finish = false;
+        while (! finish) {
+            finish = tryPerformDownload ();
+        }
         
         return validator;
+    }
+    
+    private boolean tryPerformDownload () {
+        validator = null;
+        final InstallSupport support = model.getInstallSupport ();
+        try {
+            ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"));
+            JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
+            JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent (handle);
+            JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
+
+            handle.setInitialDelay (0);
+            panel.waitAndSetProgressComponents (mainLabel, progressComponent, detailLabel);
+
+            validator = support.doDownload (handle, Utilities.isGlobalInstallation());
+            if (validator == null) return true;
+            if (model.getAdditionallyInstallSupport () != null) {
+                handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"));
+                ProgressHandleFactory.createProgressComponent (handle); // no need to show again
+                validator = model.getAdditionallyInstallSupport ().doDownload (handle, Utilities.isGlobalInstallation());
+            }
+            if (validator == null) return true;
+            panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
+        } catch (OperationException ex) {
+            assert OperationException.ERROR_TYPE.PROXY.equals (ex.getErrorType ());
+            log.log (Level.INFO, ex.getMessage (), ex);
+            JButton tryAgain = new JButton ();
+            Mnemonics.setLocalizedText (tryAgain, getBundle ("InstallStep_NetworkProblem_Continue")); // NOI18N
+            NetworkProblemPanel problem = new NetworkProblemPanel (
+                    getBundle ("InstallStep_NetworkProblem_Text", ex.getLocalizedMessage ()), // NOI18N
+                    new JButton [] { tryAgain, model.getCancelButton (wd) });
+            Object ret = problem.showNetworkProblemDialog ();
+            if (tryAgain.equals(ret)) {
+                // try again
+                return false;
+            } else if (DialogDescriptor.CLOSED_OPTION.equals (ret)) {
+                model.getCancelButton (wd).doClick ();
+            }
+        }
+        return true;
+        
     }
     
     private Installer handleValidation (Validator v) {

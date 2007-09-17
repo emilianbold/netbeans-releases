@@ -87,7 +87,7 @@ public class SettingsTableModel extends AbstractTableModel {
             Utilities.startAsWorkerThread (new Runnable () {
                 public void run () {
                     try {
-                        Utilities.doRefreshProviders (forRefresh, getPluginManager (), true);
+                        Utilities.presentRefreshProviders (forRefresh, getPluginManager (), true);
                         getPluginManager ().updateUnitsChanged ();
                     } finally {
                         getPluginManager ().setWaitingState (false);
@@ -175,7 +175,7 @@ public class SettingsTableModel extends AbstractTableModel {
                     Utilities.startAsWorkerThread (new Runnable () {
                         public void run () {
                             try {
-                                Utilities.doRefreshProviders (Collections.singleton (unitProvider), getPluginManager (), false);
+                                Utilities.presentRefreshProvider (unitProvider, getPluginManager (), false);
                                 getPluginManager ().updateUnitsChanged ();
                             } finally {
                                 getPluginManager ().setWaitingState (false);
