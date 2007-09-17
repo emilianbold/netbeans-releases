@@ -36,6 +36,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,7 +59,9 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.jumpto.file.LazyListModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -73,11 +76,13 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
-/** XXX Icons
+/** 
+ * XXX split into action and support class, left this just to minimize diff
+ * XXX Icons
  * XXX Don't look for all projects (do it lazy in filter or renderer)
  * @author Petr Hrebejk
  */
-public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentProvider {
+public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentProvider, LazyListModel.Filter {
     
     static final Logger LOGGER = Logger.getLogger(GoToTypeAction.class.getName()); // Used from the panel as well
     
@@ -89,26 +94,39 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private GoToPanel panel;
     private Dialog dialog;
     private JButton okButton;
-    private Collection<? extends TypeProvider> typeProviders;
+    private final Collection<? extends TypeProvider> typeProviders;
+    private final TypeBrowser.Filter typeFilter;
+    private final String title;
 
-    
     /** Creates a new instance of OpenTypeAction */
     public GoToTypeAction() {
+        this(
+            NbBundle.getMessage( GoToTypeAction.class, "DLG_GoToType" ),
+            null,
+            Lookup.getDefault().lookupAll(TypeProvider.class).toArray(new TypeProvider[0])
+        );
+    }
+    
+    public GoToTypeAction(String title, TypeBrowser.Filter typeFilter, TypeProvider... typeProviders) {
         super( NbBundle.getMessage( GoToTypeAction.class,"TXT_GoToType") );
         putValue("PopupMenuText", NbBundle.getBundle(GoToTypeAction.class).getString("editor-popup-TXT_GoToType")); // NOI18N
+        this.title = title;
+        this.typeFilter = typeFilter;
+        this.typeProviders = Arrays.asList(typeProviders);
     }
     
     public void actionPerformed( ActionEvent e ) {
-        try {
-            typeProviders = Lookup.getDefault().lookupAll(TypeProvider.class);
+        TypeDescriptor typeDescriptor = getSelectedType();
+        if (typeDescriptor != null) {
+            typeDescriptor.open();
+        }
+    }
             
-            panel = new GoToPanel( this );
+    public TypeDescriptor getSelectedType() {
+        TypeDescriptor result = null;
+        try {
+            panel = new GoToPanel(this);
             dialog = createDialog(panel);
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
-                    dialog.setVisible(true);
-                }
-            } );
             
             Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
             String initSearchText = null;
@@ -125,9 +143,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 }
             }            
             
+            dialog.setVisible(true);
+            result = panel.getSelectedType();
+
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+        return result;
     }
     
     @Override
@@ -135,7 +157,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         return OpenProjects.getDefault().getOpenProjects().length>0;
     }
     
+    public boolean accept(Object obj) {
+        return typeFilter == null ? true : typeFilter.accept((TypeDescriptor) obj);
+    }
     
+    public void scheduleUpdate(Runnable run) {
+        SwingUtilities.invokeLater(run);
+    }
     
     // Implementation of content provider --------------------------------------
     
@@ -255,7 +283,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
             panel,                             // innerPane
-            NbBundle.getMessage( GoToTypeAction.class, "DLG_GoToType" ), // NOI18N // displayName
+            title, // displayName
             true,
             new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
             okButton,
@@ -342,6 +370,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 return;
             }
             ListModel model = Models.fromList(types);
+            if (typeFilter != null) {
+                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");;
+            }
             if ( isCanceled ) {            
                 LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );                                
                 return;
@@ -573,7 +604,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         
         public void actionPerformed(ActionEvent e) {            
             if ( e.getSource() == okButton) {
-                panel.openSelectedItem();
+                panel.setSelectedType();
             }
         }
         

@@ -36,6 +36,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -56,6 +57,8 @@ public class JavaTypeProvider implements TypeProvider {
     private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );
     private Set<CacheItem> cache;
     private volatile boolean isCanceled = false;
+    private final TypeElementFinder.Customizer customizer;
+    private final ClasspathInfo cpInfo;
 
     public String name() {
         return "java"; // NOI18N
@@ -75,8 +78,14 @@ public class JavaTypeProvider implements TypeProvider {
     }
 
     public JavaTypeProvider() {
+        this(null, null);
     }
    
+    public JavaTypeProvider(ClasspathInfo cpInfo, TypeElementFinder.Customizer customizer) {
+        this.cpInfo = cpInfo;
+        this.customizer = customizer;
+    }
+    
 //    // This is essentially the code from OpenDeclAction
 //    // TODO: Was OpenDeclAction used for anything else?
 //    public void gotoType(TypeDescriptor type) {
@@ -120,60 +129,111 @@ public class JavaTypeProvider implements TypeProvider {
         cp = gss = gsb = sfb = gtn = add = sort = 0;
 
         if (cache == null) {
-            // Sources
-            time = System.currentTimeMillis();
-            ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
-            FileObject roots[] = scp.getRoots();
-            gss += System.currentTimeMillis() - time; 
-            FileObject root[] = new FileObject[1];
-            Set<CacheItem> sources = new HashSet<CacheItem>( roots.length );
-            for (int i = 0; i < roots.length; i++ ) {                    
-                root[0] = roots[i];
-                time = System.currentTimeMillis();                
-                ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root));               //create(roots[i]);
-                if ( isCanceled ) {
-                    return null;
-                }
-                else {
-                    sources.add( new CacheItem( roots[i], ci, false ) );
-                }                        
-                cp += System.currentTimeMillis() - time;
-            }
+            Set<CacheItem> sources = null;
 
-
-
-            // Binaries
-            time = System.currentTimeMillis();                
-            scp = RepositoryUpdater.getDefault().getScannedBinaries();
-            roots = scp.getRoots(); 
-            gsb += System.currentTimeMillis() - time;
-            root = new FileObject[1];
-            for (int i = 0; i < roots.length; i++ ) {
-                try {
+            if (cpInfo == null) {
+                // Sources
+                time = System.currentTimeMillis();
+                ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
+                FileObject roots[] = scp.getRoots();
+                gss += System.currentTimeMillis() - time; 
+                FileObject root[] = new FileObject[1];
+                sources = new HashSet<CacheItem>( roots.length );
+                for (int i = 0; i < roots.length; i++ ) {                    
+                    root[0] = roots[i];
+                    time = System.currentTimeMillis();                
+                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root));               //create(roots[i]);
                     if ( isCanceled ) {
                         return null;
                     }
-                    time = System.currentTimeMillis();
-                    SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(roots[i].getURL());
-                    if ( result.getRoots().length == 0 ) {
-                        continue;
-                    }       
-                    sfb += System.currentTimeMillis() - time;                        
-                    time = System.currentTimeMillis();                        
-                    root[0] = roots[i];
-                    ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);                                
-                    sources.add( new CacheItem( roots[i], ci, true ) );                                                
+                    else {
+                        sources.add( new CacheItem( roots[i], ci, false ) );
+                    }                        
                     cp += System.currentTimeMillis() - time;
                 }
-                catch ( FileStateInvalidException e ) {
-                    continue;
-                }                   
-                finally {
+
+
+
+                // Binaries
+                time = System.currentTimeMillis();                
+                scp = RepositoryUpdater.getDefault().getScannedBinaries();
+                roots = scp.getRoots(); 
+                gsb += System.currentTimeMillis() - time;
+                root = new FileObject[1];
+                for (int i = 0; i < roots.length; i++ ) {
+                    try {
+                        if ( isCanceled ) {
+                            return null;
+                        }
+                        time = System.currentTimeMillis();
+                        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(roots[i].getURL());
+                        if ( result.getRoots().length == 0 ) {
+                            continue;
+                        }       
+                        sfb += System.currentTimeMillis() - time;                        
+                        time = System.currentTimeMillis();                        
+                        root[0] = roots[i];
+                        ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);                                
+                        sources.add( new CacheItem( roots[i], ci, true ) );                                                
+                        cp += System.currentTimeMillis() - time;
+                    }
+                    catch ( FileStateInvalidException e ) {
+                        continue;
+                    }                   
+                    finally {
+                        if ( isCanceled ) {
+                            return null;
+                        }
+                    }
+                }
+            } else { // user provided classpath
+
+                FileObject[] bootRoots = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT).getRoots();
+                FileObject[] compileRoots = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE).getRoots();
+                FileObject[] sourceRoots = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE).getRoots();
+                sources = new HashSet<CacheItem>(bootRoots.length + compileRoots.length + sourceRoots.length);
+
+                // bootPath
+                for (int i = 0; i < bootRoots.length; i++ ) {                    
+                    time = System.currentTimeMillis();                
+                    ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(bootRoots[i]), EMPTY_CLASSPATH, EMPTY_CLASSPATH);
                     if ( isCanceled ) {
                         return null;
                     }
+                    else {
+                        sources.add( new CacheItem( bootRoots[i], ci, true ) );
+                    }                        
+                    cp += System.currentTimeMillis() - time;
                 }
+
+                // classPath
+                for (int i = 0; i < compileRoots.length; i++ ) {                    
+                    time = System.currentTimeMillis();                
+                    ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, ClassPathSupport.createClassPath(compileRoots[i]), EMPTY_CLASSPATH);
+                    if ( isCanceled ) {
+                        return null;
+                    }
+                    else {
+                        sources.add( new CacheItem( compileRoots[i], ci, true ) );
+                    }                        
+                    cp += System.currentTimeMillis() - time;
+                }
+
+                // sourcePath
+                for (int i = 0; i < sourceRoots.length; i++ ) {                    
+                    time = System.currentTimeMillis();                
+                    ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(sourceRoots[i]));
+                    if ( isCanceled ) {
+                        return null;
+                    }
+                    else {
+                        sources.add( new CacheItem( sourceRoots[i], ci, false ) );
+                    }                        
+                    cp += System.currentTimeMillis() - time;
+                }
+
             }
+                
             if ( !isCanceled ) {
                 cache = sources;
             }
@@ -204,7 +264,14 @@ public class JavaTypeProvider implements TypeProvider {
                 default:
                     textForQuery = text;
             }
-            Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, EnumSet.of( ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE ));
+
+            Set<ElementHandle<TypeElement>> names = null;
+            if (customizer != null) {
+                names = customizer.query(ci.classpathInfo, textForQuery, nameKind, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE));
+            } else {
+                names = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, EnumSet.of( ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE ));
+            }
+
             if ( isCanceled ) {
                 return null;
             }

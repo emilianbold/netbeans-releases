@@ -132,6 +132,7 @@ Contributor(s): Andrei Badea
                 <friend>org.netbeans.modules.gsf</friend>
                 <friend>org.netbeans.api.gsf</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
+                <package>org.netbeans.api.jumpto.type</package>
                 <package>org.netbeans.spi.jumpto.type</package>
             </friend-packages>
         </data>

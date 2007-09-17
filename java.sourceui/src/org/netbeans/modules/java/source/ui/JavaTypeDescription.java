@@ -170,6 +170,10 @@ public class JavaTypeDescription extends TypeDescriptor {
         return cacheItem.getProjectIcon();
     }
     
+    public ElementHandle<TypeElement> getHandle() {
+        return handle;
+    }
+    
     private void init() {
         final String typeName = this.handle.getBinaryName();
         int lastDot = typeName.lastIndexOf('.'); // NOI18N

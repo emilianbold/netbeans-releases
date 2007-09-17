@@ -60,6 +60,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private ContentProvider contentProvider;
     private boolean containsScrollPane;
     private JLabel messageLabel;
+    private TypeDescriptor selectedType;
     
     private String oldText;
     
@@ -141,12 +142,12 @@ public class GoToPanel extends javax.swing.JPanel {
         });
     }
     
-    public void openSelectedItem() {
-        TypeDescriptor selectedValue = ((TypeDescriptor) matchesList.getSelectedValue());
-        if ( selectedValue != null ) {
-            // TODO - use TypeDescriptor.getOffset instead?
-            ((TypeDescriptor) matchesList.getSelectedValue()).open();
-        }
+    public void setSelectedType() {
+        selectedType = ((TypeDescriptor) matchesList.getSelectedValue());
+    }
+    
+    public TypeDescriptor getSelectedType() {
+        return selectedType;
     }
             
     /** This method is called from within the constructor to
@@ -292,7 +293,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
         if (contentProvider.hasValidContent()) {
             contentProvider.closeDialog();
-            openSelectedItem();        
+            setSelectedType();        
         }
     }//GEN-LAST:event_nameFieldActionPerformed
     
@@ -430,18 +431,25 @@ public class GoToPanel extends javax.swing.JPanel {
         // ListSelectionListener -----------------------------------------------
         
         public void valueChanged(ListSelectionEvent ev) {
-            TypeDescriptor selectedValue = ((TypeDescriptor) dialog.matchesList.getSelectedValue());
-            if ( selectedValue != null ) {
-                String fileName = "";
-                FileObject fo = selectedValue.getFileObject();
-                if (fo != null) {
-                    fileName = FileUtil.getFileDisplayName(fo);
+            // got "Not computed yet" text sometimes
+            Object obj = dialog.matchesList.getSelectedValue();
+            
+            if (obj instanceof TypeDescriptor) {
+                TypeDescriptor selectedValue = ((TypeDescriptor) obj);
+                if ( selectedValue != null ) {
+                    String fileName = "";
+                    FileObject fo = selectedValue.getFileObject();
+                    if (fo != null) {
+                        fileName = FileUtil.getFileDisplayName(fo);
+                    }
+                    dialog.jTextFieldLocation.setText(fileName);
                 }
-                dialog.jTextFieldLocation.setText(fileName);
-            }
-            else {
+                else {
+                    dialog.jTextFieldLocation.setText("");
+                }
+            } else {
                 dialog.jTextFieldLocation.setText("");
-            }
+         }
         }
         
         private void update() {
