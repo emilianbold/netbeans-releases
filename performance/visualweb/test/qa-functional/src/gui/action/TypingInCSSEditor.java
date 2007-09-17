@@ -84,8 +84,8 @@ public class TypingInCSSEditor extends  org.netbeans.performance.test.utilities.
     }
     @Override
     public void close() {
-        //editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
-        repaintManager().resetRegionFilters();        
+        editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
+        //repaintManager().resetRegionFilters();        
         EditorOperator.closeDiscardAll();
         
     }
