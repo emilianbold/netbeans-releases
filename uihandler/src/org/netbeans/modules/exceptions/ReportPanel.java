@@ -75,24 +75,26 @@ public class ReportPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setDisplayedMnemonic('U');
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/exceptions/Bundle").getString("USERNAME_MNEMONIC").charAt(0));
         jLabel1.setLabelFor(loginField);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel1.text")); // NOI18N
 
         loginField.setText(exSettings.getUserName());
 
-        jLabel9.setDisplayedMnemonic('m');
+        jLabel9.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/exceptions/Bundle").getString("SUMMARY_MNEMONIC").charAt(0));
         jLabel9.setLabelFor(summaryField);
         jLabel9.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel9.text")); // NOI18N
 
         summaryField.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.summaryField.text")); // NOI18N
 
-        jLabel4.setDisplayedMnemonic('D');
+        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/exceptions/Bundle").getString("DESCRIPTION_MNEMONIC").charAt(0));
         jLabel4.setLabelFor(commentArea);
         jLabel4.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel4.text")); // NOI18N
 
         commentArea.setColumns(20);
+        commentArea.setLineWrap(true);
         commentArea.setRows(5);
+        commentArea.setWrapStyleWord(true);
         jScrollPane1.setViewportView(commentArea);
         commentArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.commentArea.AccessibleContext.accessibleName")); // NOI18N
         commentArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.commentArea.AccessibleContext.accessibleDescription")); // NOI18N
@@ -103,12 +105,12 @@ public class ReportPanel extends javax.swing.JPanel {
 
         jLabel8.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel8.text_1")); // NOI18N
 
-        jLabel5.setDisplayedMnemonic('P');
+        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/exceptions/Bundle").getString("PASSWORD_MNEMONIC").charAt(0));
         jLabel5.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel5.text_1")); // NOI18N
 
         jPasswordField1.setText(exSettings.getPasswd());
 
-        jCheckBox1.setMnemonic('R');
+        jCheckBox1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/exceptions/Bundle").getString("GUEST_REPORT_MNEMONIC").charAt(0));
         jCheckBox1.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "jCheckBox1.text")); // NOI18N
         jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
