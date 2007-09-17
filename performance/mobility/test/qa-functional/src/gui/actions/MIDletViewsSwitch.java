@@ -25,6 +25,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.performance.test.guitracker.ActionTracker;
 
 /**
  *
@@ -41,19 +42,23 @@ public class MIDletViewsSwitch extends org.netbeans.performance.test.utilities.P
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     
     private MIDletEditorOperator targetMIDletEditor;
-        
+    private static ActionTracker tr;
+    
     public MIDletViewsSwitch(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_PREPARE = 10000;
+        WAIT_AFTER_CLOSE = 5000;
     }
     public MIDletViewsSwitch(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_PREPARE = 10000;        
+        WAIT_AFTER_PREPARE = 10000;
+        WAIT_AFTER_CLOSE = 5000;        
     }
     public void initialize() {
         log(":: initialize");
+        tr = ActionTracker.getInstance();
         targetProject = "MobileApplicationVisualMIDlet";
         midletName = "VisualMIDletMIDP20.java"; 
         
@@ -80,17 +85,20 @@ public class MIDletViewsSwitch extends org.netbeans.performance.test.utilities.P
     }
     public void prepare() {
         log(":: prepare");
+        tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "TEST:PREPARE");
         targetMIDletEditor.switchToViewByName(fromView);
         
     }
 
     public ComponentOperator open() {
         log(":: open");
+        tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "TEST:OPEN");
         targetMIDletEditor.switchToViewByName(toView);
         return null;
     }
     public void close() {
         log(":: close");
+        tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "TEST:CLOSE");
     }
     public void shutdown() {
         log(":: shutdown");
