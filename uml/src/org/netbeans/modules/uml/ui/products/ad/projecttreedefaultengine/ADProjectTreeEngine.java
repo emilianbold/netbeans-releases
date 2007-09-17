@@ -648,13 +648,12 @@ public class ADProjectTreeEngine
    protected void updateTree(ETList < IElement > elements,
                              ETList < String > paths)
    {
-      ETList < ITreeItem > affectedNodes = new ETArrayList < ITreeItem >();
-      for (Iterator < IElement > iter = elements.iterator(); iter.hasNext();)
+
+        for (Iterator < IElement > iter = elements.iterator(); iter.hasNext();)
       {
          IElement element = iter.next();
 
          ETList < ITreeItem > nodes = getTreeModel().findNodes(element); 
-         affectedNodes.addAll(nodes);
          for (Iterator < ITreeItem > iterator = nodes.iterator(); iterator.hasNext();)
          {
             ITreeItem item = iterator.next();
@@ -700,8 +699,15 @@ public class ADProjectTreeEngine
                                     curChild.sortChildren();
                             }
                       }
-                  } 
-                 
+                  }
+                  
+                  // Fixed 115600.
+                  // For nodes created under a folder node, like atrributes,
+                  // operation, relationships, removeDuplicateNode
+                  // cleans up the duplicate nodes previously created ourside the
+                  // folder.
+                  removeDuplicateItems(item, desiredChildren);
+                  
                   // The new node is now added directly to the parent node, so no
                   // need to compare the 'desiredChildren; with the actual children
                   // from the parent item; hence commented out this block of code.
@@ -710,12 +716,48 @@ public class ADProjectTreeEngine
 //                  {
 //                     getTreeModel().sortChildren(item);
 //                  }
-            }
+                 }
+             }
          }
       }
    }
-   }
 
+  
+    private void removeDuplicateItems(ITreeItem parentItem, ITreeItem[] desiredChildren)
+    {
+        ITreeItem curItem = null;
+        ETList<ITreeItem> children = new ETArrayList<ITreeItem>();
+        Enumeration<ITreeItem> childNodes = parentItem.getNodeChildren();
+        while (childNodes.hasMoreElements() == true)
+        {
+            children.add(childNodes.nextElement());
+        }
+
+        for (int index = 0; index < desiredChildren.length; index++)
+        {
+            boolean foundIt = false;
+            for (int j = 0; j < children.size() && !foundIt; j++)
+            {
+                curItem = children.get(j);
+                if (curItem != null && curItem.equals(desiredChildren[index]))
+                {
+                    children.remove(j);
+                    foundIt = true;
+                }
+            }
+        }
+        
+        if (children.size() > 0) 
+        {
+            IProjectTreeModel model = getTreeModel();
+            for (int j = 0; j < children.size(); j++)
+            {
+                curItem = children.get(j);
+                model.removeNodeFromParent(curItem);
+            }
+        }
+    }
+    
    /**
     * This routine verifies that the project tree item has all the children that the builder
     * says it should have.  If not then we create/delete them as necessary.
