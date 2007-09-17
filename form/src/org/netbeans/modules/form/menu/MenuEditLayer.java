@@ -931,7 +931,24 @@ public class MenuEditLayer extends JPanel {
                 clearRollover();
             }
             prevRollover = rollover;
-            prevRollover.setBorder(BorderFactory.createLineBorder(Color.ORANGE,2));
+            prevRollover.setBorder(new Border() {
+
+                public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setStroke(DropTargetLayer.DROP_TARGET_LINE_STROKE);
+                    g2.setColor(DropTargetLayer.DROP_TARGET_COLOR);
+                    g2.drawRect(x,y,width,height);
+                }
+
+                public Insets getBorderInsets(Component c) {
+                    return new Insets(2,2,2,2);
+                }
+
+                public boolean isBorderOpaque() {
+                    return false;
+                }
+                //BorderFactory.createLineBorder(Color.ORANGE,2)
+            });
             prevRollover.repaint();
             if(rollover instanceof JMenu) {
                 formDesigner.openMenu(targetContainer);

@@ -63,11 +63,11 @@ class DropTargetLayer extends JComponent {
     
     //private static BasicStroke DROP_TARGET_LINE_STROKE = new BasicStroke(2,
     //        BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1f,  new float[] {5f, 5f}, 0f);
-    private static BasicStroke DROP_TARGET_LINE_STROKE = new BasicStroke(
+    public static final BasicStroke DROP_TARGET_LINE_STROKE = new BasicStroke(
           3.0f, BasicStroke.CAP_ROUND, 1, 1.0f,
           new float[] {6.0f,6.0f}, 0.0f);
 
-    private static Color DROP_TARGET_COLOR = new Color(0xFFA400);
+    public static final Color DROP_TARGET_COLOR = new Color(0xFFA400);
     private static Color SELECTION_COLOR = DROP_TARGET_COLOR;
     private static BasicStroke SELECTION_STROKE = new BasicStroke(1);
     
