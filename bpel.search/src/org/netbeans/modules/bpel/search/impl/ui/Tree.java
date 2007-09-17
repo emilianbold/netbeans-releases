@@ -93,9 +93,11 @@ final class Tree extends JTree implements SearchListener {
     myRoot = (DefaultMutableTreeNode) getModel().getRoot();
 
     // vlv: print
-    String root = getModel().getRoot().toString();
-    String name = i18n(Tree.class, "LBL_Tree_Name", root); // NOI18N
-    putClientProperty(java.awt.print.Printable.class, name);
+    putClientProperty(java.awt.print.Printable.class, getRootName());
+  }
+
+  private String getRootName() {
+    return i18n(Tree.class, "LBL_Tree_Name", getModel().getRoot().toString()); // NOI18N
   }
 
   public void searchStarted(SearchEvent event) {
