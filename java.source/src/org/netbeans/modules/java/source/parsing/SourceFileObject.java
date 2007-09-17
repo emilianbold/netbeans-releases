@@ -376,7 +376,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         }
 	result[0][length[0]]='\n'; //NOI18N
 	CharBuffer charBuffer = CharBuffer.wrap (result[0],0,length[0]);
-        tokens = TokenHierarchy.create(charBuffer, true, JavaTokenId.language(), null, null); //TODO: .createSnapshot();
+        tokens = TokenHierarchy.create(charBuffer, false, JavaTokenId.language(), null, null); //TODO: .createSnapshot();
         return charBuffer;
     }
             
