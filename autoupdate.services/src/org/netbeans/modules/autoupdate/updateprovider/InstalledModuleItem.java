@@ -51,7 +51,6 @@ public class InstalledModuleItem extends ModuleItem {
         this.info = info;
         this.author = author;
         this.installCluster = installCluster;
-        this.source = source;
         this.installDate = installTime;
     }
     
@@ -68,6 +67,10 @@ public class InstalledModuleItem extends ModuleItem {
     public String getSource () {
         if (source == null) {
             source = Utilities.readSourceFromUpdateTracking (info);
+        }
+        // fallback to product version
+        if (source == null) {
+            source = Utilities.getProductVersion ();
         }
         return source;
     }
