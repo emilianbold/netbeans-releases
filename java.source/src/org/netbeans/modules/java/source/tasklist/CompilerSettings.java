@@ -50,15 +50,15 @@ public class CompilerSettings {
         DEFAULTS = new HashMap<String, Boolean>();
         
         DEFAULTS.put(ENABLE_LINT, false);
-        DEFAULTS.put(ENABLE_LINT_DEPRECATION, true);
-        DEFAULTS.put(ENABLE_LINT_UNCHECKED, true);
-        DEFAULTS.put(ENABLE_LINT_FALLTHROUGH, true);
+        DEFAULTS.put(ENABLE_LINT_DEPRECATION, false);
+        DEFAULTS.put(ENABLE_LINT_UNCHECKED, false);
+        DEFAULTS.put(ENABLE_LINT_FALLTHROUGH, false);
         DEFAULTS.put(ENABLE_LINT_SERIAL, false);
-        DEFAULTS.put(ENABLE_LINT_FINALLY, true);
-        DEFAULTS.put(ENABLE_LINT_CAST, true);
-        DEFAULTS.put(ENABLE_LINT_DIVZERO, true);
-        DEFAULTS.put(ENABLE_LINT_EMPTY, true);
-        DEFAULTS.put(ENABLE_LINT_OVERRIDES, true);
+        DEFAULTS.put(ENABLE_LINT_FINALLY, false);
+        DEFAULTS.put(ENABLE_LINT_CAST, false);
+        DEFAULTS.put(ENABLE_LINT_DIVZERO, false);
+        DEFAULTS.put(ENABLE_LINT_EMPTY, false);
+        DEFAULTS.put(ENABLE_LINT_OVERRIDES, false);
     }
     
     public static Preferences getNode() {
