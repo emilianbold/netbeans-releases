@@ -40,6 +40,8 @@ import java.io.File;
 import java.util.Enumeration;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.java.classpath.ClassPath;
 // </RAVE>
 
 /**
@@ -136,6 +138,13 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             return false;
         }
 
+        // Check whether the Visual Web JSF Backwards Compatibility Kit is needed
+        String kitMesg = checkBackwardsKit();
+        if (kitMesg != null) {
+            wizard.putProperty("WizardPanel_errorMessage", kitMesg);
+            return false;
+        }
+
         // Extra checking that is dependent on the file type
         if (fileType.equals(PageIterator.FILETYPE_WEBFORM)) {
             return checkWebForm(targetName);
@@ -144,6 +153,38 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         }
 
         return true;
+    }
+
+    private String checkBackwardsKit() {
+        boolean addJSF11 = false;
+        boolean addRowset = false;
+
+        if (!JsfProjectUtils.isJavaEE5Project(project) && (LibraryManager.getDefault().getLibrary("jsf1102") == null)) { // I18N
+            // It's a J2EE 1.4 project
+            ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
+            if (cp.findResource("javax/faces/FacesException.class") == null && //NOI18N
+                cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") == null) { //NOI18N
+                // Server doesn't have the JSF RI support
+                addJSF11 = true;
+            }
+        }
+
+        String srcLevel = JsfProjectUtils.getSourceLevel(project);
+        if (("1.3".equals(srcLevel) || "1.4".equals(srcLevel)) && // NOI18N
+            (LibraryManager.getDefault().getLibrary("rowset-ri") == null)) { // NOI18N
+            // It's a J2SE 1.3/1.4 project
+            ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
+            if (cp.findResource("javax/sql/rowset/BaseRowSet.class") == null) { //NOI18N
+                // IDE doesn't have the Rowset RI support
+                addRowset = true;
+            }
+        }
+
+        if (addJSF11 || addRowset) {
+            return JsfProjectUtils.getBackwardsKitMesg(addJSF11, addRowset);
+        } else {
+            return null;
+        }
     }
 
     private String getFolderPath(String targetPath) {
