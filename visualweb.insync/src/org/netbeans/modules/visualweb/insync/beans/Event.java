@@ -46,6 +46,7 @@ public class Event extends BeansNode {
     // Java source-based event fields
     protected DelegatorMethod delegator;
     protected EventMethod handler;
+    private String name;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -111,10 +112,9 @@ public class Event extends BeansNode {
      * @param descriptor  The MethodDescriptor that defines the handler method signature+.
      * @param handler  Our handler method that is populated by the user.
      */
-    Event(EventSet set, MethodDescriptor descriptor, String handler) {
+    Event(EventSet set, MethodDescriptor descriptor, String name) {
         this(set, descriptor);
-        insertEntry(handler);
-        setHandler(handler);
+        this.name = name;
         assert Trace.trace("insync.beans", "E new created Event: " + this);
     }
     
@@ -153,14 +153,14 @@ public class Event extends BeansNode {
      * 
      * @param delegate name of delegate, pass null to use a tmp name & set later
      */
-    protected void insertEntry(String handler) {
+    protected void insertEntry() {
         Class[] pTypes = descriptor.getMethod().getParameterTypes();
         String[] pNames = Naming.paramNames(pTypes, descriptor.getParameterDescriptors());
         boolean noreturn = false;
         if (descriptor.getMethod().getReturnType().getName().equals("void")) {
             noreturn = true;
         }
-        set.getDelegatorMethod(descriptor).addDelegateStatement(handler, pNames, noreturn);
+        set.getDelegatorMethod(descriptor).addDelegateStatement(name, pNames, noreturn);
     }
 
     /**
@@ -213,6 +213,15 @@ public class Event extends BeansNode {
      * 
      * @param name  The new handler method name.
      */
+    public void setHandler() {
+        setHandler(name);
+    }    
+    
+    /**
+     * Set the name of the handler method for this event
+     * 
+     * @param name  The new handler method name.
+     */
     public void setHandler(String name) {
         if (handler != null) {
             if (!getUnit().hasEventMethod(descriptor, name)) {
@@ -242,7 +251,7 @@ public class Event extends BeansNode {
             return delegator.getDelegateName();
         }
         
-        return null;
+        return name;
     }
 
     /**

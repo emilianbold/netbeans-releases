@@ -608,7 +608,8 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
         // or, return new FacesBean that encorporates the element and the java side
         else {
             FacesBean fbean = new FacesBean(this, bi, name, mparent, element);
-            fbean.insertEntry(null);  // this bean's Java source position doesn't matter
+            //fbean.insertEntry(null);  // this bean's Java source position doesn't matter
+            beansToAdd.add(fbean);
             fbean.setBindingProperties();
             bean = fbean;
         }

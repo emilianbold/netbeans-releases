@@ -56,7 +56,7 @@ import org.netbeans.modules.visualweb.insync.java.ClassUtil;
  */
 public class BeansUnit implements Unit {
 
-    protected final List beans = new ArrayList();
+    protected final List<Bean> beans = new ArrayList<Bean>();
     protected final Map nameCounters = new HashMap();  // type-mapped integer counters
 
     protected JavaUnit junit;     // underlying java source unit
@@ -81,6 +81,9 @@ public class BeansUnit implements Unit {
     protected BeanStructureScanner beanStructureScanner;
     
     private String baseClassName;
+    
+    protected List<Bean> beansToAdd = new ArrayList<Bean>();
+    protected List<Bean> beansToRemove = new ArrayList<Bean>();
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -265,9 +268,36 @@ public class BeansUnit implements Unit {
      * @see org.netbeans.modules.visualweb.insync.Unit#writeUnlock(org.netbeans.modules.visualweb.insync.UndoEvent)
      */
     public boolean writeUnlock(UndoEvent event) {
-        return junit.writeUnlock(event);
+        boolean unLocked = junit.writeUnlock(event);
+        if(unLocked) {
+            flush(event);
+        }
+        return unLocked;
     }
 
+    /*
+     * Writes the java code changes
+     */
+    private void flush(UndoEvent event) {
+        junit.writeLock(event);
+        try {
+            if (beansToAdd.size() > 0) {
+                javaClass.addBeans(beansToAdd);
+                beansToAdd.clear();
+            }
+            if (beansToRemove.size() > 0) {
+                javaClass.removeBeans(beansToRemove);
+                beansToRemove.clear();
+            }
+            for (Bean b : beans) {
+                b.unit.getPropertiesInitMethod().addPropertySetStatements(b);
+                b.unit.getPropertiesInitMethod().addEventSetStatements(b);
+            }
+        } finally {
+            junit.writeUnlock(event);
+        }
+    }
+    
     /*
      * @see org.netbeans.modules.visualweb.insync.Unit#isWriteLocked()
      */
@@ -402,7 +432,9 @@ public class BeansUnit implements Unit {
      * Return a new Bean instance bound to an existing field, getter & setter
      */
     protected Bean newBoundBean(BeanInfo beanInfo, String name, List<String> typeNames) {
-         return new Bean(this, beanInfo, name, typeNames);
+         Bean bean = new Bean(this, beanInfo, name, typeNames);
+         bean.setInserted(true);
+         return bean;
     }
 
     /**
@@ -421,13 +453,11 @@ public class BeansUnit implements Unit {
          Bean b = new Bean(this, beanInfo, name);
          if (b != null) {
              int index = pos != null ? pos.getIndex() : -1;
-             Bean after = (index > 0 && index <= beans.size()) ? (Bean)beans.get(index-1) : null;
-             b.insertEntry(after);
+             beansToAdd.add(b);
              if (parent != null) {        // add this child to parent
                  beans.add(b);            // add at end, this pos doesn't matter
                  parent.addChild(b, pos);
-             }
-             else {
+             }else {
                  if (index > 0 && index <= beans.size())
                      beans.add(index, b);
                  else
@@ -722,7 +752,7 @@ public class BeansUnit implements Unit {
         Bean parent = bean.getParent();
         if (parent != null)
             parent.removeChild(bean);  // remove from parent list
-        bean.removeEntry();  // tell bean to remove all of its source entries
+        beansToRemove.add(bean);
     }
 
     /**

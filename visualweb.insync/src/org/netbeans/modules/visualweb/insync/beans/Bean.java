@@ -29,7 +29,6 @@ import java.util.List;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
-import org.netbeans.modules.visualweb.insync.java.Method;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
@@ -51,11 +50,12 @@ public class Bean extends BeansNode {
     static final boolean CREATE_SETTER = true;  // generate host setter for this bean
 
     protected final BeanInfo beanInfo;
-    protected final ArrayList properties = new ArrayList();
-    protected final ArrayList eventSets = new ArrayList();
-
+    protected final List<Property> properties = new ArrayList<Property>();
+    protected final List<EventSet> eventSets = new ArrayList<EventSet>();
+    
     private String name;
     private List<String> typeParameterNames;
+    private boolean inserted;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -87,29 +87,12 @@ public class Bean extends BeansNode {
     }
 
     /**
-     * Create the underlying field and accessor methods
-     *
-     * @param after existing bean that this bean's entries will be added after
-     */
-    public void insertEntry(Bean after) {
-        Class type = beanInfo.getBeanDescriptor().getBeanClass();
-        unit.getThisClass().addProperty(name, type, CREATE_GETTER, CREATE_SETTER);
-        String cmn = getCleanupMethod();
-        if (cmn != null) {
-            Method method = unit.getCleanupMethod();
-            if (method != null) {
-                method.addPropertyStatement(name, cmn, null);
-            }
-        }
-    }
-
-    /**
      * Remove this bean's field, methods and statements from the host class. This bean instance is
      * dead & should not be used.
      *
      * @return true iff the source entry for this bean was actually removed.
      */
-    protected boolean removeEntry() {
+    public boolean removeEntry() {
         assert Trace.trace("insync.beans", "B.removeEntry: " + this);
         boolean removed = false;
         for (Iterator i = properties.iterator(); i.hasNext(); ) {
@@ -122,12 +105,6 @@ public class Bean extends BeansNode {
             removed |= es.removeEntry();
             i.remove();
         }
-        String cmn = getCleanupMethod();  // the name of this bean's cleanup method, if any
-        if (cmn != null && unit.getCleanupMethod() != null) {
-                unit.getCleanupMethod().removeStatement(name, cmn);
-        }
-        unit.getThisClass().removeProperty(name);
-
         removed |= true; //!CQ don't really know since clazz didn't tell us...
         return removed;
     }
@@ -223,8 +200,8 @@ public class Bean extends BeansNode {
     /**
      * @return the type of this bean
      */
-    public String getType() {
-        return beanInfo.getBeanDescriptor().getBeanClass().getName();
+    public Class getType() {
+        return beanInfo.getBeanDescriptor().getBeanClass();
     }
 
     /**
@@ -275,30 +252,32 @@ public class Bean extends BeansNode {
         }else if (!unit.isBeanNameAvailable(newname, this)) {
             return null;
         }
-        
+
         String oldname = name;
         if (!oldname.equals(newname)) {
             //System.err.println("B.setName " + oldname + "=>" + name);
             name = newname;
-            List<FileObject> fObjs = new ArrayList<FileObject>();
-            FacesModel currentModel = (FacesModel)unit.getModel();
-            fObjs.add(currentModel.getJavaFile());
-            if (!currentModel.isPageBean()) {
-                //In case of non-page beans, it is necessary to update the property 
-                //binding expression and accessor methods in lesser scoped beans
-                FacesModel[] models = ((FacesModelSet) currentModel.getOwner()).getFacesModels();
-                for (int i = 0; i < models.length; i++) {
-                    FileObject fObj = models[i].getJavaFile();
-                    //If the faces model is not yet synced(because it may not be open), then
-                    //get the file object for java file via its corresponding jsp file
-                    if (fObj == null && (models[i].getFile() == models[i].getMarkupFile())) {
-                        fObj = FacesModel.getJavaForJsp(models[i].getFile());
+            if (inserted) {
+                List<FileObject> fObjs = new ArrayList<FileObject>();
+                FacesModel currentModel = (FacesModel) unit.getModel();
+                fObjs.add(currentModel.getJavaFile());
+                if (!currentModel.isPageBean()) {
+                    //In case of non-page beans, it is necessary to update the property
+                    //binding expression and accessor methods in lesser scoped beans
+                    FacesModel[] models = ((FacesModelSet) currentModel.getOwner()).getFacesModels();
+                    for (int i = 0; i < models.length; i++) {
+                        FileObject fObj = models[i].getJavaFile();
+                        //If the faces model is not yet synced(because it may not be open), then
+                        //get the file object for java file via its corresponding jsp file
+                        if (fObj == null && (models[i].getFile() == models[i].getMarkupFile())) {
+                            fObj = FacesModel.getJavaForJsp(models[i].getFile());
+                        }
+                        fObjs.add(fObj);
                     }
-                    fObjs.add(fObj);
                 }
-            }
 
-            unit.getThisClass().renameProperty(oldname, newname, fObjs);
+                unit.getThisClass().renameProperty(oldname, newname, fObjs);
+            }
         }
         return newname;
     }
@@ -359,7 +338,7 @@ public class Bean extends BeansNode {
      * @return An array of Property instances representing the set properties for this bean.
      */
     public Property[] getProperties() {
-        return (Property[])properties.toArray(Property.EMPTY_ARRAY);
+        return properties.toArray(Property.EMPTY_ARRAY);
     }
 
     /**
@@ -481,7 +460,7 @@ public class Bean extends BeansNode {
      * @return An array of EventSet instances representing the hooked event sets for this bean.
      */
     public EventSet[] getEventSets() {
-        return (EventSet[])eventSets.toArray(EventSet.EMPTY_ARRAY);
+        return eventSets.toArray(EventSet.EMPTY_ARRAY);
     }
 
     /**
@@ -612,5 +591,20 @@ public class Bean extends BeansNode {
     public List<String> getTypeParameterNames() {
         return typeParameterNames;
     }
-
+    
+    public boolean isGetterRequired() {
+        return CREATE_GETTER;
+    }
+    
+    public boolean isSetterRequired() {
+        return CREATE_SETTER;
+    }
+    
+    public boolean isInserted() {
+        return inserted; 
+    }
+    
+    public void setInserted(boolean inserted) {
+        this.inserted = inserted;
+    }
 }

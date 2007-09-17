@@ -107,7 +107,7 @@ public abstract class MarkupBean extends Bean {
      *
      * @return true iff the source entry for this bean was actually removed.
      */
-    protected boolean removeEntry() {
+    public boolean removeEntry() {
         Node parent = element.getParentNode();
         assert Trace.trace("insync.faces", "FB removeEntry: " + this);
         boolean removed = parent != null && parent.removeChild(element) != null;

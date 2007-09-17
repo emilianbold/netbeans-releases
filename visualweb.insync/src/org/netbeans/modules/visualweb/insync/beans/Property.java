@@ -40,6 +40,10 @@ public class Property extends BeansNode {
     // Java source-based property fields
     private JavaClass javaClass;
     private Statement stmt;
+    
+    private String valueSource;
+    private Object value;
+    private boolean inserted;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -86,7 +90,9 @@ public class Property extends BeansNode {
             return null;      
         }
         
-        return new Property(bean, pd, stmt, null);
+        Property prop = new Property(bean, pd, stmt, null);
+        prop.setInserted(true);
+        return prop;
     }
 
     /**
@@ -107,7 +113,7 @@ public class Property extends BeansNode {
      */
     protected boolean removeEntry() {
         boolean removed = false;
-        if(stmt != null) {
+        if(inserted & stmt != null) {
             removed = stmt.remove();
             stmt = null;
         }
@@ -142,7 +148,13 @@ public class Property extends BeansNode {
      * literals.
      */
     public Object getValue(Class type) {
-        return stmt == null ? null : stmt.evaluateArgument();
+        if (inserted && value == null) {
+            if (stmt == null) {
+                stmt = getStatement();
+            }
+            value = stmt.evaluateArgument();
+        }
+        return value;
     }
 
     /**
@@ -150,18 +162,24 @@ public class Property extends BeansNode {
      * default, but may be returned in other forms by subclasses.
      */
     public String getValueSource() {
-        return stmt == null ? null : stmt.getArgumentSource();
+        if(inserted && valueSource == null) {
+            if(stmt == null) {
+                stmt = getStatement();
+            }
+            valueSource = stmt.getArgumentSource();
+        }
+        return valueSource;
     }
 
     /**
      * Set the value of this property, creating the call arg expression of the appropriate type
      */
     public void setValue(Object value, String valueSource) {
-        if(stmt == null) {
-            Method method = unit.getPropertiesInitMethod();
-            stmt = method.addPropertyStatement(bean.getName(), 
-                    descriptor.getWriteMethod().getName(), valueSource);
-        }else {
+        this.valueSource = valueSource;
+        if(inserted && valueSource != null) {
+            if(stmt == null) {
+                stmt = getStatement();
+            }
             stmt.replaceArgument(valueSource);
         }
     }
@@ -169,11 +187,34 @@ public class Property extends BeansNode {
     //org.netbeans.modules.visualweb.insync.java.Statement holds on to bean name because of bug #96387
     //Until that bug is fixed, this is a workaround to fix #103122 
     public void setBeanName(String name) {
-        if(stmt != null) {
+        if (inserted) {
+            if (stmt == null) {
+                stmt = getStatement();
+            }
             stmt.setBeanName(name);
         }
     }
     
+    private Statement getStatement() {
+        return bean.unit.getPropertiesInitMethod().findPropertyStatement(bean.getName(), getWriteMethodName());
+    }
+    
+    public String getBeanName() {
+        return bean != null ? bean.getName() : null;
+    }
+    
+    public String getWriteMethodName() {
+        return descriptor != null ? 
+            descriptor.getWriteMethod().getName() : null;
+    }
+    
+    public boolean isInserted() {
+        return inserted; 
+    }
+    
+    public void setInserted(boolean inserted) {
+        this.inserted = inserted;
+    }
     /**
      * 
      */

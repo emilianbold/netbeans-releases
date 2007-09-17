@@ -99,10 +99,16 @@ public class MethodBindEventSet extends EventSet {
         }
     }
 
+    /**
+     * @see org.netbeans.modules.visualweb.insync.beans.EventSet#insertEntry()
+     */
+    public void insertEntry() {
+    }
+    
     /*
      * @see org.netbeans.modules.visualweb.insync.beans.EventSet#removeEntry()
      */
-    protected boolean removeEntry() {
+    public boolean removeEntry() {
         assert Trace.trace("insync.beans", "MBES.removeEntry: " + this);
         if (bindingProperty != null) {
             event = null;

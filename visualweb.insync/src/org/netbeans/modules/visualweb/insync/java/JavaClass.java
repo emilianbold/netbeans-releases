@@ -44,10 +44,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.Naming;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,6 +57,7 @@ public class JavaClass {
     //JavaUnit javaUnit;    //To obtain FileObject/JavaSource
     private FileObject fObj;        //Temporary till we plug this into insync
     private String name;
+
     private enum MethodKind {
         NORMAL,
         DELEGATOR,
@@ -207,64 +206,88 @@ public class JavaClass {
      * Inserts a field, getter and setter given the property name and type, boolean 
      * flags to control the addition of getter/setter
      */
-    public void addProperty(final String name, final Class type, final boolean getter, final boolean setter) {
-        WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
-            public Object run(WorkingCopy wc) {
-                TreeMaker make = wc.getTreeMaker();
-                TypeElement typeElement = typeElementHandle.resolve(wc);
-                ClassTree ctree = wc.getTrees().getTree(typeElement);
-                ClassTree newctree = ctree;
-                VariableTree vtree = TreeMakerUtils.createPropertyField(wc, name, type);
-                
-                // Find the constructor
-                // TBD: index selection logic, i.e where to add the field, getter and setter
-                // For now insert before the ctor
-                Tree ctor = getPublicConstructor(wc, ctree);
-                newctree = make.insertClassMember(newctree, ctree.getMembers().indexOf(ctor), vtree);
-                MethodTree mtree = null;
-                if(getter) {
-                    mtree = TreeMakerUtils.createPropertyGetterMethod(wc, name, type);
-                    newctree = make.insertClassMember(newctree, newctree.getMembers().indexOf(ctor), mtree);
-                }
-                if(setter) {
-                    mtree = TreeMakerUtils.createPropertySetterMethod(wc, name, type);
-                    newctree = make.insertClassMember(newctree, newctree.getMembers().indexOf(ctor), mtree);
-                }
-                wc.rewrite(ctree, newctree);
-                return null;
-            }
-        }, fObj);    
+    private ClassTree addProperty(final String name, final Class type, final boolean getter, 
+            final boolean setter, ClassTree ctree, Tree tree, WorkingCopy wc) {
+        TreeMaker make = wc.getTreeMaker();
+        ClassTree newctree = ctree;
+        VariableTree vtree = TreeMakerUtils.createPropertyField(wc, name, type);
+
+        newctree = make.insertClassMember(newctree, ctree.getMembers().indexOf(tree), vtree);
+        MethodTree mtree = null;
+        if (getter) {
+            mtree = TreeMakerUtils.createPropertyGetterMethod(wc, name, type);
+            newctree = make.insertClassMember(newctree, newctree.getMembers().indexOf(tree), mtree);
+        }
+        if (setter) {
+            mtree = TreeMakerUtils.createPropertySetterMethod(wc, name, type);
+            newctree = make.insertClassMember(newctree, newctree.getMembers().indexOf(tree), mtree);
+        }
+        return newctree;
     }
     
     /*
      * Deletes a field, getter and setter given the property name and type, boolean 
      * flags to control the addition of getter/setter
      */    
-    public void removeProperty(final String name) {
-        WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
+    private ClassTree removeProperty(final String name, ClassTree ctree, WorkingCopy wc) {
+        TreeMaker make = wc.getTreeMaker();
+        ClassTree newctree = ctree;
+        VariableElement varElem = getField(wc, name);
+        if (varElem != null) {
+            newctree = make.removeClassMember(ctree, wc.getTrees().getTree(varElem));
+        }
+        ExecutableElement getElem = getMethod(wc, Naming.getterName(name), new Class[0]);
+        TypeMirror type = null;
+        if (getElem != null) {
+            type = getElem.getReturnType();
+            newctree = make.removeClassMember(newctree, wc.getTrees().getTree(getElem));
+            ExecutableElement setElem = getMethod(wc, Naming.setterName(name), Collections.<TypeMirror>singletonList(type));
+            if (setElem != null) {
+                newctree = make.removeClassMember(newctree, wc.getTrees().getTree(setElem));
+            }
+        }
+        return newctree;
+    }
+    
+    public void addBeans(final List<Bean> beans) {
+        WriteTaskWrapper.execute(new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
-                TreeMaker make = wc.getTreeMaker();
                 TypeElement typeElement = typeElementHandle.resolve(wc);
                 ClassTree ctree = wc.getTrees().getTree(typeElement);
-                ClassTree newctree = ctree;
-                VariableElement varElem = getField(wc, name);
-                if(varElem != null) {
-                    newctree = make.removeClassMember(ctree, wc.getTrees().getTree(varElem));
+                ClassTree oldTree = ctree;
+                // Find the constructor
+                // TBD: index selection logic, i.e where to add the field, getter and setter
+                // For now insert before the ctor
+                Tree ctor = getPublicConstructor(wc, ctree);
+                for (Bean bean : beans) {
+                    ctree = addProperty(bean.getName(), bean.getType(), 
+                            bean.isGetterRequired(), bean.isSetterRequired(), ctree, ctor, wc);
+                    bean.getUnit().getPropertiesInitMethod().addPropertySetStatements(wc, bean);
+                    bean.setInserted(true);
                 }
-                ExecutableElement getElem = getMethod(wc, Naming.getterName(name), new Class[0]);
-                TypeMirror type = null;
-                if(getElem != null) {
-                    type = getElem.getReturnType();
-                    newctree = make.removeClassMember(newctree, wc.getTrees().getTree(getElem));
-                    ExecutableElement setElem = getMethod(wc, Naming.setterName(name), Collections.<TypeMirror>singletonList(type));
-                    if(setElem != null) {
-                        newctree = make.removeClassMember(newctree, wc.getTrees().getTree(setElem));
-                    }
-                }
-                wc.rewrite(ctree, newctree);
+                beans.get(0).getUnit().getCleanupMethod().addCleanupStatements(wc, beans);
+                wc.rewrite(oldTree, ctree);
                 return null;
             }
-        }, fObj);    
+        }, fObj);
+    }
+
+    public void removeBeans(final List<Bean> beans) {
+        WriteTaskWrapper.execute(new WriteTaskWrapper.Write() {
+            public Object run(WorkingCopy wc) {
+                TypeElement typeElement = typeElementHandle.resolve(wc);
+                ClassTree ctree = wc.getTrees().getTree(typeElement);
+                ClassTree oldTree = ctree;
+                for (Bean bean : beans) {
+                    ctree = removeProperty(bean.getName(), ctree, wc);
+                    bean.getUnit().getPropertiesInitMethod().removeSetStatements(wc, bean);
+                    bean.removeEntry();
+                }
+                beans.get(0).getUnit().getCleanupMethod().removeCleanupStatements(wc, beans);
+                wc.rewrite(oldTree, ctree);
+                return null;
+            }
+        }, fObj);
     }
     
     /*
@@ -287,7 +310,6 @@ public class JavaClass {
         return (HashMap<ElementHandle, String>)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
                 final HashMap<ElementHandle, String> elementAndNames = new HashMap<ElementHandle, String>();
-                TypeElement typeElement = typeElementHandle.resolve(cinfo);
                 VariableElement varElem = getField(cinfo, name);
                 if(varElem != null) {
                     elementAndNames.put(ElementHandle.create(varElem), newName);

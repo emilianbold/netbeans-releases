@@ -42,7 +42,11 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.BeanStructureScanner;
+import org.netbeans.modules.visualweb.insync.beans.Event;
+import org.netbeans.modules.visualweb.insync.beans.EventSet;
+import org.netbeans.modules.visualweb.insync.beans.Property;
 import org.netbeans.modules.visualweb.insync.faces.ThresherFacesBeanStructureScanner;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -163,7 +167,7 @@ public class Method {
      */ 
     public Statement addPropertyStatement(final String beanName, final String methodName, 
             final String valueSource) {
-        WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
+       WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
                 TreeMaker make = wc.getTreeMaker();
                 ExecutableElement elem = execElementHandle.resolve(wc);
@@ -180,8 +184,115 @@ public class Method {
         return findPropertyStatement(beanName, methodName);
     }
     
+    public void addCleanupStatements(WorkingCopy wc, List<Bean> beans) {
+        ExecutableElement elem = execElementHandle.resolve(wc);
+        BlockTree oldBlockTree = wc.getTrees().getTree(elem).getBody();
+        BlockTree newBlockTree = oldBlockTree;
+        for (Bean bean : beans) {
+            if (bean.getCleanupMethod() != null) {
+                newBlockTree = addStatement(wc, newBlockTree, bean.getName(), bean.getCleanupMethod(), null);
+            }
+        }
+        wc.rewrite(oldBlockTree, newBlockTree);
+    }
+
+    public void removeCleanupStatements(WorkingCopy wc, List<Bean> beans) {
+        ExecutableElement elem = execElementHandle.resolve(wc);
+        BlockTree oldBlockTree = wc.getTrees().getTree(elem).getBody();
+        BlockTree newBlockTree = oldBlockTree;
+        for (Bean bean : beans) {
+            if (bean.getCleanupMethod() != null) {
+                newBlockTree = removeStatement(wc, newBlockTree, bean.getName(), bean.getCleanupMethod());
+            }
+        }
+        wc.rewrite(oldBlockTree, newBlockTree);
+    }
+    
+    public void addPropertySetStatements(final Bean bean) {
+        final List<Property> props = new ArrayList<Property>();
+        for (Property prop : bean.getProperties()) {
+            if (!prop.isMarkupProperty() && !prop.isInserted()) {
+                props.add(prop);
+            }
+        }
+        if(props.size() > 0) {
+            WriteTaskWrapper.execute(new WriteTaskWrapper.Write() {
+                public Object run(WorkingCopy wc) {
+                    addPropertySetStatements(wc, bean, props);
+                    return null;
+                }
+            }, javaClass.getFileObject());
+        }
+    }
+
+    private void addPropertySetStatements(WorkingCopy wc, Bean bean, List<Property> props) {
+        ExecutableElement elem = execElementHandle.resolve(wc);
+        BlockTree oldBlockTree = wc.getTrees().getTree(elem).getBody();
+        BlockTree newBlockTree = oldBlockTree;
+        for (Property prop : props) {
+            newBlockTree = addStatement(wc, newBlockTree, bean.getName(), prop.getWriteMethodName(), prop.getValueSource());
+            prop.setInserted(true);
+        }
+        wc.rewrite(oldBlockTree, newBlockTree);
+    }
+
+    public void addPropertySetStatements(WorkingCopy wc, Bean bean) {
+        ExecutableElement elem = execElementHandle.resolve(wc);
+        BlockTree oldBlockTree = wc.getTrees().getTree(elem).getBody();
+        BlockTree newBlockTree = oldBlockTree;
+        for (Property prop : bean.getProperties()) {
+            if (!prop.isMarkupProperty() && !prop.isInserted()) {
+                newBlockTree = addStatement(wc, newBlockTree, bean.getName(), prop.getWriteMethodName(), prop.getValueSource());
+                prop.setInserted(true);
+            }
+        }
+        wc.rewrite(oldBlockTree, newBlockTree);
+    }
+   
+    public void removeSetStatements(WorkingCopy wc, Bean bean) {
+        ExecutableElement elem = execElementHandle.resolve(wc);
+        BlockTree oldBlockTree = wc.getTrees().getTree(elem).getBody();
+        BlockTree newBlockTree = oldBlockTree;
+        //Remove property set statements
+        for (Property prop : bean.getProperties()) {
+            if (!prop.isMarkupProperty() && prop.isInserted()) {
+                newBlockTree = removeStatement(wc, newBlockTree, bean.getName(), prop.getWriteMethodName());
+                prop.setInserted(false);
+            }
+        }
+        //Remove event set statements
+        for (EventSet eventSet : bean.getEventSets()) {
+            if(eventSet.isInserted()) {
+                newBlockTree = removeStatement(wc, newBlockTree, bean.getName(), eventSet.getAddListenerMethodName());
+                eventSet.setInserted(false);
+            }
+        }
+        wc.rewrite(oldBlockTree, newBlockTree);
+    }
+
+    public void addEventSetStatements(Bean bean) {
+        for (EventSet eventSet : bean.getEventSets()) {
+            if (!eventSet.isInserted()) {
+                eventSet.insertEntry();
+            }
+        }
+    }
+
+    private BlockTree addStatement(WorkingCopy wc, BlockTree blockTree, String beanName, String methodName, String valueSource) {
+        TreeMaker make = wc.getTreeMaker();
+        ExecutableElement elem = execElementHandle.resolve(wc);
+        ArrayList<ExpressionTree> args = new ArrayList<ExpressionTree>();
+        if (valueSource != null) {
+            SourcePositions[] positions = new SourcePositions[1];
+            args.add(wc.getTreeUtilities().parseExpression(valueSource, positions));
+        }
+        ExpressionTree exprTree = TreeMakerUtils.createMethodInvocation(wc, beanName, methodName, args);
+        ExpressionStatementTree exprStatTree = wc.getTreeMaker().ExpressionStatement(exprTree);
+        return wc.getTreeMaker().addBlockStatement(blockTree, exprStatTree);
+    }
+
     /*
-     * Adds a expression statement of the form a.setFoo(arg);
+     * Removes a statement of the form a.setFoo(arg);
      * 
      */ 
     public void removeStatement(final String beanName, final String methodName) {
@@ -198,6 +309,16 @@ public class Method {
         }, javaClass.getFileObject());
     }    
 
+   private BlockTree removeStatement(WorkingCopy wc, BlockTree blockTree, String beanName, String methodName) {
+       TreeMaker make = wc.getTreeMaker();
+       ExecutableElement elem = execElementHandle.resolve(wc);
+       StatementTree stmtTree = findPropertyStatement(wc, beanName, methodName);
+       if (stmtTree != null) {
+           return wc.getTreeMaker().removeBlockStatement(blockTree, stmtTree);
+       }
+       return null;
+   }
+    
     /*
      * Adds a expression statement of the form a.b(arg1, ..);
      */     
@@ -412,7 +533,7 @@ public class Method {
                 }
                 try {
                     DataObject od = DataObject.find(javaClass.getFileObject());
-                    EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
+                    EditorCookie ec = od.getCookie(EditorCookie.class);
                     if (ec != null && offset != -1) {
                         StyledDocument doc = ec.getDocument();
                         if (doc != null) {

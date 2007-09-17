@@ -27,6 +27,7 @@ import java.beans.MethodDescriptor;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.netbeans.modules.visualweb.insync.java.Method;
@@ -45,11 +46,12 @@ public class EventSet extends BeansNode {
     final protected Bean bean;   // owning bean
     final protected EventSetDescriptor descriptor;
 
-    final protected ArrayList events = new ArrayList();
+    final protected List<Event> events = new ArrayList<Event>();
 
     // Java source-based event set fields
-    Statement stmt;
-    JavaClass adapterClass;
+    private Statement stmt;
+    private JavaClass adapterClass;
+    private boolean inserted;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -105,7 +107,9 @@ public class EventSet extends BeansNode {
         
         JavaClass adapter = stmt.getAdapterClass();
         if(adapter != null) {
-            return new EventSet(bean, esd, stmt, adapter);
+            EventSet eventSet = new EventSet(bean, esd, stmt, adapter);
+            eventSet.setInserted(true);
+            return eventSet;
         }
         return null;
     }
@@ -118,7 +122,6 @@ public class EventSet extends BeansNode {
      */
     EventSet(Bean bean, EventSetDescriptor descriptor, boolean unused) {
         this(bean, descriptor);
-        insertEntry();
         assert Trace.trace("insync.beans", "ES new created EventSet: " + this);
     }
 
@@ -194,7 +197,7 @@ public class EventSet extends BeansNode {
     /**
      * Insert the stub source entry for this EventSet
      */
-    protected void insertEntry() {
+    public void insertEntry() {
         Class atype = getAdapterType();
         String adapterClassName;
         if (atype != null) {
@@ -203,14 +206,23 @@ public class EventSet extends BeansNode {
             adapterClassName = getListenerType().getName();
         }
         Method method = unit.getPropertiesInitMethod();
-        stmt = method.addEventSetStatement(bean.getName(), descriptor.getAddListenerMethod().getName(), adapterClassName);
-        adapterClass = stmt.getAdapterClass(); 
-        if (atype == null) {
-            // stub all methods in adapter body if we are extending just the interface
-            MethodDescriptor[] mdescrs = descriptor.getListenerMethodDescriptors();
-            for (int i = 0; i < mdescrs.length; i++) {
-                stubDelegatorMethod(mdescrs[i]);
+        if (descriptor.getAddListenerMethod() != null) {
+            stmt = method.addEventSetStatement(bean.getName(), 
+                    descriptor.getAddListenerMethod().getName(), adapterClassName);
+            adapterClass = stmt.getAdapterClass();
+            if (atype == null) {
+                // stub all methods in adapter body if we are extending just the interface
+                MethodDescriptor[] mdescrs = descriptor.getListenerMethodDescriptors();
+                for (int i = 0; i < mdescrs.length; i++) {
+                    stubDelegatorMethod(mdescrs[i]);
+                }
             }
+            
+            for (Event event : events) {
+                event.insertEntry();
+                event.setHandler();
+            }
+            inserted = true;
         }
     }
 
@@ -230,10 +242,15 @@ public class EventSet extends BeansNode {
      * 
      * @return true iff the source entry for this event was actually removed.
      */
-    protected boolean removeEntry() {
+    public boolean removeEntry() {
         assert Trace.trace("insync.beans", "ES.removeEntry: " + this);
+        boolean removed = false;
         events.clear();
-        return stmt == null ? false : stmt.remove();
+        if(inserted & stmt != null) {
+            removed = stmt.remove();
+            stmt = null;
+        }
+        return removed;
     }
 
     //------------------------------------------------------------------------------------ Accessors
@@ -360,7 +377,22 @@ public class EventSet extends BeansNode {
                 bean.unsetEventSet(this);  // will call back to our removeEntry()
         }
     }
+    
+    public String getAddListenerMethodName() {
+        if(descriptor.getAddListenerMethod() != null) {
+            return descriptor.getAddListenerMethod().getName();
+        }
+        return null;
+    }
 
+    public boolean isInserted() {
+        return inserted; 
+    }
+    
+    public void setInserted(boolean inserted) {
+        this.inserted = inserted;
+    }
+    
     //--------------------------------------------------------------------------------------- Object
 
     /**
