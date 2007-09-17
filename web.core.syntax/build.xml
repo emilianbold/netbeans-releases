@@ -18,5 +18,23 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="web/jspsyntax" default="netbeans" basedir=".">
-  <import file="../../nbbuild/templates/projectized.xml"/>
+    <target name="test-preinit" depends="init,build-languages-lib"/>
+    
+    <import file="../../nbbuild/templates/projectized.xml"/>
+
+    <target name="check-lib-classes">
+        <available file="../../languages/build/test/qa-functional/classes" property="lib.classes.exist" type="dir"/>
+    </target>
+
+    <target name="build-languages-lib" unless="lib.classes.exist" depends="check-lib-classes">
+        <echo> BUILDING LANGUAGES LIB </echo>
+	<java classname="org.apache.tools.ant.Main" dir="../../languages/test" failonerror="true" fork="true">
+          <jvmarg value="-Dant.home=${ant.home}"/>
+          <arg value="buildtests"/>
+          <arg value="-Dxtest.testtype=qa-functional"/>
+          <arg value="-Dxtest.attribs=stable"/>
+	  <classpath path="${java.class.path}"/>
+        </java>
+    </target>
+
 </project>
