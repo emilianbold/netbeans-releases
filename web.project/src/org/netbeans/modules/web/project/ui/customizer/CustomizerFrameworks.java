@@ -262,6 +262,8 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
             wizardDescriptor.putProperty("j2eeLevel", j2eeVersion);
             wizardDescriptor.putProperty("serverInstanceID", serverInstanceID);
             frameworkConfigurationPanel.readSettings(wizardDescriptor);
+            
+            stateChanged(new ChangeEvent(this));
         }
 
         public void stateChanged(ChangeEvent e) {
