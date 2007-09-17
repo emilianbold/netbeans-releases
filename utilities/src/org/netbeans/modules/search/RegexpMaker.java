@@ -163,7 +163,9 @@ final class RegexpMaker {
             return false;
         }
 
-        return Pattern.matches(wordCharsExpr, new String(new char[] {c}));
+        assert wordCharsExpr == "[\\p{javaLetterOrDigit}_]"             //NOI18N
+               : "update implementation of method isWordChar(char)";    //NOI18N
+        return (c == '_') || Character.isLetterOrDigit(c);
     }
 
     /**
