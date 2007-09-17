@@ -647,7 +647,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         />
     </target>
 
-    <target name="check-sigtest" depends="sigtest-init">
+    <target name="check-sigtest" depends="sigtest-init" unless="sigtest.skip.check">
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
