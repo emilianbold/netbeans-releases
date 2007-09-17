@@ -290,19 +290,14 @@ public abstract class SimpleItem {
         }
 
         public UpdateItem toUpdateItem (Map<String, String> licenses, String installTime) {
-            String source = Utilities.readSourceFromUpdateTracking (info);
-            if (source == null) {
-                source = Utilities.getProductVersion ();
-            }
-            
             UpdateItemImpl impl = new InstalledModuleItem (
                     info.getCodeNameBase (),
                     info.getSpecificationVersion ().toString (),
                     info,
-                    source,
                     null, // XXX author
                     null, // installed cluster
                     installTime
+                    
                     );
             
             return Utilities.createUpdateItem (impl);

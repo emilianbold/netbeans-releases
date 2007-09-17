@@ -43,7 +43,6 @@ public class InstalledModuleItem extends ModuleItem {
             String codeName,
             String specificationVersion,
             ModuleInfo info,
-            String source,
             String author,
             String installCluster,
             String installTime) {
@@ -67,6 +66,9 @@ public class InstalledModuleItem extends ModuleItem {
     }
     
     public String getSource () {
+        if (source == null) {
+            source = Utilities.readSourceFromUpdateTracking (info);
+        }
         return source;
     }
     

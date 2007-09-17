@@ -91,7 +91,6 @@ public class FeatureUncompleteTest extends NbTestCase
                     info.getCodeNameBase (),
                     info.getSpecificationVersion ().toString (),
                     info,
-                    "",
                     null, // XXX author
                     null, // installed cluster
                     null);

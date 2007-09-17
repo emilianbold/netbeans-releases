@@ -117,7 +117,6 @@ public class FeatureNotUpToDateTest extends NbTestCase
                     info.getCodeNameBase (),
                     higherSV.toString (),
                     new HackedModuleInfo (info, higherSV),
-                    "",
                     null, // XXX author
                     null, // installed cluster
                     null);
