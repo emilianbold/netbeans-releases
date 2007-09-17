@@ -32,9 +32,9 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.jsf.JSFUtils;
-import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -47,6 +47,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
 
     private JSFConfigurationPanel panel;
+    private boolean customizer;
     
     private ArrayList <Library> jsfLibraries;
     private boolean webModule25Version;
@@ -54,14 +55,18 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
-        initComponents();
         this.panel = panel;
+        this.customizer = customizer;
+        
+        initComponents();
         initLibraries();
 
         tURLPattern.getDocument().addDocumentListener(this);
         cbPackageJars.setVisible(false);
         if (customizer){
             enableComponents(false);
+        } else {
+            updateLibrary();
         }
     }
     
@@ -419,28 +424,24 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         for (int i = 0; i < components.length; i++) {
             components[i].setEnabled(enable);
         }
-        
-        if (enable){
-            updateLibrary();
-        }  
     }
     
-    boolean valid(WizardDescriptor wizardDescriptor) {
+    boolean valid() {
+        ExtenderController controller = panel.getController();
         String urlPattern = tURLPattern.getText();
-        if (urlPattern == null || urlPattern.trim().equals("")) {                                    // NOI18N
-          wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
-                NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));
-          return false;
+        if (urlPattern == null || urlPattern.trim().equals("")) { // NOI18N
+            controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));
+            return false;
         }
         if (!isPatternValid(urlPattern)) {
-          wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
-                NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
-          return false;
+            controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
+            return false;
         }
         
-        if (wizardDescriptor != null) {
-            String j2eeLevel = (String) wizardDescriptor.getProperty("j2eeLevel"); //NOI18N
-            String currentServerInstanceID = (String) wizardDescriptor.getProperty("serverInstanceID"); //NOI18N
+        if (!customizer) {
+            Properties properties = controller.getProperties();
+            String j2eeLevel = (String)properties.getProperty("j2eeLevel"); //NOI18N
+            String currentServerInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
             if (j2eeLevel != null && currentServerInstanceID != null) {
                 boolean currentWebModule25Version;
                 if (j2eeLevel.equals("1.5")) //NOI81N
@@ -457,32 +458,30 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         
         if ((rbNewLibrary.isSelected() && (jtFolder.getText().trim().length() <= 0 || jtNewLibraryName.getText().trim().length() <= 0))
                 || (rbRegisteredLibrary.isSelected() && cbLibraries.getItemCount() <= 0)) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
+            controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
             return false;
         }
-        
         
         if (rbNewLibrary.isSelected()) {
             String folder = jtFolder.getText().trim();
             String newLibraryName = jtNewLibraryName.getText().trim();
             String message =JSFUtils.isJSFInstallFolder(new File(folder));
             if (message != null) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", message); //NOI18N
+                controller.setErrorMessage(message); //NOI18N
                 return false;
             }
             if (newLibraryName.length() <= 0) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName")); //NOI18N
+                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName")); //NOI18N
                 return false;
             }
             Library lib = JSFUtils.getJSFLibrary(newLibraryName);
             if (lib != null) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_AlreadyExists")); //NOI18N
+                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_AlreadyExists")); //NOI18N
                 return false;
             }
         }
                 
-        if(wizardDescriptor!=null)
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
+        controller.setErrorMessage(null);
         return true;
     }
     
@@ -498,21 +497,15 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         return false;
     }
     
-    void validate (WizardDescriptor d) throws WizardValidationException {
-//        projectLocationPanel.validate (d);
-    }
-    
-    void read (WizardDescriptor d) {
-        if ("1.5".equals(d.getProperty("j2eeLevel"))) //NOI81N
+    void update() {
+        Properties properties = panel.getController().getProperties();
+        if ("1.5".equals((String)properties.getProperty("j2eeLevel"))) //NOI81N
             webModule25Version = true;
         else
             webModule25Version = false;
         
-        serverInstanceID = (String) d.getProperty("serverInstanceID"); //NOI18N
+        serverInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
         initLibSettings(webModule25Version, serverInstanceID);
-                
-//        projectLocationPanel.read(d);
-//        optionsPanel.read(d);
     }
     
     /**  Method looks at the project classpath and is looking for javax.faces.FacesException.
@@ -554,11 +547,6 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         }
     }
 
-    void store(WizardDescriptor d) {
-//        projectLocationPanel.store(d);
-//        optionsPanel.store(d);
-    }
-    
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
@@ -622,7 +610,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             enableNewLibraryComponent(false);
             enableDefinedLibraryComponent(false);
             panel.setLibraryType(JSFConfigurationPanel.LibraryType.NONE);
-            panel.setErrorMessage(null);
+            panel.getController().setErrorMessage(null);
         } else if (rbRegisteredLibrary.isSelected()){
             enableNewLibraryComponent(false);
             enableDefinedLibraryComponent(true);
@@ -630,7 +618,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             if (jsfLibraries.size() > 0){
                 panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()));
             }
-            panel.setErrorMessage(null);
+            panel.getController().setErrorMessage(null);
         } else if (rbNewLibrary.isSelected()){
             enableNewLibraryComponent(true);
             enableDefinedLibraryComponent(false);
@@ -655,7 +643,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         String message = null;
         String fileName = jtFolder.getText();
         // clear the panel error message
-        panel.setErrorMessage(null);
+        panel.getController().setErrorMessage(null);
         
         if (fileName == null || "".equals(fileName)) {
             message = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_PathIsNotFaceletsFolder");
@@ -682,7 +670,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 }
             }
         }
-        panel.setErrorMessage(message);
+        panel.getController().setErrorMessage(message);
     }
 
 }

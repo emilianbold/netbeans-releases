@@ -21,19 +21,19 @@ package org.netbeans.modules.web.core;
 
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.jsploader.JspCompileUtil;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 
 import org.openide.filesystems.*;
-import org.netbeans.modules.web.spi.webmodule.RequestParametersProvider;
+import org.netbeans.modules.web.spi.webmodule.RequestParametersQueryImplementation;
 
 /** Static methods for execution parameters.
 *
 * @author Petr Jiricka
 */
-public class WebExecSupport implements RequestParametersProvider {
+public class WebExecSupport implements RequestParametersQueryImplementation {
 
     public static final String EA_REQPARAMS = "NetBeansAttrReqParams"; // NOI18N
 
@@ -64,11 +64,11 @@ public class WebExecSupport implements RequestParametersProvider {
 
     public String getFileAndParameters(FileObject f) {
         
-        List <WebFrameworkProvider> frameworkProviders = WebFrameworkSupport.getFrameworkProviders(); 
+        List <WebFrameworkProvider> frameworks = WebFrameworks.getFrameworks(); 
         String url = null;
         WebModule wm = WebModule.getWebModule(f);
-        if (wm != null && frameworkProviders.size() > 0){
-            for ( WebFrameworkProvider frameworkProvider : frameworkProviders) {
+        if (wm != null && frameworks.size() > 0){
+            for ( WebFrameworkProvider frameworkProvider : frameworks) {
                 if (frameworkProvider.isInWebModule(wm)){
                     url = frameworkProvider.getServletPath(f);
                     if (url != null)

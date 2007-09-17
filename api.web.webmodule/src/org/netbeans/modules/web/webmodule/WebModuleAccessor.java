@@ -21,15 +21,16 @@ package org.netbeans.modules.web.webmodule;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 
-/* This class provides access to the {@link WebModule}'s private constructor
+/**
+ * This class provides access to the {@link WebModule}'s private constructor
  * from outside in the way that this class is implemented by an inner class of
- * {@link WebModule} and the instance is set into the {@link DEFAULT}.
+ * {@link WebModule} and the instance is set into the {@link #DEFAULT}.
  */
 public abstract class WebModuleAccessor {
 
     public static WebModuleAccessor DEFAULT;
 
-    // force loading of WebModule class. That will set DEFAULT variable.
+    // force loading of the WebModule class. That will set DEFAULT variable.
     static {
         Class c = WebModule.class;
         try {
@@ -38,9 +39,6 @@ public abstract class WebModuleAccessor {
             ex.printStackTrace();
         }
     }
-    
+
     public abstract WebModule createWebModule(WebModuleImplementation spiWebmodule);
-
-    public abstract WebModuleImplementation getWebModuleImplementation (WebModule wm);
-
 }

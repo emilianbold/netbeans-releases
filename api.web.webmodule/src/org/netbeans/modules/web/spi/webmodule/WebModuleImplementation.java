@@ -23,31 +23,41 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.filesystems.FileObject;
 
 /**
- * SPI interface for {@link org.netbeans.modules.web.api.webmodule.WebModule}.
+ * SPI for {@link org.netbeans.modules.web.api.webmodule.WebModule}.
+ *
  * @see WebModuleFactory
  */
 public interface WebModuleImplementation {
 
-    /** Folder that contains sources of the static documents for
+    /**
+     * Returns the folder that contains sources of the static documents for
      * the web module (html, JSPs, etc.).
+     *
+     * @return the static documents folder; can be null.
      */
     FileObject getDocumentBase ();
 
-    /** Context path of the web module.
+    /**
+     * Returns the context path of the web module.
+     *
+     * @return the context path; can be null.
      */
     String getContextPath ();
 
-    /** J2EE platform version - one of the constants
-     * {@link org.netbeans.modules.web.api.webmodule.WebModule#J2EE_13_LEVEL}, 
-     * {@link org.netbeans.modules.web.api.webmodule.WebModule#J2EE_14_LEVEL}.
-     * @return J2EE platform version
+    /**
+     * Returns the J2EE platform version of this module. The returned value is
+     * one of the constants {@link org.netbeans.modules.web.api.webmodule.WebModule#J2EE_13_LEVEL},
+     * {@link org.netbeans.modules.web.api.webmodule.WebModule#J2EE_14_LEVEL} or
+     * {@link org.netbeans.modules.web.api.webmodule.WebModule#JAVA_EE_5_LEVEL}.
+     *
+     * @return J2EE platform version; never null.
      */
     String getJ2eePlatformVersion ();
-    
+
     /**
      * WEB-INF folder for the web module.
      * <div class="nonnormative">
-     * The WEB-INF folder would typically be a child of the folder returned 
+     * The WEB-INF folder would typically be a child of the folder returned
      * by {@link #getDocumentBase} but does not need to be.
      * </div>
      *
@@ -56,26 +66,32 @@ public interface WebModuleImplementation {
     FileObject getWebInf ();
 
     /**
-     * Deployment descriptor (web.xml file) of the web module.
+     * Returns the deployment descriptor (<code>web.xml</code> file) of the web module.
      * <div class="nonnormative">
-     * The web.xml file would typically be a child of the folder returned 
+     * The web.xml file would typically be a child of the folder returned
      * by {@link #getWebInf} but does not need to be.
      * </div>
      *
-     * @return the {@link FileObject}; might be <code>null</code>
+     * @return the <code>web.xml</code> file; can be null.
      */
     FileObject getDeploymentDescriptor ();
-    
-    /** Source roots associated with the web module.
+
+    /**
+     * Returns the Java source roots associated with the web module.
      * <div class="nonnormative">
-     * Note that not all the java source roots in the project (e.g. in a freeform project)
-     * belong to the web module.
+     * <p>Note that not all the java source roots in the project (e.g. in a freeform project)
+     * belong to the web module.</p>
      * </div>
+     *
+     * @return this web module's Java source roots; never null.
      */
     FileObject[] getJavaSources();
-    
+
     /**
-     * Returns the metadata associated with this web module.
+     * Returns a model describing the metadata of this web module (servlets,
+     * resources, etc.).
+     *
+     * @return this web module's metadata model; never null.
      */
     MetadataModel<WebAppMetadata> getMetadataModel();
 }

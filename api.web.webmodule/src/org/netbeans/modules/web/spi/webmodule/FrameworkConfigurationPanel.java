@@ -21,14 +21,20 @@ package org.netbeans.modules.web.spi.webmodule;
 
 import org.openide.WizardDescriptor;
 
-/** Extension to WizardDescriptor.Panel. It allows to enable/disable
- *  framework configuration panel components as requested by different
- *  usages of the dialog.
+/**
+ * Extension to {@link org.openide.WizardDescriptor.Panel}. It allows to enable or disable
+ * the framework configuration panel components as requested by the different
+ * usages of the panel.
+ *
+ * @deprecated This class has been replaced with {@link org.netbeans.modules.web.spi.webmodule.WebModuleExtender}.
  */
-public interface FrameworkConfigurationPanel extends  WizardDescriptor.Panel {
+@Deprecated
+public interface FrameworkConfigurationPanel extends WizardDescriptor.Panel {
 
-    /** Enable/disable panel components.
-    * @param enable if the components should be enabled or disabled
-    */
+    /**
+     * Enables or disables the panel components.
+     *
+     * @param enable if the components should be enabled or disabled
+     */
     public void enableComponents(boolean enable);
 }

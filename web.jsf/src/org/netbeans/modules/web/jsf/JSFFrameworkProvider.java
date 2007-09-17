@@ -45,10 +45,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
-import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,7 +72,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Description"));       //NOI18N
     }
     
-    public Set extend(WebModule webModule) {
+    // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
+    // better to move this to JSFConfigurationPanel
+    public Set extendImpl(WebModule webModule) {
         Set result = new HashSet();
         Library jsfLibrary = null;      
         Library jstlLibrary = null;
@@ -154,9 +157,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         return null;
     }
     
-    public FrameworkConfigurationPanel getConfigurationPanel(WebModule webModule) {
+    public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        panel = new JSFConfigurationPanel(!defaultValue);
+        panel = new JSFConfigurationPanel(this, controller, !defaultValue);
         if (!defaultValue){
             // get configuration panel with values from the wm
             Servlet servlet = ConfigurationUtils.getFacesServlet(webModule);

@@ -19,29 +19,28 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 
-import java.awt.Component;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
-import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.util.HelpCtx;
 
 /**
  *
  * @author petr
  */
-public class JSFConfigurationPanel implements FrameworkConfigurationPanel, WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
-    private WizardDescriptor wizardDescriptor;
+public class JSFConfigurationPanel extends WebModuleExtender {
+    
+    private final JSFFrameworkProvider framework;
+    private final ExtenderController controller;
     private JSFConfigurationPanelVisual component;
-
-    private String error_message;
 
     public enum LibraryType {USED, NEW, NONE};
     private LibraryType libraryType;
@@ -50,20 +49,16 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
     private File installedFolder;
 
     /** Creates a new instance of JSFConfigurationPanel */
-    public JSFConfigurationPanel(boolean customizer) {
+    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer) {
+        this.framework = framework;
+        this.controller = controller;
         this.customizer = customizer;
         getComponent();
     }
     
     private boolean customizer;
     
-    
-    
-    public boolean isFinishPanel() {
-        return true;
-    }
-
-    public Component getComponent() {
+    public JSFConfigurationPanelVisual getComponent() {
         if (component == null)
             component = new JSFConfigurationPanelVisual(this, customizer);
 
@@ -74,9 +69,21 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         return new HelpCtx(JSFConfigurationPanel.class);
     }
     
+    public void update() {
+        component.update();
+    }
+    
     public boolean isValid() {
         getComponent();
-        return component.valid(wizardDescriptor);
+        return component.valid();
+    }
+    
+    public Set extend(WebModule webModule) {
+        return framework.extendImpl(webModule);
+    }
+    
+    public ExtenderController getController() {
+        return controller;
     }
     
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
@@ -102,35 +109,6 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         }
     }
     
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read (wizardDescriptor);
-        
-        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
-        // this name is used in NewProjectWizard to modify the title
-        Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
-        if (substitute != null)
-            wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
-    }
-    
-   
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-        ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
-    }
-
-    public void validate() throws WizardValidationException {
-        getComponent ();
-        component.validate (wizardDescriptor);
-    }
-
-    public void enableComponents(boolean enable) {
-        getComponent();
-        component.enableComponents(enable);
-        
-    }
-
     public String getServletName(){
         return component.getServletName();
     }
@@ -167,15 +145,6 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         return component.packageJars();
     }
     
-    protected void setErrorMessage(String message){
-        if (error_message != null && (message == null || "".equals(message))){
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
-            error_message = null;
-        } else
-            this.error_message = message;
-        fireChangeEvent();
-    }
-
     public String getNewLibraryName(){
         return newLibraryName;
     }

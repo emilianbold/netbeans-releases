@@ -46,7 +46,8 @@ import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.openide.DialogDescriptor;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -58,11 +59,8 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.OpenCookie;
 
@@ -88,7 +86,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Description"));       //NOI18N
     }
     
-    public Set extend(final WebModule webModule) {
+    // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
+    // better to move this to JSFConfigurationPanel
+    Set extendImpl(final WebModule webModule) {
         final FileObject fileObject = webModule.getDocumentBase();
         final Project project = FileOwnerQuery.getOwner(fileObject);
         final ProjectTemplate template = new JsfProjectTemplateJakarta();
@@ -208,9 +208,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         return null;
     }
     
-    public FrameworkConfigurationPanel getConfigurationPanel(WebModule webModule) {
+    public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        panel = new JSFConfigurationPanel(!defaultValue);
+        panel = new JSFConfigurationPanel(this, controller, !defaultValue);
 
         // Default Bean Package
         if (webModule != null) {

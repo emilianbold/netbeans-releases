@@ -19,7 +19,8 @@
 
 package org.netbeans.modules.web.api.webmodule;
 
-/** Constants ueful for web-based projects;
+/**
+ * Constants useful for web-based projects.
  *
  * @author  Milan Kuchtiak
  */
@@ -28,41 +29,33 @@ public class WebProjectConstants {
     private WebProjectConstants () {}
 
     /**
-     * Document root root sources type (source folders for JSPs, HTML ...)
-     * @see org.netbeans.api.project.Sources
+     * Document root root sources type (source folders for JSPs, HTML, ...).
+     * See <code>org.netbeans.api.project.Sources</code>.
      */
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
 
     /**
-     * WEB-INF sources type (source folders for TLD files ...)
-     * @see org.netbeans.api.project.Sources
+     * WEB-INF sources type (source folders for TLD files, ...).
+     * See <code>org.netbeans.api.project.Sources</code>.
      */
     public static final String TYPE_WEB_INF="web_inf"; //NOI18N
-    /**
-     * WEB-INF sources type (source folders for Tag Files ...)
-     * @see org.netbeans.api.project.Sources
-     */
-    public static final String TYPE_TAGS="tags"; //NOI18N
     
     /**
      * Standard command for redeploying a web project.
-     * @see ActionProvider
+     * See <code>org.netbeans.api.project.ActionProvider</code>.
      */
-    //TO-DO: should be got from org.netbeans.modules.j2ee.common.J2eeProjectConstants 
     public static final String COMMAND_REDEPLOY = "redeploy" ; //NOI18N
     
     /**
      * Standard artifact type representing a WAR file.
-     * @see org.netbeans.api.project.ant.AntArtifact
+     * See <code>org.netbeans.api.project.ant.AntArtifact</code>.
      */
-    public static final String ARTIFACT_TYPE_WAR = "war"; // NOI18N 
+    public static final String ARTIFACT_TYPE_WAR = "war"; // NOI18N
     
     /**
-     * Standard artifact type representing a WAR file used for adding 
+     * Standard artifact type representing a WAR file used for adding
      * Web module into a J2EE Application (ear project).
-     * @see org.netbeans.api.project.ant.AntArtifact
+     * See <code>org.netbeans.api.project.ant.AntArtifact</code>.
      */
-    //TO-DO: should be got from org.netbeans.modules.j2ee.common.J2eeProjectConstants 
     public static final String ARTIFACT_TYPE_WAR_EAR_ARCHIVE = "j2ee_ear_archive"; //NOI18N
-    
 }

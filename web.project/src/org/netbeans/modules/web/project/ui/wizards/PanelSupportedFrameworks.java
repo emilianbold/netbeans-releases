@@ -23,9 +23,9 @@ import java.awt.Component;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
 
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
@@ -33,8 +33,9 @@ import org.openide.util.HelpCtx;
  * Panel asking for web frameworks to use.
  * @author Radko Najman
  */
-final class PanelSupportedFrameworks implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
-    
+final class PanelSupportedFrameworks implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+
+    private ExtenderController controller = ExtenderController.create();
     private WizardDescriptor wizardDescriptor;
     private PanelSupportedFrameworksVisual component;
     
@@ -48,7 +49,7 @@ final class PanelSupportedFrameworks implements WizardDescriptor.Panel, WizardDe
 
     public Component getComponent() {
         if (component == null)
-            component = new PanelSupportedFrameworksVisual(this, null, PanelSupportedFrameworksVisual.ALL_FRAMEWORKS, null);
+            component = new PanelSupportedFrameworksVisual(this, controller, null, PanelSupportedFrameworksVisual.ALL_FRAMEWORKS, null);
 
         return component;
     }
@@ -79,7 +80,7 @@ final class PanelSupportedFrameworks implements WizardDescriptor.Panel, WizardDe
     
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
-        component.read (wizardDescriptor);
+        component.read(wizardDescriptor);
         
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewProjectWizard to modify the title
@@ -92,10 +93,5 @@ final class PanelSupportedFrameworks implements WizardDescriptor.Panel, WizardDe
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
         ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
-    }
-
-    public void validate() throws WizardValidationException {
-        getComponent ();
-        component.validate (wizardDescriptor);
     }
 }

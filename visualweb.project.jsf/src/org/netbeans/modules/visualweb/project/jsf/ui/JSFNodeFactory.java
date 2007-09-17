@@ -25,7 +25,7 @@ import org.netbeans.modules.visualweb.project.jsf.services.ThemeNodeService;
 import org.netbeans.modules.visualweb.project.jsf.services.ComponentLibraryService;
 import org.netbeans.modules.visualweb.project.jsf.services.DataSourceService;
 
-import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 
 import java.beans.PropertyChangeEvent;
@@ -146,7 +146,7 @@ public class JSFNodeFactory implements NodeFactory {
         }
 
         private JSFFrameworkProvider getJSFFramework() {
-            List frameworks = WebFrameworkSupport.getFrameworkProviders();
+            List frameworks = WebFrameworks.getFrameworks();
             for (int i = 0; i < frameworks.size(); i++) {
                 WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
                 String name = NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name");

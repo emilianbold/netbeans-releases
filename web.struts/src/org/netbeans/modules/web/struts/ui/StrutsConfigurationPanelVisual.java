@@ -21,9 +21,7 @@ package org.netbeans.modules.web.struts.ui;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-
-import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -178,25 +176,22 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
     private javax.swing.JTextField jTextFieldServletName;
     // End of variables declaration//GEN-END:variables
     
-    boolean valid(WizardDescriptor wizardDescriptor) {
+    boolean valid() {
+        ExtenderController controller = panel.getController();
         String urlPattern = (String)jComboBoxURLPattern.getEditor().getItem();
         if (urlPattern == null || urlPattern.trim().equals("")){
-          wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
-                NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));  
-          return false;
-        }
-        if (!isPatternValid(urlPattern)){
-          wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
-                NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));  
-          return false;  
-        }
-        if (getAppResource() == null || getAppResource().trim().length() == 0) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
-                NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_ApplicationResourceNotValid"));  
+            controller.setErrorMessage(NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));
             return false;
         }
-        if (wizardDescriptor != null)
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
+        if (!isPatternValid(urlPattern)){
+            controller.setErrorMessage(NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
+            return false;
+        }
+        if (getAppResource() == null || getAppResource().trim().length() == 0) {
+            controller.setErrorMessage(NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_ApplicationResourceNotValid"));
+            return false;
+        }
+        controller.setErrorMessage(null);
         return true;
     }
 
@@ -212,20 +207,6 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         return false;
     }
     
-    void validate (WizardDescriptor d) throws WizardValidationException {
-//        projectLocationPanel.validate (d);
-    }
-    
-    void read (WizardDescriptor d) {
-//        projectLocationPanel.read(d);
-//        optionsPanel.read(d);
-    }
-
-    void store(WizardDescriptor d) {
-//        projectLocationPanel.store(d);
-//        optionsPanel.store(d);
-    }
-    
     void enableComponents(boolean enable) {
         jComboBoxURLPattern.setEnabled(enable);
         jTextFieldAppResource.setEnabled(enable);
@@ -235,9 +216,8 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         jLabelAppResource.setEnabled(enable);
         jLabelServletName.setEnabled(enable);
         jLabelURLPattern.setEnabled(enable);
-                
     }
-
+    
     public String getURLPattern(){
         return (String)jComboBoxURLPattern.getSelectedItem();
     }

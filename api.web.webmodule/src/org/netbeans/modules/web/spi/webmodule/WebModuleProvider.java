@@ -23,30 +23,33 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 
 /**
- * Provider interface for webmodules.
- * <p>
- * The <code>org.netbeans.modules.web.webapi</code> module registers an
+ * Provider interface for web modules.
+ *
+ * <p>The <code>org.netbeans.api.web.webmodule</code> module registers an
  * implementation of this interface to global lookup which looks for the
  * project which owns a file (if any) and checks its lookup for this interface,
  * and if it finds an instance, delegates to it. Therefore it is not normally
  * necessary for a project type provider to register its own instance just to
- * define the webmodule for files it owns, assuming it uses projects for 
- * implementation of webmodule.
- * </p>
- * <p> If needed a new implementation of this interface can be registered in 
- * global lookup.
- * </p>
+ * define the web module for files it owns, assuming it uses projects for
+ * implementation of the web module.</p>
+ *
+ * <p>If needed a new implementation of this interface can be registered in
+ * global lookup.</p>
+ *
  * @see WebModule#getWebModule
+ *
  * @author Pavel Buzek
  */
 public interface WebModuleProvider {
-    
+
     /**
-     * Find a webmodule containing a given file.
-     * @param file a file somewhere
-     * @return a webmodule, or null for no answer
+     * Find the web module containing a given file.
+     *
+     * @param  file a file; never null.
+     * @return a web module, or null if this provider could not find a web module
+     *         containing this file.
+     *
      * @see WebModuleFactory
      */
     WebModule findWebModule(FileObject file);
-    
 }

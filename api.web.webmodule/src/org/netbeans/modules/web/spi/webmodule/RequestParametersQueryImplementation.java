@@ -19,27 +19,22 @@
 
 package org.netbeans.modules.web.spi.webmodule;
 
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.webmodule.WebModuleAccessor;
+import org.openide.filesystems.FileObject;
 
 /**
- * Most general way to create {@link WebModule} instances.
- * You are not permitted to create them directly; instead you implement
- * {@link WebModuleImplementation} and use this factory.
+ * This is the SPI counterpart of {@link org.netbeans.modules.web.api.webmodule.RequestParametersQuery}.
+ * Register an instance of this provider in the default lookup to provide
+ * access to the file part of URL and request parameters.
  *
  * @author Pavel Buzek
  */
-public final class WebModuleFactory {
-
-    private WebModuleFactory () {}
+public interface RequestParametersQueryImplementation {
 
     /**
-     * Creates an API web module instance for the given SPI web module.
+     * Return the part of URL for access the file. It can include the query string.
      *
-     * @param  spiWebmodule an instance of a SPI web module.
-     * @return an instance of a API web module.
+     * @param  file the file for find the request parameters for; never null.
+     * @return path fom the context; can be null.
      */
-    public static WebModule createWebModule(WebModuleImplementation spiWebmodule) {
-        return WebModuleAccessor.DEFAULT.createWebModule (spiWebmodule);
-    }
+    String getFileAndParameters (FileObject file);
 }

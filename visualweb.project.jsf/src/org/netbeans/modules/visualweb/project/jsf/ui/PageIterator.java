@@ -22,9 +22,10 @@ package org.netbeans.modules.visualweb.project.jsf.ui;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.framework.JSFFrameworkProvider;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
@@ -39,6 +40,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -200,7 +202,7 @@ public class PageIterator implements TemplateWizard.Iterator {
 
         // Visual Web framework is not initialized
         if (!JsfProjectUtils.isJsfProject(project)) {
-            List frameworks = WebFrameworkSupport.getFrameworkProviders();
+            List frameworks = WebFrameworks.getFrameworks();
             for (int i = 0; i < frameworks.size(); i++) {
                 WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
                 String name = NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name");
@@ -220,8 +222,8 @@ public class PageIterator implements TemplateWizard.Iterator {
                         setStartPage(project, webModule, dir, "Page2"); // NOI18N
                     }
 
-                    framework.getConfigurationPanel(webModule);
-                    result = framework.extend(webModule);
+                    WebModuleExtender extender = framework.createWebModuleExtender(webModule, ExtenderController.create());
+                    result = extender.extend(webModule);
 
                     if (dir.getFileObject(targetName+"."+template.getExt()) != null) { // NOI18N
                         return result;

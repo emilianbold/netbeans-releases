@@ -19,14 +19,21 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -35,20 +42,20 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.WizardDescriptor;
 
 public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.Provider, ListSelectionListener {
     
     private final ProjectCustomizer.Category category;
     private WebProject project;
     private WebProjectProperties uiProperties;
+    private List newExtenders = new LinkedList();
     private List usedFrameworks = new LinkedList();
-    private List newFrameworks = new LinkedList();
+    private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
+    private ExtenderController controller = ExtenderController.create();
     
     /** Creates new form CustomizerFrameworks */
     public CustomizerFrameworks(ProjectCustomizer.Category category, WebProjectProperties uiProperties) {
@@ -61,13 +68,22 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     }
     
     private void initFrameworksList(WebModule webModule) {
+        String j2eeVersion = (String)uiProperties.get(WebProjectProperties.J2EE_PLATFORM);
+        String serverInstanceID = (String)uiProperties.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+        Properties properties = controller.getProperties();
+        properties.setProperty("j2eeLevel", j2eeVersion); // NOI18N
+        properties.setProperty("serverInstanceID", serverInstanceID); // NOI18N
+        
         jListFrameworks.setModel(new DefaultListModel());
-        List frameworks = WebFrameworkSupport.getFrameworkProviders();
+        List frameworks = WebFrameworks.getFrameworks();
         for (int i = 0; i < frameworks.size(); i++) {
             WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
             if (framework.isInWebModule(webModule)) {
                 usedFrameworks.add(framework);
                 ((DefaultListModel) jListFrameworks.getModel()).addElement(framework.getName());
+                WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
+                extenders.put(framework, extender);
+                extender.addChangeListener(new ExtenderListener(extender));
             }                
         }
         jListFrameworks.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -172,29 +188,42 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         DialogDescriptor desc = new DialogDescriptor(inner, NbBundle.getMessage(CustomizerFrameworks.class, "LBL_SelectWebExtension_DialogTitle")); //NOI18N
         Object res = DialogDisplayer.getDefault().notify(desc);
         if (res.equals(NotifyDescriptor.YES_OPTION)) {
-            newFrameworks.addAll(panel.getSelectedFrameworks());
-            if (newFrameworks != null) {
-                uiProperties.setNewFrameworks(newFrameworks);
-                for(int i = 0; i < newFrameworks.size(); i++) {
-                    WebFrameworkProvider framework = (WebFrameworkProvider) newFrameworks.get(i);
-		    if (!((DefaultListModel) jListFrameworks.getModel()).contains(framework.getName()))
-			((DefaultListModel) jListFrameworks.getModel()).addElement(framework.getName());
-		    
-		    if (usedFrameworks.size() == 0)
-			usedFrameworks.add(framework);
-		    else
-			for (int j = 0; j < usedFrameworks.size(); j++)
-			    if (!((WebFrameworkProvider) usedFrameworks.get(j)).getName().equals(framework.getName())) {
-				usedFrameworks.add(framework);
-				break;
-			    }
-		    
-                    jListFrameworks.setSelectedValue(framework.getName(), true);
+            List newFrameworks = panel.getSelectedFrameworks();
+            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+            for(int i = 0; i < newFrameworks.size(); i++) {
+                WebFrameworkProvider framework = (WebFrameworkProvider) newFrameworks.get(i);
+                if (!((DefaultListModel) jListFrameworks.getModel()).contains(framework.getName()))
+                    ((DefaultListModel) jListFrameworks.getModel()).addElement(framework.getName());
+
+                boolean added = false;
+                if (usedFrameworks.size() == 0) {
+                    usedFrameworks.add(framework);
+                    added = true;
                 }
+                else
+                    for (int j = 0; j < usedFrameworks.size(); j++)
+                        if (!((WebFrameworkProvider) usedFrameworks.get(j)).getName().equals(framework.getName())) {
+                            usedFrameworks.add(framework);
+                            added = true;
+                            break;
+                        }
+                
+                if (added) {
+                    WebModuleExtender extender = framework.createWebModuleExtender(wm, controller);
+                    if (extender != null) {
+                        extenders.put(framework, extender);
+                        newExtenders.add(extender);
+                        extender.addChangeListener(new ExtenderListener(extender));
+                    }
+                }
+
+                jListFrameworks.setSelectedValue(framework.getName(), true);
             }
+            
+            uiProperties.setNewExtenders(newExtenders);
         }
         
-        if (WebFrameworkSupport.getFrameworkProviders().size() == jListFrameworks.getModel().getSize())
+        if (WebFrameworks.getFrameworks().size() == jListFrameworks.getModel().getSize())
             jButtonAdd.setEnabled(false);
     }//GEN-LAST:event_jButtonAddActionPerformed
     
@@ -221,9 +250,9 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
 	int selectedIndex = jListFrameworks.getSelectedIndex();
 	if (selectedIndex != -1) {	
 	    WebFrameworkProvider framework = (WebFrameworkProvider) usedFrameworks.get(selectedIndex);
-	    WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-	    if (framework.getName().equals(frameworkName))
-		if (framework.getConfigurationPanel(wm) != null) {
+	    if (framework.getName().equals(frameworkName)) {
+                WebModuleExtender extender = extenders.get(framework);
+		if (extender != null) {
 		    String message = MessageFormat.format(NbBundle.getMessage(CustomizerFrameworks.class, "LBL_FrameworkConfiguration"), new Object[] {frameworkName}); //NOI18N
 		    jLabelConfig.setText(message);
 		    jPanelConfig.removeAll();
@@ -235,48 +264,38 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
 		    gridBagConstraints.weightx = 1.0;
 		    gridBagConstraints.weighty = 1.0;
 
-                    FrameworkConfigurationPanel frameworkConfigurationPanel = framework.getConfigurationPanel(wm);
-                    frameworkConfigurationPanel.addChangeListener(new FrameworkConfigurationPanelListener(frameworkConfigurationPanel));
-		    jPanelConfig.add(frameworkConfigurationPanel.getComponent(), gridBagConstraints);
+		    jPanelConfig.add(extender.getComponent(), gridBagConstraints);
+                    jPanelConfig.repaint();
 		    jPanelConfig.revalidate();
 		} else {
 		    hideConfigPanel();
 		}
+            }
 	} else
 	    hideConfigPanel();
     }
     
     // #109426
-    private final class FrameworkConfigurationPanelListener implements ChangeListener {
-        private final FrameworkConfigurationPanel frameworkConfigurationPanel;
-        private final WizardDescriptor wizardDescriptor;
-
-        public FrameworkConfigurationPanelListener(FrameworkConfigurationPanel frameworkConfigurationPanel) {
-            this.frameworkConfigurationPanel = frameworkConfigurationPanel;
-            
-            // ugly, i know...
-            WizardDescriptor.Panel<Void>[] wizardPanels = null;
-            wizardDescriptor = new WizardDescriptor(wizardPanels, null);
-            String j2eeVersion = (String)uiProperties.get(WebProjectProperties.J2EE_PLATFORM);
-            String serverInstanceID = (String)uiProperties.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
-            wizardDescriptor.putProperty("j2eeLevel", j2eeVersion);
-            wizardDescriptor.putProperty("serverInstanceID", serverInstanceID);
-            frameworkConfigurationPanel.readSettings(wizardDescriptor);
-            
+    private final class ExtenderListener implements ChangeListener {
+    
+        private final WebModuleExtender extender;
+        
+        public ExtenderListener(WebModuleExtender extender) {
+            this.extender = extender;
+            extender.update();
             stateChanged(new ChangeEvent(this));
         }
 
         public void stateChanged(ChangeEvent e) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", null); // NOI18N
-            if (frameworkConfigurationPanel.isValid()) {
+            controller.setErrorMessage(null);
+            if (extender.isValid()) {
                 if (!category.isValid()) {
                     category.setValid(true);
                     category.setErrorMessage(null);
                 }
             } else {
-                String errorMessage = (String) wizardDescriptor.getProperty("WizardPanel_errorMessage"); // NOI18N
                 category.setValid(false);
-                category.setErrorMessage(errorMessage);
+                category.setErrorMessage(controller.getErrorMessage());
             }
         }
     }

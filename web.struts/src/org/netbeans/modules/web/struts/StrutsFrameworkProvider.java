@@ -46,6 +46,8 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Taglib;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.netbeans.modules.web.struts.config.model.MessageResources;
 
 import org.openide.filesystems.FileObject;
@@ -62,7 +64,6 @@ import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 
 import org.netbeans.modules.web.struts.ui.StrutsConfigurationPanel;
 
@@ -89,8 +90,10 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 NbBundle.getMessage(StrutsFrameworkProvider.class, "Sruts_Name"),               //NOI18N
                 NbBundle.getMessage(StrutsFrameworkProvider.class, "Sruts_Description"));       //NOI18N
     }
-
-    public Set extend (WebModule wm) {
+    
+    // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
+    // better to move this to JSFConfigurationPanel
+    public Set extendImpl(WebModule wm) {
         FileObject fo = wm.getDocumentBase();
         Project project = FileOwnerQuery.getOwner(fo);
         Set result = new HashSet();
@@ -168,9 +171,9 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
         return (dd != null && StrutsConfigUtilities.getActionServlet(dd) != null);
     }
     
-    public FrameworkConfigurationPanel getConfigurationPanel(WebModule wm) {
+    public WebModuleExtender createWebModuleExtender(WebModule wm, ExtenderController controller) {
         boolean defaultValue = (wm == null || !isInWebModule(wm));
-        panel = new StrutsConfigurationPanel(!defaultValue);
+        panel = new StrutsConfigurationPanel(this, controller, !defaultValue);
         if (defaultValue){
             // get configuration panel with default value
             panel.setAppResource(defaultAppResource);

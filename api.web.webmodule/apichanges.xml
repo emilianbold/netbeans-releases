@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="../../nbbuild/javadoctools/apichanges.xsl"?>
@@ -80,42 +80,76 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Deprecating_WebFrameworkProvider_Methods">
+            <api name="WebModuleAPI"/>
+            <summary>Deprecating <code>WebFrameworkProvider.extend()</code> and <code>WebFrameworkProvider.getConfigurationPanel()</code></summary>
+            <version major="1" minor="9"/>
+            <date day="14" month="9" year="2007"/>
+            <author login="abadea@netbeans.org"/>
+            <compatibility deprecation="yes"/>
+            <description>
+                <p>
+                    Deprecated methods <code>WebFrameworkProvider.extend()</code> and <code>WebFrameworkProvider.getConfigurationPanel()</code>.
+                    Class <code>WebConfigurationPanel</code> has been deprecated too.
+                </p>
+                <p>
+                    Introduced a <code>WebModuleExtender</code> class and a <code>WebModule.createWebModuleExtender()</code> method returning it.
+                    This allows for better encapsulation of the web module extending process.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.web.api.webmodule" name="WebFrameworkProvider"/>
+            <class package="org.netbeans.modules.web.spi.webmodule" name="WebConfigurationPanel"/>
+            <class package="org.netbeans.modules.web.spi.webmodule" name="WebModuleExtender"/>
+        </change>
+        <change id="Deprecating_getJavaSources">
+            <api name="WebModuleAPI"/>
+            <summary>Deprecating <code>WebModule.getJavaSources</code></summary>
+            <version major="1" minor="9"/>
+            <date day="14" month="9" year="2007"/>
+            <author login="abadea@netbeans.org"/>
+            <compatibility deprecation="yes"/>
+            <description>
+                <p>
+                    Deprecated <code>WebModule.getJavaSources</code> because its return value is not generic enough.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.web.api.webmodule" name="WebModule"/>
+        </change>
         <change id="Adding_getServletPath">
             <api name="WebModuleAPI"/>
-            <summary>Adding getServletPath method for framework providers</summary>
+            <summary>Adding <code>WebFrameworkProvider.getServletPath()</code></summary>
             <version major="1" minor="5"/>
             <date day="8" month="3" year="2006"/>
             <author login="ppisl@netbeans.org"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <compatibility addition="yes"/>
             <description>
                 <p>
-                    Added method for obtaining servlet path for an jsp from the framework provider. 
+                    Added method <code>WebFrameworkProvider.getServletPath()</code> for obtaining the servlet path for a JSP. 
                 </p>
             </description>
-            <class package="org.netbeans.modules.web.api.webmodule" name="WebExtensionSupport" link="no" />
-            <class package="org.netbeans.modules.web.spi.webmodule" name="WebExtensionProvider" link="no" />
+            <class package="org.netbeans.modules.web.spi.webmodule" name="WebFrameworkProvider"/>
         </change>
         <change id="Adding_Framework_Support">
             <api name="WebModuleAPI"/>
-            <summary>Adding Web Extension support</summary>
+            <summary>Adding web framework support</summary>
             <version major="1" minor="4"/>
             <date day="28" month="7" year="2005"/>
             <author login="ppisl@netbeans.org"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <compatibility addition="yes"/>
             <description>
                 <p>
                     There are some frameworks like Struts, JSF, Spring etc., which extend the web applications. 
-                    When we want to support the extensions we need add the support for the extensions into 
-                    the Web Module API/SPI. 
+                    This change introduces the concept of a web framework provider to the Web Module API/SPI
+                    which allows to implement supporting these frameworks.
                 </p>
             </description>
-            <class package="org.netbeans.modules.web.api.webmodule" name="WebExtensionSupport" link="no" />
-            <class package="org.netbeans.modules.web.spi.webmodule" name="WebExtensionProvider" link="no" />
+            <class package="org.netbeans.modules.web.api.webmodule" name="WebFrameworks"/>
+            <class package="org.netbeans.modules.web.spi.webmodule" name="WebFrameworkProvider"/>
         </change>
          
         <change id="Remove_URLCookie">
             <api name="WebModuleAPI"/>
-            <summary>Replace URLCookie with a RequestParametersQuery API and RequestParametersProvider SPI</summary>
+            <summary>Replace URLCookie with a RequestParametersQuery API and RequestParametersQueryImplementation SPI</summary>
             <version major="1" minor="2"/>
             <date day="27" month="1" year="2005"/>
             <author login="pbuzek@netbeans.org"/>
@@ -128,7 +162,7 @@ is the proper place.
             </description>
             <class package="org.netbeans.modules.web.api.webmodule" name="URLCookie" link="no" />
             <class package="org.netbeans.modules.web.api.webmodule" name="RequestParametersQuery"/>
-            <class package="org.netbeans.modules.web.spi.webmodule" name="RequestParametersProvider"/>
+            <class package="org.netbeans.modules.web.spi.webmodule" name="RequestParametersQueryImplementation"/>
          </change>
     </changes>
 

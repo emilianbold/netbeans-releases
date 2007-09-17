@@ -44,6 +44,7 @@ import org.netbeans.modules.web.project.ProjectWebModule;
 
 import org.netbeans.modules.web.project.SourceRoots;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
@@ -185,7 +186,7 @@ public class WebProjectProperties {
     public ClassPathSupport cs;
 
     //list of frameworks to add to the application
-    private List newFrameworks;
+    private List newExtenders;
     
     // MODELS FOR VISUAL CONTROLS
     
@@ -367,10 +368,10 @@ public class WebProjectProperties {
             
             // extend project with selected frameworks
             // It should be called outside mutex, which is used above. See issue#68118
-            if (newFrameworks != null) {
-                for(int i = 0; i < newFrameworks.size(); i++)
-                    ((WebFrameworkProvider) newFrameworks.get(i)).extend(project.getAPIWebModule());
-                newFrameworks.clear();
+            if (newExtenders != null) {
+                for(int i = 0; i < newExtenders.size(); i++)
+                    ((WebModuleExtender) newExtenders.get(i)).extend(project.getAPIWebModule());
+                newExtenders.clear();
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run() {
                         project.fixRecommendedAndPrivilegedTemplates();
@@ -959,7 +960,7 @@ public class WebProjectProperties {
         }
     }
     
-    public void setNewFrameworks(List frameworks) {
-        newFrameworks = frameworks;
+    public void setNewExtenders(List extenders) {
+        newExtenders = extenders;
     }
 }

@@ -19,35 +19,34 @@
 
 package org.netbeans.modules.web.api.webmodule;
 
-import java.util.Iterator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.netbeans.modules.web.spi.webmodule.RequestParametersProvider;
+import org.netbeans.modules.web.spi.webmodule.RequestParametersQueryImplementation;
+import org.openide.util.Parameters;
 
-/** This query serves for executing single file in the server.
- * It returns request parameters for a given file.
+/**
+ * This query serves for executing single file in the server.
+ * It returns the request parameters for a given file.
  *
- * @see {@link org.netbeans.modules.web.spi.RequestParametersProvider} if you
- * want to implement this query.
+ * @see org.netbeans.modules.web.spi.webmodule.RequestParametersQueryImplementation
  *
  * @author Pavel Buzek
  */
 public final class RequestParametersQuery {
 
-    private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template<RequestParametersProvider>(RequestParametersProvider.class));
-    
-    /** Return the part of URL for access the file. It can include the query string.
-     * @return path fom the context.
-     */    
-    public static String getFileAndParameters(FileObject f) {
-        if (f == null) {
-            throw new NullPointerException("Passed null to RequestParametersQuery.getRequestParameters(FileObject)"); // NOI18N
-        }
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            RequestParametersProvider impl = (RequestParametersProvider)it.next();
-            String params = impl.getFileAndParameters(f);
+    private static final Lookup.Result<RequestParametersQueryImplementation> implementations =
+        Lookup.getDefault().lookupResult(RequestParametersQueryImplementation.class);
+
+    /**
+     * Returns the part of URL for access the file. It can include the query string.
+     * @param  file the file to find the request parameters for.
+     * @return path from the context; can be null.
+     * @throws NullPointerException if the <code>file</code> parameter is null.
+     */
+    public static String getFileAndParameters(FileObject file) {
+        Parameters.notNull("file", file); // NOI18N
+        for (RequestParametersQueryImplementation impl : implementations.allInstances()) {
+            String params = impl.getFileAndParameters(file);
             if (params != null) {
                 return params;
             }

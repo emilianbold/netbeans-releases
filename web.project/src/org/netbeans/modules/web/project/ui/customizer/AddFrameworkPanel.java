@@ -27,7 +27,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 
-import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 
 /**
@@ -45,7 +45,7 @@ public class AddFrameworkPanel extends javax.swing.JPanel {
     }
     
     private void createFrameworksList(List usedFrameworks) {
-        List frameworks = WebFrameworkSupport.getFrameworkProviders();
+        List frameworks = WebFrameworks.getFrameworks();
 	DefaultListModel model = new DefaultListModel();
 	jListFrameworks.setModel(model);
         

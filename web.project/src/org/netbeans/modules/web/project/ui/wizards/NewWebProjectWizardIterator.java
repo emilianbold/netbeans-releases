@@ -30,6 +30,7 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -46,7 +47,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
-import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.project.WebProject;
@@ -72,7 +73,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         
     private String[] createSteps() {
 	String[] steps;
-	if (WebFrameworkSupport.getFrameworkProviders().size() > 0)
+	if (WebFrameworks.getFrameworks().size() > 0)
 	    steps = new String[] {
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP2_Frameworks") //NOI18N
@@ -145,11 +146,11 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         WebModule apiWebModule = createdWebProject.getAPIWebModule();
         //add framework extensions
-        List selectedFrameworks = (List) wiz.getProperty(WizardProperties.FRAMEWORKS);
-        if (selectedFrameworks != null){
+        List selectedExtenders = (List) wiz.getProperty(WizardProperties.EXTENDERS);
+        if (selectedExtenders != null){
             handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_AddingFrameworks"), 3);
-            for(int i = 0; i < selectedFrameworks.size(); i++) {
-                Object o = ((WebFrameworkProvider) selectedFrameworks.get(i)).extend(apiWebModule);
+            for(int i = 0; i < selectedExtenders.size(); i++) {
+                Object o = ((WebModuleExtender) selectedExtenders.get(i)).extend(apiWebModule);
                 if (o != null && o instanceof Set)
                     resultSet.addAll((Set)o);
             }
@@ -174,7 +175,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         this.wiz = wiz;
         index = 0;
 
-	if (WebFrameworkSupport.getFrameworkProviders().size() > 0)
+	if (WebFrameworks.getFrameworks().size() > 0)
 	    //standard panels + configurable framework panel
 	    panels = new WizardDescriptor.Panel[] {
 		new PanelConfigureProject(),

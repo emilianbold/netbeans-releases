@@ -20,7 +20,6 @@
 package org.netbeans.modules.visualweb.project.jsf.framework;
 
 // <RAVE>
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 // </RAVE>
 
@@ -38,8 +37,9 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 // import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
     private JSFConfigurationPanel panel;
+    private boolean customizer;
     
     private ArrayList <Library> jsfLibraries;
     private boolean webModule25Version;
@@ -65,8 +66,11 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
-        initComponents();
         this.panel = panel;
+        this.customizer = customizer;
+        
+        initComponents();
+        
         // <RAVE>
         remove(jsfTabbedPane);
         add(confPanel, "card10");
@@ -75,8 +79,11 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
         tURLPattern.getDocument().addDocumentListener(this);
         cbPackageJars.setVisible(false);
+        
         if (customizer){
             enableComponents(false);
+        } else {
+            updateLibrary();
         }
     }
     
@@ -448,7 +455,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private javax.swing.JTextField tServletName;
     private javax.swing.JTextField tURLPattern;
     // End of variables declaration//GEN-END:variables
- 
+
     void enableComponents(boolean enable) {
         Component[] components;
         
@@ -461,37 +468,33 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         for (int i = 0; i < components.length; i++) {
             components[i].setEnabled(enable);
         }
-        
-        if (enable){
-            updateLibrary();
-        }  
     }
     
-    boolean valid(WizardDescriptor wizardDescriptor) {
+    boolean valid() {
+        ExtenderController controller = panel.getController();
         // <RAVE> Checking default Bean Package
         String beanPkg = beanPackageTextField.getText();
-        if (wizardDescriptor != null && !JsfProjectUtils.isValidJavaPackageName(beanPkg)) {
+        if (!customizer && !JsfProjectUtils.isValidJavaPackageName(beanPkg)) {
             String errMsg = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_InvalidPackage");
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+            controller.setErrorMessage(errMsg); // NOI18N
             return false;
         }
         // </RAVE>
 
         String urlPattern = tURLPattern.getText();
         if (urlPattern == null || urlPattern.trim().equals("")){
-          wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
-                NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));
-          return false;
+            controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));
+            return false;
         }
         if (!isPatternValid(urlPattern)){
-          wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
-                NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
-          return false;
+            controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
+            return false;
         }
         
-        if (wizardDescriptor != null) {
-            String j2eeLevel = (String) wizardDescriptor.getProperty("j2eeLevel"); //NOI18N
-            String currentServerInstanceID = (String) wizardDescriptor.getProperty("serverInstanceID"); //NOI18N
+        if (!customizer) {
+            Properties properties = controller.getProperties();
+            String j2eeLevel = (String)properties.getProperty("j2eeLevel"); //NOI18N
+            String currentServerInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
             if (j2eeLevel != null && currentServerInstanceID != null) {
                 boolean currentWebModule25Version;
                 if (j2eeLevel.equals("1.5")) //NOI81N
@@ -506,7 +509,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             }
 
             // <RAVE>
-            initRowsetSettings(wizardDescriptor);
+            initRowsetSettings();
             // </RAVE>
         }
         
@@ -520,7 +523,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         }
 
         if (addJSF11 || addRowset) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", JsfProjectUtils.getBackwardsKitMesg(addJSF11, addRowset)); //NOI18N
+            controller.setErrorMessage(JsfProjectUtils.getBackwardsKitMesg(addJSF11, addRowset)); //NOI18N
             return false;
         }
         // </RAVE>
@@ -529,16 +532,16 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             String folder = jtFolder.getText().trim();
             String version = jtVersion.getText().trim();
             if (folder.length() <= 0) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyJSFFolder")); //NOI18N
+                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyJSFFolder")); //NOI18N
                 return false;
             }
             File jsfFolder = new File(folder);
             if (!jsfFolder.exists()) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NonExistingJSFFolder")); //NOI18N
+                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NonExistingJSFFolder")); //NOI18N
                 return false;
             }
             if (!jsfFolder.isDirectory()) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NotJSFFolder")); //NOI18N
+                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NotJSFFolder")); //NOI18N
                 return false;
             }
             FileObject fo = FileUtil.toFileObject(jsfFolder);
@@ -550,23 +553,21 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                     counter++;
             }
             if (counter != 2) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NotValidJSFFolder")); //NOI18N
+                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NotValidJSFFolder")); //NOI18N
                 return false;
             }
             if (version.length() <= 0) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyJSFVersion")); //NOI18N
+                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyJSFVersion")); //NOI18N
                 return false;
             }
             Library lib = JSFUtils.getJSFLibrary(version);
             if (lib != null) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_AlreadyExists")); //NOI18N
+                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_AlreadyExists")); //NOI18N
                 return false;
             }
         }
-                
-        
-        if(wizardDescriptor!=null)
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
+
+        controller.setErrorMessage(null);
         return true;
     }
     
@@ -588,25 +589,19 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         return false;
     }
     
-    void validate (WizardDescriptor d) throws WizardValidationException {
-//        projectLocationPanel.validate (d);
-    }
-    
-    void read (WizardDescriptor d) {
-        if ("1.5".equals(d.getProperty("j2eeLevel"))) //NOI81N
+    void update() {
+        Properties properties = panel.getController().getProperties();
+        if ("1.5".equals((String)properties.getProperty("j2eeLevel"))) //NOI81N
             webModule25Version = true;
         else
             webModule25Version = false;
         
-        serverInstanceID = (String) d.getProperty("serverInstanceID"); //NOI18N
+        serverInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
         initLibSettings(webModule25Version, serverInstanceID);
 
         // <RAVE>
-        initRowsetSettings(d);
+        initRowsetSettings();
         // </RAVE>
-                
-//        projectLocationPanel.read(d);
-//        optionsPanel.read(d);
     }
     
     private void initLibSettings(boolean webModule25Version, String serverInstanceID) {
@@ -653,9 +648,10 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     }
 
     // <RAVE>
-    private void initRowsetSettings(WizardDescriptor wizardDescriptor) {
+    private void initRowsetSettings() {
         addRowset = false;
-        String setSrcLevel = (String) wizardDescriptor.getProperty("setSourceLevel"); //NOI18N
+        Properties properties = panel.getController().getProperties();
+        String setSrcLevel = (String) properties.getProperty("setSourceLevel"); //NOI18N
         if ("1.4".equals(setSrcLevel)) { // NOI18N
             // It's a J2SE 1.4 project
             Library libRowset = LibraryManager.getDefault().getLibrary("rowset-ri"); // NOI18N
@@ -744,7 +740,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             enableNewLibraryComponent(false);
             enableDefinedLibraryComponent(false);
             panel.setLibraryType(JSFConfigurationPanel.LibraryType.NONE);
-            panel.setErrorMessage(null);
+            panel.getController().setErrorMessage(null);
         } else if (rbRegisteredLibrary.isSelected()){
             enableNewLibraryComponent(false);
             enableDefinedLibraryComponent(true);
@@ -752,7 +748,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             if (jsfLibraries.size() > 0){
                 panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()));
             }
-            panel.setErrorMessage(null);
+            panel.getController().setErrorMessage(null);
         } else if (rbNewLibrary.isSelected()){
             enableNewLibraryComponent(true);
             enableDefinedLibraryComponent(false);
@@ -802,7 +798,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 }
             }
         }
-        panel.setErrorMessage(message);
+        panel.getController().setErrorMessage(message);
     }
 
 }

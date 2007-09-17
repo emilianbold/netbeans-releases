@@ -43,7 +43,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ConfigurationFilesListener;
-import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
@@ -528,7 +528,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
 
         private void addFrameworkFiles() {
-            List providers = WebFrameworkSupport.getFrameworkProviders();
+            List providers = WebFrameworks.getFrameworks();
             for (int i = 0; i < providers.size(); i++) {
                 WebFrameworkProvider provider = (WebFrameworkProvider) providers.get(i);
                 FileObject wmBase = pwm.getDocumentBase();
