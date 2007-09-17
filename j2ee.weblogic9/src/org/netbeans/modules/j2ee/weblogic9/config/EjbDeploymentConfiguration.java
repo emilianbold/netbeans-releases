@@ -107,6 +107,8 @@ public class EjbDeploymentConfiguration implements ModuleConfiguration, Deployme
     public void dispose() {
     }
     
+    // FIXME this is not a proper implementation - deployment PLAN should be saved
+    // not a deployment descriptor    
     public void save(OutputStream os) throws ConfigurationException {
         WeblogicEjbJar weblogicEjbJar = getWeblogicEjbJar();
         if (weblogicEjbJar == null) {

@@ -60,6 +60,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 	  removeUnreferencedNodes="true"
           docroot="weblogic-application"
 	  rootDir="src"/>
+	<schema2beans schema="${wl9_dir}/resources/weblogic-deployment-plan.xsd"
+	  package="org.netbeans.modules.j2ee.weblogic9.config.gen"
+	  schemaType="xmlschema"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="deployment-plan"
+	  rootDir="src"/>
   </target>
   
   <target name="compile" depends="dd2beans_gen, projectized-common.compile"/>

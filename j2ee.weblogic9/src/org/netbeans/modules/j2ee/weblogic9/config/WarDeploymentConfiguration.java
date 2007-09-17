@@ -137,6 +137,8 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
         return webLogicWebApp;
     }
     
+    // FIXME this is not a proper implementation - deployment PLAN should be saved
+    // not a deployment descriptor
     public void save(OutputStream os) throws ConfigurationException {
         WeblogicWebApp webLogicWebApp = getWeblogicWebApp();
         if (webLogicWebApp == null) {

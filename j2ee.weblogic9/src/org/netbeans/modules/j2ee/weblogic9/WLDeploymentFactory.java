@@ -33,11 +33,9 @@ import java.util.Enumeration;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
@@ -53,6 +51,8 @@ import org.openide.util.NbBundle;
 public class WLDeploymentFactory implements DeploymentFactory {
 
     public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
+
+    private static final Logger LOGGER = Logger.getLogger(WLDeploymentFactory.class.getName());
 
     /**
      * The singleton instance of the factory
@@ -72,7 +72,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
     public static synchronized DeploymentFactory getInstance() {
         if (instance == null) {
             instance = new WLDeploymentFactory();
-            DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
+            //DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
         }
         return instance;
     }
@@ -107,27 +107,23 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
     private static WLClassLoader loader;
 
-    public static ClassLoader getWLClassLoader (String serverRoot) {
+    public static synchronized ClassLoader getWLClassLoader (String serverRoot) {
         if (loader == null) {
-            resetWLClassLoader(serverRoot);
+            try {
+                URL[] urls = new URL[] { new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
+                loader = new WLClassLoader(urls, WLDeploymentFactory.class.getClassLoader());
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, null, e);
+            }
         }
         return loader;
     }
 
-    private static void resetWLClassLoader (String serverRoot) {
-        loader = null;
-        try {
-            URL[] urls = new URL[] { new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
-            loader = new WLClassLoader(urls, WLDeploymentFactory.class.getClassLoader());
-        } catch (Exception e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e);
-        }
-    }
-
     /*package*/ DeploymentManager getVendorDeploymentManager(String uri, String username, String password, String host, String port) throws DeploymentManagerCreationException {
-        if (WLDebug.isEnabled()) {
-            WLDebug.notify(WLDeploymentFactory.class, "getDM, uri:" + uri+" username:" + username+" password:"+password+" host:"+host+" port:"+port);
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "getDM, uri:" + uri+" username:" + username+" password:"+password+" host:"+host+" port:"+port); // NOI18N
         }
+
         DeploymentManagerCreationException dmce = null;
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
@@ -141,7 +137,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
             ClassLoader loader = getWLClassLoader(serverRoot);
             Thread.currentThread().setContextClassLoader(loader);
-            Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
+            Class helperClazz = Class.forName("weblogic.deploy.api.tools.SessionHelper", false, loader); //NOI18N
             Method m = helperClazz.getDeclaredMethod("getDeploymentManager", new Class [] {String.class,String.class,String.class,String.class}); // NOI18N
             Object o = m.invoke(null, new Object [] {host, port, username, password});
             if (DeploymentManager.class.isAssignableFrom(o.getClass())) {
@@ -175,7 +171,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
             ClassLoader loader = getWLClassLoader(serverRoot);
             Thread.currentThread().setContextClassLoader(loader);
-            Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
+            Class helperClazz = Class.forName("weblogic.deploy.api.tools.SessionHelper", false, loader); //NOI18N
             Method m = helperClazz.getDeclaredMethod("getDisconnectedDeploymentManager", new Class [] {}); // NOI18N
             Object o = m.invoke(null, new Object [] {});
             if (DeploymentManager.class.isAssignableFrom(o.getClass())) {
@@ -205,8 +201,9 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
     public DeploymentManager getDeploymentManager(String uri, String username,
             String password) throws DeploymentManagerCreationException {
-        if (WLDebug.isEnabled()) {
-            WLDebug.notify(WLDeploymentFactory.class, "getDeploymentManager, uri:" + uri+" username:" + username+" password:"+password);
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "getDeploymentManager, uri:" + uri+" username:" + username+" password:"+password); // NOI18N
         }
 
         String[] parts = uri.split(":");                               // NOI18N
@@ -219,9 +216,11 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
     public DeploymentManager getDisconnectedDeploymentManager(String uri)
             throws DeploymentManagerCreationException {
-        if (WLDebug.isEnabled()) {
-            WLDebug.notify(WLDeploymentFactory.class, "getDisconnectedDeploymentManager, uri:" + uri);
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "getDisconnectedDeploymentManager, uri:" + uri); // NOI18N
         }
+
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4];

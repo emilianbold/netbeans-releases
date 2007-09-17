@@ -23,8 +23,10 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import java.util.Vector;
 import java.io.File;
+import java.io.InputStream;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.Target;
@@ -54,37 +56,54 @@ public class WLDeployer implements ProgressObject, Runnable {
     private static final String AUTO_DEPLOY_DIR = "/autodeploy"; //NOI18N
     /** timeout for waiting for URL connection */
     private static final int TIMEOUT = 60000;
-    
-    Target[] target;
-    File file;
-    File file2;
-    String uri;
-    TargetModuleID module_id;
+
+    private final String uri;
+
+    private Target[] target;
+    private File file;
+    private File file2;
+
+    private TargetModuleID module_id;
+
     /** Creates a new instance of JBDeployer */
     public WLDeployer(String serverUri) {
         uri = serverUri;
     }
-    
-    
-    public ProgressObject deploy(Target[] target, File file, File file2, String host, String port){
+
+
+    public ProgressObject deploy(Target[] target, File file, File file2, String host, String port) {
         //PENDING: distribute to all targets!
         WLTargetModuleID module_id = new WLTargetModuleID(target[0], file.getName() );
 
         try {
-            String server_url = "http://" + host+":"+port;
-            
+            String server_url = "http://" + host + ":" + port;
+
+            // TODO in fact we should look to deployment plan for overrides
+            // for now it is as good as previous solution
             if (file.getName().endsWith(".war")) {
-                String ctx [] = WeblogicWebApp.createGraph(file2).getContextRoot();
-                if (ctx != null && ctx.length > 0) {
-                    module_id.setContextURL( server_url + ctx[0]);
+                JarFileSystem jfs = new JarFileSystem();
+                jfs.setJarFile(file);
+                FileObject webXml = jfs.getRoot().getFileObject("WEB-INF/weblogic.xml"); // NOI18N
+                if (webXml != null) {
+                    InputStream is = webXml.getInputStream();
+                    try {
+                        String[] ctx = WeblogicWebApp.createGraph(is).getContextRoot();
+                        if (ctx != null && ctx.length > 0) {
+                            module_id.setContextURL(server_url + ctx[0]);
+                        }
+                    } finally {
+                        is.close();
+                    }
+                } else {
+                    System.out.println("Cannot file WEB-INF/weblogic.xml in " + file);
                 }
             } else if (file.getName().endsWith(".ear")) {
                 JarFileSystem jfs = new JarFileSystem();
                 jfs.setJarFile(file);
-                FileObject appXml = jfs.getRoot().getFileObject("META-INF/application.xml");
+                FileObject appXml = jfs.getRoot().getFileObject("META-INF/application.xml"); // NOI18N
                 if (appXml != null) {
                     Application ear = DDProvider.getDefault().getDDRoot(appXml);
-                    Module modules [] = ear.getModule();
+                    Module[] modules = ear.getModule();
                     for (int i = 0; i < modules.length; i++) {
                         WLTargetModuleID mod_id = new WLTargetModuleID(target[0]);
                         if (modules[i].getWeb() != null) {
@@ -96,7 +115,7 @@ public class WLDeployer implements ProgressObject, Runnable {
                     System.out.println("Cannot file META-INF/application.xml in " + file);
                 }
             }
-            
+
         } catch(Exception e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
@@ -110,23 +129,23 @@ public class WLDeployer implements ProgressObject, Runnable {
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
         return this;
     }
-    
-    
-    public void run(){
+
+
+    public void run() {
 
         String deployDir = InstanceProperties.getInstanceProperties(uri).getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR) + AUTO_DEPLOY_DIR;
         FileObject foIn = FileUtil.toFileObject(file);
         FileObject foDestDir = FileUtil.toFileObject(new File(deployDir));
         String fileName = file.getName();
-        
+
         File toDeploy = new File(deployDir+File.separator+fileName);
         if(toDeploy.exists())
             toDeploy.delete();
-        
+
         fileName = fileName.substring(0,fileName.lastIndexOf('.'));
         String msg = NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath());
         fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
-        
+
         try{
             org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
             System.out.println("Copying 1 file to: " + foDestDir.getPath());
@@ -141,12 +160,12 @@ public class WLDeployer implements ProgressObject, Runnable {
                         }
                     }
                 }
-                
+
             }
-            if (webUrl!= null) {
-                URL url = new URL (webUrl);
+            if (webUrl != null) {
+                URL url = new URL(webUrl);
                 String waitingMsg = NbBundle.getMessage(WLDeployer.class, "MSG_Waiting_For_Url", url);
-                
+
                 fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
                 //delay to prevent hitting the old content before reload
                 for (int i = 0; i < 3; i++) {
@@ -159,76 +178,67 @@ public class WLDeployer implements ProgressObject, Runnable {
                     }
                 }
             }
-        }catch(Exception e){
+        } catch(Exception e) {
             fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
         }
 
         fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, "Applicaton Deployed"));
     }
-    
-    
+
+
     // ----------  Implementation of ProgressObject interface
-    private Vector listeners = new Vector();
+    private List<ProgressListener> listeners = new CopyOnWriteArrayList<ProgressListener>();
+
     private DeploymentStatus deploymentStatus;
-    
+
     public void addProgressListener(ProgressListener pl) {
         listeners.add(pl);
     }
-    
+
     public void removeProgressListener(ProgressListener pl) {
         listeners.remove(pl);
     }
-    
+
     public void stop() throws OperationUnsupportedException {
         throw new OperationUnsupportedException("");
     }
-    
+
     public boolean isStopSupported() {
         return false;
     }
-    
+
     public void cancel() throws OperationUnsupportedException {
         throw new OperationUnsupportedException("");
     }
-    
+
     public boolean isCancelSupported() {
         return false;
     }
-    
+
     public ClientConfiguration getClientConfiguration(TargetModuleID targetModuleID) {
         return null;
     }
-    
+
     public TargetModuleID[] getResultTargetModuleIDs() {
         return new TargetModuleID[]{ module_id };
     }
-    
+
     public DeploymentStatus getDeploymentStatus() {
         return deploymentStatus;
     }
-    
+
     /** Report event to any registered listeners. */
     public void fireHandleProgressEvent(TargetModuleID targetModuleID, DeploymentStatus deploymentStatus) {
         ProgressEvent evt = new ProgressEvent(this, targetModuleID, deploymentStatus);
-        
+
         this.deploymentStatus = deploymentStatus;
-        
-        java.util.Vector targets = null;
-        synchronized (this) {
-            if (listeners != null) {
-                targets = (java.util.Vector) listeners.clone();
-            }
-        }
-        
-        if (targets != null) {
-            for (int i = 0; i < targets.size(); i++) {
-                ProgressListener target = (ProgressListener)targets.elementAt(i);
-                target.handleProgressEvent(evt);
-            }
+
+        for (ProgressListener target : listeners) {
+            target.handleProgressEvent(evt);
         }
     }
-    
-    
+
+
 }
 
 

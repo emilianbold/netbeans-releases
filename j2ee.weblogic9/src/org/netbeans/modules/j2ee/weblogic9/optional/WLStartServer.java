@@ -26,7 +26,6 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +51,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
 import org.netbeans.modules.j2ee.weblogic9.util.WLOutputManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -67,6 +65,8 @@ import org.openide.util.Utilities;
  */
 public class WLStartServer extends StartServer {
 
+    private static final Logger LOGGER = Logger.getLogger(WLStartServer.class.getName());
+    
     /**
      * The socket timeout value for server ping. Unfortunately there is no right
      * value and the server state should be checked in different (more reliable)
@@ -129,9 +129,7 @@ public class WLStartServer extends StartServer {
      * @return a progress object that describes the startup process
      */
     public ProgressObject startDebugging(Target target) {
-        if (WLDebug.isEnabled()) // debug output
-            WLDebug.notify(getClass(), "starting server in " +         // NOI18N
-                    "debug mode");                                     // NOI18N
+        LOGGER.log(Level.FINER, "Starting server in debug mode"); // NOI18N
 
         // create a new progress object
         WLServerProgress serverProgress = new WLServerProgress(this);
@@ -215,8 +213,7 @@ public class WLStartServer extends StartServer {
      * @return the progress object describing the shutdown process
      */
     public ProgressObject stopDeploymentManager() {
-        if (WLDebug.isEnabled()) // debug output
-            WLDebug.notify(getClass(), "stopping server!");            // NOI18N
+        LOGGER.log(Level.FINER, "Stopping server"); // NOI18N
 
         // create a new progress object
         WLServerProgress serverProgress = new WLServerProgress(this);
@@ -241,8 +238,7 @@ public class WLStartServer extends StartServer {
      * @return a progress object describing the server startup process
      */
     public ProgressObject startDeploymentManager() {
-        if (WLDebug.isEnabled()) // debug output
-            WLDebug.notify(getClass(), "starting server!");            // NOI18N
+        LOGGER.log(Level.FINER, "Starting server"); // NOI18N
 
         // create a new progress object
         WLServerProgress serverProgress = new WLServerProgress(this);

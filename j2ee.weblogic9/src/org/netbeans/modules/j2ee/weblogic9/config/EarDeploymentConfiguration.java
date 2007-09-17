@@ -108,6 +108,8 @@ public class EarDeploymentConfiguration implements ModuleConfiguration, Deployme
     public void dispose() {
     }
     
+    // FIXME this is not a proper implementation - deployment PLAN should be saved
+    // not a deployment descriptor    
     public void save(OutputStream os) throws ConfigurationException {
         WeblogicApplication weblogicApplication = getWeblogicApplication();
         if (weblogicApplication == null) {
