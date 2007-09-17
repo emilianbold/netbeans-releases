@@ -23,7 +23,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.openide.loaders.DataFolder;
@@ -101,9 +103,9 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         if (searchInfo != null) {
             return searchInfo.canSearch();
         }
-    
-        /* 2nd try - does the node represent a DataObject.Container? */
-        return nodeLookup.lookup(DataObject.Container.class) != null;
+
+        final DataObject dataObj = nodeLookup.lookup(DataObject.class);
+        return (dataObj != null) && dataObj.isValid();
     }
     
     protected void startListening() {
@@ -174,16 +176,40 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         }
 
         /* 2nd try - does the node represent a DataObject.Container? */
-        DataFolder dataFolder = node.getLookup().lookup(DataFolder.class);
-        if (dataFolder == null) {
-            return null;
-        } else {
+        final Lookup nodeLookup = node.getLookup();
+        DataFolder dataFolder = nodeLookup.lookup(DataFolder.class);
+        if (dataFolder != null) {
             return SearchInfoFactory.createSearchInfo(
                                 dataFolder.getPrimaryFile(),
                                 true,                       //recursive
                                 new FileObjectFilter[] {
                                         SearchInfoFactory.VISIBILITY_FILTER });
+        } else {
+            DataObject dataObj = nodeLookup.lookup(DataObject.class);
+            if (dataObj != null) {
+                return new DataObjectSearchInfo(dataObj);
+            }
         }
+
+        return null;
+    }
+
+    private static final class DataObjectSearchInfo implements SearchInfo {
+
+        private final DataObject dataObj;
+
+        DataObjectSearchInfo(final DataObject dataObj) {
+            this.dataObj = dataObj;
+        }
+
+        public boolean canSearch() {
+            return dataObj.isValid();
+        }
+
+        public Iterator<DataObject> objectsToSearch() {
+            return Collections.<DataObject>singleton(dataObj).iterator();
+        }
+        
     }
     
     /**
