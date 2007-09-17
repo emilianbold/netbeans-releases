@@ -923,7 +923,10 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         if (guardedEditor == null) {
             guardedEditor = new FormGEditor();
-            guardedProvider = GuardedSectionsFactory.find(((DataEditorSupport.Env) env).getMimeType()).create(guardedEditor);
+            GuardedSectionsFactory gFactory = GuardedSectionsFactory.find(((DataEditorSupport.Env) env).getMimeType());
+            if (gFactory != null) {
+                guardedProvider = gFactory.create(guardedEditor);
+            }
         }
         
         if (guardedProvider != null) {
