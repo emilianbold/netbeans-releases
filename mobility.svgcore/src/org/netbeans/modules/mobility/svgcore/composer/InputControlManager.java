@@ -29,7 +29,7 @@ public final class InputControlManager {
     private final MouseController    m_mouseCtrl;
     private final KeyboardController m_keyCtrl;
 
-    class MouseController implements MouseListener, MouseMotionListener {
+    class MouseController implements MouseListener, MouseMotionListener /*, MouseWheelListener */{
         public void mouseClicked(MouseEvent e) {
             m_sceneMgr.processEvent(e);
         }
@@ -56,7 +56,12 @@ public final class InputControlManager {
 
         public void mouseReleased(MouseEvent e) {
             m_sceneMgr.processEvent(e);
-        }           
+        }
+/*
+        public void mouseWheelMoved(MouseWheelEvent e) {
+            m_sceneMgr.processEvent(e);
+        }
+*/
     }
 
     private class KeyboardController implements KeyListener {

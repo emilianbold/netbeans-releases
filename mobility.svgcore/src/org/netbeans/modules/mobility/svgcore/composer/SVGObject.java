@@ -16,9 +16,11 @@ package org.netbeans.modules.mobility.svgcore.composer;
 
 import com.sun.perseus.j2d.Transform;
 import java.awt.Rectangle;
+import java.util.List;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedTransformableElement;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.util.Exceptions;
+import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGMatrix;
 import org.w3c.dom.svg.SVGRect;
@@ -199,6 +201,7 @@ public final class SVGObject {
             }            
         });
     }
+    private static final String OPERATION_TOKEN = "operation";
     
     public void moveToTop() {
         String id = getElementId();
@@ -230,16 +233,24 @@ public final class SVGObject {
     
     public void delete() {
         if ( !m_isDeleted) {
-            //ask for repaint before the object is removed,
-            //the bounding box shall not be avaiable after delete
-            repaint(SVGObjectOutline.SELECTOR_OVERLAP);
-            
-            m_isDeleted = true;
-
             String id = getElementId();
                     
-            getPerseusController().delete(m_elem);
-            getFileModel().deleteElement(id);
+            //getPerseusController().delete(m_elem);
+            getFileModel().deleteElement(id,new SVGFileModel.TransactionCommand() {
+                public Object execute(Object userData) {
+                    //ask for repaint before the object is removed,
+                    //the bounding box shall not be avaiable after delete
+                    repaint(SVGObjectOutline.SELECTOR_OVERLAP);
+                    m_isDeleted = true;
+                    PerseusController pc = getPerseusController();
+                    
+                    for (String id : (List<String>) userData) {
+                        SVGElement elem = pc.getElementById(id);
+                        getPerseusController().delete(elem);
+                    }
+                    return null;
+                }
+            });
         } else {
             System.err.println("Already deleted!");
         }

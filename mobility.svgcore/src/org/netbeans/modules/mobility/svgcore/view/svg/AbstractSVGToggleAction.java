@@ -28,11 +28,12 @@ import org.openide.util.Utilities;
  */
 public abstract class AbstractSVGToggleAction extends AbstractSVGAction {
     private static final String RES_NAME_SUFFIX = "1_"; //NOI18N
+    public static final String  SELECTION_STATE = "selected"; //NOI18N
     
     protected final String    m_label1;
     protected final String    m_hint1;
     protected final ImageIcon m_icon1;
-    protected       boolean   m_on;
+    protected       boolean   m_isSelected;
 
     public AbstractSVGToggleAction(String name) {
         this(name, true);
@@ -40,8 +41,16 @@ public abstract class AbstractSVGToggleAction extends AbstractSVGAction {
     
     public AbstractSVGToggleAction(String name, boolean enabled) {
         super(name, enabled);
-        m_on = true;
-        m_label1 = getMessage(LBL_ID_PREFIX + RES_NAME_SUFFIX + name); 
+        m_isSelected = true;
+        
+        String label1;
+        
+        try {
+            label1 = getMessage(LBL_ID_PREFIX + RES_NAME_SUFFIX + name); 
+        } catch( MissingResourceException e) {
+            label1 = m_label;
+        }
+        m_label1 = label1;
         
         String hint;
         try {
@@ -63,12 +72,21 @@ public abstract class AbstractSVGToggleAction extends AbstractSVGAction {
     }
     
     protected String getLabel() {
-        return (m_on || m_label1 == null) ? m_label : m_label1;
+        return m_isSelected ? m_label1 : m_label;
     }
     
     public void actionPerformed(ActionEvent e) {
-        m_on = !m_on;
-        setDescription(m_on ? m_hint : m_hint1);
-        setIcon(m_on ? m_icon : m_icon1);
+        setIsSelected( !m_isSelected);
+    }
+    
+    public final void setIsSelected(boolean isSelected) {
+        m_isSelected = isSelected;
+        setDescription(m_isSelected ? m_hint1 : m_hint);
+        setIcon(m_isSelected ? m_icon1 : m_icon);
+        putValue( SELECTION_STATE, isSelected);
+    }
+    
+    public final boolean isSelected() {
+        return m_isSelected;
     }
 }

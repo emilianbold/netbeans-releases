@@ -70,9 +70,6 @@ public final class PerseusController {
     public static final String ID_VIEWBOX_MARKER         = "$VIEWBOX$"; //NOI18N
     public static final String ID_BBOX_MARKER            = "$BBOX$"; //NOI18N
 
-    public static final int        EVENT_ANIM_STARTED = AWTEvent.RESERVED_ID_MAX + 534;
-    public static final int        EVENT_ANIM_STOPPED = EVENT_ANIM_STARTED + 1;
-    
     protected final SceneManager        m_sceneMgr;
     protected       SVGAnimatorImpl     m_animator;
     protected       SVGImage            m_svgImage;
@@ -197,7 +194,7 @@ public final class PerseusController {
         return null;
     }
     
-    public void delete(final SVGLocatableElement elem) {
+    public void delete(final SVGElement elem) {
         execute(new Runnable() {
             public void run() {
                 Node parent = elem.getParentNode();
@@ -367,7 +364,7 @@ public final class PerseusController {
         return elem;
     }
 
-    protected SVGElement getElementById(String id) {
+    public SVGElement getElementById(String id) {
         SVGElement elem = getElementById( (ModelNode) getSVGRootElement(), id);
         //assert elem != null;
         return elem;
@@ -396,13 +393,16 @@ public final class PerseusController {
         return m_animationState;
     }
     
+    public boolean isAnimatorStarted() {
+        return m_animationState == ANIMATION_RUNNING || m_animationState == ANIMATION_PAUSED;
+    }
     
     public void startAnimator(){
         if (m_animationState == ANIMATION_NOT_RUNNING ||
             m_animationState == ANIMATION_PAUSED){
             if (m_animator.getState() != SVGAnimatorImpl.STATE_PLAYING) {
                 m_animator.play();
-                m_sceneMgr.processEvent( new AWTEvent(this, EVENT_ANIM_STARTED){});
+                m_sceneMgr.processEvent( new AWTEvent(this, SceneManager.EVENT_ANIM_STARTED){});
             }
             m_animationState = ANIMATION_RUNNING;
             m_sceneMgr.getScreenManager().repaint();
@@ -413,10 +413,10 @@ public final class PerseusController {
         SVGElement root = getSVGRootElement();
         Set<String> ids = new HashSet<String>();
         collectFocusableElements(root, ids);
-        focusableTargets.add(null);
         orderFocusableElements(root, ids, focusableTargets);
-        
+        focusableTargets.add(0, null);        
     }
+     
     public void pauseAnimator(){
         if (m_animationState == ANIMATION_RUNNING){
             if (m_animator.getState() == SVGAnimatorImpl.STATE_PLAYING) {
@@ -434,7 +434,7 @@ public final class PerseusController {
             m_animator.pause();
             setAnimatorTime(0);
             m_animationState = ANIMATION_NOT_RUNNING;
-            m_sceneMgr.processEvent( new AWTEvent(this, EVENT_ANIM_STOPPED){});            
+            m_sceneMgr.processEvent( new AWTEvent(this, SceneManager.EVENT_ANIM_STOPPED){});            
             m_sceneMgr.getScreenManager().repaint();            
         }
     }
@@ -736,7 +736,7 @@ public final class PerseusController {
         return false;
     }
     
-    private static boolean isElementIdChar(char c) {
+    public static boolean isElementIdChar(char c) {
         return Character.isLetter(c) ||
              Character.isDigit(c) ||
              c == '.' ||

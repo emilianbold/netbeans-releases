@@ -114,7 +114,7 @@ public final class SelectActionFactory extends AbstractComposerActionFactory imp
                     SVGDataObject dObj = m_sceneMgr.getDataObject();
                     DocumentElement delem = dObj.getModel().getElementById(id);
                     if (delem != null) {
-                        SVGSourceMultiViewElement.selectElement( dObj, delem, true);
+                        SVGSourceMultiViewElement.selectElement( dObj, delem.getStartOffset(), true);
                     }
                 } 
                 

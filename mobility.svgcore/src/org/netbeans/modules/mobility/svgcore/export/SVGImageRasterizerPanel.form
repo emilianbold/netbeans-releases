@@ -577,8 +577,8 @@
     <Container class="javax.swing.JPanel" name="jPanel3">
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-            <EtchetBorder/>
+          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+            <TitledBorder title="Preview"/>
           </Border>
         </Property>
       </Properties>
@@ -586,11 +586,11 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jPanel4" alignment="0" max="32767" attributes="1"/>
-                      <Component id="imageHolder" alignment="0" pref="344" max="32767" attributes="1"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="imageHolder" alignment="1" pref="332" max="32767" attributes="1"/>
+                      <Component id="jPanel4" alignment="1" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -599,8 +599,7 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="imageHolder" pref="364" max="32767" attributes="0"/>
+                  <Component id="imageHolder" pref="349" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jPanel4" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -610,6 +609,13 @@
       </Layout>
       <SubComponents>
         <Container class="javax.swing.JScrollPane" name="imageHolder">
+          <Properties>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                <EtchetBorder/>
+              </Border>
+            </Property>
+          </Properties>
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
         </Container>
@@ -635,7 +641,7 @@
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="previewSizeText" alignment="0" min="-2" pref="82" max="-2" attributes="0"/>
-                          <Component id="previewFileText" pref="263" max="32767" attributes="0"/>
+                          <Component id="previewFileText" pref="251" max="32767" attributes="0"/>
                           <Component id="previewFormatText" alignment="0" min="-2" pref="64" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>

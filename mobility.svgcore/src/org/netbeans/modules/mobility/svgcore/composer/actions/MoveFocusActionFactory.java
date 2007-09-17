@@ -125,11 +125,11 @@ public final class MoveFocusActionFactory extends AbstractComposerActionFactory 
     }
 
     public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
-        if ( e.getID() == PerseusController.EVENT_ANIM_STARTED) {
+        if ( e.getID() == SceneManager.EVENT_ANIM_STARTED) {
             ((PerseusController) e.getSource()).getFocusableTargets(m_focusTargets);
             m_focusedIdIndex = 0;
             setActionseEnabled(true);
-        } else if ( e.getID() == PerseusController.EVENT_ANIM_STOPPED) {
+        } else if ( e.getID() == SceneManager.EVENT_ANIM_STOPPED) {
             m_focusTargets.clear();
             setActionseEnabled(false);
         } else if (e.getID() == MouseEvent.MOUSE_CLICKED) {

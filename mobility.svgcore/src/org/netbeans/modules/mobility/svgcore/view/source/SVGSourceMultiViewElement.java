@@ -16,7 +16,6 @@ package org.netbeans.modules.mobility.svgcore.view.source;
 import java.io.IOException;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.view.svg.SelectionCookie;
 import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
@@ -50,10 +49,8 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
                 dObj.getNodeDelegate().getLookup(),
                 Lookups.singleton(pc),
                 Lookups.singleton( new SelectionCookie() {
-                    public void updateSelection(SVGDataObject doj, DocumentElement de, boolean doubleClick) {
-                        if (de != null) {
-                            selectElement(doj, de, doubleClick);
-                        }
+                    public void updateSelection(SVGDataObject doj, String id, int startOff, boolean doubleClick) {
+                        selectElement(doj, startOff, doubleClick);
                     }
                 })
             });
@@ -76,8 +73,7 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
         dObj.setLastOpenView(SVGDataObject.XML_VIEW_INDEX);
     }
     
-    public static void selectElement( final SVGDataObject svgDoj, final DocumentElement de, final boolean requestFocus) {
-        int startOffset = de.getStartOffset();
+    public static void selectElement( final SVGDataObject svgDoj, int startOffset, final boolean requestFocus) {
         if ( startOffset != -1) {
             selectPosition(svgDoj, startOffset, requestFocus);
         }

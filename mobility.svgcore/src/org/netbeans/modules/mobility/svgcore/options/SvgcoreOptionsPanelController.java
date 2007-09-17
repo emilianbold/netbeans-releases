@@ -48,7 +48,7 @@ final class SvgcoreOptionsPanelController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx ("netbeans.optionsDialog.advanced.svg");
     }
     
     public JComponent getComponent(Lookup masterLookup) {

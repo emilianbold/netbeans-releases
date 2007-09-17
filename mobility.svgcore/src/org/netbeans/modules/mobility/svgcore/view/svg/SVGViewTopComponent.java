@@ -5,7 +5,7 @@
  * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt. 
-  * 
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -30,6 +30,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -59,7 +61,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.svgcore.export.SaveElementAsImage;
 import org.openide.filesystems.FileObject;
@@ -83,6 +84,7 @@ import org.netbeans.modules.mobility.svgcore.composer.ScreenManager;
 import org.netbeans.modules.mobility.svgcore.export.ScreenSizeHelper;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.navigator.SVGNavigatorContent;
+import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGToggleAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.FilterNode;
@@ -106,17 +108,15 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
     
     //UI controls
     private transient JToolBar        toolbar;
-    private transient JToolBar        m_animationToolbar;
+    private transient JToolBar        animationToolbar;
     private transient JSlider         slider;
     private transient JSpinner        currentTimeSpinner;
     private transient JComboBox       zoomComboBox;
     private transient AbstractButton  startAnimationButton;
     private transient AbstractButton  pauseAnimationButton;
-    private transient AbstractButton  toolTipToggleButton;
-    private transient AbstractButton  hoverToggleButton;
     private transient AbstractButton  scaleToggleButton;
     private transient AbstractButton  showViewBoxToggleButton;
-    private transient AbstractButton  allowEditToggleButton;
+    //private transient AbstractButton  allowEditToggleButton;
     private transient ChangeListener  changeListener;        
     
     private transient boolean doScale        = false;
@@ -127,8 +127,6 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
     
     //actions
     private transient ToggleScaleAction       scaleAction;
-    private transient ToggleTooltipAction     toolTipAction;
-    private transient ToggleHighlightAction   highlightAction;
     private transient ZoomToFitAction         zoomToFitAction;
     private transient ZoomInAction            zoomInAction;
     private transient ZoomOutAction           zoomOutAction;
@@ -167,26 +165,38 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
     private final transient AbstractSVGToggleAction       allowEditAction = 
         new AbstractSVGToggleAction( "svg_allow_edit") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
-                super.actionPerformed(e);
                 SceneManager smgr = getSceneManager();
-                boolean isEditable = !smgr.isReadOnly();
-                smgr.setReadOnly( isEditable);
-                updateAnimationTime(0, -1);
+                
+                if ( smgr.isReadOnly()) {
+                    PerseusController pc = getPerseusController();
+                    if ( pc != null && pc.isAnimatorStarted()) {
+                        startAnimationAction.actionPerformed(e);
+                    }
+                    insertGraphicsAction.setEnabled(true);
+                    smgr.setReadOnly(false);
+                } else {
+                    insertGraphicsAction.setEnabled(false);
+                    smgr.setReadOnly(true);
+                }
+                
+                //updateAnimationTime(0, -1);
                 updateAnimationActions();
                 updateDataTransferActions();
-                insertGraphicsAction.setEnabled(!isEditable);
-                allowEditToggleButton.setSelected(!isEditable);
                 smgr.updateActionState();
+                setIsSelected( !smgr.isReadOnly());
             }
     };            
     
-    private final transient AbstractSVGAction       startAnimationAction = 
+    private final transient AbstractSVGToggleAction   startAnimationAction = 
         new AbstractSVGToggleAction("svg_anim_start") { //NOI18N
             public void actionPerformed(ActionEvent e) {
                 //startAnimationButton.setSelected(true);
                 PerseusController pc = getPerseusController();
                 if (pc != null) {
-                    if ( m_on) {
+                    if ( !pc.isAnimatorStarted()) {
+                        if ( !getSceneManager().isReadOnly()) {
+                            allowEditAction.actionPerformed(e);
+                        }
                         pc.startAnimator();
                         if ( m_timeUpdater == null ) {
                             m_timeUpdater = new UpdateThread();
@@ -205,20 +215,23 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
                     }
                     updateAnimationActions();
                 }
-                super.actionPerformed(e);
+                //super.actionPerformed(e);
             }
     };            
 
     private final transient AbstractSVGToggleAction  pauseAnimationAction = 
         new AbstractSVGToggleAction("svg_anim_pause", false) { //NOI18N
             public void actionPerformed(ActionEvent e) {
-                super.actionPerformed(e);
-                if ( getPerseusController().getAnimatorState() == PerseusController.ANIMATION_RUNNING) {
-                    getPerseusController().pauseAnimator();
-                } else {
-                    getPerseusController().startAnimator();
+                PerseusController pc = getPerseusController();
+                
+                if (pc != null) {
+                    if ( pc.getAnimatorState() == PerseusController.ANIMATION_RUNNING) {
+                        pc.pauseAnimator();
+                    } else {
+                        pc.startAnimator();
+                    }
+                    updateAnimationActions();                
                 }
-                updateAnimationActions();                
             }
     };            
 
@@ -231,7 +244,7 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
                         SwingUtilities.getWindowAncestor(SVGViewTopComponent.this),
                         NbBundle.getMessage(SVGViewTopComponent.class, "LBL_CHOOSE_SVG_FILE")); //NOI18N
                 if (r == JFileChooser.APPROVE_OPTION) {
-                    File file = chooser.getSelectedFile();
+                    final File file = chooser.getSelectedFile();
                     if (!file.isFile()) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(SVGViewTopComponent.class, "ERROR_NotSVGFile", file), //NOI18N
@@ -239,12 +252,21 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
                                 ));
                         return;
                     } else {
-                        try {
-                            m_svgDataObject.getModel().mergeImage(file);
-                            //m_sceneMgr.getPerseusController().mergeImage(file);
-                        } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);                        
-                        }
+                        Thread th = new Thread( "InsertGraphicsTask") { //NOI18N
+                            public void run() {
+                                try {
+                                    getSceneManager().setBusyState(SceneManager.OPERATION_TOKEN, true);
+                                    m_svgDataObject.getModel().mergeImage(file);
+                                } catch (Exception ex) {
+                                    Exceptions.printStackTrace(ex);                        
+                                } finally {
+                                    getSceneManager().setBusyState(SceneManager.OPERATION_TOKEN, false);
+                                }
+                            }
+                        };
+                        th.setPriority(Thread.MIN_PRIORITY);
+                        th.setDaemon(true);
+                        th.start();
                     }
                 }
             }
@@ -347,7 +369,7 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
         //add(toolbar  = createToolBar(), BorderLayout.NORTH);
         toolbar = createToolBar();
         //enableComponentsInToolbar(toolbar, false);
-        m_animationToolbar = createAnimationBar();
+        animationToolbar = createAnimationBar();
                 
         changeListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -381,7 +403,7 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
         basePanel.setBackground(Color.WHITE);
         add(basePanel, BorderLayout.CENTER);
         Box bottom = new Box(BoxLayout.Y_AXIS);
-        bottom.add( m_animationToolbar);
+        bottom.add( animationToolbar);
         bottom.add(getScreenManager().getStatusBar());
         add( bottom, BorderLayout.SOUTH);
         updateName();
@@ -418,6 +440,10 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
         
     public JComponent getToolbar() {
         return toolbar;
+    }
+    
+    JPanel getBasePanel() {
+        return basePanel;
     }
     
     public int getPersistenceType() {
@@ -526,6 +552,7 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
       */
         
         if ( getModel().isChanged()) {
+            basePanel.removeAll();
             updateImage();
             getModel().setChanged(false);
         }
@@ -559,6 +586,7 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
 //        svgImage = null;
         //enableComponentsInToolbar(toolbar, false);        
     }
+    
     /** Creates cloned object which uses the same underlying data object. */
     /*
     protected CloneableTopComponent createClonedObject () {
@@ -582,7 +610,7 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
     private void addButtonsForActions(JToolBar toolbar, Action [] toolbarActions, GridBagConstraints constrains) {
         for (Action action : toolbarActions) {
             if (action != null) {
-                initButton(toolbar, action, false);
+                initButton(toolbar, action, action instanceof AbstractSVGToggleAction);
             } else {
                 toolbar.add(createToolBarSeparator(), constrains);
             }
@@ -641,8 +669,9 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
         initButton(toolbar, zoomOutAction = new ZoomOutAction(), false);
         toolbar.add(createToolBarSeparator(), constrains);
         
-        toolTipToggleButton = initButton(toolbar, toolTipAction = new ToggleTooltipAction(), true);        
-        hoverToggleButton = initButton(toolbar, highlightAction = new ToggleHighlightAction(), true);
+        addButtonsForActions( toolbar, smgr.getToolbarActions( "svg_toggle_tooltip", "svg_toggle_highlight"), constrains); //NOI18N
+        
+        //hoverToggleButton = initButton(toolbar, highlightAction = new ToggleHighlightAction(), true);
 
         constrains = new GridBagConstraints();
         constrains.anchor = GridBagConstraints.WEST;   
@@ -656,8 +685,8 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
 
         toolbar.add(createToolBarSeparator(), constrains);
 
-        allowEditToggleButton = initButton(toolbar, allowEditAction, true);               
-        allowEditToggleButton.setSelected(!smgr.isReadOnly());
+        initButton(toolbar, allowEditAction, true);
+        allowEditAction.setIsSelected(!smgr.isReadOnly());
 
         toolbar.add(createToolBarSeparator(), constrains);
         initButton(toolbar, insertGraphicsAction, false);
@@ -688,8 +717,9 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
         toolbar.add(Box.createHorizontalStrut(5));
         
         startAnimationButton = initButton(toolbar, startAnimationAction, true);
-        startAnimationButton.setSelected(false);
+        startAnimationAction.setIsSelected(false);
         pauseAnimationButton = initButton(toolbar, pauseAnimationAction, true);
+        pauseAnimationAction.setIsSelected(false);
        
         toolbar.add(createToolBarSeparator(), constrains);
         
@@ -738,7 +768,28 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
    
     private AbstractButton initButton(JComponent bar, Action action, boolean isToggle){
         Border buttonBorder = UIManager.getBorder ("nb.tabbutton.border"); //NOI18N
-        AbstractButton button = isToggle ? new JToggleButton(action) : new JButton(action);
+        
+        AbstractButton button;
+        
+        if (isToggle) {
+            final JToggleButton tButton = new JToggleButton(action);
+            action.addPropertyChangeListener( new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+//                    System.out.println("Action property changed: " + evt.getPropertyName() + " " + evt.getOldValue() + " -> " + evt.getNewValue() + " " + tButton + " " + evt.getSource());
+                    if ( AbstractSVGToggleAction.SELECTION_STATE.equals(evt.getPropertyName())) {
+                        tButton.setSelected( ((Boolean) evt.getNewValue()).booleanValue());
+                        tButton.repaint();
+                    }
+                }
+            });
+            Boolean state = (Boolean) action.getValue(AbstractSVGToggleAction.SELECTION_STATE);
+            if ( state != null) {
+                tButton.setSelected( state.booleanValue());
+            }
+            button = tButton;
+        } else {
+            button = new JButton(action);
+        }
         
         if ( buttonBorder != null ) {
             button.setBorder( buttonBorder );
@@ -789,21 +840,20 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
     }
     
     private void updateAnimationActions() {
-        int state = getPerseusController().getAnimatorState();
-        boolean isReadOnly = getSceneManager().isReadOnly();
-        enableComponentsInToolbar( m_animationToolbar, isReadOnly && state != PerseusController.ANIMATION_NOT_AVAILABLE);
+        PerseusController pc = getPerseusController();
+        if (pc != null) {
+            int state = pc.getAnimatorState();
+            boolean isReadOnly = getSceneManager().isReadOnly();
+            enableComponentsInToolbar( animationToolbar, isReadOnly && state != PerseusController.ANIMATION_NOT_AVAILABLE, 
+                    startAnimationButton, pauseAnimationButton);
 
-        //startAnimationAction.setEnabled(isReadOnly && state == PerseusController.ANIMATION_NOT_RUNNING);
-        startAnimationAction.setEnabled(isReadOnly && state != PerseusController.ANIMATION_NOT_AVAILABLE);
-        startAnimationButton.setEnabled(startAnimationAction.isEnabled());
-        
-        boolean isActive = isReadOnly && (state == PerseusController.ANIMATION_RUNNING ||
-                state == PerseusController.ANIMATION_PAUSED);
-        pauseAnimationAction.setEnabled(isActive);
-//        stopAnimationAction.setEnabled(isActive);
-        pauseAnimationButton.setEnabled(isActive);
-        pauseAnimationButton.setSelected( state == PerseusController.ANIMATION_PAUSED);
-//        stopAnimationButton.setEnabled(isActive);
+            startAnimationAction.setEnabled(state != PerseusController.ANIMATION_NOT_AVAILABLE);
+
+            boolean isActive = isReadOnly && pc.isAnimatorStarted();
+            startAnimationAction.setIsSelected(isActive);
+            pauseAnimationAction.setEnabled(isActive);
+            pauseAnimationAction.setIsSelected(state == PerseusController.ANIMATION_PAUSED);
+        }
     }
     
     private static JSeparator createToolBarSeparator () {
@@ -823,14 +873,12 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread";  //NOI18N
 
         getSceneManager().saveSelection();
-        basePanel.removeAll();
         
         if ( parsingTask != null) {
             parsingTask.cancel();
         }
         try {
             parsingTask = new ParsingTask(m_svgDataObject, this);
-            basePanel.add( parsingTask.getPanel(), BorderLayout.CENTER);
             parsingTask.start();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -844,26 +892,34 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
         smgr.setImage(img);
         smgr.restoreSelection();
         final JComponent topComponent = smgr.getComposerGUI();
+        topComponent.addMouseWheelListener( new MouseWheelListener() {
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if ( e.getWheelRotation() < 0) {
+                    zoomOutAction.actionPerformed(null);
+                } else {
+                    zoomInAction.actionPerformed(null);
+                }
+            }
+            
+        });
         basePanel.add( topComponent, BorderLayout.CENTER);
         smgr.registerPopupActions( new Action[] {
             insertGraphicsAction,
             zoomToFitAction,
             zoomInAction,
             zoomOutAction,
-            highlightAction,
-            toolTipAction,
             scaleAction,
             showViewBoxAction,
             startAnimationAction,
             pauseAnimationAction,
-//            stopAnimationAction,
             allowEditAction
         }, this, lookup);
 
         //enableComponentsInToolbar(toolbar, true);
         updateZoomCombo();
         updateAnimationActions();
-
+        smgr.processEvent( SceneManager.createEvent( this, SceneManager.EVENT_IMAGE_DISPLAYED));
+        
         SVGLocatableElement elem = getPerseusController().getViewBoxMarker();
         ScreenManager scrMgr = getScreenManager();
         
@@ -874,9 +930,6 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
             showViewBoxAction.setEnabled(true);
         }
         showViewBoxToggleButton.setSelected(scrMgr.getShowAllArea());
-        
-        hoverToggleButton.setSelected(scrMgr.getHighlightObject());
-        toolTipToggleButton.setSelected(scrMgr.getShowTooltip());
         
         topComponent.requestFocus();
         //updateSelection(actualSelection);
@@ -994,35 +1047,7 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
             repaint();
         }
     }    
-    
-    private class ToggleHighlightAction extends AbstractSVGAction implements Presenter.Popup {
-        ToggleHighlightAction () {
-            super( "svg_toggle_highlight"); //NOI18N
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            ScreenManager smgr = getScreenManager();
-            boolean b = !smgr.getHighlightObject();
-            smgr.setHighlightObject(b);
-            hoverToggleButton.setSelected(b);
-            repaint();
-        }
-    }    
 
-    private class ToggleTooltipAction extends AbstractSVGAction implements Presenter.Popup {
-        ToggleTooltipAction (){
-            super( "svg_toggle_tooltip"); //NOI18N
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            ScreenManager smgr = getScreenManager();
-            boolean b = !smgr.getShowTooltip();
-            smgr.setShowTooltip(b);
-            toolTipToggleButton.setSelected(b);
-            repaint();
-        }
-    }    
-   
     private class ToggleShowViewBoxAction extends AbstractSVGAction implements Presenter.Popup {
         ToggleShowViewBoxAction (){
             super( "svg_toggle_view"); //NOI18N
@@ -1078,42 +1103,48 @@ final public class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }    
     
-    private static void enableComponentsInToolbar(Container component, boolean enable){
-        Component[] components = component.getComponents();
-        for (int i = 0; i < components.length; i++) {
-            components[i].setEnabled(enable);
-            enableComponentsInToolbar((Container) components[i], enable);
+    private static void enableComponentsInToolbar(Container component, boolean enable, Component ... skip){        
+        main_loop: for (Component comp : component.getComponents())  {
+            if (skip != null) {
+                for (Component skipped : skip) {
+                    if (skipped == comp) {
+                        continue main_loop;
+                    }
+                }
+            }
+            comp.setEnabled(enable);
+            enableComponentsInToolbar((Container) comp, enable);
         }
     }
 
     private class SVGCookie implements SelectionCookie, AnimationCookie {
 
-        public void startAnimation(final SVGDataObject doj, final DocumentElement de) {
+        public void startAnimation(final SVGDataObject doj, final String id) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     //System.out.println("Starting animation");
                     startAnimationAction.actionPerformed(null);
-                    String id = doj.getModel().getElementId(de);
+//                    String id = doj.getModel().getElementId(de);
                     getPerseusController().startAnimation(id);
                 }
             });
         }
 
-        public void stopAnimation(final SVGDataObject doj, final DocumentElement de) {
+        public void stopAnimation(final SVGDataObject doj, final String id) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     //System.out.println("Stopping animation");
-                    String id = doj.getModel().getElementId(de);
+                    ///String id = doj.getModel().getElementId(de);
                     getPerseusController().stopAnimation(id);
                 }
             });
         }
 
-        public void updateSelection(final SVGDataObject doj, final DocumentElement de, boolean doubleClick) {
+        public void updateSelection(final SVGDataObject doj, final String id, int startOff, boolean doubleClick) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     //System.out.println("Updating selection");
-                    String id = doj.getModel().getElementId(de);
+                    //String id = doj.getModel().getElementId(de);
                     getSceneManager().setSelection(id, false);
                 }
             });

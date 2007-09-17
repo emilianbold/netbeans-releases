@@ -160,7 +160,6 @@ public class SVGDataObject extends XmlMultiViewDataObject {
     
     public SVGDataObject(FileObject pf, SVGDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        //System.out.println("> SVGDataObject()");
         org.xml.sax.InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
         getCookieSet().add(checkCookie);

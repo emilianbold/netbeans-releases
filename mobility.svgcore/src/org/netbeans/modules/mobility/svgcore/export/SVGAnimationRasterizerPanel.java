@@ -428,7 +428,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .add(allFramesCheckBox))
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Preview"));
 
         jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -480,7 +480,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .add(jLabel5)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(previewAnimationSizeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 126, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(previewFileText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                    .add(previewFileText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
                     .add(previewFormatText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 55, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -511,6 +511,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
         previewFileText.getAccessibleContext().setAccessibleDescription("");
         previewAnimationSizeText.getAccessibleContext().setAccessibleName("");
 
+        imageHolder.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         imageHolder.setPreferredSize(new java.awt.Dimension(300, 300));
 
         previewLabel.setLabelFor(previewFrameSpinner);
@@ -541,10 +542,12 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3Layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel3Layout.createSequentialGroup()
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3Layout.createSequentialGroup()
                         .add(previewLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(previewFrameSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 49, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -552,7 +555,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .add(jLabel9)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(previewMaxFrameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 35, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 79, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 67, Short.MAX_VALUE)
                         .add(jLabel7)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(previewCurrentTimeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -561,15 +564,12 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(previewEndTimeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel10))
-                    .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
+                        .add(jLabel10)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(previewLabel)
                     .add(previewFrameSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -580,8 +580,8 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                     .add(previewMaxFrameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(previewCurrentTimeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(previewEndTimeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(1, 1, 1)
-                .add(imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())

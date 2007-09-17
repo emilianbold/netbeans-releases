@@ -18,6 +18,8 @@ import org.netbeans.modules.mobility.svgcore.composer.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,13 +28,14 @@ import java.util.Map;
 import java.util.Set;
 import javax.microedition.m2g.SVGImage;
 import javax.microedition.m2g.SVGImage;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.CharSeq;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
-import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel.ChangeDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -42,48 +45,125 @@ import org.openide.util.NbBundle;
  *
  * @author Pavel Benes
  */
-public class ElementMapping {    
+public final class ElementMapping {    
     private static final String ID_COUPLING_PREFIX = "_";  //NOI18N
     private static final String ID_WRAPPER_PREFIX  = "w_"; //NOI18N
     
-    private final String                      m_encoding;
+    private final SVGFileModel                m_fileModel;
     private final Map<String,DocumentElement> m_ids = new HashMap<String, DocumentElement>();
-    private final Set<String>                 m_extIds = new HashSet<String>();
-    private       DocumentModel               m_docModel;
+    //private final Set<String>                 m_extIds = new HashSet<String>();
     private       boolean                     m_refreshNeeded = false;
-    
-    
-    public ElementMapping(SVGDataObject obj) {
-        m_encoding = obj.getEncodingHelper().getEncoding();
-    }
-    
-    public String getWithUniqueIds(DocumentModel docModel, String wrapperId, 
-            boolean isRootSvg, String [] rootId) throws BadLocationException {
-        String          docText  = null;
-        DocumentElement rootElem = isRootSvg ? SVGFileModel.getSVGRoot(docModel) : docModel.getRootElement();
-
-        if (rootElem != null) {
-            List<DocumentElement> children = rootElem.getChildren();
-            int childElemNum;
+    //private       ElementDescriptor           m_selectedDescr = null;
+    /*
+    private static class ElementDescriptor {
+        private final String               m_id;
+        private final int                  m_startOff;
+        private final String               m_tag;
+        private final Map<String, Integer> m_attribs;
         
-            if ( (childElemNum=children.size()) > 0) {
-                DocumentElement firstChild = children.get(0);
-                int startOff = firstChild.getStartOffset();
-                int endOff   = children.get(childElemNum - 1).getEndOffset();
-                if (rootId != null) {
-                    rootId[0] = SVGFileModel.getIdAttribute(firstChild);
-                }
-                try {
-                    m_extIds.clear();
+        public ElementDescriptor(String id, DocumentElement de) {
+            m_id       = id;
+            m_tag      = de.getName();
+            m_startOff = de.getStartOffset();
+            m_attribs  = new HashMap<String, Integer>();            
 
-                    List<DocumentElement> conflicts = new ArrayList<DocumentElement>();
-                    collectConflictingElements(docModel.getRootElement(), conflicts);
+            AttributeSet attrSet = de.getAttributes();
+            
+            if ( attrSet != null) {
+                for (Enumeration attrNames = attrSet.getAttributeNames(); attrNames.hasMoreElements(); ) {
+                    String attrName = (String) attrNames.nextElement();
+                    Object attrValue = attrSet.getAttribute(attrName);
+                    if ( attrValue != null && 
+                         !SVGConstants.SVG_TRANSFORM_ATTRIBUTE.equals(attrName)) {
+                        m_attribs.put( attrName, attrValue.hashCode());
+                    }
+                }
+            }
+            return;
+        }
+        
+        public boolean isSameElement(DocumentElement de, boolean checkStartOff) {
+            if ( (!checkStartOff || de.getStartOffset() == m_startOff) &&
+                  m_tag != null && m_tag.equals( de.getName())) {
+                AttributeSet attrSet    = de.getAttributes();
+                int          attrCount1 = attrSet != null ? attrSet.getAttributeCount() : 0;
+                int          attrCount2 = m_attribs.size();
+
+                if ( attrCount1 > 0) {
+                    if ( attrSet.getAttribute( SVGConstants.SVG_TRANSFORM_ATTRIBUTE) != null) {
+                        attrCount1--;
+                    } 
+                }
+
+                if ( attrCount1 == attrCount2) {
+                    for ( Iterator<Entry<String, Integer>> iter = m_attribs.entrySet().iterator(); iter.hasNext();) {
+                        Entry<String, Integer> e = iter.next();
+                        if ( e.getValue().intValue() != attrSet.getAttribute( e.getKey()).hashCode()) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    */
+    
+    public ElementMapping(SVGFileModel fileModel) {
+        m_fileModel = fileModel;
+        //m_encoding = obj.getEncodingHelper().getEncoding();
+    }
+
+    //TODO Move to the SVGFileModel
+    public String getWithUniqueIds(DocumentModel docModel, String wrapperId, boolean isRootSvg, String [] rootId) throws BadLocationException {
+        try {
+            docModel.readLock();
+            
+            String          docText  = null;
+            DocumentElement rootElem = isRootSvg ? SVGFileModel.getSVGRoot(docModel) : docModel.getRootElement();
+
+            if (rootElem != null) {
+                List<DocumentElement> children = rootElem.getChildren();
+                int childElemNum;
+
+                if ( (childElemNum=children.size()) > 0) {
+                    DocumentElement firstChild = children.get(0);
+                    int startOff = firstChild.getStartOffset();
+                    int endOff   = children.get(childElemNum - 1).getEndOffset();
+                    if (rootId != null) {
+                        rootId[0] = SVGFileModel.getIdAttribute(firstChild);
+                    }
+                    Set<String>  newIds    = new HashSet<String>();
+                    List<String> conflicts = new ArrayList<String>();
+                    collectConflictingElements(rootElem, conflicts, newIds);
 
                     docText = docModel.getDocument().getText(startOff, endOff - startOff + 1);
                     if (!conflicts.isEmpty()) {
-                        //TODO change also the references to changed ids
-                        StringBuilder sb = new StringBuilder(docText);
-                        
+                        StringBuilder           sb      = new StringBuilder(docText);
+                        List<SVGFileModel.ChangeDescriptor>  changes = new ArrayList<SVGFileModel.ChangeDescriptor>();
+
+                        for (String oldId : conflicts) {
+                            String newId;
+                            if (wrapperId != null) {
+                                newId = generateId(wrapperId + '_' + oldId, false, newIds);
+                            } else {
+                                newId = generateId(oldId, false, newIds);
+                            }
+                            newIds.add(newId);
+                            if (rootId != null && oldId.equals(rootId[0])) {
+                                rootId[0] = newId;
+                            }
+                            SVGFileModel.resolveChanges( (CharSequence)sb, rootElem, oldId, newId, changes);
+                        }
+
+                        Collections.sort(changes);
+
+                        for ( ChangeDescriptor change : changes) {
+                            change.replace(sb);
+                        }        
+
+                        /*
                         for (DocumentElement conflict : conflicts) {
                             String oldId = SVGFileModel.getIdAttribute(conflict);
                             assert oldId != null;
@@ -103,151 +183,94 @@ public class ElementMapping {
                                 }
                             }
                         }
+                         */
                         docText = sb.toString();
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             NbBundle.getMessage(ElementMapping.class, "WARNING_IDConflicts"),  //NOI18N
                             NotifyDescriptor.Message.WARNING_MESSAGE
                         ));
                     }
-                } finally {
-                    m_extIds.clear();
                 }
             }
+            return docText;
+        } finally {
+            docModel.readUnlock();
         }
-        return docText;
     }
-            
-    private String m_id;
-    private int m_startOff;
-    private int m_endOff;
-    private String m_text;
-    
-    public void storeSelection(String id) {
-        if ( id != null && m_docModel != null) {
-            DocumentElement de  = m_ids.get(id);
-            if ( de != null && SVGFileModel.getIdAttribute(de) == null) {
-                try {
-                    BaseDocument    doc = (BaseDocument) m_docModel.getDocument();
-                    
-                    m_id       = id;
-                    m_startOff = de.getStartOffset();
-                    m_endOff   = de.getEndOffset();
-                    m_text     = doc.getText(m_startOff, m_endOff - m_startOff + 1);
-                    return;
-                } catch( BadLocationException e) {
-                    Exceptions.printStackTrace(e);
-                }                    
-            } 
-        }
-        m_id   = null;
-        m_text = null;
-        m_startOff = m_endOff = -1;
-    }
-    
-    private DocumentElement findSameElement( List<DocumentElement> anonymous) throws BadLocationException {
-        if (m_id != null) {
-            BaseDocument doc = (BaseDocument) m_docModel.getDocument();
-            
-            //first pass
-            for ( DocumentElement de : anonymous) {
-                int startOff = de.getStartOffset();
-                if ( startOff == m_startOff) {
-                    String text = doc.getText( startOff, de.getEndOffset() - startOff + 1);
-                    if ( m_text.equals(text)) {
-                        return de;
-                    }
-                }
+           
+    public SVGImage parseDocument(boolean update) throws BadLocationException, IOException {
+        StringBuilder sb;
+        
+        synchronized( m_fileModel.getTransactionMonitor()) {
+            if (update) {
+                m_fileModel.updateModel();
             }
-            //second pass
-            for ( DocumentElement de : anonymous) {
-                int startOff = de.getStartOffset();
-                String text = doc.getText( startOff, de.getEndOffset() - startOff + 1);
-                if ( m_text.equals(text)) {
-                    return de;
-                }
-            }
-        }
-        return null;
-    }
-    
-    public SVGImage parseDocument(SVGFileModel fileModel, DocumentModel docModel) throws BadLocationException, IOException {
-        if (fileModel != null) {
-            //wait until the DocumentModel is updated after last changes
-            fileModel.updateModel();
-        }
+            DocumentModel docModel = m_fileModel.getModel();
+            try {
+                docModel.readLock();
             
-        synchronized(this) {
-            //long time = System.currentTimeMillis();
-            BaseDocument  doc    = (BaseDocument) docModel.getDocument();
-            CharSeq       charSeq = doc.getText();
-            
-            int           docLength = charSeq.length();
-            StringBuilder sb        = new StringBuilder(docLength);
-            
-            for (int i = 0; i < docLength; i++) {
-                sb.append(charSeq.charAt(i));
-            }
-            
-            m_docModel = docModel;
+                //long time = System.currentTimeMillis();
+                BaseDocument  doc       = (BaseDocument) docModel.getDocument();
+                CharSeq       charSeq   = doc.getText();            
+                int           docLength = charSeq.length();
 
-            m_ids.clear();
-            m_refreshNeeded = false;
-//            m_scheduledTasks.clear();
-            List <DocumentElement> elemsWithoutID = new ArrayList<DocumentElement>();
-            // store all elements with ID into map and collect all anonymous
-            // elements for further processing
-            collectAnonymousElements(docModel.getRootElement(), elemsWithoutID);
+                sb = new StringBuilder(docLength);
 
-            DocumentElement selected = null;
-            if ( m_id != null) {
-                selected = findSameElement(elemsWithoutID);
-            }
-            int serial = 0;
-            
-            // generate unique ID for all annonymous elements
-            for (DocumentElement elem : elemsWithoutID) {
-                String id;
-                if (selected == elem) {
-                    id = m_id;
-                } else {
+                for (int i = 0; i < docLength; i++) {
+                    sb.append(charSeq.charAt(i));
+                }
+
+                m_ids.clear();
+                m_refreshNeeded = false;
+                List <DocumentElement> elemsWithoutID = new ArrayList<DocumentElement>();
+                // store all elements with ID into map and collect all anonymous
+                // elements for further processing
+                collectAnonymousElements(docModel.getRootElement(), elemsWithoutID);
+                int serial = 0;
+
+                // generate unique ID for all annonymous elements
+                for (DocumentElement elem : elemsWithoutID) {
+                    String id;
                     do {
                         id = ID_COUPLING_PREFIX + serial++;
-                    } while( m_ids.containsKey(id) || id.equals(m_id));
-                }
-                int startOffset = elem.getStartOffset();
-                startOffset += elem.getName().length() + 1;
-                String str = " id=\"" + id + "\" ";
-                sb.insert( startOffset, str);
+                    } while( m_ids.containsKey(id));
+                    
+                    int startOffset = elem.getStartOffset();
+                    startOffset += elem.getName().length() + 1;
+                    String str = " id=\"" + id + "\" ";
+                    sb.insert( startOffset, str);
 
-                if ( m_ids.put(id, elem) != null) {
-                    System.err.println("Duplicated id: " + id);
+                    checkRemovedElement(elem);
+                    if ( m_ids.put(id, elem) != null) {
+                        System.err.println("Duplicated id: " + id);
+                    }
                 }
-            }
-            
-            InputStream in = new EncodingInputStream(sb, m_encoding);
-            
-            try {
-                SVGImage svgImage = (SVGImage) PerseusController.createImage( in);
-                return svgImage;
             } finally {
-                in.close();
-            }        
+                docModel.readUnlock();
+            }
         }
+
+        String encoding = m_fileModel.getDataObject().getEncodingHelper().getEncoding();
+        InputStream in = new EncodingInputStream(sb, encoding);
+
+        try {
+            SVGImage svgImage = (SVGImage) PerseusController.createImage( in);
+            return svgImage;
+        } finally {
+            in.close();
+        }        
     }
     
     public synchronized void add(DocumentElement newDe) {
         String id = SVGFileModel.getIdAttribute(newDe);
 //        System.out.println("Adding mapping " + id + " <--> " + newDe);
+        checkRemovedElement(newDe);
+        
         if (id != null) {
             m_ids.put(id, newDe);
         } else {
             m_refreshNeeded = true;
         }
-        /*
-        Runnable task;
-        if ( (task=m_scheduledTasks.remove(id)) != null) {
-            SwingUtilities.invokeLater(task);
-        }*/
     }
     
     public synchronized void remove(DocumentElement oldDe) {
@@ -266,11 +289,13 @@ public class ElementMapping {
             m_ids.remove(id);
         }
     }
-    
+ 
     private void refresh() {
         try {
+            //System.out.println("Refreshing mapping");
             //long time = System.currentTimeMillis();
-            parseDocument(null, m_docModel);
+            SVGImage img = parseDocument(false);
+            m_fileModel.getDataObject().getSceneManager().setImage(img);
             //time = System.currentTimeMillis() - time;
             //System.out.println("Mapping refreshed in " + time + "[ms]");
         } catch (Exception ex) {
@@ -278,27 +303,20 @@ public class ElementMapping {
         }
     }
     
-    public synchronized DocumentElement id2element(String id) {
+    synchronized DocumentElement id2element(String id) {
         DocumentElement elem = m_ids.get(id);
-        //System.out.print("Looking for id " + id + " ...");
-        if ( elem != null) {
-            if ( elem.getDocumentModel() == m_docModel) {
-                //System.out.println(" found.");
-                return elem;
-            } else {
-                //System.out.println(" refreshing");
+        if ( elem == null) {
+            System.out.println("No element for id: " + id);
+            if ( m_refreshNeeded) {
                 refresh();
-                return id2element(id);
+                elem = m_ids.get(id);
             }
-        } else {
-            if (m_refreshNeeded) {
-                refresh();
-                return id2element(id);
-           }
         }
-        System.out.println("No element found for id '" + id + "'");
-        return null;
+        checkRemovedElement(elem);
+
+        return elem;
     }
+    
     
     public synchronized String element2id(DocumentElement elem) {
         String id;
@@ -307,8 +325,9 @@ public class ElementMapping {
             //TODO possibly use some small scale refresh, that 
             // tries to refresh only part of the document
             //System.out.println("Refreshing");
-            refresh();
-            id = element2idImpl(elem);
+            //refresh();
+            //id = element2idImpl(elem);
+            System.out.println("Element not found: " + elem);
         }
         return id;
     }
@@ -322,15 +341,15 @@ public class ElementMapping {
         return null;
     }
     
-    synchronized String generateId(String prefix, boolean isWrapper) {
+    synchronized String generateId(String prefix, boolean isWrapper, Set<String> extIds) {
         String id;
         int    serial = 0;
         if ( isWrapper) {
             prefix = ID_WRAPPER_PREFIX + prefix;
         }
         do {
-             id = prefix + "." + serial++;
-        } while( m_ids.containsKey(id) || m_extIds.contains(id));
+             id = prefix + "_" + serial++; //NOI18N
+        } while( m_ids.containsKey(id) || (extIds != null && extIds.contains(id)));
         
         return id;        
     }
@@ -339,7 +358,11 @@ public class ElementMapping {
         return id != null && id.startsWith(ID_WRAPPER_PREFIX);
     }
 
-    protected void collectConflictingElements( DocumentElement elem, List<DocumentElement> conflicts) {
+    static protected void checkRemovedElement(DocumentElement de) {        
+        assert de == null || de.getStartOffset() < de.getEndOffset() : "Deleted element found: " + de;
+    }
+
+    protected void collectConflictingElements( DocumentElement elem, List<String> conflicts, Set<String> newIds) {
         assert elem != null;
 
         List<DocumentElement> children = elem.getChildren();
@@ -348,7 +371,7 @@ public class ElementMapping {
             DocumentElement de = children.get(i);
             
             if (SVGFileModel.isTagElement(de)) {                
-                collectConflictingElements(de, conflicts);
+                collectConflictingElements(de, conflicts, newIds);
             }
         }
 
@@ -357,9 +380,9 @@ public class ElementMapping {
 
             if (id != null) {
                 if ( m_ids.containsKey(id)) {
-                    conflicts.add(elem);
+                    conflicts.add(id);
                 } else {
-                    m_extIds.add(id);
+                    newIds.add(id);
                 }
             }
         }
@@ -367,15 +390,19 @@ public class ElementMapping {
     
     protected void collectAnonymousElements( DocumentElement elem, List<DocumentElement> elems) {
         assert elem != null;
-        assert elem.getDocumentModel() == m_docModel : "Element " + elem + " has incorrect model " + elem.getDocumentModel();
+        assert elem.getDocumentModel() == m_fileModel.getModel() : "Element " + elem + " has incorrect model " + elem.getDocumentModel();
 
         List<DocumentElement> children = elem.getChildren();
 
         for (int i = children.size() - 1; i >= 0; i--) {
             DocumentElement de = children.get(i);
             
-            if (SVGFileModel.isTagElement(de)) {                
-                collectAnonymousElements(de, elems);
+            if (SVGFileModel.isTagElement(de)) {
+                if ( de.getStartOffset() < de.getEndOffset()) {
+                    collectAnonymousElements(de, elems);
+                } else {
+                    System.out.println("Deleted element found in the model: " + de);
+                }
             }
         }
 
@@ -383,6 +410,7 @@ public class ElementMapping {
             String id = SVGFileModel.getIdAttribute(elem);
 
             if (id != null) {
+                checkRemovedElement(elem);                
                 if ( m_ids.put(id, elem) != null) {
                     System.err.println("Duplicated id: " + id);
                 }
@@ -391,38 +419,4 @@ public class ElementMapping {
             }
         }
     }
-/*    
-    protected void decorateElement( DocumentElement elem, StringBuilder sb) {
-        assert elem != null;
-        assert elem.getDocumentModel() == m_docModel : "Element " + elem + " has incorrect model " + elem.getDocumentModel();
-
-        List<DocumentElement> children = elem.getChildren();
-
-        for (int i = children.size() - 1; i >= 0; i--) {
-            DocumentElement de = children.get(i);
-            
-            if (SVGFileModel.isTagElement(de)) {                
-                decorateElement(de, sb);
-            }
-        }
-
-        if ( !"ROOT_ELEMENT".equals(elem.getType())) {
-            AttributeSet attrs = elem.getAttributes();
-            String       id    = (String) attrs.getAttribute(PerseusController.ATTR_ID);
-
-            if (id == null) {
-                id = generateId();
-
-                int startOffset = elem.getStartOffset();
-                startOffset += elem.getName().length() + 1;
-                String str = " id=\"" + id + "\" ";
-                sb.insert( startOffset, str);
-            }
-
-            if ( m_ids.put(id, elem) != null) {
-                System.err.println("Duplicated id: " + id);
-            }
-        }
-    }
- */
 }

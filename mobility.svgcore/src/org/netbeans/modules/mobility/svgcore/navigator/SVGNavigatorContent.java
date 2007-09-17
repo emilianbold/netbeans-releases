@@ -142,9 +142,9 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
         SVGNavigatorContent.this.repaint();                                
     }
     
-    synchronized void select(String selectedId) {
+    synchronized void select(final String elemId) {
         if (navigatorPanel != null) {
-            navigatorPanel.tree.selectNode(selectedId);
+            navigatorPanel.tree.selectNode(elemId, null);
         }
     }
 
@@ -189,6 +189,15 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             }
         };       
         
+        private String getElementId(DocumentElement de) {
+            if ( de.getStartOffset() < de.getEndOffset()) {
+                return m_doj.getModel().getElementId(de);
+            } else {
+                System.err.println("Deleted element found: " + de);
+                return null;
+            }
+        }
+        
         public NavigatorContentPanel(SVGDataObject doj) throws Exception {
             m_doj = doj;
             setLayout(new BorderLayout());
@@ -210,16 +219,16 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
                                 TopComponent tc = m_doj.getMTVC();
 
                                 if ( tc != null) {
-                                    Lookup           lkp     = tc.getLookup();                                
-                                    SelectionCookie  cookie  = (SelectionCookie)lkp.lookup(SelectionCookie.class);
-
-                                    if ( cookie != null) {
-                                        cookie.updateSelection(m_doj, de, false);
+                                    Lookup           lkp    = tc.getLookup();                                
+                                    SelectionCookie  cookie = (SelectionCookie)lkp.lookup(SelectionCookie.class);
+                                    String           id     = getElementId(de);
+                                    if ( cookie != null && id != null) {
+                                        cookie.updateSelection(m_doj, id, de.getStartOffset(), false);
                                     }
                                 }
                                 break;
                             case 2:
-                                SVGSourceMultiViewElement.selectElement(m_doj, de, true);
+                                SVGSourceMultiViewElement.selectElement(m_doj, de.getStartOffset(), true);
                                 break;
                         }
                     }
@@ -252,9 +261,9 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
                         //show popup
                         JPopupMenu pm = new JPopupMenu();
                         
-                        final AnimationCookie animCookie = (AnimationCookie) getCookie(AnimationCookie.class);
+                        final AnimationCookie animCookie = (AnimationCookie) getCookie(AnimationCookie.class);                        
                         final DocumentElement de         = getElementAt(e.getX(), e.getY());
-                        boolean               isReadOnly = m_doj.getSceneManager().isReadOnly();
+                        boolean         isReadOnly       = m_doj.getSceneManager().isReadOnly();
                         
                         if (animCookie != null && de != null && 
                             SVGFileModel.isAnimation(de)) {
@@ -262,7 +271,10 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
                             JMenuItem animStart = new JMenuItem(NbBundle.getMessage(SVGNavigatorContent.class, "LBL_AnimStart")); //NOI18N
                             animStart.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent evt) {
-                                    animCookie.startAnimation(m_doj, de);
+                                    String id = getElementId(de);
+                                    if ( id != null) {
+                                        animCookie.startAnimation(m_doj, id);
+                                    }
                                 }
                             });
                             animStart.setEnabled(isReadOnly);
@@ -271,7 +283,10 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
                             JMenuItem animStop = new JMenuItem(NbBundle.getMessage(SVGNavigatorContent.class, "LBL_AnimStop")); //NOI18N
                             animStop.addActionListener(new java.awt.event.ActionListener() {
                                 public void actionPerformed(ActionEvent evt) {
-                                    animCookie.stopAnimation(m_doj, de);
+                                    String id = getElementId(de);
+                                    if ( id != null) {
+                                        animCookie.stopAnimation(m_doj, id);
+                                    }
                                 }
                             });
 

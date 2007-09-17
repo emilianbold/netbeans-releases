@@ -14,48 +14,26 @@
 
 package org.netbeans.modules.mobility.svgcore.composer;
 
-import java.lang.Integer;
 import javax.swing.Action;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Pavel Benes
  */
 public final class ActionWrapper {
-    /*
-    public static final Comparator<ActionWrapper> MENU_ORDERING = new Comparator<ActionWrapper>() {
-        public int compare(ActionWrapper a1, ActionWrapper a2) {
-            return (a1.m_menuPosition<a2.m_menuPosition ? -1 :
-                (a1.m_menuPosition==a2.m_menuPosition ? 0 : 1));                
-        }        
-    };*/
-    
     private final Action m_action;
     private final int    m_toolBarPosition;
     
     /* Create separator */
     public ActionWrapper() {
-        m_action = null;
-        m_toolBarPosition = -1;
+        this( null, -1);
     }
     
-    public ActionWrapper(Action action, FileObject fo) {
-        assert action != null;
+    public ActionWrapper(Action action, int toolBarPosition) {
         m_action = action;
-        m_toolBarPosition = getAttribute(fo, "toolBarPosition"); //NOI18N
+        m_toolBarPosition = toolBarPosition;
     }
     
-    public ActionWrapper(FileObject fo) {
-        m_action = null;
-        m_toolBarPosition = getAttribute(fo, "toolBarPosition"); //NOI18N
-    }
-    
-    private static int getAttribute(FileObject fo, String attrName) {
-        Integer pos = (Integer) fo.getAttribute(attrName);
-        return pos != null ? pos.intValue() : -1;
-    }
-
     public Action getAction() {
         return m_action;
     }

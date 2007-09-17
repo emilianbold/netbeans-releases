@@ -135,6 +135,12 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         m_textPane.addHyperlinkListener( this);
         m_panel.add(new JScrollPane(m_textPane), BorderLayout.CENTER);
         setPriority( Thread.MIN_PRIORITY);
+        setDaemon(true);
+        
+        if ( m_svgView.getBasePanel().getComponentCount() == 0) {
+            initializeReportView();
+            m_svgView.repaint();
+        }
     }
 
     public JComponent getPanel() {
@@ -145,10 +151,12 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         interrupt();
     }
 
+    private static final String PARSE_TOKEN = "parse";
     public void run() {
         try {
             SVGFileModel fileModel = m_dObj.getModel();
             try {
+                m_dObj.getSceneManager().setBusyState(PARSE_TOKEN, true);
                 System.setErr( new PrintStream(new OutputStream() {
                     public void write(int b) throws IOException {
                     }
@@ -163,6 +171,7 @@ final class ParsingTask extends Thread implements HyperlinkListener {
             } catch(Exception e) {
                 showParsingErrors(fileModel.getModel().getDocument(), e);
             } finally {
+                m_dObj.getSceneManager().setBusyState(PARSE_TOKEN, false);
                 System.setErr(System.err);
             }
         } catch(Exception e) {
@@ -279,9 +288,23 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         updateText(composeMessageText( errors));
     }
 
+    private void initializeReportView() {
+        JPanel basePanel = m_svgView.getBasePanel();
+        if ( basePanel.getComponentCount() > 0) {
+            if ( basePanel.getComponent(0) == m_panel) {
+                return;
+            } else {
+                basePanel.removeAll();
+            }
+        }
+        basePanel.add( m_panel, BorderLayout.CENTER);
+        basePanel.invalidate();
+    }
+    
     private void updateText(final String errorMsg) {
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
+                initializeReportView();
                 m_textPane.setText(errorMsg);
                 m_textPane.invalidate();
                 m_svgView.validate();

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -332,7 +333,7 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
     }
     
     public void elementAdded(DocumentElementEvent e) {
-        DocumentElement ade = e.getChangedChild();
+        final DocumentElement ade = e.getChangedChild();
         
         if(debug) System.out.println(">>> +EVENT called on " + hashCode() + " - " + m_de + ": element " + ade + " is going to be added");  //NOI18N
         
@@ -359,6 +360,17 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
                         m_nodeTree.getTreeModel().nodesWereInserted(this, new int[]{tnIndex});
                     }
                     if(debug)System.out.println("<<<EVENT finished (node " + tn + " added)"); //NOI18N
+                    
+                    final String id = m_nodeTree.getSelectedId();
+                    if ( id != null &&
+                         m_nodeTree.isSelectionEmpty() &&
+                         id.equals(SVGFileModel.getIdAttribute(ade))) {
+                        SwingUtilities.invokeLater( new Runnable() {
+                            public void run() {
+                                m_nodeTree.selectNode(id, ade);
+                            }
+                        });                        
+                    }
                 }
             } else {
                 if (visibility == SVGNavigatorTree.VISIBILITY_NO) {

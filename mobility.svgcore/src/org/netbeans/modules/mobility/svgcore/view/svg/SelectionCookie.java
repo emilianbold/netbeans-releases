@@ -12,10 +12,9 @@
  */   
 package org.netbeans.modules.mobility.svgcore.view.svg;
 
-import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.openide.nodes.Node;
 
 public interface SelectionCookie extends Node.Cookie {
-    public void updateSelection(SVGDataObject doj, DocumentElement elem, boolean doubleClick);
+    public void updateSelection(SVGDataObject doj, String elemId, int startOff, boolean doubleClick);
 }    

@@ -19,7 +19,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.KeyListener;
@@ -43,7 +42,7 @@ import org.w3c.dom.svg.SVGSVGElement;
  * @author Pavel Benes
  */
 public final class ScreenManager {
-    private static final Image PEN_ICON            = org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/pen.png"); // NOI18N        
+    //private static final Image PEN_ICON            = org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/pen.png"); // NOI18N        
     private static final Color VIEWBOXBORDER_COLOR = Color.DARK_GRAY;
 
     private static final float MINIMUM_ZOOM = 0.01f;
@@ -91,17 +90,18 @@ public final class ScreenManager {
 
                         boolean isReadOnly = m_sceneMgr.isReadOnly();
                         Stack<ComposerAction> actions = m_sceneMgr.getActiveActions();
-                        if (actions != null) {
+                        synchronized( actions) {
                             for (int i = actions.size()-1; i >= 0; i--) {
                                 actions.get(i).paint(g, x, y, isReadOnly);
                             }
                         }
 
+                        /*
                         if (!isReadOnly) {
                             x += 1;
                             y += h - PEN_ICON.getHeight(null) - 1;
                             g.drawImage(PEN_ICON, x, y, null);
-                        }
+                        }*/
                     } finally {
                         g.setClip(clip);
                     }
@@ -126,6 +126,7 @@ public final class ScreenManager {
     public void registerMouseController( InputControlManager.MouseController mouseListener) {
         m_animatorView.addMouseListener(mouseListener);
         m_animatorView.addMouseMotionListener(mouseListener);
+        //m_animatorView.addMouseWheelListener(mouseListener);
         m_imageContainer.addMouseListener(mouseListener);
     }
 
@@ -134,10 +135,10 @@ public final class ScreenManager {
     }
     
     public void registerPopupMenu( final Action [] popupActions, final Lookup lookup) {
-        m_topComponent.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
+        m_imageContainer.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 JPopupMenu popup = Utilities.actionsToPopup( popupActions, lookup);                
-                popup.show(m_topComponent, e.getX(), e.getY());
+                popup.show(m_imageContainer, e.getX(), e.getY());
             }
         });
 
@@ -195,16 +196,20 @@ public final class ScreenManager {
         return m_showAllArea;
     }
     
-    public void setShowTooltip(boolean showTooltip) {
+    public boolean setShowTooltip(boolean showTooltip) {
+        boolean oldValue = m_showTooltip;
         m_showTooltip = showTooltip;
+        return oldValue;
     }
     
     public boolean getShowTooltip() {
         return m_showTooltip;
     }
 
-    public void setHighlightObject(boolean highlightObject) {
+    public boolean setHighlightObject(boolean highlightObject) {
+        boolean oldValue = m_highlightObject;
         m_highlightObject = highlightObject;
+        return oldValue;
     }
     
     public boolean getHighlightObject() {

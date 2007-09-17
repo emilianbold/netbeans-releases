@@ -43,6 +43,7 @@ public final class SVGNavigatorTree extends JTree {
     private final SVGDataObject     m_dObj;
     private final DefaultTreeModel  m_treeModel;    
     private       boolean           m_firstPaint;
+    private       String            m_selectedId = null;
 
     public SVGNavigatorTree(SVGDataObject dObj) throws Exception {
         super();
@@ -68,6 +69,10 @@ public final class SVGNavigatorTree extends JTree {
     
     public SVGDataObject getDataObject() {
         return m_dObj;
+    }
+    
+    String getSelectedId() {
+        return m_selectedId;
     }
     
     public void filterChanged() {
@@ -98,8 +103,12 @@ public final class SVGNavigatorTree extends JTree {
         return SVGFileModel.isTagElement(de);
     }
     
-    public TreePath selectNode( String id) {
-        DocumentElement de = m_dObj.getModel().getElementById(id);
+    public void selectNode( String elemId, DocumentElement de) {
+        m_selectedId = elemId;
+        if (de == null) {
+            de = m_dObj.getModel().getElementById(elemId);
+        }
+
         if (de != null) {
             SVGNavigatorNode rootNode = (SVGNavigatorNode) treeModel.getRoot();
             SVGNavigatorNode node = rootNode.findNode(de);
@@ -126,10 +135,7 @@ public final class SVGNavigatorTree extends JTree {
             Rectangle rect = getPathBounds(treePath);
             scrollRectToVisible(rect);
             repaint();
-            
-            return treePath;
         } 
-        return null;
     }
     
     byte checkVisibility(DocumentElement docElem, boolean deepCheck) {
