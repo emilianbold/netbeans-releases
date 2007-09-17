@@ -49,6 +49,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -995,6 +996,16 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         if (typeKind.isPrimitive()) {
             return maker.Identifier(typeMirror.toString());
+        }
+
+        if (typeKind == TypeKind.ARRAY) {
+            TypeMirror componentType = ((ArrayType) typeMirror).getComponentType();
+            Tree componentTypeTree = createTypeTree(componentType,
+                                                    workingCopy,
+                                                    maker);
+            return (componentTypeTree != null)
+                   ? maker.ArrayType(componentTypeTree)
+                   : null;
         }
 
         final Types types = workingCopy.getTypes();
