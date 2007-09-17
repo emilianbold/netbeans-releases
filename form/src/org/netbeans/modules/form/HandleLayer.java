@@ -134,6 +134,11 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         dropListener = new NewComponentDropListener();
         dropTarget = new DropTarget(this, dropListener);
     }
+    
+    //expose the drop listener so the MenuEditLayer can access it
+    public DropTargetListener getNewComponentDropListener() {
+        return dropListener;
+    }
 
     void setViewOnly(boolean viewOnly) {
         if(this.viewOnly == viewOnly) {
@@ -2880,8 +2885,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 //switch to the menu layer if this is a menu component other than JMenuBar
                 if(item != null && MenuEditLayer.isMenuRelatedComponentClass(item.getComponentClass()) &&
                         !JMenuBar.class.isAssignableFrom(item.getComponentClass())) {
-                    formDesigner.getMenuEditLayer().startNewMenuComponentDragAndDrop(item);
-                    return;
+                    if(!formDesigner.getMenuEditLayer().isDragProxying()) {
+                        formDesigner.getMenuEditLayer().startNewMenuComponentDragAndDrop(item);
+                        return;
+                    }
                 }
                 if (item != null) {
                     if ((item.getComponentClassName().indexOf('.') != -1) // Issue 79573

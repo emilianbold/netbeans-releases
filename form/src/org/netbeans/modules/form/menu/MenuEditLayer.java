@@ -1650,9 +1650,23 @@ public class MenuEditLayer extends JPanel {
         }
         return false;
     }
+    private boolean shouldRedispatchDnDToHandle() {
+        if(!USE_JSEPARATOR_FIX) return false;
+        if(handleLayer == null) return false;
+        PaletteItem item = PaletteUtils.getSelectedItem();
+        if(JSeparator.class.isAssignableFrom(item.getComponentClass())) {
+            return true;
+        }
+        return false;
+    }
     
     private class GlassLayerDropTargetListener implements DropTargetListener {
         public void dragEnter(DropTargetDragEvent dtde) {
+            if(shouldRedispatchDnDToHandle()) {
+                dragProxying = true;
+                handleLayer.getNewComponentDropListener().dragEnter(dtde);
+                return;
+            }
             p("drag enter: " + dtde);
             if(!dragop.isStarted()) {
                 PaletteItem item = PaletteUtils.getSelectedItem();
@@ -1676,6 +1690,11 @@ public class MenuEditLayer extends JPanel {
         }
 
         public void dragOver(DropTargetDragEvent dtde) {
+            if(shouldRedispatchDnDToHandle()) {
+                dragProxying = true;
+                handleLayer.getNewComponentDropListener().dragOver(dtde);
+                return;
+            }
             p("drag over: " + dtde);
             if(dragop.isStarted()) {
                 p("moving dragop");
@@ -1687,11 +1706,22 @@ public class MenuEditLayer extends JPanel {
         }
 
         public void dragExit(DropTargetEvent dte) {
+            if(shouldRedispatchDnDToHandle()) {
+                dragProxying = true;
+                handleLayer.getNewComponentDropListener().dragExit(dte);
+            }
+            dragProxying = false;
         }
 
         public void drop(DropTargetDropEvent dtde) {
+            if(shouldRedispatchDnDToHandle()) {
+                handleLayer.getNewComponentDropListener().drop(dtde);
+                dragProxying = false;
+                return;
+            }
             if(dragop.isStarted()) {
                 dragop.end(dtde.getLocation());
+                dragProxying = false;
                 return;
             }
         }
@@ -1704,6 +1734,10 @@ public class MenuEditLayer extends JPanel {
     }
      
     
+    private boolean dragProxying = false;
+    public boolean isDragProxying() {
+        return dragProxying;
+    }
     
     
     class WrapperIcon implements Icon {
