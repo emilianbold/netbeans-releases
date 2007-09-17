@@ -134,6 +134,10 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         return (int)info.getTrees().getSourcePositions().getEndPosition(tree.getCompilationUnit(), tree.getLeaf());
     }
 
+    public int getPreferredPosition() {
+        return -1;
+    }
+    
     private static final class NodeChilren extends Children.Keys {
         
         public NodeChilren(List<Node> nodes) {

@@ -81,6 +81,10 @@ public class ElementNode extends AbstractNode implements OffsetProvider {
             return -1;
     }
 
+    public int getPreferredPosition() {
+        return -1;
+    }
+
     private static final class NodeChilren extends Children.Keys<Node> {
         
         public NodeChilren(List<Node> nodes) {

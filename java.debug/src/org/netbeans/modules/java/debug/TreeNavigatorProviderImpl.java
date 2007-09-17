@@ -143,16 +143,21 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
             if (doc == null) {
                 return;
             }
-            OffsetsBag bag = new OffsetsBag(doc);
+            OffsetsBag bag = new OffsetsBag(doc, true);
 
             for (Node n : manager.getSelectedNodes()) {
                 if (n instanceof OffsetProvider) {
                     OffsetProvider p = (OffsetProvider) n;
                     final int start = p.getStart();
                     final int end = p.getEnd();
+                    final int pref = p.getPreferredPosition();
                     
                     if (start >= 0 && end >= 0) {
                         bag.addHighlight(start, end, HIGHLIGHT);
+                    }
+                    
+                    if (pref >= 0) {
+                        bag.addHighlight(pref, pref+1, HIGHLIGHT_PREF);
                     }
                 }
             }
@@ -164,6 +169,7 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
     }
     
     private static final AttributeSet HIGHLIGHT = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(224, 224, 224));
+    private static final AttributeSet HIGHLIGHT_PREF = AttributesUtilities.createImmutable(StyleConstants.Underline, new Color(30, 255, 0));
     
     private final class TaskImpl implements CancellableTask<CompilationInfo> {
         

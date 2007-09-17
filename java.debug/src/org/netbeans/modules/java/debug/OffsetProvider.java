@@ -25,4 +25,6 @@ public interface OffsetProvider {
     public int getStart();
     public int getEnd();
     
+    public int getPreferredPosition();
+    
 }

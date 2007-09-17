@@ -46,4 +46,7 @@ public class CommentNode extends AbstractNode implements OffsetProvider {
         return comment.endPos();
     }
 
+    public int getPreferredPosition() {
+        return -1;
+    }
 }

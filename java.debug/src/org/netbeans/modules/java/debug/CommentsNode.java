@@ -64,6 +64,10 @@ public class CommentsNode extends AbstractNode implements OffsetProvider {
         return end;
     }
 
+    public int getPreferredPosition() {
+        return -1;
+    }
+
     private static final class ChildrenImpl extends Children.Keys {
 
         private List<Comment> comments;
