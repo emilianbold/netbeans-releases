@@ -631,6 +631,9 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <pathconvert refid="sigtest.class.path.ref" property="sigtest.class.path">
             
         </pathconvert>    
+        <condition property="sigtest.skip.check.condition">
+            <equals arg1="${sigtest.skip.check}" arg2="true"/>
+        </condition>
         
         <echo>Checking module: ${module.name}</echo>
     </target>
@@ -647,7 +650,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         />
     </target>
 
-    <target name="check-sigtest" depends="sigtest-init" unless="sigtest.skip.check">
+    <target name="check-sigtest" depends="sigtest-init" unless="sigtest.skip.check.condition">
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
