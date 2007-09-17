@@ -126,7 +126,7 @@ public class LLSyntaxAnalyser {
             List<ASTItem> tokens = embeddings.get (mimeType);
             Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
             TokenInput in = TokenInputUtils.create (tokens);
-            ASTNode r = language.getAnalyser ().read (in, skipErrors, null);
+            ASTNode r = language.getAnalyser ().read (in, skipErrors, cancel);
             Feature astProperties = language.getFeature ("AST");
             if (astProperties != null) {
                 String process_embedded = (String)astProperties.getValue("process_embedded");
