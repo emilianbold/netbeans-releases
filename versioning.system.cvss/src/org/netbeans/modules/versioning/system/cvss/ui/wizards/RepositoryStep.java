@@ -508,7 +508,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         repositoryPanel.extCommandTextField.setEnabled(repositoryPanel.extSshRadioButton.isSelected());
 
         repositoryPanel.proxyConfigurationButton.setVisible(showPserverFields || showExtFields);
-        repositoryPanel.proxyConfigurationButton.setEnabled(!repositoryPanel.extSshRadioButton.isSelected());
+        repositoryPanel.proxyConfigurationButton.setEnabled(showPserverFields || !repositoryPanel.extSshRadioButton.isSelected());
         repositoryPanel.browseButton.setVisible(showExtFields);
         repositoryPanel.browseButton.setEnabled(repositoryPanel.extSshRadioButton.isSelected());
     }
