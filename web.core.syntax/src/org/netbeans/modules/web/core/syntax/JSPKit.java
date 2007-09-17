@@ -320,7 +320,8 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
     }
     
     public Formatter createFormatter() {
-        return new JspFormatter(this.getClass());
+        // this functionality is now handled by the IndentTask
+        return null;
         
     }
     

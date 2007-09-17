@@ -146,7 +146,8 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
     }
     
     public Formatter createFormatter() {
-        return new HTMLFormatter(this.getClass());
+        // this functionality is now handled by the IndentTask
+        return null;
     }
     
     /** Called after the kit is installed into JEditorPane */

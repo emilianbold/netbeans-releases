@@ -45,6 +45,8 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
     /** Creates a new instance of TagBases */
     public TagBasedFormatter(Class kitClass) {
         super(kitClass);
+        ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                "Class " + getClass().getName() + " is deprecated, use *IndentTask");
     }
     
     protected abstract ExtSyntaxSupport getSyntaxSupport(BaseDocument doc);

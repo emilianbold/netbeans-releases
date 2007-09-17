@@ -199,7 +199,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             return null;
         }
         
-        List<TokenSequence<? extends TokenId>> tokenSequences = tokenHierarchy.tokenSequenceList(supportedLanguagePath(), startOffset, endOffset);
+        List<TokenSequence<? extends TokenId>> tokenSequences = tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE);
 
         try {
             int lastLine = Utilities.getLineOffset(doc, doc.getLength());

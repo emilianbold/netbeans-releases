@@ -20,8 +20,11 @@
 package org.netbeans.modules.html.editor.indent;
 
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.HTMLFormatter;
+import org.netbeans.editor.ext.html.HTMLLexerFormatter;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
@@ -32,33 +35,37 @@ import org.netbeans.spi.editor.indent.IndentTask;
  *
  * @author Marek Fukala
  */
-                                        
+
 
 public class HtmlIndentTask implements IndentTask {
 
     private Context context;
-    //private HTMLLexerFormatter formatter = null;
-    private static HTMLFormatter formatter = null;
-    
+    private static HTMLLexerFormatter formatter = null;
+
     HtmlIndentTask(Context context) {
         this.context = context;
     }
 
     public void reindent() throws BadLocationException {
-        getFormatter().reformat((BaseDocument)context.document(), context.startOffset(), context.endOffset(), true);
+        getFormatter().reformat((BaseDocument) context.document(), context.startOffset(), context.endOffset(), true);
     }
-    
+
     public ExtraLock indentLock() {
         return null;
     }
 
     //private synchronized HTMLLexerFormatter getFormatter() {
-    private synchronized HTMLFormatter getFormatter() {
-        if(formatter == null) {
-            //formatter = new HTMLLexerFormatter(HTMLKit.class);
-            formatter = new HTMLFormatter(HTMLKit.class);
+    private synchronized HTMLLexerFormatter getFormatter() {
+        if (formatter == null) {
+            String topLevelLang = NbEditorUtilities.getMimeType(context.document());
+            LanguagePath languagePath = LanguagePath.get(Language.find(topLevelLang));
+            
+            if (!"text/html".equals(topLevelLang)) {
+                languagePath = LanguagePath.get(languagePath, Language.find("text/html")); //NOI18N
+            }
+
+            formatter = new HTMLLexerFormatter(HTMLKit.class, languagePath);
         }
         return formatter;
     }
-        
 }

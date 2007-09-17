@@ -34,7 +34,8 @@ public class HTMLIndentEngine extends FormatterIndentEngine {
     }
 
     protected ExtFormatter createFormatter() {
-        return new HTMLFormatter(HTMLKit.class);
+        // this functionality is now handled by the IndentTask
+        return null;//new HTMLFormatter(HTMLKit.class);
     }
 
 }

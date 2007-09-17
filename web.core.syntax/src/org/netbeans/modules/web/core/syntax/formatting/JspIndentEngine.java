@@ -37,7 +37,8 @@ public class JspIndentEngine extends JavaIndentEngine {
     }
 
     protected org.netbeans.editor.ext.ExtFormatter createFormatter() {
-        return new JspFormatter(JSPKit.class);
+        // this functionality is now handled by the IndentTask
+        return null;
     }
 
 }
