@@ -49,6 +49,8 @@ class ConnectionCustomEditor extends javax.swing.JPanel {
     private RADComponent selectedComponent;
     private PropertyDescriptor selectedProperty;
     private MethodDescriptor selectedMethod;
+    
+    private boolean initialized = false;
 
     public ConnectionCustomEditor(RADConnectionPropertyEditor propertyEditor,
                                   FormModel formModel, Class valueType)
@@ -80,6 +82,7 @@ class ConnectionCustomEditor extends javax.swing.JPanel {
             }
         }
         else beanRadio.setEnabled(false); // no beans on the form are of the required type
+        initialized = true;
     }
 
     private static void setupBrowseButton(JButton button) {
@@ -298,6 +301,9 @@ class ConnectionCustomEditor extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void beanComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_beanComboActionPerformed
+        if (!initialized) {
+            return;
+        }
         int index = beanCombo.getSelectedIndex();
         if (index > 0) {
             selectedComponent = beanList.get(index-1);
