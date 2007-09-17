@@ -2188,6 +2188,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     final String name = f.getName();
                     if (f.isDirectory() && !ignoredDirectories.contains(name)) {
                         File[] content = f.listFiles();
+                        if (content != null) {
                             for (int i=0,j=0;i<content.length;i++) {
                                 f = content[i];
                                 if (f.isFile()) {
@@ -2197,6 +2198,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     this.toDo.add(f);
                                 }
                             }
+                        }
                     }                    
                     else if (name.endsWith('.'+JavaDataLoader.JAVA_EXTENSION) && !PACKAGE_INFO.equals(name) && f.length()>0) { //NOI18N
                         toDo.add(0,f);
