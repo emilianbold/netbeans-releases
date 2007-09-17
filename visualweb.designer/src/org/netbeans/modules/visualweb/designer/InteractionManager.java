@@ -725,6 +725,11 @@ public class InteractionManager {
 //                pos = Position.NONE;
                 pos = DomPosition.NONE;
             }
+            
+            // XXX #115390 When in grid and the cursor is not in the highlighted don't provide position.
+            if (box != null && box.isGrid() && highlightedComponentRootElement == null) {
+                pos = DomPosition.NONE;
+            }
 
             // See if the new position points to a location in a grid mode; for example,
             // you may be pointing at an absolutely positioned StaticText; the caret position
