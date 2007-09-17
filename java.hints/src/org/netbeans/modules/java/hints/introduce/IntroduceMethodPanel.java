@@ -87,8 +87,8 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
 
             public String validate(String text) {
                 if( null == text 
-                    || text.length() == 0
-                    || text.indexOf( ' ' ) >= 0 )
+                    || text.length() == 0 ) return "";
+                if (text.indexOf( ' ' ) >= 0 )
                     return getDefaultErrorMessage( text );
                 return null;
             }

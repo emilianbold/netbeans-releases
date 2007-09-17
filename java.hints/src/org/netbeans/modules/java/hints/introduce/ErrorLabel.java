@@ -57,6 +57,7 @@ class ErrorLabel extends JLabel {
         
         this.document = doc;
         this.validator = validator;
+        revalidateText();
         
         doc.addDocumentListener( new DocumentListener() {
             public void insertUpdate(DocumentEvent arg0) {
@@ -91,7 +92,7 @@ class ErrorLabel extends JLabel {
         }
         isValid = errMessage == null;
         setText( errMessage );
-        setIcon( null == errMessage ? null : getErrorIcon() );
+        setIcon( null == errMessage || "".equals(errMessage)? null : getErrorIcon() );
             
         firePropertyChange( PROP_IS_VALID, oldStatus, isValid);
     }
