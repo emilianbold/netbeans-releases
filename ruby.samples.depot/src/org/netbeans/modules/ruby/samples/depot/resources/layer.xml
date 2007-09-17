@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Samples">
+                <folder name="Ruby">
+                    <file name="DepotProject.zip" url="DepotProject.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.samples.depot.resources.Bundle"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ruby/railsprojects/ui/resources/rails.png"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.samples.depot.DepotWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/samples/depot/DepotDescription.html"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
