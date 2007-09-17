@@ -87,7 +87,8 @@ public class CurrentProject {
     public Project getCurrentProject(DesignBean[] designBeans) {
         DesignContext context = designBeans[0].getDesignContext();
         FacesModel model = ((LiveUnit) context).getModel();
-        return model.getProject();
+        project = model.getProject();
+        return project;
     }
-             
+               
 }
