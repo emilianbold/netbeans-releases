@@ -50,9 +50,9 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     private String serviceVariable;
     
     private String superClassName;
-    private Set interfaces = new HashSet();
+    private Set<String> interfaces = new HashSet<String>();
     private String packageName;
-    private Set imports = new HashSet();
+    private Set<String> imports = new HashSet<String>();
     private String className;
     private WebServiceDescriptor wsData;
     private WsdlPort port;
@@ -539,7 +539,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                 
                 try {
                     Method m = annotation.getClass().getMethod("propOrder", new Class[0]); // NOI18N
-                    String[] props = (String[])m.invoke(annotation, null);
+                    String[] props = (String[])m.invoke(annotation);
                     
                     for (int i = 0; props != null && i < props.length; i++) {
                         if (props[i] != null && props[i].length() > 0)

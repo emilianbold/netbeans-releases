@@ -37,7 +37,6 @@ import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.visualweb.websvcmgr.actions.AddDataProviderToFormAction;
 import org.netbeans.modules.visualweb.websvcmgr.actions.AddToFormAction;
-import org.netbeans.modules.visualweb.websvcmgr.actions.TestMethodAction;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderBeanInfoWriter;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderDesignInfoWriter;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderInfo;
@@ -391,8 +390,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
 
     public Action[] getMethodActions(Node node) {
         return new Action[] {
-            SystemAction.get(AddDataProviderToFormAction.class),
-            SystemAction.get(TestMethodAction.class)
+            SystemAction.get(AddDataProviderToFormAction.class)
         };
     }
     
