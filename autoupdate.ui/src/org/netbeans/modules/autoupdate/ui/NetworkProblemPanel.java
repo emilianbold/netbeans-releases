@@ -119,19 +119,6 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         } else {
             options = buttons;
         }
-//        continueButton = new JButton ();
-//        continueButton.setEnabled (true);
-//        continueButton.addActionListener (new ActionListener () {
-//            public void actionPerformed (ActionEvent evt) {
-//                RequestProcessor.getDefault().post (getPerformAgain (), 100);
-//            }
-//        });
-//        Mnemonics.setLocalizedText (continueButton, getBundle ("CTL_Error_Continue"));
-//        continueButton.getAccessibleContext().setAccessibleDescription(getBundle ("ACSD_Error_Continue"));
-//
-//        final JButton cancelButton = cancel == null ? new JButton(getBundle ("CTL_Error_Cancel")) : cancel;
-//        cancelButton.getAccessibleContext().setAccessibleDescription(getBundle ("ACSD_Error_Cancel"));
-//
         JButton showProxyOptions = new JButton ();
         Mnemonics.setLocalizedText (showProxyOptions, getBundle ("CTL_ShowProxyOptions"));
 
@@ -149,7 +136,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         showProxyOptions.getAccessibleContext ().setAccessibleDescription (getBundle ("ACSD_ShowProxyOptions"));
         showProxyOptions.addActionListener (new ActionListener () {
             public void actionPerformed (ActionEvent arg0) {
-                OptionsDisplayer.getDefault ().open ("General");
+                OptionsDisplayer.getDefault ().open ("General"); // NOI18N
             }
         });
         
