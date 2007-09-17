@@ -892,6 +892,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     results.add(JavaCompletionItem.createTypeItem((TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), true));
                         }
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null); //NOI18N
+                    } else if (DEFAULT_KEYWORD.equals(headerText)) {
+                        addLocalConstantsAndTypes(env);
                     } else {
                         Tree mthParent = path.getParentPath().getLeaf();
                         if (mthParent.getKind() == Tree.Kind.CLASS && controller.getTreeUtilities().isAnnotation((ClassTree)mthParent)) {
@@ -1283,6 +1285,16 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         kinds = EnumSet.of(CLASS, INTERFACE);
                         baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
+                    } else if (parent.getKind() == Tree.Kind.METHOD && ((MethodTree)parent).getDefaultValue() == fa) {
+                        Element el = controller.getTrees().getElement(expPath);
+                        if (type.getKind() == TypeKind.ERROR && el.getKind().isClass()) {
+                            el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
+                        }
+                        if (el instanceof PackageElement)
+                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null);
+                        else if (type.getKind() == TypeKind.DECLARED)
+                            addMemberConstantsAndTypes(env, (DeclaredType)type, el);
+                        return;
                     } else if (afterLt) {
                         kinds = EnumSet.of(METHOD);
                     } else if (parent.getKind() == Tree.Kind.ENHANCED_FOR_LOOP && ((EnhancedForLoopTree)parent).getExpression() == fa) {
