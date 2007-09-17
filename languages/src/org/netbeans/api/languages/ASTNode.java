@@ -232,6 +232,7 @@ public class ASTNode extends ASTItem {
      * 
      * @param item a child to be added
      */
+    @Override
     public void addChildren (ASTItem item) {
         super.addChildren (item);
         if (nameToChild != null)
@@ -251,6 +252,7 @@ public class ASTNode extends ASTItem {
      * 
      * @param item a child to be added
      */
+    @Override
     public void removeChildren (ASTItem item) {
         super.removeChildren (item);
         if (nameToChild != null)
@@ -269,6 +271,7 @@ public class ASTNode extends ASTItem {
      * 
      * @param item a child to be added
      */
+    @Override
     public void setChildren (int index, ASTItem item) {
         ASTItem old = getChildren ().get (index);
         if (nameToChild != null)
@@ -363,6 +366,7 @@ public class ASTNode extends ASTItem {
      * 
      * @return string representation of this object
      */
+    @Override
     public String toString () {
         StringBuilder sb = new StringBuilder ();
         sb.append ("ASTNode ").append (getNT ()).append (' ').
@@ -394,6 +398,7 @@ public class ASTNode extends ASTItem {
          * 
          * @return path from this item to the item on given offset
          */
+        @Override
         public ASTPath findPath (int offset) {
             ASTPath result = null;
             Iterator<ASTItem> it = getChildren ().iterator ();
