@@ -72,7 +72,7 @@ public class TypingInCSSEditor extends  org.netbeans.performance.test.utilities.
         editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
 
         editorOperator.setCaretPosition(8, 1);        
-        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        //repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         waitNoEvent(2000);
         
     }
@@ -84,7 +84,7 @@ public class TypingInCSSEditor extends  org.netbeans.performance.test.utilities.
     }
     @Override
     public void close() {
-        editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
+        //editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
         repaintManager().resetRegionFilters();        
         EditorOperator.closeDiscardAll();
         
