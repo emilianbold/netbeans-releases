@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.compapp.projects.jbi;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,6 +77,7 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
@@ -210,7 +209,9 @@ public class JbiActionProvider implements ActionProvider {
         String[] targetNames = commands.get(command);
 
         if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
-            setupTests();
+            if (!setupTests()) {
+                return;
+            }
         }
 
         if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) || 
@@ -302,19 +303,21 @@ public class JbiActionProvider implements ActionProvider {
                 executorTask.addTaskListener(new TaskListener() {
                     public void taskFinished(Task task) {
                         FileObject testDir = project.getTestDirectory();
-                        String fileName = FileUtil.toFile(testDir).getPath() + 
-                                "/selected-tests.properties"; // NOI18N
-                        try {
-                            BufferedReader reader = new BufferedReader(new FileReader(fileName));
-                            String line = reader.readLine();
-                            assert line.startsWith("testcases=");
-                            String testCaseNames = line.substring(line.indexOf('=')); // NOI18N
-                            for (String testCaseName : testCaseNames.split(",")) { // NOI18N
-                                FileObject testCaseDir = testDir.getFileObject(testCaseName.trim());
-                                TestcaseNode.setTestCaseRunning(testCaseDir, false);                                
+                        if (testDir != null) {
+                            String fileName = FileUtil.toFile(testDir).getPath() + 
+                                    "/selected-tests.properties"; // NOI18N
+                            try {
+                                BufferedReader reader = new BufferedReader(new FileReader(fileName));
+                                String line = reader.readLine();
+                                assert line.startsWith("testcases=");
+                                String testCaseNames = line.substring(line.indexOf('=')); // NOI18N
+                                for (String testCaseName : testCaseNames.split(",")) { // NOI18N
+                                    FileObject testCaseDir = testDir.getFileObject(testCaseName.trim());
+                                    TestcaseNode.setTestCaseRunning(testCaseDir, false);                                
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
                     }
                 });
@@ -337,7 +340,7 @@ public class JbiActionProvider implements ActionProvider {
                         return casaDO.getLookup().lookup(JbiBuildListener.class);
                     }
                 } catch (DataObjectNotFoundException e) {
-                    ; // ignore the error
+                    // ignore the error
                 }
             }
         }
@@ -347,6 +350,7 @@ public class JbiActionProvider implements ActionProvider {
     private boolean validateSubProjects() {
         try {
             JbiProjectProperties properties = project.getProjectProperties();
+            @SuppressWarnings("unchecked")
             List<VisualClassPathItem> itemList = 
                     (List) properties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
 
@@ -401,56 +405,62 @@ public class JbiActionProvider implements ActionProvider {
     }
 
 
-    private void setupTests() {
+    private boolean setupTests() {
         try {
             FileObject testDir = project.getTestDirectory();
             if (testDir == null) {
-                NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(JbiActionProvider.class, "MSG_NoTestDirError"), // NOI18N
-                        NbBundle.getMessage(JbiActionProvider.class, "TTL_NoTestDirError"), // NOI18N
-                        NotifyDescriptor.OK_CANCEL_OPTION);
-                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-                    testDir = project.createTestDirectory();
-                } else {
-                    return;
-                }
+                testDir = project.createTestDirectory();
+                // TODO: logical view should be updated upon test dir creation
+                    
+                String msg = NbBundle.getMessage(JbiActionProvider.class, "MSG_NoTestCase"); // NOI18N
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                                msg, NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);    
+                
+                return false;
             }
 
-            // REFACTOR ME
             //Generate a list of test folders
             Enumeration testFolders = testDir.getFolders(false); // no recursion
-            List<String> testCaseNameList = new ArrayList<String>();
-            final List<String> skippedTestCaseNameList = new ArrayList<String>();
+            List<String> runnableTestCaseNames = new ArrayList<String>();
+            final List<String> skippedTestCaseNames = new ArrayList<String>();
             while (testFolders.hasMoreElements()) {
                 FileObject testFolder = (FileObject) testFolders.nextElement();
                 String testFolderName = testFolder.getName();
                 //accumulate everything except "results" folder and other well-known folders
                 if (!testFolderName.equals("results") && !testFolderName.equalsIgnoreCase("cvs")) { // NOI18N
                     if (!TestcaseNode.isTestCaseRunning(testFolder)) {
-                        testCaseNameList.add(testFolderName);
+                        runnableTestCaseNames.add(testFolderName);
                     } else {
-                        skippedTestCaseNameList.add(testFolderName);
+                        skippedTestCaseNames.add(testFolderName);
                     }
                 }
             }
 
-            if (skippedTestCaseNameList.size() > 0) {
+            if (skippedTestCaseNames.size() > 0) {
                 SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {                        
-                        String msg = "The following test case(s) are skipped because they are in progress:" + 
-                                System.getProperty("line.separator") + // NOI18N
-                                skippedTestCaseNameList;
+                    public void run() {           
+                        String msg = NbBundle.getMessage(JbiActionProvider.class, 
+                                "MSG_SkipTestCaseInProgress", skippedTestCaseNames); // NOI18N
                         NotifyDescriptor d = new NotifyDescriptor.Message(
-                                msg, NotifyDescriptor.WARNING_MESSAGE);
+                                msg, NotifyDescriptor.INFORMATION_MESSAGE);
                         DialogDisplayer.getDefault().notify(d);
                     }
                 });
             }
 
-            Collections.sort(testCaseNameList);
+            if (runnableTestCaseNames.size() == 0 && skippedTestCaseNames.size() == 0) {
+                String msg = NbBundle.getMessage(JbiActionProvider.class, "MSG_NoTestCase"); // NOI18N
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                                msg, NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);    
+                return false;
+            }
+            
+            Collections.sort(runnableTestCaseNames);
 
             String testCasesCSV = ""; // NOI18N
-            for (String testCaseName : testCaseNameList) {
+            for (String testCaseName : runnableTestCaseNames) {
                 testCasesCSV += testCaseName + ","; // NOI18N
             }
             if (testCasesCSV.length() > 1) {
@@ -475,9 +485,12 @@ public class JbiActionProvider implements ActionProvider {
             outStream = new FileOutputStream(fileName);
             props.store(outStream);
             outStream.close();
+            return true;
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
+        
+        return false;
     }
 
 

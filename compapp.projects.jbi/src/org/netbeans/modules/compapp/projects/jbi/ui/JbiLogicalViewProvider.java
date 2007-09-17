@@ -64,7 +64,6 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 
@@ -90,6 +89,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
+import org.netbeans.modules.compapp.projects.jbi.JbiProjectGenerator;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -166,15 +166,63 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         jRoot = new JbiLogicalViewRootNode();
         Children kids = jRoot.getChildren();
         
+        final JbiProjectProperties pps = 
+                new JbiProjectProperties(project, helper, resolver);
+        
         try {
-            JbiProjectProperties pps = new JbiProjectProperties(project, helper, resolver);
-            
             //helper.addAntProjectListener(epp);
-            kids.add(new Node[] {new JbiModuleViewNode(pps, project)});
-            kids.add(new Node[] {new TestNode(pps, project)});
+            kids.add(new Node[]{new JbiModuleViewNode(pps, project)});
+            if (project.getTestDirectory() != null) {
+                kids.add(new Node[]{new TestNode(pps, project)});
+            }
         } catch (Exception ioe) {
             org.openide.ErrorManager.getDefault().log(ioe.getLocalizedMessage());
         }
+
+        // In case test directory is missing initially and created later (IZ 115285)
+        FileChangeListener fileChangeListener = new FileChangeAdapter() {
+            @Override
+            public void fileFolderCreated(FileEvent fe) {   
+                String testDirName = (String) project.getProjectProperties().
+                        get(JbiProjectProperties.TEST_DIR);                
+                if (fe.getFile().getNameExt().equals(testDirName)) {  
+                    Children kids = jRoot.getChildren();
+                    kids.add(new Node[]{new TestNode(pps, project)});
+                    jRoot.refreshNode();
+                }
+            }
+            
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+                String oldName = fe.getName();
+                String oldExt = fe.getExt();
+                String oldNameExt = (oldExt == null || oldExt.trim().equals("")) ? // NOI18N
+                    oldName : (oldName + "." + oldExt); // NOI18N
+                
+                String testDirName = (String) project.getProjectProperties().
+                        get(JbiProjectProperties.TEST_DIR);
+                
+                if (oldNameExt.equals(testDirName)) {
+                    Children kids = jRoot.getChildren();
+                    for (Node node : kids.getNodes()) {
+                        if (node instanceof TestNode) {
+                            kids.remove(new Node[] {node});
+                            break;
+                        }
+                    }
+                }
+                
+                String newNameExt = fe.getFile().getNameExt();
+                if (newNameExt.equals(testDirName)) {
+                    Children kids = jRoot.getChildren();
+                    kids.add(new Node[]{new TestNode(pps, project)});
+                    jRoot.refreshNode();
+                }
+            }
+            
+            // Test dir deletion is automatically taken care of by TestNode
+        };
+        project.getProjectDirectory().addFileChangeListener(fileChangeListener);        
         
         return jRoot;
     }
