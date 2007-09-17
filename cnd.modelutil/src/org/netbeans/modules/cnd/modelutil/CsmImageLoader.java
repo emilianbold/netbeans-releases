@@ -59,6 +59,26 @@ public class CsmImageLoader implements CsmImageName {
         return Utilities.loadImage(iconPath);
     }
 
+    public static ImageIcon getProjectIcon(CsmProject prj, boolean opened) {
+        String iconPath = getProjectPath(prj.isArtificial(), opened);
+        return getCachedImageIcon(iconPath);
+    }
+
+    public static Image getProjectImage(boolean library, boolean opened) {
+        String iconPath = getProjectPath(library, opened);
+        return Utilities.loadImage(iconPath);
+    }
+    
+    private static String getProjectPath(boolean library, boolean opened) {
+        String iconPath;
+        if (library) {
+            iconPath = opened ? LIB_PROJECT_OPENED : LIB_PROJECT;
+        } else {
+            iconPath = opened ? PROJECT_OPENED : PROJECT;
+        }
+        return iconPath;
+    }
+    
     public static ImageIcon getIcon(CsmObject o) {
         String iconPath = getImagePath(o);
         return getCachedImageIcon(iconPath); 
@@ -109,6 +129,8 @@ public class CsmImageLoader implements CsmImageName {
             } else {
                 return INCLUDE_USER;
             }
+        } else if (CsmKindUtilities.isProject(o)) {
+            return getProjectPath(((CsmProject)o).isArtificial(), false);
         }
         return getImagePath(kind, modifiers);
     }
