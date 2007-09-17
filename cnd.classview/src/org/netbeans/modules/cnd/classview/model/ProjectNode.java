@@ -27,9 +27,9 @@ import javax.swing.Action;
 import org.netbeans.modules.cnd.classview.Diagnostic;
 import java.awt.Image;
 import org.openide.nodes.*;
-import org.openide.util.Utilities;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 
 /**
  * @author Vladimir Kvasihn
@@ -60,20 +60,12 @@ public class ProjectNode extends NPNode {
     
     @Override
     public Image getIcon(int param) {
-        if (isLibrary) {
-            return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Libraries.gif"); // NOI18N
-        } else {
-            return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project.gif"); // NOI18N
-        }
+        return CsmImageLoader.getProjectImage(isLibrary, false);
     }
     
     @Override
     public Image getOpenedIcon(int param) {
-        if (isLibrary) {
-            return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Libraries.gif"); // NOI18N
-        } else {
-            return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project_open.gif"); // NOI18N
-        }
+        return CsmImageLoader.getProjectImage(isLibrary, true); 
     }
     
     public CsmProject getProject() {
