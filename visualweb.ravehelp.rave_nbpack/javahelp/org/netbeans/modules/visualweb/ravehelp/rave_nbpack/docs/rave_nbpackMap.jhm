@@ -171,6 +171,7 @@
 	<mapID target="projrave_ejb_howtoejbs_ejb_delete" url="ejb/howtoejbs/ejb_delete.html"/>
 	<mapID target="projrave_ejb_howtoejbs_ejb_export" url="ejb/howtoejbs/ejb_export.html"/>
 	<mapID target="projrave_ejb_howtoejbs_ejb_quickref" url="ejb/howtoejbs/ejb_quickref.html"/>
+	<mapID target="projrave_ejb_howtoejbs_import" url="ejb/howtoejbs/ejb_import.html"/>
 	<mapID target="projrave_ejb_process" url="ejb/ejb_process.html"/>
 	<mapID target="projrave_glossary_beanprop" url="glossary/glossary_beanprop.html"/>
 	<mapID target="projrave_glossary_bound" url="glossary/glossary_bound.html"/>
@@ -619,7 +620,7 @@
 	<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html"/>
 	<mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html"/>
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
+	<mapID target="webapps_process_top" url="web/about/webapps_process.html#top"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
-	<mapID target="webapps_process_top" url="web/about/webapps_process.html#top"/>
 </map>

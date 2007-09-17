@@ -108,6 +108,7 @@
 					<file title="ejb_bind_table.html"/>
 					<file title="ejb_delete.html"/>
 					<file title="ejb_export.html"/>
+					<file title="ejb_import.html"/>
 					<file title="ejb_quickref.html"/>
 				</directory>
 				<file title="aboutejbs.html"/>
