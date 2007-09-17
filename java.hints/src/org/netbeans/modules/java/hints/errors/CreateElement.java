@@ -134,7 +134,7 @@ public final class CreateElement implements ErrorRule<Void> {
             if (lookupNCT && leafKind == Kind.NEW_CLASS) {
                 newClass = path;
             }
-            
+	    
             if (leafKind == Kind.MEMBER_SELECT) {
                 lookupMethodInvocation = leaf == errorPath.getLeaf();
             }
@@ -210,7 +210,13 @@ public final class CreateElement implements ErrorRule<Void> {
             
             wasMemberSelect = true;
         } else {
-            if (errorPath.getLeaf().getKind() == Kind.IDENTIFIER) { //TODO: Handle Annotations
+	    
+	    if(e.getEnclosingElement().getKind() == ElementKind.ANNOTATION_TYPE) //unresolved element inside annot.
+			target = (TypeElement) e.getEnclosingElement();
+	    else
+	    
+		if (errorPath.getLeaf().getKind() == Kind.IDENTIFIER) {
+		    //TODO: Handle Annotations
                 target = source;
                 
                 if (firstMethod != null) {
@@ -247,7 +253,7 @@ public final class CreateElement implements ErrorRule<Void> {
             }
             return prepareCreateMethodFix(info, methodInvocation, modifiers, target, simpleName, mit.getArguments(), types);
         }
-        
+	
         if (newClass != null) {
             //create method:
             NewClassTree nct = (NewClassTree) newClass.getLeaf();
@@ -312,7 +318,12 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable(target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
-            result.add(new CreateFieldFix(info, simpleName, modifiers, target, type));
+	    if(e.getEnclosingElement().getKind() == ElementKind.ANNOTATION_TYPE) {
+		result.add(new CreateMethodFix(info, simpleName, modifiers, target, type, types, Collections.<String>emptyList()));
+		return result;
+	    }	
+	    else
+		result.add(new CreateFieldFix(info, simpleName, modifiers, target, type));
         }
 
         if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || types.contains(ElementKind.PARAMETER))) {
