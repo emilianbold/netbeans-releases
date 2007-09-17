@@ -33,6 +33,7 @@ import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -402,7 +403,22 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                 
                 token2attribs.put(tokenId, tokenAttribs);
             }
-            
+
+            if (LOG.isLoggable(Level.FINE)) {
+                // Add token info to the tooltip
+                tokenAttribs = AttributesUtilities.createComposite(
+                    AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, 
+                        "<html>" //NOI18N
+                        + "<b>Token:</b> " + seq.token().text() //NOI18N
+                        + "<br><b>Id:</b> " + tokenId.name() //NOI18N
+                        + "<br><b>Category:</b> " + tokenId.primaryCategory() //NOI18N
+                        + "<br><b>Ordinal:</b> " + tokenId.ordinal() //NOI18N
+                        + "<br><b>Mimepath:</b> " + mimePath //NOI18N
+                    ),
+                    tokenAttribs 
+                );
+            }
+
             return tokenAttribs;
         }
 
