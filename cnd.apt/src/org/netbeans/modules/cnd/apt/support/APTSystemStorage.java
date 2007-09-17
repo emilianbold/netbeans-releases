@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
-import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**

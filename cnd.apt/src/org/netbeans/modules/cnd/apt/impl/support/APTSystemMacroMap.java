@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
-import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
@@ -35,22 +34,15 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 public class APTSystemMacroMap extends APTBaseMacroMap {
     
     private APTMacroMap preMacroMap;
-    private boolean mutable = false;
     
 //    /** Creates a new instance of APTSystemMacroMap */
     protected APTSystemMacroMap() {           
         preMacroMap = new APTPredefinedMacroMap();
     }
-//    
-//    public APTSystemMacroMap(APTMacroMap preMacroMap) {
-//         this.preMacroMap = preMacroMap;
-//    }
     
     public APTSystemMacroMap(List<String> sysMacros) {
         this();
-        mutable = true;
-        APTMacroUtils.fillMacroMap(this, sysMacros);
-        mutable = false;
+        fill(sysMacros);
     }
     
     protected APTMacro createMacro(Token name, Collection<Token> params, List<Token> value) {
@@ -89,21 +81,11 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
 
     @Override
     public void define(Token name, Collection<Token> params, List<Token> value) {
-        if( mutable ) {
-            super.define(name, params, value);
-        } else {
-            assert false : "define should not be called for system macro map";
-        }
+        throw new UnsupportedOperationException("Can not modify immutable System macro map"); // NOI18N
     }
 
     @Override
     public void undef(Token name) {
-        if( mutable ) {
-            super.undef(name);
-        } else {
-            assert false : "undef should not be called for system macro map";
-        }
-    }
-    
-    
+        throw new UnsupportedOperationException("Can not modify immutable System macro map"); // NOI18N
+    }    
 }

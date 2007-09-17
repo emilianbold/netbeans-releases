@@ -26,7 +26,6 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
-import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
@@ -51,8 +50,7 @@ public class APTHandlersSupportImpl {
     }
 
     public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
-        APTMacroMap fileMap = new APTFileMacroMap(sysMap);
-        APTMacroUtils.fillMacroMap(fileMap, userMacros);
+        APTMacroMap fileMap = new APTFileMacroMap(sysMap, userMacros);
         return fileMap;
     }
 

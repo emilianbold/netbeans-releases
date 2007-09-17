@@ -20,15 +20,25 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import antlr.Token;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -38,7 +48,19 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public abstract class APTBaseMacroMap implements APTMacroMap {
+
     protected APTMacroMapSnapshot active;
+    
+    private static final String DEFINE_PREFIX="#define "; // NOI18N
+    private static final List<Token> DEF_MACRO_BODY;
+    static {
+        int type = APTTokenTypes.NUMBER;
+        APTToken token = APTUtils.createAPTToken(type);
+        token.setType(type);
+        token.setText("1"); // NOI18N
+        DEF_MACRO_BODY = new ArrayList<Token>();
+        DEF_MACRO_BODY.add(token);
+    }
     
     /**
      * Creates a new instance of APTBaseMacroMap
@@ -49,12 +71,64 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
 
     ////////////////////////////////////////////////////////////////////////////
     // manage define/undef macros
+
+    
+    public void fill(List<String> macros) {
+        // update callback with user macros information
+        for (Iterator<String> it = macros.iterator(); it.hasNext();) {
+            String macro = it.next();
+            if (APTTraceFlags.TRACE_APT) {
+                System.err.println("adding macro in map " + macro); // NOI18N
+            }
+            define(macro);
+        }           
+    }
+    
+    /** 
+     * analyze macroText string with structure "macro=value" and put in map
+     */
+    private void define(String macroText) {
+        macroText = DEFINE_PREFIX + macroText;
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText);
+        try {
+            Token next = stream.nextToken();
+            // use define node to initialize #define directive from stream
+            APTDefineNode defNode = new APTDefineNode(next);
+            boolean look4Equal = true;
+            do {
+                next = stream.nextToken();
+                if (look4Equal && (next.getType() == APTTokenTypes.ASSIGNEQUAL)) {
+                    // skip the first equal token, it's delimeter
+                    look4Equal = false;
+                    next = stream.nextToken();
+                }
+            } while (defNode.accept(next)); 
+            // special check for macros without values, we must set it to be 1
+            List<Token> body = defNode.getBody();
+            if (body == APTUtils.EMPTY_STREAM) {
+                body = DEF_MACRO_BODY;
+            }
+            defineImpl(defNode.getName(), defNode.getParams(), body);
+        } catch (TokenStreamException ex) {
+            APTUtils.LOG.log(Level.SEVERE, 
+                    "error on lexing macros {0}\n\t{1}", // NOI18N
+                    new Object[] {macroText, ex.getMessage()});
+        }
+    }
     
     public final void define(Token name, List<Token> value) {
+        defineImpl(name, value);
+    }
+    
+    protected final void defineImpl(Token name, List<Token> value) {
         define(name, null, value);
     }
 
     public void define(Token name, Collection<Token> params, List<Token> value) {
+        defineImpl(name, params, value);
+    }
+    
+    protected void defineImpl(Token name, Collection<Token> params, List<Token> value) {
         active.macros.put(APTUtils.getTokenTextKey(name), createMacro(name, params, value));
     }
     

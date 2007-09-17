@@ -44,11 +44,12 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     /**
      * Creates a new instance of APTFileMacroMap
      */
-    public APTFileMacroMap(APTMacroMap sysMacroMap) {
+    public APTFileMacroMap(APTMacroMap sysMacroMap, List<String> userMacros) {
         if (sysMacroMap == null) {
             sysMacroMap = APTBaseMacroMap.EMPTY;
         }
         this.sysMacroMap = sysMacroMap;
+        fill(userMacros);
     }
     
     public void setSysMacros(APTMacroMap sysMacroMap) {
