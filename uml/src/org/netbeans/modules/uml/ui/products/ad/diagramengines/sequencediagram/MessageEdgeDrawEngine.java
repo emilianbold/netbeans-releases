@@ -110,7 +110,7 @@ public class MessageEdgeDrawEngine extends ETEdgeDrawEngine implements IMessageE
    private boolean m_Show = true;
 
    
-   private int m_ShowMessageType = IShowMessageType.SMT_UNKNOWN;
+   private int m_ShowMessageType = -1;
 
    private LifelinePiece m_PieceSelf = null;
    //   private MessageRelocator m_MessageRelocator = null;
@@ -126,9 +126,6 @@ public class MessageEdgeDrawEngine extends ETEdgeDrawEngine implements IMessageE
 
    public MessageEdgeDrawEngine()
    {
-       //kris richards - issue 113794 - getting default value from pref
-       m_ShowMessageType = 
-               NbPreferences.forModule(MessageEdgeDrawEngine.class).getInt("UML_SQD_DEFAULT_MSG", IShowMessageType.SMT_NONE);
    }
 
    public String getElementType()
@@ -750,19 +747,25 @@ public class MessageEdgeDrawEngine extends ETEdgeDrawEngine implements IMessageE
             case IMessageKind.MK_CREATE :
                m_LineKind = DrawEngineLineKindEnum.DELK_DOT;
                m_ArrowHeadKind = DrawEngineArrowheadKindEnum.DEAK_UNFILLEDARROW;
+               if (m_ShowMessageType<0) m_ShowMessageType = IShowMessageType.SMT_UNKNOWN ;
                break;
             default :
             case IMessageKind.MK_SYNCHRONOUS :
                m_LineKind = DrawEngineLineKindEnum.DELK_SOLID;
                m_ArrowHeadKind = DrawEngineArrowheadKindEnum.DEAK_FILLED;
+               if (m_ShowMessageType<0) m_ShowMessageType = 
+                       NbPreferences.forModule(MessageEdgeDrawEngine.class).getInt("UML_SQD_DEFAULT_MSG", IShowMessageType.SMT_NONE);                       
                break;
             case IMessageKind.MK_ASYNCHRONOUS :
                m_LineKind = DrawEngineLineKindEnum.DELK_SOLID;
                m_ArrowHeadKind = DrawEngineArrowheadKindEnum.DEAK_UNFILLEDARROW;
+               if (m_ShowMessageType<0) m_ShowMessageType = 
+                       NbPreferences.forModule(MessageEdgeDrawEngine.class).getInt("UML_SQD_DEFAULT_MSG", IShowMessageType.SMT_NONE);
                break;
             case IMessageKind.MK_RESULT :
                m_LineKind = DrawEngineLineKindEnum.DELK_DOT;
                m_ArrowHeadKind = DrawEngineArrowheadKindEnum.DEAK_FILLED;
+               if (m_ShowMessageType<0) m_ShowMessageType = IShowMessageType.SMT_UNKNOWN ;
                break;
 
          }
