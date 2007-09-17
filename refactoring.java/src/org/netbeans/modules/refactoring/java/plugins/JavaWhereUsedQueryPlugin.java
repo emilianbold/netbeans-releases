@@ -113,7 +113,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 } 
                 if (el.getKind() == ElementKind.METHOD && isFindUsages()) {
                     //get method references for method and for all it's overriders
-                    Set<ElementHandle<TypeElement>> s = idx.getElements(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
+                    Set<ElementHandle<TypeElement>> s = RetoucheUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el.getEnclosingElement());
                     for (ElementHandle<TypeElement> eh:s) {
                         TypeElement te = eh.resolve(info);
                         if (te==null) {
