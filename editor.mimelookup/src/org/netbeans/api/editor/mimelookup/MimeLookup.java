@@ -91,6 +91,25 @@ public final class MimeLookup extends Lookup {
     }
 
     /**
+     * Gets a <code>Lookup</code> implementation that exposes objects specific
+     * for the given <code>MimePath</code> for the given mime-type
+     * or mime-path given as string.
+     * <br/>
+     * The method first translates the string mime-path into {@link MimePath}
+     * by using {@link MimePath#parse(String)} and then calls
+     * {@link #getLookup(MimePath)}.
+     *
+     * @param mimePath non-null string which is either a mime-type e.g. "text/plain"
+     *   or mime-path (multiple mime-types separated by slash) e.g.
+     *   "text/x-jsp/text/x-java".
+     * @return The <code>Lookup</code> containing instances for the given mime-path.
+     * @see #getLookup(MimePath)
+     */
+    public static Lookup getLookup(String mimePath) {
+        return getLookup(MimePath.parse(mimePath));
+    }
+
+    /**
      * Gets mime-type specific lookup.
      *
      * @param mimeType non-null mime-type string representation, e.g. "text/x-java"
