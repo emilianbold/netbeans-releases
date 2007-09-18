@@ -36,15 +36,30 @@ import org.openide.util.NbBundle;
 public class NetworkProblemPanel extends javax.swing.JPanel {
     private String problem;
     private JButton [] buttons = null;
+    private boolean isWarning = false;
 
     /** Creates new form NetworkProblemPanel */
+    public NetworkProblemPanel (String problemDescription) {
+        this (problemDescription, false);
+    }
+    
     public NetworkProblemPanel (String problemDescription, JButton... buttons) {
+        this (problemDescription, true, buttons);
+    }
+    
+    private NetworkProblemPanel (String problemDescription, boolean warning, JButton... buttons) {
         this.buttons = buttons;
+        this.isWarning = warning;
         problem = problemDescription == null ?
             getBundle("NetworkProblemPanel_taTitle_Text") : // NOI18N
             problemDescription;
         initComponents ();
         taTitle.setToolTipText (problem);
+        if (isWarning) {
+            taMessage.setText(NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_WarningText")); // NOI18N
+        } else {
+            taMessage.setText(NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_ErrorText")); // NOI18N
+        }
     }
     
     /** This method is called from within the constructor to
@@ -69,6 +84,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         taTitle.setWrapStyleWord(true);
         taTitle.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         taTitle.setOpaque(false);
+        taTitle.setPreferredSize(new java.awt.Dimension(100, 40));
         spTitle.setViewportView(taTitle);
 
         spMessage.setBorder(null);
@@ -76,7 +92,6 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         taMessage.setEditable(false);
         taMessage.setLineWrap(true);
         taMessage.setRows(3);
-        taMessage.setText(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_Text")); // NOI18N
         taMessage.setWrapStyleWord(true);
         taMessage.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         taMessage.setOpaque(false);
@@ -86,7 +101,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(spTitle)
+            .add(spTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
             .add(spMessage)
         );
         layout.setVerticalGroup(
@@ -94,7 +109,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(spTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spMessage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 160, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(spMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -124,7 +139,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
 
         DialogDescriptor descriptor = new DialogDescriptor(
              this,
-             getBundle ("CTL_Warning"),
+             isWarning ? getBundle ("CTL_Warning") : getBundle ("CTL_Error"),
              true,                                  // Modal
              options, // Option list
              null,                         // Default
@@ -140,8 +155,10 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
             }
         });
         
-        descriptor.setMessageType (NotifyDescriptor.WARNING_MESSAGE);
-        descriptor.setAdditionalOptions (new Object [] {showProxyOptions});
+        descriptor.setMessageType (isWarning ? NotifyDescriptor.WARNING_MESSAGE : NotifyDescriptor.ERROR_MESSAGE);
+        if (isWarning) {
+            descriptor.setAdditionalOptions(new Object [] {showProxyOptions});
+        }
         descriptor.setClosingOptions (options);
         return descriptor;
     }

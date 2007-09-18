@@ -206,6 +206,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             if (tmpInst == null) return null;
         } catch (OperationException ex) {
             log.log (Level.INFO, ex.getMessage (), ex);
+            NetworkProblemPanel problem = new NetworkProblemPanel (ex.getLocalizedMessage ());
+            problem.showNetworkProblemDialog ();
+            model.getCancelButton (wd).doClick ();
+            return null;
         }
         final Installer inst = tmpInst;
         List<UpdateElement> unsigned = new ArrayList<UpdateElement> ();

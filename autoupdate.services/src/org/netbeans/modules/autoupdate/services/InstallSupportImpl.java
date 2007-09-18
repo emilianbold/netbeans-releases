@@ -221,8 +221,14 @@ public class InstallSupportImpl {
         try {
             retval = getExecutionService ().submit (validationCallable).get ();
         } catch(InterruptedException iex) {
+            if (iex.getCause() instanceof OperationException) {
+                throw (OperationException) iex.getCause();
+            }
             Exceptions.printStackTrace(iex);
         } catch(ExecutionException iex) {
+            if (iex.getCause() instanceof OperationException) {
+                throw (OperationException) iex.getCause();
+            }
             Exceptions.printStackTrace(iex);
         }
         return retval;
@@ -628,11 +634,7 @@ public class InstallSupportImpl {
         int wasVerified = 0;
 
         // verify
-        try {
-            wasVerified = verifyNbm (toUpdateImpl.getUpdateElement (), dest, progress, verified);
-        } catch (Exception x) {
-            err.log (Level.INFO, x.getMessage (), x);
-        }
+        wasVerified = verifyNbm (toUpdateImpl.getUpdateElement (), dest, progress, verified);
         
         return wasVerified;
     }
@@ -706,7 +708,7 @@ public class InstallSupportImpl {
         return estimatedSize;
     }
     
-    private int verifyNbm (UpdateElement el, File nbmFile, ProgressHandle progress, int verified) {
+    private int verifyNbm (UpdateElement el, File nbmFile, ProgressHandle progress, int verified) throws OperationException {
         String res = null;
         try {
             verified += el.getDownloadSize ();
@@ -738,9 +740,13 @@ public class InstallSupportImpl {
         } catch (IOException ioe) {
             err.log (Level.INFO, ioe.getMessage (), ioe);
             res = "BAD_DOWNLOAD";
+            throw new OperationException (OperationException.ERROR_TYPE.INSTALL,
+                    NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_Validate_CorruptedNBM", nbmFile)); // NOI18N
         } catch (KeyStoreException kse) {
             err.log (Level.INFO, kse.getMessage (), kse);
             res = "CORRUPTED";
+            throw new OperationException (OperationException.ERROR_TYPE.INSTALL,
+                    NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_Validate_CorruptedNBM", nbmFile)); // NOI18N
         }
         
         err.log (Level.FINE, "NBM " + nbmFile + " was verified as " + res);
