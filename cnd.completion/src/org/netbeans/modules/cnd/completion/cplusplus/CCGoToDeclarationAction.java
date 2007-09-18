@@ -101,7 +101,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
                     CsmModelAccessor.getModel().enqueue(this, taskName);
                     return;
                 }
-                if (target != null) {
+                if (target != null && (target.getDocument() instanceof BaseDocument)) {
                     BaseDocument doc = (BaseDocument) target.getDocument();
                     int offset = target.getCaret().getDot();
                     offset = TokenUtilities.correctOffsetToID(doc, offset);
@@ -123,7 +123,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         String retValue;
 
         retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-identifier-declaration");
-        if (target != null) {
+        if (target != null && (target.getDocument() instanceof BaseDocument)) {
             BaseDocument doc = (BaseDocument) target.getDocument();
             int offset = target.getCaret().getDot();
             offset = TokenUtilities.correctOffsetToID(doc, offset);
