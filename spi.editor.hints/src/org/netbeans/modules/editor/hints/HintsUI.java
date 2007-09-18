@@ -415,13 +415,15 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
         
         AnnotationHolder annotations = AnnotationHolder.getInstance(od.getPrimaryFile());
         
-        for (Annotation a : annotations.getAnnotations()) {
-            if (a instanceof ParseErrorAnnotation) {
-                ParseErrorAnnotation pa = (ParseErrorAnnotation) a;
-                
-                if (lineNum == pa.getLineNumber()
-                        && org.openide.util.Utilities.compareObjects(desc.getShortDescription(), a.getShortDescription())) {
-                    return pa;
+        if (annotations != null) {
+            for (Annotation a : annotations.getAnnotations()) {
+                if (a instanceof ParseErrorAnnotation) {
+                    ParseErrorAnnotation pa = (ParseErrorAnnotation) a;
+
+                    if (lineNum == pa.getLineNumber()
+                            && org.openide.util.Utilities.compareObjects(desc.getShortDescription(), a.getShortDescription())) {
+                        return pa;
+                    }
                 }
             }
         }
