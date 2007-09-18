@@ -81,7 +81,7 @@
 					<tocitem text="Binding a Table Component to an Enterprise JavaBean Method" target="projrave_ejb_howtoejbs_ejb_bind_table" />
 					<tocitem text="Deleting an Enterprise JavaBean Component" target="projrave_ejb_howtoejbs_ejb_delete" />
 					<tocitem text="Exporting a Set of Enterprise JavaBean Components" target="projrave_ejb_howtoejbs_ejb_export" />
-					<tocitem text="Importing a Set of Enterprise JavaBean Components" target="ejb_import" />
+					<tocitem text="Importing a Set of Enterprise JavaBean Components" />
 				</tocitem>
 				<tocitem text="Web Services">
 					<tocitem text="About Web Services" target="projrave_web_svc_aboutwebservices" />

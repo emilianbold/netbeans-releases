@@ -591,10 +591,12 @@
 	<mapID target="projrave_ui_elements_propsheets_jsfstd_text_field_props" url="ui_elements/propsheets/jsfstd_text_field_props.html"/>
 	<mapID target="projrave_ui_elements_propsheets_page_props" url="ui_elements/propsheets/page_props.html"/>
 	<mapID target="projrave_ui_elements_server_nav_add_new_data_provider" url="ui_elements/server_nav/add_new_data_provider.html"/>
+	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="ui_elements/server_nav/add_websvcdb.html"/>
 	<mapID target="projrave_ui_elements_server_nav_run_query" url="ui_elements/server_nav/run_query.html"/>
 	<mapID target="projrave_ui_elements_server_nav_runtime_nav_driver_node_popup" url="ui_elements/server_nav/runtime_nav_driver_node_popup.html"/>
 	<mapID target="projrave_ui_elements_server_nav_runtime_navigator" url="ui_elements/server_nav/runtime_navigator.html"/>
 	<mapID target="projrave_ui_elements_server_nav_services_win_popup" url="ui_elements/server_nav/services_win_popup.html"/>
+	<mapID target="projrave_ui_elements_server_nav_test_websvcdb" url="ui_elements/server_nav/test_websvcdb.html"/>
 	<mapID target="projrave_web_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_accessing_websvc" url="web_svc/howtowebservices/accessing_websvc.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_add_websvc_to_page" url="web_svc/howtowebservices/add_websvc_to_page.html"/>

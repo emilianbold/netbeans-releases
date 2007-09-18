@@ -900,10 +900,12 @@
 						<file title="Template"/>
 					</directory>
 					<file title="add_new_data_provider.html"/>
+					<file title="add_websvcdb.html"/>
 					<file title="run_query.html"/>
 					<file title="runtime_nav_driver_node_popup.html"/>
 					<file title="runtime_navigator.html"/>
 					<file title="services_win_popup.html"/>
+					<file title="test_websvcdb.html"/>
 				</directory>
 			</directory>
 			<directory title="web">
