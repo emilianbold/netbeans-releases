@@ -83,10 +83,12 @@ public class ContextUtils {
             CsmReference ref = ContextUtils.findReference(activatedNodes[0]);            
             if (isSupportedReference(ref)) {
                 decl = ref.getReferencedObject();
+                if (CsmKindUtilities.isClass(decl)){
+                    return (CsmClass)decl;
+                }
             }
-        } else {
-            decl = ContextUtils.findDeclaration(activatedNodes[0]);
         }
+        decl = ContextUtils.findDeclaration(activatedNodes[0]);
         if (CsmKindUtilities.isClass(decl)){
             return (CsmClass)decl;
         }
@@ -120,14 +122,12 @@ public class ContextUtils {
     
     private static CsmDeclaration findInnerFileDeclaration(CsmFile file, int offset) {
         CsmDeclaration innerDecl = null;
-        if (innerDecl == null) {
-            for (Iterator it = file.getDeclarations().iterator(); it.hasNext();) {
-                CsmDeclaration decl = (CsmDeclaration) it.next();
-                if (isInObject(decl, offset)) {
-                    innerDecl = findInnerDeclaration(decl, offset);
-                    innerDecl = innerDecl != null ? innerDecl : decl;
-                    break;
-                }
+        for (Iterator it = file.getDeclarations().iterator(); it.hasNext();) {
+            CsmDeclaration decl = (CsmDeclaration) it.next();
+            if (isInObject(decl, offset)) {
+                innerDecl = findInnerDeclaration(decl, offset);
+                innerDecl = innerDecl != null ? innerDecl : decl;
+                break;
             }
         }
         return innerDecl;
@@ -135,7 +135,6 @@ public class ContextUtils {
 
     private static CsmDeclaration findInnerDeclaration(CsmDeclaration outDecl, int offset) {
         Iterator it = null;
-        CsmDeclaration innerDecl = null;
         if (CsmKindUtilities.isNamespaceDefinition(outDecl)) {
             it = ((CsmNamespaceDefinition) outDecl).getDeclarations().iterator();
         } else if (CsmKindUtilities.isClass(outDecl)) {
@@ -146,13 +145,17 @@ public class ContextUtils {
             while (it.hasNext()) {
                 CsmDeclaration decl = (CsmDeclaration) it.next();
                 if (isInObject(decl, offset)) {
-                    innerDecl = findInnerDeclaration(decl, offset);
-                    innerDecl = innerDecl != null ? innerDecl : decl;
+                    CsmDeclaration innerDecl = findInnerDeclaration(decl, offset);
+                    if (CsmKindUtilities.isClass(innerDecl)){
+                        return innerDecl;
+                    } else if (CsmKindUtilities.isClass(decl)){
+                        return decl;
+                    }
                     break;
                 }
             }
         }
-        return innerDecl;
+        return null;
     }    
 
     private static boolean isInObject(CsmObject obj, int offset) {

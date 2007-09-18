@@ -33,7 +33,6 @@ import org.openide.util.actions.CookieAction;
 public final class ShowClassHierarchyAction extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {
-        ContextUtils.getContextClass(activatedNodes);
         CsmClass decl = ContextUtils.getContextClass(activatedNodes);
         if (decl != null){
             HierarchyTopComponent view = HierarchyTopComponent.findInstance();
