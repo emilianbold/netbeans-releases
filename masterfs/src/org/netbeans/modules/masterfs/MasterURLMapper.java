@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URI;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Implements URLMapper for MasterFileSystem.
@@ -54,8 +55,7 @@ public final class MasterURLMapper extends URLMapper {
             sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append(']');//NOI18N
             IllegalArgumentException iax = new IllegalArgumentException(sb.toString());
             if (Utilities.isWindows() && url.getAuthority() != null) {
-                Exceptions.attachLocalizedMessage(iax,
-                                                  "; might be because your user directory is on a Windows UNC path (issue #46813)? If so, try using mapped drive letters.");//NOI18N                
+                Exceptions.attachLocalizedMessage(iax,NbBundle.getMessage(MasterURLMapper.class, "MSG_UNC_PATH"));//NOI18N
             }            
             Exceptions.printStackTrace(iax);
             return null;
