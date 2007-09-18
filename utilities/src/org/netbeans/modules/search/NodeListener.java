@@ -545,23 +545,6 @@ final class NodeListener implements MouseListener, KeyListener,
     }
     
     public void keyReleased(KeyEvent e) {
-        if ((e.getKeyCode() != KeyEvent.VK_ENTER)
-                || (e.getModifiersEx() != 0)) {
-            return;
-        }
-        
-        final JTree tree = (JTree) e.getSource();
-        final TreeSelectionModel selectionModel = tree.getSelectionModel();
-        if (selectionModel.getSelectionCount() != 1) {
-            return;
-        }
-        final TreePath selectedPath = selectionModel.getLeadSelectionPath();
-        if ((selectedPath == null) || (selectedPath.getParentPath() == null)) {
-            // empty selection or root node selected
-            return;
-        }
-        Node nbNode = getNbNode(selectedPath, getResultModel(tree));
-        callDefaultAction(nbNode, e.getSource(), e.getID(), "enter");   //NOI18N
     }
     
     public void mouseEntered(MouseEvent e) {
@@ -589,6 +572,20 @@ final class NodeListener implements MouseListener, KeyListener,
             if (path != null) {
                 toggleSelection(tree, path);
             }
+        } else if ((e.getKeyCode() == KeyEvent.VK_ENTER)
+                   && (e.getModifiersEx() == 0)) {
+            final JTree tree = (JTree) e.getSource();
+            final TreeSelectionModel selectionModel = tree.getSelectionModel();
+            if (selectionModel.getSelectionCount() != 1) {
+                return;
+            }
+            final TreePath selectedPath = selectionModel.getLeadSelectionPath();
+            if ((selectedPath == null) || (selectedPath.getParentPath() == null)) {
+                // empty selection or root node selected
+                return;
+            }
+            Node nbNode = getNbNode(selectedPath, getResultModel(tree));
+            callDefaultAction(nbNode, e.getSource(), e.getID(), "enter");   //NOI18N
         }
     }
 
