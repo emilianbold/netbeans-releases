@@ -133,6 +133,7 @@ public class Highlighting {
     }
     
     protected void fire (int startOffset, int endOffset) {
+        if (listeners == null) return;
         Object[] l = listeners.getListenerList ();
         PropertyChangeEvent event = null;
         for (int i = l.length-2; i>=0; i-=2) {
