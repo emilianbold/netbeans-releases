@@ -525,6 +525,10 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         public boolean accept( File f ) {
 
             if ( f.isDirectory() ) {
+                //#114765
+                if ("CVS".equalsIgnoreCase(f.getName()) && new File(f, "Entries").exists()) { //NOI18N
+                    return false;
+                }
                 return true; // Directory selected
             }
 
