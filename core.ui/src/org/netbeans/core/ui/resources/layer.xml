@@ -446,6 +446,9 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="form">
                 <file name="properties.wstcgrp" url="properties.wstcgrp"/>
             </folder>
+            <folder name="jsfdesigner">
+                <file name="properties.wstcgrp" url="properties.wstcgrp"/>
+            </folder>
         </folder>
         
         <folder name="Components">

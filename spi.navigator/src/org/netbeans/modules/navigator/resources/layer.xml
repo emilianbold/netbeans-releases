@@ -51,6 +51,12 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
 
+        <folder name="Groups">
+            <folder name="jsfdesigner">
+                <file name="navigatorTC.wstcgrp" url="navigatorTC.wstcgrp"/>
+            </folder>
+        </folder>
+        
         <folder name="Components">
             <file name="navigatorTC.settings" url="navigatorTC.xml"/>
         </folder>
