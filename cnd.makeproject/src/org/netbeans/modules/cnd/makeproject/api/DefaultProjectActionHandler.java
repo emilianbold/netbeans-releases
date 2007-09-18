@@ -43,6 +43,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -207,12 +208,18 @@ public class DefaultProjectActionHandler implements ActionListener {
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
+                    if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
+                        String errmsg;
+                        if (Utilities.isMac())
+                            errmsg = getString("Err_NoTermFoundMacOSX");
+                        else
+                            errmsg = getString("Err_NoTermFound");
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
+                        conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                    }
                     if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                         args = pae.getProfile().getArgsFlat();
                         exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
-                    } else if (pae.getProfile().getTerminalType() == null) {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_NoTermFound"))); // NOI18N
                     } else {
                         showInput = false;
                         if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
