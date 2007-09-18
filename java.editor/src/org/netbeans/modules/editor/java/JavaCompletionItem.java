@@ -267,6 +267,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         BaseDocument doc = (BaseDocument)c.getDocument();
         String text = getInsertPrefix().toString();
         if (text != null) {
+            boolean completeMethod = text.length() == len && "()".equals(toAdd);
             int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
             if (semiPos > -2)
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -316,6 +317,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 doc.insertString(position.getOffset(), text, null);
                 if (semiPosition != null)
                     doc.insertString(semiPosition.getOffset(), ";", null);
+                else if (completeMethod)
+                    c.setCaretPosition(c.getCaretPosition() - 1);
             } catch (BadLocationException e) {
                 // Can't update
             } finally {
