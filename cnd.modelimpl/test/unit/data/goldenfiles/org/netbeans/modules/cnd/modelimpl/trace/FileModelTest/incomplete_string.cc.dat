@@ -1,0 +1,28 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE incomplete_string.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+FUNCTION foo [5:1/37-5:11/47] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE foo()
+    UNIQUE NAME F:foo()
+    PARAMETERS:
+    RETURNS int TEXT=int  [5:1/37-5:4/40]
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION foo [5:1/37-5:11/47] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE foo()
+    UNIQUE NAME F:foo()
+    PARAMETERS:
+    RETURNS int TEXT=int  [5:1/37-5:4/40]
+

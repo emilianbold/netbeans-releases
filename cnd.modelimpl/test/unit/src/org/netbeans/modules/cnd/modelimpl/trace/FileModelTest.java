@@ -42,6 +42,10 @@ public class FileModelTest extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
     
+    public void testIncompleteString() throws Exception {
+        performTest("incomplete_string.cc");        
+    }
+    
     public void testPreProcDefinedKeyword() throws Exception {
         performTest("preproc_defined_keyword.cc");        
     }
