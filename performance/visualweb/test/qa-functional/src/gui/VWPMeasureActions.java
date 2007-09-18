@@ -40,6 +40,7 @@ public class VWPMeasureActions  {
         
         suite.addTest(new TypingInCSSEditor("measureTime","Type a character in CSS Editor"));
         suite.addTest(new CSSRuleAddTest("measureTime","Measure time to add and modify CSS rule"));
+        suite.addTest(new PasteCSSText("measureTime","Measure time to Paste text into CSS editor"));
         
         suite.addTest(new OpenBeanFiles("testApplicationBean","Open Application Bean"));
         suite.addTest(new OpenBeanFiles("testRequestBean","Open Request  Bean"));
