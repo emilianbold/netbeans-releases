@@ -27,21 +27,18 @@ Microsystems, Inc. All Rights Reserved.
                     <code-name-base>org.apache.jmeter.module</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <implementation-version/>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.loadgenerator</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <implementation-version/>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.profiler.loadgen</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <implementation-version/>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
