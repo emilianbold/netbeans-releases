@@ -417,10 +417,13 @@ public class BracketCompleterTest extends RubyTestBase {
         insertBreak("=begin^\n", "=begin\n^\n=end\n");
     }
 
-//    public void testDocsEnd() throws Exception {
-//        // For some reason it's broken at the end of the document; figure out why
-//        insertBreak("=begin^", "=begin\n^\n=end");
-//    }
+    public void testDocsEnd() throws Exception {
+        insertBreak("=begin^", "=begin\n^\n=end");
+    }
+
+    public void testDocsEnd2() throws Exception {
+        insertBreak("def foo\nend\n=begin^", "def foo\nend\n=begin\n^\n=end");
+    }
 
     public void testInsertEnd1() throws Exception {
         insertBreak("x^", "x\n^");

@@ -114,6 +114,9 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     // XXX What about RubyTokenId.REGEXP_BEGIN?
     private static final TokenId[] REGEXP_TOKENS = { RubyTokenId.REGEXP_LITERAL, RubyTokenId.REGEXP_END };
 
+    /** Used in =begin/=end completion */
+    private final static String EQ_BEGIN = "=begin"; // NOI18N
+    
     /** When != -1, this indicates that we previously adjusted the indentation of the
      * line to the given offset, and if it turns out that the user changes that token,
      * we revert to the original indentation
@@ -248,9 +251,14 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         TokenId id = token.id();
 
         // Is it an umatched =begin token?
-        if ((id == RubyTokenId.ERROR) && (ts.offset() == (offset - 6)) &&
-                token.text().toString().startsWith("=begin") && insertMatching) {
-            doc.insertString(offset, "\n=end", null);
+        if (insertMatching && (((id == RubyTokenId.ERROR) && (ts.offset() == (offset - 6)) && 
+                token.text().toString().startsWith(EQ_BEGIN)) || 
+                (id == RubyTokenId.BEGIN && ts.offset() == Utilities.getRowStart(doc, offset) + 1 &&
+                EQ_BEGIN.equals(doc.getText(ts.offset() - 1, EQ_BEGIN.length()))) || 
+                (id == RubyTokenId.NONUNARY_OP && ts.offset() + EQ_BEGIN.length() <= doc.getLength() &&
+                EQ_BEGIN.equals(doc.getText(ts.offset(), EQ_BEGIN.length()))))) {
+            // NOI18N
+            doc.insertString(offset, "\n=end", null); // NOI18N
             caret.setDot(offset);
 
             return -1;
