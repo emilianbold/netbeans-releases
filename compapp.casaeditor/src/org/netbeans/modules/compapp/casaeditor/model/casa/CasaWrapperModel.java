@@ -68,6 +68,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaModelImpl;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
@@ -111,6 +112,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -151,7 +153,8 @@ public class CasaWrapperModel extends CasaModelImpl {
     private Map<String, String> mDeleteProjects = new HashMap<String, String>();
         
     // mapping WSDL port link hrefs to WSDL components
-    private Map<String, Object> cachedWSDLComponents = new HashMap<String, Object>();
+    private Map<String, WSDLComponent> cachedWSDLComponents = 
+            new HashMap<String, WSDLComponent>();
     
     private List<String> artifactTypes = new ArrayList<String>();
     
@@ -163,6 +166,8 @@ public class CasaWrapperModel extends CasaModelImpl {
 //    // e.x, "smtp" -> "sun-smtp-binding".
 //    private Map<String, String> bindingType2BcName;
     
+    // Any CompApp WSDL change should mark CASA "dirty" (IZ 96390)
+    private PropertyChangeListener markCasaDirtyListener;
     
     /** Creates a new instance of CasaWrapperModel */
     public CasaWrapperModel(ModelSource source) {
@@ -176,9 +181,18 @@ public class CasaWrapperModel extends CasaModelImpl {
 //        }
         
         artifactTypes.add(JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA);
-//        buildBindingComponentMaps();
+        
+        markCasaDirtyListener = new PropertyChangeListener() {
+              public void propertyChange(PropertyChangeEvent evt) {
+                DataObject dataObject = getDataObject(CasaWrapperModel.this);
+                if (!dataObject.isModified()) {
+                    dataObject.setModified(true);
+                }
+            }
+        };
     }
         
+    @Override
     public void removePropertyChangeListener(final PropertyChangeListener pcl) {
         super.removePropertyChangeListener(pcl);
         mSupport.removePropertyChangeListener(pcl);
@@ -188,6 +202,7 @@ public class CasaWrapperModel extends CasaModelImpl {
      * Add property change listener which will receive events for any element
      * in the underlying sa jbi model.
      */
+    @Override
     public void addPropertyChangeListener(final PropertyChangeListener pcl) {
         super.addPropertyChangeListener(pcl);
         mSupport.addPropertyChangeListener(pcl);
@@ -238,7 +253,8 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /** 
-     * Gets the target binding component name of a casa port.
+     * Gets the name of the target binding component for a casa port. 
+     * For example, "sun-http-binding".
      */ 
     public String getBindingComponentName(final CasaPort casaPort) { 
         CasaBindingComponentServiceUnit bcSU =
@@ -246,6 +262,10 @@ public class CasaWrapperModel extends CasaModelImpl {
         return bcSU.getComponentName();
     }
     
+    /**
+     * Gets the binding type of the given casa port.
+     * For example, "http" or "soap".
+     */
     public String getBindingType(final CasaPort casaPort) {
         String bindingType = casaPort.getBindingType();
         if (bindingType == null) {
@@ -310,15 +330,15 @@ public class CasaWrapperModel extends CasaModelImpl {
      * @return  the wsdl port linked by the casaport
      */
     public Port getLinkedWSDLPort(final CasaPort casaPort) { 
-        String linkHref = casaPort.getLink().getHref();        
+        String linkHref = casaPort.getLink().getHref();    
+        Port port = null;
         try {
-            Port port = (Port) getWSDLComponentFromXLinkHref(linkHref);
-            return port;
+            port = getWSDLComponentFromXLinkHref(linkHref, Port.class);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         
-        return null;
+        return port;
     }
     
     /**
@@ -328,11 +348,12 @@ public class CasaWrapperModel extends CasaModelImpl {
      * @exception IllegalArgumentException  if the given href doesn't match the
      *      expected pattern.
      */
-    private WSDLComponent getWSDLComponentFromXLinkHref(String linkHref)
-    throws URISyntaxException, CatalogModelException, XPathExpressionException {
+    @SuppressWarnings("unchecked")
+    private <T extends WSDLComponent> T getWSDLComponentFromXLinkHref(
+            String linkHref, Class<T> type)
+            throws URISyntaxException, CatalogModelException, XPathExpressionException {
         
-        WSDLComponent wsdlComponent = 
-                (WSDLComponent) cachedWSDLComponents.get(linkHref);
+        WSDLComponent wsdlComponent = cachedWSDLComponents.get(linkHref);
         
         if (wsdlComponent == null) {
             String regex = "(.*)#xpointer\\((.*)\\)";       // NOI18N
@@ -360,7 +381,11 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
-        return wsdlComponent;
+        WSDLModel wsdlModel = wsdlComponent.getModel();
+        wsdlModel.removePropertyChangeListener(markCasaDirtyListener);
+        wsdlModel.addPropertyChangeListener(markCasaDirtyListener);
+        
+        return (T) wsdlComponent;
     }
         
     /**
@@ -1020,12 +1045,8 @@ public class CasaWrapperModel extends CasaModelImpl {
         for (CasaLink link : portTypes.getLinks()) {
             String href = link.getHref();
             try {
-                PortType pt = (PortType) getWSDLComponentFromXLinkHref(href);
-//                if (pt.getName().equals(DUMMY_PORTTYPE_NAME)) {
-//                    ret.add(null);
-//                } else {
-                    ret.add(pt);
-//                }
+                PortType pt = getWSDLComponentFromXLinkHref(href, PortType.class);
+                ret.add(pt);
             } catch (Exception ex) {
                 System.out.println("Failed to Fetch: " + href);
             }
@@ -1055,7 +1076,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         for (CasaLink link : casaPortTypes.getLinks()) {
             String href = link.getHref();
             try {
-                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
+                PortType pt = this.getWSDLComponentFromXLinkHref(href, PortType.class);
                 if (interfaceQName.getNamespaceURI().equals(
                         pt.getModel().getDefinitions().getTargetNamespace()) &&
                         interfaceQName.getLocalPart().equals(pt.getName())) {
@@ -1073,7 +1094,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         for (CasaLink link : casaPortTypes.getLinks()) {
             String href = link.getHref();
             try {
-                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
+                PortType pt = this.getWSDLComponentFromXLinkHref(href, PortType.class);
                 if (interfaceQName.getNamespaceURI().equals( 
                         pt.getModel().getDefinitions().getTargetNamespace()) &&
                         interfaceQName.getLocalPart().equals(pt.getName())) {
@@ -2382,49 +2403,16 @@ public class CasaWrapperModel extends CasaModelImpl {
         } catch (CatalogModelException ex) {
             ex.printStackTrace();
         }
-
         
         if (wsdlModelSource != null) {
-            WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(wsdlModelSource);
-            /*
-//            if (firstTimeLoadingCompAppWSDLModel) {
-//                firstTimeLoadingCompAppWSDLModel = false;
-                wsdlModel.addPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        markDirty();
-                    }
-                });
-                wsdlModel.addComponentListener(new ComponentListener() {
-                    public void valueChanged(ComponentEvent componentEvent) {
-                        markDirty();
-                    }
-                    
-                    public void childrenAdded(ComponentEvent componentEvent) {
-                        markDirty();
-                    }
-                    
-                    public void childrenDeleted(ComponentEvent componentEvent) {
-                        markDirty();
-                    }
-                });
-//            }
-             */
-//            compappWSDLModel = wsdlModel;
+            WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(wsdlModelSource);  
+            // compappWSDLModel = wsdlModel;
             return wsdlModel;
         } else {
             return null;
         }
     }
-    /*
-    private boolean firstTimeLoadingCompAppWSDLModel = true;
-    */
-    private void markDirty() {
-        DataObject dataObject = getDataObject(this);
-        if (!dataObject.isModified()) {
-            dataObject.setModified(true);
-        }
-    }
-    
+        
     private String getCompAppWSDLTargetNamespace() {
         Project jbiProject = getJBIProject();
         return JbiProjectHelper.getJbiProjectName(jbiProject);
