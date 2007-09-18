@@ -59,8 +59,7 @@ public class RenameRefactoringUI implements RefactoringUI {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            ASTToken item = (ASTToken) path.getLeaf();
-            String itemName = item.getIdentifier();
+            String itemName = path.getLeaf() instanceof ASTToken ? ((ASTToken) path.getLeaf()).getIdentifier() : "";
             String panelName = NbBundle.getMessage(RenameRefactoringUI.class, "LBL_Rename") + ' ' + itemName;
             panel = new RenamePanel(itemName, parent, panelName);
         }
