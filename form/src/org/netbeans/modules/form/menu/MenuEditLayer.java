@@ -1226,6 +1226,13 @@ public class MenuEditLayer extends JPanel {
                             
                             if(evt.getChangeType() == evt.COMPONENT_ADDED) {
                                 updateIcon(evt.getComponent());
+                                //reinstall the accelerator preview when moving items around
+                                if(evt.getComponent() != null) {
+                                    Component co = (Component) formDesigner.getComponent(evt.getComponent());
+                                    if(co instanceof JMenuItem) {
+                                        installAcceleratorPreview((JMenuItem)co);
+                                    }
+                                }
                             }
                             
                             // if this menu was deleted then make sure it's popup is hidden and removed
