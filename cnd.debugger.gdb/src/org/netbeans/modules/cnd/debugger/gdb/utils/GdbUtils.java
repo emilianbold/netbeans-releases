@@ -365,7 +365,7 @@ public class GdbUtils {
      * So before setting the value string we strip these extraneous newlines.
      */
     public static String mackHack(String info) {
-        if (info != null && info.indexOf("\\n") != -1) {
+        if (info != null && info.indexOf("\\n") != -1) { // NOI18N
             StringBuilder s = new StringBuilder();
             int idx = 0;
             char last = 0;

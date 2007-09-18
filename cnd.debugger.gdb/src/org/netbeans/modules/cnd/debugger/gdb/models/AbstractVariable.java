@@ -165,7 +165,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     }
                 }
                 if (value != null) {
-                    if (value.endsWith("\\\"")) {
+                    if (value.endsWith("\\\"")) { // NOI18N
                         pos = value.indexOf('"');
                         if (pos != -1) {
                             value = value.substring(pos, value.length() - 1) + '"';
@@ -240,10 +240,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int pos;
         
         if (value.startsWith("0x") && (pos = value.indexOf(" \\\"")) != -1 && value.endsWith("\\\"")) { // NOI18N
-            value = '"' + value.substring(pos + 3, value.length() - 2) + '"';
+            value = '"' + value.substring(pos + 3, value.length() - 2) + '"'; // NOI18N
         } else if (value.startsWith("0x") && (pos = value.indexOf(" \"")) != -1 && value.endsWith("\"")) { // NOI18N
             value = value.substring(pos + 1);
-        } else if (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
+        } else if (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') { // NOI18N
             // OK
         } else {
             value = null;
@@ -298,7 +298,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         if (fields.length > 0) {
             return fields.length;
         } else if (type != null && value != null &&
-                ((type.indexOf('[') != -1 || (type.indexOf("**") != -1 && isValidPointerAddress(value))) ||
+                ((type.indexOf('[') != -1 || (type.indexOf("**") != -1 && isValidPointerAddress(value))) || // NOI18N
                 (value.length() > 0 && value.charAt(0) == '{'))) {
             return 5;
         } else {
@@ -307,7 +307,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     private boolean isValidPointerAddress(String info) {
-        int pos1 = info.indexOf("*) 0x");
+        int pos1 = info.indexOf("*) 0x"); // NOI18N
         int i;
         if (info.charAt(0) == '(' && pos1 != -1) {
             try {
@@ -557,7 +557,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 }
                 return new AbstractField(parent, n, t, v);
             } else if (info.trim().equals("<No data fields>")) { // NOI18N
-                return new AbstractField(parent, "", "", info.trim());
+                return new AbstractField(parent, "", "", info.trim()); // NOI18N
             }
         }
         return null;
@@ -700,7 +700,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 pname = parent.getName();
             }
             
-            if (name.equals("<Base class>")) {
+            if (name.equals("<Base class>")) { // NOI18N
                 return pname;
             } else if (name.indexOf('[') != -1) {
                 if ((pos = pname.lastIndexOf('.')) != -1) {

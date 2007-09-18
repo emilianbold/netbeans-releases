@@ -142,7 +142,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         } catch (DataObjectNotFoundException ex) {
             return 0;
         }
-        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
         if (ec == null) {
 	    return 0;
 	}
@@ -389,6 +389,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
      * @return <code>true</code> whether value of this customizer 
      * is valid
      */
+    @Override
     public boolean isValid() {
         return true;
     }
@@ -436,7 +437,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         try {
             return FileUtil.toFile(OpenProjects.getDefault().getMainProject().getProjectDirectory()).getAbsolutePath();
         } catch (Exception ex) {
-            return ".";
+            return "."; // NOI18N
         }
     }
     

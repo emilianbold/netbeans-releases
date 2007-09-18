@@ -138,7 +138,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     }
     
     public void setTypeToError(String msg) {
-        msg = msg.replace("\\\"", "\"");
+        msg = msg.replace("\\\"", "\""); // NOI18N
         if (msg.charAt(msg.length() - 1) == '.') {
             msg = msg.substring(0, msg.length() - 1);
         }
@@ -189,7 +189,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     }
     
     public void setValueToError(String msg) {
-        msg = msg.replace("\\\"", "\"");
+        msg = msg.replace("\\\"", "\""); // NOI18N
         if (msg.charAt(msg.length() - 1) == '.') {
             msg = msg.substring(0, msg.length() - 1);
         }

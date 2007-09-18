@@ -276,7 +276,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     private static String convertToWindowsPath(String orig) {
         String nue = orig.replace('\\', '/');
-        return orig.replace("\\", "/");
+        return orig.replace("\\", "/"); // NOI18N
     }
     
     private String cygpath(String path) {
@@ -489,7 +489,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 typePendingTable.remove(type);
                 typeCompletionTable.remove(itok);
                 
-                if (type.indexOf(':') != -1) { // NOI18N
+                if (tbuf.indexOf(':') != -1) {
                     checkForSuperClass(tbuf.substring(pos + 1));
                 }
                 firePropertyChange(PROP_LOCALS_VIEW_UPDATE, 0, 1);
@@ -723,11 +723,55 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return -1;
     }
     
+    private Map<String, Object> addSuperclassEntries(Map<String, Object> map, String info) {
+        char c;
+        int pos;
+        int start = 0;
+        int scount = 1;
+        
+        for (int i = 0; i < info.length(); i++) {
+            if (info.substring(i).startsWith("public ")) { // NOI18N
+                i += 7;
+                start = i;
+            } else if (info.substring(i).startsWith("private ")) { // NOI18N
+                i += 8;
+                start = i;
+            } else if (info.substring(i).startsWith("protected ")) { // NOI18N
+                i += 10;
+                start = i;
+            }
+            if (i < info.length()) {
+                c = info.charAt(i);
+                if (c == '<') {
+                    pos = GdbUtils.findMatchingLtGt(info, i);
+                    if (pos != -1) {
+                        i = pos;
+                    }
+                } else if (c == ',') {
+                    map.put("<super" + scount++ + ">", info.substring(start, i).trim()); // NOI18N
+                    if ((i + 1) < info.length()) {
+                    info = info.substring(i + 1);
+                    i = 0;
+                    start = 0;
+                    }
+                }
+            }
+        }
+        map.put("<super" + scount++ + ">", info.substring(start).trim()); // NOI18N
+        
+        return map;
+    }
+    
     private Map getCSUFieldMap(String info) {
         Map<String, Object> map = new HashMap<String, Object>();
+        int pos0;
         int pos1 = info.indexOf('{');
         int pos2 = GdbUtils.findMatchingCurly(info, pos1);
         String fields = null;
+        
+        if (pos1 != -1 && (pos0 = info.substring(0, pos1).indexOf(':')) != -1) {
+            map = addSuperclassEntries(map, info.substring(pos0 + 1, pos1));
+        }
         
         if (pos1 == -1 && pos2 == -1) {
             if (GdbUtils.isPointer(info)) {
@@ -829,7 +873,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 (info.startsWith("class {") || info.startsWith("struct {") || info.startsWith("union {"))) { // NOI18N
             int start = info.indexOf('{');
             int end = GdbUtils.findMatchingCurly(info, start) + 1;
-            if (start != -1 && end != 0 && !info.substring(start, end).equals("{...}")) {
+            if (start != -1 && end != 0 && !info.substring(start, end).equals("{...}")) { // NOI18N
                 return true;
             }
         }
@@ -902,26 +946,36 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         
         if (hasSuperClass) {
-            if (info.startsWith("public ")) {
-                info = info.substring(7);
-            } else if (info.startsWith("private ")) {
-                info = info.substring(8);
-            } else if (info.startsWith("protected ")) {
-                info = info.substring(10);
-            }
+            int start = 0;
             for (int i = 0; i < info.length(); i++) {
-                c = info.charAt(i);
-                if (c == '<') {
-                    pos = GdbUtils.findMatchingLtGt(info, i);
-                    if (pos != -1) {
-                        i = pos;
+                if (info.substring(i).startsWith("public ")) { // NOI18N
+                    i += 7;
+                    start = i;
+                } else if (info.substring(i).startsWith("private ")) { // NOI18N
+                    i += 8;
+                    start = i;
+                } else if (info.substring(i).startsWith("protected ")) { // NOI18N
+                    i += 10;
+                    start = i;
+                }
+                if (i < info.length()) {
+                    c = info.charAt(i);
+                    if (c == '<') {
+                        pos = GdbUtils.findMatchingLtGt(info, i);
+                        if (pos != -1) {
+                            i = pos;
+                        }
+                    } else if (c == ',') {
+                        addTypeCompletion(info.substring(start, i).trim());
+                        if ((i + 1) < info.length()) {
+                            info = info.substring(i + 1);
+                            i = 0;
+                            start = 0;
+                        }
                     }
-                } else if (c == ',') {
-                    addTypeCompletion(info.substring(0, i - 1));
-                    info.substring(i + 1);
                 }
             }
-            addTypeCompletion(info.substring(0));
+            addTypeCompletion(info.substring(start).trim());
         }
     }
     
@@ -932,7 +986,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             Object o = entry.getValue();
             if (o instanceof String) {
                 String type = o.toString();
-                if (!GdbUtils.isSimple(type) && !type.equals("<No data fields>") && !isUnnamedType(type)) {
+                if (!GdbUtils.isSimple(type) && !type.equals("<No data fields>") && !isUnnamedType(type)) { // NOI18N
                     addTypeCompletion(o.toString());
                 }
             }
@@ -978,7 +1032,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 while (!isTypeCompletionComplete() && state.equals(STATE_STOPPED) && tcwait++ < 40) {
                     if (tcwait > 5) {
                         log.warning("Waiting for type completion - " + tcwait +
-                                " [TCT: " + typeCompletionTable.size() + ", TPT: " + typePendingTable.size() +
+                                " [TCT: " + typeCompletionTable.size() + ", TPT: " + typePendingTable.size() + // NOI18N
                                 ", VCT: " + valueCompletionTable.size() + "]"); // NOI18N
                     }
                     try {

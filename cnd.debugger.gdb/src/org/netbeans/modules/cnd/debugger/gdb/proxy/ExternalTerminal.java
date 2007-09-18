@@ -147,7 +147,7 @@ public class ExternalTerminal implements PropertyChangeListener {
         List<String> options = new ArrayList<String>();
         
         options.add(path);
-        if (path.contains("gnome-terminal")) {
+        if (path.contains("gnome-terminal")) { // NOI18N
             options.add("--hide-menubar"); // NOI18N
             options.add("--disable-factory"); // NOI18N
             options.add("--command"); // NOI18N

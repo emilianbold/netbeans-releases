@@ -59,7 +59,7 @@ public class FieldTokenizer {
         }
 	if (anon_count > 0) {
 	    retval[0] = Integer.toString(anon_count);
-	    retval[1] = "<anon-count>";
+	    retval[1] = "<anon-count>"; // NOI18N
 	    anon_count = 0;
 	} else {
 	    retval[0] = null;

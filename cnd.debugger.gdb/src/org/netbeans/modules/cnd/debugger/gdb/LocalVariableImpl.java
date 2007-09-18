@@ -75,7 +75,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
 	    debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
 	}
         
-        debugger.getGdbProxy().data_evaluate_expression(name + "=" + expression);
+        debugger.getGdbProxy().data_evaluate_expression(name + "=" + expression); // NOI18N
     }
     
     public String getType() {

@@ -53,7 +53,7 @@ public class GdbVariable {
         this.value = value;
         realtype = null;
         derefValue = null;
-        children = new ArrayList();
+        children = new ArrayList<GdbVariable>();
         debugger = null;
         
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
@@ -121,7 +121,7 @@ public class GdbVariable {
     
     public List<GdbVariable> getChildren() {
         synchronized (children) {
-            if (children.size() == 0 && !Thread.currentThread().getName().equals("GdbReaderRP")) {
+            if (children.size() == 0 && !Thread.currentThread().getName().equals("GdbReaderRP")) { // NOI18N
                 if (getRealType() != null) {
                     if (!GdbUtils.isFunctionPointer(getRealType()) || GdbUtils.isArray(getRealType())) {
                         if (GdbUtils.isArray(getRealType())) {
@@ -197,62 +197,63 @@ public class GdbVariable {
     }
     
     private void parseStructUnionClass(String info) {
+        @SuppressWarnings("unchecked")
         Map<String, Object> map = (Map) getRealType();
         int start = 0;
         int pos;
-        String name;
-        String type = null;
-        String value; 
+        String lcl_name;
+        String lcl_type = null;
+        String lcl_value; 
         
         children.clear();
         while (start != -1 && (pos = info.indexOf('=', start)) != -1) {
-            name = info.substring(start, pos - 1);
-            if (name.startsWith("static ")) { // NOI18N
-                name = name.substring(7).trim();
-            } else if (name.startsWith("const ")) { // NOI18N
-                name = name.substring(6).trim();
-            } else if (name.startsWith("mutable ")) { // NOI18N
-                name = name.substring(8).trim();
+            lcl_name = info.substring(start, pos - 1);
+            if (lcl_name.startsWith("static ")) { // NOI18N
+                lcl_name = lcl_name.substring(7).trim();
+            } else if (lcl_name.startsWith("const ")) { // NOI18N
+                lcl_name = lcl_name.substring(6).trim();
+            } else if (lcl_name.startsWith("mutable ")) { // NOI18N
+                lcl_name = lcl_name.substring(8).trim();
             }
 
-            Object o = map.get(name);
+            Object o = map.get(lcl_name);
             if (o instanceof String) {
-                type = o.toString();
-                getDebugger().addTypeCompletion(type);
-            } else if (name.charAt(0) == '<' && name.charAt(name.length() - 1) == '>') {
-                String superclass = name.substring(1, name.length() - 1);
+                lcl_type = o.toString();
+                getDebugger().addTypeCompletion(lcl_type);
+            } else if (lcl_name.charAt(0) == '<' && lcl_name.charAt(lcl_name.length() - 1) == '>') {
+                String superclass = lcl_name.substring(1, lcl_name.length() - 1);
                 getDebugger().addTypeCompletion(superclass);
-                name = NbBundle.getMessage(GdbVariable.class, "LBL_BaseClass"); // NOI18N
-                type = superclass; // NOI18N
-            } else if (name.startsWith("_vptr")) { // NOI18N
-                name = null; // skip this - its not a real field
-                type = "";
+                lcl_name = NbBundle.getMessage(GdbVariable.class, "LBL_BaseClass"); // NOI18N
+                lcl_type = superclass; // NOI18N
+            } else if (lcl_name.startsWith("_vptr")) { // NOI18N
+                lcl_name = null; // skip this - its not a real field
+                lcl_type = "";
             }
             
             start = GdbUtils.firstNonWhite(info, pos + 1);
             if (info.charAt(start) == '{') {
                 pos = GdbUtils.findMatchingCurly(info, start);
                 if (pos == -1) {
-                    value = info.substring(start); // mis-formed string...
+                    lcl_value = info.substring(start); // mis-formed string...
                 } else {
-                    value = info.substring(start, pos);
+                    lcl_value = info.substring(start, pos);
                 }
             } else {
-                if (type.startsWith("char[")) {
+                if (lcl_type.startsWith("char[")) { // NOI18N
                     pos = findCorrectComma(info, start);
                 } else {
                     pos = GdbUtils.findNextComma(info, start);
                 }
                 if (pos == -1) {
-                    value = info.substring(start);
+                    lcl_value = info.substring(start);
                 } else {
-                    value = info.substring(start, pos - 1);
+                    lcl_value = info.substring(start, pos - 1);
                 }
             }
-            if (name != null) {
-                children.add(new GdbVariable(name, type, value));
+            if (lcl_name != null) {
+                children.add(new GdbVariable(lcl_name, lcl_type, lcl_value));
             }
-            start = GdbUtils.firstNonWhite(info, start + value.length() + 1);
+            start = GdbUtils.firstNonWhite(info, start + lcl_value.length() + 1);
         }
     }
     
