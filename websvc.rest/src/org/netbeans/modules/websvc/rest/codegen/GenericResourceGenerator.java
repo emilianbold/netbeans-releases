@@ -239,7 +239,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
             HttpMethodType.POST.name(),
             mime.value(), mime.value() };
         
-        String bodyText = "{ //TODO\n return Response.Builder.created(content, context.getURI()).build(); }"; //NOI18N
+        String bodyText = "{ //TODO\n return Response.Builder.created(content, context.getAbsolute()).build(); }"; //NOI18N
         String[] parameters = getPostPutParams();
         Object[] paramTypes = getPostPutParamTypes(type);
         if (type != null) {

@@ -674,7 +674,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object returnType = getConverterType(bean);
         
         String bodyText = "{ try {" +
-                "return new $CONVERTER$(getEntities(), context.getURI());" +
+                "return new $CONVERTER$(getEntities(), context.getAbsolute());" +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
@@ -714,7 +714,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "$CLASS$ entity = data.getEntity();" +
                 "createEntity(entity);" +
                 "service.commitTx();" +
-                "return Builder.created(context.getURI().resolve(entity.$ID_GETTER$() + \"/\")).build();" +
+                "return Builder.created(context.getAbsolute().resolve(entity.$ID_GETTER$() + \"/\")).build();" +
                 "} finally {" +
                 "service.close();" +
                 "}" +
@@ -827,7 +827,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     
     private ClassTree addGetUriMethod(WorkingCopy copy, ClassTree tree,
             EntityResourceBean bean) {
-        String bodyText = "{return context.getURI();}";
+        String bodyText = "{return context.getAbsolute();}";
         
         String comment = "Returns the URI associated with this resource.\n\n" +
                 "@return URI associated with this resource";
@@ -853,7 +853,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object returnType = getConverterType(bean);
         
         String bodyText = "{ try {" +
-                "return  new $CONVERTER$(getEntity(id), context.getURI()); " +
+                "return  new $CONVERTER$(getEntity(id), context.getAbsolute()); " +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
@@ -1001,7 +1001,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                     "@Override protected $SUBCLASS$ getEntity($ID_TYPE$ id) {" +
                     "$SUBCLASS$ entity = parent.$GETTER$();" +
                     "if (entity == null) {" +
-                    "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getURI() + \" does not exist.\"), 404);" +
+                    "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getAbsolute() + \" does not exist.\"), 404);" +
                     "}" +
                     "return entity;" +
                     "}" +
@@ -1083,7 +1083,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "createNamedQuery(\"$CLASS$.findBy$UPPER_ID$\")." +
                 "setParameter(\"$ID$\", id).getSingleResult();" +
                 "} catch (NoResultException ex) {" +
-                "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getURI() + \" does not exist.\"), 404);" +
+                "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getAbsolute() + \" does not exist.\"), 404);" +
                 "}" +
                 "}";
         
