@@ -81,7 +81,7 @@ public class CopyFinder extends TreePathScanner<Boolean, TreePath> {
         
         if (p != null && node.getKind() == p.getLeaf().getKind()) {
             //maybe equivalent:
-            boolean result = super.scan(node, p);// == Boolean.TRUE ? true : false;
+            boolean result = super.scan(node, p) == Boolean.TRUE;
             
             if (result) {
                 if (p == searchingFor && node != searchingFor) {
@@ -102,7 +102,7 @@ public class CopyFinder extends TreePathScanner<Boolean, TreePath> {
             //maybe equivalent:
             allowGoDeeper = false;
             
-            boolean result = super.scan(node, searchingFor) == Boolean.TRUE ? true : false;
+            boolean result = super.scan(node, searchingFor) == Boolean.TRUE;
             
             allowGoDeeper = true;
             
