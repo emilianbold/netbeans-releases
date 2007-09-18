@@ -170,14 +170,10 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     
     private class OpenEdit implements OpenCookie, EditCookie {
         public void open() {
-            // open form editor with form designer selected
             getJsfJspEditorSupport().openDesigner();
         }
         public void edit() {
-            // XXX IZ 114696 - Opening a project with opened pages causes
-            // JSP view to come up by default; this line is intentionally incorrect
-            getJsfJspEditorSupport().openDesigner();
-            // getJsfJspEditorSupport().editJsp();
+            getJsfJspEditorSupport().editJsp();
         }
     }
     
