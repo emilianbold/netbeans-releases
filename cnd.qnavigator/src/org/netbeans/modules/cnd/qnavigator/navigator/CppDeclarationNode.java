@@ -124,7 +124,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 if (cls != null && cls.getName().length()>0) {
                     String name = cls.getName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
                     String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
-                    return displayName+"<font color='!controlShadow'>&nbsp;&nbsp;[ " + name + ":: ]"; // NOI18N
+                    return displayName+"<font color='!controlShadow'>  in " + name; // NOI18N
                 }
             }
         }
