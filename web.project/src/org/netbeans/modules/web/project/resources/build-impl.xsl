@@ -951,33 +951,14 @@ introduced by support for multiple source roots. -jglick
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
-            <!-- "real" jar building, in any case -->
-            <target name="-dist-without-custom-manifest" unless="has.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
-                <dirname property="dist.jar.dir" file="${{dist.war}}"/>
-                <mkdir dir="${{dist.jar.dir}}"/>
-                <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.web.dir.real}}"/>
-                </jar>
-            </target>
-            <target name="-dist-with-custom-manifest" if="has.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
-                <dirname property="dist.jar.dir" file="${{dist.war}}"/>
-                <mkdir dir="${{dist.jar.dir}}"/>
-                <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.web.dir.real}}"/>
-                </jar>
-            </target>
-            
             <!-- "dist" -->
             <target name="-do-dist-without-manifest" if="do.war.package.without.custom.manifest">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
-                <antcall target="-dist-without-custom-manifest" />
+                <xsl:call-template name="distWithoutCustomManifest"/>
             </target>
-            
             <target name="-do-dist-with-manifest" if="do.war.package.with.custom.manifest">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
-                <antcall target="-dist-with-custom-manifest" />
+                <xsl:call-template name="distWithCustomManifest"/>
             </target>
             
             <!--
@@ -985,13 +966,13 @@ introduced by support for multiple source roots. -jglick
                 target to do war build, if the project is not going to be
                 directory deployed. used by run-deploy as part of 'run'
             -->
-            <target name="-do-tmp-dist-with-manifest" if="do.tmp.war.package.with.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
-                <antcall target="-dist-with-custom-manifest" />
-            </target>
             <target name="-do-tmp-dist-without-manifest" if="do.tmp.war.package.without.custom.manifest">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
-                <antcall target="-dist-without-custom-manifest" />
+                <xsl:call-template name="distWithoutCustomManifest"/>
+            </target>
+            <target name="-do-tmp-dist-with-manifest" if="do.tmp.war.package.with.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
+                <xsl:call-template name="distWithCustomManifest"/>
             </target>
 
             <target name="do-dist">
@@ -1767,6 +1748,26 @@ introduced by support for multiple source roots. -jglick
         -->
         
     </xsl:template>
+    
+    <!--
+    operations for building of War file
+    xslt templates instead of antcall, see # 115640
+    -->
+    <xsl:template name="distWithoutCustomManifest">
+        <dirname property="dist.jar.dir" file="${{dist.war}}"/>
+        <mkdir dir="${{dist.jar.dir}}"/>
+        <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
+            <fileset dir="${{build.web.dir.real}}"/>
+        </jar>
+    </xsl:template>
+    <xsl:template name="distWithCustomManifest">
+        <dirname property="dist.jar.dir" file="${{dist.war}}"/>
+        <mkdir dir="${{dist.jar.dir}}"/>
+        <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
+            <fileset dir="${{build.web.dir.real}}"/>
+        </jar>
+    </xsl:template>
+    
     
     <!---
     Generic template to build subdependencies of a certain type.
