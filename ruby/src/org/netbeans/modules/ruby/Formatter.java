@@ -261,6 +261,23 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 // (Probably in an RHTML file on a line with no Ruby)
                 return true;
             }
+        } else {
+            // Empty line inside a string, documentation etc. literal?
+            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, offset);
+
+            if (token != null) {
+                TokenId id = token.id();
+                // If we're in a string literal (or regexp or documentation) leave
+                // indentation alone!
+                if ((id == RubyTokenId.STRING_LITERAL) ||
+                        id == RubyTokenId.DOCUMENTATION ||
+                        (id == RubyTokenId.QUOTED_STRING_LITERAL) ||
+                        (id == RubyTokenId.REGEXP_LITERAL)) {
+                    // No indentation for literal strings in Ruby, since they can
+                    // contain newlines. Leave it as is.
+                    return true;
+                }
+            }
         }
 
         return false;

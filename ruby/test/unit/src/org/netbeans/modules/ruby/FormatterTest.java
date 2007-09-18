@@ -337,6 +337,16 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
                "def foo\n  x = %q-foo\nbar-", null);
     }
 
+    public void testLiterals2() throws Exception {
+        insertNewline("def foo\n=begin\nfoo^\n=end\nend",
+                "def foo\n=begin\nfoo\n^\n=end\nend", null);
+    }
+    
+    public void testLiterals3() throws Exception {
+        insertNewline("def foo\nx = '\nfoo^\n'\nend",
+                "def foo\nx = '\nfoo\n^\n'\nend", null);
+    }
+    
     public void testLineContinuationAlias() throws Exception {
         format("foo ==\ntrue",
                "foo ==\n  true", null);
