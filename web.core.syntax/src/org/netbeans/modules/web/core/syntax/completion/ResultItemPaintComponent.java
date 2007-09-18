@@ -310,7 +310,7 @@ public class ResultItemPaintComponent extends JPanel {
     public static class JspDirectivePaintComponent extends ResultItemPaintComponent {
         protected void draw(Graphics g){
             drawIcon(g, getIcon());
-            drawString(g, "<%@");
+            drawString(g, "<%@ ");
             drawString(g, str, Color.BLUE, getDrawFont().deriveFont(Font.BOLD), false );
             drawString(g, " ... ", Color.GREEN.darker());
             drawString(g, "%>");
