@@ -385,6 +385,9 @@ public final class JavaSource {
                 }
                 final ClasspathInfo info = ClasspathInfo.create(bootPath, compilePath, srcPath);
                 FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(fileObject);
+                if (root == null) {
+                    return null;
+                }
                 try {
                     js = new JavaSource (info,fileObject,root);
                 } catch (IOException ioe) {
