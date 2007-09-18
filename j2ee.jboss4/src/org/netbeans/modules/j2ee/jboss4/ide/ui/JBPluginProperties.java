@@ -141,37 +141,36 @@ public class JBPluginProperties {
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
     }
-    
-    public boolean isCurrentServerLocationValid(){
-        if (getInstallLocation()!=null)
-            return 
-                JBPluginUtils.isGoodJBServerLocation4x(new File(getInstallLocation())) || 
-                JBPluginUtils.isGoodJBServerLocation5x(new File(getInstallLocation()));
-        else
-            return false;
-    }
-    
-    
-    public void setInstallLocation(String installLocation){
-        if ( installLocation.endsWith("/") || installLocation.endsWith("\\") ){
-            installLocation = installLocation.substring(0, installLocation.length() - 1 );
+
+    public boolean isCurrentServerLocationValid() {
+        if (getInstallLocation() != null) {
+            return JBPluginUtils.isGoodJBServerLocation4x(new File(getInstallLocation()))
+                    || JBPluginUtils.isGoodJBServerLocation5x(new File(getInstallLocation()));
         }
-        
+
+        return false;
+    }
+
+    public void setInstallLocation(String installLocation) {
+        if (installLocation.endsWith(File.separator)) {
+            installLocation = installLocation.substring(0, installLocation.length() - 1);
+        }
+
         this.installLocation = installLocation;
     }
-    
-    public String getInstallLocation(){
+
+    public String getInstallLocation() {
         return this.installLocation;
     }
-    
+
     public void setDomainLocation(String domainLocation) {
-        if ( domainLocation.endsWith("/") || domainLocation.endsWith("\\") ){
-            domainLocation = domainLocation.substring(0, domainLocation.length() - 1 );
+        if (domainLocation.endsWith(File.separator)) {
+            domainLocation = domainLocation.substring(0, domainLocation.length() - 1);
         }
-        
+
         this.domainLocation = domainLocation;
     }
-    
+
     public String getDomainLocation() {
         return domainLocation;
     }
