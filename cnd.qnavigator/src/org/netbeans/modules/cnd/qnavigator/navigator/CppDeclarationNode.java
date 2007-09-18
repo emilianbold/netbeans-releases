@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -45,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.editor.parser.TypedefNode;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -112,6 +112,23 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 
     public void setIcon(Image icon) {
         this.icon = icon;
+    }
+
+
+    @Override
+    public String getHtmlDisplayName() {
+        if (CsmKindUtilities.isFunctionDefinition(object)) {
+            CsmFunction function = ((CsmFunctionDefinition)object).getDeclaration();
+            if (function != null && !function.equals(object) &&  CsmKindUtilities.isClassMember(function)){
+                CsmClass cls = ((CsmMember)function).getContainingClass();
+                if (cls != null && cls.getName().length()>0) {
+                    String name = cls.getName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+                    String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+                    return displayName+"<font color='!controlShadow'>&nbsp;&nbsp;[ " + name + ":: ]"; // NOI18N
+                }
+            }
+        }
+        return super.getHtmlDisplayName();
     }
     
     @Override
