@@ -112,6 +112,9 @@ public class ElementJavadoc {
         try {
             final ElementHandle<? extends Element> linkDoc = links.get(link);
             FileObject fo = linkDoc != null ? SourceUtils.getFile(linkDoc, cpInfo) : null;
+            if (fo != null && fo.isFolder() && linkDoc.getKind() == ElementKind.PACKAGE) {
+                fo = fo.getFileObject("package-info", "java"); //NOI18N
+            }
             JavaSource js = fo != null ? JavaSource.forFileObject(fo) : JavaSource.create(cpInfo);
             if (js != null) {
                 js.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -216,6 +219,8 @@ public class ElementJavadoc {
                 sb.append(getFieldHeader(eu, (FieldDoc)doc));
             } else if (doc.isClass() || doc.isInterface() || doc.isAnnotationType()) {
                 sb.append(getClassHeader(eu, (ClassDoc)doc));
+            } else if (doc instanceof PackageDoc) {
+                sb.append(getPackageHeader(eu, (PackageDoc)doc));
             }
             sb.append("<p>"); //NOI18N
             if (doc.commentText().length() > 0 || doc.tags().length > 0) {
@@ -273,7 +278,7 @@ public class ElementJavadoc {
     private CharSequence getMethodHeader(ElementUtilities eu, ExecutableMemberDoc mdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<p><tt>"); //NOI18N
-        sb.append(getAnnotations(eu, mdoc));
+        sb.append(getAnnotations(eu, mdoc.annotations()));
         int len = sb.length();
         sb.append(Modifier.toString(mdoc.modifierSpecifier() &~ Modifier.NATIVE));
         len = sb.length() - len;
@@ -340,7 +345,7 @@ public class ElementJavadoc {
     private CharSequence getFieldHeader(ElementUtilities eu, FieldDoc fdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<p><tt>"); //NOI18N
-        sb.append(getAnnotations(eu, fdoc));
+        sb.append(getAnnotations(eu, fdoc.annotations()));
         int len = sb.length();
         sb.append(fdoc.modifiers());
         len = sb.length() - len;
@@ -355,7 +360,7 @@ public class ElementJavadoc {
     private CharSequence getClassHeader(ElementUtilities eu, ClassDoc cdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<p><tt>"); //NOI18N
-        sb.append(getAnnotations(eu, cdoc));
+        sb.append(getAnnotations(eu, cdoc.annotations()));
         int mods = cdoc.modifierSpecifier() & ~Modifier.INTERFACE;
         if (cdoc.isEnum())
             mods &= ~Modifier.FINAL;
@@ -405,9 +410,18 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private CharSequence getAnnotations(ElementUtilities eu, ProgramElementDoc peDoc) {
+    private CharSequence getPackageHeader(ElementUtilities eu, PackageDoc pdoc) {
         StringBuilder sb = new StringBuilder();
-        for (AnnotationDesc annotationDesc : peDoc.annotations()) {
+        sb.append("<p><tt>"); //NOI18N
+        sb.append(getAnnotations(eu, pdoc.annotations()));
+        sb.append("package <b>").append(pdoc.name()).append("</b>"); //NOI18N
+        sb.append("</tt></p>"); //NOI18N
+        return sb;
+    }
+    
+    private CharSequence getAnnotations(ElementUtilities eu, AnnotationDesc[] annotations) {
+        StringBuilder sb = new StringBuilder();
+        for (AnnotationDesc annotationDesc : annotations) {
             AnnotationTypeDoc annotationType = annotationDesc.annotationType();
             if (annotationType != null) {
                 appendType(eu, sb, annotationType, false, false);
