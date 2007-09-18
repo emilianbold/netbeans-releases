@@ -1269,8 +1269,12 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             });
         }
     
-        public void setColorings(Document doc, Map<Token, Coloring> colorings, Set<Token> addedTokens, Set<Token> removedTokens) {
-            LexerBasedHighlightLayer.getLayer(SemanticHighlighter.class, doc).setColorings(colorings, addedTokens, removedTokens);
+        public void setColorings(final Document doc, final Map<Token, Coloring> colorings, final Set<Token> addedTokens, final Set<Token> removedTokens) {
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run() {
+                    LexerBasedHighlightLayer.getLayer(SemanticHighlighter.class, doc).setColorings(colorings, addedTokens, removedTokens);
+                }                
+            });            
         }
     };
 
