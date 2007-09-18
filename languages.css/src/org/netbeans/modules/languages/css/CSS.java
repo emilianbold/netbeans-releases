@@ -29,6 +29,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
@@ -36,6 +37,8 @@ import org.openide.windows.TopComponent;
  * @author Jan Jancura
  */
 public class CSS {
+    
+    private static final String TOOLTIP_SAMPLE_TEXT = NbBundle.getBundle("org/netbeans/modules/languages/css/Bundle").getString("LBL_Sample_Text");
 
     public static String navigatorTooltip (Context context) {
         if (!(context instanceof SyntaxContext)) return null;
@@ -50,7 +53,9 @@ public class CSS {
         String s = declarations.getAsText ();
         s = s.replaceAll ("\"", "");
         sb.append (s);
-        sb.append ("\">Text Preview.</p>");
+        sb.append ("\">");
+        sb.append(TOOLTIP_SAMPLE_TEXT);
+        sb.append("</p>");
         sb.append ("</html>");
         return sb.toString ();
     }

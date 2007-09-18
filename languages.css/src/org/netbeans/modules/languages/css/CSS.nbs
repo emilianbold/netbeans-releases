@@ -182,6 +182,7 @@ NAVIGATOR:media: {
 
 NAVIGATOR:ruleset: {
     display_name: "$selectors$";
+    tooltip: org.netbeans.modules.languages.css.CSS.navigatorTooltip;
     icon: "/org/netbeans/modules/languages/resources/css.gif";
 }
 
