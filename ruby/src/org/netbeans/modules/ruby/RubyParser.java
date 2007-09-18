@@ -72,6 +72,11 @@ import org.openide.util.NbBundle;
  *   "end" much earlier. Go back and look for a method inside a method, and the outer
  *   method is probably missing an end (can use indentation to look for this as well).
  *   Create a quickfix to insert it.
+ * @todo Only look for missing-end if there's an unexpected end
+ * @todo If you get a "class definition in method body" error, there's a missing
+ *   end - prior to the class!
+ * @todo "syntax error, unexpected tRCURLY" means that I also have a missing end,
+ *   but we encountered a } before we got to it. I need to be bracketing this stuff.
  * 
  * @author Tor Norbye
  */
@@ -340,6 +345,11 @@ public class RubyParser implements Parser {
             assert end != -1;
             String found = description.substring(start, end);
             description = details = NbBundle.getMessage(RubyParser.class, "UnexpectedError", found);
+        }
+        
+        // Initialize keys for errors needing it
+        if (key == null) {
+            key = description;
         }
         
         Error error =
