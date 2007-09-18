@@ -113,14 +113,15 @@ public class FormCustomEditor extends JPanel
 
                 if (currentValue != null) {
                     try {
-                        if (editor.getPropertyType().isAssignableFrom(
-                                               currentValue.getClass()))
+                        boolean isFormDesignValue = (currentValue instanceof FormDesignValue);
+                        if (editor.getPropertyType().isAssignableFrom(currentValue.getClass())
+                                && !isFormDesignValue)
                         {   // currentValue is a real property value corresponding
                             // to property editor value type
                             prEd.setValue(currentValue);
                             valueSet = true;
                         }
-                        else if (currentValue instanceof FormDesignValue) {
+                        else if (isFormDesignValue) {
                             Object realValue = // get real value of the design value
                                 ((FormDesignValue)currentValue).getDesignValue();
                             if (realValue != FormDesignValue.IGNORED_VALUE) {
