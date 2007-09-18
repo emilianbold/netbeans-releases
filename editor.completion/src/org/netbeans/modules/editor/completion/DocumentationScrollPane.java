@@ -200,12 +200,7 @@ public class DocumentationScrollPane extends JScrollPane {
                     ((HTMLDocument)document).setBase(url);
                 }
             }
-            if (currentDocumentation instanceof DefaultDoc) {
-                String ref = ((DefaultDoc)currentDocumentation).desc;
-                view.setContent(text, ref.startsWith("#") ? ref.substring(1) : null); //NOI18N
-            } else {
-                view.setContent(text, null);
-            }
+            view.setContent(text, null);
         } else if (url != null){
             try{
                 view.setPage(url);
@@ -413,7 +408,7 @@ public class DocumentationScrollPane extends JScrollPane {
                         try {
                             URL url = currentDocumentation.getURL();
                             url =  url != null ? new URL(url, desc) : new URL(desc);
-                            doc = new DefaultDoc(currentDocumentation, url);
+                            doc = new DefaultDoc(url);
                         } catch (MalformedURLException ex) {                            
                         }
                     }
@@ -426,17 +421,14 @@ public class DocumentationScrollPane extends JScrollPane {
     
     private class DefaultDoc implements CompletionDocumentation {
         
-        private CompletionDocumentation baseDoc = null;
         private URL url = null;
-        private String desc = null;
         
-        private DefaultDoc(CompletionDocumentation baseDoc, URL url) {
-            this.baseDoc = baseDoc;
+        private DefaultDoc(URL url) {
             this.url = url;
         }
     
         public String getText() {
-            return baseDoc != null ? baseDoc.getText() : null;
+            return null;
         }
         
         public URL getURL() {
@@ -444,7 +436,7 @@ public class DocumentationScrollPane extends JScrollPane {
         }
         
         public CompletionDocumentation resolveLink(String link) {
-            return baseDoc != null ? baseDoc.resolveLink(link) : null;
+            return null;
         }
         
         public Action getGotoSourceAction() {
