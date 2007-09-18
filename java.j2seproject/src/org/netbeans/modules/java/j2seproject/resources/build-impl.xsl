@@ -943,9 +943,11 @@ is divided into following sections:
                         </xsl:call-template>
                     </sourcepath>
                     -->
+                    <!-- Does not work with includes/excludes either, and duplicates class names in index:
                     <xsl:call-template name="createPackagesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                     </xsl:call-template>
+                    -->
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                         <xsl:with-param name="includes2">**/*.java</xsl:with-param>

@@ -459,7 +459,39 @@ public final class BuildImplTest extends NbTestCase {
         TestFileUtils.assertContains(aph.resolveFileObject("dist/javadoc/pkg1/package-summary.html"), "Floopy blint.");
         TestFileUtils.assertContains(aph.resolveFileObject("dist/javadoc/pkg2/package-summary.html"), "Floppy blunt.");
     }
-    // XXX test: no duplicated class names in index; excluded packages not documented; excluded classes not documented; @see works on packages
+    public void testJavadocExcludedClassesAndPackagesNotDocumented() throws Exception { // part of #49026
+        AntProjectHelper aph = setupProject(0, false);
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/incl/A.java", "package incl; public class A {}");
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/incl/A_.java", "package incl; public class A_ {}");
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/excl/B.java", "package excl; public class B {}");
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/other/C.java", "package other; public class C {}");
+        EditableProperties ep = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty("includes", "*cl/");
+        ep.setProperty("excludes", "excl/,**/*_*");
+        aph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(aph.getProjectDirectory()));
+        assertBuildSuccess(ActionUtils.runTarget(aph.getProjectDirectory().getFileObject("build.xml"), new String[] {"javadoc"}, getProperties()));
+        assertNotNull(aph.resolveFileObject("dist/javadoc/incl/A.html"));
+        assertNull(aph.resolveFileObject("dist/javadoc/incl/A_.html"));
+        assertNull(aph.resolveFileObject("dist/javadoc/excl"));
+        assertNull(aph.resolveFileObject("dist/javadoc/other"));
+    }
+    // XXX cannot be made to work without breaking something else:
+//    public void testJavadocSeeWorksOnPackages() throws Exception { // #57940
+//        AntProjectHelper aph = setupProject(0, false);
+//        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/pkg1/A.java", "package pkg1; public class A {}");
+//        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/pkg2/B.java", "package pkg2; /** @see pkg1 */ public class B {}");
+//        assertBuildSuccess(ActionUtils.runTarget(aph.getProjectDirectory().getFileObject("build.xml"), new String[] {"javadoc"}, getProperties()));
+//        TestFileUtils.assertContains(aph.resolveFileObject("dist/javadoc/pkg2/B.html"), "../pkg1/package-summary.html");
+//    }
+    public void testJavadocNoDuplicatedClassNamesInIndex() throws Exception { // #102036
+        AntProjectHelper aph = setupProject(0, false);
+        TestFileUtils.writeFile(aph.getProjectDirectory(), "src/pkg1/A.java", "package pkg1; public class A {}");
+        assertBuildSuccess(ActionUtils.runTarget(aph.getProjectDirectory().getFileObject("build.xml"), new String[] {"javadoc"}, getProperties()));
+        String text = TestFileUtils.readFile(aph.resolveFileObject("dist/javadoc/allclasses-frame.html"));
+        assertTrue(text.matches("(?s).*pkg1/A\\.html.*"));
+        assertFalse(text.matches("(?s).*pkg1/A\\.html.*pkg1/A\\.html.*"));
+    }
 
     public void testTest() throws Exception {
         AntProjectHelper aph = setupProject(2, true);
