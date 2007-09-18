@@ -23,9 +23,9 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -57,6 +57,9 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     public ClassHierarchyPanel(boolean isView) {
         initComponents();
         if (!isView){
+            // refresh
+            toolBar.remove(0);
+            // separator
             toolBar.remove(0);
         }
         setName(NbBundle.getMessage(getClass(), "CTL_ClassHierarchyTopComponent")); // NOI18N
@@ -98,6 +101,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         directionGroup = new javax.swing.ButtonGroup();
         toolBar = new javax.swing.JToolBar();
         refreshButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
         subtypeButton = new javax.swing.JToggleButton();
         supertypeButton = new javax.swing.JToggleButton();
         jPanel2 = new javax.swing.JPanel();
@@ -126,6 +130,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             }
         });
         toolBar.add(refreshButton);
+        toolBar.add(jSeparator1);
 
         directionGroup.add(subtypeButton);
         subtypeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/classhierarchy/resources/subtypehierarchy.gif"))); // NOI18N
@@ -286,6 +291,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.ButtonGroup directionGroup;
     private javax.swing.JScrollPane hierarchyPane;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JButton refreshButton;
     private javax.swing.JToggleButton subtypeButton;
     private javax.swing.JToggleButton supertypeButton;
@@ -311,11 +317,11 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
 
     private class SubTypeAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private JCheckBoxMenuItem menuItem;
         public SubTypeAction() {
             putValue(Action.NAME, NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.subtypeButton.toolTipText")); //NOI18N
             putValue(Action.SMALL_ICON, subtypeButton.getIcon());
-            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
             menuItem.setAction(this);
         }
  
@@ -330,11 +336,11 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
 
     private class SuperTypeAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private JCheckBoxMenuItem menuItem;
         public SuperTypeAction() {
             putValue(Action.NAME, NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.supertypeButton.toolTipText")); //NOI18N
             putValue(Action.SMALL_ICON, supertypeButton.getIcon());
-            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
             menuItem.setAction(this);
         }
  
