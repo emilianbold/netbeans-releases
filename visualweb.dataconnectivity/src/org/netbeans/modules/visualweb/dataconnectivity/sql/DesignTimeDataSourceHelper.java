@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -52,6 +51,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceMa
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -64,7 +64,7 @@ import org.xml.sax.SAXNotRecognizedException;
  * Helper class used by server navigator.  Helps manage
  * datasources in Creator's naming context.
  *
- * @author John Kline
+ * @author John Kline, John Baker
  */
 public class DesignTimeDataSourceHelper {
 
@@ -514,7 +514,7 @@ public class DesignTimeDataSourceHelper {
             DatabaseSettingsImporter.getInstance().updateWebXml(currentProj, jdbcResources);
             
             // Support for Creator 2 projects and a hack - serverplugin not detecting datasources in project
-            if ((jdbcResource == null) && dynamicDataSources.length > 0) {
+            if (((jdbcResource == null) || JsfProjectUtils.getProjectVersion(currentProj).equals("3.0")) && dynamicDataSources.length > 0) {
                 RequestedJdbcResource[] resources = null;                
                 DataSourceInfo dsInfo = null;
                 DesignTimeDataSourceService dataSourceService = null;
