@@ -1722,6 +1722,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     <loadfile property="sigtest.output" srcfile="${sigtest.output.dir}/all" failonerror="false"/>
     <property name="sigtest.output" value=""/>
+    <delete file="${sigtest.output.dir}/all"/>
     
     <fail message="Sigtest failed${line.separator}${sigtest.output}">
         <condition>

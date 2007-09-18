@@ -98,7 +98,7 @@ if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
                 echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
                 echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$report"; 
                 echo; cat $report
-            ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
+            ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
         done
     fi
 
