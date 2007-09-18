@@ -761,7 +761,9 @@ protected STRING_LITERAL_BODY :
 		|	
                          ~('"' | '\r' | '\n' | '\\')
 		)*
-            '"'
+            ('"' // correct ending of string
+                |  {LA(1)=='\r'||LA(1)=='\n'}? // error string doesn't have closing quote
+            )
         ;
 
 
