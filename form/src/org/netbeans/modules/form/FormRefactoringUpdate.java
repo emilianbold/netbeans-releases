@@ -369,17 +369,23 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                     replaced |= replaceShortClassName(oldName, newName);
                     break;
                 }
-                if (replaced) { // need to regenerate the code
+                if (replaced) { // regenerate the code
+                    // need to reload the form from file
                     final FormEditorSupport fes = formDataObject.getFormEditorSupport();
-                    if (fes.isOpened() || (formEditor != null && formEditor.isFormLoaded())) { // need to reload the form from file
+                    if (fes.isOpened()) {
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
                                 formEditor = fes.reloadFormEditor();
                                 updateForm(true);
                             }
                         });
-                    } else if (prepareForm(true)) {
-                        updateForm(true);
+                    } else {
+                        if  (formEditor != null && formEditor.isFormLoaded()) {
+                            formEditor.closeForm();
+                        }
+                        if (prepareForm(true)) {
+                            updateForm(true);
+                        }
                     }
                 }
                 formFileRenameDone = false; // not to block redo

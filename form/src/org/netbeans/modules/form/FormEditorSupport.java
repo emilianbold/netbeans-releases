@@ -426,12 +426,14 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     }
 
     public FormEditor reloadFormEditor() {
-        FormDesigner formDesigner = getFormEditor(true).getFormDesigner();
+        if (formEditor == null || !formEditor.isFormLoaded()) {
+            return null;
+        }
+        FormDesigner formDesigner = formEditor.getFormDesigner();
         if (formDesigner == null) {
             formDesigner = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
         }
-
-        getFormEditor().closeForm();
+        formEditor.closeForm();
         formEditor = null;
         formEditor = getFormEditor(true); // new FormEditor instance
         if (formDesigner != null) {
