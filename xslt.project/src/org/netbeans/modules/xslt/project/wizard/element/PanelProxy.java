@@ -307,14 +307,12 @@ final class PanelProxy<T> extends Panel<T> {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(
-      SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
     panel.add(file, c);
 
-      c.weightx = 0.0;
-      c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
-      panel.add(browseButton, c);
-    
+    c.weightx = 0.0;
+    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    panel.add(browseButton, c);
     
     return panel;
   }

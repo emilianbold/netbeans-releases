@@ -40,76 +40,59 @@
  */
 package org.netbeans.modules.xslt.project.wizard.element;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JPanel;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.filechooser.FileSystemView;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.01.30
+ *
+ * @author Vitaly Bychkov
  */
-final class PanelWSDL<T> extends Panel<T> {
-    
-  PanelWSDL(Project project, Panel<T> parent) {
-    super(project, parent);
-    myWebService = new PanelWebService<T>(project, parent);
+final class FileDialog extends FileSystemView {
+
+  FileDialog(Project project) {
+    myDelegatedFileSystemView = getFileSystemView();
+    assert project != null;
+    myProject = project;
+    mySrcFolder = Util.getSrcFolder(myProject);
   }
 
   @Override
-  protected String getComponentName()
-  {
-    return NAME_WSDL;
+  public File[] getRoots() {
+    return new File[]{FileUtil.toFile(mySrcFolder)};
   }
 
   @Override
-  protected Panel<T> getNext()
-  {
-    return new PanelService<T>(getProject(), this, myModel);
+  public Boolean isTraversable(File f) {
+    f = FileUtil.normalizeFile(f);
+    return super.isTraversable(f) && !FileUtil.isParentOf(FileUtil.toFileObject(f), mySrcFolder);
   }
 
   @Override
-  protected String getError()
-  {
-    String error = myWebService.getError();
-
-    if (error != null) {
-      return error;
+  public boolean isFileSystemRoot(File dir) {
+    return mySrcFolder.equals(dir);
+  }
+  
+  @Override
+  public File getParentDirectory(File dir) {
+    if (dir == null) {
+      return null;
     }
-    myModel = (WSDLModel) myWebService.getResult();
+    if (FileUtil.isParentOf(mySrcFolder, FileUtil.toFileObject(dir))) {
+      return dir.getParentFile();
+    }
     return null;
   }
 
-  @Override
-  protected void createPanel(JPanel mainPanel, GridBagConstraints cc)
-  {
-    JPanel panel = new JPanel(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
-    ButtonGroup group = new ButtonGroup();
-    c.anchor = GridBagConstraints.WEST;
-    c.weighty = 1.0;
-
-    c.gridy++;
-    c.weightx = 1.0;
-    c.insets = new Insets(0, 0, 0, 0);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    myWebService.createPanel(panel, c);
-
-    mainPanel.add(panel, cc);
+  public File createNewFolder(File containingDir) throws IOException {
+    return myDelegatedFileSystemView.createNewFolder(containingDir);
   }
 
-  @Override
-  protected void setEnabled(boolean enabled)
-  {
-    myWebService.setEnabled(enabled);
-  }
-
-  private WSDLModel myModel;
-  private PanelWebService<T> myWebService;
+  private Project myProject;
+  private FileObject mySrcFolder;
+  private FileSystemView myDelegatedFileSystemView;
 }

@@ -369,13 +369,10 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
       return createBrowseButton(fileTextField, BROWSE_LABEL);
   }
   
-  protected final JButton createBrowseButton(final JTextField fileTextField, 
-          String labelKey)
-  {
-      
-    final JPanel panel = myComponent;   
-    JButton browseButton =     // browse button
-      browseButton = createButton(
+  protected final JButton createBrowseButton(final JTextField fileTextField, String labelKey) {
+    final JPanel panel = myComponent;
+
+    JButton browseButton = createButton(
         new ButtonAction(
           i18n(labelKey), // NOI18N
           i18n("TLT_Browse")) { // NOI18N
@@ -402,40 +399,32 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
                 };
               
             JFileChooser fileChooser = new JFileChooser(FileUtil.toFile(getFolder()),
-              new ProjectFileSystemView(getProject()));  
+              new FileDialog(getProject()));  
             fileChooser.setFileFilter(xsltFileFilter);
             
             int result = fileChooser.showOpenDialog(panel);
-            
-//            System.out.println("result of file chooser view is : "+result);
             File selectedFile = fileChooser.getSelectedFile();
-//            System.out.println("selected file is: "+selectedFile);
+
             if (result == JFileChooser.APPROVE_OPTION && selectedFile != null) {
-                
-                String relPath = "";
-                selectedFile = FileUtil.normalizeFile(selectedFile);
-                if (!selectedFile.exists()) {
-                    relPath = FileUtil.getRelativePath(getFolder(), 
-                                FileUtil.toFileObject(selectedFile.getParentFile()));
-                    relPath = (relPath == null || "".equals(relPath) 
-                            ?  "" : relPath + "/") + selectedFile.getName();
-                } else {
-                    relPath = FileUtil.getRelativePath(getFolder(), 
-                                FileUtil.toFileObject(selectedFile));
-                }
-//                System.out.println("project relative path: "
-//                        +relPath);
-                
-                fileTextField.setText(relPath);
+              String relPath = "";
+              selectedFile = FileUtil.normalizeFile(selectedFile);
+
+              if (!selectedFile.exists()) {
+                  relPath = FileUtil.getRelativePath(getFolder(), 
+                              FileUtil.toFileObject(selectedFile.getParentFile()));
+                  relPath = (relPath == null || "".equals(relPath) 
+                          ?  "" : relPath + "/") + selectedFile.getName();
+              } else {
+                  relPath = FileUtil.getRelativePath(getFolder(), 
+                              FileUtil.toFileObject(selectedFile));
+              }
+              fileTextField.setText(relPath);
             }
           }
         }
-      
       );  
-      
       return browseButton;
   }
-  
   
   private ChangeSupport myChangeSupport;
   private Project myProject;
@@ -448,7 +437,6 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   private static final String NAME = "newXSLFile"; // NOI18N
   private static final String BROWSE_LABEL = "LBL_Browse"; // NOI18N
   private static final String BROWSE_LABEL2 = "LBL_Browse2"; // NOI18N
-  
 
   protected static final String EMPTY = ""; // NOI18N
 

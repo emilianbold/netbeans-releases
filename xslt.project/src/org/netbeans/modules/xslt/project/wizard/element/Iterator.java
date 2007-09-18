@@ -150,37 +150,34 @@ public final class Iterator implements TemplateWizard.Iterator {
     Project project = Templates.getProject(wizard);
     String choice = (String) wizard.getProperty(Panel.CHOICE);
 
-    TransformationUseCasesFactory tUseCaseFactory = 
-            TransformationUseCasesFactory.getInstance();
+    TransformationUseCasesFactory tUseCaseFactory = TransformationUseCasesFactory.getInstance();
     file = tUseCaseFactory.createUseCase(project, wizard);
     
     return file == null ? null : DataObject.find(file);
   }
 
   private static TransformationUseCase getUseCase(TemplateWizard wizard) {
-      String choice = wizard == null ? null : (String) wizard.getProperty(Panel.CHOICE);      
-      return choice == null ? null :  TRANSFORMATION_USE_CASE.get(choice);
+    String choice = wizard == null ? null : (String) wizard.getProperty(Panel.CHOICE);      
+    return choice == null ? null :  TRANSFORMATION_USE_CASE.get(choice);
   }
   
-private enum TransformationUseCase {
-REQUEST_REPLY,
-FILTER_ONE_WAY,
-FILTER_REQUEST_REPLY;
-}
+  private enum TransformationUseCase {
+    REQUEST_REPLY,
+    FILTER_ONE_WAY,
+    FILTER_REQUEST_REPLY;
+  }
   
-private static class TransformationUseCasesFactory {
-    private static TransformationUseCasesFactory INSTANCE = 
-            new TransformationUseCasesFactory();
-    private TransformationUseCasesFactory() {
-    }
+  private static class TransformationUseCasesFactory {
+
+    private static TransformationUseCasesFactory INSTANCE = new TransformationUseCasesFactory();
+
+    private TransformationUseCasesFactory() {}
 
     public static TransformationUseCasesFactory getInstance() {
         return INSTANCE;
     }
 
-    public FileObject createUseCase(Project project, TemplateWizard wizard) 
-            throws IOException 
-    {
+    public FileObject createUseCase(Project project, TemplateWizard wizard) throws IOException {
         assert project != null && wizard != null;
 
         List<FileObject> createdFos = new ArrayList<FileObject>();
@@ -198,13 +195,10 @@ private static class TransformationUseCasesFactory {
                 throw ex;
             }
         }
-
         return fo;
     }
 
-    private void rollbackCreatedXslFiles(List<FileObject> createdFos) 
-            throws IOException
-    {
+    private void rollbackCreatedXslFiles(List<FileObject> createdFos) throws IOException {
         assert createdFos != null;
         for (FileObject fo : createdFos) {
             if (fo != null && fo.isValid()) {
@@ -232,10 +226,8 @@ private static class TransformationUseCasesFactory {
         if (file2 != null) {
           file = createXslFile(project, file2, createdFos);
         }
-
         return file;
     }
-
 
     private FileObject createXslFile(
         Project project,
@@ -301,10 +293,9 @@ private static class TransformationUseCasesFactory {
                     dirFo = tmpDirFo;
                 }
             }
-
         }
-        
         FileObject xslFo = null;
+
         if (dirFo != null) {
             xslFo = dirFo.getFileObject(file);
             if (xslFo == null) {
@@ -316,7 +307,6 @@ private static class TransformationUseCasesFactory {
                 }
             }
         }
-
         return xslFo;
     }
 
@@ -373,9 +363,7 @@ private static class TransformationUseCasesFactory {
         return tMapFo;
     }
 
-    public void configureRequestReply(TMapModel tMapModel
-            , TemplateWizard wizard) 
-    {
+    public void configureRequestReply(TMapModel tMapModel, TemplateWizard wizard) {
         assert tMapModel != null && wizard != null;
         try {
             tMapModel.startTransaction();
@@ -453,7 +441,6 @@ private static class TransformationUseCasesFactory {
             if (tMapOp == null) {
                 return;
             }
-// TODO m            
             Invoke invoke = null;
             String inputInvokeVar = getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
                 getVariableNumber(tMapOp, INPUT_INVOKE_VARIABLE_PREFIX, 1));
@@ -528,7 +515,6 @@ private static class TransformationUseCasesFactory {
             }
             count++;
         }
-
         return count;
     }
 
@@ -567,7 +553,6 @@ private static class TransformationUseCasesFactory {
                 break;
             }
         }
-
         return service;
     }
 
@@ -594,7 +579,6 @@ private static class TransformationUseCasesFactory {
                 break;
             }
         }
-
         return tMapOp;
   }
 
@@ -606,7 +590,6 @@ private static class TransformationUseCasesFactory {
                 getTMapService(model, wizardInPlt, wizardInRole), 
                 wizardInputOperation);
     }
-
 
     private org.netbeans.modules.xslt.tmap.model.api.Operation setOperation(
         TMapModel tMapModel, 
@@ -636,12 +619,9 @@ private static class TransformationUseCasesFactory {
             tMapService = createTMapService(componentFactory, tMapModel, 
                     wizardInPlt, wizardInRole);
         }
-
-        // TODO m
         if (tMapService == null) {
             return null;
         }
-
         org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = null;
         tMapOp = getTMapOperation(tMapService, wizardInputOperation);
 
@@ -657,7 +637,6 @@ private static class TransformationUseCasesFactory {
             tMapOp.setOutputVariableName(
                     getVariableName(OUTPUT_OPERATION_VARIABLE_PREFIX, 1));
         }
-
         return tMapOp;
     }
 
@@ -667,16 +646,13 @@ private static class TransformationUseCasesFactory {
 
         TransformMap root = tMapModel.getTransformMap();
 
-        // TODO m
         if (root == null) {
             root = componentFactory.createTransformMap();
             tMapModel.addChildComponent(null, root, -1);
         }
-
         if (root == null) {
             return null;
         }
-
         tMapService = componentFactory.createService();
         tMapService.setPartnerLinkType(tMapService.createWSDLReference(wizardInPlt, PartnerLinkType.class));
         tMapService.setRole(tMapService.createWSDLReference(wizardInRole, Role.class));
@@ -697,10 +673,7 @@ private static class TransformationUseCasesFactory {
         if (inputFileStr != null && !"".equals(inputFileStr)) {
             transform.setFile(inputFileStr);
         }
-
-        // TODO m
         String sourcePartName = getFirstPartName(source);
-
         transform.setSource(getTMapVarRef(source, sourcePartName));
 
         String resultPartName = getFirstPartName(result);
@@ -756,7 +729,6 @@ private static class TransformationUseCasesFactory {
         if (part != null) {
             partName = part.getName();
         }
-
         return partName;
     }
 
@@ -764,7 +736,6 @@ private static class TransformationUseCasesFactory {
         if (var == null) {
             return null;
         }
-
         return getFirstPartName(var.getMessage());
     }
 
@@ -772,7 +743,6 @@ private static class TransformationUseCasesFactory {
         if (opParam == null) {
             return null;
         }
-
         return getFirstPartName(opParam.getMessage());
     }
 
@@ -781,7 +751,6 @@ private static class TransformationUseCasesFactory {
           TemplateWizard wizard, TMapComponentFactory componentFactory) 
     {
         return createInvoke(tMapOp, null, null, wizard, componentFactory);
-
     }
 
     private Invoke createInvoke(
@@ -815,7 +784,6 @@ private static class TransformationUseCasesFactory {
           invoke.setOperation(
                   invoke.createWSDLReference(wizardOutputOperation, Operation.class));
 
-          // TODO m
           if (inputInvokeVar == null || "".equals(inputInvokeVar)) {
               inputInvokeVar = getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
                   getVariableNumber(tMapOp, INPUT_INVOKE_VARIABLE_PREFIX, 1));
@@ -827,11 +795,9 @@ private static class TransformationUseCasesFactory {
           invoke.setInputVariableName(inputInvokeVar);
           invoke.setOutputVariableName(outputInvokeVar);
         }
-
         return invoke;
     }
-
-}
+  }
 
   private static Map<String, TransformationUseCase> TRANSFORMATION_USE_CASE = 
           new HashMap<String, TransformationUseCase>();
@@ -847,13 +813,11 @@ private static class TransformationUseCasesFactory {
   private static String TEMPLATES_PATH = "Templates/SOA/"; // NOI18N
   private static String XSLT_SERVICE = "xslt.service"; // NOI18N
   private static String XSL = "xsl"; // NOI18N
+  private Panel<WizardDescriptor> myPanel;
   
   private static final String DEFAULT_VARIABLE_PREFIX = "var"; // NOI18N
   private static final String INPUT_OPERATION_VARIABLE_PREFIX = "inOpVar"; // NOI18N
   private static final String OUTPUT_OPERATION_VARIABLE_PREFIX = "outOpVar"; // NOI18N
   private static final String INPUT_INVOKE_VARIABLE_PREFIX = "inInvokeVar"; // NOI18N
   private static final String OUTPUT_INVOKE_VARIABLE_PREFIX = "outInvokeVar"; // NOI18N
-
-  private Panel<WizardDescriptor> myPanel;
 }
-
