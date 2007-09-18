@@ -62,6 +62,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../cnd/modelservices</project>
                 <project>../../cnd/modelui</project>
                 <project>../../cnd/modelutil</project>
+                <project>../../cnd/navigation</project>
                 <project>../../cnd/qnavigator</project>
                 <project>../../cnd/repository</project>
                 <project>../../cnd/repositoryapi</project>
@@ -318,6 +319,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../mobility/editor</project>
                 <project>../../mobility/end2end</project>
                 <project>../../mobility/end2end/jsr172</project>
+                <project>../../mobility/end2end/kit</project>
                 <project>../../mobility/examples/midp</project>
                 <project>../../mobility/j2meunit</project>
                 <project>../../mobility/javahelp</project>
@@ -325,6 +327,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../mobility/layouts/agui-swing</project>
                 <project>../../mobility/layouts/pp-awt</project>
                 <project>../../mobility/licensing</project>
+                <project>../../mobility/miscme/databindingme</project>
                 <project>../../mobility/miscme/netbeans_midp_components_basic_module</project>
                 <project>../../mobility/miscme/netbeans_midp_components_pda_module</project>
                 <project>../../mobility/miscme/netbeans_midp_components_wma_module</project>
@@ -388,6 +391,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../ruby/rake</project>
                 <project>../../ruby/refactoring</project>
                 <project>../../ruby/rhtml</project>
+                <project>../../ruby/samples/depot-sample</project>
                 <project>../../schema2beans/rt</project>
                 <project>../../scripting/bat</project>
                 <project>../../scripting/javascript</project>
@@ -474,16 +478,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../visualweb/propertyeditors/resolver</project>
                 <project>../../visualweb/ravehelp/rave_nbpack</project>
                 <project>../../visualweb/ravelibs/batik</project>
-                <project>../../visualweb/ravelibs/commons-beanutils</project>
-                <project>../../visualweb/ravelibs/commons-collections</project>
-                <project>../../visualweb/ravelibs/commons-digester</project>
                 <project>../../visualweb/ravelibs/commons-fileupload</project>
-                <project>../../visualweb/ravelibs/commons-logging</project>
-                <project>../../visualweb/ravelibs/el-ri-1.2</project>
-                <project>../../visualweb/ravelibs/jsf-ri-1.2</project>
                 <project>../../visualweb/ravelibs/jtidy</project>
-                <project>../../visualweb/ravelibs/portlet-api</project>
-                <project>../../visualweb/ravelibs/sun-apache-commons</project>
                 <project>../../visualweb/rowset</project>
                 <project>../../visualweb/samples/bundled</project>
                 <project>../../visualweb/websvcmgr</project>
@@ -509,6 +505,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../web/libs/flyingsaucer</project>
                 <project>../../web/libs/glassfish_logging</project>
                 <project>../../web/libs/jsf-1_2</project>
+                <project>../../web/libs/jsf-1_2-ri</project>
                 <project>../../web/libs/jstl11</project>
                 <project>../../web/libs/servletjspapi</project>
                 <project>../../web/project</project>
@@ -516,6 +513,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../web/struts</project>
                 <project>../../web/webapi</project>
                 <project>../../websvc/clientapi</project>
+                <project>../../websvc/components/google</project>
                 <project>../../websvc/core</project>
                 <project>../../websvc/customization</project>
                 <project>../../websvc/design</project>
@@ -528,6 +526,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../websvc/jaxwsapi</project>
                 <project>../../websvc/jaxwsmodel</project>
                 <project>../../websvc/kit</project>
+                <project>../../websvc/manager</project>
                 <project>../../websvc/registry</project>
                 <project>../../websvc/rest/partnersvc</project>
                 <project>../../websvc/restapi</project>
