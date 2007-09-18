@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.KeyEvent;
+import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import junit.textui.TestRunner;
 import lib.EditorTestCase;
@@ -42,11 +43,11 @@ public class IncrementalSearchTest extends EditorTestCase{
         super(name);
     }
     
-    JToolBar searchBar;
+    JPanel searchBar;
     
     public boolean getSearchBar(Container comp) {
         if(comp.getClass().getName().equals("org.netbeans.modules.editor.impl.SearchBar")) {
-            searchBar = (JToolBar) comp;
+            searchBar = (JPanel) comp;
             return true;
         }
         Component[] coms = comp.getComponents();
