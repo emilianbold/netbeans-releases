@@ -416,14 +416,15 @@ public final class DocumentUtilities {
     
     /**
      * Check whether the given document is read-locked by at least one thread
-     * or whether it was write-locked by the current thread.
+     * or whether it was write-locked by the current thread (write-locking
+     * grants the read-access automatically).
      * <br/>
      * The method currently only works for {@link javax.swing.text.AbstractDocument}
      * based documents and it uses reflection.
      * <br/>
-     * Unfortunately the AbstractDocument does not allow to detect
-     * whether exactly this thread has done the read locking
-     * or whether it was another thread.
+     * Unfortunately the AbstractDocument only records number of read-lockers
+     * but not the thread references that performed the read-locking. Thus it can't be verified
+     * whether current thread has performed read locking or another thread.
      * 
      * @param doc non-null document instance.
      * @return true if the document was read-locked by some thread
@@ -443,7 +444,9 @@ public final class DocumentUtilities {
                 numReadersField.setAccessible(true);
             }
             try {
-                return numReadersField.getInt(doc) > 0;
+                synchronized (doc) {
+                    return numReadersField.getInt(doc) > 0;
+                }
             } catch (IllegalAccessException ex) {
                 throw new IllegalStateException(ex);
             }
@@ -473,7 +476,9 @@ public final class DocumentUtilities {
                 currWriterField.setAccessible(true);
             }
             try {
-                return currWriterField.get(doc) == Thread.currentThread();
+                synchronized (doc) {
+                    return currWriterField.get(doc) == Thread.currentThread();
+                }
             } catch (IllegalAccessException ex) {
                 throw new IllegalStateException(ex);
             }
