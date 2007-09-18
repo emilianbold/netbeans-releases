@@ -90,7 +90,15 @@ public class SimpleLookupTest extends NbTestCase {
             // ok, NPE is what we want
         }        
     }
-    
+
+    public void testFixedSubtypes() {
+        class A {}
+        class B extends A {}
+        Lookup l = Lookups.fixed(new A(), new B());
+        assertEquals(1, l.lookupAll(B.class).size());
+        assertEquals(2, l.lookupAll(A.class).size());
+    }
+
     /**
      * Simple tests testing converting lookup.
      */
