@@ -23,9 +23,11 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -49,6 +51,8 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private AbstractNode root;
     private CsmUID<CsmClass> object;
     private boolean subDirection = true;
+    private boolean recursive = true;
+    private boolean plain = false;
     private ExplorerManager explorerManager = new ExplorerManager();
     private Action[] actions;
     private Action close;
@@ -68,9 +72,14 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
         if (isView) {
-            actions = new Action[]{new RefreshAction(), null, new SubTypeAction(), new SuperTypeAction()};
+            actions = new Action[]{new RefreshAction(), 
+                                   null, new SubTypeAction(), new SuperTypeAction(),
+                                   null, new RecursiveAction(), new DirectOnlyAction(),
+                                   null, new TreeAction(), new ListAction()};
         } else {
-            actions = new Action[]{new SubTypeAction(), new SuperTypeAction()};
+            actions = new Action[]{null, new SubTypeAction(), new SuperTypeAction(),
+                                   null, new RecursiveAction(), new DirectOnlyAction(),
+                                   null, new TreeAction(), new ListAction()};
         }
         root = new AbstractNode(children){
             @Override
@@ -104,6 +113,9 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         jSeparator1 = new javax.swing.JToolBar.Separator();
         subtypeButton = new javax.swing.JToggleButton();
         supertypeButton = new javax.swing.JToggleButton();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
+        recursiveButton = new javax.swing.JButton();
+        treeButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         hierarchyPane = new BeanTreeView();
 
@@ -164,6 +176,29 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             }
         });
         toolBar.add(supertypeButton);
+        toolBar.add(jSeparator2);
+
+        recursiveButton.setText(org.openide.util.NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.recursiveButton.text")); // NOI18N
+        recursiveButton.setFocusable(false);
+        recursiveButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        recursiveButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        recursiveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                recursiveButtonActionPerformed(evt);
+            }
+        });
+        toolBar.add(recursiveButton);
+
+        treeButton.setText(org.openide.util.NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.treeButton.text")); // NOI18N
+        treeButton.setFocusable(false);
+        treeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        treeButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        treeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                treeButtonActionPerformed(evt);
+            }
+        });
+        toolBar.add(treeButton);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -224,6 +259,36 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         setSubtypeHierarchy(false);
     }//GEN-LAST:event_supertypeButtonActionPerformed
 
+    private void recursiveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recursiveButtonActionPerformed
+        setRecursive(!recursive);
+    }//GEN-LAST:event_recursiveButtonActionPerformed
+
+    private void treeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_treeButtonActionPerformed
+        setPlain(!plain);
+    }//GEN-LAST:event_treeButtonActionPerformed
+
+    private void setRecursive(boolean isRecursive){
+        if (object != null) {
+            CsmClass cls = object.getObject();
+            if (cls != null){
+                recursive = isRecursive;
+                updateButtons();
+                update(cls);
+            }
+        }
+    }
+    
+    private void setPlain(boolean isPlain){
+        if (object != null) {
+            CsmClass cls = object.getObject();
+            if (cls != null){
+                plain = isPlain;
+                updateButtons();
+                update(cls);
+            }
+        }
+    }
+
     public void setClass(CsmClass cls){
         object = cls.getUID();
         subDirection = true;
@@ -232,12 +297,21 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
     
     private void updateButtons(){
-        if (subDirection) {
-            subtypeButton.setSelected(true);
-            supertypeButton.setSelected(false);
+        subtypeButton.setSelected(subDirection);
+        supertypeButton.setSelected(!subDirection);
+        if (recursive) {
+            recursiveButton.setIcon(getButtonIcon(ClassHierarchyPanel.DIRECT_ONLY));
+            recursiveButton.setToolTipText(getButtonTooltip(ClassHierarchyPanel.DIRECT_ONLY,subDirection));
         } else {
-            subtypeButton.setSelected(false);
-            supertypeButton.setSelected(true);
+            recursiveButton.setIcon(getButtonIcon(ClassHierarchyPanel.RECURSIVE));
+            recursiveButton.setToolTipText(getButtonTooltip(ClassHierarchyPanel.RECURSIVE,subDirection));
+        }
+        if (plain) {
+            treeButton.setIcon(getButtonIcon(ClassHierarchyPanel.TREE));
+            treeButton.setToolTipText(getButtonTooltip(ClassHierarchyPanel.TREE,subDirection));
+        } else {
+            treeButton.setIcon(getButtonIcon(ClassHierarchyPanel.LIST));
+            treeButton.setToolTipText(getButtonTooltip(ClassHierarchyPanel.LIST,subDirection));
         }
     }
 
@@ -254,7 +328,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
                 Children.MUTEX.writeAccess(new Runnable(){
                     public void run() {
                         children.remove(children.getNodes());
-                        HierarchyModel model = HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, actions, subDirection);
+                        HierarchyModel model = HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, actions, subDirection, plain, recursive);
                         model.setCloseWindowAction(close);
                         final Node node = new HierarchyNode(csmClass,model, null);
                         children.add(new Node[]{node});
@@ -292,10 +366,13 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JScrollPane hierarchyPane;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JButton recursiveButton;
     private javax.swing.JButton refreshButton;
     private javax.swing.JToggleButton subtypeButton;
     private javax.swing.JToggleButton supertypeButton;
     private javax.swing.JToolBar toolBar;
+    private javax.swing.JButton treeButton;
     // End of variables declaration//GEN-END:variables
     
     private class RefreshAction extends AbstractAction implements Presenter.Popup {
@@ -312,6 +389,94 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         }
 
         public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
+
+    private class RecursiveAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public RecursiveAction() {
+            putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.RECURSIVE,subDirection));
+            putValue(Action.SMALL_ICON,  getButtonIcon(ClassHierarchyPanel.RECURSIVE));
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        private void updateName(){
+            putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.RECURSIVE,subDirection));
+            menuItem.setName((String)getValue(Action.NAME));
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            setRecursive(true);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            updateName();
+            menuItem.setSelected(recursive);
+            return menuItem;
+        }
+    }
+
+    private class DirectOnlyAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public DirectOnlyAction() {
+            putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.DIRECT_ONLY,subDirection));
+            putValue(Action.SMALL_ICON, getButtonIcon(ClassHierarchyPanel.DIRECT_ONLY));
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        private void updateName(){
+            putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.DIRECT_ONLY,subDirection));
+            menuItem.setName((String)getValue(Action.NAME));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            setRecursive(false);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            updateName();
+            menuItem.setSelected(!recursive);
+            return menuItem;
+        }
+    }
+
+    private class ListAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public ListAction() {
+            putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.LIST, subDirection));
+            putValue(Action.SMALL_ICON, getButtonIcon(ClassHierarchyPanel.LIST));
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setPlain(true);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(plain);
+            return menuItem;
+        }
+    }
+
+    private class TreeAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public TreeAction() {
+            putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.TREE, subDirection));
+            putValue(Action.SMALL_ICON, getButtonIcon(ClassHierarchyPanel.TREE));
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            setPlain(false);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(!plain);
             return menuItem;
         }
     }
@@ -352,6 +517,70 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             menuItem.setSelected(!subDirection);
             return menuItem;
         }
+    }
+    private static final int RECURSIVE = 0;
+    private static final int DIRECT_ONLY = 1;
+    
+    private static final int TREE = 2;
+    private static final int LIST = 3;
+
+    private static final int SUB_TYPES = 4;
+    private static final int SUPER_TYPES= 5;
+
+    private ImageIcon getButtonIcon(int kind){
+        String path = null;
+        switch (kind){
+        case RECURSIVE:
+            path = "/org/netbeans/modules/cnd/navigation/includeview/resources/recursive.png"; // NOI18N
+            break;
+        case DIRECT_ONLY:
+            path = "/org/netbeans/modules/cnd/navigation/includeview/resources/direct_only.png"; // NOI18N
+            break;
+        case TREE:
+            path = "/org/netbeans/modules/cnd/navigation/includeview/resources/tree.png"; // NOI18N
+            break;
+        case LIST:
+            path = "/org/netbeans/modules/cnd/navigation/includeview/resources/list.png"; // NOI18N
+            break;
+        case SUB_TYPES:
+            path = "/org/netbeans/modules/cnd/navigation/classhierarchy/resources/subtypehierarchy.png"; // NOI18N
+            break;
+        case SUPER_TYPES:
+            path = "/org/netbeans/modules/cnd/navigation/classhierarchy/resources/supertypehierarchy.png"; // NOI18N
+            break;
+        }
+        return new javax.swing.ImageIcon(getClass().getResource(path));
+    }
+
+    private String getButtonTooltip(int kind, boolean direction){
+        String path = null;
+        switch (kind){
+        case RECURSIVE:
+            path = "ClassHierarchyPanel.recursiveButton.toolTipText"; // NOI18N
+            if (!direction) {
+                path += "2"; // NOI18N
+            }
+            break;
+        case DIRECT_ONLY:
+            path = "ClassHierarchyPanel.directOnlyButton.toolTipText"; // NOI18N
+            if (!direction) {
+                path += "2"; // NOI18N
+            }
+            break;
+        case TREE:
+            path = "ClassHierarchyPanel.treeButton.toolTipText"; // NOI18N
+            break;
+        case LIST:
+            path = "ClassHierarchyPanel.listButton.toolTipText"; // NOI18N
+            break;
+        case SUB_TYPES:
+            path = "ClassHierarchyPanel.subtypeButton.toolTipText"; // NOI18N
+            break;
+        case SUPER_TYPES:
+            path = "ClassHierarchyPanel.supertypeButton.toolTipText"; // NOI18N
+            break;
+        }
+        return org.openide.util.NbBundle.getMessage(getClass(), path);
     }
 
 }

@@ -268,7 +268,6 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
                 update(file);
             }
         }
-        
     }
     
     private void setWhoIncludes(boolean isWhoIncludes) {
@@ -564,6 +563,6 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             path = "IncludeHierarchyPanel.whoIsIncludedButton.toolTipText"; // NOI18N
             break;
         }
-        return org.openide.util.NbBundle.getMessage(IncludeHierarchyPanel.class, path);
+        return org.openide.util.NbBundle.getMessage(getClass(), path);
     }
 }

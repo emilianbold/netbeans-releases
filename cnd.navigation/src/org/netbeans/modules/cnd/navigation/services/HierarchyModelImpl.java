@@ -44,19 +44,46 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
     private Action close;
        
     /** Creates a new instance of HierarchyModel */
-    public HierarchyModelImpl(CsmClass cls, Action[] actions, boolean subDirection) {
+    public HierarchyModelImpl(CsmClass cls, Action[] actions, boolean subDirection, boolean plain, boolean recursive) {
         this.actions = actions;
         if (subDirection) {
             myMap = buildSubHierarchy(cls);
         } else {
             myMap = buildSuperHierarchy(cls);
         }
+        if (!recursive) {
+            Set<CsmClass> result = myMap.get(cls);
+            if (result == null){
+                result = new HashSet<CsmClass>();
+            }
+            myMap = new HashMap<CsmClass,Set<CsmClass>>();
+            myMap.put(cls,result);
+        }
+        if (plain) {
+            Set<CsmClass> result = new HashSet<CsmClass>();
+            gatherList(cls, result, myMap);
+            myMap = new HashMap<CsmClass,Set<CsmClass>>();
+            myMap.put(cls,result);
+        }
     }
     
     public Map<CsmClass,Set<CsmClass>> getModel(){
         return myMap;
     }
-    
+
+    private void gatherList(CsmClass cls, Set<CsmClass> result, Map<CsmClass,Set<CsmClass>> map){
+        Set<CsmClass> set = map.get(cls);
+        if (set == null) {
+            return;
+        }
+        for(CsmClass c : set){
+            if (!result.contains(c)) {
+                result.add(c);
+                gatherList(c, result, map);
+            }
+        }
+    }
+
     private Map<CsmClass,Set<CsmClass>> buildSuperHierarchy(CsmClass cls){
         HashMap<CsmClass,Set<CsmClass>> aMap = new HashMap<CsmClass,Set<CsmClass>>();
         buildSuperHierarchy(cls, aMap);
