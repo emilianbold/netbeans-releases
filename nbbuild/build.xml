@@ -1706,7 +1706,28 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="check-sigtests" depends="sigtests-init">
     <echo message="Checking signature files for ${cluster.config} modules"/>
     
-    <subant target="check-sigtest" buildpath="${modules.fullpath}"/>
+    <property name="sigtest.output.dir" location="build/sigtestscheck"/>
+    <delete dir="${sigtest.output.dir}"/>
+    <mkdir dir="${sigtest.output.dir}"/>
+    <subant target="check-sigtest" buildpath="${modules.fullpath}">
+        <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+    </subant>
+    
+    <concat destfile="${sigtest.output.dir}/all">
+        <fileset dir="${sigtest.output.dir}">
+            <include name="*"/>
+            <exclude name="all"/>
+        </fileset>
+    </concat>
+    
+    <loadfile property="sigtest.output" srcfile="${sigtest.output.dir}/all" failonerror="false"/>
+    <property name="sigtest.output" value=""/>
+    
+    <fail message="Sigtest failed${line.separator}${sigtest.output}">
+        <condition>
+            <not><equals arg1="" arg2="${sigtest.output}"/></not>
+        </condition>
+    </fail>
   </target>
   
   <target name="generate-uc-catalog.init">

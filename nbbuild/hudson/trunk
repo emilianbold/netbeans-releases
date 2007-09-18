@@ -87,12 +87,19 @@ fi
 sigtest_jar=`pwd`/../sigtestdev.jar
 sigtest_prev=`pwd`/../lastSuccessful/archive/nbbuild/build/sigtests
 sigtest_gen=`pwd`/nbbuild/build/sigtests
+sigtest_out=`pwd`/nbbuild/build/sigtestscheck
 
 if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
-    ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar check-sigtests > $sigtest_gen.log
+    ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.output.dir=$sigtest_out check-sigtests > $sigtest_gen.log
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
-        (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_gen.log"; echo; cat $sigtest_gen.log) | mail -s "Signature changes in $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
+        for report in $sigtest_out/*; do
+            (
+                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
+                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$report"; 
+                echo; cat $report
+            ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
+        done
     fi
 
 fi

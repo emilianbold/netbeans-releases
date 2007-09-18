@@ -79,12 +79,23 @@ public class Sigtest extends Task {
         failOnError = b;
     }
 
+    @Override
     public void execute() throws BuildException {
-        if (fileName == null) throw new BuildException("FileName has to filed", getLocation());
-        if (packages == null) throw new BuildException("Packages has to filed", getLocation());
-        if (action == null) throw new BuildException("Action has to filed", getLocation());
-        if (classpath == null) throw new BuildException("Classpath has to filed", getLocation());
-        if (sigtestJar == null) throw new BuildException("SigtestJar has to filed", getLocation());
+        if (fileName == null) {
+            throw new BuildException("FileName has to filed", getLocation());
+        }
+        if (packages == null) {
+            throw new BuildException("Packages has to filed", getLocation());
+        }
+        if (action == null) {
+            throw new BuildException("Action has to filed", getLocation());
+        }
+        if (classpath == null) {
+            throw new BuildException("Classpath has to filed", getLocation());
+        }
+        if (sigtestJar == null) {
+            throw new BuildException("SigtestJar has to filed", getLocation());
+        }
         
         if (packages.equals("-")) {
             log("No public packages, skipping");
@@ -106,6 +117,19 @@ public class Sigtest extends Task {
         arg.setValue("-Classpath");
         arg = java.createArg();
         arg.setPath(classpath);
+        
+        File outputFile = null;
+        String s = getProject().getProperty("sigtest.output.dir");
+        if (s != null) {
+            File dir = getProject().resolveFile(s);
+            dir.mkdirs();
+            outputFile = new File(dir, fileName.getName().replace(".sig", "").replace("-", "."));
+            log(outputFile.toString());
+            java.setOutput(outputFile);
+            java.setFork(true);
+        }
+        
+        
         if (additionArgs != null) {
             arg = java.createArg();
             arg.setLine(additionArgs);
@@ -114,17 +138,34 @@ public class Sigtest extends Task {
         StringTokenizer packagesTokenizer = new StringTokenizer(packages,",");
         while (packagesTokenizer.hasMoreTokens()) {
             String p = packagesTokenizer.nextToken().trim();
+            String prefix = "-PackageWithoutSubpackages "; // NOI18N
             //Strip the ending ".*"
-            if (p.lastIndexOf(".*") > 0 )
-                p = p.substring(0,p.lastIndexOf(".*"));
+            int idx = p.lastIndexOf(".*");
+            if (idx > 0) {
+                p = p.substring(0, idx);
+            } else {
+                idx = p.lastIndexOf(".**");
+                if (idx > 0) {
+                    prefix = "-Package "; // NOI18N
+                    p = p.substring(0, idx);
+                }
+            }
             
             arg = java.createArg();
-            arg.setLine("-PackageWithoutSubpackages " + p);
+            arg.setLine(prefix + p);
         }
         int returnCode = java.executeJava();
         if (returnCode != 95) {
-            if (failOnError) throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above",getLocation());
-            else log("Signature tests return code is wrong (" + returnCode + "), check the messages above");
+            if (failOnError && outputFile == null) {
+                throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above", getLocation());
+            }
+            else {
+                log("Signature tests return code is wrong (" + returnCode + "), check the messages above");
+            }
+        } else {
+            if (outputFile != null) {
+                outputFile.delete();
+            }
         }
     }
 
