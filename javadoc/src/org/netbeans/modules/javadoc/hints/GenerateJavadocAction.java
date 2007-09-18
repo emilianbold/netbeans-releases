@@ -42,7 +42,6 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.openide.text.IndentEngine;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -205,7 +204,7 @@ public final class GenerateJavadocAction extends TextAction {
         }
         
         if (startOffset != pos.getOffset()) {
-            ie.reindent(startOffset, pos.getOffset());
+            ie.reindent(startOffset + 1, pos.getOffset());
         }
 
     }
