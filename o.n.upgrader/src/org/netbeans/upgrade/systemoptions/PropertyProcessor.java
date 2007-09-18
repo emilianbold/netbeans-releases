@@ -38,7 +38,8 @@ abstract class PropertyProcessor  {
         registerPropertyProcessor(new IntrospectedInfoProcessor());//AntSettings                
         registerPropertyProcessor(new ListProcessor());//ProjectUISettings             
         registerPropertyProcessor(new URLProcessor());//ProjectUISettings             
-        registerPropertyProcessor(new ColorProcessor());//FormLoaderSettings
+        registerPropertyProcessor(new ColorProcessor(ColorProcessor.JAVA_AWT_COLOR));//FormLoaderSettings
+        registerPropertyProcessor(new ColorProcessor(ColorProcessor.NETBEANS_COLOREDITOR_SUPERCOLOR));//FormLoaderSettings
         registerPropertyProcessor(new StringPropertyProcessor());//ProxySettings
         registerPropertyProcessor(new HashSetProcessor(HashSetProcessor.CVS_PERSISTENT_HASHSET));//CvsSettings
         registerPropertyProcessor(new HashSetProcessor(HashSetProcessor.SVN_PERSISTENT_HASHSET));//SvnSettings

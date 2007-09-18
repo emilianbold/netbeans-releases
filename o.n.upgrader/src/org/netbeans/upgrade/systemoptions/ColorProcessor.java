@@ -26,8 +26,12 @@ import java.util.Iterator;
  * @author Radek Matous
  */
 class ColorProcessor extends PropertyProcessor {
-    ColorProcessor() {
-        super("java.awt.Color");//NOI18N
+    
+    static final String JAVA_AWT_COLOR = "java.awt.Color";  // NOI18N
+    static final String NETBEANS_COLOREDITOR_SUPERCOLOR = "org.netbeans.beaninfo.editors.ColorEditor.SuperColor";  // NOI18N
+    
+    ColorProcessor(String className) {
+        super(className);//NOI18N
     }
     
     

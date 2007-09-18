@@ -45,6 +45,7 @@ public class FormSettingsTest extends BasicTestForImport {
                     "gridX",
                     "gridY",
                     "guidingLineColor",
+                    "layoutCodeTarget",
                     "listenerGenerationStyle",
                     "registeredEditors",
                     "selectionBorderColor",
@@ -64,6 +65,7 @@ public class FormSettingsTest extends BasicTestForImport {
     public void testGridX() throws Exception { assertProperty("gridX","10"); }
     public void testGridY() throws Exception { assertProperty("gridY","10"); }
     public void testListenerGenerationStyle() throws Exception { assertProperty("listenerGenerationStyle","0"); }
+    public void testlayoutCodeTarget() throws Exception { assertProperty("layoutCodeTarget","0"); }    
     public void testSelectionBorderSize() throws Exception { assertProperty("selectionBorderSize","1"); }
     public void testToolBarPalette() throws Exception { assertProperty("toolBarPalette","true"); }
     public void testUseIndentEngine() throws Exception { assertProperty("useIndentEngine","false"); }
@@ -74,7 +76,7 @@ public class FormSettingsTest extends BasicTestForImport {
     public void testEditorSearchPath() throws Exception { assertProperty("editorSearchPath","org.netbeans.modules.form.editors2"); }    
     public void testRegisteredEditors() throws Exception { assertProperty("registeredEditors","aaaaaaa | bbbbbbbbb"); }    
 
-    public void testConnectionBorderColor() throws Exception { assertProperty("connectionBorderColor","-65536"); }
+    public void testConnectionBorderColor() throws Exception { assertProperty("connectionBorderColor","-16776961"); }
     public void testDragBorderColor() throws Exception { assertProperty("dragBorderColor","-8355712"); }
     public void testFormDesignerBackgroundColor() throws Exception { assertProperty("formDesignerBackgroundColor","-1"); }
     public void testFormDesignerBorderColor() throws Exception { assertProperty("formDesignerBorderColor","-2039553"); }
