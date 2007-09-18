@@ -24,6 +24,7 @@ import java.awt.event.*;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 import org.netbeans.modules.cnd.classview.resources.I18n;
 
@@ -32,7 +33,7 @@ import org.netbeans.modules.cnd.classview.resources.I18n;
  */
 public class GoToDeclarationAction extends AbstractAction {
     
-    private CsmOffsetable csmObject;
+    private final CsmOffsetable csmObject;
     
     public GoToDeclarationAction(CsmOffsetable csmObject) {
         this.csmObject = csmObject;
@@ -40,7 +41,18 @@ public class GoToDeclarationAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
-        //JOptionPane.showMessageDialog(null, "Not implemented");
-        CsmUtilities.openSource(csmObject);
+        CsmOffsetable target = csmObject;
+        if (CsmKindUtilities.isFunctionDeclaration((CsmObject)csmObject)){
+            CsmFunctionDefinition def = ((CsmFunction)csmObject).getDefinition();
+            if (def != null){
+                target = def;
+            }
+        } else if(CsmKindUtilities.isVariableDeclaration((CsmObject)csmObject)){
+            CsmVariableDefinition def = ((CsmVariable)csmObject).getDefinition();
+            if (def != null){
+                target = def;
+            }
+        }
+        CsmUtilities.openSource(target);
     }
 }
