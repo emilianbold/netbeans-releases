@@ -68,6 +68,9 @@ import org.openide.util.NbBundle;
  *
  * @todo Filter out the case where you have a def inside a class on the same line!
  * @todo Apply this tip to brace blocks as well - and offer both expand and collapse!
+ * @todo Why doesn't this work on line begins? E.g. add "def foo; bar; end" and put the
+ *   caret to the left of "def"; it doesn't activate
+ * @todo See James Moore's comment about formatting multi-line statements
  * 
  * @author Tor Norbye
  */
@@ -292,6 +295,10 @@ public class ExpandSameLineDef implements AstRule {
 
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.CURRENT_LINE_WARNING;
+    }
+
+    public boolean showInTasklist() {
+        return false;
     }
 
     public JComponent getCustomizer(Preferences node) {

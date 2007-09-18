@@ -20,12 +20,32 @@ import java.util.List;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
+ * Interface implemented by plugins that wish to provide quickfixes and hints.
  *
  * @author Tor Norbye
  */
 public interface HintsProvider {
 
+    /**
+     * Compute hints applicable to the given compilation info and add to the given result list.
+     */
     void computeHints(CompilationInfo info, List<ErrorDescription> hints);
+    
+    /**
+     * Compute any suggestions applicable to the given caret offset, and add to
+     * the given suggestion list.
+     */
     void computeSuggestions(CompilationInfo info, List<ErrorDescription> suggestions, int caretOffset);
+
+    /** 
+     * Process the errors for the given compilation info, and add errors and
+     * warning descriptions into the provided hint list. Return any errors
+     * that were not added as error descriptions (e.g. had no applicable error rule)
+     */
+    List<Error> computeErrors(CompilationInfo info, List<ErrorDescription> hints);
+
+    /**
+     * Cancel in-progress processing of hints.
+     */
     void cancel();
 }

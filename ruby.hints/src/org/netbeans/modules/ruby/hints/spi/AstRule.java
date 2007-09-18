@@ -31,12 +31,7 @@ import org.netbeans.modules.ruby.AstPath;
  *
  * @author Tor Norbye
  */
-public interface AstRule extends Rule {
-
-    /**
-     * Return true iff this hint applies to the given file
-     */
-    public boolean appliesTo(CompilationInfo compilationInfo);
+public interface AstRule extends UserConfigurableRule {
     
     /** 
      * Get the ElementKinds this rule should run on.

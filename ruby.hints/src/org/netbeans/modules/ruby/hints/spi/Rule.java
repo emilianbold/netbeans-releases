@@ -19,8 +19,7 @@
 
 package org.netbeans.modules.ruby.hints.spi;
 
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
+import org.netbeans.api.gsf.CompilationInfo;
 
 /** Represents a rule to be run on the source.
  * Only contains the basic identification and UI properties of the rule. 
@@ -32,40 +31,22 @@ import javax.swing.JComponent;
  */
 public interface Rule {
     
-    /** Gets unique ID of the rule
+    /**
+     * Return true iff this hint applies to the given file
      */
-    public String getId();
+    public boolean appliesTo(CompilationInfo compilationInfo);
 
     /** Get's UI usable name of the rule
      */
     public String getDisplayName();
 
-    /** Gets longer description of the rule
+    /**
+     * Whether this task should be shown in the tasklist
      */
-    public String getDescription();
+    public boolean showInTasklist();
 
-    /** Finds out whether the rule is currently enabled.
-     * @return true if enabled false otherwise.
-     */
-    public boolean getDefaultEnabled();
-    
     /** Gets current severiry of the hint.
      * @return Hints severity in current profile.
      */
     public HintSeverity getDefaultSeverity();
-    
-    
-    // XXX Add Others
-    // public JPanel getCustomizer() or Hash map getParameters()
-//    /** Gets the UI description for this rule. It is fine to return null
-//     * to get the default behavior. Notice that the Preferences node is a copy
-//     * of the node returned from {link:getPreferences()}. This is in oder to permit 
-//     * canceling changes done in the options dialog.<BR>
-//     * Default implementation return null, which results in no customizer.
-//     * It is fine to return null (as default implementation does)
-//     * @param node Preferences node the customizer should work on.
-//     * @return Component which will be shown in the options dialog.
-//     */    
-    public JComponent getCustomizer(Preferences node);
-
 }

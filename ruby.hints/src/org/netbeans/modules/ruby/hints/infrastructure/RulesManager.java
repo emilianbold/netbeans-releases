@@ -48,6 +48,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.openide.util.NbPreferences;
 
 /** 
@@ -103,7 +104,7 @@ public class RulesManager {
 //        return HintsSettings.isEnabled(rule, getPreferences(rule, HintsSettings.getCurrentProfileId()));        
 //    }
     
-    public HintSeverity getSeverity(Rule rule) {
+    public HintSeverity getSeverity(UserConfigurableRule rule) {
         return HintsSettings.getSeverity(rule, getPreferences(rule, HintsSettings.getCurrentProfileId()));        
     }
 
@@ -114,7 +115,7 @@ public class RulesManager {
      * @profile Profile to get the node for. May be null for current profile
      * @return Preferences node for given hint.
      */
-    public Preferences getPreferences(Rule rule, String profile) { 
+    public Preferences getPreferences(UserConfigurableRule rule, String profile) { 
         profile = profile == null ? HintsSettings.getCurrentProfileId() : profile;
         return NbPreferences.forModule(this.getClass()).node(profile).node(rule.getId());
     }

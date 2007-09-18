@@ -22,6 +22,7 @@ import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.modules.ruby.hints.options.HintsAdvancedOption;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -33,11 +34,11 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class DisableHintFix implements Fix {
-    private Rule rule;
+    private UserConfigurableRule rule;
     private CompilationInfo info;
     private int caretPos;
     
-    public DisableHintFix(Rule rule, CompilationInfo info, int caretPos) {
+    public DisableHintFix(UserConfigurableRule rule, CompilationInfo info, int caretPos) {
         this.rule = rule;
         this.info = info;
         this.caretPos = caretPos;

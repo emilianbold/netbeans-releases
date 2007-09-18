@@ -214,6 +214,10 @@ public class BlockVarReuse implements AstRule {
         return HintSeverity.WARNING;
     }
 
+    public boolean showInTasklist() {
+        return true;
+    }
+
     public JComponent getCustomizer(Preferences node) {
         return null;
     }

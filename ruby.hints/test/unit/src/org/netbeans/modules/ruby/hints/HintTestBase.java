@@ -338,7 +338,7 @@ public abstract class HintTestBase extends RubyTestBase {
             int start = desc.getRange().getBegin().getOffset();
             int end = desc.getRange().getEnd().getOffset();
             OffsetRange range = new OffsetRange(start, end);
-            if (range.containsInclusive(caretOffset)) {
+            if (range.containsInclusive(caretOffset) || caretOffset == range.getEnd()+1) { // special case for wrong JRuby offsets
                 // Optionally make sure the text is the one we're after such that
                 // tests can disambiguate among multiple fixes
                 LazyFixList list = desc.getFixes();

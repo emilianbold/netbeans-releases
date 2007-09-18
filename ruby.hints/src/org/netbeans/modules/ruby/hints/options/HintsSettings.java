@@ -22,6 +22,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.ruby.hints.infrastructure.RulesManager;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 
 /**
  *
@@ -49,20 +50,20 @@ public class HintsSettings {
     
     /** For current profile
      */ 
-    public static boolean isEnabled(Rule hint ) {
+    public static boolean isEnabled(UserConfigurableRule hint ) {
         Preferences p = RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId());
         return isEnabled(hint, p);
     }
     
     /** For current profile
      */ 
-    public static boolean isShowInTaskList( Rule hint ) {
+    public static boolean isShowInTaskList( UserConfigurableRule hint ) {
         Preferences p = RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId());
         return isShowInTaskList(hint, p);
     }
     
       
-    public static boolean isEnabled(Rule hint, Preferences preferences ) {        
+    public static boolean isEnabled(UserConfigurableRule hint, Preferences preferences ) {        
         return preferences.getBoolean(ENABLED_KEY, hint.getDefaultEnabled());
     }
     
@@ -70,18 +71,15 @@ public class HintsSettings {
         p.putBoolean(ENABLED_KEY, value);
     }
       
-    public static boolean isShowInTaskList( Rule hint, Preferences preferences ) {
-//        Preferences p = RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId());
-// XXX This is bogus        
-//        return preferences.getBoolean(IN_TASK_LIST_KEY, HINTS_ACCESSOR.isShowInTaskListDefault(hint));
-        return true;
+    public static boolean isShowInTaskList(UserConfigurableRule hint, Preferences preferences ) {
+        return preferences.getBoolean(IN_TASK_LIST_KEY, hint.showInTasklist());
     }
     
     public static void setShowInTaskList( Preferences p, boolean value ) {
         p.putBoolean(IN_TASK_LIST_KEY, value);
     }
       
-    public static HintSeverity getSeverity(Rule hint, Preferences preferences ) {
+    public static HintSeverity getSeverity(UserConfigurableRule hint, Preferences preferences ) {
         String s = preferences.get(SEVERITY_KEY, null );
         return s == null ? hint.getDefaultSeverity() : HintSeverity.valueOf(s);
     }

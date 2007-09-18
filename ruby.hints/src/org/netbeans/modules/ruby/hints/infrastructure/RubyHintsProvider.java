@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.api.gsf.Error;
 import org.netbeans.api.gsf.HintsProvider;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.modules.ruby.AstPath;
@@ -34,8 +35,10 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -52,8 +55,46 @@ public class RubyHintsProvider implements HintsProvider {
     private boolean cancelled;
     private Map<Integer,List<AstRule>> testHints;
     private Map<Integer,List<AstRule>> testSuggestions;
+    private Map<String,List<ErrorRule>> testErrors;
     
     public RubyHintsProvider() {
+    }
+
+    public List<Error> computeErrors(CompilationInfo info, List<ErrorDescription> result) {
+        List<Error> errors = info.getDiagnostics();
+        if (errors == null || errors.size() == 0) {
+            return Collections.emptyList();
+        }
+
+        cancelled = false;
+        
+        Map<String,List<ErrorRule>> hints = testErrors;
+        if (testErrors == null) {
+            hints = RulesManager.getInstance().getErrors();
+        }
+
+        if (hints.isEmpty() || isCancelled()) {
+            return Collections.emptyList();
+        }
+        
+        List<Description> descriptions = new ArrayList<Description>();
+        
+        List<Error> unhandled = new ArrayList<Error>();
+        
+        for (Error error : errors) {
+            if (!applyRules(error, info, hints, descriptions)) {
+                unhandled.add(error);
+            }
+        }
+        
+        if (descriptions.size() > 0) {
+            for (Description desc : descriptions) {
+                ErrorDescription errorDesc = createDescription(desc, info, -1);
+                result.add(errorDesc);
+            }
+        }
+        
+        return unhandled;
     }
     
     public void computeHints(CompilationInfo info, List<ErrorDescription> result) {
@@ -96,10 +137,13 @@ public class RubyHintsProvider implements HintsProvider {
     }
     
     private ErrorDescription createDescription(Description desc, CompilationInfo info, int caretPos) {
-        // TODO - add a hint to turn off this hint?
-        // Should be a utility or infrastructure option!
         Rule rule = desc.getRule();
-        HintSeverity severity = RulesManager.getInstance().getSeverity(rule);
+        HintSeverity severity;
+        if (rule instanceof UserConfigurableRule) {
+            severity = RulesManager.getInstance().getSeverity((UserConfigurableRule)rule);
+        } else {
+            severity = rule.getDefaultSeverity();
+        }
         OffsetRange range = desc.getRange();
         List<Fix> fixList;
         if (desc.getFixes() != null && desc.getFixes().size() > 0) {
@@ -108,8 +152,10 @@ public class RubyHintsProvider implements HintsProvider {
                 fixList.add(new FixWrapper(fix));
             }
             
-            // Add a hint for disabling this fix
-            fixList.add(new DisableHintFix(desc.getRule(), info, caretPos));
+            if (rule instanceof UserConfigurableRule) {
+                // Add a hint for disabling this fix
+                fixList.add(new DisableHintFix((UserConfigurableRule)rule, info, caretPos));
+            }
         } else {
             fixList = Collections.emptyList();
         }
@@ -193,6 +239,29 @@ public class RubyHintsProvider implements HintsProvider {
                 }
             }
         }
+    }
+
+    /** Apply error rules and return true iff somebody added an error description for it */
+    private boolean applyRules(Error error, CompilationInfo info, Map<String,List<ErrorRule>> hints,
+            List<Description> result) {
+        String code = error.getKey();
+        if (code != null) {
+            List<ErrorRule> rules = hints.get(code);
+
+            if (rules != null) {
+                int countBefore = result.size();
+                for (ErrorRule rule : rules) {
+                    if (!rule.appliesTo(info)) {
+                        continue;
+                    }
+                    rule.run(info, error, result);
+                }
+                
+                return countBefore < result.size();
+            }
+        }
+        
+        return false;
     }
     
     private void scan(Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints, int caretOffset, 

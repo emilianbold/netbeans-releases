@@ -22,8 +22,7 @@ package org.netbeans.modules.ruby.hints.spi;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.modules.ruby.AstPath;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.api.gsf.Error;
 
 /** 
  * Represents a rule to be run on the java source in case the compiler 
@@ -34,7 +33,7 @@ import org.netbeans.spi.editor.hints.Fix;
  *
  * @author Petr Hrebejk, Jan Lahoda
  */
-public interface ErrorRule<T> extends Rule {//XXX: should ErrorRule extend Rule?
+public interface ErrorRule extends Rule {//XXX: should ErrorRule extend Rule?
 
     /** Get the diagnostic codes this rule should run on
      */
@@ -42,18 +41,7 @@ public interface ErrorRule<T> extends Rule {//XXX: should ErrorRule extend Rule?
 
     /** Return possible fixes for a given diagnostic report.
      */
-    public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, AstPath path, Data<T> data);
+    public void run(CompilationInfo compilationInfo, Error error/*, Data<T> data*/,
+             List<Description> result);
 
-    public void cancel();
-    
-    public static final class Data<T> {
-        private T o;
-        public synchronized T getData() {
-            return o;
-        }
-        
-        public synchronized void setData(T o) {
-            this.o = o;
-        }
-    }
 }

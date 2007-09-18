@@ -31,6 +31,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -258,8 +259,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             renderer.setText( getFileObjectLocalizedName(fo) );
             renderer.setSelected( logic.isSelected((DefaultMutableTreeNode)value));
         }
-        else if ( data instanceof Rule ) {
-            Rule treeRule = (Rule)data;
+        else if ( data instanceof UserConfigurableRule ) {
+            UserConfigurableRule treeRule = (UserConfigurableRule)data;
             renderer.setText( treeRule.getDisplayName() );            
             
             Preferences node = logic.getCurrentPrefernces(treeRule);                        
