@@ -123,7 +123,7 @@ class VisualDesignerPopupFactory extends PopupFactory {
         for(JMenu m : containerMap.keySet()) {
             if(m != menu) {
                 // hide if not an ancestor of this menu
-                if(!isAncestor(m,menu)) {
+                if(!isAncestor(m,menu) && !canvas.hasSelectedDescendants(m)) {
                     JPanel popup = containerMap.get(m);
                     popup.setVisible(false);
                 }

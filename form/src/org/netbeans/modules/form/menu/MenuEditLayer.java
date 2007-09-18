@@ -719,6 +719,27 @@ public class MenuEditLayer extends JPanel {
         return false;
     }
     
+    boolean hasSelectedDescendants(JMenu menu) {
+        RADComponent comp =formDesigner.getMetaComponent(menu);
+        if(comp instanceof RADVisualContainer) {
+            return hasSelectedDescendants((RADVisualContainer)comp);
+        }
+        return false;
+    }
+    boolean hasSelectedDescendants(RADVisualContainer comp) {
+        if(this.selectedComponents.contains(comp)) {
+            return true;
+        }
+        for(RADComponent c : comp.getSubBeans()) {
+            if(this.selectedComponents.contains(c)) return true;
+            if(c instanceof RADVisualContainer) {
+                boolean sel = hasSelectedDescendants((RADVisualContainer)c);
+                if(sel) return true;
+            }
+        }
+        return false;
+    }
+    
     JComponent getMenuParent(JComponent menu) {
         RADComponent targetRad = formDesigner.getMetaComponent(menu);
         RADComponent parentRad = targetRad.getParentComponent();
