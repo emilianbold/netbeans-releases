@@ -67,7 +67,7 @@ public class SimpleLookupTest extends NbTestCase {
         assertNull(p1.lookup(String.class)); 
         //
         String[] s = new String[] { "test1", "test2" };
-        Lookup p2 = Lookups.fixed(s);
+        Lookup p2 = Lookups.fixed((Object[]) s);
         Object obj2 = p2.lookup(Object.class);
         assertNotNull(obj2);
         if (obj2 != s[0] && obj2 != s[1]) {
@@ -80,7 +80,7 @@ public class SimpleLookupTest extends NbTestCase {
         Collection<? extends String> all = r.allInstances();
         assertTrue(all.size() == 2);
         for (String o : all) {
-            assertTrue("allInstances contains wrong objects", o == s[0] || o == s[1]);
+            assertTrue("allInstances contains wrong objects", o.equals(s[0]) || o.equals(s[1]));
         }
         
         try {
@@ -290,7 +290,7 @@ public class SimpleLookupTest extends NbTestCase {
             return c.isAssignableFrom(getType());
         }
 
-        public boolean equals (Object o) {
+        public @Override boolean equals(Object o) {
             if (o instanceof ItemPair) {
                 ItemPair p = (ItemPair)o;
                 return item.equals (p.item);
@@ -298,7 +298,7 @@ public class SimpleLookupTest extends NbTestCase {
             return false;
         }
 
-        public int hashCode () {
+        public @Override int hashCode() {
             return item.hashCode ();
         }
     } // end of ItemPair
