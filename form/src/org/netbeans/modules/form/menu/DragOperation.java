@@ -411,11 +411,16 @@ class DragOperation {
             return;
         }
         
+        JComponent newComponent = null;
         // get the pre-created component
         MetaComponentCreator creator = menuEditLayer.formDesigner.getFormModel().getComponentCreator();
-        RADVisualComponent precreated = creator.precreateVisualComponent(
-                paletteItem.getComponentClassSource());
-        JComponent newComponent = (JComponent) precreated.getBeanInstance();
+        if(creator != null) {
+            RADVisualComponent precreated = creator.precreateVisualComponent(
+                    paletteItem.getComponentClassSource());
+            if(precreated != null) {
+                newComponent = (JComponent) precreated.getBeanInstance();
+            }
+        }
         // if pre-creation failed then make new component manually
         if(newComponent == null) {
             try {
