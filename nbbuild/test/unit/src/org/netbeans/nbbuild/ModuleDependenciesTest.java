@@ -19,25 +19,17 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import junit.framework.*;
-
-import org.netbeans.junit.*;
-
+import org.netbeans.junit.NbTestCase;
 
 /** Check the behaviour ModuleDependencies task that prints out info about
  * module dependencies, etc.

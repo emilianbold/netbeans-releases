@@ -73,7 +73,7 @@ public class ModuleDependencies extends Task {
         return output;
     }
 
-    public void execute () throws BuildException {
+    public @Override void execute() throws BuildException {
         if (outputs.size () == 0) throw new BuildException ("At least one <output> tag has to be specified");
 
         try {
@@ -146,7 +146,7 @@ public class ModuleDependencies extends Task {
             DirectoryScanner scan = input.jars.getDirectoryScanner(p);
             for (String incl : scan.getIncludedFiles()) {
                 File f = new File(scan.getBasedir(), incl);
-                getProject ().log ("Processing " + f, getProject ().MSG_VERBOSE);
+                getProject().log("Processing " + f, Project.MSG_VERBOSE);
                 JarFile file = new JarFile (f);
                 
                 Manifest manifest = file.getManifest();
@@ -465,10 +465,10 @@ public class ModuleDependencies extends Task {
             String out = entry.getKey();
             List<ModuleInfo> cnt = entry.getValue();
             if (cnt.size() > 1) {
-                log("Package " + out + " is shared between:", org.apache.tools.ant.Project.MSG_VERBOSE);
+                log("Package " + out + " is shared between:", Project.MSG_VERBOSE);
                 boolean doPrint = regexp == null;
                 for (ModuleInfo m : cnt) {
-                    log ("   " + m.codebasename, org.apache.tools.ant.Project.MSG_VERBOSE);
+                    log ("   " + m.codebasename, Project.MSG_VERBOSE);
                     if (regexp != null && regexp.matcher(m.group).matches()) {
                         doPrint = true;
                     }
@@ -496,7 +496,7 @@ public class ModuleDependencies extends Task {
             int last = e.getName ().lastIndexOf ('/');
             String pkg = last == -1 ? "" : e.getName ().substring (0, last);
             myPkgs.add (pkg);
-            log("Found package " + pkg + " in " + f, getProject().MSG_DEBUG);
+            log("Found package " + pkg + " in " + f, Project.MSG_DEBUG);
         }
         
         Manifest m = file.getManifest();
@@ -737,14 +737,14 @@ public class ModuleDependencies extends Task {
             return codebasename.compareTo (m.codebasename);
         }
 
-        public boolean equals (Object obj) {
+        public @Override boolean equals(Object obj) {
             if (obj instanceof ModuleInfo) {
                 return codebasename.equals(((ModuleInfo) obj).codebasename);
             }
             return false;
         }
 
-        public int hashCode () {
+        public @Override int hashCode() {
             return codebasename.hashCode ();
         }
         
@@ -756,7 +756,7 @@ public class ModuleDependencies extends Task {
             }
         }
 
-        public String toString () {
+        public @Override String toString() {
             return "ModuleInfo[" + getName () + "]";
         }
     } // end of ModuleInfo
@@ -801,14 +801,14 @@ public class ModuleDependencies extends Task {
             return token.compareTo (m.token);
         }
 
-        public boolean equals (Object obj) {
+        public @Override boolean equals(Object obj) {
             if (obj instanceof Dependency) {
                 return token.equals(((Dependency) obj).token);
             }
             return false;
         }
 
-        public int hashCode () {
+        public @Override int hashCode() {
             return token.hashCode ();
         }
         
@@ -848,7 +848,7 @@ public class ModuleDependencies extends Task {
             
         }
         
-        public String toString () {
+        public @Override String toString() {
             String t;
             switch (type) {
                 case REQUIRES: t = "requires "; break;
