@@ -172,7 +172,12 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     errState = true;
                     break;
                 default:
-                    errState = tp.isErrorState();
+                    if (lastValidTokenID.getCategory() == CCTokenContext.CPP) {
+                        // this provider doesn't handle preprocessor tokens
+                        errState = true;
+                    } else {
+                        errState = tp.isErrorState();
+                    }
                 }
             }
 
