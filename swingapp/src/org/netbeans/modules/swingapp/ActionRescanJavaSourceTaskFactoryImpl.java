@@ -59,7 +59,7 @@ class RescanTask implements CancellableTask<CompilationInfo> {
 //        System.out.println("footask run called");
 //        System.out.println("file = " + file.getName() + " " + file.getPath());
         ActionManager am = ActionManager.getActionManager(file);
-        if(am != null) {
+        if(am != null && AppFrameworkSupport.getClassNameForFile(file) != null) {
             //System.out.println("got an action manager");
             am.lazyRescan(file);
         }

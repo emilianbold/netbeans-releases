@@ -227,7 +227,7 @@ class AppFrameworkSupport {
      */
     static String getClassNameForFile(FileObject fo) {
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        return cp.getResourceName(fo, '.', false);
+        return cp != null ? cp.getResourceName(fo, '.', false) : null;
     }
 
     static FileObject getFileForClass(FileObject fileInProject, String className) {
