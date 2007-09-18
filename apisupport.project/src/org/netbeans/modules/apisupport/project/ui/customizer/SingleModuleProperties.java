@@ -22,18 +22,21 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
@@ -680,6 +683,9 @@ public final class SingleModuleProperties extends ModuleProperties {
                 depsToSave.remove(entry.getKey());
                 depsToSave.add(entry.getValue());
             }
+            
+            logNetBeansAPIUsage("DEPENDENCIES", dependencyModel.getDependencies()); // NOI18N
+            
             getProjectXMLManager().replaceDependencies(depsToSave);
         }
         String[] friends = getFriendListModel().getFriends();
@@ -699,6 +705,33 @@ public final class SingleModuleProperties extends ModuleProperties {
         } else if (isNetBeansOrg()) {
             ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), true);
         }
+    }
+    
+    /** UI Logger for apisupport */
+    static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.apisupport"); // NOI18N
+
+    /** Sends info to UI handler about NetBeans APIs in use
+     */
+    private static void logNetBeansAPIUsage(String msg, Collection<ModuleDependency> deps) {
+        List<String> cnbs = new ArrayList<String>();
+        for (ModuleDependency moduleDependency : deps) {
+            String cnb = moduleDependency.getModuleEntry().getCodeNameBase();
+            // observe just NetBeans API module usage
+            if (cnb.startsWith("org.openide") || cnb.startsWith("org.netbeans")) { // NOI18N
+                cnbs.add(cnb);
+            }
+        }
+        
+        if (cnbs.isEmpty()) {
+            return;
+        }
+        
+        LogRecord rec = new LogRecord(Level.CONFIG, msg);
+        rec.setParameters(cnbs.toArray(new String[0]));
+        rec.setResourceBundleName(SingleModuleProperties.class.getPackage().getName() + ".Bundle"); // NOI18N
+        rec.setResourceBundle(NbBundle.getBundle(SingleModuleProperties.class));
+        rec.setLoggerName(UI_LOG.getName());
+        UI_LOG.log(rec);
     }
     
     /**

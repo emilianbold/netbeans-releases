@@ -636,7 +636,20 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   No.
+      <api name="org.netbeans.ui.apisupport.DEPENDENCIES" category="friend" group="logger" type="export">
+      There is a special support for notifying the UI gestures collector
+      about the usage of NetBeans APIs. When a project customizer is closed,
+      the modules sends to <a href="@JDK@/java/util/logging/Logger.html">
+      Logger.getLogger("org.netbeans.ui.apisupport")
+      </a> a <a href="@JDK@/java/util/logging/LogRecord.html">LogRecord</a>
+      with message <code>DEPENDENCIES</code>, 
+      <code>CONFIG</code> <a href="@JDK@/java/util/logging/LogRecord.html">level</a>
+      and paramerters being the code name bases of modules that start with
+      <code>org.openide</code> or <code>org.netbeans</code>.
+      This message can then be consumed
+      by enhanced UI logger to let netbeans.org project know which APIs are
+      used to most.
+      </api>
   </p>
  </answer>
 
