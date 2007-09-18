@@ -955,6 +955,14 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     private static void ensureFakePeerAttached(Component comp) {
+        // This method is called for components to be added to a container.
+        // It might happen that the component is still in another container
+        // (by error) and then when removed from this container before adding
+        // to the new one, the peer would be null-ed. Trying to prevent this by
+        // removing the component before attaching the fake peer. (For bug 115431.)
+        if (comp != null && comp.getParent() != null) {
+            comp.getParent().remove(comp);
+        }
         FakePeerSupport.attachFakePeer(comp);
         if (comp instanceof Container)
             FakePeerSupport.attachFakePeerRecursively((Container)comp);
