@@ -422,7 +422,15 @@ public class FormModel
         if (currentLS == null) { // switching to old layout support
             metacont.setOldLayoutSupport(true);
         }
-        metacont.setLayoutSupportDelegate(layoutDelegate);
+        try {
+            metacont.setLayoutSupportDelegate(layoutDelegate);
+        } catch (Exception ex) {
+            if (currentLS == null) {
+                // failure might leave the layout delegate null (#115431)
+                metacont.setOldLayoutSupport(false);
+            }
+            throw ex;
+        }
 
         fireContainerLayoutExchanged(metacont, currentDel, layoutDelegate);
     }
