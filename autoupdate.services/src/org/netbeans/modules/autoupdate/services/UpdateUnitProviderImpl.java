@@ -138,6 +138,10 @@ public final class UpdateUnitProviderImpl {
                 ownHandle.progress (getDisplayName ());
             }
             getUpdateProvider ().refresh (force);
+            if (force) {
+                // store time of the last check
+                AutoupdateSettings.setLastCheck (new Date ());
+            }
         } finally {
             if (ownHandle != null) {
                 ownHandle.finish ();
