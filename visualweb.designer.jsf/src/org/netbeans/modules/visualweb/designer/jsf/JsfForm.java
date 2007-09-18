@@ -1807,7 +1807,12 @@ public class JsfForm {
     
     boolean isModelValid() {
         // XXX
-        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+        FacesModel facesModel = getFacesModel();
+        if (facesModel == null) {
+            // XXX #115851 Possible NPE. It means, this was called during loading.
+            return false;
+        }
+        MarkupUnit markupUnit = facesModel.getMarkupUnit();
         if (markupUnit == null) {
             return false;
         }
