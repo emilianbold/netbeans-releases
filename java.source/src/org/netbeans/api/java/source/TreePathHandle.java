@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;                                                                                                                                                                                                    
 import javax.lang.model.element.Element;                                                                                                                                                                                       
 import javax.lang.model.element.ElementKind;
+import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;                                                                                                                                                                                         
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;                                                                                                                                                                                     
@@ -35,6 +36,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;                                                                                                                                                                                         
 import org.openide.loaders.DataObjectNotFoundException;                                                                                                                                                                        
 import org.openide.text.CloneableEditorSupport;                                                                                                                                                                                
+import org.openide.text.EditorSupport;
 import org.openide.text.PositionRef;                                                                                                                                                                                           
 import org.openide.util.Exceptions;
                                                                                                                                                                                                                                
@@ -257,8 +259,7 @@ public final class TreePathHandle {
             throw (RuntimeException) new RuntimeException().initCause(e);
         }
         int position = ((JCTree) treePath.getLeaf()).pos;               
-        CloneableEditorSupport s = findCloneableEditorSupport(file);                                                                                                                                           
-        PositionRef pos = s.createPositionRef(position, Bias.Forward);                                                                                                                                                         
+        PositionRef pos = createPositionRef(file, position, Bias.Forward);                                                                                                                                           
         TreePath current = treePath;                                                                                                                                                                                           
         Element element;                                                                                                                                                                                                       
         boolean enclElIsCorrespondingEl = true;                                                                                                                                                                                
@@ -306,21 +307,25 @@ public final class TreePathHandle {
         }                                                                                                                                                                                                                      
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
-    private static CloneableEditorSupport findCloneableEditorSupport(FileObject file) {                                                                                                                                        
-        try {                                                                                                                                                                                                                  
-            DataObject dob = DataObject.find(file);                                                                                                                                                                            
-            Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);                                                                                                                                                  
-            if (obj instanceof CloneableEditorSupport) {                                                                                                                                                                       
-                return (CloneableEditorSupport)obj;                                                                                                                                                                            
-            }                                                                                                                                                                                                                  
-            obj = dob.getCookie(org.openide.cookies.EditorCookie.class);                                                                                                                                                       
-            if (obj instanceof CloneableEditorSupport) {                                                                                                                                                                       
-                return (CloneableEditorSupport)obj;                                                                                                                                                                            
-            }                                                                                                                                                                                                                  
-        } catch (DataObjectNotFoundException ex) {                                                                                                                                                                             
-            ex.printStackTrace();                                                                                                                                                                                              
-        }                                                                                                                                                                                                                      
-        return null;                                                                                                                                                                                                           
+    private static PositionRef createPositionRef(FileObject file, int position, Position.Bias bias) {
+        try {
+            CloneableEditorSupport ces;
+            DataObject dob = DataObject.find(file);
+            Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+            if (obj instanceof CloneableEditorSupport) {
+                return ((CloneableEditorSupport) obj).createPositionRef(position, bias);
+            }
+            obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+            if (obj instanceof CloneableEditorSupport) {
+                return ((CloneableEditorSupport) obj).createPositionRef(position, bias);
+            }
+            @SuppressWarnings("deprecation")
+            EditorSupport es = dob.getCookie(EditorSupport.class);
+            return es.createPositionRef(position, bias);
+        } catch (DataObjectNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        throw new IllegalStateException("Cannot create PositionRef for file " + file.getPath() +". CloneableEditorSupport not found");                                                                                                                                                                                                           
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
     private static class KindPath {                                                                                                                                                                                            
