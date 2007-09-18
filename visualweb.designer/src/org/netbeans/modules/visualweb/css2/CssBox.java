@@ -2181,8 +2181,24 @@ public class CssBox implements Box {
         while (parent != null) {
             Element element = parent.getElement();
             if (element != null) {
-                int length = CssUtilities.getCssLength(element, propIndex);
-                if (length != AUTO) {
+//                int length = CssUtilities.getCssLength(element, propIndex);
+//                if (length != AUTO) {
+//                    return length;
+//                }
+                CssValue cssValue = parent.computeWidthCssValue();
+                if (!CssProvider.getValueService().isAutoValue(cssValue)) {
+                    int length;
+                    if (cssValue == null) {
+                        // XXX #6460007 Possible NPE.
+                        length = 0;
+                    } else {
+                        length = (int)cssValue.getFloatValue();
+                    }
+                    
+                    // XXX #108602 The percentages might still not be inited correctly.
+                    if(cssValue instanceof CssComputedValue) {
+                        parent.uncomputeWidthCssValue();
+                    }
                     return length;
                 }
             }
