@@ -261,11 +261,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             new Runnable() {
                 public void run() {
                     // #23486: pane could not be initialized yet.
-                    if (pane != null) {
-                        Document doc = support.createStyledDocument(pane.getEditorKit());
-                        pane.setDocument(doc);
-                        pane.setEditorKit(null);
-                    }
+                    // #114608 - commenting out setting of the empty document and null kit
+//                    if (pane != null) {
+//                        Document doc = support.createStyledDocument(pane.getEditorKit());
+//                        pane.setDocument(doc);
+//                        pane.setEditorKit(null);
+//                    }
 
                     removeAll();
                     initialized = false;
