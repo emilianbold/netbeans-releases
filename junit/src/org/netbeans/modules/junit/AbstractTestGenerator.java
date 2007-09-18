@@ -1217,7 +1217,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                    && type.toString().equals("java.lang.String")) {     //NOI18N
             defValue = maker.Literal("");                               //NOI18N
         } else {
-            defValue = maker.Identifier("null");
+            defValue = maker.Literal(null);
         }
         return defValue;
     }
