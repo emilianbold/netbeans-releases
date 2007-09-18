@@ -333,26 +333,22 @@ public class UnitTab extends javax.swing.JPanel {
     }
     
     private void setSelectionInfo (String downloadSize, int count) {
-        String key = null;
         String operationNameKey = null;
         switch (model.getType ()) {
         case INSTALLED :
-            key = "UnitTab_lHowManySelected_Text_INSTALLED";
             operationNameKey = "UnitTab_OperationName_Text_INSTALLED";
             break;
         case UPDATE :
-            key = "UnitTab_lHowManySelected_Text_UPDATE";
             operationNameKey = "UnitTab_OperationName_Text_UPDATE";
             break;
         case AVAILABLE :
-            key = "UnitTab_lHowManySelected_Text_AVAILABLE";
             operationNameKey = "UnitTab_OperationName_Text_AVAILABLE";
             break;
         case LOCAL :
-            key = "UnitTab_lHowManySelected_Text_LOCAL";
             operationNameKey = "UnitTab_OperationName_Text_LOCAL";
             break;
         }
+        String key = count == 1 ? "UnitTab_lHowManySelected_Single_Text" : "UnitTab_lHowManySelected_Many_Text";
         if (UnitCategoryTableModel.Type.INSTALLED == model.getType () || UnitCategoryTableModel.Type.LOCAL == model.getType ()) {
             lSelectionInfo.setText ((NbBundle.getMessage (UnitTab.class, key, count)));
         } else {
