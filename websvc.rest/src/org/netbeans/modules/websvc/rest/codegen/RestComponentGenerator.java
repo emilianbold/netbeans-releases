@@ -237,7 +237,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         String text = ""; //NOI18N
         for (ParameterInfo param : bean.getQueryParameters()) {
             String name = param.getName();
-            text += "if (this." + name + " != null) {" + name + " = this." + name + ";" + "}\n";
+            text += "if (" + name + " == null) { " + name + " = this." + name + ";" + "}\n";
         }
 
         return text;
