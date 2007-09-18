@@ -289,7 +289,7 @@ class LuceneIndex extends Index {
                             prefix = token;
                         }
                         sb.append(token); 
-                        sb.append("[\\p{javaLowerCase}\\p{Digit}_\\$]*"); // NOI18N         
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
                         lastIndex = index;
                     }
                     while(index != -1);
