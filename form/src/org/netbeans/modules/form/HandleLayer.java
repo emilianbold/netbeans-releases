@@ -2729,8 +2729,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     if (targetContainer != null) {
                         newLayout = targetContainer.getLayoutSupport() == null;
                         oldLayout = !newLayout;
+                        Point posInComp = new Point(hotSpot.x - originalBounds[0].x + convertPoint.x,
+                                                    hotSpot.y - originalBounds[0].y + convertPoint.y);
                         constraints = oldLayout && isDraggableLayoutComponent()
-                            ? getConstraintsAtPoint(targetContainer, p, hotSpot) : null;
+                            ? getConstraintsAtPoint(targetContainer, p, posInComp) : null;
                     }
                     else {
                         newLayout = oldLayout = false;
@@ -2810,7 +2812,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             Container cont = (Container) formDesigner.getComponent(targetContainer);
             Container contDel = targetContainer.getContainerDelegate(cont);
             Point posInCont = convertPointToComponent(p.x, p.y, contDel);
-            Point posInComp = hotSpot;
+            Point posInComp = new Point(hotSpot.x - originalBounds[0].x + convertPoint.x,
+                                        hotSpot.y - originalBounds[0].y + convertPoint.y);
             index = laysup.getNewIndex(cont, contDel,
                                        showingComponents[0], -1,
                                        posInCont, posInComp);
