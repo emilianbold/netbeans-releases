@@ -209,7 +209,7 @@ public final class AntBuildExtender {
                 assert id.length() > 0 : "Illegal project.xml";
                 String value = root.getAttribute(AntBuildExtenderAccessor.ATTR_FILE);
                 FileObject script = nbproj.getFileObject(value);
-                assert script != null : "Missing file " + script;
+                assert script != null : "Missing file " + value + " for extension " + id;
                 Extension ext = new Extension(id, script, value);
                 extensions.put(id, ext);
                 NodeList deps = root.getElementsByTagNameNS(namespace, AntBuildExtenderAccessor.ELEMENT_DEPENDENCY);
