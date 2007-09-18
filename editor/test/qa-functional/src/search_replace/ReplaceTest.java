@@ -59,7 +59,10 @@ public class ReplaceTest extends EditorTestCase {
         //mwo.pushKey(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK);
         //new EventTool().waitNoEvent(100);
         //mwo.pushKey(KeyEvent.VK_ESCAPE);
-        new ReplaceAction().perform();
+        //new ReplaceAction().perform();
+        mwo.requestFocus();
+        mwo.pushKey(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK);
+        new EventTool().waitNoEvent(200);
     }
     
     
@@ -76,16 +79,18 @@ public class ReplaceTest extends EditorTestCase {
             // open replace and close
             openReplaceDialog();
             txtOper.pushKey(KeyEvent.VK_ESCAPE);
-            
+            new EventTool().waitNoEvent(200);
             // open replace and open help
-            txtOper.pushKey(KeyEvent.VK_H, KeyEvent.CTRL_MASK);
+            txtOper.requestFocus();
+            txtOper.pushKey(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK);
+            new EventTool().waitNoEvent(200);
             Replace replace = new Replace();
             replace.btHelp().doClick();
             
             // close help
             HelpOperator help = new HelpOperator();
             help.close();
-            
+            new EventTool().waitNoEvent(200);
             // close replace
             replace.btClose().doClick();
             
