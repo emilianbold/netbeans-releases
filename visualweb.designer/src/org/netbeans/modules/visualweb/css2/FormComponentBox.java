@@ -908,7 +908,7 @@ public class FormComponentBox extends ContainerBox {
             //maxIsPreferred = 3;
             jc.setOpaque(false); // will indicate nonrectangular
         } else if (type.equals("password")) {
-            JPasswordField field = new JPasswordField();
+            JPasswordField field = new JPasswordFieldColumnWidth();
             c = field;
 
             // XXX #110555 Java app can't mix two or more L&F's at the same time.
@@ -1505,6 +1505,34 @@ public class FormComponentBox extends ContainerBox {
         }
     } // End of JTextFieldColumnWidth.
     
+    /** XXX #112462 Text field with adjusted (more 'browser-like') column width. */
+    private static class JPasswordFieldColumnWidth extends JPasswordField {
+        private int columnWidth;
+        
+        public JPasswordFieldColumnWidth() {
+            super();
+        }
+        
+        public JPasswordFieldColumnWidth(String text, int columns) {
+            super(text, columns);
+        }
+        
+        @Override
+        public void setFont(Font font) {
+            super.setFont(font);
+            columnWidth = 0;
+        }
+        
+        @Override
+        protected int getColumnWidth() {
+            if (columnWidth == 0) {
+                FontMetrics metrics = getFontMetrics(getFont());
+//                columnWidth = metrics.charWidth('m');
+                columnWidth = metrics.charWidth('a'); // NOI18N
+            }
+            return columnWidth;
+        }
+    } // End of JTextFieldColumnWidth.
     
     /** XXX #112462 Text area with adjusted (more 'browser-like') column width. */
     private static class JTextAreaColumnWidth extends JTextArea {
