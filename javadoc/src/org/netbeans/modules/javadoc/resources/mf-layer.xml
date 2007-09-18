@@ -120,6 +120,9 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
+                <file name="org-netbeans-modules-javadoc-Formater.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javadoc.hints.GenerateJavadocAction.create"/>
+                </file>
             </folder>
         </folder>
     </folder>

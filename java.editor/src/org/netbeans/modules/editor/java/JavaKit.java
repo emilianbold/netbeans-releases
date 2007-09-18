@@ -31,7 +31,12 @@ import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.PrefixMakerAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
@@ -456,6 +461,27 @@ public class JavaKit extends NbEditorKit {
         
         static final long serialVersionUID = -1506173310438326380L;
         
+        private boolean isJavadocTouched = false;
+
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            try {
+                super.actionPerformed(evt, target);
+                
+                // XXX temporary solution until the editor will provide a SPI to plug. See issue #115739
+                // This must run outside the document lock
+                if (isJavadocTouched) {
+                    Lookup.Result<TextAction> res = MimeLookup.getLookup(MimePath.parse("text/x-javadoc")).lookupResult(TextAction.class);
+                    ActionEvent newevt = new ActionEvent(target, ActionEvent.ACTION_PERFORMED, "fix-javadoc");
+                    for (TextAction action : res.allInstances()) {
+                        action.actionPerformed(newevt);
+                    }
+                }
+            } finally {
+                isJavadocTouched = false;
+            }
+        }
+        
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             int dotPos = caret.getDot();
             if (BracketCompletion.posWithinString(doc, dotPos)) {
@@ -478,7 +504,8 @@ public class JavaKit extends NbEditorKit {
                 } catch (BadLocationException ex) {
                 }
             }
-            return null;
+            
+            return javadocBlockCompletion(target, doc, dotPos);
         }
         
         protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret, Object cookie) {
@@ -489,6 +516,90 @@ public class JavaKit extends NbEditorKit {
                     caret.setDot(nowDotPos+1);
                 }
             }
+        }
+        
+        private Object javadocBlockCompletion(JTextComponent target, BaseDocument doc, final int dotPosition) {
+            try {
+                TokenHierarchy<BaseDocument> tokens = TokenHierarchy.get(doc);
+                TokenSequence ts = tokens.tokenSequence();
+                ts.move(dotPosition);
+                if (!ts.moveNext() || ts.token().id() != JavaTokenId.JAVADOC_COMMENT) {
+                    return null;
+                }
+                
+                int jdoffset = dotPosition - 3;
+                if (jdoffset >= 0) {
+                    CharSequence content = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc);
+                    if (isOpenJavadoc(content, dotPosition - 1) && !isClosedJavadoc(content, dotPosition)) {
+                        // complete open javadoc
+                        // note that the formater will add one line of javadoc
+                        doc.insertString(dotPosition, "*/", null); // NOI18N
+                        doc.getFormatter().indentNewLine(doc, dotPosition);
+                        target.setCaretPosition(dotPosition);
+                        
+                        isJavadocTouched = true;
+                        return Boolean.TRUE;
+                    }
+                }
+            } catch (BadLocationException ex) {
+                // ignore
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+        
+        private static boolean isOpenJavadoc(CharSequence content, int pos) {
+            for (int i = pos; i >= 0; i--) {
+                char c = content.charAt(i);
+                if (c == '*' && i - 2 > 0 && content.charAt(i - 1) == '*' && content.charAt(i - 2) == '/') {
+                    // matched /**
+                    return true;
+                } else if (c == '\n') {
+                    // no javadoc, matched start of line
+                    return false;
+                } else if (c == '/' && content.charAt(i - 1) == '*') {
+                    // matched javadoc enclosing tag
+                }
+            }
+            
+            return false;
+        }
+        
+        private static boolean isClosedJavadoc(CharSequence txt, int pos) {
+            int length = txt.length();
+            int quotation = 0;
+            for (int i = pos; i < length; i++) {
+                char c = txt.charAt(i);
+                if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
+                    if (quotation == 0) {
+                        return true;
+                    }
+                    // guess it is not just part of some text constant
+                    boolean isClosed = true;
+                    for (int j = i + 2; j < length; j++) {
+                        char cc = txt.charAt(j);
+                        if (cc == '\n') {
+                            break;
+                        } else if (cc == '"' && j < length - 1 && txt.charAt(j + 1) != '\'') {
+                            isClosed = false;
+                            break;
+                        }
+                    }
+
+                    if (isClosed) {
+                        return true;
+                    }
+                } else if (c == '/' && i < length - 1 && txt.charAt(i + 1) == '*') {
+                    // start of another comment block
+                    return false;
+                } else if (c == '\n') {
+                    quotation = 0;
+                } else if (c == '"' && i < length - 1 && txt.charAt(i + 1) != '\'') {
+                    quotation = ++quotation % 2;
+                }
+            }
+
+            return false;
         }
 
   }

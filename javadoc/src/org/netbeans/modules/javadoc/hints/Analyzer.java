@@ -221,7 +221,7 @@ final class Analyzer {
     /**
      * has syntax errors preventing to generate javadoc?
      */
-    private boolean hasErrors(Tree leaf) {
+    static boolean hasErrors(Tree leaf) {
         switch (leaf.getKind()) {
             case METHOD:
                 MethodTree mt = (MethodTree) leaf;
@@ -788,7 +788,7 @@ final class Analyzer {
         return false;
     }
     
-    private static SourceVersion resolveSourceVersion(FileObject file) {
+    static SourceVersion resolveSourceVersion(FileObject file) {
         String sourceLevel = SourceLevelQuery.getSourceLevel(file);
         if (sourceLevel == null) {
             return SourceVersion.latest();
