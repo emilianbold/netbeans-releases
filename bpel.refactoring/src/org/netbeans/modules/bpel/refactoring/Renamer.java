@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -187,8 +186,8 @@ final class Renamer extends Plugin {
 
       if (errors != null && errors.size() > 0) {
         return processErrors(errors);
-      } 
-    } 
+      }
+    }
     XMLRefactoringTransaction transaction =
       myRequest.getContext().lookup(XMLRefactoringTransaction.class);
     transaction.register(this, elements);
@@ -197,35 +196,10 @@ final class Renamer extends Plugin {
     for (Element element : elements) {
       element.setTransactionObject(transaction);
       refactoringElements.add(myRequest, element);
-    }      
+    }
     return null;
   }
       
-  private Problem processErrors(List<ErrorItem> items) {
-    if (items == null || items.size()== 0) {
-      return null;
-    }
-    Problem parent = null;
-    Problem child = null;
-    Problem head = null;
-    Iterator<ErrorItem> iterator = items.iterator();
-            
-    while (iterator.hasNext()) {
-      ErrorItem error = iterator.next();
-
-      if (parent == null) {
-        parent = new Problem(isFatal(error), error.getMessage());
-        child = parent;
-        head = parent;
-        continue;
-      }
-      child = new Problem(isFatal(error), error.getMessage());
-      parent.setNext(child);
-      parent = child;
-    }
-    return head;
-  }
-   
   public void doRefactoring(
     List<RefactoringElementImplementation> elements) throws IOException
   {
@@ -242,7 +216,7 @@ final class Renamer extends Plugin {
       else if (reference instanceof Model) {
         rename(getComponents(map.get(model)));
       }
-    }       
+    }
   }
     
   public String getModelReference(Component component) {
@@ -285,19 +259,6 @@ final class Renamer extends Plugin {
     return component;
   }
        
-  private List<Model> getModels(List<Element> elements) {
-    List<Model> models = new ArrayList<Model>();
-
-    for (Element element : elements) {
-      models.add((element.getLookup().lookup(Component.class)).getModel());
-    }
-    return models;
-  }
-
-  private boolean isFatal(ErrorItem error) {
-    return error.getLevel() == ErrorItem.Level.FATAL;
-  }  
-
   private void rename(
     List<Component> components,
     Model model,
@@ -318,11 +279,11 @@ final class Renamer extends Plugin {
       for (Component component : components) {
         renameComponent(component, target);
       }
-    } 
+    }
     finally {
       if (doTransaction && model.isIntransaction()) {
         model.endTransaction();
-      }  
+      }
     }
   }
 

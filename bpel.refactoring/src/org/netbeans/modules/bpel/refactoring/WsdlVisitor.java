@@ -163,7 +163,7 @@ final class WsdlVisitor extends ChildVisitor {
     }
     if (reference.get().equals(part.getParent())) {
       myUsage.add(alias);
-     }
+    }
   }
 
   private void checkUsages(Component component) {

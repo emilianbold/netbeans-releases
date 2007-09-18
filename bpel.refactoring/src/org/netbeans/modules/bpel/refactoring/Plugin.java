@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
@@ -58,6 +59,7 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 
+import org.netbeans.modules.xml.refactoring.ErrorItem;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.refactoring.WSDLRefactoringEngine;
@@ -167,6 +169,44 @@ abstract class Plugin implements RefactoringPlugin, XMLRefactoringPlugin {
   }
 
   public void cancelRequest() {}
+
+  protected List<Model> getModels(List<Element> elements) {
+    List<Model> models = new ArrayList<Model>();
+
+    for (Element element : elements) {
+      models.add((element.getLookup().lookup(Component.class)).getModel());
+    }
+    return models;
+  }
+
+  protected Problem processErrors(List<ErrorItem> items) {
+    if (items == null || items.size()== 0) {
+      return null;
+    }
+    Problem parent = null;
+    Problem child = null;
+    Problem head = null;
+    Iterator<ErrorItem> iterator = items.iterator();
+            
+    while (iterator.hasNext()) {
+      ErrorItem error = iterator.next();
+
+      if (parent == null) {
+        parent = new Problem(isFatal(error), error.getMessage());
+        child = parent;
+        head = parent;
+        continue;
+      }
+      child = new Problem(isFatal(error), error.getMessage());
+      parent.setNext(child);
+      parent = child;
+    }
+    return head;
+  }
+
+  protected boolean isFatal(ErrorItem error) {
+    return error.getLevel() == ErrorItem.Level.FATAL;
+  }  
 
   public String getModelReference(Component component) {
     if (component instanceof Import) {

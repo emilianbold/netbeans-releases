@@ -41,87 +41,62 @@
 package org.netbeans.modules.bpel.refactoring;
 
 import java.io.IOException;
-import java.net.URL;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
 import org.netbeans.modules.xml.refactoring.ErrorItem;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
-import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
 
-import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.bpel.model.api.events.VetoException;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.03.16
+ * @version 2007.09.17
  */
-final class Mover extends Plugin {
+final class Deleter extends Plugin {
     
-  Mover(MoveRefactoring refactoring) {
+  Deleter(SafeDeleteRefactoring refactoring) {
     myRequest = refactoring;
   }
   
-  public Problem fastCheckParameters() {
-    URL url = ((MoveRefactoring) myRequest).getTarget().lookup(URL.class);
-
-    if (url == null) {
-      return null;
-    }
-    FileObject target = URLMapper.findFileObject(url);
-
-    if (target != null && !target.canWrite()) {
-      return new Problem(true, i18n(Mover.class,"ERR_PackageIsReadOnly")); // NOI18N
-    }
-    return null;
-  }
-    
-  public Problem checkParameters() {
-    return null;
-  }
-    
   public Problem prepare(RefactoringElementsBag refactoringElements) {
+//out();
+//out("PREPARE");
+//out();
     Referenceable reference =
       myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     if (reference == null) {
       return null;
     }
-    if ( !(reference instanceof Model)) {
-      return null;
-    }
     Set<Component> roots = getRoots(reference);
-    List<Element> elements = new ArrayList<Element>();
+    myElements = new ArrayList<Element>();
 
     for (Component root : roots) {
       List<Element> founds = find(reference, root);
 
       if (founds != null) {
-        elements.addAll(founds);
+        myElements.addAll(founds);
       }
     }
-    if (elements.size() > 0) {
-      List<Model> models = getModels(elements);
+    if (myElements.size() > 0) {
+      List<Model> models = getModels(myElements);
       List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
 
       if (errors != null && errors.size() > 0) {
@@ -130,102 +105,79 @@ final class Mover extends Plugin {
     } 
     XMLRefactoringTransaction transaction =
       myRequest.getContext().lookup(XMLRefactoringTransaction.class);
-    transaction.register(this, elements);
+    transaction.register(this, myElements);
     refactoringElements.registerTransaction(transaction);
 
-    for (Element element : elements) {
+    for (Element element : myElements) {
       element.setTransactionObject(transaction);
       refactoringElements.add(myRequest, element);
     }      
     return null;
   }
-      
-  public void doRefactoring(
-    List<RefactoringElementImplementation> elements) throws IOException
-  {
-    Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
-    Set<Model> models = map.keySet();
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
 
-    for (Model model : models) {
-      if (reference instanceof Model) {
-        rename(model, getComponents(map.get(model)));
-      }
-    }    
-  }
-    
-  public String getModelReference(Component component) {
-    if (component instanceof Import) {
-      return ((Import) component).getLocation();
-    }
+  public Problem fastCheckParameters() {
     return null;
   }
 
-  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(
-    List<RefactoringElementImplementation> elements)
+  public Problem checkParameters() {
+    return null;
+  }
+
+  public void doRefactoring(List<RefactoringElementImplementation> elements)
+    throws IOException
   {
-    Map<Model, Set<RefactoringElementImplementation>> results =
-      new HashMap<Model, Set<RefactoringElementImplementation>>();
-  
-    for(RefactoringElementImplementation element : elements) {
-      Model model = (element.getLookup().lookup(Component.class)).getModel();
-      Set<RefactoringElementImplementation> components = results.get(model);
-
-      if (components == null) {
-        components = new HashSet<RefactoringElementImplementation>();
-        components.add(element);
-        results.put(model, components);
-      }
-      else {
-        components.add(element);
-      }
-    }
-    return results;
-  }
-
-  private List<Component> getComponents(
-    Set<RefactoringElementImplementation> elements)
-  {
-    List<Component> component = new ArrayList<Component>(elements.size());
-  
-    for (RefactoringElementImplementation element : elements) {
-      component.add(element.getLookup().lookup(Component.class));
-    }
-    return component;
-  }
-       
-  private void rename(Model model, List<Component> components) throws IOException {
-    if (components == null) {
-      return;
-    }
-    for (Component component : components) {
-      renameFile(model, component);
-    }
-  }
-
-  private void renameFile(Model model, Component component) throws IOException {
 //out();
-//out("FILE RENAME: " + Util.getName(component));
-    if ( !(component instanceof Import)) {
+//out("DO: " + myRequest.getRefactoringSource());
+    Referenceable referenceable =
+      myRequest.getRefactoringSource().lookup(Referenceable.class);
+
+    if ( !(referenceable instanceof Component)) {
       return;
+    }
+    for (Element element : myElements) {
+      Object object = element.getUserObject();
+//out("  see: " + object);
+
+      if ( !(object instanceof PropertyAlias)) {
+        continue;
+      }
+      delete((PropertyAlias) object, (Component) referenceable);
+    }
+//out();
+  }
+
+  private void delete(PropertyAlias alias, Component target) {
+    Model model = alias.getModel();
+    boolean doTransaction = false;
+
+    if (model != null) {
+      doTransaction = !model.isIntransaction();
     }
     try {
-      Import _import = (Import) component;
-      String location = _import.getLocation();
-
-      try {
-        location = SharedUtils.calculateNewLocationString(model, myRequest);
+      if (doTransaction && model != null) {
+        model.startTransaction();
       }
-      catch (URISyntaxException e) {
-        return;
+      if (target instanceof Part) {
+        alias.setPart(null);
       }
-      _import.setLocation(location);
+      else if (target instanceof Message) {
+        alias.setMessageType(null);
+        alias.setPart(null);
+      }
+      else if (target instanceof CorrelationProperty) {
+        alias.setPropertyName(null);
+      }
+//    else {
+//out("target: " + target.getClass().getName());
+//    }
     }
-    catch(VetoException e) {
-      throw new IOException(e.getMessage());
+    finally {
+      if (doTransaction && model != null && model.isIntransaction()) {
+        model.endTransaction();
+      }
     }
   }
-  
-  private MoveRefactoring myRequest;
+
+  private List<Element> myElements;
+  private SafeDeleteRefactoring myRequest;
 }

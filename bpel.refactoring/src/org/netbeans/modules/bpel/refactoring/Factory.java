@@ -41,6 +41,7 @@
 package org.netbeans.modules.bpel.refactoring;
 
 import org.netbeans.modules.xml.xam.Referenceable;
+
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -48,6 +49,8 @@ import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -61,7 +64,6 @@ public final class Factory implements RefactoringPluginFactory {
       refactoring.getRefactoringSource().lookup(Referenceable.class);
   
     if (referenceable == null) {
-      // this is not my object, don't participate in refactoring
       return null;
     }
     if (refactoring instanceof WhereUsedQuery) {
@@ -71,8 +73,7 @@ public final class Factory implements RefactoringPluginFactory {
       return new Renamer((RenameRefactoring) refactoring);
     }
     if (refactoring instanceof SafeDeleteRefactoring) {
-      // do nothing
-      return null;
+      return new Deleter((SafeDeleteRefactoring) refactoring);
     }
     if (refactoring instanceof MoveRefactoring) {
       return new Mover((MoveRefactoring) refactoring);
