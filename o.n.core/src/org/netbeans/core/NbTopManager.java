@@ -95,7 +95,7 @@ public abstract class NbTopManager {
         if (!(lookup instanceof MainLookup)) {
             throw new ClassCastException("Wrong Lookup impl found: " + lookup);
         }
-        ((MainLookup)lookup).startedNbTopManager();
+        MainLookup.startedNbTopManager();
     }
 
     /** Getter for instance of this manager.
@@ -249,7 +249,7 @@ public abstract class NbTopManager {
         for (int i = 0; i < modifs.length; i++) {
             try {
                 dobj = modifs[i];
-                SaveCookie sc = (SaveCookie) dobj.getCookie(SaveCookie.class);
+                SaveCookie sc = dobj.getCookie(SaveCookie.class);
 
                 if (sc != null) {
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(
