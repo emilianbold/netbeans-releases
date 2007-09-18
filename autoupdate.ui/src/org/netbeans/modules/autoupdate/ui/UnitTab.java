@@ -321,7 +321,6 @@ public class UnitTab extends javax.swing.JPanel {
                 refreshState ();
             }
         });
-        new PopupAction ();
         table.addMouseListener (popupActionsSupport = new PopupActionSupport (forPopup));
         getDefaultAction ().setEnabled (model.getMarkedUnits ().size () > 0);
     }
@@ -870,33 +869,6 @@ public class UnitTab extends javax.swing.JPanel {
             return false;
         }        
         
-    }
-    
-    private class PopupAction extends RowTabAction {
-        public PopupAction () {
-            super ("UnitTab_PopUpAction", KeyStroke.getKeyStroke (KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), null);
-        }
-        
-        public void performerImpl (Unit u) {
-            int row = getSelectedRow ();
-            if(row > 0) {
-                Point e = table.getCellRect (row, 1, enabled).getLocation ();
-                showPopup (e, table);
-            }
-        }
-        
-        protected boolean isEnabled (Unit u) {
-            return u != null;
-        }
-        
-        protected String getContextName (Unit u) {
-            return getActionName ();
-        }
-        
-        @Override
-        protected boolean isVisible (Unit u) {
-            return false;
-        }
     }
     
     private class UninstallAction extends TabAction {

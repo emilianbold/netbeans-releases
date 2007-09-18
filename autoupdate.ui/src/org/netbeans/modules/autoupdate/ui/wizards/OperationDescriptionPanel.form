@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
@@ -54,9 +54,7 @@
   <SubComponents>
     <Component class="javax.swing.JTextPane" name="tpPrimaryTitle">
       <Properties>
-        <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/autoupdate/ui/wizards/Bundle.properties" key="OperationDescriptionPanel.tpPrimaryTitle.contentType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
+        <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <AuxValues>
@@ -65,9 +63,7 @@
     </Component>
     <Component class="javax.swing.JTextPane" name="tpPrimaryPlugins">
       <Properties>
-        <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/autoupdate/ui/wizards/Bundle.properties" key="OperationDescriptionPanel.tpPrimaryPlugins.contentType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
+        <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <AuxValues>
@@ -76,9 +72,7 @@
     </Component>
     <Component class="javax.swing.JTextPane" name="tpDependingTitle">
       <Properties>
-        <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/autoupdate/ui/wizards/Bundle.properties" key="OperationDescriptionPanel.tpDependingTitle.contentType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
+        <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <AuxValues>
@@ -87,9 +81,7 @@
     </Component>
     <Component class="javax.swing.JTextPane" name="tpDependingPlugins">
       <Properties>
-        <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/autoupdate/ui/wizards/Bundle.properties" key="OperationDescriptionPanel.tpDependingPlugins.contentType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
+        <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <AuxValues>

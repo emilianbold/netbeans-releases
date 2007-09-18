@@ -66,8 +66,6 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     private static final String DEPENDENCIES_TITLE_UNINSTALL = "UninstallDependenciesResolutionStep_Table_Title";
     private static final String DEPENDENCIES_TITLE_ACTIVATE = "OperationDescriptionStep_TableInstall_Title";
     private static final String DEPENDENCIES_TITLE_DEACTIVATE = "UninstallDependenciesResolutionStep_Table_Title";
-    private static final String TABLE_TITLE_BROKEN = "OperationDescriptionStep_BrokenDependencies_Title";
-    private static final String TITLE_BROKEN_DEPENDENCIES = "OperationDescriptionStep_BrokenDependencies";
     private PanelBodyContainer component;
     private OperationWizardModel model = null;
     private boolean readyToGo = false;
