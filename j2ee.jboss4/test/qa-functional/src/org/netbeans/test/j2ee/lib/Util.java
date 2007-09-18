@@ -31,13 +31,11 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
-//import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-//import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
@@ -189,7 +187,8 @@ public class Util {
                     if (params == null){
                         params = new String[] {DEFAULT_J2EE_LEVEL, DEFAULT_APPSRV_ID, null};
                     }
-                    EarProjectGenerator.createProject(projectDir, name, params[0], params[1], name, params[2]);
+                    EarProjectGenerator.createProject(projectDir, name,
+                            params[0], params[1], params[2]);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid project type.");
@@ -215,7 +214,7 @@ public class Util {
                 // posting the to AWT event thread
                 Mutex.EVENT.writeAccess(new Runnable() {
                     public void run() {
-                        OpenProjectList.getDefault().close( new Project[] { project } );
+                        OpenProjectList.getDefault().close(new Project[] { project }, true);
                     }
                 });
                 return true;
@@ -226,8 +225,12 @@ public class Util {
     }
     
     /** Waits until metadata scanning is finished. */
-    public static boolean waitScanFinished() {
-        return ((JMManager)JMManager.getManager()).waitScanFinished();
+    public static void waitScanFinished() {
+        try {
+            SourceUtils.waitScanFinished();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
     
     /**
