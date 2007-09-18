@@ -38,7 +38,19 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         initComponents();
         
         for (int i = 0; i < mappedChoices.length; i ++)
-            menuItemsTable.put (mappedChoices[i], displayChoices[i]) ;
+            getMappedIndex.put (mappedChoices[i], displayChoices[i]) ;
+    }
+    
+    private int getMappedIndex (String s) {
+        int index = -1;
+        
+        for (int i = 0; i < mappedChoices.length && index < 0; i ++) {
+            if (s.equals(mappedChoices[i])) {
+                index = i;
+            }
+        }
+        
+        return index ;
     }
     
     /**
@@ -49,34 +61,43 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         
         String s = "";
         Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
-       
+        int index = -1 ;
+        
         s = prefs.get("UML_ShowMe_Allow_Lengthy_Searches", PSK_ASK);
-        allowLengthySearchesCB.setSelectedItem(menuItemsTable.get(s));
+        index = getMappedIndex (s) ;
+        allowLengthySearchesCB.setSelectedIndex(index);
         
         s = prefs.get("UML_ShowMe_Automatically_Create_Classifiers", PSK_ASK);
-        autoCreateCB.setSelectedItem(menuItemsTable.get(s));
+        index = getMappedIndex (s) ;
+        autoCreateCB.setSelectedIndex(index);
         
         s = prefs.get("UML_ShowMe_Delete_Combined_Fragment_Messages", PSK_ASK);
-        deleteCombFragCB.setSelectedItem(menuItemsTable.get(s));
+        index = getMappedIndex (s) ;
+        deleteCombFragCB.setSelectedIndex(index);
         
         s = prefs.get("UML_ShowMe_Delete_Connector_Messages", PSK_ASK);
-        deleteConnectorCB.setSelectedItem(menuItemsTable.get(s));
+        index = getMappedIndex (s) ;
+        deleteConnectorCB.setSelectedIndex(index);
         
         s = prefs.get("UML_ShowMe_Delete_File_when_Deleting_Artifacts", PSK_ASK);
-        deleteFileCB.setSelectedItem(menuItemsTable.get(s));
+        index = getMappedIndex (s) ;
+        deleteFileCB.setSelectedIndex(index);
         
         s = prefs.get("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", PSK_ASK);
-        filterWarningCB.setSelectedItem(menuItemsTable.get(s));
+        index = getMappedIndex (s) ;
+        filterWarningCB.setSelectedIndex(index);
                         
         s = prefs.get("UML_ShowMe_Move_Invoked_Operation", PSK_ASK);
-        moveInvokedCB.setSelectedItem(menuItemsTable.get(s));
+        index = getMappedIndex (s) ;
+        moveInvokedCB.setSelectedIndex(index);
         
         s = prefs.get("UML_ShowMe_Overwrite_Existing_Participants", PSK_ASK);
-        overwriteCB.setSelectedItem(menuItemsTable.get(s));
+        index = getMappedIndex (s) ;
+        overwriteCB.setSelectedIndex(index);
         
         s = prefs.get("UML_ShowMe_Transform_When_Elements_May_Be_Lost", PSK_ASK);
-        transformCB.setSelectedItem(menuItemsTable.get(s));
-        
+        index = getMappedIndex (s) ;
+        transformCB.setSelectedIndex(index);   
         
     }
     
@@ -261,7 +282,7 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     private String[] displayChoices = {ASK, ALWAYS, NEVER} ;
     private String[] mappedChoices = {PSK_ASK, PSK_ALWAYS, PSK_NEVER} ;
     
-    private Hashtable menuItemsTable = new Hashtable();
+    private Hashtable getMappedIndex = new Hashtable();
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox allowLengthySearchesCB;

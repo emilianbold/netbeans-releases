@@ -1463,7 +1463,8 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                             checkWithUser = false;
                         } else if (showMePref.equals ("PSK_ALWAYS")) {
                             checkWithUser = false;
-                        } 
+                        } else
+                            checkWithUser = true;
                         
                         if ( checkWithUser )
                         {
