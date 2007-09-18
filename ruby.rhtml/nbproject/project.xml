@@ -243,6 +243,14 @@
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.lexer</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.openide.dialogs</code-name-base>
                         <recursive/>
                     </test-dependency>

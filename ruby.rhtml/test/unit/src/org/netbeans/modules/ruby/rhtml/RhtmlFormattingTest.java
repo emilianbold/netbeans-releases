@@ -21,9 +21,17 @@ import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.HTMLFormatter;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.html.HTMLLexerFormatter;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.IndentPrefs;
@@ -41,6 +49,18 @@ public class RhtmlFormattingTest extends RubyTestBase {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestLanguageProvider.register(RhtmlTokenId.language());
+        TestLanguageProvider.register(HTMLTokenId.language());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+    
     @Override
     protected BaseDocument getDocument(String s) {
         BaseDocument doc = super.getDocument(s);
@@ -81,16 +101,35 @@ public class RhtmlFormattingTest extends RubyTestBase {
 //        a.actionPerformed(new ActionEvent(pane, 0, ""));
 
         // ... that doesn't work, so do what the indent task currently does anyway:
-        HTMLFormatter f = new HTMLFormatter(HTMLKit.class);
+        
+        String topLevelLang = NbEditorUtilities.getMimeType(doc);
+        Language language = Language.find(topLevelLang);
+        LanguagePath languagePath = LanguagePath.get(language);
+
+        if (!"text/html".equals(topLevelLang)) {
+            Language htmlLanguage = Language.find("text/html");
+            languagePath = LanguagePath.get(languagePath, htmlLanguage); //NOI18N
+        }
+
+        HTMLLexerFormatter f = new HTMLLexerFormatter(HTMLKit.class, languagePath);
+        
         String unformatted = doc.getText(0, doc.getLength());
         JEditorPane pane = new JEditorPane();
         pane.setContentType(HTMLKit.HTML_MIME_TYPE);
         HTMLKit kit = new HTMLKit();
         pane.setEditorKit(kit);
         BaseDocument bdoc = (BaseDocument)pane.getDocument();
+
+        // The HTML indent engine requires a custom indent shift width setting since
+        // it no longer creates a formatter
+        Settings.setValue(HTMLKit.class, SettingsNames.INDENT_SHIFT_WIDTH, Integer.valueOf(2));        
+        if (Utilities.getKitClass(pane) != HTMLKit.class) {
+            Settings.setValue(Utilities.getKitClass(pane), SettingsNames.INDENT_SHIFT_WIDTH, Integer.valueOf(2));        
+        }
+        bdoc.settingsChange(null);
+        
         bdoc.insertString(0, unformatted, null);
         f.reformat(bdoc, startPos, endPos, true);
-        
         
         Formatter formatter = getFormatter(preferences);
 
