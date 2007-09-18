@@ -53,6 +53,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
     protected String name;
     protected String type;
     protected String value;
+    protected String mvalue;
+    protected String ovalue;
     protected String derefValue;
     protected Field[] fields;
     protected Logger log = Logger.getLogger("gdb.logger"); // NOI18N
@@ -82,6 +84,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
         this.name = name;
         this.type = type;
         this.value = value;
+        this.mvalue = null;
+        this.ovalue = null;
         this.derefValue = derefValue;
         fields = new Field[0];
         
@@ -105,7 +109,11 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @return string representation of type of this variable.
      */
     public String getValue() {
-       return value;
+        if (mvalue != null) {
+            return mvalue;
+        } else {
+            return value;
+        }
     }
 
     /**
@@ -116,11 +124,16 @@ public class AbstractVariable implements LocalVariable, Customizer {
      */
     public void setValue(String value) {
         String msg = null;
+        int pos;
         
         if (getFieldsCount() == 0) {
             GdbDebugger debugger = getDebugger();
             if (debugger != null) {
                 value = value.trim();
+                if (value.length() > 0 && value.charAt(0) == '(' && (pos = GdbUtils.findMatchingParen(value, 0)) != -1) {
+                    // Strip a cast
+                    value = value.substring(pos + 1).trim();
+                }
                 if (type.equals("char")) { // NOI18N
                     value = setValueChar(value);
                     if (value == null) { // Invalid input
@@ -145,16 +158,21 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     if (value == null) { // Invalid input
                         msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Enum"); // NOI18N
                     }
+                } else if (value.charAt(0) == '"' || (value.startsWith("0x") && value.endsWith("\""))) { // NOI18N
+                    value = setValueCharStar(value);
+                    if (value == null) { // Invalid input
+                        msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char*"); // NOI18N
+                    }
                 }
                 if (value != null) {
                     if (value.endsWith("\\\"")) {
-                        int pos = value.indexOf('"');
+                        pos = value.indexOf('"');
                         if (pos != -1) {
                             value = value.substring(pos, value.length() - 1) + '"';
                         }
                     }
                     if (value.charAt(0) == '(') {
-                        int pos = GdbUtils.findMatchingParen(value, 0);
+                        pos = GdbUtils.findMatchingParen(value, 0);
                         if (pos != -1) {
                             value = value.substring(pos + 1).trim();
                         }
@@ -171,7 +189,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
                             fullname = name;
                         }
                     }
-                    debugger.getGdbProxy().data_evaluate_expression(fullname + '=' + value);
+                    ovalue = this.value;
+                    debugger.updateVariable(this, fullname, value);
                 }
             }
         }
@@ -180,6 +199,14 @@ public class AbstractVariable implements LocalVariable, Customizer {
             nd.setTitle("TITLE_SetValue_Warning"); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
         }
+    }
+    
+    public void restoreOldValue() {
+        mvalue = ovalue;
+    }
+    
+    public void setModifiedValue(String mvalue) {
+        this.mvalue = mvalue;
     }
     
     /**

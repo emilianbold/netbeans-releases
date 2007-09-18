@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
+import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
@@ -80,6 +81,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
     public static final String          PROP_LOCALS_VIEW_UPDATE = "localsViewUpdate"; // NOI18N
     public static final String          PROP_KILLTERM = "killTerm"; // NOI18N
+    public static final String          PROP_WATCH_VIEW_UPDATE = "watchViewUpdate"; // NOI18N
 
     public static final String          STATE_NONE = "state_none"; // NOI18N
     public static final String          STATE_STARTING = "state_starting"; // NOI18N
@@ -124,6 +126,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Map<Integer, GdbWatchVariable> watchTypeMap = new HashMap<Integer, GdbWatchVariable>();
     private Map<Integer, GdbWatchVariable> watchValueMap = new HashMap<Integer, GdbWatchVariable>();
     private Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
+    private Map<Integer, AbstractVariable> updateVariablesMap = new HashMap<Integer, AbstractVariable>();
     private Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
@@ -397,6 +400,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void resultRecord(int token, String msg) {
         GdbVariable var;
         GdbWatchVariable watch;
+        AbstractVariable avar;
         Integer itok = Integer.valueOf(token);
         
         currentToken = token + 1;
@@ -450,6 +454,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if ((watch = watchValueMap.remove(itok)) != null) {
                 watch.setValue(msg.substring(13, msg.length() - 1));
+                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
+//                firePropertyChange(PROP_LOCALS_VIEW_UPDATE, true, false);
+            } else if ((avar = updateVariablesMap.remove(itok)) != null) {
+                avar.setModifiedValue(msg.substring(13, msg.length() - 1));
+//                firePropertyChange(PROP_LOCALS_VIEW_UPDATE, true, false);
             }
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             setRunning();
@@ -486,6 +495,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 firePropertyChange(PROP_LOCALS_VIEW_UPDATE, 0, 1);
             } else if ((watch = watchTypeMap.remove(itok)) != null) {
                 watch.setType(watch.getTypeBuf());
+                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
             } else if (pendingBreakpointMap.get(itok) != null) {
                 breakpointValidation(token, null);
             }
@@ -505,10 +515,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 ttToken = 0;
             } else if (watchValueMap.get(itok) != null) {
                 watch = watchValueMap.remove(itok);
-                watch.setError(msg.substring(1, msg.length() - 1));
+                watch.setValueToError(msg.substring(1, msg.length() - 1));
+                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
             } else if (watchTypeMap.get(itok) != null) {
                 watch = watchTypeMap.remove(itok);
-                watch.setType(""); // probably out-of-scope
+                watch.setTypeToError(msg.substring(1, msg.length() - 1));
+                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
+            } else if ((avar = updateVariablesMap.remove(itok)) != null) {
+                avar.restoreOldValue();
+                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
+                firePropertyChange(PROP_LOCALS_VIEW_UPDATE, true, false);
             } else if (msg.startsWith("\"No symbol ") && msg.endsWith(" in current context.\"")) { // NOI18N
                 String type = msg.substring(13, msg.length() - 23);
                 if (type.equals("string") || type.equals("std::string")) { // NOI18N
@@ -1056,6 +1072,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
+    public void updateVariable(AbstractVariable var, String name, String value) {
+        int token = gdb.data_evaluate_expression(name + '=' + value);
+        updateVariablesMap.put(new Integer(token), var);
+    }
+    
     /**
      * We set a temporary breakpoint at main so we can complete initialization. Some things
      * (like breakpoints) can't be set before this point.
@@ -1464,6 +1485,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (var.getName().length() > 0) {
             int token = gdb.symbol_type(var.getName());
+            var.clearTypeBuf();
             watchTypeMap.put(new Integer(token), var);
         }
     }

@@ -280,6 +280,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         tfCondition.setBackground(new java.awt.Color(238, 238, 238));
         tfCondition.setEditable(false);
         tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "HINT_UnimplementedCondition")); // NOI18N
+        tfCondition.setEnabled(false);
         tfCondition.setMinimumSize(new java.awt.Dimension(116, 17));
         tfCondition.setPreferredSize(new java.awt.Dimension(11, 19));
         spCondition.setViewportView(tfCondition);

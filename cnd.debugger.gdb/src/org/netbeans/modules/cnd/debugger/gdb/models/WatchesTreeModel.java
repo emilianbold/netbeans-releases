@@ -48,11 +48,11 @@ import org.openide.util.WeakSet;
  *
  */
 
-public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
+public class WatchesTreeModel implements TreeModel, TreeExpansionModel, PropertyChangeListener {
 
     private GdbDebugger debugger;
     private ContextProvider lookupProvider;
-    private LocalsTreeModel localsTreeModel;
+    private static WatchesTreeModel watchesTreeModel;
     private Listener listener;
     private Vector<ModelListener> listeners = new Vector<ModelListener>();
     private Map<Watch, GdbWatchVariable> watchToVariable = new WeakHashMap<Watch, GdbWatchVariable>(); 
@@ -63,13 +63,19 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
     public WatchesTreeModel(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger.addPropertyChangeListener(this);
+        watchesTreeModel = this;
     }
 
-    LocalsTreeModel getLocalsTreeModel() {
-        if (localsTreeModel == null) {
-            localsTreeModel = (LocalsTreeModel) lookupProvider.lookupFirst("LocalsView", TreeModel.class);
+    public static WatchesTreeModel getWatchesTreeModel() {
+        return watchesTreeModel;
+    }
+    
+    public void propertyChange(PropertyChangeEvent ev) {
+        if (ev.getPropertyName().equals(GdbDebugger.PROP_WATCH_VIEW_UPDATE) &&
+                debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+            fireTreeChanged();
         }
-        return localsTreeModel;
     }
     
     /** 
@@ -123,9 +129,9 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
             }
             return gws;
         } else if (parent instanceof GdbWatchVariable) {
-            return getLocalsTreeModel().getChildren(parent, from, to);
+            return ((GdbWatchVariable) parent).getFields(from, to);
         }
-        return getLocalsTreeModel().getChildren(parent, from, to);
+        throw new UnknownTypeException(parent);
     }
     
     /**
@@ -165,6 +171,8 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (node == ROOT) {
             return DebuggerManager.getDebuggerManager().getWatches().length;
+        } else if (node instanceof GdbWatchVariable) {
+            return ((GdbWatchVariable) node).getFieldsCount();
         }
         throw new UnknownTypeException(node);
     }
@@ -205,12 +213,12 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
         }
     }
     
-    void fireTableValueChangedChanged (Object node, String propertyName) {
+    void fireTableValueChangedChanged(Object node, String propertyName) {
         synchronized (watchToVariable) {
             for (Iterator it = watchToVariable.keySet().iterator(); it.hasNext(); ) {
                 Object w = it.next();
                 if (node.equals(watchToVariable.get(w))) {
-                    System.err.println("WTM.fireTableValueChanged:" + ((GdbWatchVariable) node).getName());
+//                    System.err.println("WTM.fireTableValueChanged:" + ((GdbWatchVariable) node).getName());
 //                    ((GdbWatchVariable) node).setEvaluated(null);
                     break;
                 }
@@ -219,7 +227,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel {
         fireTableValueChangedComputed(node, propertyName);
     }
         
-    void fireTableValueChangedComputed (Object node, String propertyName) {
+    void fireTableValueChangedComputed(Object node, String propertyName) {
         Vector v = (Vector) listeners.clone();
         int i, k = v.size();
         for (i = 0; i < k; i++) {

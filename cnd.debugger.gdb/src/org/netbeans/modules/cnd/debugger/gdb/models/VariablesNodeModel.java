@@ -32,7 +32,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 
@@ -54,11 +53,8 @@ public class VariablesNodeModel implements NodeModel {
     public static final String SUPER =
             "org/netbeans/modules/debugger/resources/watchesView/SuperVariable"; // NOI18N
     
-    private GdbDebugger      debugger;
-    private ContextProvider  lookupProvider;
-    
     private RequestProcessor evaluationRP = new RequestProcessor();
-    private final Collection modelListeners = new HashSet();
+    private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
     
     // Localizable messages
     private String LC_NoInfo = NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info"); // NOI18N
@@ -75,8 +71,6 @@ public class VariablesNodeModel implements NodeModel {
     private final String strNoCurrentThread = "No current thread"; // NOI18N
     
     public VariablesNodeModel(ContextProvider lookupProvider) {
-        this.lookupProvider = lookupProvider;
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     public String getDisplayName(Object o) throws UnknownTypeException {
@@ -108,7 +102,7 @@ public class VariablesNodeModel implements NodeModel {
         throw new UnknownTypeException(o);
     }
     
-    private Map shortDescriptionMap = new HashMap();
+    private Map<Object, String> shortDescriptionMap = new HashMap<Object, String>();
     
     public String getShortDescription(final Object o) throws UnknownTypeException {
         synchronized (shortDescriptionMap) {

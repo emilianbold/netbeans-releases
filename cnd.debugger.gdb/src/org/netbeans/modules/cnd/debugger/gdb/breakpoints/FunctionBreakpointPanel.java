@@ -226,6 +226,7 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         tfCondition.setBackground(new java.awt.Color(238, 238, 238));
         tfCondition.setEditable(false);
         tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(FunctionBreakpointPanel.class, "HINT_UnimplementedCondition")); // NOI18N
+        tfCondition.setEnabled(false);
         spCondition.setViewportView(tfCondition);
         tfCondition.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_TF_Function_Breakpoint_Condition")); // NOI18N
         tfCondition.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Function_Breakpoint_Condition")); // NOI18N

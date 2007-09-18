@@ -57,19 +57,9 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         this.model = model;
         this.watch = watch;
         
-        GdbVariable var;
         if (watch.getExpression().length() > 0) {
-            if (expressionIsSimpleVariable() && (var = findSimpleVariable()) != null) {
-                type = var.getType();
-                value = var.getValue();
-                if (type != null && value != null) {
-                    expandChildrenFromValue(this);
-                }
-            }
-            if (type == null && getDebugger().getState().equals(GdbDebugger.STATE_STOPPED)) {
-                setTypeInvalid();
-                setValueInvalid();
-            }
+            setTypeInvalid();
+            setValueInvalid();
             getDebugger().addPropertyChangeListener(this);
             watch.addPropertyChangeListener(this);
         } else {
@@ -82,18 +72,8 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         watch.remove();
     }
     
-    private void setValueInvalid() {
-        synchronized (invalidValue) {
-            invalidValue[0] = true;
-            getDebugger().requestWatchValue(this);
-        }
-    }
-    
-    private void setTypeInvalid() {
-        synchronized (invalidType) {
-            invalidType[0] = true;
-            getDebugger().requestWatchType(this);
-        }
+    public void clearTypeBuf() {
+        typeBuf.delete(0, typeBuf.length());
     }
     
     public void appendTypeBuf(String tline) {
@@ -106,6 +86,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE) && ev.getNewValue().equals(GdbDebugger.STATE_STOPPED)) {
+            setTypeInvalid();
             setValueInvalid();
         } else if (ev.getPropertyName().equals(Watch.PROP_EXPRESSION)) {
             setTypeInvalid();
@@ -149,6 +130,21 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         }
     }
     
+    private void setTypeInvalid() {
+        synchronized (invalidType) {
+            invalidType[0] = true;
+            getDebugger().requestWatchType(this);
+        }
+    }
+    
+    public void setTypeToError(String msg) {
+        msg = msg.replace("\\\"", "\"");
+        if (msg.charAt(msg.length() - 1) == '.') {
+            msg = msg.substring(0, msg.length() - 1);
+        }
+        setType('>' + msg + '<');
+    }
+    
     @Override
     public String getValue() {
         if (value == null) {
@@ -182,9 +178,17 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     public void setValueAt(String value) {
         super.setValue(value);
+        setValueInvalid();
     }
     
-    public void setError(String msg) {
+    private void setValueInvalid() {
+        synchronized (invalidValue) {
+            invalidValue[0] = true;
+            getDebugger().requestWatchValue(this);
+        }
+    }
+    
+    public void setValueToError(String msg) {
         msg = msg.replace("\\\"", "\"");
         if (msg.charAt(msg.length() - 1) == '.') {
             msg = msg.substring(0, msg.length() - 1);
