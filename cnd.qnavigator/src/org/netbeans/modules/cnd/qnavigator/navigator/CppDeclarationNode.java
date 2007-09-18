@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
 
 /**
  * Navigator Tree node.
@@ -124,7 +125,8 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 if (cls != null && cls.getName().length()>0) {
                     String name = cls.getName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
                     String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
-                    return displayName+"<font color='!controlShadow'>  in " + name; // NOI18N
+                    String in = NbBundle.getMessage(getClass(), "LBL_inClass"); //NOI18N                    
+                    return displayName+"<font color='!controlShadow'>  " + in + " " + name; // NOI18N
                 }
             }
         }
