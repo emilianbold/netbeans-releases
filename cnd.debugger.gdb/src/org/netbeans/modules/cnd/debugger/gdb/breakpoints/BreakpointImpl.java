@@ -20,8 +20,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Session;
@@ -48,7 +46,6 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     private GdbBreakpoint breakpoint;
     private BreakpointsReader reader;
     private final Session session;
-    private static Map<String, BreakpointImpl> bplist = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
     
     protected BreakpointImpl(GdbBreakpoint breakpoint, BreakpointsReader reader, GdbDebugger debugger, Session session) {
         this.debugger = debugger;
@@ -67,7 +64,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 breakpointNumber = Integer.parseInt(number);
                 setState(BPSTATE_VALIDATED);
                 if (!breakpoint.isEnabled()) {
-                    debugger.break_disable(breakpointNumber);
+                    getDebugger().break_disable(breakpointNumber);
                 }
                 if (this instanceof FunctionBreakpointImpl) {
                     try {
@@ -79,13 +76,8 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             } else {
                 setState(BPSTATE_VALIDATION_FAILED);
             }
-            bplist.put(number, this);
+            getDebugger().getBreakpointList().put(number, this);
         }
-    }
-
-    /** Get the breakpoint associated with the gdb breakpoint number */
-    public static BreakpointImpl get(String breakpointNumber) {
-        return bplist.get(breakpointNumber);
     }
 
     /**
@@ -122,7 +114,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
      * Called from XXXBreakpointImpl constructor only.
      */
     final void set() {
-        breakpoint.setDebugger(debugger);
+        breakpoint.setDebugger(getDebugger());
         breakpoint.addPropertyChangeListener(this);
         update();
     }
@@ -157,30 +149,8 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected final void remove() {
         breakpoint.removePropertyChangeListener(this);
         setState(BPSTATE_DELETION_PENDING);
-        bplist.remove(breakpointNumber);
-    }
-    
-    /**
-     * Suspend all breakpoints. This is used to suspend breakpoints during Watch
-     * updates so functions called don't stop.
-     */
-    public static void suspendBreakpoints(GdbDebugger debugger) {
-        for (BreakpointImpl impl : bplist.values()) {
-            if (impl.breakpoint.isEnabled()) {
-                debugger.getGdbProxy().break_disable(impl.breakpointNumber);
-            }
-        }
-    }
-    
-    /**
-     * Resume all breakpoints. This is used to re-enable breakpoints after a Watch
-     * update.
-     */
-    public static void restoreBreakpoints(GdbDebugger debugger) {
-        for (BreakpointImpl impl : bplist.values()) {
-            if (impl.breakpoint.isEnabled()) {
-                debugger.getGdbProxy().break_enable(impl.breakpointNumber);
-            }
+        if (breakpointNumber > 0) {
+            getDebugger().getBreakpointList().remove(breakpointNumber);
         }
     }
 
@@ -196,7 +166,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         boolean resume = false;
 
         if (condition == null || condition.equals("")) { // NOI18N
-            GdbBreakpointEvent e = new GdbBreakpointEvent(getBreakpoint(), debugger, GdbBreakpointEvent.CONDITION_NONE, null);
+            GdbBreakpointEvent e = new GdbBreakpointEvent(getBreakpoint(), getDebugger(), GdbBreakpointEvent.CONDITION_NONE, null);
             getDebugger().fireBreakpointEvent(getBreakpoint(), e);
             //resume = getBreakpoint().getSuspend() == GdbBreakpoint.SUSPEND_NONE || e.getResume();
         } else {
@@ -217,18 +187,18 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 //            try {
 //                boolean result;
 //                GdbBreakpointEvent ev;
-//                synchronized (debugger.LOCK) {
+//                synchronized (getDebugger().LOCK) {
 //                    StackFrame sf = thread.frame (0);
 //                    result = evaluateConditionIn (condition, sf);
 //                    ev = new GdbBreakpointEvent (
 //                        getBreakpoint (),
-//                        debugger,
+//                        getDebugger(),
 //                        result ?
 //                            GdbBreakpointEvent.CONDITION_TRUE :
 //                            GdbBreakpointEvent.CONDITION_FALSE,
-//                        debugger.getThread (thread),
+//                        getDebugger().getThread (thread),
 //                        referenceType,
-//                        debugger.getVariable (value)
+//                        getDebugger().getVariable (value)
 //                    );
 //                }
 //                getDebugger().fireBreakpointEvent(getBreakpoint(), ev);
@@ -241,22 +211,22 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 //            } catch (ParseException ex) {
 //                GdbBreakpointEvent ev = new GdbBreakpointEvent (
 //                    getBreakpoint (),
-//                    debugger,
+//                    getDebugger(),
 //                    ex,
-//                    debugger.getThread (thread),
+//                    getDebugger().getThread (thread),
 //                    referenceType,
-//                    debugger.getVariable (value)
+//                    getDebugger().getVariable (value)
 //                );
 //                getDebugger().fireBreakpointEvent(getBreakpoint(), ev);
 //                return ev.getResume ();
 //            } catch (InvalidExpressionException ex) {
 //                GdbBreakpointEvent ev = new GdbBreakpointEvent (
 //                    getBreakpoint (),
-//                    debugger,
+//                    getDebugger(),
 //                    ex,
-//                    debugger.getThread (thread),
+//                    getDebugger().getThread (thread),
 //                    referenceType,
-//                    debugger.getVariable (value)
+//                    getDebugger().getVariable (value)
 //                );
 //                getDebugger ().fireBreakpointEvent (
 //                    getBreakpoint (),
@@ -286,7 +256,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 //        }
 //
 //        // 2) evaluate expression
-//        // already synchronized (debugger.LOCK)
+//        // already synchronized (getDebugger().LOCK)
 //        Boolean value = getDebugger().evaluateIn(compiledCondition, frame);
 //        try {
 //            return value.booleanValue();

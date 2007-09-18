@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -123,6 +124,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Map<Integer, GdbWatchVariable> watchTypeMap = new HashMap<Integer, GdbWatchVariable>();
     private Map<Integer, GdbWatchVariable> watchValueMap = new HashMap<Integer, GdbWatchVariable>();
     private Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
+    private Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
     private int ttToken = 0;
@@ -724,7 +726,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     fields = t.substring(pos1 + 1, pos2);
                 }
             }
-        } else if (pos1 != -1 && pos2 != -1) {
+        } else if (pos1 != -1 && pos2 != -1 && pos2 > (pos1 + 1)) {
             fields = info.substring(pos1 + 1, pos2 - 1);
         }
         if (fields != null) {
@@ -1287,7 +1289,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 GdbBreakpoint breakpoint;
                 String frame = map.get("frame"); // NOI18N
                 gdb.stack_list_frames();
-                BreakpointImpl impl = BreakpointImpl.get(map.get("bkptno")); // NOI18N
+                BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
                 if (impl != null && (breakpoint = impl.getBreakpoint()) != null) {
                     fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
                             breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
@@ -1440,12 +1442,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     public void requestWatchValue(GdbWatchVariable var) {
-        if (state.equals(STATE_STOPPED)) {
+        if (state.equals(STATE_STOPPED) || !watchValueMap.isEmpty()) {
             int token;
             if (var.getName().indexOf('(') != -1) {
-                BreakpointImpl.suspendBreakpoints(this);
+                suspendBreakpoints();
                 token = gdb.data_evaluate_expression('"' + var.getName() + '"'); // NOI18N
-                BreakpointImpl.restoreBreakpoints(this);
+                restoreBreakpoints();
             } else {
                 token = gdb.data_evaluate_expression('"' + var.getName() + '"'); // NOI18N
             }
@@ -1463,6 +1465,30 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         if (var.getName().length() > 0) {
             int token = gdb.symbol_type(var.getName());
             watchTypeMap.put(new Integer(token), var);
+        }
+    }
+    
+    /**
+     * Suspend all breakpoints. This is used to suspend breakpoints during Watch
+     * updates so functions called don't stop.
+     */
+    public void suspendBreakpoints() {
+        for (BreakpointImpl impl : getBreakpointList().values()) {
+            if (impl.getBreakpoint().isEnabled()) {
+                gdb.break_disable(impl.getBreakpointNumber());
+            }
+        }
+    }
+    
+    /**
+     * Resume all breakpoints. This is used to re-enable breakpoints after a Watch
+     * update.
+     */
+    public void restoreBreakpoints() {
+        for (BreakpointImpl impl : getBreakpointList().values()) {
+            if (impl.getBreakpoint().isEnabled()) {
+                gdb.break_enable(impl.getBreakpointNumber());
+            }
         }
     }
         
@@ -1574,6 +1600,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void popTopmostCall() {
         gdb.stack_select_frame(0);
         gdb.exec_finish();
+    }
+    
+    public Map<String, BreakpointImpl> getBreakpointList() {
+        return breakpointList;
     }
     
     /**
