@@ -90,9 +90,9 @@ public final class DocBaseNodeFactory implements NodeFactory {
         public List<String> keys() {
             FolderHolder nodeFolders = getNodeFolders();
             List<String> result = new ArrayList<String>();
-            result.add(DOC_BASE + nodeFolders.getWebDocBaseDir().getPath());
+            result.add(DOC_BASE + getFolderPath(nodeFolders.getWebDocBaseDir()));
             if (!nodeFolders.hasCorrectStructure()) {
-                result.add(WEB_INF + nodeFolders.getWebInfDir().getPath());
+                result.add(WEB_INF + getFolderPath(nodeFolders.getWebInfDir()));
             }
             return result;
         }
@@ -151,6 +151,14 @@ public final class DocBaseNodeFactory implements NodeFactory {
                 return DataFolder.findFolder(folder);
             }
             return null;
+        }
+        
+        // # 114402
+        private String getFolderPath(FileObject folder) {
+            if (folder == null) {
+                return "";
+            }
+            return folder.getPath();
         }
         
         private FileObject getFileObject(String propName) {
