@@ -74,7 +74,7 @@
 				<tocitem text="Creating a Java ME Web Services (JSR-172) Client" target="me.wcw_jsr172" />
 				<tocitem text="Updating Java ME Web Services Client Files" target="me.wcw_updatingjsr172" />
 			</tocitem>
-			<tocitem text="Visually Desiging MIDP Applications">
+			<tocitem text="Visually Designing MIDP Applications">
 				<tocitem text="About Visually Designing MIDP Applications" target="me.mvd_about" />
 				<tocitem text="Working with the Visual Mobile Designer" target="me.mvd_working" />
 				<tocitem text="VMD Tasks: Quick Reference" target="me.mvd_quickref" />
@@ -145,7 +145,7 @@
 				<tocitem text="About the Java ME Wireless Toolkit" target="me.about_toolkit" />
 				<tocitem text="Using the Java ME Wireless Toolkit Utilities" target="me.toolkit_using" />
 			</tocitem>
-			<tocitem text="Desiging MIDP Games">
+			<tocitem text="Designing MIDP Games">
 				<tocitem text="About the Game Builder" target="cldc.games_about" />
 				<tocitem text="Working with the Game Builder" target="cldc.games_working" />
 				<tocitem text="Game Builder Task Quick Reference" target="cldc.games_quickref" />
