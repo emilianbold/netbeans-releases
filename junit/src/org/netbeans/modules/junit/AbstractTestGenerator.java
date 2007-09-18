@@ -906,7 +906,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             TypeMirror retType = srcMethod.getReturnType();
             TypeKind retTypeKind = retType.getKind();
 
-            if (retTypeKind == TypeKind.VOID) {
+            if ((retTypeKind == TypeKind.VOID) || (retTypeKind == TypeKind.ERROR)) {
                 StatementTree methodCallStmt = maker.ExpressionStatement(methodCall);
 
                 statements.add(methodCallStmt);
@@ -1006,6 +1006,10 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             return (componentTypeTree != null)
                    ? maker.ArrayType(componentTypeTree)
                    : null;
+        }
+
+        if (typeKind == TypeKind.ERROR) {
+            return null;
         }
 
         final Types types = workingCopy.getTypes();
