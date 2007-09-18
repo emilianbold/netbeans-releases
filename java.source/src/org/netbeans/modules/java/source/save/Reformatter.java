@@ -65,7 +65,8 @@ public class Reformatter implements ReformatTask {
     private int startOffset;
     private int endOffset;
     private int shift;
-    private int tabSize;    
+    private int tabSize; 
+    private PositionConverter converter;
 
     public Reformatter(JavaSource javaSource, Context context) {
         this.javaSource = javaSource;
@@ -89,14 +90,14 @@ public class Reformatter implements ReformatTask {
             if (controller == null)
                 return;
         }
-        this.startOffset = context.startOffset() - shift;
-        this.endOffset = context.endOffset() - shift;
-        PositionConverter converter = controller.getPositionConverter();
+        startOffset = context.startOffset() - shift;
+        endOffset = context.endOffset() - shift;
+        converter = controller.getPositionConverter();
         if (converter != null) {
-            this.startOffset = converter.getJavaSourcePosition(this.startOffset);
-            this.endOffset = converter.getJavaSourcePosition(this.endOffset);
+            startOffset = converter.getJavaSourcePosition(startOffset);
+            endOffset = converter.getJavaSourcePosition(endOffset);
         }
-        if (this.startOffset >= this.endOffset)
+        if (startOffset >= endOffset)
             return;
         TreePath path = getCommonPath();
         if (path == null)
@@ -245,7 +246,7 @@ public class Reformatter implements ReformatTask {
                     sourceOffset += sourceTS.offset() + sourceTS.token().length();
                 }
                 if (sourceOffset >= startOffset && sourceOffset <= endOffset) {
-                    Position pos = doc.createPosition(sourceOffset + shift);
+                    Position pos = doc.createPosition(converter != null ? converter.getOriginalPosition(sourceOffset + shift) : sourceOffset + shift);
                     StringBuilder sb = new StringBuilder();
                     textTS.moveIndex(addStart);
                     while (textTS.moveNext() && textTS.index() <= addEnd)
@@ -269,8 +270,8 @@ public class Reformatter implements ReformatTask {
                     }
                 }
                 if (start >= 0) {
-                    Position startPos = doc.createPosition(start + shift);
-                    Position endPos = doc.createPosition(end + shift);
+                    Position startPos = doc.createPosition(converter != null ? converter.getOriginalPosition(start + shift) : start + shift);
+                    Position endPos = doc.createPosition(converter != null ? converter.getOriginalPosition(end + shift) : end + shift);
                     diffs.add(new Diff(startPos, endPos, null));
                 }
                 break;
@@ -302,8 +303,8 @@ public class Reformatter implements ReformatTask {
                     }
                 }
                 if (start >= 0) {
-                    Position startPos = doc.createPosition(start + shift);
-                    Position endPos = doc.createPosition(end + shift);
+                    Position startPos = doc.createPosition(converter != null ? converter.getOriginalPosition(start + shift) : start + shift);
+                    Position endPos = doc.createPosition(converter != null ? converter.getOriginalPosition(end + shift) : end + shift);
                     StringBuilder sb = new StringBuilder();
                     textTS.moveIndex(addStart);
                     while (textTS.moveNext() && textTS.index() <= addEnd)
@@ -369,7 +370,7 @@ public class Reformatter implements ReformatTask {
             case 'i':
                 lineOffset = lineEndOffset;
                 if (lineOffset >= startOffset && lineOffset <= endOffset) {
-                    Position pos = doc.createPosition(lineOffset + shift);
+                    Position pos = doc.createPosition(converter != null ? converter.getOriginalPosition(lineOffset + shift) : lineOffset + shift);
                     StringBuilder sb = new StringBuilder();
                     while(j <= lineAddEnd)
                         sb.append(textLines.get(j++));
@@ -391,8 +392,8 @@ public class Reformatter implements ReformatTask {
                     }
                 }
                 if (start >= 0) {
-                    Position startPos = doc.createPosition(start + shift);
-                    Position endPos = doc.createPosition(end + shift);
+                    Position startPos = doc.createPosition(converter != null ? converter.getOriginalPosition(start + shift) : start + shift);
+                    Position endPos = doc.createPosition(converter != null ? converter.getOriginalPosition(end + shift) : end + shift);
                     diffs.add(new Diff(startPos, endPos, null));
                 }
                 break;
