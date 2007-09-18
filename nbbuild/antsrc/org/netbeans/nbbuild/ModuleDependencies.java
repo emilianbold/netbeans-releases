@@ -521,6 +521,9 @@ public class ModuleDependencies extends Task {
         for (ModuleInfo m : modules) {
             boolean first = true;
             for (Dependency d : m.depends) {
+                if (d.getName().startsWith("org.openide.modules.ModuleFormat")) {
+                    continue; // just clutter
+                }
                 String print = "  REQUIRES ";
                 if (d.exact && d.compare != null) {
                     // ok, impl deps
@@ -749,11 +752,7 @@ public class ModuleDependencies extends Task {
         }
         
         public String getName () {
-            if (majorVersion == -1) {
-                return codebasename + " (" + group + ")";
-            } else {
-                return codebasename + "/" + majorVersion + " (" + group + ")";
-            }
+            return codebasename + " (" + group + ")";
         }
 
         public @Override String toString() {
@@ -836,16 +835,7 @@ public class ModuleDependencies extends Task {
         }
         
         public String getName () {
-            if (majorVersionFrom == -1 && majorVersionTo == -1) {
-                return token;
-            } else {
-                if (majorVersionTo == majorVersionFrom) {
-                    return token + "/" + majorVersionFrom;
-                } else {
-                    return token + "/" + majorVersionFrom + "-" + majorVersionTo;
-                }
-            }
-            
+            return token;
         }
         
         public @Override String toString() {

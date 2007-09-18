@@ -187,13 +187,13 @@ public class ModuleDependenciesTest extends NbTestCase {
 	Matcher match = Pattern.compile("MODULE ([^ ]*)").matcher(res);
 	assertTrue("One MODULE is there: " + res, match.find());
 	int fst = match.start();
-	assertEquals("my.another.module/3", match.group(1));
+	assertEquals("my.another.module", match.group(1));
 	
 	assertTrue("Second MODULE is there: " + res, match.find());
 	int snd = match.start();
-	assertEquals("my.module/3", match.group(1));
+	assertEquals("my.module", match.group(1));
 
-	match = Pattern.compile("  FRIEND my.very.public.module/10 \\(ahoj\\)").matcher(res);
+	match = Pattern.compile("  FRIEND my.very.public.module \\(ahoj\\)").matcher(res);
 	assertTrue("One FRIEND is there: " + res, match.find());
 	assertTrue("Second FRIEND is there: " + res, match.find());
 	
@@ -315,9 +315,9 @@ public class ModuleDependenciesTest extends NbTestCase {
         String res = readFile (friendPkg);
 
         if (!res.equals(
-            "MODULE my.another.module/3 (base)\n" +
-            "  FRIEND my.module/3 (extra)\n" +
-            "  FRIEND my.very.public.module/10 (extra)\n" +
+            "MODULE my.another.module (base)\n" +
+            "  FRIEND my.module (extra)\n" +
+            "  FRIEND my.very.public.module (extra)\n" +
             "  PACKAGE friend.recursive\n" +
             "  PACKAGE friend.recursive.sub\n" +
             "  PACKAGE friend.there\n" +
@@ -392,7 +392,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         String res = readFile (friendPkg);
 
         if (!res.equals(
-            "MODULE my.another.module/3 (base)\n" +
+            "MODULE my.another.module (base)\n" +
             "  EXTERNAL my.module\n" +
             "  EXTERNAL my.very.public.module\n" +
             "  PACKAGE friend.recursive\n" +
@@ -650,8 +650,8 @@ public class ModuleDependenciesTest extends NbTestCase {
         StringTokenizer tok = new StringTokenizer (res, "\n\r");
         
         assertEquals ("We have two modules: " + res, 2, tok.countTokens ());
-        assertEquals ("First contains another module, as it is sooner in alhabet\n" + res, "MODULE my.another.module/3 (ahoj)", tok.nextToken ());
-        assertEquals ("Second the next one" + res, "MODULE my.module/3 (ahoj)", tok.nextToken ());
+        assertEquals ("First contains another module, as it is sooner in alhabet\n" + res, "MODULE my.another.module (ahoj)", tok.nextToken ());
+        assertEquals ("Second the next one" + res, "MODULE my.module (ahoj)", tok.nextToken ());
         assertFalse ("No next tokens", tok.hasMoreElements ());
     }
     
@@ -770,16 +770,16 @@ public class ModuleDependenciesTest extends NbTestCase {
         f1.nextToken ();
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
-        assertTrue ("on " + dep1, dep1.indexOf ("org.openide/1") >= 0);
+        assertTrue ("on " + dep1, dep1.indexOf ("org.openide") >= 0);
         
         assertEquals ("One line + two dep for f2", 3, f2.countTokens ());
         f2.nextToken ();
         String dep2 = f2.nextToken ();
         assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
-        assertTrue ("on my " + dep2, dep2.indexOf ("my.module/3") >= 0);
+        assertTrue ("on my " + dep2, dep2.indexOf ("my.module") >= 0);
         dep2 = f2.nextToken ();
         assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
-        assertTrue ("on " + dep2, dep2.indexOf ("org.openide/1") >= 0);
+        assertTrue ("on " + dep2, dep2.indexOf ("org.openide") >= 0);
         
     }
     
@@ -845,10 +845,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         f2.nextToken ();
         String dep2 = f2.nextToken ();
         assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
-        assertTrue ("on my " + dep2, dep2.indexOf ("my.module/3") >= 0);
+        assertTrue ("on my " + dep2, dep2.indexOf ("my.module") >= 0);
         dep2 = f2.nextToken ();
         assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
-        assertTrue ("on " + dep2, dep2.indexOf ("org.openide/1") >= 0);
+        assertTrue ("on " + dep2, dep2.indexOf ("org.openide") >= 0);
         
     }
 
@@ -918,16 +918,16 @@ public class ModuleDependenciesTest extends NbTestCase {
         f1.nextToken ();
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
-        assertTrue ("on " + dep1, dep1.indexOf ("org.openide/1") >= 0);
+        assertTrue ("on " + dep1, dep1.indexOf ("org.openide") >= 0);
         
         assertEquals ("One line + two dep for f2", 3, f2.countTokens ());
         f2.nextToken ();
         String dep2 = f2.nextToken ();
         assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
-        assertTrue ("on my " + dep2, dep2.indexOf ("my.module/3") >= 0);
+        assertTrue ("on my " + dep2, dep2.indexOf ("my.module") >= 0);
         dep2 = f2.nextToken ();
         assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
-        assertTrue ("on " + dep2, dep2.indexOf ("org.openide/1") >= 0);
+        assertTrue ("on " + dep2, dep2.indexOf ("org.openide") >= 0);
         
     }
 
@@ -984,7 +984,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("module is ", modulename.indexOf ("my.another.module") >= 0);
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
-        assertTrue ("on " + dep1, dep1.indexOf ("my.module/3") >= 0);
+        assertTrue ("on " + dep1, dep1.indexOf ("my.module") >= 0);
     }
     
     
@@ -1050,7 +1050,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("group is " + res, groupname.indexOf ("others") >= 0);
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
-        assertTrue ("on openide module" + dep1, dep1.indexOf ("org.openide/1") >= 0);
+        assertTrue ("on openide module" + dep1, dep1.indexOf ("org.openide") >= 0);
     }
     
     public void testCanOutputJustDependenciesBetweenClustersForOneCluster() throws Exception {
@@ -1119,10 +1119,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("group is " + res, groupname.indexOf ("others") >= 0);
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
-        assertTrue ("on my module" + dep1, dep1.indexOf ("my.module/3") >= 0);
+        assertTrue ("on my module" + dep1, dep1.indexOf ("my.module") >= 0);
         String dep2 = f1.nextToken ();
         assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
-        assertTrue ("on openide module" + dep2, dep2.indexOf ("org.openide/1") >= 0);
+        assertTrue ("on openide module" + dep2, dep2.indexOf ("org.openide") >= 0);
     }
     
 
@@ -1204,7 +1204,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("group is " + res, groupname.indexOf ("rest") >= 0);
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
-        assertTrue ("on openide module" + dep1, dep1.indexOf ("org.netbeans.core/1") >= 0);
+        assertTrue ("on openide module" + dep1, dep1.indexOf ("org.netbeans.core") >= 0);
     }
     
     public void testRangeDependencyNeedsToBeParsed () throws Exception {
@@ -1260,7 +1260,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("module is ", modulename.indexOf ("my.another.module") >= 0);
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
-        assertTrue ("on " + dep1, dep1.indexOf ("my.module/3") >= 0);
+        assertTrue ("on " + dep1, dep1.indexOf ("my.module") >= 0);
     }
 
     public void testGenerateProvidesRequiresDependencies () throws Exception {
@@ -1316,7 +1316,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("module name contains another " + modulename, modulename.indexOf ("my.another.module") > 0);
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
-        assertTrue ("on " + dep1, dep1.indexOf ("my.module/3") >= 0);
+        assertTrue ("on " + dep1, dep1.indexOf ("my.module") >= 0);
     }
 
     public void testSpecialDependenciesArePrintedWithoutSearchingForAppropriateModule () throws Exception {
@@ -1362,7 +1362,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         
         assertEquals ("One line + one dep for f1\n" + res, 2, f1.countTokens ());
         String modname = f1.nextToken ();
-        assertTrue ("Name: " + modname, modname.indexOf ("my.another.module/3") > 0);
+        assertTrue ("Name: " + modname, modname.indexOf ("my.another.module") > 0);
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
         assertTrue ("on " + dep1, dep1.indexOf ("org.openide.modules.os.MacOSX") >= 0);
