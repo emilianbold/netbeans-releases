@@ -575,12 +575,19 @@ public class TomcatProperties {
     public void setDriverDeployment(boolean enabled) {
         ip.setProperty(PROP_DRIVER_DEPLOYMENT, Boolean.toString(enabled));
     }
-    
+
     public List/*<URL>*/ getClasses() {
         String[] nbFilter = new String[] {
-            "httpmonitor", "schema2beans"
+            "httpmonitor",
+            "schema2beans",
+            /*
+             * The following two jars contains eclipse JDT parser. We have to
+             * exclude it to not to clash with our jsp parser. See issue #115529.
+             */
+            "jasper-compiler-jdt",
+            "jasper-jdt"
         };
-        
+
         String[] implFilter = new String[] {
             "-impl.jar"
         };
