@@ -38,6 +38,7 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 import javax.swing.*;
+import org.netbeans.modules.css.visual.model.PropertyData;
 import org.openide.util.NbBundle;
 
 /**
@@ -275,7 +276,9 @@ public class BorderStyleEditor extends StyleEditor {
             topStyleCombo.addItemListener(new ItemListener() {
 
                 public void itemStateChanged(ItemEvent evt) {
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_TOP_STYLE, null, topStyleCombo.getSelectedItem().toString());
+                    PropertyData pd = new PropertyData();
+                    pd.setValue(topStyleCombo.getSelectedItem().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_TOP_STYLE, null, pd.toString());
                 }
             });
 
@@ -313,7 +316,9 @@ public class BorderStyleEditor extends StyleEditor {
             bottomStyleCombo.addItemListener(new ItemListener() {
 
                 public void itemStateChanged(ItemEvent evt) {
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_BOTTOM_STYLE, null, bottomStyleCombo.getSelectedItem().toString());
+                    PropertyData pd = new PropertyData();
+                    pd.setValue(topStyleCombo.getSelectedItem().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_BOTTOM_STYLE, null, pd.toString());
                 }
             });
 
@@ -353,7 +358,9 @@ public class BorderStyleEditor extends StyleEditor {
             leftStyleCombo.addItemListener(new ItemListener() {
 
                 public void itemStateChanged(ItemEvent evt) {
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_LEFT_STYLE, null, leftStyleCombo.getSelectedItem().toString());
+                    PropertyData pd = new PropertyData();
+                    pd.setValue(topStyleCombo.getSelectedItem().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_LEFT_STYLE, null, pd.toString());
                 }
             });
 
@@ -392,7 +399,9 @@ public class BorderStyleEditor extends StyleEditor {
             rightStyleCombo.addItemListener(new ItemListener() {
 
                 public void itemStateChanged(ItemEvent evt) {
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_RIGHT_STYLE, null, rightStyleCombo.getSelectedItem().toString());
+                    PropertyData pd = new PropertyData();
+                    pd.setValue(topStyleCombo.getSelectedItem().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_RIGHT_STYLE, null, pd.toString());
                 }
             });
 
