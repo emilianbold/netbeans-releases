@@ -25,6 +25,8 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -80,6 +82,7 @@ public class UnitTab extends javax.swing.JPanel {
     private UnitDetails details = null;
     private UnitCategoryTableModel model = null;
     private DocumentListener dlForSearch;
+    private FocusListener flForSearch;
     private String filter = "";
     private PluginManagerUI manager = null;
     private PopupActionSupport popupActionsSupport;
@@ -212,7 +215,20 @@ public class UnitTab extends javax.swing.JPanel {
     public void addNotify () {
         super.addNotify ();
         if (dlForSearch == null) {
-            tfSearch.getDocument ().addDocumentListener (getDocumentListener ());
+            tfSearch.getDocument ().addDocumentListener (getDocumentListener ());            
+        }
+        
+        if (flForSearch == null) {
+            flForSearch = new FocusListener() {
+                public void focusGained(FocusEvent e) {
+                    tfSearch.selectAll();
+                }
+
+                public void focusLost(FocusEvent e) {
+                    tfSearch.select(0, 0);
+                }
+            };
+            tfSearch.addFocusListener(flForSearch);
         }
     }
     
@@ -223,6 +239,11 @@ public class UnitTab extends javax.swing.JPanel {
             tfSearch.getDocument ().removeDocumentListener (getDocumentListener ());
         }
         dlForSearch = null;
+        if (flForSearch != null) {
+            tfSearch.removeFocusListener(flForSearch);
+        }
+        flForSearch = null;
+        
     }
     
     
