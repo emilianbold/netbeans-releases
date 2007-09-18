@@ -27,9 +27,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -162,8 +164,13 @@ public final class ProjectEar extends J2eeApplicationProvider
         return project.getServerInstanceID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
+    /** Returns the contents of the archive, in copyable form. 
+     * Used for incremental deployment. Currently uses its own J2eeModule.RootedEntry interface. 
+     * If the J2eeModule instance describes a j2ee application, the result should not 
+     * contain module archives.
+     */
     public Iterator getArchiveContents () throws IOException {
-        return new IT (getContentDirectory ());
+        return new IT (this, getContentDirectory ());
     }
 
     public FileObject getContentDirectory() {
@@ -336,21 +343,48 @@ public final class ProjectEar extends J2eeApplicationProvider
     }
  
     private static class IT implements Iterator {
-        Enumeration ch;
+        Iterator<FileObject> it;
         FileObject root;
         
-        private IT (FileObject f) {
-            this.ch = f.getChildren (true);
+        private IT(ProjectEar pe, FileObject f) {
+            J2eeModule mods[] = pe.getModules();
+            // build filter
+            Set<String> filter = new HashSet<String>(mods.length);
+            for (int i = 0; i < mods.length; i++) {
+                FileObject modArchive = null;
+                try {
+                    modArchive = mods[i].getArchive();
+                } catch (java.io.IOException ioe) {
+                    Logger.getLogger(ProjectEar.class.getName()).log(Level.FINER,
+                            null,ioe);
+                    continue;
+                }
+                String modName = modArchive.getNameExt();
+                long modSize = modArchive.getSize();
+                filter.add(modName+"."+modSize);        // NOI18N
+            }
+            
+            ArrayList<FileObject> filteredContent = new ArrayList<FileObject>(5);
+            Enumeration ch = f.getChildren(true);
+            while (ch.hasMoreElements()) {
+                FileObject fo = (FileObject) ch.nextElement();
+                String fileName = fo.getNameExt();
+                long fileSize = fo.getSize();
+                if (filter.contains(fileName+"."+fileSize)) {   // NOI18N
+                    continue;
+                }
+                filteredContent.add(fo);
+            }
             this.root = f;
+            it = filteredContent.iterator();
         }
         
-        public boolean hasNext () {
-            return ch.hasMoreElements ();
+        public boolean hasNext() {
+            return it.hasNext();
         }
         
-        public Object next () {
-            FileObject f = (FileObject) ch.nextElement ();
-            return new FSRootRE (root, f);
+        public Object next() {
+            return new FSRootRE(root, it.next());
         }
         
         public void remove () {
