@@ -40,7 +40,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -51,6 +50,9 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class NavigatorModel implements CsmProgressListener, CsmModelListener {
+ 
+    private static final int DEFAULT_PARSING_DELAY = 2000;
+
     private DataObject cdo;
     private CsmUID<CsmFile> uid;
     private NavigatorPanelUI ui;
@@ -72,8 +74,8 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         this.cdo = cdo;
         this.ui = ui;
         update(getCsmFile());
-        if (CppSettings.getDefault().getParsingDelay() > 0) {
-            checkModifiedTimer = new Timer(CppSettings.getDefault().getParsingDelay(), new ActionListener() {
+        if (getParsingDelay() > 0) {
+            checkModifiedTimer = new Timer(getParsingDelay(), new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     checkModified();
                 }
@@ -86,6 +88,11 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             }
         });
         checkCursorTimer.start();
+    }
+    
+    private int getParsingDelay(){
+        //return CppSettings.getDefault().getParsingDelay();
+        return DEFAULT_PARSING_DELAY;
     }
     
     private CsmFile getCsmFile() {
@@ -200,7 +207,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             return;
         }
         long timeSinceLastModification = System.currentTimeMillis() - cppEditorSupport.getLastModified();
-        if (timeSinceLastModification < CppSettings.getDefault().getParsingDelay()){
+        if (timeSinceLastModification < getParsingDelay()){
             return;
         }
         lastModified = cppEditorSupport.getLastModified();
