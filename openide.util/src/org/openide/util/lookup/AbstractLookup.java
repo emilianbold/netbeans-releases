@@ -719,7 +719,7 @@ public class AbstractLookup extends Lookup implements Serializable {
             if (this.index == -1) {
                 this.index = x;
             } else {
-                throw new IllegalStateException("You cannot use " + this + " in more than one AbstractLookup"); // NOI18N
+                throw new IllegalStateException("You cannot use " + this + " in more than one AbstractLookup. Prev: " + this.index + " new: " + x); // NOI18N
             }
         }
 
