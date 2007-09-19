@@ -163,10 +163,15 @@ public class RADProperty extends FormProperty {
     protected Object getRealValue(Object value) {
         Object realValue = super.getRealValue(value);
 
-        if (realValue == FormDesignValue.IGNORED_VALUE
-              && component.getBeanInstance() instanceof java.awt.Component 
-              && "text".equals(desc.getName())) // NOI18N
-            realValue = ((FormDesignValue)value).getDescription();
+        if (realValue == FormDesignValue.IGNORED_VALUE) {
+            if (component.getBeanInstance() instanceof java.awt.Component 
+                && "text".equals(desc.getName())) { // NOI18N
+                realValue = ((FormDesignValue)value).getDescription();
+            } else if (supportsDefaultValue()) {
+                // Issue 87647
+                return getDefaultValue();
+            }
+        }
 
         return realValue;
     }
