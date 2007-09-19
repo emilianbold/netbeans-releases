@@ -46,6 +46,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
     /** Gets the supported layout manager class - JLayeredPane.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return JLayeredPane.class;
     }
@@ -61,6 +62,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
      * @param components [input] real components in a real container having the
      *                           previous layout
      */
+    @Override
     public void convertConstraints(LayoutConstraints[] previousConstraints,
                                    LayoutConstraints[] currentConstraints,
                                    Component[] components)
@@ -75,6 +77,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
      * @param components components to be added
      * @param index position at which to add the components to container
      */
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -114,6 +117,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
      *        are read
      * @return LayoutConstraints based on information read form code
      */
+    @Override
     protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
                                                     CodeGroup constrCode,
                                                     CodeExpression compExp)
@@ -146,6 +150,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
      * @param compExp CodeExpression object representing component
      * @param index position of the component in the layout
      */
+    @Override
     protected CodeExpression createConstraintsCode(CodeGroup constrCode,
                                                    LayoutConstraints constr,
                                                    CodeExpression compExp,
@@ -174,6 +179,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
      * @return the default LayoutConstraints object for the supported layout;
      *         null if no component constraints are used
      */
+    @Override
     protected LayoutConstraints createDefaultConstraints() {
         return new LayeredConstraints(0, 0, 0, -1, -1);
     }
@@ -181,6 +187,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
     // ----------
 
     // overriding AbsoluteLayoutSupport
+    @Override
     protected LayoutConstraints createNewConstraints(
                                     LayoutConstraints currentConstr,
                                     int x, int y, int w, int h)
@@ -226,16 +233,19 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
 
         // ------
 
+        @Override
         public Object getConstraintsObject() {
             return new Integer(layer);
         }
 
+        @Override
         public LayoutConstraints cloneConstraints() {
             return new LayeredConstraints(layer, x, y, w, h);
         }
 
         // -------
 
+        @Override
         protected Node.Property[] createProperties() {
             Node.Property[] props = super.createProperties();
             Node.Property[] layeredProps = new Node.Property[props.length + 1];
@@ -252,20 +262,25 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
                     public void setTargetValue(Object value) {
                         layer = ((Integer)value).intValue();
                     }
+                    @Override
                     public boolean supportsDefaultValue () {
                         return true;
                     }
+                    @Override
                     public Object getDefaultValue() {
                         return new Integer(0);
                     }
+                    @Override
                     public PropertyEditor getExpliciteEditor() {
                         return new LayerEditor();
                     }
+                    @Override
                     public Object getValue(String key) {
                         if ("canEditAsText".equals(key)) // NOI18N
                             return Boolean.TRUE;
                         return super.getValue(key);
                     }
+                    @Override
                     public void setPropertyContext(
                         org.netbeans.modules.form.FormPropertyContext ctx)
                     { // disabling this method due to limited persistence
@@ -307,10 +322,12 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
             "javax.swing.JLayeredPane.DRAG_LAYER" // NOI18N
         };
 
+        @Override
         public String[] getTags() {
             return tags;
         }
 
+        @Override
         public String getAsText() {
             Object value = getValue();
             for (int i=0; i < values.length; i++)
@@ -320,6 +337,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
             return value.toString();
         }
 
+        @Override
         public void setAsText(String str) {
             for (int i=0; i < tags.length; i++)
                 if (tags[i].equals(str)) {
@@ -333,6 +351,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
             catch (NumberFormatException e) {} // ignore
         }
 
+        @Override
         public String getJavaInitializationString() {
             Object value = getValue();
             for (int i=0; i < values.length; i++)

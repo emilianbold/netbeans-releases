@@ -57,6 +57,7 @@ public class GridLayoutSupport extends AbstractLayoutSupport
      * @return index corresponding to the position of the component in the
      *         container
      */
+    @Override
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -106,10 +107,12 @@ public class GridLayoutSupport extends AbstractLayoutSupport
     }
 
     private int assistantParams;
+    @Override
     public String getAssistantContext() {
         return "gridLayout"; // NOI18N
     }
 
+    @Override
     public Object[] getAssistantParams() {
         return new Object[] {Integer.valueOf(assistantParams+1)};
     }
@@ -129,6 +132,7 @@ public class GridLayoutSupport extends AbstractLayoutSupport
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -199,6 +203,7 @@ public class GridLayoutSupport extends AbstractLayoutSupport
      * @param initLayoutCode CodeGroup to be filled with relevant
      *        initialization code
      */
+    @Override
     protected void readInitLayoutCode(CodeExpression layoutExp,
                                       CodeGroup initLayoutCode)
     {

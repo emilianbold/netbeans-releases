@@ -155,6 +155,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
         designScrollPane = new javax.swing.JScrollPane();
         designPanel = new JPanel() {
+            @Override
             public Dimension getPreferredSize() {
                 //System.out.println(" THE pref size of DesignPanel " + containerProxy.getPreferredSize()); // NOI18N
                 return  containerProxy.getPreferredSize();
@@ -171,6 +172,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         designPanel.add(containerProxy, con);
 
         designLayeredPane = new JLayeredPane() {
+            @Override
             public Dimension getPreferredSize() {
 
                 Dimension dpd = designPanel.getPreferredSize();
@@ -215,28 +217,28 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     }
 
     void setAnchor(int anchor) {
-        java.util.List selected = containerProxy.getSelectedProxies();
-        Iterator it = selected.iterator();
+        java.util.List<GBComponentProxy> selected = containerProxy.getSelectedProxies();
+        Iterator<GBComponentProxy> it = selected.iterator();
         while (it.hasNext())
 //            setProperty((GBComponentProxy)it.next(), DesignGridBagLayout.PROP_ANCHOR, new Integer(anchor));
-            setProperty((GBComponentProxy)it.next(), "anchor", new Integer(anchor)); // NOI18N
+            setProperty(it.next(), "anchor", new Integer(anchor)); // NOI18N
     }
 
     void setFill(int fill) {
-        java.util.List selected = containerProxy.getSelectedProxies();
-        Iterator it = selected.iterator();
+        java.util.List<GBComponentProxy> selected = containerProxy.getSelectedProxies();
+        Iterator<GBComponentProxy> it = selected.iterator();
         while (it.hasNext())
 //            setProperty((GBComponentProxy)it.next(), DesignGridBagLayout.PROP_FILL, new Integer(fill));
-            setProperty((GBComponentProxy)it.next(), "fill", new Integer(fill)); // NOI18N
+            setProperty(it.next(), "fill", new Integer(fill)); // NOI18N
     };
 
 
 
     void modifyIPad(int action, int what) {
-        java.util.List selected = containerProxy.getSelectedProxies();
-        Iterator it = selected.iterator();
+        java.util.List<GBComponentProxy> selected = containerProxy.getSelectedProxies();
+        Iterator<GBComponentProxy> it = selected.iterator();
         while (it.hasNext()) {
-            GBComponentProxy p =(GBComponentProxy)it.next();
+            GBComponentProxy p = it.next();
             int value =  what == HORIZONTAL ? p.getRealConstraints().ipadx : p.getRealConstraints().ipady;
             value += action;
             if (value < 0)
@@ -249,10 +251,10 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     }
 
     void modifyInsets(int action, int what) {
-        java.util.List selected = containerProxy.getSelectedProxies();
-        Iterator it = selected.iterator();
+        java.util.List<GBComponentProxy> selected = containerProxy.getSelectedProxies();
+        Iterator<GBComponentProxy> it = selected.iterator();
         while (it.hasNext()) {
-            GBComponentProxy p =(GBComponentProxy)it.next();
+            GBComponentProxy p = it.next();
             Insets old_insets = p.getRealConstraints().insets;
             Insets new_insets =(Insets)old_insets.clone();
 
@@ -284,11 +286,11 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
 
     void modifyGridSize(int action, int what) {
-        java.util.List selected = containerProxy.getSelectedProxies();
-        Iterator it = selected.iterator();
+        java.util.List<GBComponentProxy> selected = containerProxy.getSelectedProxies();
+        Iterator<GBComponentProxy> it = selected.iterator();
 
         while (it.hasNext()) {
-            GBComponentProxy p =(GBComponentProxy)it.next();
+            GBComponentProxy p = it.next();
             int value =  what == HORIZONTAL ? p.getRealConstraints().gridwidth : p.getRealConstraints().gridheight;
 
             if (action == 0)
@@ -517,6 +519,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
             componentLabel = new javax.swing.JLabel()
             {
+                @Override
                 public void paint(Graphics g) {
                     int borderSize = 5;
                     Color borderColor = Color.blue;
@@ -545,6 +548,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
                 }
 
+                @Override
                 public Dimension getPreferredSize() {
                     FormDesigner designer = FormEditor.getFormDesigner(formModel);
                     Component comp = (Component)designer.getComponent(component);
@@ -590,6 +594,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                     return size;
                 }
 
+                @Override
                 public Dimension getMinimumSize() {
                     Component comp = (Component)
                         FormEditor.getFormDesigner(formModel).getComponent(component);
@@ -599,6 +604,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 //                    return component.getComponent().getMinimumSize();
                 }
 
+                @Override
                 public Dimension getMaximumSize() {
                     Component comp = (Component)
                         FormEditor.getFormDesigner(formModel).getComponent(component);
@@ -613,14 +619,17 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             componentLabel.setText(component.getName());
             componentLabel.setHorizontalAlignment(0);
             componentLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
                     GBComponentProxy.this.mouseClicked(evt);
                 }
 
+                @Override
                 public void mousePressed(java.awt.event.MouseEvent evt) {
                     GBComponentProxy.this.mousePressed(evt);
                 }
 
+                @Override
                 public void mouseReleased(java.awt.event.MouseEvent evt) {
                     GBComponentProxy.this.mouseReleased(evt);
                 }
@@ -628,6 +637,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             });
 
             componentLabel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+                @Override
                 public void mouseDragged(java.awt.event.MouseEvent evt) {
                     GBComponentProxy.this.mouseDragged(evt);
                 }
@@ -921,6 +931,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 preferredSize =(Dimension)componentLabel.getPreferredSize().clone();
             }
 
+            @Override
             public Dimension getPreferredSize() {
                 preferredSize.height = componentLabel.getPreferredSize().height + getRealConstraints().ipady;
                 preferredSize.width = componentLabel.getPreferredSize().width + getRealConstraints().ipadx;
@@ -928,10 +939,12 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 return preferredSize;
             }
 
+            @Override
             public Dimension getMinimumSize() {
                 return componentLabel.getMinimumSize();
             }
 
+            @Override
             public Dimension getMaximumSize() {
                 return componentLabel.getMaximumSize();
             }
@@ -980,6 +993,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             super(original);
         }
         
+        @Override
         public Node.PropertySet[] getPropertySets() {
             Node.PropertySet[] sets = super.getPropertySets();
             for (int i=0; i < sets.length; i++)
@@ -1052,6 +1066,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             //layout.layoutContainer(this);
         }
 
+        @Override
         public void paint(Graphics g) {
 
             if (firstPaint) {
@@ -1168,8 +1183,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         }
 
 
-        java.util.List getSelectedProxies() {
-            java.util.List selected = new ArrayList(gbcProxies.length);
+        java.util.List<GBComponentProxy> getSelectedProxies() {
+            java.util.List<GBComponentProxy> selected = new ArrayList<GBComponentProxy>(gbcProxies.length);
 
             for (int i = 0; i < gbcProxies.length; i++) {
                 if (gbcProxies[i].isSelected)
@@ -1180,14 +1195,14 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         }
 
         Node[] getSelectedNodes() {
-            java.util.List selected = getSelectedProxies();
+            java.util.List<GBComponentProxy> selected = getSelectedProxies();
 
             Node[] result =  new Node[ selected.size() ];
 
-            Iterator it = selected.iterator();
+            Iterator<GBComponentProxy> it = selected.iterator();
 
             for (int i = 0; it.hasNext(); i++) {
-                result[i] =((GBComponentProxy)it.next()).getNode();
+                result[i] = it.next().getNode();
             }
 
             return result;
@@ -1204,7 +1219,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
         void select(GBComponentProxy p, boolean shift) {
 
-            java.util.List selected = getSelectedProxies();
+            java.util.List<GBComponentProxy> selected = getSelectedProxies();
 
             if (p.isSelected()) {
                 if (selected.size() == 1) {
@@ -1214,9 +1229,9 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                     p.setSelected(false);
                 }
                 else {
-                    Iterator it = selected.iterator();
+                    Iterator<GBComponentProxy> it = selected.iterator();
                     while (it.hasNext()) {
-                        ((GBComponentProxy)it.next()).setSelected(false);
+                        it.next().setSelected(false);
                     }
                     p.setSelected(true);
                 }
@@ -1224,9 +1239,9 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             }
             else {
                 if (!shift) {
-                    Iterator it = selected.iterator();
+                    Iterator<GBComponentProxy> it = selected.iterator();
                     while (it.hasNext())
-                        ((GBComponentProxy)it.next()).setSelected(false);
+                        it.next().setSelected(false);
                 }
                 p.setSelected(true);
             }
@@ -1269,6 +1284,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
             addWindowListener(new WindowAdapter() {
+                @Override
                 public void windowClosed(WindowEvent e) {
                     customizerPanel.customizerClosed();
                 }
@@ -1277,6 +1293,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         }
 
+        @Override
         public void pack() {
             if (packCalled)
                 return;
@@ -1300,7 +1317,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             if (ev.getActionCommand().equals("close")) // NOI18N
                 dispose();
             else if (ev.getActionCommand().equals("help")) { // NOI18N
-                Help help = (Help) Lookup.getDefault().lookup(Help.class);
+                Help help = Lookup.getDefault().lookup(Help.class);
                 if (help != null)
                     help.showHelp(HelpCtx.findHelp(customizerPanel));
             }

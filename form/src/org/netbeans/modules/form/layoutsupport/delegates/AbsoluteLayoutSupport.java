@@ -57,8 +57,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
 
     private static Constructor constrConstructor;
 
-    private static FormLoaderSettings formSettings = (FormLoaderSettings)
-                   FormLoaderSettings.getInstance();
+    private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
 
     /** Gets the supported layout manager class - AbsoluteLayout.
      * @return the class supported by this delegate
@@ -73,6 +72,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
      *        ICON_COLOR_32x32, ICON_MONO_16x16, ICON_MONO_32x32
      * @return icon to be displayed for node in Component Inspector
      */
+    @Override
     public Image getIcon(int type) {
         switch (type) {
             case BeanInfo.ICON_COLOR_16x16:
@@ -94,6 +94,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
      * @param components [input] real components in a real container having the
      *                           previous layout
      */
+    @Override
     public void convertConstraints(LayoutConstraints[] previousConstraints,
                                    LayoutConstraints[] currentConstraints,
                                    Component[] components)
@@ -131,6 +132,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
      * @return new LayoutConstraints object corresponding to the position of
      *         the component in the container
      */
+    @Override
     public LayoutConstraints getNewConstraints(Container container,
                                                Container containerDelegate,
                                                Component component,
@@ -180,10 +182,12 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
     }
 
     private Object[] assistantParams;
+    @Override
     public String getAssistantContext() {
         return "absoluteLayout"; // NOI18N
     }
 
+    @Override
     public Object[] getAssistantParams() {
         return assistantParams;
     }
@@ -204,6 +208,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -241,6 +246,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
      * @param index position of the component in its container
      * @return resizing options for the component; 0 if no resizing is possible
      */
+    @Override
     public int getResizableDirections(Container container,
                                       Container containerDelegate,
                                       Component component,
@@ -262,6 +268,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
      * @return component layout constraints for resized component; null if
      *         resizing is not possible or not implemented
      */
+    @Override
     public LayoutConstraints getResizedConstraints(Container container,
                                                    Container containerDelegate,
                                                    Component component,
@@ -348,6 +355,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
      *        are read (not needed here)
      * @return LayoutConstraints based on information read form code
      */
+    @Override
     protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
                                                     CodeGroup constrCode,
                                                     CodeExpression compExp)
@@ -374,6 +382,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
      *        needed here
      * @return created CodeExpression representing the layout constraints
      */
+    @Override
     protected CodeExpression createConstraintsCode(CodeGroup constrCode,
                                                    LayoutConstraints constr,
                                                    CodeExpression compExp,
@@ -395,6 +404,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
      * metaobject in case it is not provided (e.g. in addComponents method).
      * @return the default LayoutConstraints object for the supported layout
      */
+    @Override
     protected LayoutConstraints createDefaultConstraints() {
         return new AbsoluteLayoutConstraints(0, 0, -1, -1);
     }
@@ -490,6 +500,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     public void setTargetValue(Object value) {
                         x = ((Integer)value).intValue();
                     }
+                    @Override
                     public void setPropertyContext(
                         org.netbeans.modules.form.FormPropertyContext ctx)
                     { // disabling this method due to limited persistence
@@ -507,6 +518,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     public void setTargetValue(Object value) {
                         y = ((Integer)value).intValue();
                     }
+                    @Override
                     public void setPropertyContext(
                         org.netbeans.modules.form.FormPropertyContext ctx)
                     { // disabling this method due to limited persistence
@@ -524,26 +536,32 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     public void setTargetValue(Object value) {
                         w = ((Integer)value).intValue();
                     }
+                    @Override
                     public boolean supportsDefaultValue () {
                         return true;
                     }
+                    @Override
                     public Object getDefaultValue() {
                         return new Integer(-1);
                     }
+                    @Override
                     public PropertyEditor getExpliciteEditor() {
                         return new SizeEditor();
                     }
+                    @Override
                     public Object getValue(String key) {
                         if ("canEditAsText".equals(key)) // NOI18N
                             return Boolean.TRUE;
                         return super.getValue(key);
                     }
+                    @Override
                     public String getJavaInitializationString() {
                         if (nullMode && refComponent != null && !isChanged())
                             return Integer.toString(
                                      refComponent.getPreferredSize().width);
                         return super.getJavaInitializationString();
                     }
+                    @Override
                     public void setPropertyContext(
                         org.netbeans.modules.form.FormPropertyContext ctx)
                     { // disabling this method due to limited persistence
@@ -561,26 +579,32 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     public void setTargetValue(Object value) {
                         h = ((Integer)value).intValue();
                     }
+                    @Override
                     public boolean supportsDefaultValue () {
                         return true;
                     }
+                    @Override
                     public Object getDefaultValue() {
                         return new Integer(-1);
                     }
+                    @Override
                     public PropertyEditor getExpliciteEditor() {
                         return new SizeEditor();
                     }
+                    @Override
                     public Object getValue(String key) {
                         if ("canEditAsText".equals(key)) // NOI18N
                             return Boolean.TRUE;
                         return super.getValue(key);
                     }
+                    @Override
                     public String getJavaInitializationString() {
                         if (nullMode && refComponent != null && !isChanged())
                             return Integer.toString(
                                      refComponent.getPreferredSize().height);
                         return super.getJavaInitializationString();
                     }
+                    @Override
                     public void setPropertyContext(
                         org.netbeans.modules.form.FormPropertyContext ctx)
                     { // disabling this method due to limited persistence
@@ -662,16 +686,19 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
         final Integer prefValue = new Integer(-1);
         final String prefTag = getBundle().getString("VALUE_preferred"); // NOI18N
 
+        @Override
         public String[] getTags() {
             return new String[] { prefTag };
         }
 
+        @Override
         public String getAsText() {
             Object value = getValue();
             return prefValue.equals(value) ?
                      prefTag : value.toString();
         }
 
+        @Override
         public void setAsText(String str) {
             if (prefTag.equals(str))
                 setValue(prefValue);
@@ -682,6 +709,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                 catch (NumberFormatException e) {} // ignore
         }
 
+        @Override
         public String getJavaInitializationString() {
             Object value = getValue();
             return value != null ? value.toString() : null;

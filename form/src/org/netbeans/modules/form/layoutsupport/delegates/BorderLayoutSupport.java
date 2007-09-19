@@ -62,6 +62,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
      * @return new LayoutConstraints object corresponding to the position of
      *         the component in the container
      */
+    @Override
     public LayoutConstraints getNewConstraints(Container container,
                                                Container containerDelegate,
                                                Component component,
@@ -156,10 +157,12 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
     }
 
     private String assistantParams;
+    @Override
     public String getAssistantContext() {
         return "borderLayout"; // NOI18N
     }
 
+    @Override
     public Object[] getAssistantParams() {
         return new Object[] {assistantParams};
     }
@@ -179,6 +182,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -278,6 +282,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
      *        are read (not needed here)
      * @return LayoutConstraints based on information read form code
      */
+    @Override
     protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
                                                     CodeGroup constrCode,
                                                     CodeExpression compExp)
@@ -299,6 +304,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
      *        needed here
      * @return created CodeExpression representing the layout constraints
      */
+    @Override
     protected CodeExpression createConstraintsCode(CodeGroup constrCode,
                                                    LayoutConstraints constr,
                                                    CodeExpression compExp,
@@ -315,6 +321,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
      * metaobject in case it is not provided (e.g. in addComponents method).
      * @return the default LayoutConstraints object for the supported layout
      */
+    @Override
     protected LayoutConstraints createDefaultConstraints() {
         String pos = findFreePositions()[0];
         if (isAWTContainer()) {
@@ -326,7 +333,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
     // ----------------
 
     private String[] findFreePositions() {
-        ArrayList positions = new ArrayList(6);
+        java.util.List<String> positions = new ArrayList<String>(6);
 
         if (getComponentOnPosition(BorderLayout.CENTER) == -1)
             positions.add(BorderLayout.CENTER);
@@ -412,9 +419,11 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
                             direction = (String)value;
                         }
 
+                    @Override
                         public PropertyEditor getExpliciteEditor() {
                             return new BorderDirectionEditor();
                         }
+                    @Override
                         public void setPropertyContext(
                             org.netbeans.modules.form.FormPropertyContext ctx)
                         { // disabling this method due to limited persistence
@@ -464,14 +473,17 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
             "java.awt.BorderLayout.SOUTH" // NOI18N
         };
 
+        @Override
         public String[] getTags() {
             return values;
         }
 
+        @Override
         public String getAsText() {
             return (String)getValue();
         }
 
+        @Override
         public void setAsText(String str) {
             for (int i = 0; i < values.length; i++)
                 if (str.equals(values[i])) {
@@ -480,6 +492,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
                 }
         }
 
+        @Override
         public String getJavaInitializationString() {
             Object value = getValue();
             for (int i=0; i < values.length; i++)

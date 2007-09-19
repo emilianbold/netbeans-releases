@@ -48,6 +48,7 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
      * it's null.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return null;
     }
@@ -58,6 +59,7 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
      *        ICON_COLOR_32x32, ICON_MONO_16x16, ICON_MONO_32x32
      * @return icon to be displayed for node in Component Inspector
      */
+    @Override
     public Image getIcon(int type) {
         switch (type) {
             case BeanInfo.ICON_COLOR_16x16:
@@ -72,6 +74,7 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
      * component to the layout (container).
      * @return one component's layout code
      */
+    @Override
     public CodeGroup getComponentCode(int index) {
         // hack: be sure that the constraints object is associated with the
         // primary component (to be able to get its preferred size)
@@ -93,6 +96,7 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
      * @param containerDelegate effective container delegate of the container
      *        (e.g. like content pane of JFrame)
      */
+    @Override
     public void setLayoutToContainer(Container container,
                                      Container containerDelegate)
     {
@@ -107,6 +111,7 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
      * @param components components to be added
      * @param index position at which to add the components to container
      */
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -144,6 +149,7 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
      * @return created CodeExpression representing the layout manager
      *         (so representing null value in this case)
      */
+    @Override
     protected CodeExpression createInitLayoutCode(CodeGroup layoutCode) {
         return getCodeStructure().createNullExpression(LayoutManager.class);
     }
@@ -161,6 +167,7 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
      * @return CodeExpression representing found component; null if the
      *         statement is not relevant
      */
+    @Override
     protected CodeExpression readComponentCode(CodeStatement statement,
                                                CodeGroup componentCode)
     {
@@ -202,6 +209,7 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
      * @param compExp CodeExpression object representing component
      * @param index position of the component in the layout
      */
+    @Override
     protected void createComponentCode(CodeGroup componentCode,
                                        CodeExpression compExp,
                                        int index)

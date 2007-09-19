@@ -44,7 +44,7 @@ import org.netbeans.modules.form.FormProperty;
 
 public class GridBagLayoutSupport extends AbstractLayoutSupport
 {
-    private static Reference customizerRef;
+    private static Reference<GridBagCustomizer.Window> customizerRef;
 
     /** Gets the supported layout manager class - GridBagLayout.
      * @return the class supported by this delegate
@@ -56,6 +56,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     /** Returns a class of customizer for GridBagLayout.
      * @return layout customizer class
      */
+    @Override
     public Class getCustomizerClass() {
         return GridBagCustomizer.Window.class;
     }
@@ -63,13 +64,14 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     /** Creates an instance of customizer for GridBagLayout.
      * @return layout customizer class
      */
+    @Override
     public Component getSupportCustomizer() {
         GridBagCustomizer.Window customizer = null;
         if (customizerRef != null)
-            customizer = (GridBagCustomizer.Window) customizerRef.get();
+            customizer = customizerRef.get();
         if (customizer == null) {
             customizer = new GridBagCustomizer.Window();
-            customizerRef = new WeakReference(customizer);
+            customizerRef = new WeakReference<GridBagCustomizer.Window>(customizer);
         }
         customizer.setObject(this);
         return customizer;
@@ -86,6 +88,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
      * @param components [input] real components in a real container having the
      *                           previous layout
      */
+    @Override
     public void convertConstraints(LayoutConstraints[] previousConstraints,
                                    LayoutConstraints[] currentConstraints,
                                    Component[] components)
@@ -97,8 +100,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                      instanceof AbsoluteLayoutSupport.AbsoluteLayoutConstraints))
             return;
         
-        List xlines = new ArrayList();
-        List ylines = new ArrayList();
+        List<Integer> xlines = new ArrayList<Integer>();
+        List<Integer> ylines = new ArrayList<Integer>();
         
         Rectangle parentbound;
         Container con = components[0].getParent();
@@ -134,8 +137,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             layouts[i] = new LayoutInfo();
         
         for (int i=0; i < xlines.size() - 1; i++) {
-            int x1 = ((Integer)xlines.get(i)).intValue();
-            int x2 = ((Integer)xlines.get(i+1)).intValue();
+            int x1 = xlines.get(i);
+            int x2 = xlines.get(i+1);
             
             for (int j=0; j < components.length; j++) {
                 Rectangle jbounds = components[j].getBounds();
@@ -149,8 +152,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         
         // Determine grid height of components.
         for (int i=0; i < ylines.size() - 1; i++) {
-            int y1 = ((Integer)ylines.get(i)).intValue();
-            int y2 = ((Integer)ylines.get(i+1)).intValue();
+            int y1 = ylines.get(i);
+            int y2 = ylines.get(i+1);
             
             for (int j=0; j < components.length; j++) {
                 Rectangle jbounds = components[j].getBounds();
@@ -210,8 +213,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         // introduction of new (otherwise redundant) grid lines.
         
         LayoutInfoComparator comp = new LayoutInfoComparator(LayoutInfoComparator.XAXIS);
-        LayoutInfo [] layoutsX = (LayoutInfo []) layouts.clone();
-        LayoutInfo [] layoutsY = (LayoutInfo []) layouts.clone();
+        LayoutInfo [] layoutsX = layouts.clone();
+        LayoutInfo [] layoutsY = layouts.clone();
         Arrays.sort(layoutsX, comp);
         comp.cord = LayoutInfoComparator.YAXIS;
         Arrays.sort(layoutsY, comp);
@@ -307,11 +310,11 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         return compPos2 >= border1 && compPos1 < border2;
     }
     
-    private static void insertLines(int line, java.util.List lines) {
+    private static void insertLines(int line, java.util.List<Integer> lines) {
         if (line < 0)
             line = 0;
         for (int i=0; i < lines.size(); i++) {
-            int ival = ((Integer)lines.get(i)).intValue();
+            int ival = lines.get(i);
             if (line < ival) {
                 lines.add(i, new Integer(line));
                 return;
@@ -325,7 +328,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     /**
      * Comparator of <code>LayoutInfo</code> objects.
      */
-    private static class LayoutInfoComparator implements java.util.Comparator{
+    private static class LayoutInfoComparator implements java.util.Comparator<LayoutInfo>{
         final static int XAXIS = 0;
         final static int YAXIS = 1;
         int cord;
@@ -334,11 +337,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             this.cord = cord;
         }
         
-        public int compare(Object left, Object right) {
-            LayoutInfo layoutleft = (LayoutInfo) left;
-            LayoutInfo layoutright = (LayoutInfo) right;
-            
-            if ((left == null) || (right == null)) return 0;
+        public int compare(LayoutInfo layoutleft, LayoutInfo layoutright) {
+            if ((layoutleft == null) || (layoutright == null)) return 0;
             if (cord == XAXIS) {
                 return layoutleft.getLastGridX() - layoutright.getLastGridX();
             } else {
@@ -439,6 +439,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
      *        are read (not needed here)
      * @return LayoutConstraints based on information read form code
      */
+    @Override
     protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
                                                     CodeGroup constrCode,
                                                     CodeExpression compExp)
@@ -457,6 +458,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
      *        needed here
      * @return created CodeExpression representing the layout constraints
      */
+    @Override
     protected CodeExpression createConstraintsCode(CodeGroup constrCode,
                                                    LayoutConstraints constr,
                                                    CodeExpression compExp,
@@ -475,6 +477,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
      * @return the default LayoutConstraints object for the supported layout;
      *         null if no component constraints are used
      */
+    @Override
     protected LayoutConstraints createDefaultConstraints() {
         return new GridBagLayoutConstraints();
     }
@@ -857,11 +860,11 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
          */
         private final class Property extends FormProperty {
             private Field field;
-            private Class propertyEditorClass;
+            private Class<? extends PropertyEditor> propertyEditorClass;
 
             Property(String name, Class type,
                      String displayName, String shortDescription,
-                     Class propertyEditorClass)
+                     Class<? extends PropertyEditor> propertyEditorClass)
             {
                 super("GridBagLayoutConstraints "+name, type, // NOI18N
                       displayName, shortDescription);
@@ -893,10 +896,12 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 }
             }
 
+            @Override
             public boolean supportsDefaultValue () {
                 return true;
             }
 
+            @Override
             public Object getDefaultValue() {
                 try {
                     return field.get(defaultConstraints);
@@ -907,11 +912,12 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 }
             }
 
+            @Override
             public PropertyEditor getExpliciteEditor() {
                 if (propertyEditorClass == null)
                     return null;
                 try {
-                    return (PropertyEditor) propertyEditorClass.newInstance();
+                    return propertyEditorClass.newInstance();
                 }
                 catch (Exception ex) { //should not happen
                     ex.printStackTrace();
@@ -919,6 +925,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 }
             }
 
+            @Override
             protected void propertyValueChanged(Object old, Object current) {
                 // #36932 - GridBagLayout allows max. 512 grid size
                 if (current instanceof Integer) {
@@ -944,6 +951,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 super.propertyValueChanged(old, current);
             }
 
+            @Override
             public void setPropertyContext(
                 org.netbeans.modules.form.FormPropertyContext ctx)
             { // disabling this method due to limited persistence
@@ -960,10 +968,12 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         String[] javaInitStrings;
         boolean otherValuesAllowed;
 
+        @Override
         public String[] getTags() {
             return tags;
         }
 
+        @Override
         public String getAsText() {
             Object value = getValue();
             for (int i=0; i < values.length; i++)
@@ -974,6 +984,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                        value.toString() : null;
         }
 
+        @Override
         public void setAsText(String str) {
             for (int i=0; i < tags.length; i++)
                 if (tags[i].equals(str)) {
@@ -988,6 +999,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 catch (NumberFormatException e) {} // ignore
         }
 
+        @Override
         public String getJavaInitializationString() {
             Object value = getValue();
             for (int i=0; i < values.length; i++)
@@ -1000,7 +1012,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         }
     }
 
-    public static final class GridPosEditor extends GridBagConstrEditor {
+    static final class GridPosEditor extends GridBagConstrEditor {
 
         public GridPosEditor() {
             tags = new String[] {
@@ -1016,7 +1028,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         }
     }
 
-    public static final class GridSizeEditor extends GridBagConstrEditor {
+    static final class GridSizeEditor extends GridBagConstrEditor {
 
         public GridSizeEditor() {
             tags = new String[] {
@@ -1035,7 +1047,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         }
     }
 
-    public static final class FillEditor extends GridBagConstrEditor {
+    static final class FillEditor extends GridBagConstrEditor {
         public FillEditor() {
             tags = new String[] {
                 getBundle().getString("VALUE_fill_none"), // NOI18N
@@ -1059,7 +1071,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         }
     }
 
-    public static final class AnchorEditor extends GridBagConstrEditor {
+    static final class AnchorEditor extends GridBagConstrEditor {
         public AnchorEditor() {
             tags = new String[] {
                 getBundle().getString("VALUE_anchor_center"), // NOI18N

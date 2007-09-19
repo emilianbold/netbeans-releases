@@ -42,6 +42,7 @@ class DefaultLayoutSupport extends AbstractLayoutSupport {
         return layoutClass;
     }
 
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -64,6 +65,7 @@ class DefaultLayoutSupport extends AbstractLayoutSupport {
      * not initialized yet.
      * @return new instance of this layout support
      */
+    @Override
     protected AbstractLayoutSupport createLayoutSupportInstance() {
         return new DefaultLayoutSupport(layoutClass);
     }

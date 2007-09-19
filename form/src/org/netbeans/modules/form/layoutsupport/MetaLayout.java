@@ -47,10 +47,12 @@ class MetaLayout extends RADComponent {
         setBeanInstance(lmInstance);
     }
 
+    @Override
     protected void createCodeExpression() {
         // code expression is handled by the layout support class
     }
 
+    @Override
     protected void createPropertySets(java.util.List propSets) {
         super.createPropertySets(propSets);
 
@@ -66,6 +68,7 @@ class MetaLayout extends RADComponent {
         }
     }
 
+    @Override
     protected PropertyChangeListener createPropertyListener() {
         // cannot reuse RADComponent.PropertyListener, because this is not
         // a regular RADComponent (properties have a special meaning)

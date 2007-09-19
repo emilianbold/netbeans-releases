@@ -96,7 +96,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                                                   metaContainer.getBeanClass());
 
         if (layoutDelegateClass != null) {
-            delegate = layoutRegistry.createSupportInstance(layoutDelegateClass);
+            delegate = LayoutSupportRegistry.createSupportInstance(layoutDelegateClass);
             if (!fromCode && !delegate.checkEmptyContainer(getPrimaryContainer())) {
                 RuntimeException ex = new IllegalArgumentException();
                 org.openide.ErrorManager.getDefault().annotate(
@@ -420,7 +420,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         if (layoutDelegate instanceof AbstractLayoutSupport)
             return ((AbstractLayoutSupport)layoutDelegate).getAllProperties();
 
-        ArrayList allPropsList = new ArrayList();
+        java.util.List<Node.Property> allPropsList = new ArrayList<Node.Property>();
         for (int i=0; i < propertySets.length; i++) {
             Node.Property[] props = propertySets[i].getProperties();
             for (int j=0; j < props.length; j++)

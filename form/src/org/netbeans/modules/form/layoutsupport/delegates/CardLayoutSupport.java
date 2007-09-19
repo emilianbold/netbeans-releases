@@ -57,6 +57,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
      * @param index position at which the components should be added (inserted);
      *        if -1, the components should be added at the end
      */
+    @Override
     public void addComponents(CodeExpression[] newCompExpressions,
                               LayoutConstraints[] newConstraints,
                               int index)
@@ -78,6 +79,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
      * Inspector.
      * @param index position (index) of the selected component in container
      */
+    @Override
     public void selectComponent(int index) {
         // set the active card according to index
         LayoutConstraints constraints = getConstraints(index);
@@ -93,6 +95,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
      *        (for layout managers we always use container delegate instead of
      *        the container)
      */
+    @Override
     public void arrangeContainer(Container container,
                                  Container containerDelegate)
     {
@@ -122,6 +125,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
      *         container; we just return the number of components here - as the
      *         drag&drop does not have much sense for CardLayout
      */
+    @Override
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -134,6 +138,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
         return containerDelegate.getComponentCount();
     }
 
+    @Override
     public String getAssistantContext() {
         return "cardLayout"; // NOI18N
     }
@@ -153,6 +158,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -186,6 +192,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
      *        are read (not needed here)
      * @return LayoutConstraints based on information read form code
      */
+    @Override
     protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
                                                     CodeGroup constrCode,
                                                     CodeExpression compExp)
@@ -207,6 +214,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
      *        needed here
      * @return created CodeExpression representing the layout constraints
      */
+    @Override
     protected CodeExpression createConstraintsCode(CodeGroup constrCode,
                                                    LayoutConstraints constr,
                                                    CodeExpression compExp,
@@ -223,6 +231,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
      * metaobject in case it is not provided (e.g. in addComponents method).
      * @return the default LayoutConstraints object for the supported layout
      */
+    @Override
     protected LayoutConstraints createDefaultConstraints() {
         return new CardConstraints("card"+(getComponentCount()+1)); // NOI18N
     }
@@ -255,6 +264,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
                         public void setTargetValue(Object value) {
                             card = (String)value;
                         }
+                        @Override
                         public void setPropertyContext(
                             org.netbeans.modules.form.FormPropertyContext ctx)
                         { // disabling this method due to limited persistence

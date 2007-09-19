@@ -39,6 +39,7 @@ public class JToolBarSupport extends AbstractLayoutSupport {
         return JToolBar.class;
     }
 
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -68,6 +69,7 @@ public class JToolBarSupport extends AbstractLayoutSupport {
      * @return index corresponding to the position of the component in the
      *         container
      */
+    @Override
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -107,10 +109,12 @@ public class JToolBarSupport extends AbstractLayoutSupport {
     }
 
     private int assistantParams;
+    @Override
     public String getAssistantContext() {
         return "toolbarLayout"; // NOI18N
     }
 
+    @Override
     public Object[] getAssistantParams() {
         return new Object[] {Integer.valueOf(assistantParams+1)};
     }
@@ -130,6 +134,7 @@ public class JToolBarSupport extends AbstractLayoutSupport {
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,

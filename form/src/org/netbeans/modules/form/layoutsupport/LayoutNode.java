@@ -66,17 +66,20 @@ public class LayoutNode extends FormNode
         firePropertySetsChange(null, null);
     }
 
+    @Override
     public Image getIcon(int iconType) {
         return layoutSupport.getIcon(iconType);
     }
 
+    @Override
     public Node.PropertySet[] getPropertySets() {
         return layoutSupport.getPropertySets();
     }
 
+    @Override
     public javax.swing.Action[] getActions(boolean context) {
         if (systemActions == null) { // from AbstractNode
-            ArrayList actions = new ArrayList(10);
+            java.util.List<javax.swing.Action> actions = new ArrayList<javax.swing.Action>(10);
 
             if (!layoutSupport.getMetaContainer().isReadOnly()) {
                 actions.add(SystemAction.get(SelectLayoutAction.class));
@@ -94,11 +97,13 @@ public class LayoutNode extends FormNode
         return systemActions;
     }
 
+    @Override
     public boolean hasCustomizer() {
         return !layoutSupport.getMetaContainer().isReadOnly()
                && layoutSupport.getCustomizerClass() != null;
     }
 
+    @Override
     protected Component createCustomizer() {
         Class customizerClass = layoutSupport.getCustomizerClass();
         if (customizerClass == null)

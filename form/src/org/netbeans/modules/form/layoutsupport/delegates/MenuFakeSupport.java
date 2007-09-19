@@ -34,17 +34,21 @@ public class MenuFakeSupport extends AbstractLayoutSupport {
         return null;
     }
 
+    @Override
     public boolean isDedicated() {
         return true;
     }
 
+    @Override
     public boolean shouldHaveNode() {
         return false;
     }
 
+    @Override
     protected void readLayoutCode(CodeGroup layoutCode) {
     }
 
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,

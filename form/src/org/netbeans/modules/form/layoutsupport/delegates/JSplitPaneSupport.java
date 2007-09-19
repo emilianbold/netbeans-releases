@@ -67,6 +67,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
      * @return new LayoutConstraints object corresponding to the position of
      *         the component in the container
      */
+    @Override
     public LayoutConstraints getNewConstraints(Container container,
                                                Container containerDelegate,
                                                Component component,
@@ -109,10 +110,12 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
     }
 
     private String assistantParams;
+    @Override
     public String getAssistantContext() {
         return "splitPaneLayout"; // NOI18N
     }
 
+    @Override
     public Object[] getAssistantParams() {
         return new Object[] {assistantParams};
     }
@@ -129,6 +132,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -210,6 +214,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
      * @param components components to be added
      * @param index position at which to add the components to container
      */
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -249,6 +254,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
      * @return whether it was possible to remove the component (some containers
      *         may not support removing individual components reasonably)
      */
+    @Override
     public boolean removeComponentFromContainer(Container container,
                                                 Container containerDelegate,
                                                 Component component)
@@ -291,6 +297,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
      * @return whether it was possible to clear the container (some containers
      *         may not support this)
      */
+    @Override
     public boolean clearContainer(Container container,
                                   Container containerDelegate)
     {
@@ -326,6 +333,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
      * @return CodeExpression representing found component; null if the
      *         statement is not relevant
      */
+    @Override
     protected CodeExpression readComponentCode(CodeStatement statement,
                                                CodeGroup componentCode)
     {
@@ -363,6 +371,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
      * @param componentExpression CodeExpression object representing component
      * @param index position of the component in the layout
      */
+    @Override
     protected void createComponentCode(CodeGroup componentCode,
                                        CodeExpression componentExpression,
                                        int index)
@@ -382,6 +391,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
      * @return the default LayoutConstraints object for the supported layout;
      *         null if no component constraints are used
      */
+    @Override
     protected LayoutConstraints createDefaultConstraints() {
         return new SplitConstraints(findFreePosition());
     }
@@ -493,15 +503,18 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
                         public void setTargetValue(Object value) {
                             position = (String)value;
                         }
+                        @Override
                         public PropertyEditor getExpliciteEditor() {
                             return new SplitPositionEditor();
                         }
+                        @Override
                         protected void propertyValueChanged(Object old,
                                                             Object current) {
                             if (isChangeFiring())
                                 updateCode();
                             super.propertyValueChanged(old, current);
                         }
+                        @Override
                         public void setPropertyContext(
                             org.netbeans.modules.form.FormPropertyContext ctx)
                         { // disabling this method due to limited persistence
@@ -567,14 +580,17 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
             JSplitPane.BOTTOM
         };
 
+        @Override
         public String[] getTags() {
             return values;
         }
 
+        @Override
         public String getAsText() {
             return (String)getValue();
         }
 
+        @Override
         public void setAsText(String str) {
             for (int i = 0; i < values.length; i++)
                 if (str.equals(values[i])) {

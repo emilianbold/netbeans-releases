@@ -79,9 +79,9 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
     private LayoutSupportContext layoutContext;
 
-    private java.util.List componentCodeExpressions;
-    private java.util.List componentCodeGroups;
-    private java.util.List componentConstraints;
+    private java.util.List<CodeExpression> componentCodeExpressions;
+    private java.util.List<CodeGroup> componentCodeGroups;
+    private java.util.List<LayoutConstraints> componentConstraints;
 
     private BeanCodeManager layoutBeanCode;
     private CodeGroup setLayoutCode;
@@ -269,7 +269,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         }
 
         if (propertySets != null) {
-            ArrayList allPropsList = new ArrayList();
+            java.util.List<Node.Property> allPropsList = new ArrayList<Node.Property>();
             for (int i=0; i < propertySets.length; i++) {
                 Node.Property[] props = propertySets[i].getProperties();
                 for (int j=0; j < props.length; j++)
@@ -323,7 +323,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @return one component's layout code
      */
     public CodeGroup getComponentCode(int index) {
-        return (CodeGroup) componentCodeGroups.get(index);
+        return componentCodeGroups.get(index);
     }
 
     /** Gets CodeExpression object representing one component.
@@ -331,7 +331,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @return CodeExpression for a component
      */
     public CodeExpression getComponentCodeExpression(int index) {
-        return (CodeExpression) componentCodeExpressions.get(index);
+        return componentCodeExpressions.get(index);
     }
 
     /** Gets number of components in the layout.
@@ -495,7 +495,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      */
     public LayoutConstraints getConstraints(int index) {
         return index < 0 || index >= componentConstraints.size() ? null :
-               (LayoutConstraints) componentConstraints.get(index);
+               componentConstraints.get(index);
     }
 
     /** This method is called when switching layout - giving an opportunity to
@@ -887,15 +887,15 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     protected void clean() {
         if (componentCodeExpressions != null)
             componentCodeExpressions.clear();
-        else componentCodeExpressions = new ArrayList();
+        else componentCodeExpressions = new ArrayList<CodeExpression>();
 
         if (componentCodeGroups != null)
             componentCodeGroups.clear();
-        else componentCodeGroups = new ArrayList();
+        else componentCodeGroups = new ArrayList<CodeGroup>();
 
         if (componentConstraints != null)
             componentConstraints.clear();
-        else componentConstraints = new ArrayList();
+        else componentConstraints = new ArrayList<LayoutConstraints>();
 
         if (setLayoutCode != null)
             setLayoutCode.removeAll();

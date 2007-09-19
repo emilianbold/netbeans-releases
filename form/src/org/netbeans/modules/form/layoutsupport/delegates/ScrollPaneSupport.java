@@ -55,6 +55,7 @@ public class ScrollPaneSupport extends AbstractLayoutSupport {
      *         container; we just return 0 here - as the drag&drop does not
      *         have much sense in JScrollPane
      */
+    @Override
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -67,6 +68,7 @@ public class ScrollPaneSupport extends AbstractLayoutSupport {
         return 0;
     }
 
+    @Override
     public String getAssistantContext() {
         return "scrollPaneLayout"; // NOI18N
     }
@@ -84,6 +86,7 @@ public class ScrollPaneSupport extends AbstractLayoutSupport {
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -107,6 +110,7 @@ public class ScrollPaneSupport extends AbstractLayoutSupport {
      * @param components components to be added
      * @param index position at which to add the components to container
      */
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -151,6 +155,7 @@ public class ScrollPaneSupport extends AbstractLayoutSupport {
      * @return whether it was possible to remove the component (some containers
      *         may not support removing individual components reasonably)
      */
+    @Override
     public boolean removeComponentFromContainer(Container container,
                                                 Container containerDelegate,
                                                 Component component)

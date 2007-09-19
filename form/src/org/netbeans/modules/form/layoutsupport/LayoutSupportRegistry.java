@@ -40,8 +40,8 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 
 public class LayoutSupportRegistry {
 
-    private static Map containerToLayoutDelegate;
-    private static Map layoutToLayoutDelegate;
+    private static Map<String,String> containerToLayoutDelegate;
+    private static Map<String,String> layoutToLayoutDelegate;
 
     private static boolean needPaletteRescan = true;
 
@@ -49,23 +49,23 @@ public class LayoutSupportRegistry {
 
     private static FileChangeListener paletteListener;
 
-    private static Map instanceMap;
+    private static Map<FormModel,LayoutSupportRegistry> instanceMap;
 
-    private Reference formModelRef;
+    private Reference<FormModel> formModelRef;
 
     // -------
 
     private LayoutSupportRegistry(FormModel formModel) {
-        this.formModelRef = new WeakReference(formModel);
+        this.formModelRef = new WeakReference<FormModel>(formModel);
     }
 
     public static LayoutSupportRegistry getRegistry(FormModel formModel) {
         LayoutSupportRegistry reg;
         if (instanceMap == null) {
-            instanceMap = new WeakHashMap(); 
+            instanceMap = new WeakHashMap<FormModel,LayoutSupportRegistry>(); 
             reg = null;
         }
-        else reg = (LayoutSupportRegistry) instanceMap.get(formModel);
+        else reg = instanceMap.get(formModel);
 
         if (reg == null) {
             reg = new LayoutSupportRegistry(formModel);
@@ -79,8 +79,7 @@ public class LayoutSupportRegistry {
     // get methods
 
     public Class getSupportClassForContainer(Class containerClass) {
-        String className = (String)
-                           getContainersMap().get(containerClass.getName());
+        String className = getContainersMap().get(containerClass.getName());
         if (className == null) {
             className = findSuperClass(getContainersMap(), containerClass);
 //            if (className == null && needPaletteRescan) {
@@ -95,7 +94,7 @@ public class LayoutSupportRegistry {
     }
 
     public String getSupportNameForContainer(String containerClassName) {
-        String className = (String) getContainersMap().get(containerClassName);
+        String className = getContainersMap().get(containerClassName);
         if (className == null) {
             Class containerClass = loadClass(containerClassName);
             if (containerClass != null)
@@ -112,7 +111,7 @@ public class LayoutSupportRegistry {
     }
 
     public Class getSupportClassForLayout(Class layoutClass) {
-        String className = (String) getLayoutsMap().get(layoutClass.getName());
+        String className = getLayoutsMap().get(layoutClass.getName());
         if (className == null && needPaletteRescan)
             className = scanPalette(layoutClass.getName());
         if (className == null)
@@ -122,7 +121,7 @@ public class LayoutSupportRegistry {
     }
 
     public String getSupportNameForLayout(String layoutClassName) {
-        String className = (String) getLayoutsMap().get(layoutClassName);
+        String className = getLayoutsMap().get(layoutClassName);
         if (className == null && needPaletteRescan)
             className = scanPalette(layoutClassName);
         if (className == null) {
@@ -226,13 +225,16 @@ public class LayoutSupportRegistry {
         boolean newPaletteListener = paletteListener == null;
         if (newPaletteListener) {
             paletteListener = new FileChangeAdapter() {
+                @Override
                 public void fileDataCreated(FileEvent fe) {
                     needPaletteRescan = true;
                 }
+                @Override
                 public void fileFolderCreated(FileEvent fe) {
                     needPaletteRescan = true;
                     fe.getFile().addFileChangeListener(this);
                 }
+                @Override
                 public void fileDeleted(FileEvent fe) {
                     fe.getFile().removeFileChangeListener(this);
                 }
@@ -262,8 +264,7 @@ public class LayoutSupportRegistry {
                     continue;
                 }
 
-                PaletteItem item = (PaletteItem)
-                                   itemDO.getCookie(PaletteItem.class);
+                PaletteItem item = itemDO.getCookie(PaletteItem.class);
                 if (item == null || !item.isLayout())
                     continue;
 
@@ -294,7 +295,7 @@ public class LayoutSupportRegistry {
                 }
 
                 if (supportedClass != null) {
-                    Map map;
+                    Map<String,String> map;
                     if (Container.class.isAssignableFrom(supportedClass))
                         map = getContainersMap();
                     else if (LayoutManager.class.isAssignableFrom(supportedClass))
@@ -322,7 +323,7 @@ public class LayoutSupportRegistry {
 
     private Class loadClass(String className) {
         try {
-            return FormUtils.loadClass(className, (FormModel)formModelRef.get());
+            return FormUtils.loadClass(className, formModelRef.get());
         }
         catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -333,9 +334,9 @@ public class LayoutSupportRegistry {
         return null;
     }
 
-    private static Map getContainersMap() {
+    private static Map<String,String> getContainersMap() {
         if (containerToLayoutDelegate == null) {
-            containerToLayoutDelegate = new HashMap();
+            containerToLayoutDelegate = new HashMap<String,String>();
             // fill in default containers
             containerToLayoutDelegate.put(
                 "javax.swing.JScrollPane", // NOI18N
@@ -368,9 +369,9 @@ public class LayoutSupportRegistry {
         return containerToLayoutDelegate;
     }
 
-    private static Map getLayoutsMap() {
+    private static Map<String,String> getLayoutsMap() {
         if (layoutToLayoutDelegate == null) {
-            layoutToLayoutDelegate = new HashMap();
+            layoutToLayoutDelegate = new HashMap<String,String>();
             // fill in default layouts
             layoutToLayoutDelegate.put(
                 "java.awt.BorderLayout", // NOI18N

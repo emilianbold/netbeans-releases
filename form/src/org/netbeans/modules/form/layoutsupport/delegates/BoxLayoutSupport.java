@@ -60,6 +60,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      * should be reverted.
      * @param ev PropertyChangeEvent object describing the change
      */
+    @Override
     public void acceptContainerLayoutChange(PropertyChangeEvent ev)
         throws PropertyVetoException
     {   // accept any change, just need to update the BoxLayout instance;
@@ -85,6 +86,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      * @return index corresponding to the position of the component in the
      *         container
      */
+    @Override
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -122,10 +124,12 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
     }
 
     private int assistantParams;
+    @Override
     public String getAssistantContext() {
         return "boxLayout"; // NOI18N
     }
 
+    @Override
     public Object[] getAssistantParams() {
         return new Object[] {Integer.valueOf(assistantParams+1)};
     }
@@ -146,6 +150,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -202,6 +207,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      *        for layout managers we always use container delegate instead of
      *        the container
      */
+    @Override
     public void setLayoutToContainer(Container container,
                                      Container containerDelegate)
     {
@@ -209,6 +215,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
                                                         containerDelegate));
     }
 
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -225,6 +232,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      * a bean (so it cannot be created automatically).
      * @return new instance of BoxLayout
      */
+    @Override
     protected LayoutManager createDefaultLayoutInstance() {
         return new BoxLayout(new JPanel(), BoxLayout.LINE_AXIS);
     }
@@ -238,6 +246,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      * @param containerDelegate effective container delegate of the container
      * @return cloned instance of BoxLayout
      */
+    @Override
     protected LayoutManager cloneLayoutInstance(Container container,
                                                 Container containerDelegate)
     {
@@ -252,6 +261,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      *        code; not needed here because BoxLayout is represented only by
      *        a single constructor code expression and no statements
      */
+    @Override
     protected void readInitLayoutCode(CodeExpression layoutExp,
                                       CodeGroup layoutCode)
     {
@@ -272,6 +282,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      *        no statements
      * @return new CodeExpression representing the BoxLayout
      */
+    @Override
     protected CodeExpression createInitLayoutCode(CodeGroup layoutCode) {
         CodeStructure codeStructure = getCodeStructure();
 
@@ -291,6 +302,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      * generally) getPropertySets() instead.
      * @return array of properties of the layout manager
      */
+    @Override
     protected FormProperty[] getProperties() {
         if (properties == null) {
             // we cannot use RADProperty because "axis" is not a real
@@ -315,14 +327,17 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
                     }
                 }
 
+                @Override
                 public boolean supportsDefaultValue() {
                     return true;
                 }
 
+                @Override
                 public Object getDefaultValue() {
                     return new Integer(BoxLayout.LINE_AXIS);
                 }
 
+                @Override
                 public PropertyEditor getExpliciteEditor() {
                     return new BoxAxisEditor();
                 }
@@ -340,6 +355,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      * BoxLayout (see getProperties method)
      * @return layout property of given name
      */
+    @Override
     protected Node.Property getProperty(String propName) {
         return "axis".equals(propName) ? getProperties()[0] : null; // NOI18N
     }
@@ -383,10 +399,12 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
             "javax.swing.BoxLayout.Y_AXIS"  // NOI18N
         };
 
+        @Override
         public String[] getTags() {
             return tags;
         }
 
+        @Override
         public String getAsText() {
             Object value = getValue();
             for (int i=0; i<values.length; i++) {
@@ -395,6 +413,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
             return null;
         }
 
+        @Override
         public void setAsText(String str) {
             for (int i=0; i<values.length; i++) {
                 if (tags[i].equals(str)) {
@@ -404,6 +423,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
             }
         }
 
+        @Override
         public String getJavaInitializationString() {
             Object value = getValue();
             for (int i=0; i < values.length; i++)

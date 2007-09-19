@@ -56,6 +56,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * The code structures describing the layout is updated immediately.
      * @param index index of the component in the layout
      */
+    @Override
     public void removeComponent(int index) {
         super.removeComponent(index);
         if (selectedTab >= getComponentCount())
@@ -68,6 +69,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * @param real instance of the container when the click occurred
      * @param containerDelegate effective container delegate of the container
      */
+    @Override
     public void processMouseClick(Point p,
                                   Container container,
                                   Container containerDelegate)
@@ -90,6 +92,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * Inspector.
      * @param index position (index) of the selected component in container
      */
+    @Override
     public void selectComponent(int index) {
         selectedTab = index; // remember as selected tab
     }
@@ -100,6 +103,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * @param container instance of a real container to be arranged
      * @param containerDelegate effective container delegate of the container
      */
+    @Override
     public void arrangeContainer(Container container,
                                  Container containerDelegate)
     {
@@ -139,6 +143,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * @return index corresponding to the position of the component in the
      *         container
      */
+    @Override
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -151,6 +156,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         return ((JTabbedPane)container).getTabCount();
     }
 
+    @Override
     public String getAssistantContext() {
         return "tabbedPaneLayout"; // NOI18N
     }
@@ -168,6 +174,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -200,6 +207,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * @param components components to be added
      * @param index position at which to add the components to container
      */
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -248,6 +256,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * @return CodeExpression representing found component; null if the
      *         statement is not relevant
      */
+    @Override
     protected CodeExpression readComponentCode(CodeStatement statement,
                                                CodeGroup componentCode)
     {
@@ -294,6 +303,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * @param compExp CodeExpression object representing component
      * @param index position of the component in the layout
      */
+    @Override
     protected void createComponentCode(CodeGroup componentCode,
                                        CodeExpression componentExpression,
                                        int index)
@@ -313,6 +323,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
      * @return the default LayoutConstraints object for the supported layout;
      *         null if no component constraints are used
      */
+    @Override
     protected LayoutConstraints createDefaultConstraints() {
         return new TabConstraints("tab"+(getComponentCount())); // NOI18N
     }
@@ -423,6 +434,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                             title = (String)value;
                         }
 
+                        @Override
                         protected Object getRealValue(Object value) {
                             Object realValue = super.getRealValue(value);
                             if (realValue == FormDesignValue.IGNORED_VALUE)
@@ -430,6 +442,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                             return realValue;
                         }
 
+                        @Override
                         protected void propertyValueChanged(Object old, Object current) {
                             if (isChangeFiring())
                                 updateCode();
@@ -450,14 +463,17 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                             icon = (Icon)value;
                         }
 
+                        @Override
                         public boolean supportsDefaultValue() {
                             return true;
                         }
 
+                        @Override
                         public Object getDefaultValue() {
                             return null;
                         }
 
+                        @Override
                         protected void propertyValueChanged(Object old, Object current) {
                             if (isChangeFiring())
                                 updateCode();
@@ -478,6 +494,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                             toolTip = (String)value;
                         }
 
+                        @Override
                         protected Object getRealValue(Object value) {
                             Object realValue = super.getRealValue(value);
                             if (realValue == FormDesignValue.IGNORED_VALUE)
@@ -485,14 +502,17 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                             return realValue;
                         }
 
+                        @Override
                         public boolean supportsDefaultValue() {
                             return true;
                         }
 
+                        @Override
                         public Object getDefaultValue() {
                             return null;
                         }
 
+                        @Override
                         protected void propertyValueChanged(Object old, Object current) {
                             if (isChangeFiring())
                                 updateCode();

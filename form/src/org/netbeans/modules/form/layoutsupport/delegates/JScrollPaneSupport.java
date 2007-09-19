@@ -49,6 +49,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      * @return true if the container can be used as default (empty) instance
      *         with this layout support
      */
+    @Override
     public boolean checkEmptyContainer(Container cont) {
         return cont instanceof JScrollPane
                && ((JScrollPane)cont).getViewport().getView() == null;
@@ -69,6 +70,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      *         container; we just return 0 here - as the drag&drop does not
      *         have much sense in JScrollPane
      */
+    @Override
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -82,6 +84,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
     }
 
     private boolean assistantParams;
+    @Override
     public String getAssistantContext() {
         return assistantParams ? "jscrollPaneLayout" : null; // NOI18N
     }
@@ -99,6 +102,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      * @param g Graphics object for painting (with color and line style set)
      * @return whether any feedback was painted (true in this case)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -127,6 +131,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      * @param components components to be added
      * @param index position at which to add the components to container
      */
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -146,6 +151,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      * @return whether it was possible to remove the component (some containers
      *         may not support removing individual components reasonably)
      */
+    @Override
     public boolean removeComponentFromContainer(Container container,
                                                 Container containerDelegate,
                                                 Component component)
@@ -159,6 +165,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      * @return whether it was possible to clear the container (some containers
      *         may not support this)
      */
+    @Override
     public boolean clearContainer(Container container,
                                   Container containerDelegate)
     {
@@ -185,6 +192,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      * JScrollPane (whole container).
      * @return code expression representing the effective container
      */
+    @Override
     protected CodeExpression getActiveContainerCodeExpression() {
         return getLayoutContext().getContainerCodeExpression();
     }
@@ -200,6 +208,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      * @return CodeExpression representing found component; null if the
      *         statement is not relevant
      */
+    @Override
     protected CodeExpression readComponentCode(CodeStatement statement,
                                                CodeGroup componentCode)
     {
@@ -222,6 +231,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      * @param componentExpression CodeExpression object representing component
      * @param index position of the component in the layout
      */
+    @Override
     protected void createComponentCode(CodeGroup componentCode,
                                        CodeExpression componentExpression,
                                        int index)
