@@ -231,15 +231,20 @@ public class RubyInstallation {
             Set<String> dirs = new TreeSet<String>(Arrays.asList(path.split(File.pathSeparator)));
             for (String dir : dirs) {
                 File f = null;
-                if (Utilities.isWindows() && (f = new File(dir, "ruby.exe")).exists()) { // NOI18N
-                    rubies.add(f.getPath());
+                if (Utilities.isWindows()) {
+                    f = new File(dir, "ruby.exe");
                 } else {
                     f = new File(dir, "ruby"); // NOI18N
-                    if (f.exists()) {
-                        // Don't include /usr/bin/ruby on the Mac - it's no good                        
-                        if (Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) { // NOI18N
-                            continue;
-                        }
+                    // Don't include /usr/bin/ruby on the Mac - it's no good
+                    if (Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) { // NOI18N
+                        continue;
+                    }
+                }
+                if (f.exists()) {
+                    try {
+                        rubies.add(f.getCanonicalPath());
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Cannot resolve cannonical path for: " + f, e);
                         rubies.add(f.getPath());
                     }
                 }
