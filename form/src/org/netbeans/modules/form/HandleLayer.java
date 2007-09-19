@@ -864,7 +864,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                         return null; // components in different containers
                 }
                 else {
-                    if (metacont == null || !formDesigner.isInDesigner((RADVisualComponent)metacomp)) {
+                    if (metacont == null || !formDesigner.isInDesigner((RADVisualComponent)metacont)) {
                         return null; // out of visible tree
                     }
                     parent = metacont;
@@ -2039,17 +2039,14 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                                                       movingBounds);
                 String[] position = formDesigner.getLayoutDesigner().positionCode();
                 FormEditor.getAssistantModel(getFormModel()).setContext(position[0], position[1]);
-            }
-            else if (oldDrag && isDraggableLayoutComponent()
-                     && targetContainer != null && targetContainer.getLayoutSupport() != null) {
-                oldMove(p);
-                for (int i=0; i<movingBounds.length; i++) {
-                    movingBounds[i].x = p.x - convertPoint.x - hotSpot.x + originalBounds[i].x - convertPoint.x;
-                    movingBounds[i].y = p.y - convertPoint.y - hotSpot.y + originalBounds[i].y - convertPoint.y;
+            } else {
+                if (oldDrag && isDraggableLayoutComponent()
+                         && targetContainer != null
+                         && targetContainer.getLayoutSupport() != null) {
+                    oldMove(p);
+                } else {
+                    FormEditor.getAssistantModel(getFormModel()).setContext("generalPosition"); // NOI18N
                 }
-            }
-            else {
-                FormEditor.getAssistantModel(getFormModel()).setContext("generalPosition"); // NOI18N
                 for (int i=0; i<movingBounds.length; i++) {
                     movingBounds[i].x = p.x - convertPoint.x - hotSpot.x + originalBounds[i].x - convertPoint.x;
                     movingBounds[i].y = p.y - convertPoint.y - hotSpot.y + originalBounds[i].y - convertPoint.y;
