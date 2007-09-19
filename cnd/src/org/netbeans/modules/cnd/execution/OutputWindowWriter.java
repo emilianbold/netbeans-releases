@@ -217,7 +217,7 @@ public class OutputWindowWriter extends Writer {
             //next action:
             try {
                 DataObject od = DataObject.find(file);
-                LineCookie lc = (LineCookie) od.getCookie(LineCookie.class);
+                LineCookie lc = od.getCookie(LineCookie.class);
                 
                 if (lc != null) {
                     Line l = lc.getLineSet().getOriginal(line);
@@ -237,7 +237,7 @@ public class OutputWindowWriter extends Writer {
             //goto:
             try {
                 DataObject od = DataObject.find(file);
-                LineCookie lc = (LineCookie) od.getCookie(LineCookie.class);
+                LineCookie lc = od.getCookie(LineCookie.class);
                 
                 if (lc != null) {
                     Line l = lc.getLineSet().getOriginal(line);
@@ -383,47 +383,57 @@ public class OutputWindowWriter extends Writer {
             }
         }
         
-        private Stack/*<FileObject>*/   relativeTo;
-        private Stack/*int*/            relativeLevel;
-        private ArrayList/*<StackIncludeItem>*/ errorInludes;
+        private Stack<FileObject> relativeTo = new Stack<FileObject>();
+        private Stack<Integer> relativeLevel = new Stack<Integer>();
+        private ArrayList<StackIncludeItem> errorInludes =new ArrayList<StackIncludeItem>();
         private FileObject relativeToFO;
         private boolean failed;
         private boolean isEntered;
         
-        public GCCErrorParser(FileObject relativeTo) {
-            this.relativeToFO = relativeTo;
-            this.relativeTo = new Stack();
-            this.errorInludes = new ArrayList();
-            this.relativeLevel = new Stack();
-            
-            this.relativeTo.push(relativeTo);
+        public GCCErrorParser(FileObject relativeToFO) {
+            this.relativeToFO = relativeToFO;
+            this.relativeTo.push(relativeToFO);
             this.relativeLevel.push(0);
             this.isEntered = false;
+        }
+        
+        // FIXUP IZ#115960 and all other about EmptyStackException
+        // - make Stack.pop() and peek() safe.
+        private void popPath(){
+            if (relativeTo.size()>1) {
+                relativeTo.pop();
+            }
+        }
+        
+        private void popLevel(){
+           if (relativeLevel.size()>1) {
+               relativeLevel.pop();
+           }
         }
         
         public boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException {
             
             if (m.pattern() == GCC_DIRECTORY_ENTER || m.pattern() == GCC_DIRECTORY_LEAVE) {
                 int level = Integer.valueOf((m.group(1)));
-                int baseLavel = Integer.valueOf(this.relativeLevel.peek() + "");
+                int baseLavel = relativeLevel.peek().intValue();
                 String directory = m.group(2);
                 
                 if (level > baseLavel) {
-                    this.isEntered = true;
-                    this.relativeLevel.push(level);
-                    this.isEntered = true;
+                    isEntered = true;
+                    relativeLevel.push(level);
+                    isEntered = true;
                 } else if (level == baseLavel) {
-                    this.isEntered = !this.isEntered;
+                    isEntered = !this.isEntered;
                 } else {
-                    this.isEntered = false;
-                    this.relativeLevel.pop();
+                    isEntered = false;
+                    popLevel();
                 }
                 
-                if (this.isEntered) {
+                if (isEntered) {
                     if (!IpeUtils.isPathAbsolute(directory)) { 
-                        if (this.relativeToFO != null) {
-                            if (this.relativeToFO.isFolder()) {
-                                directory = this.relativeToFO.getURL().getPath() + File.separator + directory;
+                        if (relativeToFO != null) {
+                            if (relativeToFO.isFolder()) {
+                                directory = relativeToFO.getURL().getPath() + File.separator + directory;
                             }
                         }
                     }
@@ -433,23 +443,19 @@ public class OutputWindowWriter extends Writer {
                     if (relativeDir != null) {
                         relativeTo.push(relativeDir);
                     }
-                    
                     return false;
-                    
                 } else {
-                    relativeTo.pop();
+                    popPath();
                     return false;
                 }
-                
-                
             }
             
             if (m.pattern() == GCC_DIRECTORY_CD) {
                 String directory = m.group(1);
                 if (!IpeUtils.isPathAbsolute(directory)) { 
-                    if (this.relativeToFO != null) {
-                        if (this.relativeToFO.isFolder()) {
-                            directory = this.relativeToFO.getURL().getPath() + File.separator + directory;
+                    if (relativeToFO != null) {
+                        if (relativeToFO.isFolder()) {
+                            directory = relativeToFO.getURL().getPath() + File.separator + directory;
                         }
                     }
                 }
@@ -473,7 +479,7 @@ public class OutputWindowWriter extends Writer {
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
-                    FileObject relativeDir = (FileObject) relativeTo.peek();
+                    FileObject relativeDir = relativeTo.peek();
                     if (relativeDir != null) {
                         FileObject fo = resolveRelativePath(relativeDir, file);
                         if (fo != null) {
@@ -492,7 +498,7 @@ public class OutputWindowWriter extends Writer {
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
-                    FileObject relativeDir = (FileObject) relativeTo.peek();
+                    FileObject relativeDir = relativeTo.peek();
                     if (relativeDir != null) {
                         FileObject fo = resolveRelativePath(relativeDir, file);
                         if (fo != null) {
@@ -512,8 +518,7 @@ public class OutputWindowWriter extends Writer {
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
-                    FileObject relativeDir = (FileObject) relativeTo.peek();
-                    
+                    FileObject relativeDir = relativeTo.peek();
                     if (relativeDir != null){
                         //FileObject fo = relativeDir.getFileObject(file);
                         FileObject fo = resolveRelativePath(relativeDir, file);
