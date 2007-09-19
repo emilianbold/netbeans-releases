@@ -58,6 +58,7 @@ public class HelpOperatorTest extends JellyTestCase {
     }
     
     /** Print out test name. */
+    @Override
     public void setUp() {
         System.out.println("### "+getName()+" ###");
         // find help window if not found before
@@ -68,6 +69,7 @@ public class HelpOperatorTest extends JellyTestCase {
     
     /** method called after each testcase
      */
+    @Override
     protected void tearDown() {
     }
     
@@ -139,20 +141,23 @@ public class HelpOperatorTest extends JellyTestCase {
         }).waitAction(null);
     }
     
-    /** simple test case
-     */
+    /** Test btPrint() method. */
     public void testPrint() {
-        assertEquals("Print", help.btPrint().getToolTipText());
+        String tooltip = help.btPrint().getToolTipText();
+        if(!tooltip.equals("Print") && !tooltip.equals("Tisk")) {
+            fail("btPrint() returned wrong button: "+tooltip);
+        }
     }
     
-    /** simple test case
-     */
+    /** Test btPageSetup() method. */
     public void testPageSetup() {
-        assertEquals("Page Setup", help.btPageSetup().getToolTipText());
+        String tooltip = help.btPageSetup().getToolTipText();
+        if(!tooltip.equals("Print") && !tooltip.equals("Nastavení stránky")) {
+            fail("btPageSetup() returned wrong button: "+tooltip);
+        }
     }
     
-    /** simple test case
-     */
+    /** Test close() method. */
     public void testClose() {
         help.close();
     }
