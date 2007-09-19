@@ -56,6 +56,7 @@ public class DebugProjectActionTest extends JellyTestCase {
     private static MainWindowOperator.StatusTextTracer statusTextTracer;
 
     /** Method called before all test cases. */
+    @Override
     public void setUp() {
         System.out.println("### "+getName()+" ###");  // NOI18N
         if(statusTextTracer == null) {
@@ -68,15 +69,28 @@ public class DebugProjectActionTest extends JellyTestCase {
 
     /** method called after each testcase
      */
+    @Override
     protected void tearDown() {
         try {
+            // "SampleWebProject (debug)"
+            String outputTarget = Bundle.getString(
+                    "org.apache.tools.ant.module.run.Bundle", "TITLE_output_target", 
+                    new Object[] {"SampleProject", null, "debug"});  // NOI18N
+            // "Building SampleProject (debug)..."
+            String buildingMessage = Bundle.getString(
+                    "org.apache.tools.ant.module.run.Bundle", "FMT_running_ant",
+                    new Object[] {outputTarget});
+            // "Finished building SampleProject (debug)"
+            String finishedMessage = Bundle.getString(
+                    "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status", 
+                    new Object[] {outputTarget});
             // wait status text "Building SampleProject (debug)..."
-            statusTextTracer.waitText("debug", true); // NOI18N
+            statusTextTracer.waitText(buildingMessage);
             // wait status text "Finished building SampleProject (debug)."
-            statusTextTracer.waitText("debug", true); // NOI18N
+            statusTextTracer.waitText(finishedMessage);
             // wait status text "User program finished"
             String finishedLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
-            statusTextTracer.waitText(finishedLabel, true); // NOI18N
+            statusTextTracer.waitText(finishedLabel); // NOI18N
         } catch (JemmyException e) {
             log("debugOutput.txt", new OutputTabOperator("SampleProject").getText()); // NOI18N
             throw e;
