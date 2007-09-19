@@ -66,4 +66,30 @@ public class IndexedField extends IndexedElement {
     public void setSmart(boolean smart) {
         this.smart = smart;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final IndexedField other = (IndexedField) obj;
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        if (this.fqn != other.fqn && (this.fqn == null || !this.fqn.equals(other.fqn))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 43 * hash + (this.fqn != null ? this.fqn.hashCode() : 0);
+        return hash;
+    }
 }

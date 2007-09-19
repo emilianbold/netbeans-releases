@@ -141,6 +141,12 @@ import org.openide.util.Exceptions;
  * @todo Make a dedicated completion item which I return on documentation completion if I want  to
  *    complete the CURRENT element; it basically just wraps the desired comment so we can pull it
  *    out in the document() method
+ * @todo Provide code completion for "3|" or "3 |" - show available overloaded operators! This
+ *    shouldn't just apply to numbers - any class you've overridden
+ * @todo Digest http://blogs.sun.com/coolstuff/entry/using_java_classes_in_jruby
+ *    to fix require'java' etc.
+ * @todo http://www.innovationontherun.com/scraping-dynamic-websites-using-jruby-and-htmlunit/
+ *    Idea: Use a quicktip to require all the jars in the project?
  *
  * @author Tor Norbye
  */
@@ -1456,7 +1462,15 @@ public class CodeCompleter implements Completable {
 
                 // TODO - if fqn has multiple ::'s, try various combinations? or is 
                 // add inherited already doing that?
-                Set<IndexedField> f = index.getInheritedFields(fqn, prefix, kind);
+                
+                Set<IndexedField> f;
+                if (RubyUtils.isRhtmlFile(fileObject) || RubyUtils.isMarkabyFile(fileObject)) {
+                    f = new HashSet<IndexedField>();
+                    addActionViewFields(f, fileObject, index, prefix, kind);
+                } else {
+                    f = index.getInheritedFields(fqn, prefix, kind);
+                }
+
                 for (IndexedField field : f) {
                     FieldItem item = new FieldItem(field, anchor, request);
 
@@ -1524,8 +1538,21 @@ public class CodeCompleter implements Completable {
                     
                     // Handle action view completion for RHTML and Markaby files
                     if (RubyUtils.isRhtmlFile(fileObject) || RubyUtils.isMarkabyFile(fileObject)) {
-                        addActionViewMatches(inheritedMethods, fileObject, index, prefix, kind);
-                                }
+                        addActionViewMethods(inheritedMethods, fileObject, index, prefix, kind);
+                    } else if (fileObject.getName().endsWith("_spec")) { // NOI18N
+                        // RSpec
+                        String includes[] = { 
+                            // "describe" should be in Kernel already, from spec/runner/extensions/kernel.rb
+                            "Spec::Matchers",
+                            // This one shouldn't be necessary since there's a
+                            // "class Object; include xxx::ObjectExpectations; end" in rspec's object.rb
+                            "Spec::Expectations::ObjectExpectations", 
+                            "Spec::DSL::BehaviourEval::InstanceMethods" }; // NOI18N
+                        for (String fqns : includes) {
+                            Set<IndexedMethod> helper = index.getInheritedMethods(fqns, prefix, kind);
+                            inheritedMethods.addAll(helper);
+                        }
+                    }
 
                     for (IndexedMethod method : inheritedMethods) {
                         // This should not be necessary - filtering happens in getInheritedMethods right?
@@ -1665,7 +1692,7 @@ public class CodeCompleter implements Completable {
         return proposals;
     }
         
-    private void addActionViewMatches(Set<IndexedMethod> inheritedMethods, FileObject fileObject, RubyIndex index, String prefix, 
+    private void addActionViewMethods(Set<IndexedMethod> inheritedMethods, FileObject fileObject, RubyIndex index, String prefix, 
             NameKind kind) { 
         // RHTML and Markaby: Add in the helper methods etc. from the associated files
         boolean isMarkaby = RubyUtils.isMarkabyFile(fileObject);
@@ -1696,6 +1723,41 @@ public class CodeCompleter implements Completable {
         }
     }       
 
+    private void addActionViewFields(Set<IndexedField> inheritedFields, FileObject fileObject, RubyIndex index, String prefix, 
+            NameKind kind) { 
+        // RHTML and Markaby: Add in the helper methods etc. from the associated files
+        boolean isMarkaby = RubyUtils.isMarkabyFile(fileObject);
+        if (isMarkaby) {
+            Set<IndexedField> actionView = index.getInheritedFields("ActionView::Base", prefix, kind); // NOI18N
+            inheritedFields.addAll(actionView);
+        }
+
+        if (RubyUtils.isRhtmlFile(fileObject) || isMarkaby) {
+            // Hack - include controller and helper files as well
+            FileObject f = fileObject.getParent();
+            String controllerName = null;
+            // XXX Will this work for .mab files? Where do they go?
+            while (f != null && !f.getName().equals("views")) { // NOI18N // todo - make sure grandparent is app
+                String n = RubyUtils.underlinedNameToCamel(f.getName());
+                if (controllerName == null) {
+                    controllerName = n;
+                } else {
+                    controllerName = n + "::" + controllerName; // NOI18N
+                }
+                f = f.getParent();
+            }
+
+            String fqn = controllerName+"Controller"; // NOI18N
+            Set<IndexedField> controllerFields = index.getInheritedFields(fqn, prefix, kind);
+            for (IndexedField field : controllerFields) {
+                if ("ActionController::Base".equals(field.getIn())) { // NOI18N
+                    continue;
+                }
+                inheritedFields.add(field);
+            }
+        }
+    }       
+    
     /** If we're doing documentation completion, try to drop the list down to a single alternative
      * (since the framework will just use the first produced result), and in particular, the -best-
      * alternative
