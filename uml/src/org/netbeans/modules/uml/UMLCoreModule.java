@@ -147,8 +147,9 @@ public class UMLCoreModule extends ModuleInstall
    }
  
    private void showMacWarning() {
+       MacWarningPanel mwp = new MacWarningPanel() ;
         DialogDescriptor dd = new DialogDescriptor(
-                NbBundle.getMessage (UMLCoreModule.class, "MAC_WARNING"), 
+                mwp, 
                 NbBundle.getMessage (UMLCoreModule.class, "MAC_WARNING_TITLE"), 
                  false, 
                  new Object[] {DialogDescriptor.OK_OPTION}, 
