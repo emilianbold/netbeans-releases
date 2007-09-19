@@ -11,10 +11,10 @@
     <h1>JSP Scriptlets Code Completion Page</h1>
 
 <%-- Java completion for TestBean class --%>
-<%--
-<% TESTBe|
+<%--CC
+<% LinkedLi|
 ...
-<% TESTBean
+<% LinkedList
 --%>
 
 <% TESTBean tBean; %>
@@ -27,7 +27,7 @@
 --%>
 
 <%-- Java completion for variables methods and fields between more sriptlets --%>
-<%--
+<%--CC
 <% tBean.setN|
 ...
 <% tBean.setName(name)

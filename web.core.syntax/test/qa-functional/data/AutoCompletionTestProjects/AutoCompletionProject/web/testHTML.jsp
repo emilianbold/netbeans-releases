@@ -37,10 +37,10 @@
 --%>
 
 <%-- completion for body HTML endtag --%>
-<%--
-<body></b|
+<%--CC
+<table></ta|
 ...
-<body></body>
+<table></table>
 --%>
 
 <html>
