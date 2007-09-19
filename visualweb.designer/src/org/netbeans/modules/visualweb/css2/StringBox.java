@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
+import java.awt.FontMetrics;
+import org.netbeans.modules.visualweb.designer.CssUtilities;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
@@ -57,14 +59,23 @@ public class StringBox extends ContainerBox {
             super.initializeBorder();
         }
 
-        if (border == null) {
+//        if (border == null) {
+        // XXX #115938 Don't show design border when there is zero width for the component.
+        if (border == null && (string != null && string.length() > 0)) {
             border = CssBorder.getDesignerBorder();
         }
 
-        leftBorderWidth = border.getLeftBorderWidth();
-        topBorderWidth = border.getTopBorderWidth();
-        bottomBorderWidth = border.getBottomBorderWidth();
-        rightBorderWidth = border.getRightBorderWidth();
+        if (border == null) {
+            leftBorderWidth   = 0;
+            topBorderWidth    = 0;
+            bottomBorderWidth = 0;
+            rightBorderWidth  = 0;
+        } else {
+            leftBorderWidth = border.getLeftBorderWidth();
+            topBorderWidth = border.getTopBorderWidth();
+            bottomBorderWidth = border.getBottomBorderWidth();
+            rightBorderWidth = border.getRightBorderWidth();
+        }
     }
 
     public int getIntrinsicWidth() {
@@ -74,7 +85,9 @@ public class StringBox extends ContainerBox {
 
                 return getBox(0).getPrefWidth();
             } else {
-                width = 30;
+//                width = 30;
+                // XXX #115938 No text (i.e. no child boxes), then no width.
+                width = 0;
             }
         }
 
@@ -88,7 +101,10 @@ public class StringBox extends ContainerBox {
 
                 return ((LineBoxGroup)getBox(0)).getMetrics().getHeight();
             } else {
-                height = 14;
+//                height = 14;
+                // XXX #115938 Height should be based on the font.
+                FontMetrics fontMetrics = CssUtilities.getDesignerFontMetricsForElement(getElement(), string, webform.getDefaultFontSize());
+                height = fontMetrics.getHeight();
             }
         }
 
