@@ -22,7 +22,6 @@ import java.awt.Color;
 
 import org.netbeans.modules.xml.api.model.*;
 
-import javax.swing.text.JTextComponent;
 
 /**
  * Represents value option (attribute one or element content one).
@@ -42,16 +41,18 @@ class ValueResultItem extends XMLResultItem {
     private final String replacementText;
 
     public ValueResultItem(GrammarResult res) {
-        super(res.getNodeValue(), res.getDisplayName());
+        super(res.getDisplayName(), res.getDisplayName());
         foreground = Color.magenta;
         selectionForeground = Color.magenta.darker();
         replacementText = res.getNodeValue();
     }
 
+    @Override
     public String getReplacementText(int modifiers) {
         return replacementText;
     }
     
+    @Override
     Color getPaintColor() { return Color.blue; }
 
 }

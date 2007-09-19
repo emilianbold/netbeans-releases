@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.xml.text.completion;
 
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -32,12 +30,8 @@ import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.XMLTokenContext;
-import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -75,23 +69,35 @@ public class XMLCompletionProvider implements CompletionProvider {
         return null;
     }
     
-    static class Query extends AbstractQuery {
+    static class Query extends AsyncCompletionQuery {
         
         private JTextComponent component;
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
         
-        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        protected boolean doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             XMLCompletionQuery.XMLCompletionResult res = queryImpl(component, caretOffset);
             if(res != null) {
                 List/*<CompletionItem>*/ results = res.getData();
                 resultSet.addAllItems(results);
                 resultSet.setTitle(res.getTitle());
                 resultSet.setAnchorOffset(res.getSubstituteOffset());
+                return results.size() == 0;
             }
+            return true;
         }
+        
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            boolean noResults = doQuery(resultSet, doc, caretOffset);
+            if(doc != null && noResults) {
+                checkHideCompletion((BaseDocument)doc, caretOffset);
+            }
+            resultSet.finish();
+        }
+        
     }
     
     private static XMLCompletionQuery.XMLCompletionResult queryImpl(JTextComponent component, int offset) {
@@ -106,26 +112,6 @@ public class XMLCompletionProvider implements CompletionProvider {
         }
         
         return null;
-    }
-    
-    private static abstract class AbstractQuery extends AsyncCompletionQuery {
-        
-        protected void preQueryUpdate(JTextComponent component) {
-            int caretOffset = component.getCaretPosition();
-            Document doc = component.getDocument();
-            checkHideCompletion((BaseDocument)doc, caretOffset);
-        }
-        
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            if(doc != null) {
-                checkHideCompletion((BaseDocument)doc, caretOffset);
-            }
-            doQuery(resultSet, doc, caretOffset);
-            resultSet.finish();
-        }
-        
-        abstract void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset);
-        
     }
     
     private static void checkHideCompletion(BaseDocument doc, int caretOffset) {
