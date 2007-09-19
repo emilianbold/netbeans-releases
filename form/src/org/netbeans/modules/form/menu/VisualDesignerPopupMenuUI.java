@@ -23,7 +23,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.plaf.PopupMenuUI;
-import org.netbeans.modules.form.menu.MenuEditLayer;
 
 /** A custom PopupMenuUI which uses our special hacked popup factory.
  * We use this rather than replacing the global popup factory so that it won't
@@ -45,7 +44,10 @@ class VisualDesignerPopupMenuUI extends PopupMenuUI {
     }
     public Popup getPopup(JPopupMenu popup, int x, int y) {
         //PopupFactory popupFactory = PopupFactory.getSharedInstance();
-        PopupFactory popupFactory = layer.hackedPopupFactory;
+        PopupFactory popupFactory = layer.hackedPopupFactory;//layer.getPopupFactory();
+        if(popupFactory == null) {
+            return super.getPopup(popup, x, y);
+        }
         return popupFactory.getPopup(popup.getInvoker(), popup, x, y);
     }
 }

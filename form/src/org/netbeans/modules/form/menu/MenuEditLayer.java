@@ -352,7 +352,7 @@ public class MenuEditLayer extends JPanel {
     private VisualDesignerPopupFactory getPopupFactory() {
         if(hackedPopupFactory == null) {
             hackedPopupFactory = new VisualDesignerPopupFactory(this);
-        }
+            }
         return hackedPopupFactory;
     }
     
