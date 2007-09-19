@@ -117,7 +117,7 @@ public class OperationLocator extends LocatorEvaluator<MethodDeclaration>
             {
                 if (totalParams == 0) return true;
                 
-                for (int i = 0, testParam = 0; i < max; ++i)
+                for (int i = 0, testParam = 0; i < max && testParam < desiredMax; ++i)
                 {    
                     IREParameter cur = paramList.get(i);
                     if (cur == null) continue;
@@ -126,8 +126,10 @@ public class OperationLocator extends LocatorEvaluator<MethodDeclaration>
                     // specifies the methods return type.
                     if (cur.getKind() != IREParameter.PDK_RESULT
                             && !areParametersEqual(classLoader, thisClass,
-                                    cur, m_DesiredParameters.get(testParam++)))
+                                    cur, m_DesiredParameters.get(testParam))) 
                         return false;
+                    else 
+                        testParam ++ ;
                 }
 
                 return true;
