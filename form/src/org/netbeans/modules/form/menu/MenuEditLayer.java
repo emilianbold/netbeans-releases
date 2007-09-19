@@ -115,8 +115,7 @@ public class MenuEditLayer extends JPanel {
     private FormModelListener menuBarFormListener;
     private PropertyChangeListener selectionListener;
     private boolean isAlive = true;
-    public HandleLayer handleLayer = null;
-    private static final boolean USE_JSEPARATOR_FIX = false;
+    private static final boolean USE_JSEPARATOR_FIX = true;
     
     /** Creates a new instance of MenuEditLayer */
     public MenuEditLayer(final FormDesigner formDesigner) {
@@ -322,8 +321,8 @@ public class MenuEditLayer extends JPanel {
         }
         backgroundMap.clear();
         //hackedPopupFactory.containerMap.clear();
-        if(handleLayer != null) {
-            handleLayer.requestFocusInWindow();
+        if(formDesigner.getHandleLayer() != null) {
+            formDesigner.getHandleLayer().requestFocusInWindow();
         }
     }
     
@@ -1465,9 +1464,19 @@ public class MenuEditLayer extends JPanel {
         }
         
         public void mousePressed(MouseEvent e) {
+            p("mouse pressed: " + e);
+            p("started = " + dragop.isStarted() + " pnp = " + dragop.isPickAndPlop() + " target = " + dragop.getTargetComponent());
+            
+            //if this is a valid menu drop
+            if(dragop.isStarted() && dragop.getTargetComponent() != null &&
+                    isMenuRelatedComponentClass(dragop.getTargetComponent().getClass())) {
+                p("skipping the lower part");
+                dragop.end(e.getPoint());
+                return;
+            }
             if(shouldRedispatchToHandle()) {
                 dragop.fastEnd();
-                handleLayer.dispatchEvent(e);
+                formDesigner.getHandleLayer().dispatchEvent(e);
                 return;
             }
             // drag drag ops
@@ -1673,7 +1682,7 @@ public class MenuEditLayer extends JPanel {
         
         public void mouseMoved(MouseEvent e) {
             if(shouldRedispatchToHandle()) {
-                handleLayer.dispatchEvent(e);
+                formDesigner.getHandleLayer().dispatchEvent(e);
                 //hideMenuLayer();
                 //return;
             }
@@ -1682,25 +1691,33 @@ public class MenuEditLayer extends JPanel {
             }                
             
         }
+        
+        private boolean shouldRedispatchToHandle() {
+            if(!USE_JSEPARATOR_FIX) return false;
+            if(dragop.isStarted() && dragop.isPickAndPlop()) {
+                if(dragop.getDragComponent() instanceof JSeparator /*&&
+                        dropTargetLayer.getDropTargetComponent() == null*/) {
+                    return true;
+                }
+            }
+            return false;
+        }
                 
     }
     
-    private boolean shouldRedispatchToHandle() {
-        if(!USE_JSEPARATOR_FIX) return false;
-        if(handleLayer == null) return false;
-        if(dragop.isStarted() && dragop.isPickAndPlop()) {
-            if(dragop.getDragComponent() instanceof JSeparator /*&&
-                    dropTargetLayer.getDropTargetComponent() == null*/) {
-                return true;
-            }
+    private boolean shouldRedispatchDnDToHandle(DropTargetDragEvent dtde) {
+        //return false;
+        
+        RADComponent rad = formDesigner.getHandleLayer().getMetaComponentAt(dtde.getLocation(), HandleLayer.COMP_DEEPEST);
+        p("comp under = " + rad);
+        if(rad != null && isMenuRelatedComponentClass(rad.getBeanClass())) {
+            p("over menu stuff. cancel the proxying");
+            return false;
         }
-        return false;
-    }
-    private boolean shouldRedispatchDnDToHandle() {
+        //if(true) return false;
         if(!USE_JSEPARATOR_FIX) return false;
-        if(handleLayer == null) return false;
         PaletteItem item = PaletteUtils.getSelectedItem();
-        if(JSeparator.class.isAssignableFrom(item.getComponentClass())) {
+        if(item != null && JSeparator.class.isAssignableFrom(item.getComponentClass())) {
             return true;
         }
         return false;
@@ -1708,43 +1725,54 @@ public class MenuEditLayer extends JPanel {
     
     private class GlassLayerDropTargetListener implements DropTargetListener {
         public void dragEnter(DropTargetDragEvent dtde) {
-            if(shouldRedispatchDnDToHandle()) {
+            if(shouldRedispatchDnDToHandle(dtde)) {
                 dragProxying = true;
-                handleLayer.getNewComponentDropListener().dragEnter(dtde);
+                formDesigner.getHandleLayer().getNewComponentDropListener().dragEnter(dtde);
                 return;
             }
             p("drag enter: " + dtde);
             if(!dragop.isStarted()) {
-                PaletteItem item = PaletteUtils.getSelectedItem();
-                
-                
-                if(item != null && !isMenuRelatedComponentClass(item.getComponentClass())) {
-                    p("not a menu component. going back to the handle layer");
+                start(dtde);
+            }
+        }
+        
+        private void start(DropTargetDragEvent dtde) {
+            p("really starting the Drag stuff");
+            PaletteItem item = PaletteUtils.getSelectedItem();
+
+            if(item != null && !isMenuRelatedComponentClass(item.getComponentClass())) {
+                p("not a menu component. going back to the handle layer");
+                hideMenuLayer();
+                return;
+            }
+
+            if(formDesigner.getDesignerMode() == FormDesigner.MODE_ADD && item != null) {
+                if(JMenuBar.class.isAssignableFrom(item.getComponentClass())) {
+                    p("dragging in a menu bar. go back to handle layer");
                     hideMenuLayer();
                     return;
                 }
-                
-                if(formDesigner.getDesignerMode() == FormDesigner.MODE_ADD && item != null) {
-                    if(JMenuBar.class.isAssignableFrom(item.getComponentClass())) {
-                        p("dragging in a menu bar. go back to handle layer");
-                        hideMenuLayer();
-                        return;
-                    }
-                    dragop.start(item,dtde.getLocation());
-                }
+                dragop.start(item,dtde.getLocation());
             }
         }
-
+        
         public void dragOver(DropTargetDragEvent dtde) {
-            if(shouldRedispatchDnDToHandle()) {
-                dragProxying = true;
-                handleLayer.getNewComponentDropListener().dragOver(dtde);
+            p("full dragover: " + dtde.getLocation());
+            p("should redispatch = " + shouldRedispatchDnDToHandle(dtde));
+            // look at the rad component under the cursor first
+
+            if(dragProxying && shouldRedispatchDnDToHandle(dtde)) {
+                formDesigner.getHandleLayer().getNewComponentDropListener().dragOver(dtde);
                 return;
             }
+            p("switching to normal menulayer dnd");
+            dragProxying = false;
             p("drag over: " + dtde);
             if(dragop.isStarted()) {
                 p("moving dragop");
                 dragop.move(dtde.getLocation());
+            } else {
+                start(dtde);
             }
         }
 
@@ -1752,16 +1780,17 @@ public class MenuEditLayer extends JPanel {
         }
 
         public void dragExit(DropTargetEvent dte) {
-            if(shouldRedispatchDnDToHandle()) {
-                dragProxying = true;
-                handleLayer.getNewComponentDropListener().dragExit(dte);
+            //if(shouldRedispatchDnDToHandle()) {
+            if(dragProxying) {
+                formDesigner.getHandleLayer().getNewComponentDropListener().dragExit(dte);
             }
             dragProxying = false;
         }
 
         public void drop(DropTargetDropEvent dtde) {
-            if(shouldRedispatchDnDToHandle()) {
-                handleLayer.getNewComponentDropListener().drop(dtde);
+            //if(shouldRedispatchDnDToHandle()) {
+            if(dragProxying) {
+                formDesigner.getHandleLayer().getNewComponentDropListener().drop(dtde);
                 dragProxying = false;
                 return;
             }

@@ -329,6 +329,10 @@ class DragOperation {
         }
     }
     
+    public JComponent getTargetComponent() {
+        return targetComponent;
+    }
+    
     private void completeInterMenuDrag(Point pt) {
         p("================\n\n\n\n==========\n\n========");
         p("complete inter menu drag: target comp = " + targetComponent);
