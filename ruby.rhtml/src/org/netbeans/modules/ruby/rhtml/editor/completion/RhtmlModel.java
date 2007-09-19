@@ -171,7 +171,7 @@ public class RhtmlModel {
                 // I don't have to do this on lines that are in comments... But no big harm
                 text = text.replace("'", "\\'");
                 buffer.append(text);
-                buffer.append("'; "); // NOI18N
+                buffer.append("';\n"); // NOI18N
                 int generatedEnd = buffer.length();
 
                 CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);
