@@ -106,7 +106,7 @@ class DiffFacility {
                     builder.append(lines2[i].data);
                 }
                 gdiff.append(Diff.insert(delEnd == Difference.NONE ? 
-                        delStart < lines1.length ? lines1[delStart].start : lines1[lines1.length-1].end
+                        delStart < lines1.length ? lines1[delStart].start : (lines1.length != 0 ? lines1[lines1.length-1].end : 0)
                         : lines1[delEnd].end,
                         builder.toString()));
                 
