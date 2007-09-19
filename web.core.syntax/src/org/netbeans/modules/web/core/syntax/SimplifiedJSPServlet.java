@@ -67,7 +67,7 @@ public class SimplifiedJSPServlet {
             + "\t\tJspContext jspContext,\n" 
             + "\t\tObject page,\n" 
             + "\t\tPageContext pageContext\n"
-            + ") throws javax.servlet.ServletException, java.io.IOException {\n\n"; //NOI18N
+            + ") throws Throwable {\n\n"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
     private final Document doc;
     private final FileObject fobj;
