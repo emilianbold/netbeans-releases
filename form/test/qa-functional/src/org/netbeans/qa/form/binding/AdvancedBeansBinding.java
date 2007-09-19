@@ -43,6 +43,8 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     private String ACTION_PATH = "Bind|text";  // NOI18N
     private String BIND_EXPRESSION = "${text}";  // NOI18N
     private String FILENAME = "ConvertorAndValidatorTest.java"; // NOI18N
+    private String VALIDATOR_NAME = "loginLengthValidator";  // NOI18N
+    private String CONVERTOR_NAME = "bool2FaceConverter";  // NOI18N    
     
     /** Constructor required by JUnit */
     public AdvancedBeansBinding(String testName) {
@@ -57,12 +59,26 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     /** Creates suite from particular test cases. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new AdvancedBeansBinding("testCompileComponents")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testAlternateValues")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
         return suite;
     }
+
+    public void testCompileComponents() throws Exception {
+        super.setUp();
+
+        Node beanNode = openFile(CONVERTOR_NAME);
+        CompileAction action = new CompileAction();
+        action.perform(beanNode);
+        
+        beanNode = openFile(VALIDATOR_NAME);
+        action = new CompileAction();
+        action.perform(beanNode);
+    }
+    
     
     /** Tests different update modes */
     public void testUpdateMode() {
@@ -171,8 +187,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     
     /** Tests validation */
     public void testValidation() {
-        String validatorName = "loginLengthValidator";  // NOI18N
-        
+
         // open frame
         openFile(FILENAME);
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
@@ -183,13 +198,12 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         // set Face2Bool converter from list
         BindDialogOperator bindOp = new BindDialogOperator();
         bindOp.selectAdvancedTab();
-        bindOp.selectValidator(validatorName);
+        bindOp.selectValidator(VALIDATOR_NAME);
         bindOp.ok();
         
         // find code in source file
         FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
-        findInCode("binding.setValidator(loginLengthValidator);", designer);  // NOI18N
-
+        findInCode("binding.setValidator(" + VALIDATOR_NAME + ");", designer);  // NOI18N
         
         // open bind dialog again and check selected
         act.perform(actNode);
@@ -199,12 +213,11 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         bindOp.ok();
 
         // test name
-        assertEquals(selected, validatorName);
+        assertEquals(selected, VALIDATOR_NAME);
     }
 
     /** Tests conversion */
     public void testConversion() {
-        String convertorName = "bool2FaceConverter";  // NOI18N
         
         // open frame
         openFile(FILENAME);
@@ -216,12 +229,12 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         // set Face2Bool converter from list
         BindDialogOperator bindOp = new BindDialogOperator();
         bindOp.selectAdvancedTab();
-        bindOp.selectConverter(convertorName);
+        bindOp.selectConverter(CONVERTOR_NAME);
         bindOp.ok();
         
         // find code in source file
         FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
-        findInCode("binding.setConverter(bool2FaceConverter);", designer);  // NOI18N
+        findInCode("binding.setConverter("+CONVERTOR_NAME+");", designer);  // NOI18N
 
         
         // open bind dialog again and check selected convertor
@@ -232,7 +245,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         bindOp.ok();
 
         // test convertor name
-        assertEquals(selectedConvertor, convertorName);
+        assertEquals(selectedConvertor, CONVERTOR_NAME);
         
         
 //        actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel10 [JLabel]"); // NOI18N
