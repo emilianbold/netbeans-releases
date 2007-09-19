@@ -125,6 +125,10 @@ class DropTargetLayer extends JComponent {
         return pt.x > menu.getWidth()-30;
     }
     
+    public static boolean isBelowItem(Point pt, JComponent tcomp) {
+        return pt.y > tcomp.getHeight()/2;
+    }
+    
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         
@@ -224,10 +228,15 @@ class DropTargetLayer extends JComponent {
 
         // draw the drop target
         if (currentTargetComponent != null) {
+            Point cursorLocation = SwingUtilities.convertPoint(this, currentTargetPoint, currentTargetComponent);
             if (currentTargetType == DropTargetType.INTER_MENU) {
                 Point loc = SwingUtilities.convertPoint(currentTargetComponent, new Point(0, 0), this);
                 int x = loc.x;
                 int y = loc.y;
+                //if the cursor is in the lower half of the target component
+                if(isBelowItem(cursorLocation, currentTargetComponent)) {
+                    y += currentTargetComponent.getHeight();
+                }
                 g2.translate(x, y);
                 drawHorizontalTargetLine(g2, -10, 0, currentTargetComponent.getWidth() + 20);
                 g2.translate(-x, -y);
