@@ -239,11 +239,11 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
                         Collections.<TypeParameterTree>emptyList(),
                         Collections.<VariableTree>emptyList(),
                         Collections.<ExpressionTree>emptyList(),
-                        method.getBody(),
+                        make.Block(method.getBody().getStatements(), false),
                         null // default value - not applicable
                 );
                 workingCopy.rewrite(clazz, make.addClassMember(clazz, nju));
-                workingCopy.rewrite(method.getBody(), make.Block(Collections.<StatementTree>emptyList(), false));
+                workingCopy.rewrite(method.getBody(), make.Block(Collections.<StatementTree>singletonList(make.Return(null)), false));
             }
             
         };
