@@ -22,6 +22,8 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassObjectReference;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.Field;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
@@ -119,6 +121,16 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             value = oldV.virtualMachine().mirrorOf(expression.charAt(1));
         } else if (oldV instanceof StringReference && expression.startsWith("\"") && expression.endsWith("\"") && expression.length() > 1) {
             value = oldV.virtualMachine().mirrorOf(expression.substring(1, expression.length() - 1));
+        } else if (oldV instanceof ObjectReference &&
+                   ((ObjectReference) oldV).referenceType() instanceof ClassType &&
+                   ((ClassType) ((ObjectReference) oldV).referenceType()).isEnum()) {
+            ClassType enumType = (ClassType) ((ObjectReference) oldV).referenceType();
+            Field enumValue = enumType.fieldByName(expression);
+            if (enumValue != null) {
+                value = enumType.getValue(enumValue);
+            } else {
+                throw new InvalidExpressionException(expression);
+            }
         } else {
             // evaluate expression to Value
             Value evaluatedValue = debugger.evaluateIn (expression);
