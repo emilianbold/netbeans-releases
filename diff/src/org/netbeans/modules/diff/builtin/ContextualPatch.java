@@ -425,7 +425,7 @@ public final class ContextualPatch {
 
         for (;;) {
             String line = readPatchLine();
-            if (line == null || line.startsWith("Index:")) {
+            if (line == null || line.length() == 0 || line.startsWith("Index:")) {
                 unreadPatchLine();
                 break;
             } else if (line.startsWith("***************")) {
@@ -533,7 +533,7 @@ public final class ContextualPatch {
         
         for (;;) {
             String line = readPatchLine();
-            if (line == null || line.startsWith("Index:")) {
+            if (line == null || line.length() == 0 || line.startsWith("Index:")) {
                 unreadPatchLine();
                 break;
             }
