@@ -50,6 +50,7 @@ import org.netbeans.modules.ruby.railsprojects.UpdateHelper;
 import org.netbeans.modules.ruby.railsprojects.plugins.PluginAction;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
+import org.netbeans.modules.ruby.rubyproject.RakeTargetsDebugAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -443,6 +444,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             //actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null)); // NOI18N
             //actions.add(null);
             actions.add(SystemAction.get(RakeTargetsAction.class));
+            actions.add(SystemAction.get(RakeTargetsDebugAction.class));
             actions.add(SystemAction.get(MigrateAction.class));
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(RailsActionProvider.COMMAND_RAILS_CONSOLE, bundle.getString("LBL_ConsoleAction_Name"), null)); // NOI18N
