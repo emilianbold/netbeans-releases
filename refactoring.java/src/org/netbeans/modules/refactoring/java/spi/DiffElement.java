@@ -20,6 +20,7 @@ package org.netbeans.modules.refactoring.java.spi;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -87,6 +88,9 @@ import org.openide.util.lookup.Lookups;
     }
 
     public FileObject getParentFile() {
+        if (diff.getKind() == Difference.Kind.CREATE) {
+            return parentFile.getParent();
+        }
         return parentFile;
     }
     
@@ -99,7 +103,11 @@ import org.openide.util.lookup.Lookups;
                 return result;
         }
         try {
-            result = modification.getResultingSource(parentFile);
+            if (diff.getKind()==Difference.Kind.CREATE) {
+                result = diff.getNewText();
+            } else {
+                result = modification.getResultingSource(parentFile);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;

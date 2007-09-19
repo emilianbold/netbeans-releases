@@ -63,6 +63,18 @@ public final class ModificationResult {
         return diffs.get(fo);
     }
     
+    public Set<File> getNewFiles() {
+        Set<File> newFiles = new HashSet<File>();
+        for (List<Difference> ds:diffs.values()) {
+            for (Difference d: ds) {
+                if (d.getKind() == Difference.Kind.CREATE) {
+                    newFiles.add(new File(((CreateChange) d).getFileObject().toUri()));
+                }
+            }
+        }
+        return newFiles;
+    }
+    
     /**
      * Once all of the changes have been collected, this method can be used
      * to commit the changes to the source files

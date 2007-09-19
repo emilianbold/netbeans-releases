@@ -32,12 +32,11 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
-import org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -119,10 +118,16 @@ public class PreviewManager {
             this.file = r.getParentFile();
         }
         public String getName() {
+            if (file.isFolder()) {
+                return NbBundle.getMessage(PreviewManager.class,"LBL_FileDoesNotExist");
+            }
             return file.getName();
         }
 
         public String getTitle() {
+            if (file.isFolder()) {
+                return NbBundle.getMessage(PreviewManager.class,"LBL_FileDoesNotExist");
+            }
             return file.getNameExt();
         }
 
@@ -152,14 +157,21 @@ public class PreviewManager {
         }
 
         public String getName() {
-            return "Proposed refactoring";
+            return NbBundle.getMessage(PreviewManager.class,"LBL_ProposedRefactoring");
         }
         
         public String getTitle() {
-            return  "Refactored " + element.getParentFile().getNameExt();
+            if (element.getParentFile().isFolder()) {
+                return NbBundle.getMessage(PreviewManager.class,"LBL_NewFile");
+            }
+            return  NbBundle.getMessage(PreviewManager.class,"LBL_Refactored",element.getParentFile().getNameExt());
         }
         
         public String getMIMEType() {
+            if (element.getParentFile().isFolder()) {
+                //this is hack, all folders are text/x-java
+                return "text/x-java"; //NOI18N
+            }
             return element.getParentFile().getMIMEType();
         }
         

@@ -18,12 +18,17 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.Transaction;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -34,6 +39,7 @@ public class RetoucheCommit implements Transaction {
     ArrayList<BackupFacility.Handle> ids = new ArrayList();
     private boolean commited = false;
     Collection<ModificationResult> results;
+    private Set<File> newFiles;
     
     public RetoucheCommit(Collection<ModificationResult> results) {
         this.results = results;
@@ -53,6 +59,7 @@ public class RetoucheCommit implements Transaction {
                 commited = true;
                 for (ModificationResult result:results) {
                     ids.add(BackupFacility.getDefault().backup(result.getModifiedFileObjects()));
+                    newFiles = result.getNewFiles();
                     result.commit();
                 }
             }
@@ -62,12 +69,27 @@ public class RetoucheCommit implements Transaction {
         }
     }
     
+    private boolean newFilesStored = false;
     public void rollback() {
         for (BackupFacility.Handle id:ids) {
             try {
                 id.restore();
             } catch (IOException ex) {
                 throw (RuntimeException) new RuntimeException().initCause(ex);
+            }
+        }
+        if (newFiles!=null) {
+            for (File f:newFiles) {
+                try {
+                    FileObject fo = FileUtil.toFileObject(f);
+                    if (!newFilesStored) {
+                        ids.add(BackupFacility.getDefault().backup(fo));
+                        newFilesStored = true;
+                    }
+                    fo.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
