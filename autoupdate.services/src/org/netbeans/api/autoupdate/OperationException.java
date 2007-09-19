@@ -24,7 +24,8 @@ package org.netbeans.api.autoupdate;
  * @author Radek Matous
  */
 public final class OperationException extends Exception {    
-    private static ERROR_TYPE error;
+    private ERROR_TYPE error;
+    private String msg;
     public static enum ERROR_TYPE {
         PROXY,
         INSTALLER,
@@ -37,18 +38,26 @@ public final class OperationException extends Exception {
     public OperationException (ERROR_TYPE error) {
         super (/*e.g.message from ERR*/);
         this.error = error;
+        msg = error.toString ();
     }
     
     /** not public contructor */
     public OperationException (ERROR_TYPE error, Exception x) {
         super (x);
         this.error = error;
+        msg = x.getLocalizedMessage ();
     }
     
     /** not public contructor */
     public OperationException (ERROR_TYPE error, String message) {
         super (message);
         this.error = error;
+        msg = message;
+    }
+    
+    @Override
+    public String getLocalizedMessage () {
+        return msg;
     }
     
     public ERROR_TYPE getErrorType () {return error;}

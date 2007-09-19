@@ -195,6 +195,12 @@ public abstract class OperationWizardModel {
     }
     
     // XXX Hack in WizardDescriptor
+    public void modifyOptionsForFailed (WizardDescriptor wd) {
+        recognizeButtons (wd);
+        wd.setOptions (new JButton [] { getOriginalCancel (wd) });
+    }
+    
+    // XXX Hack in WizardDescriptor
     public void modifyOptionsForDoClose (WizardDescriptor wd, boolean canCancel) {
         recognizeButtons (wd);
         JButton b = getOriginalFinish (wd);

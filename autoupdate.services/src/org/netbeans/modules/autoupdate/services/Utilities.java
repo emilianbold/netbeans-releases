@@ -526,9 +526,20 @@ public class Utilities {
     }
     
     public static Set<Dependency> findBrokenDependencies(UpdateElement element, List<ModuleInfo> infos) {
+        List<ModuleInfo> extendedModules = getInstalledModules();
+        extendedModules.addAll(infos);
+        Set<Dependency> deps = collectAllDependencies (element);
+        Set<Dependency> retval = Collections.emptySet ();
+        final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies(deps, extendedModules);
+        Set<UpdateElement> reqs = findRequiredModules(brokenDeps, extendedModules);
+        extendedModules.addAll (getModuleInfos (reqs));
+        retval = DependencyChecker.findBrokenDependencies(deps, extendedModules);
+        return retval;
+    }
+    
+    private static Set<Dependency> collectAllDependencies (UpdateElement element) {
         UpdateElementImpl el = Trampoline.API.impl (element);
         assert el != null : "UpdateElementImpl found for UpdateElement " + element;
-        Set<Dependency> retval = Collections.emptySet ();
         List<ModuleInfo> mInfos = null;
         switch (el.getType ()) {
         case KIT_MODULE :
@@ -550,13 +561,7 @@ public class Utilities {
         for (ModuleInfo info : mInfos) {
             deps.addAll (filterTypeRecommends (info.getDependencies ()));
         }
-        List<ModuleInfo> extendedModules = getInstalledModules();
-        extendedModules.addAll(infos);
-        final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies(deps, extendedModules);
-        Set<UpdateElement> reqs = findRequiredModules(brokenDeps, extendedModules);
-        extendedModules.addAll (getModuleInfos (reqs));
-        retval = DependencyChecker.findBrokenDependencies(deps, extendedModules);
-        return retval;
+        return deps;
     }
     
     private static Set<Dependency> filterTypeRecommends (Collection<Dependency> deps) {
@@ -573,6 +578,15 @@ public class Utilities {
         assert element != null : "UpdateElement cannot be null";
         Set<String> retval = new HashSet<String> ();
         for (Dependency dep : findBrokenDependencies (element, infos)) {
+            retval.add (dep.toString ());
+        }
+        return retval;
+    }
+    
+    static Set<String> getBrokenDependenciesInInstalledModules (UpdateElement element) {
+        assert element != null : "UpdateElement cannot be null";
+        Set<String> retval = new HashSet<String> ();
+        for (Dependency dep : DependencyChecker.findBrokenDependencies (collectAllDependencies (element), InstalledModuleProvider.getInstalledModules ().values ())) {
             retval.add (dep.toString ());
         }
         return retval;
@@ -715,11 +729,11 @@ public class Utilities {
     }
     
     public static boolean canDisable (Module m) {
-            return m != null &&  m.isEnabled () && ! isEssentialModule (m) && ! m.isAutoload () && ! m.isEager ();
+        return m != null &&  m.isEnabled () && ! isEssentialModule (m) && ! m.isAutoload () && ! m.isEager ();
     }
     
     public static boolean canEnable (Module m) {
-            return m != null && !m.isEnabled () && !m.isFixed () && !m.isAutoload () && !m.isEager ();
+        return m != null && !m.isEnabled () && ! m.isAutoload () && ! m.isEager ();
     }
     
     public static boolean isElementInstalled (UpdateElement el) {

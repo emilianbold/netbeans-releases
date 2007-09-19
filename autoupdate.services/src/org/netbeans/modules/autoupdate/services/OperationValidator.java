@@ -33,6 +33,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -233,7 +234,7 @@ abstract class OperationValidator {
             switch (impl.getType ()) {
             case KIT_MODULE :
             case MODULE :
-                Module module =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
+                Module module = Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
                 res = Utilities.canEnable (module);
                 break;
             case STANDALONE_MODULE :
@@ -287,7 +288,7 @@ abstract class OperationValidator {
             switch (impl.getType ()) {
             case KIT_MODULE :
             case MODULE :
-                Module module =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
+                Module module = Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
                 res = Utilities.canDisable (module);
                 break;
             case STANDALONE_MODULE :

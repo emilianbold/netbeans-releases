@@ -272,7 +272,26 @@ public final class OperationContainerImpl<Support> {
                 moduleInfos.addAll (infos);
             }
             
-            return Utilities.getBrokenDependencies (getUpdateElement (), moduleInfos);
+            
+            Set<String> broken = null;
+            switch (type) {
+            case ENABLE :
+                broken = Utilities.getBrokenDependenciesInInstalledModules (getUpdateElement ());
+                break;
+            case UNINSTALL :
+            case DIRECT_UNINSTALL :
+            case CUSTOM_UNINSTALL :
+            case DISABLE :
+            case DIRECT_DISABLE :
+            case INSTALL :
+            case UPDATE :
+            case CUSTOM_INSTALL:
+                broken = Utilities.getBrokenDependencies (getUpdateElement (), moduleInfos);
+                break;
+            default:
+                assert false : "Unknown type of operation " + type;
+            }
+            return broken;
         }
     }
     

@@ -135,9 +135,9 @@ public abstract class OperationSupportImpl {
                 mm.enable(toRun);
                 retval = true;
             } catch(IllegalArgumentException ilae) {
-                throw new OperationException(OperationException.ERROR_TYPE.ENABLE);
+                throw new OperationException(OperationException.ERROR_TYPE.ENABLE, ilae);
             } catch(InvalidException ie) {
-                throw new OperationException(OperationException.ERROR_TYPE.ENABLE);
+                throw new OperationException(OperationException.ERROR_TYPE.ENABLE, ie);
             }
             return retval;
         }

@@ -23,6 +23,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -37,6 +39,9 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 
 /**
  *
@@ -67,6 +72,15 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     
     private static final String HEAD_UNINSTALL_DONE = "UninstallStep_Header_UninstallDone_Head";
     private static final String CONTENT_UNINSTALL_DONE = "UninstallStep_Header_UninstallDone_Content";
+    
+    private static final String HEAD_DEACTIVATE_FAILED = "UninstallStep_Header_DeactivateFailed_Head";
+    private static final String CONTENT_DEACTIVATE_FAILED = "UninstallStep_Header_DeactivateFailed_Content";
+    
+    private static final String HEAD_ACTIVATE_FAILED = "UninstallStep_Header_ActivateFailed_Head";
+    private static final String CONTENT_ACTIVATE_FAILED = "UninstallStep_Header_ActivateFailed_Content";
+    
+    private static final String HEAD_UNINSTALL_FAILED = "UninstallStep_Header_UninstallFailed_Head";
+    private static final String CONTENT_UNINSTALL_FAILED = "UninstallStep_Header_UninstallFailed_Content";
     
     private static final String UNINSTALL_PROGRESS_NAME = "UninstallStep_ProgressName_Uninstall";
     private static final String ACTIVATE_PROGRESS_NAME = "UninstallStep_ProgressName_Activate";
@@ -117,15 +131,19 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     private void doAction () {
         // proceed operation
         Restarter r = null;
-        if ((r = handleAction ()) != null) {
-            presentActionNeedsRestart (r);
-        } else {
-            presentActionDone ();
+        try {
+            if ((r = handleAction ()) != null) {
+                presentActionNeedsRestart (r);
+            } else {
+                presentActionDone ();
+            }
+        } catch (OperationException ex) {
+            presentActionFailed (ex);
         }
         fireChange ();
     }
     
-    private Restarter handleAction () {
+    private Restarter handleAction () throws OperationException {
         assert model.getBaseContainer () != null : "getBaseContainers() returns not null container.";
         OperationSupport support = (OperationSupport) model.getBaseContainer ().getSupport ();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
@@ -155,10 +173,12 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         Restarter r = null;
         try {
             r = support.doOperation (handle);
+            panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("UninstallStep_Done")));
         } catch (OperationException ex) {
             err.log (Level.INFO, ex.getMessage (), ex);
+            panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("UninstallStep_Failed", ex.getLocalizedMessage ())));
+            throw ex;
         }
-        panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("UninstallStep_Done")));
         return r;
     }
     
@@ -190,6 +210,81 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
         }
+    }
+    
+    private void presentActionFailed (OperationException ex) {
+        switch (model.getOperation ()) {
+            case UNINSTALL :
+                component.setHeadAndContent (getBundle (HEAD_UNINSTALL_FAILED), getBundle (CONTENT_UNINSTALL_FAILED));
+                break;
+            case ENABLE :
+                component.setHeadAndContent (getBundle (HEAD_ACTIVATE_FAILED), getBundle (CONTENT_ACTIVATE_FAILED));
+                break;
+            case DISABLE :
+                component.setHeadAndContent (getBundle (HEAD_DEACTIVATE_FAILED), getBundle (CONTENT_DEACTIVATE_FAILED));
+                break;
+            default:
+                assert false : "Unknown OperationType " + model.getOperation ();
+        }
+        model.modifyOptionsForFailed (wd);
+        switch (model.getOperation ()) {
+            case UNINSTALL :
+                panel.setBody (getBundle ("UninstallStep_UninstallFailed_Text", ex.getLocalizedMessage ()),
+                        UninstallUnitWizardModel.getVisibleUpdateElements(model.getAllUpdateElements(), false, model.getOperation()));
+                break;
+            case ENABLE :
+                panel.setBody (getBundle ("UninstallStep_ActivateFailed_Text",
+                        ex.getLocalizedMessage()),
+                        prepareBrokenDependenciesForShow (model));
+                break;
+            case DISABLE :
+                panel.setBody (getBundle ("UninstallStep_DeactivateFailed_Text", ex.getLocalizedMessage ()),
+                        UninstallUnitWizardModel.getVisibleUpdateElements(model.getAllUpdateElements(), false, model.getOperation()));
+                break;
+            default:
+                assert false : "Unknown OperationType " + model.getOperation ();
+        }
+    }
+    
+    private static String prepareBrokenDependenciesForShow (OperationWizardModel model) {
+        String s = new String ();
+        for (String plugin : model.getBrokenDependencies ().keySet ()) {
+            s += "<br><b>" + NbBundle.getMessage (OperationDescriptionStep.class, "UninstallStep_PluginHasBrokenDependencies", plugin) + "</b><br>"; // NOI18N
+            SortedSet<String> sset = new TreeSet<String> (model.getBrokenDependencies ().get (plugin));
+            for (String dep : sset) {
+                s += "      " + tryTakeDisplayName (dep) + "<br>"; // NOI18N
+            }
+        }
+        return s.trim ();
+    }
+    
+    private static String tryTakeDisplayName (String dep) {
+        String displayName = null;
+        if (dep != null && dep.startsWith ("module")) { // NOI18N
+            String codeName = dep.substring (6).trim ();
+            int end = codeName.indexOf ('/'); // NOI18N
+            if (end == -1) {
+                end = codeName.indexOf (' '); // NOI18N
+            }
+            if (end != -1) {
+                codeName = codeName.substring (0, end);
+                for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ())) {
+                    if (codeName.equals (u.getCodeName ())) {
+                        if (u.getInstalled () != null) {
+                            displayName = u.getInstalled ().getDisplayName ();
+                            break;
+                        } else if (u.getAvailableUpdates ().size () > 0) {
+                            displayName = u.getAvailableUpdates ().get (0).getDisplayName ();
+                            break;
+                        }
+                    }
+                }
+            }
+            if (displayName != null) {
+                displayName = NbBundle.getMessage (OperationDescriptionStep.class, "UninstallStep_PluginNameFormat", displayName, dep);
+            }
+        }
+        return displayName == null ? dep : displayName;
     }
     
     private void presentActionNeedsRestart (Restarter r) {
@@ -285,7 +380,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         }
     }
 
-    private String getBundle (String key) {
-        return NbBundle.getMessage (InstallStep.class, key);
+    private String getBundle (String key, Object... params) {
+        return NbBundle.getMessage (InstallStep.class, key, params);
     }
 }

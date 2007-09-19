@@ -90,6 +90,18 @@ public class OperationPanel extends javax.swing.JPanel {
         revalidate ();
     }
     
+    public void setBody (final String msg, final String text) {
+        if (SwingUtilities.isEventDispatchThread ()) {
+            setBodyInEQ (msg, text);
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    setBodyInEQ (msg, text);
+                }
+            });
+        }
+    }
+    
     public void setBody (final String msg, final Set<UpdateElement> updateElements) {
         final List<UpdateElement> elements = new ArrayList<UpdateElement> (updateElements);
         if (SwingUtilities.isEventDispatchThread ()) {
@@ -110,13 +122,19 @@ public class OperationPanel extends javax.swing.JPanel {
         revalidate ();
     }
     
+    private void setBodyInEQ (String msg, String elements) {
+        pProgress.removeAll ();
+        pProgress.add (getTitleComponent (msg), BorderLayout.NORTH);
+        pProgress.add (getElementsComponent (elements), BorderLayout.CENTER);
+        revalidate ();
+    }
+    
     private JComponent getTitleComponent (String msg) {
         JTextArea area = new JTextArea (msg);
         area.setWrapStyleWord (true);
         area.setLineWrap (true);
         area.setEditable (false);
         area.setOpaque (false);
-        //area.setBackground (new JLabel ().getBackground ()); // XXX any better way how to set background?
         return area;
     }
     
@@ -130,7 +148,15 @@ public class OperationPanel extends javax.swing.JPanel {
         }
         area.setText (body);
         area.setOpaque (false);
-        //area.setBackground (new JLabel ().getBackground ()); // XXX any better way how to set background?
+        return area;
+    }
+    
+    private JComponent getElementsComponent (String msg) {
+        JTextPane area = new JTextPane ();
+        area.setEditable (false);
+        area.setContentType ("text/html"); // NOI18N
+        area.setText (msg);
+        area.setOpaque (false);
         return area;
     }
     
