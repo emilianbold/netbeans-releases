@@ -19,20 +19,9 @@
 
 package org.netbeans.api.diff;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 
 import org.openide.util.io.ReaderInputStream;
 import org.openide.util.Lookup;
@@ -144,7 +133,7 @@ public abstract class StreamSource extends Object {
         private File readerSource;
         private Writer w;
         private File file;
-        private String encoding;
+        private Charset encoding;
         
         Impl(String name, String title, String MIMEType, Reader r) {
             this.name = name;
@@ -155,7 +144,11 @@ public abstract class StreamSource extends Object {
             this.w = null;
             this.file = null;
             if (r instanceof InputStreamReader) {
-                encoding = ((InputStreamReader) r).getEncoding();
+                try {
+                    encoding = Charset.forName(((InputStreamReader) r).getEncoding());
+                } catch (UnsupportedCharsetException e) {
+                    // ignore, encoding will be null
+                }
             }
         }
         
@@ -166,7 +159,7 @@ public abstract class StreamSource extends Object {
             this.readerSource = null;
             this.w = null;
             this.file = file;
-            encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(file)).name();
+            encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(file));
         }
         
         private File createReaderSource(Reader r) throws IOException {
@@ -180,7 +173,9 @@ public abstract class StreamSource extends Object {
                 if (encoding == null) {
                     in = new ReaderInputStream(r);
                 } else {
-                    in = new ReaderInputStream(r, encoding);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    copyStreamsCloseAll(new OutputStreamWriter(baos, encoding), r);
+                    in = new ByteArrayInputStream(baos.toByteArray());
                 }
                 org.openide.filesystems.FileUtil.copy(in, out = new FileOutputStream(tmp));
             } finally {
@@ -231,5 +226,15 @@ public abstract class StreamSource extends Object {
             } else return w;
         }
         
+    }
+    
+    private static void copyStreamsCloseAll(Writer writer, Reader reader) throws IOException {
+        char [] buffer = new char[4096];
+        int n;
+        while ((n = reader.read(buffer)) != -1) {
+            writer.write(buffer, 0, n);
+        }
+        writer.close();
+        reader.close();
     }
 }

@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.Iterator;
 import java.awt.*;
+import java.nio.charset.Charset;
+
 import org.netbeans.lib.cvsclient.file.*;
 
 import org.openide.DialogDisplayer;
@@ -120,14 +122,9 @@ public class ResolveConflictsExecutor {
         
         final StreamSource s1;
         final StreamSource s2;
-        String encoding = FileEncodingQuery.getEncoding(fo).name();
-        if (encoding != null) {
-            s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, new InputStreamReader(new FileInputStream(f1), encoding));
-            s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, new InputStreamReader(new FileInputStream(f2), encoding));
-        } else {
-            s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
-            s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, f2);
-        }
+        Charset encoding = FileEncodingQuery.getEncoding(fo);
+        s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
+        s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, f2);
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,
                                                               originalLeftFileRevision,
                                                               originalRightFileRevision,
@@ -396,12 +393,12 @@ public class ResolveConflictsExecutor {
         private String rightFileRevision;
         private FileObject fo;
         private FileLock lock;
-        private String encoding;
+        private Charset encoding;
         
         public MergeResultWriterInfo(File tempf1, File tempf2, File tempf3,
                                      File outputFile, String mimeType,
                                      String leftFileRevision, String rightFileRevision,
-                                     FileObject fo, FileLock lock, String encoding) {
+                                     FileObject fo, FileLock lock, Charset encoding) {
             this.tempf1 = tempf1;
             this.tempf2 = tempf2;
             this.tempf3 = tempf3;
@@ -412,7 +409,7 @@ public class ResolveConflictsExecutor {
             this.fo = fo;
             this.lock = lock;
             if (encoding == null) {
-                encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(tempf1)).name();
+                encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(tempf1));
             }
             this.encoding = encoding;
         }
