@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.sources;
 
+import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
 import org.netbeans.modules.vmd.api.model.*;
@@ -48,6 +49,8 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 
 /**
  * @author David Kaspar
@@ -148,7 +151,14 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
                 }
             },
             // screen
-            new ListElementEventSourceDisplayPresenter()
+            new ListElementEventSourceDisplayPresenter(),
+            //general
+            new GoToSourcePresenter() {
+                protected boolean matches(GuardedSection section) {
+                    return MultiGuardedSection.matches (section, getComponent().getParentComponent().getComponentID() + "-action", getComponent().getComponentID() + "-postAction"); // NOI18N
+                }
+            }
+        
         );
     }
 
