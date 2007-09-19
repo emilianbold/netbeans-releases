@@ -238,6 +238,31 @@ public final class BuildImplTest extends NbTestCase {
         assertEquals(2, classesPackage.list().length);
     }
 
+    public void testCompileSingleTransitive() throws Exception { // #115918
+        AntProjectHelper aph = setupProject(0, false);
+        FileObject root = aph.getProjectDirectory();
+        FileObject a = TestFileUtils.writeFile(root, "src/p/A.java", "package p; class A {}");
+        TestFileUtils.writeFile(root, "src/p/B.java", "package p; class B {A a;}");
+        TestFileUtils.writeFile(root, "src/p/C.java", "package p; class C {}");
+        FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
+        Properties p = getProperties();
+        p.setProperty("javac.includes", "p/B.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
+        File classes = new File(new File(getWorkDir(), "build"), "classes");
+        assertOutput("Compiling 1 source file to " + classes);
+        assertNotNull(root.getFileObject("build/classes/p/A.class"));
+        assertNotNull(root.getFileObject("build/classes/p/B.class"));
+        assertNull(root.getFileObject("build/classes/p/C.class"));
+        TestFileUtils.touch(a, null);
+        TestFileUtils.writeFile(root, "src/p/A.java", "BROKEN");
+        assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
+        TestFileUtils.touch(a, null);
+        TestFileUtils.writeFile(root, "src/p/A.java", "package p; class A {}");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
+        // XXX test same in test dir
+        // XXX test alternate src/test dirs
+    }
+
     public void testIncludesExcludes() throws Exception {
         AntProjectHelper aph = setupProject(12, true);
         EditableProperties ep = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

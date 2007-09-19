@@ -271,6 +271,10 @@ is divided into following sections:
                         <xsl:attribute name="name">javac.compilerargs.jaxws</xsl:attribute>
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">sourcepath</xsl:attribute>
+                        <xsl:attribute name="default"/>
+                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -278,7 +282,7 @@ is divided into following sections:
                     <sequential>
                         <javac>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
-                            <xsl:attribute name="sourcepath"/>
+                            <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
@@ -709,7 +713,15 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <j2seproject3:force-recompile/>
-                <j2seproject3:javac includes="${{javac.includes}}" excludes=""/>
+                <xsl:element name="j2seproject3:javac">
+                    <xsl:attribute name="includes">${javac.includes}</xsl:attribute>
+                    <xsl:attribute name="excludes"/>
+                    <xsl:attribute name="sourcepath"> <!-- #115918 -->
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                </xsl:element>
             </target>
             
             <target name="-post-compile-single">
@@ -1037,6 +1049,11 @@ is divided into following sections:
                 </xsl:element>
                 <xsl:element name="j2seproject3:javac">
                     <xsl:attribute name="srcdir">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:attribute name="sourcepath">
                         <xsl:call-template name="createPath">
                             <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                         </xsl:call-template>
