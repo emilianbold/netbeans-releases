@@ -590,7 +590,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
-            parser.translation_unit();
+            try {
+                parser.translation_unit();
+            } catch (Error ex){
+                System.err.println(ex.getClass().getName()+" at parsing file "+fileBuffer.getFile().getAbsolutePath()); // NOI18N
+                throw ex;
+            }
             
             if( emptyAstStatictics ) {
                 time = System.currentTimeMillis() - time;
