@@ -1452,6 +1452,10 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
     
+    public void eatChars(int count) {
+        out.eatAwayChars(count);
+    }
+    
     private void printExpr(JCTree tree) {
 	printExpr(tree, TreeInfo.noPrec);
     }

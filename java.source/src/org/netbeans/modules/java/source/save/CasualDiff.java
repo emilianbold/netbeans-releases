@@ -2738,9 +2738,10 @@ public class CasualDiff {
             return;
         } else if (from > to || from < 0 || to < 0) {
             // #104107 - log the source when this problem occurs.
-            LOG.severe("-----\n" + origText + "-----\n");
-            throw new IllegalArgumentException("Illegal values: from = " + from + "; to = " + to + "." +
+            LOG.warning("-----\n" + origText + "-----\n");
+            LOG.warning("Illegal values: from = " + from + "; to = " + to + "." +
                 "Please, attach your messages.log to new issue!");
+            printer.eatChars(from-to);
         } else if (to > origText.length()) {
             // #99333, #97801: Debug message for the issues.
             LOG.severe("-----\n" + origText + "-----\n");

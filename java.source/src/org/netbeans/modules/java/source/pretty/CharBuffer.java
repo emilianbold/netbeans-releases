@@ -234,6 +234,15 @@ public final class CharBuffer {
             col = 0;
 	}
     }
+    
+    public void eatAwayChars(int count) {
+        if (used <= 0) return;
+        used = count;
+        int nCol = 0;
+        while (used > nCol && chars[used-nCol] != '\n') nCol++;
+        col = nCol;
+    }
+    
     public void blanklines(int n) {
         int numBlankLines = n = Math.max(lastBlankLines, n);
 	if(hasMargin())
