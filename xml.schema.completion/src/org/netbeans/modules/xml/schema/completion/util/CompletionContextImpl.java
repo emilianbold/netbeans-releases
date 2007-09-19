@@ -487,7 +487,7 @@ public class CompletionContextImpl extends CompletionContext {
         for(String temp : schemas) {
             try {
                 DefaultModelProvider provider = new DefaultModelProvider(this);
-                CompletionModel cm = provider.getCompletionModel(new java.net.URI(temp));
+                CompletionModel cm = provider.getCompletionModel(new java.net.URI(temp), false);
                 populateModelMap(cm);
             } catch (Exception ex) {
                 logger.log(Level.WARNING, ex.getMessage());

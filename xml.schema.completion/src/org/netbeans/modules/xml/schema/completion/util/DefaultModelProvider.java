@@ -63,7 +63,7 @@ public class DefaultModelProvider extends CompletionModelProvider {
             return null;
         List<CompletionModel> models = new ArrayList<CompletionModel>();
         for(URI uri : uris) {
-            CompletionModel model = getCompletionModel(uri);
+            CompletionModel model = getCompletionModel(uri, true);
             if(model != null)
                 models.add(model);
         }
@@ -71,7 +71,7 @@ public class DefaultModelProvider extends CompletionModelProvider {
         return models;
     }
     
-    CompletionModel getCompletionModel(URI schemaURI) {
+    CompletionModel getCompletionModel(URI schemaURI, boolean fetch) {
         CompletionModel model = null;
         try {
             ModelSource modelSource = null;
@@ -88,7 +88,7 @@ public class DefaultModelProvider extends CompletionModelProvider {
             }
             ModelSource schemaModelSource = null;
             if(catalogModel instanceof CatalogModelImpl) {
-                schemaModelSource = ((CatalogModelImpl)catalogModel).getModelSourceSynchronous(schemaURI, modelSource);
+                schemaModelSource = ((CatalogModelImpl)catalogModel).getModelSourceSynchronous(schemaURI, modelSource, fetch);
             }
             SchemaModel sm = null;
             if(schemaModelSource.getLookup().lookup(FileObject.class) == null) {

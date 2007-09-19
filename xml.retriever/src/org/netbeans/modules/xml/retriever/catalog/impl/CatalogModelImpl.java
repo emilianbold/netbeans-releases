@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -110,12 +111,22 @@ public class CatalogModelImpl implements CatalogModel {
         this.catalogFileObject = FileUtil.createData(fo, fileName);
     }
     
+    private boolean doFetch = true;
     private boolean fetchSynchronous = false;
     public synchronized ModelSource getModelSourceSynchronous(URI locationURI,
-        ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
+        ModelSource modelSourceOfSourceDocument, boolean fetch) throws CatalogModelException {
+        ModelSource ms = null;
+        doFetch = fetch;
         fetchSynchronous = true;
-        ModelSource ms = getModelSource(locationURI, modelSourceOfSourceDocument);
-        fetchSynchronous = false;
+        try {
+            ms = getModelSource(locationURI, modelSourceOfSourceDocument);
+        } catch (CatalogModelException ex) {
+            throw ex;
+        } finally {
+            //reset flags
+            doFetch = true;
+            fetchSynchronous = false;
+        }
         return ms;
     }
 
@@ -144,7 +155,7 @@ public class CatalogModelImpl implements CatalogModel {
         }
         if( (absResourceFile == null) || (exn != null) ){
             //means there was no entry found in catalog or relative path resolution            
-            if(fetchSynchronous) {
+            if(fetchSynchronous) { //request from CC, no one else should lookup system wide catalog
                 //check in the system wide catalog (Runtime tab), if entry found, return that
                 ModelSource rms = getModelSourceFromSystemWideCatalog(locationURI, modelSourceOfSourceDocument);
                 if (rms != null) {
@@ -152,8 +163,10 @@ public class CatalogModelImpl implements CatalogModel {
                 }
             }
             try {
-                //we did not get any matching entry by conventional way..So try retrieve and cache
-                absResourceFile = retrieveCacheAndLookup(locationURI, fob);
+                if(doFetch) {
+                    //we did not get any matching entry by conventional way..So try retrieve and cache
+                    absResourceFile = retrieveCacheAndLookup(locationURI, fob);
+                }
             } catch (IOException ex) {
                 throw new CatalogModelException(ex);
             }
