@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Comparator;
@@ -40,6 +42,7 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.ui.status.SyncFileNode;
 import org.openide.util.NbBundle;
 
@@ -417,7 +420,7 @@ itor tabs #66700).
     
 
     /**
-     * Forces refresh of Status for the given directory and files below recursively
+     * Forces refresh of Status for the given directory 
      *
      * @param start file or dir to begin refresh from
      * @return void
@@ -425,13 +428,42 @@ itor tabs #66700).
     public static void forceStatusRefresh(File file) {
         if (Mercurial.getInstance().isAdministrative(file)) return;
         
-        Mercurial.getInstance().getFileStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        if(!file.isFile()) {
-            File[] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                forceStatusRefresh(files[i]);
+        try {
+            FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+
+            cache.refreshCached(file);
+            File repository = Mercurial.getInstance().getTopmostManagedParent(file);
+            if (repository == null) {
+                return;
             }
-        }                
+        
+            if (file.isDirectory()) {
+                Map<File, FileInformation> interestingFiles;
+                interestingFiles = HgCommand.getInterestingStatus(repository, file);
+                if (!interestingFiles.isEmpty()){
+                    Collection<File> files = interestingFiles.keySet();
+                    for (File aFile : files) {
+                        FileInformation fi = interestingFiles.get(aFile);
+                        cache.refreshFileStatus(aFile, fi);
+                    }
+                }
+            } else {
+                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            }
+        } catch (HgException ex) {
+        }
+    }
+
+    /**
+     * Forces refresh of Status for the specfied context.
+     *
+     * @param VCSContext context to be updated.
+     * @return void
+     */
+    public static void forceStatusRefresh(VCSContext context) {
+        for (File root :  context.getRootFiles()) {
+            forceStatusRefresh(root);
+        }
     }
 
     /**
