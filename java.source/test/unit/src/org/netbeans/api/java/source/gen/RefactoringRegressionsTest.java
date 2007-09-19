@@ -18,25 +18,15 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.*;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
+import java.util.Collections;
+import com.sun.source.tree.*;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
+import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
+import static org.netbeans.api.java.source.JavaSource.*;
 
 /**
  *
@@ -47,16 +37,18 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
     public RefactoringRegressionsTest(String aName) {
         super(aName);
     }
+    
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(RefactoringRegressionsTest.class);
 //        suite.addTest(new RefactoringRegressionsTest("testRenameTypeParameterInInvocation"));
 //        suite.addTest(new RefactoringRegressionsTest("testRenameInNewClassExpressionWithSpaces"));
+//        suite.addTest(new RefactoringRegressionsTest("testMoveEmptyReturnStatement"));
         return suite;
     }
 
     /**
-     * #111981
+     * http://www.netbeans.org/issues/show_bug.cgi?id=111981
      */
     public void testRenameTypeParameterInInvocation() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
@@ -137,7 +129,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
     }
 
     /**
-     * #111966
+     * http://www.netbeans.org/issues/show_bug.cgi?id=111966
      */
     public void testRenameInNewClassExpressionWithSpaces() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
@@ -184,6 +176,74 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
                 NewClassTree nct = (NewClassTree) est.getExpression();
                 MemberSelectTree mst = (MemberSelectTree) nct.getIdentifier();
                 workingCopy.rewrite(mst, make.setLabel(mst, "B"));
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * http://www.netbeans.org/issues/show_bug.cgi?id=111769
+     */
+    public void testMoveEmptyReturnStatement() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Arrays;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Mnozina {\n" +
+            "    \n" +
+            "    void metoda() {\n" +
+            "        List<Prvek> required = new ArrayList<Prvek>();\n" +
+            "        return;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Arrays;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Mnozina {\n" +
+            "    \n" +
+            "    void metoda() {\n" +
+            "    }\n" +
+            "\n" +
+            "    void m() {\n" +
+            "        List<Prvek> required = new ArrayList<Prvek>();\n" +
+            "        return;\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                MethodTree nju = make.Method(
+                        make.Modifiers(Collections.<Modifier>emptySet()),
+                        "m",
+                        make.PrimitiveType(TypeKind.VOID), // return type - void
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        method.getBody(),
+                        null // default value - not applicable
+                );
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, nju));
+                workingCopy.rewrite(method.getBody(), make.Block(Collections.<StatementTree>emptyList(), false));
             }
             
         };
