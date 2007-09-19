@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -66,10 +67,14 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
+                try {
+                    File f2 = file.getCanonicalFile();
+                    file = f2;
+                } catch (IOException ioe) {
+                }
 		FileObject fo = FileUtil.toFileObject(file);
 		String url;
 		try {
-		    URL tmpurl = fo.getURL();
 		    url = fo.getURL().toExternalForm();
 		} catch (FileStateInvalidException ex) {
 		    if (Utilities.isWindows()) {
@@ -126,6 +131,11 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
+                try {
+                    File f2 = file.getCanonicalFile();
+                    file = f2;
+                } catch (IOException ioe) {
+                }
 		FileObject fo = FileUtil.toFileObject(file);
 		String url;
 		try {
