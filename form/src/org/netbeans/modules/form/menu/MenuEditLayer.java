@@ -640,6 +640,7 @@ public class MenuEditLayer extends JPanel {
     //if the menu item already has an accelerator, then it will
     //remove the preview if necessary.
     private static void installAcceleratorPreview(JMenuItem item) {
+        if(item instanceof JMenu) return;
         //detect accelerator key
         boolean already_has_accel = false;
         if(item.getAccelerator() != null) already_has_accel = true;
