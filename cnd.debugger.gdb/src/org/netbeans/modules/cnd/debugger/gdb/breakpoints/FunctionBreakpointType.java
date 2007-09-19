@@ -19,17 +19,16 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.BreakpointType;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
 
 /**
@@ -53,8 +52,31 @@ public class FunctionBreakpointType extends BreakpointType {
     }
     
     public boolean isDefault() {
+        // First, check for an open file. Is it one of ours?
 	String mime = EditorContextBridge.getContext().getMostRecentMIMEType();
-	return mime.equals("text/x-c++") || mime.equals("text/x-c") || mime.equals("text/x-fortran"); // NOI18N
+        if (mime.length() > 0 &&
+                mime.equals("text/x-c++") || mime.equals("text/x-c") ||
+                mime.equals("text/x-fortran")) { // NOI18N
+            return true;
+        }
+        
+        // Next, check the main project. Is it one of ours?
+        Project project = OpenProjects.getDefault().getMainProject();
+        if (project != null) {
+            NativeProject np = (NativeProject) project.getLookup().lookup(NativeProject.class);
+            if (np != null) {
+                return true;
+            }
+        }
+        
+        // Last, count breakpoint types. We define 2. If thats all that are returned, then
+        // we're the only active debugger and should be the default.
+        List breakpointTypes = DebuggerManager.getDebuggerManager().lookup(null, BreakpointType.class);
+        if (breakpointTypes.size() == 2) {
+            return true;
+        }
+        	
+	return false;
     }
 }
 
