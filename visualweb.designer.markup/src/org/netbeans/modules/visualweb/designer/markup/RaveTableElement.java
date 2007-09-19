@@ -21,6 +21,7 @@ package org.netbeans.modules.visualweb.designer.markup;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.apache.batik.css.engine.CSSEngine;
 import org.apache.batik.css.engine.CSSStylableElement;
+import org.apache.batik.css.engine.StyleMap;
 import org.apache.xerces.dom.CoreDocumentImpl;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -132,4 +133,18 @@ class RaveTableElement extends RaveElement {
     public Element getTbody() {
         return tbody;
     }
+    
+    // XXX Batik
+    @Override
+    public void setComputedStyleMap(String pseudoElement, StyleMap sm) {
+        super.setComputedStyleMap(pseudoElement, sm);
+        
+        if (sm == null && tbody instanceof CSSStylableElement) {
+            // XXX #115932 Also clear the tbody element.
+            // The issue is that the tbody might not be a child of the table element(!??)
+            // See above insertBefore hack.
+            ((CSSStylableElement)tbody).setComputedStyleMap(pseudoElement, sm);
+        }
+    }
+
 }
