@@ -44,7 +44,7 @@ import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.languages.features.DatabaseItem;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -56,6 +56,8 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
     private List<Element>               elements;
     private List<Highlight>             highlights;
     private JTextComponent              editor;
+    private NbEditorDocument            document;
+    private String                      text;
 
     
     /** Creates a new instance of InstantRenameAction */
@@ -70,7 +72,7 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
             return;
         }
         try {
-            removeHighlights (highlights, editor);
+            removeHighlights (highlights);
             highlights = null;
             ASTNode node = parserManager.getAST ();
             DatabaseContext root = DatabaseManager.getRoot (node);
@@ -81,10 +83,12 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
             if (item == null) {
                 return;
             }
-            NbEditorDocument doc = (NbEditorDocument) editor.getDocument ();
             this.editor = editor;
-            elements = getUssages (item, node, doc);
+            document = (NbEditorDocument) editor.getDocument ();
+            elements = getUssages (item, node);
             addHighlights (elements);
+            document.addDocumentListener (this);
+            editor.addKeyListener (this);
         } catch (BadLocationException ex) {
             ex.printStackTrace ();
         } catch (ParseException ex) {
@@ -108,8 +112,7 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
     }
 
     private static void removeHighlights (
-        final List<Highlight> highlights, 
-        final JTextComponent editor
+        final List<Highlight> highlights
     ) {
         if (highlights == null) return;
         SwingUtilities.invokeLater (new Runnable () {
@@ -117,7 +120,6 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
                 Iterator<Highlight> it = highlights.iterator ();
                 while (it.hasNext ())
                     it.next ().remove ();;
-                editor.repaint ();
             }
         });
     }
@@ -130,21 +132,17 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 highlights = new ArrayList<Highlight> ();
-                NbEditorDocument doc = (NbEditorDocument) editor.getDocument ();
-                Highlighting highlighting = Highlighting.getHighlighting (doc);
+                Highlighting highlighting = Highlighting.getHighlighting (document);
                 Iterator<Element> it = elements.iterator ();
                 while (it.hasNext ()) {
                     Element element = it.next ();
                     highlights.add (highlighting.highlight (element.getItem (), getHighlightAS ()));
                 }
-                editor.repaint ();
-                editor.getDocument().addDocumentListener (InstantRenameAction.this);
-                editor.addKeyListener (InstantRenameAction.this);
             }
         });
     }
     
-    static List<Element> getUssages (DatabaseItem item, ASTNode root, Document doc) throws BadLocationException {
+    List<Element> getUssages (DatabaseItem item, ASTNode root) throws BadLocationException {
         List<Element> result = new ArrayList<Element> ();
         DatabaseDefinition definition = null;
         if (item instanceof DatabaseDefinition) {
@@ -154,18 +152,20 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
             ASTItem i = root.findPath (item.getOffset ()).getLeaf ();
             result.add (new Element (
                 i, 
-                doc.createPosition (i.getOffset ()),
-                doc.createPosition (i.getEndOffset ()),
-                doc
+                document.createPosition (i.getOffset ()),
+                document.createPosition (i.getEndOffset ()),
+                document
             ));
         }
         ASTItem i = root.findPath (definition.getOffset ()).getLeaf ();
-        result.add (new Element (
+        Element element = new Element (
             i, 
-            doc.createPosition (i.getOffset ()),
-            doc.createPosition (i.getEndOffset ()),
-            doc
-        ));
+            document.createPosition (i.getOffset ()),
+            document.createPosition (i.getEndOffset ()),
+            document
+        );
+        result.add (element);
+        text = element.getText ();
         Iterator<DatabaseUsage> it = definition.getUsages ().iterator ();
         while (it.hasNext ()) {
             DatabaseUsage databaseUsage = it.next ();
@@ -173,32 +173,49 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
             if (i == result.get (0).getItem ()) continue;
             result.add (new Element (
                 i, 
-                doc.createPosition (i.getOffset ()),
-                doc.createPosition (i.getEndOffset ()),
-                doc
+                document.createPosition (i.getOffset ()),
+                document.createPosition (i.getEndOffset ()),
+                document
             ));
         }
         return result;
     }
     
+    private RequestProcessor requestProcessor;
+    private RequestProcessor.Task task;
+    
     private void update () {
         int offset = editor.getCaretPosition ();
         if (!elements.get (0).contains (offset)) return;
-        editor.getDocument ().removeDocumentListener (this);
-        ((NbEditorDocument) editor.getDocument ()).readLock ();
         try {
-            Iterator<Element> it = elements.iterator ();
-            try {
-                String text = it.next ().getText ();
-                while (it.hasNext ())
-                    it.next ().setText (text);
-            } catch (BadLocationException ex) {
-                ex.printStackTrace ();
-            }
-            editor.getDocument ().addDocumentListener (this);
-        } finally {
-            ((NbEditorDocument) editor.getDocument ()).readUnlock ();
+            String newText = elements.get (0).getText ();
+            if (text.equals (newText)) return;
+            text = newText;
+        } catch (BadLocationException ex) {
+            ex.printStackTrace ();
         }
+        if (requestProcessor == null)
+            requestProcessor = new RequestProcessor ("InstantRename");
+        if (task != null) task.cancel ();
+        task = requestProcessor.post (new Runnable () {
+            public void run () {
+                document.removeDocumentListener (InstantRenameAction.this);
+                document.atomicLock ();
+                try {
+                    Iterator<Element> it = elements.iterator ();
+                    try {
+                        String text = it.next ().getText ();
+                        while (it.hasNext ())
+                            it.next ().setText (text);
+                    } catch (BadLocationException ex) {
+                        ex.printStackTrace ();
+                    }
+                } finally {
+                    document.atomicUnlock ();
+                    document.addDocumentListener (InstantRenameAction.this);
+                }
+            }
+        });
     }
     
     
@@ -211,14 +228,15 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
 	if ((e.getKeyCode () == KeyEvent.VK_ESCAPE && e.getModifiers () == 0) || 
             (e.getKeyCode () == KeyEvent.VK_ENTER  && e.getModifiers() == 0)
         ) {
-            removeHighlights (highlights, editor);
+            removeHighlights (highlights);
             editor.removeKeyListener (this);
-            editor.getDocument ().removeDocumentListener (this);
+            document.removeDocumentListener (this);
             highlights = null;
             elements = null;
             editor = null;
-	    e.consume ();
-	}    
+            document = null;
+	     e.consume ();
+        }    
     }
 
     public void keyReleased (KeyEvent e) {
@@ -258,8 +276,9 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
             return start.getOffset () <= offset && offset <= end.getOffset ();
         }
         
-        void setText (String text) {
+        void setText (final String text) {
             try {
+                if (text.equals (getText ())) return;
                 doc.insertString (end.getOffset (), text, null);
                 doc.remove (start.getOffset (), end.getOffset () - start.getOffset () - text.length ());
             } catch (BadLocationException ex) {
