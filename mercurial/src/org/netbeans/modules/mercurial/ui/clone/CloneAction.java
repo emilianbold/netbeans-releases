@@ -89,7 +89,8 @@ public class CloneAction extends AbstractAction {
                     // Open and set focus on the cloned project
                     File cloneProjFile;
                     if (!prjIsRepos) {
-                        cloneProjFile = new File (normalizedCloneFolder, prjFile.getName());
+                        String name = prjFile.getAbsolutePath().substring(root.getAbsolutePath().length() + 1);
+                        cloneProjFile = new File (normalizedCloneFolder, name);
                     } else {
                         cloneProjFile = normalizedCloneFolder;
                     }
