@@ -118,6 +118,10 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
         return getCookieSet();
     }
 
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 
     /** Gets the superclass cookie, without hacking save cookie. */
     Node.Cookie getPureCookie(Class clazz) {

@@ -33,11 +33,13 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.visualweb.api.insync.JsfJavaDataObjectMarker;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException;
+import org.openide.util.Lookup;
 
 
 /**
@@ -106,6 +108,11 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx("org.netbeans.modules.visualweb.project.jsfloader.JsfJavaDataLoader" + ".Obj"); // NOI18N
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
 
     private JsfJavaEditorSupport jsfJavaEditor;
