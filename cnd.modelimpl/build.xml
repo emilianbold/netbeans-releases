@@ -68,6 +68,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="-o"/>
             <arg value="${antlr.output.dir}"/>
             <arg value="${antlr.grammar.dir}/cppparser.g"/>
+            <!-- <arg value="-traceParser"/> -->
             <classpath path="${antlr.jar}"/>
         </java>        
     </target>
