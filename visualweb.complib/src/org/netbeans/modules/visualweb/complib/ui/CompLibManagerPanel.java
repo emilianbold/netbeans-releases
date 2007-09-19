@@ -41,6 +41,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -194,6 +195,7 @@ public class CompLibManagerPanel extends javax.swing.JPanel {
         clGBConstraints.weighty = 1.0;
 
         treeCompLib.setCellRenderer(new TreeCellRenderer());
+        treeCompLib.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
         initTreeModel(null);
 
