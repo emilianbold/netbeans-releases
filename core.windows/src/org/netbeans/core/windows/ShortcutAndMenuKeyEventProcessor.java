@@ -33,6 +33,7 @@ import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -68,6 +69,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
     /* holds original set of focus backward traversal keys */
     private static Set<AWTKeyStroke> defaultBackward;
     
+    private static final Logger log = Logger.getLogger("org.netbeans.core.windows.ShortcutAndMenuKeyEventProcessor"); // NOI18N
     
     private  ShortcutAndMenuKeyEventProcessor() {
     }
@@ -163,6 +165,8 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
     }
 
     public boolean dispatchKeyEvent(KeyEvent ev) {
+        log.fine("dispatchKeyEvent ev: " + ev.paramString()
+        + " source:" + ev.getSource().getClass().getName());
         // in some ctx, may need event filtering
         if (NbKeymap.getContext().length != 0) {
             // Ignore anything but KeyPressed inside ctx, #67187
