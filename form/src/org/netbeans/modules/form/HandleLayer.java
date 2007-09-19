@@ -2664,7 +2664,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     if (formDesigner.getLayoutDesigner() != null) {
                         formDesigner.getLayoutDesigner().startAdding(
                                 layoutComponents, movingBounds, hotSpot,
-                                targetContainer != null ? targetContainer.getId() : null);
+                                targetContainer != null && targetContainer.getLayoutSupport() == null
+                                ? targetContainer.getId() : null);
                     }
                 }
 
