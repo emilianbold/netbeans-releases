@@ -66,11 +66,24 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-BreakpointCustomizeAction.instance">
                     <attr name="position" intvalue="200"/>
                 </file>
-                </folder>
+            </folder>
             <file name="DisabledFieldBreakpoint.xml" url="DisabledFieldBreakpoint.xml"/>
             <file name="DisabledMethodBreakpoint.xml" url="DisabledMethodBreakpoint.xml"/>
             <file name="FieldBreakpoint.xml" url="FieldBreakpoint.xml"/>
             <file name="MethodBreakpoint.xml" url="MethodBreakpoint.xml"/>
+        </folder>
+    </folder>
+
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                </folder>
+            </folder>
         </folder>
     </folder>
 

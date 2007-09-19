@@ -180,10 +180,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.run"/>
                   <attr name="position" intvalue="1000"/>
                     </file>
-              <file name="DebugFile.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.debug"/>
-                  <attr name="position" intvalue="1100"/>
-                    </file>
               <file name="java-project-separator-3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                   <attr name="position" intvalue="1300"/>
