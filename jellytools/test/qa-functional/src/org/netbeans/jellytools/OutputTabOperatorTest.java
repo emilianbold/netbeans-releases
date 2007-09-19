@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -196,7 +196,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
             // sometimes it fails on Solaris => try it once more in Robot mode
             log("Dialog not closed first time. Trying once more.");
             // "Find"
-            String findButtonLabel = Bundle.getString("org.netbeans.core.output2.Bundle", "BTN_Find");
+            String findButtonLabel = Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle", "BTN_Find");
             JButtonOperator findButtonOper = new JButtonOperator(findDialog, findButtonLabel);
             findButtonOper.getProperties().setDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
             findButtonOper.push();
