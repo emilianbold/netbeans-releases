@@ -130,7 +130,7 @@ public class FormNamePanel extends javax.swing.JPanel implements DocumentListene
         validateName();
     }
 
-    public String getName() {
+    public String getFragmentName() {
         return nameField.getText().trim();
     }
 

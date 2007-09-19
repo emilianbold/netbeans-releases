@@ -339,7 +339,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
             // Cancel, or Esc: do nothing
             return null;
         }
-        name = panel.getName();
+        name = panel.getFragmentName();
 
         // Check name - shouldn't be necessary, form should enforce it.
         boolean validName;
