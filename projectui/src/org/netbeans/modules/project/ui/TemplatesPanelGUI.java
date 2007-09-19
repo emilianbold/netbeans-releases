@@ -497,6 +497,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 this.btv = new CategoriesBeanTreeView ();
                 this.btv.setRootVisible(false);
                 this.btv.setPopupAllowed(false);
+                this.btv.setFocusable(false);
                 this.btv.setDefaultActionAllowed(false);
                 this.btv.getAccessibleContext ().setAccessibleName (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSN_CategoriesPanel")); // NOI18N
                 this.btv.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSD_CategoriesPanel")); // NOI18N
