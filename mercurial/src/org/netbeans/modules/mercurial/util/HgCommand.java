@@ -496,30 +496,6 @@ public class HgCommand {
     }
     
     /**
-     * Retrives all the log information for the specified repository.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return List<String> list of all the log entries
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> doLogAll(File repository) throws HgException {
-        if (repository == null ) return null;
-        
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_VERBOSE_CMD);
-        command.add(HG_LOG_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-
-        List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            throw new HgException( list.get(0));
-        return list;
-    }
-    
-    /**
      * Retrives the log information for the specified file.
      *
      * @param File repository of the mercurial repository's root directory
@@ -674,7 +650,6 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_CLONE_CMD);
-        command.add(HG_VERBOSE_CMD);
         command.add(repository);
         command.add(target);
 
@@ -1287,8 +1262,9 @@ public class HgCommand {
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             if((share == SharabilityQuery.MIXED && SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) ||
-               (share == SharabilityQuery.NOT_SHARABLE))
+               (share == SharabilityQuery.NOT_SHARABLE)) {
                 i.remove();
+             }
         }
         return files;
     }
@@ -1409,7 +1385,7 @@ public class HgCommand {
             // TODO: remove this if Hg status supports Conflict marker
             if (existsConflictFile(filePath.toString())) {
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, null, false);
-                Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): CONFLICT repository path: {0} status flags: {1} status list {2} CONFLICT {3}", new Object[]{repository.getAbsolutePath(), statusFlags, list, filePath.toString() + HgCommand.HG_STR_CONFLICT_EXT}); // NOI18N
+                Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): CONFLICT repository path: {0} status flags: {1} status line {2} CONFLICT {3}", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine, filePath.toString() + HgCommand.HG_STR_CONFLICT_EXT}); // NOI18N
             }
             repositoryFiles.put(new File(filePath.toString()), info);
         }
@@ -1531,7 +1507,17 @@ public class HgCommand {
         List<String> list = new ArrayList<String>();
         BufferedReader input = null;
         try{
-            Mercurial.LOG.log(Level.FINE, "execEnv(): " + command); // NOI18N
+            if (command.size() > 10)  {
+                List<String> smallCommand = new ArrayList<String>();
+                int count = 0;
+                for (Iterator i = command.iterator(); i.hasNext();) {
+                    smallCommand.add((String)i.next());
+                    if (count++ > 10) break;
+                } 
+                Mercurial.LOG.log(Level.FINE, "execEnv(): " + smallCommand); // NOI18N
+            } else {
+                Mercurial.LOG.log(Level.FINE, "execEnv(): " + command); // NOI18N
+            }
             Process proc;
             if(env != null && env.size() > 0){
                 proc = Runtime.getRuntime().exec(
@@ -1539,9 +1525,9 @@ public class HgCommand {
                     env.toArray(new String[env.size()]));
             }else{
                 proc = Runtime.getRuntime().exec(
-                    command.toArray(new String[command.size()]));               
+                    command.toArray(new String[command.size()]));
             }
- 
+
             input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             
             String line;
@@ -1555,11 +1541,23 @@ public class HgCommand {
             }
             input.close();
             input = null;
+            try {
+                proc.waitFor();
+                // By convention we assume that 255 (or -1) is a serious error.
+                // For instance, the command line could be too long.
+                if (proc.exitValue() == 255) {
+                    Mercurial.LOG.log(Level.FINE, "execEnv():  process returned 255"); // NOI18N
+                    throw new HgException(HG_UNABLE_EXECUTE_COMMAND_ERR);
+                }
+            } catch (InterruptedException e) {
+                Mercurial.LOG.log(Level.FINE, "execEnv():  process interrupted " + e); // NOI18N
+            }
         }catch(IOException e){
             // Hg does not seem to be returning error status != 0
             // even when it fails when for instance adding an already tracked file to
             // the repository - we will have to examine the output in the cpntext of the
             // calling func and raise exceptions there if needed
+            Mercurial.LOG.log(Level.FINE, "execEnv():  execEnv(): IOException " + e); // NOI18N
             throw new HgException(HG_UNABLE_EXECUTE_COMMAND_ERR);
         }finally{
             // TODO: should handle the input.close() if input != null
