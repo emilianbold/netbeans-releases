@@ -93,21 +93,25 @@ public class SetUpDebugEnvironment extends AbstractDebugEnvironmentTask {
                 //TODO:probably, this should be refactored so that debugger engines
                 //enables the debugging of their SEs themselfs.
                 //That would require to make some of JBI Manager APIs public.
-                boolean debugEnabled = ((Boolean) configurator.getPropertyValue(
-                        SERVICE_ENGINE_DEBUG_FLAG)).booleanValue();  
-                
+                Object debugFlag = 
+                    configurator.getPropertyValue(SERVICE_ENGINE_DEBUG_FLAG);
+                if (debugFlag == null || !(debugFlag instanceof Boolean)) {
+                    continue;
+                }
+
+                Boolean debugEnabled = (Boolean) debugFlag;
                 log("The original debug-enabled property for " + 
                         seName + " is " + debugEnabled, Project.MSG_DEBUG);
-                
+
                 debugEnabledMap.put(seName, debugEnabled);
-                
+
                 if (!debugEnabled) {
                     configurator.setPropertyValue(SERVICE_ENGINE_DEBUG_FLAG, Boolean.TRUE);
                 }
-                
+
                 // Obtain the attach-to port number from the SE
                 Integer debugPort = (Integer)configurator.getPropertyValue(SERVICE_ENGINE_DEBUG_PORT);
-                
+
                 if (debugPort != null) {
                     //adding Service Engine specific information to debug session parameters
                     //TODO:probably, this should be refactored so that debugger engines
