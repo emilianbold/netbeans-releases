@@ -601,9 +601,8 @@ public class BracketCompleterTest extends RubyTestBase {
         insertBreak("x=<<FOO^\n", "x=<<FOO\n^\nFOO\n");
     }
 
-    // TODO: should I ensure that there's no indentation for heredocs?
     public void testHeredoc2() throws Exception {
-        insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n  ^\nFOO\n");
+        insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n^\nFOO\n");
     }
     
     public void testFindMatching1() throws Exception {
