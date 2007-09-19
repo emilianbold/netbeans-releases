@@ -60,6 +60,12 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.DefaultLocale;
+import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
 import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.OpenCookie;
@@ -78,6 +84,14 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static final String FACES_VALIDATE_XML = "com.sun.faces.validateXml"; // NOI18N
     private static final String FACES_VERIFY_OBJECTS = "com.sun.faces.verifyObjects"; // NOI18N
     
+    private static final String DEFAULT_LOCALE = "en"; // NOI18N
+    private static final String[] SUPPORTED_LOCALES = {
+                    "en", // NOI18N
+                    "ja", // NOI18N
+                    "zh_CN", // NOI18N
+                    "pt_BR", // NOI18N
+    };
+
     private JSFConfigurationPanel panel;
     /** Creates a new instance of JSFFrameworkProvider */
     public JSFFrameworkProvider() {
@@ -508,6 +522,33 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 String content = JsfProjectUtils.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
                 FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
                 JsfProjectUtils.createFile(target, content, "UTF-8"); //NOI18N
+            }
+
+            // set locale in faces-config.xml
+            FileObject facesConfig = FileUtil.toFileObject(fileConfig);
+            if (facesConfig != null) {
+                JSFConfigModel facesModel = ConfigurationUtils.getConfigModel(facesConfig, true);
+                if (facesModel != null) {
+                    facesModel.startTransaction();
+                    JSFConfigComponentFactory facesFactory = facesModel.getFactory();
+                    LocaleConfig newLocale = facesFactory.createLocaleConfig();
+
+                    DefaultLocale defaultLC = facesFactory.createDefatultLocale();
+                    defaultLC.setLocale(DEFAULT_LOCALE);
+                    newLocale.setDefaultLocale(defaultLC);
+
+                    for (String locale : SUPPORTED_LOCALES) {
+                        SupportedLocale supportedLC = facesFactory.createSupportedLocale();
+                        supportedLC.setLocale(locale);
+                        newLocale.addSupportedLocales(supportedLC);
+                    }
+
+                    Application newApplication = facesFactory.createApplication();
+                    facesModel.getRootComponent().addApplication(newApplication);
+                    newApplication.addLocaleConfig(newLocale);
+                    facesModel.endTransaction();
+                    facesModel.sync();
+                }
             }
         }
     }
