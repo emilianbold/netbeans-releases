@@ -157,4 +157,18 @@ public class SampleDatabaseCreator  {
             is.close();
         }
     }               
+    
+    public static void createDatabase (String database,  String sampleZipFile) {
+        try {
+            if (DerbyDatabases.isDerbyRegistered()) {
+                SampleDatabaseCreator sample = new SampleDatabaseCreator();
+                if (!DerbyDatabases.databaseExists(database)) {
+                    sample.extractSampleDatabase(database, sampleZipFile);
+                }
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
 }

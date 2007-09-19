@@ -19,12 +19,12 @@
 
 package org.netbeans.modules.visualweb.dataconnectivity.naming;
 
-import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.SampleDatabaseCreator;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -51,6 +51,15 @@ public class DerbyWaiter {
         } else  {
             registerConnections();
         }
+        
+        // Create databases if they had been removed
+        if (!DerbyDatabases.databaseExists("travel")) {
+            SampleDatabaseCreator.createDatabase("travel", "startup/samples/travel.zip"); //NOI18N
+        }
+
+        if (!DerbyDatabases.databaseExists("vir")) {
+            SampleDatabaseCreator.createDatabase("vir", "startup/samples/vir.zip"); //NOI18N
+        }
     }
     
     private synchronized void registerConnections() {
@@ -71,10 +80,15 @@ public class DerbyWaiter {
 
         // Register sample database
         if (drvsArray.length > 0) {
-            SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", true, "localhost", 1527);  //NOI18N
-            SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", true, "localhost", 1527);  //NOI18N               
+            if (ConnectionManager.getDefault().getConnection("jdbc:derby://localhost:1527/travel [travel on TRAVEL]") == null) {
+                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", true, "localhost", 1527); //NOI18N
+            }
+            if (ConnectionManager.getDefault().getConnection("jdbc:derby://localhost:1527/vir [vir on VIR]") == null) {
+                SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", true, "localhost", 1527); //NOI18N
+            }
+            
             registered = true;
-            JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);
+            JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);                        
         }                
     }
 }
