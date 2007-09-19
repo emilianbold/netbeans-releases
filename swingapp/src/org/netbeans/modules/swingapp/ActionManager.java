@@ -146,6 +146,7 @@ public class ActionManager {
     private static void removeProject(Project p) {
         if(ams != null) {
             ActionManager am = ams.get(p);
+            am.rescanTimer.stop();
             ams.remove(p);
             reverseams.remove(am);
         }
@@ -304,10 +305,12 @@ public class ActionManager {
                         actions.remove(className);
                     }
                     //rescans this file and replaces the list of actions for this file
-                    getActionsFromFile(fo, actions);
-                    if(actions.containsKey(className)) {
-                        List<ProxyAction> newActions = actions.get(className);
-                        actionList.addAll(newActions);
+                    if(fo != null) {
+                        getActionsFromFile(fo, actions);
+                        if(actions.containsKey(className)) {
+                            List<ProxyAction> newActions = actions.get(className);
+                            actionList.addAll(newActions);
+                        }
                     }
                     fireStructureChanged();
                 }
