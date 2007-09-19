@@ -245,8 +245,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         if (type != null) {
             paramTypes[paramTypes.length-1] = type;
         }
-        String[] paramAnnotations = getUriParamAnnotations();
-        Object[] paramAnnotationAttrs = bean.getUriParams();
+        String[] paramAnnotations = getParamAnnotations(parameters.length);
+        Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
         
         String comment = "POST method for creating an instance of " + bean.getName() + "\n";
         for (int i=0; i<parameters.length-1; i++) {
@@ -281,8 +281,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         if (type != null) {
             paramTypes[paramTypes.length-1] = type;
         }
-        String[] paramAnnotations = getUriParamAnnotations();
-        Object[] paramAnnotationAttrs = bean.getUriParams();
+        String[] paramAnnotations = getParamAnnotations(parameters.length);
+        Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
         
         String comment = "PUT method for updating or creating an instance of " + bean.getName() + "\n";
         for (int i=0; i<parameters.length-1; i++) {
@@ -313,8 +313,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         
         String[] parameters = bean.getUriParams();
         Object[] paramTypes = getUriParamTypes();
-        String[] paramAnnotations = getUriParamAnnotations();
-        Object[] paramAnnotationAttrs = bean.getUriParams();
+        String[] paramAnnotations = getParamAnnotations(parameters.length);
+        Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
         
         String comment = "DELETE method for resource " + bean.getName() + "\n";
         for (String param : parameters) {
@@ -380,14 +380,34 @@ public class GenericResourceGenerator extends AbstractGenerator {
         return types.toArray(new String[types.size()]);
     }
     
-    private String[] getUriParamAnnotations() {
-        return getUriParamAnnotations(bean);
+    private Object[] getParamAnnotationAttributes(int allParamCount) {
+        String[] uriParams = bean.getUriParams();
+        int uriParamCount = uriParams.length;
+        if (allParamCount < uriParamCount) {
+            throw new IllegalArgumentException("allParamCount="+allParamCount);
+        }
+
+        String[] attrs = new String [allParamCount];
+        for (int i=0; i<uriParamCount; i++) {
+            attrs[i] = uriParams[i];
+        }
+        for (int i=uriParamCount; i<allParamCount; i++) {
+            attrs[i] = null;
+        }
+        return attrs;
     }
     
-    public static String[] getUriParamAnnotations(GenericResourceBean bean) {
-        String[] annos = new String [bean.getUriParams().length];
-        for (int i=0; i<annos.length; i++) {
+    private String[] getParamAnnotations(int allParamCount) {
+        int uriParamCount = bean.getUriParams().length;
+        if (allParamCount < uriParamCount) {
+            throw new IllegalArgumentException("allParamCount="+allParamCount);
+        }
+        String[] annos = new String [allParamCount];
+        for (int i=0; i<uriParamCount; i++) {
             annos[i] = Constants.URI_PARAM_ANNOTATION;
+        }
+        for (int i=uriParamCount; i<allParamCount; i++) {
+            annos[i] = null;
         }
         return annos;
     }
