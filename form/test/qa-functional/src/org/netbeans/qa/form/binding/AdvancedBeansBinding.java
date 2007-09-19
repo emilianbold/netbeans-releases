@@ -67,9 +67,8 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         return suite;
     }
 
-    public void testCompileComponents() throws Exception {
-        super.setUp();
-
+    /** Form component classes compilation */
+    public void testCompileComponents() {
         Node beanNode = openFile(CONVERTOR_NAME);
         CompileAction action = new CompileAction();
         action.perform(beanNode);
@@ -78,7 +77,6 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         action = new CompileAction();
         action.perform(beanNode);
     }
-    
     
     /** Tests different update modes */
     public void testUpdateMode() {
