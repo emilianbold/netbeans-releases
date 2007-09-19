@@ -289,9 +289,13 @@ public class BeansUnit implements Unit {
                 javaClass.removeBeans(beansToRemove);
                 beansToRemove.clear();
             }
+            
             for (Bean b : beans) {
-                b.unit.getPropertiesInitMethod().addPropertySetStatements(b);
-                b.unit.getPropertiesInitMethod().addEventSetStatements(b);
+                if(b.unit.getPropertiesInitMethod() != null) {
+                    Method m = b.unit.getPropertiesInitMethod();
+                    m.addPropertySetStatements(b);
+                    m.addEventSetStatements(b);
+                }
             }
         } finally {
             junit.writeUnlock(event);
