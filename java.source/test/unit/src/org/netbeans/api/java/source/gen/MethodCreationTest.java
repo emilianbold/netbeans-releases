@@ -24,6 +24,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,10 +92,11 @@ public class MethodCreationTest extends GeneratorTestMDRCompat {
         process(
             new Transformer<Void, Object>() {
             
+                @Override
                 public Void visitClass(ClassTree node, Object p) {
                     super.visitClass(node, p);
                     if ("Test".contentEquals(node.getSimpleName())) {
-                        List parametersList = new ArrayList(5);
+                        List<VariableTree> parametersList = new ArrayList<VariableTree>(5);
                         ModifiersTree mods = make.Modifiers(EnumSet.noneOf(Modifier.class));
                         parametersList.add(make.Variable(mods, "menta", make.Identifier("List"), null));
                         parametersList.add(make.Variable(mods, "carqueja", make.Identifier("T"), null));
@@ -119,6 +121,7 @@ public class MethodCreationTest extends GeneratorTestMDRCompat {
                     return null;
                 }
             }
+        
         );
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
