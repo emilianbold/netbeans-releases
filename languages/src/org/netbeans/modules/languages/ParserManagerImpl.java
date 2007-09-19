@@ -65,7 +65,7 @@ public class ParserManagerImpl extends ParserManager {
     private State                   state = State.NOT_PARSED;
     private boolean[]               cancel = new boolean[] {false};
     private List<ParserManagerListener> listeners = new ArrayList<ParserManagerListener> ();
-    private List<ASTEvaluator>      evaluators = new CopyOnWriteArrayList<ASTEvaluator> ();
+    private List<ASTEvaluator>      evaluators = new ArrayList<ASTEvaluator> ();
     private static RequestProcessor rp = new RequestProcessor ("Parser");
     
     
@@ -119,15 +119,15 @@ public class ParserManagerImpl extends ParserManager {
         evaluators.remove (e);
     }
     
-    public synchronized void forceEvaluation (ASTEvaluator e) {
-        if (state != State.ERROR && state != State.OK) {
-            return;
-        }
-        
-        e.beforeEvaluation (state, ast);
-        evaluate (state, ast, ast, new ArrayList<ASTItem> ());
-        e.afterEvaluation (state, ast);
-    }
+//    public synchronized void forceEvaluation (ASTEvaluator e) {
+//        if (state != State.ERROR && state != State.OK) {
+//            return;
+//        }
+//        
+//        e.beforeEvaluation (state, ast);
+//        evaluate (state, ast, new ArrayList<ASTItem> (), new ArrayList<ASTEvaluator> (evaluators));
+//        e.afterEvaluation (state, ast);
+//    }
     
     // private methods .........................................................
     
@@ -159,16 +159,17 @@ public class ParserManagerImpl extends ParserManager {
             if (cancel [0]) return;
         }
         if (state == State.PARSING) return;
-        if (!evaluators.isEmpty ()) {
-            Iterator<ASTEvaluator> it2 = evaluators.iterator ();
+        List<ASTEvaluator> evaluators2 = new ArrayList<ASTEvaluator> (evaluators);
+        if (!evaluators2.isEmpty ()) {
+            Iterator<ASTEvaluator> it2 = evaluators2.iterator ();
             while (it2.hasNext ()) {
                 ASTEvaluator e = it2.next ();
                 e.beforeEvaluation (state, root);
                 if (cancel [0]) return;
             }
-            evaluate (state, root, root, new ArrayList<ASTItem> ());
+            evaluate (state, root, new ArrayList<ASTItem> (), evaluators2);
             if (cancel [0]) return;
-            it2 = evaluators.iterator ();
+            it2 = evaluators2.iterator ();
             while (it2.hasNext ()) {
                 ASTEvaluator e = it2.next ();
                 e.afterEvaluation (state, root);
@@ -177,10 +178,15 @@ public class ParserManagerImpl extends ParserManager {
         }
     }
     
-    private void evaluate (State state, ASTItem root, ASTItem item, List<ASTItem> path) {
+    private void evaluate (
+        State state, 
+        ASTItem item, 
+        List<ASTItem> path,
+        List<ASTEvaluator> evaluators2
+    ) {
         path.add (item);
         ASTPath path2 = ASTPath.create (path);
-        Iterator<ASTEvaluator> it = evaluators.iterator ();
+        Iterator<ASTEvaluator> it = evaluators2.iterator ();
         while (it.hasNext ()) {
             ASTEvaluator e = it.next ();
             e.evaluate (state, path2);
@@ -189,7 +195,7 @@ public class ParserManagerImpl extends ParserManager {
         Iterator<ASTItem> it2 = item.getChildren ().iterator ();
         while (it2.hasNext ()) {
             if (cancel [0]) return;
-            evaluate (state, root, it2.next (), path);
+            evaluate (state, it2.next (), path, evaluators2);
         }
         path.remove (path.size () - 1);
     }

@@ -210,7 +210,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     
     public void beforeEvaluation (State state, ASTNode root) {
         evalState = EVALUATING;
-        folds = new CopyOnWriteArrayList<FoldItem> ();
+        folds = null;
     }
 
     public void afterEvaluation (State state, ASTNode root) {
@@ -240,6 +240,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                     }
                     for (i = 0; i < l.size(); i++)
                         operation.removeFromHierarchy (l.get (i), transaction);
+                    if (folds == null) return;
                     Iterator<FoldItem> it = folds.iterator ();
                     while (it.hasNext ()) {
                         FoldItem f = it.next ();
@@ -308,7 +309,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             if (fold.hasSingleValue ()) {
                 String foldName = language.localize((String) fold.getValue (SyntaxContext.create (doc, path)));
                 if (foldName == null) return;            
-                folds.add (new FoldItem(foldName, s, e, defaultFoldType));
+                addFold (new FoldItem(foldName, s, e, defaultFoldType));
                 return;
             }
             String foldName = language.localize((String) fold.getValue ("fold_display_name", SyntaxContext.create (doc, path)));
@@ -316,9 +317,15 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                 foldName = "..."; // NOI18N
             }
             String foldType = language.localize((String) fold.getValue ("collapse_type_action_name"));
-            folds.add (new FoldItem (foldName, s, e, Folds.getFoldType (foldType)));
+            addFold (new FoldItem (foldName, s, e, Folds.getFoldType (foldType)));
         } catch (ParseException ex) {
         }
+    }
+    
+    private void addFold (FoldItem foldItem) {
+        if (folds == null)
+            folds = new CopyOnWriteArrayList<FoldItem> ();
+        folds.add (foldItem);
     }
     
     // package private methods for unit tests...................................
