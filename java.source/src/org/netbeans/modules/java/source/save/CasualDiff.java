@@ -891,9 +891,12 @@ public class CasualDiff {
     }
 
     protected int diffReturn(JCReturn oldT, JCReturn newT, int[] bounds) {
-        int[] exprBounds = getBounds(oldT.expr);
-        copyTo(bounds[0], exprBounds[0]);
-        int localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+        int localPointer = bounds[0];
+        if (oldT.expr != null && newT.expr != null) {
+            int[] exprBounds = getBounds(oldT.expr);
+            copyTo(bounds[0], exprBounds[0]);
+            localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+        }
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];

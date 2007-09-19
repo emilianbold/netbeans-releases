@@ -215,6 +215,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
             "public class Mnozina {\n" +
             "    \n" +
             "    void metoda() {\n" +
+            "        return;\n" +
             "    }\n" +
             "\n" +
             "    void m() {\n" +

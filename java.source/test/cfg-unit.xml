@@ -124,6 +124,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="single" executor="unit-executor" name="modifying sources">
         <testset dir="unit/src">
             <patternset>
+                <include name="org/netbeans/api/java/source/gen/RefactoringRegressionsTest.class"/>
             </patternset>
         </testset>
     </testbag>
