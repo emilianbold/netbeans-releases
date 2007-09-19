@@ -219,11 +219,11 @@ public final class ModificationResult {
         }            
     }
 
-    private void createUnit(Difference diff) throws IOException {
+    private void createUnit(Difference diff) {
         CreateChange change = (CreateChange) diff;
-        change.getFileObject().openOutputStream();
         Writer w = null;
         try {
+            change.getFileObject().openOutputStream();
             w = change.getFileObject().openWriter();
             w.append(change.getNewText());
         } catch (IOException e) {
