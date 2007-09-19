@@ -89,7 +89,6 @@ public abstract class RubyTestBase extends NbTestCase {
             fail(ex.toString());
         }
         RubyParser.Context context = new RubyParser.Context(file, listener, sequence, caretOffset);
-        context.setDocument(baseDoc);
         ParserResult result = parser.parseBuffer(context, RubyParser.Sanitize.NEVER);
         return result;
     }
@@ -214,20 +213,20 @@ public abstract class RubyTestBase extends NbTestCase {
         }
     }
 
-    public CompilationInfo getInfo(String file) throws Exception {
+    public TestCompilationInfo getInfo(String file) throws Exception {
         FileObject fileObject = getTestFile(file);
 
         return getInfo(fileObject);
     }
 
-    public CompilationInfo getInfo(FileObject fileObject) throws Exception {
+    public TestCompilationInfo getInfo(FileObject fileObject) throws Exception {
         String text = readFile(fileObject);
         if (text == null) {
             text = "";
         }
         BaseDocument doc = getDocument(text);
 
-        CompilationInfo info = new TestCompilationInfo(this, fileObject, doc, text);
+        TestCompilationInfo info = new TestCompilationInfo(this, fileObject, doc, text);
 
         return info;
     }

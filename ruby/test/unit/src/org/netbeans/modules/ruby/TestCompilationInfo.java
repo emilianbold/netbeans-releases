@@ -68,6 +68,10 @@ class TestCompilationInfo extends CompilationInfo {
     public String getText() {
         return text;
     }
+    
+    public Source getSource() {
+        return source;
+    }
 
     public Index getIndex() {
         ClasspathInfo cpi = source.getClasspathInfo();
@@ -119,26 +123,9 @@ class TestCompilationInfo extends CompilationInfo {
             ParserFile file = new DefaultParserFile(getFileObject(), null, false);
             sourceFiles.add(file);
             
-            SourceFileReader reader =
-                new SourceFileReader() {
-                    public CharSequence read(ParserFile file) throws IOException {
-                        return text;
-                    }
-                    public int getCaretOffset(ParserFile fileObject) {
-                        return caretOffset;
-                    }
-                };
-            
-            //getParser().parseFiles(sourceFiles, listener, reader);
-            //r = result = resultHolder[0];
-            if (this.doc == null) {
-                this.doc = test.getDocument(text);
-            }
             RubyParser.Context context = new RubyParser.Context(file, listener, text, caretOffset);
-            context.setDocument((BaseDocument)this.doc);
             ParserResult pr = new RubyParser().parseBuffer(context, RubyParser.Sanitize.NONE);
             r = result = pr;
-  //          assert r == resultHolder[0];
         }
         
         return r;
