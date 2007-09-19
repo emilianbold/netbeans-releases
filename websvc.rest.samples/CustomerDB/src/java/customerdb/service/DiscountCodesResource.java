@@ -75,7 +75,7 @@ public class DiscountCodesResource {
     @ProduceMime({"application/xml", "application/json"})
     public DiscountCodesConverter get() {
         try {
-            return new DiscountCodesConverter(getEntities(), context.getURI());
+            return new DiscountCodesConverter(getEntities(), context.getAbsolute());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -96,7 +96,7 @@ public class DiscountCodesResource {
             DiscountCode entity = data.getEntity();
             createEntity(entity);
             service.commitTx();
-            return Builder.created(context.getURI().resolve(entity.getDiscountCode() + "/")).build();
+            return Builder.created(context.getAbsolute().resolve(entity.getDiscountCode() + "/")).build();
         } finally {
             service.close();
         }

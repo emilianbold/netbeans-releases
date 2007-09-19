@@ -75,7 +75,7 @@ public class DiscountCodeResource {
     public DiscountCodeConverter get(@UriParam("discountCode")
     String id) {
         try {
-            return new DiscountCodeConverter(getEntity(id), context.getURI());
+            return new DiscountCodeConverter(getEntity(id), context.getAbsolute());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -155,7 +155,7 @@ public class DiscountCodeResource {
         try {
             return (DiscountCode) PersistenceService.getInstance().createNamedQuery("DiscountCode.findByDiscountCode").setParameter("discountCode", id).getSingleResult();
         } catch (NoResultException ex) {
-            throw new WebApplicationException(new Throwable("Resource for " + context.getURI() + " does not exist."), 404);
+            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolute() + " does not exist."), 404);
         }
     }
 

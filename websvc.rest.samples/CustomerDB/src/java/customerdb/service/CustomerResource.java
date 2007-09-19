@@ -73,7 +73,7 @@ public class CustomerResource {
     public CustomerConverter get(@UriParam("customerId")
     Integer id) {
         try {
-            return new CustomerConverter(getEntity(id), context.getURI());
+            return new CustomerConverter(getEntity(id), context.getAbsolute());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -134,7 +134,7 @@ public class CustomerResource {
             protected DiscountCode getEntity(String id) {
                 DiscountCode entity = parent.getDiscountCode();
                 if (entity == null) {
-                    throw new WebApplicationException(new Throwable("Resource for " + context.getURI() + " does not exist."), 404);
+                    throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolute() + " does not exist."), 404);
                 }
                 return entity;
             }
@@ -151,7 +151,7 @@ public class CustomerResource {
         try {
             return (Customer) PersistenceService.getInstance().createNamedQuery("Customer.findByCustomerId").setParameter("customerId", id).getSingleResult();
         } catch (NoResultException ex) {
-            throw new WebApplicationException(new Throwable("Resource for " + context.getURI() + " does not exist."), 404);
+            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolute() + " does not exist."), 404);
         }
     }
 

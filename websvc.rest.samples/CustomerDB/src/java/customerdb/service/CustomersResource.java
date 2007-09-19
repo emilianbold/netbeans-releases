@@ -75,7 +75,7 @@ public class CustomersResource {
     @ProduceMime({"application/xml", "application/json"})
     public CustomersConverter get() {
         try {
-            return new CustomersConverter(getEntities(), context.getURI());
+            return new CustomersConverter(getEntities(), context.getAbsolute());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -96,7 +96,7 @@ public class CustomersResource {
             Customer entity = data.getEntity();
             createEntity(entity);
             service.commitTx();
-            return Builder.created(context.getURI().resolve(entity.getCustomerId() + "/")).build();
+            return Builder.created(context.getAbsolute().resolve(entity.getCustomerId() + "/")).build();
         } finally {
             service.close();
         }
