@@ -43,6 +43,7 @@ abstract class PropertyProcessor  {
         registerPropertyProcessor(new StringPropertyProcessor());//ProxySettings
         registerPropertyProcessor(new HashSetProcessor(HashSetProcessor.CVS_PERSISTENT_HASHSET));//CvsSettings
         registerPropertyProcessor(new HashSetProcessor(HashSetProcessor.SVN_PERSISTENT_HASHSET));//SvnSettings
+        registerPropertyProcessor(new CvsSettingsProcessor());
     }           
 
 
