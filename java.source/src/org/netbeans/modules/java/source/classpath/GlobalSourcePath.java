@@ -370,7 +370,7 @@ public class GlobalSourcePath {
                         GlobalSourcePath.this.libsSrcs = new HashSet<URL>();
                         Set<JavaPlatform> platforms = new HashSet<JavaPlatform> (Arrays.asList(pm.getInstalledPlatforms()));
                         Set<JavaPlatform> oldPlatforms = new HashSet<JavaPlatform> (GlobalSourcePath.this.seenPlatforms);
-                        for (JavaPlatform platform : platforms) {                
+                        OUTER: for (JavaPlatform platform : platforms) {                
                             if (!oldPlatforms.remove(platform)) {
                                 platform.addPropertyChangeListener(GlobalSourcePath.this.libsListener);
                             }
@@ -384,7 +384,7 @@ public class GlobalSourcePath {
                                         if (src != null) {
                                             for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
                                                 if (url.equals(group.getRootFolder().getURL())) {
-                                                    break;
+                                                    continue OUTER;
                                                 }
                                             }
                                         }
@@ -405,7 +405,7 @@ public class GlobalSourcePath {
 
                         Set<Library> libs = new HashSet<Library> (Arrays.asList(lm.getLibraries()));
                         Set<Library> oldLibs = new HashSet<Library> (GlobalSourcePath.this.seenLibs);
-                        for (Library lib :libs) {
+                        OUTER: for (Library lib :libs) {
                             if (!oldLibs.remove(lib)) {
                                 lib.addPropertyChangeListener(GlobalSourcePath.this.libsListener);
                             }
@@ -419,7 +419,7 @@ public class GlobalSourcePath {
                                             if (src != null) {
                                                 for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
                                                     if (url.equals(group.getRootFolder().getURL())) {
-                                                        break;
+                                                        continue OUTER;
                                                     }
                                                 }
                                             }
