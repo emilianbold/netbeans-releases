@@ -136,14 +136,14 @@ public class GNUCCCompiler extends CCCCompiler {
     
     public void saveSystemIncludesAndDefines() {
         if (systemIncludeDirectoriesList != null && saveOK)
-            systemIncludeDirectoriesList.saveList(getClass().getName() + "." + "systemIncludeDirectoriesList"); // NOI18N
+            systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
         if (systemPreprocessorSymbolsList != null && saveOK)
-            systemPreprocessorSymbolsList.saveList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
+            systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
     private void restoreSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = PersistentList.restoreList(getClass().getName() + "." + "systemIncludeDirectoriesList"); // NOI18N
-        systemPreprocessorSymbolsList = PersistentList.restoreList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
+        systemIncludeDirectoriesList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
+        systemPreprocessorSymbolsList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
     private void getSystemIncludesAndDefines() {
@@ -200,6 +200,14 @@ public class GNUCCCompiler extends CCCCompiler {
                 }
                 if (startIncludes) {
                     line = line.trim();
+                    if (getFlavor() == CompilerFlavor.MinGW) {
+                        if (line.toLowerCase().startsWith(getIncludeFilePathPrefix().toLowerCase())) {
+                            line = line.substring(getIncludeFilePathPrefix().length());
+                        }
+                        else if (line.toLowerCase().startsWith("/mingw")) { // NOI18N
+                            line = line.substring(6);
+                        }
+                    }
                     systemIncludeDirectoriesList.add(getIncludeFilePathPrefix() + line);
                     if (getIncludeFilePathPrefix().length() > 0 && line.startsWith("/usr/lib")) // NOI18N
                         systemIncludeDirectoriesList.add(getIncludeFilePathPrefix() + line.substring(4));

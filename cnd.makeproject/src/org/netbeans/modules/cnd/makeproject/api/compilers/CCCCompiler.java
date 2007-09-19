@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 
 public class CCCCompiler extends BasicCompiler {
+    private static File tmpFile = null;
     
     public CCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(flavor, kind, name, displayName, path);
@@ -53,7 +55,7 @@ public class CCCCompiler extends BasicCompiler {
     
     protected void getSystemIncludesAndDefines(String command, boolean stdout) throws IOException {
             Process process;
-            process = Runtime.getRuntime().exec(command + " " + "/dev/null"); // NOI18N
+            process = Runtime.getRuntime().exec(command + " " + tmpFile()); // NOI18N
             if (stdout)
                 parseCompilerOutput(process.getInputStream());
             else
@@ -109,5 +111,24 @@ public class CCCCompiler extends BasicCompiler {
                 break;
             }
         }
+    }
+    
+    private String tmpFile() {
+        if (tmpFile == null) {
+            try {
+                tmpFile = File.createTempFile("xyz", ".c"); // NOI18N
+}
+            catch (IOException ioe) {
+            }
+            tmpFile.deleteOnExit();
+        }
+        if (tmpFile != null)
+            return tmpFile.getAbsolutePath();
+        else
+            return "/dev/null"; // NOI18N
+    }
+    
+    protected String getUniqueID() {
+        return getClass().getName() + getPath().hashCode() + "."; // NOI18N
     }
 }
