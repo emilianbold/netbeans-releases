@@ -180,7 +180,9 @@ public final class IndexSearch
         resultsList.getSelectionModel().addListSelectionListener(
             new javax.swing.event.ListSelectionListener() {
                 public void valueChanged( javax.swing.event.ListSelectionEvent evt ) {
-                    showHelp( true );
+                    if (!evt.getValueIsAdjusting()) {
+                        showHelp( true );
+                    }
                 }
             });
         resultsScrollPane.validate();
@@ -559,12 +561,12 @@ public final class IndexSearch
         javax.swing.SwingUtilities.invokeLater( new Runnable() {
                                                     public void run() {
                                                         Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonFind"));
+                                                        referenceModel = typeModel = alphaModel = null;
+                                                        sortResults();
                                                         if ( resultsList.getModel().getSize() > 0 ) {
                                                             resultsList.setSelectedIndex( 0 );
                                                             resultsList.grabFocus();
                                                         }
-                                                        referenceModel = typeModel = alphaModel = null;
-                                                        sortResults();
                                                     }
                                                 } );
     }

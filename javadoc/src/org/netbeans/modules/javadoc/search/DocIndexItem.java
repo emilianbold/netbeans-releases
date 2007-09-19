@@ -64,7 +64,7 @@ final class DocIndexItem extends Object {
     }
 
     public URL getURL () throws java.net.MalformedURLException {
-        return new URL( contextURL, spec );
+        return contextURL != null? new URL( contextURL, spec ): null;
     }
 
     public String toString() {
