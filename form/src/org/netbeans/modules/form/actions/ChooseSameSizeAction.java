@@ -62,6 +62,7 @@ public class ChooseSameSizeAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) { }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
@@ -70,6 +71,7 @@ public class ChooseSameSizeAction extends NodeAction {
      * Returns a JMenuItem that presents this action in a Popup Menu.
      * @return the JMenuItem representation for the action
      */
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu popupMenu = new JMenu(
             NbBundle.getMessage(ChooseSameSizeAction.class, "ACT_ChooseSameSize")); // NOI18N
@@ -242,8 +244,8 @@ public class ChooseSameSizeAction extends NodeAction {
         }
     }
     
-    private static List getComponentIds(List/*<RADComponent>*/ components) {
-        List ids = new ArrayList();
+    private static List<String> getComponentIds(List/*<RADComponent>*/ components) {
+        List<String> ids = new ArrayList<String>();
         Iterator i = components.iterator();
         while (i.hasNext()) {
             RADComponent rc = (RADComponent)i.next();

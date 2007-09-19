@@ -62,6 +62,7 @@ public class EventsAction extends CookieAction {
     protected void performAction(Node[] activatedNodes) {
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
@@ -70,6 +71,7 @@ public class EventsAction extends CookieAction {
      * Returns a JMenuItem that presents this action in a Popup Menu.
      * @return the JMenuItem representation for the action
      */
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu popupMenu = new JMenuPlus(
             NbBundle.getBundle(EventsAction.class).getString("ACT_Events")); // NOI18N
@@ -98,8 +100,7 @@ public class EventsAction extends CookieAction {
         if (nodes.length == 0)
             return;
 
-        RADComponentCookie radCookie =
-            (RADComponentCookie) nodes[0].getCookie(RADComponentCookie.class);
+        RADComponentCookie radCookie = nodes[0].getCookie(RADComponentCookie.class);
         if (radCookie == null)
             return;
 

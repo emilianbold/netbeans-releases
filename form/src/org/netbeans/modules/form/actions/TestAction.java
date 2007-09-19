@@ -46,6 +46,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
         setEnabled(false);
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -69,6 +70,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
     }
 
     /** @return resource for the action icon */
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/form/resources/test_form.png"; // NOI18N
     }
@@ -127,6 +129,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             }
             else {
                 frame.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
                     public void windowClosing(java.awt.event.WindowEvent evt) {
                         frame.dispose();
                     }
@@ -142,7 +145,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             {
                 Dimension size = formContainer.getFormSize();
                 if (frame.isUndecorated()) { // will be shown as decorated anyway
-                    Dimension diffSize = formContainer.getDecoratedWindowContentDimensionDiff();
+                    Dimension diffSize = RADVisualFormContainer.getDecoratedWindowContentDimensionDiff();
                     size = new Dimension(size.width + diffSize.width, size.height + diffSize.height);
                 }
                 frame.setSize(size);
@@ -170,10 +173,12 @@ public class TestAction extends CallableSystemAction implements Runnable {
         }
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu layoutMenu = new LAFMenu(getName());
         layoutMenu.setEnabled(isEnabled());
@@ -201,6 +206,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             super(name);
         }
 
+        @Override
         public JPopupMenu getPopupMenu() {
             JPopupMenu popup = super.getPopupMenu();
             JMenuItem mi;
@@ -226,7 +232,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
                             popup.add(new JSeparator());
                         }
                         for (int j=0; j<items.length; j++) {
-                            PaletteItem pitem = (PaletteItem)items[j].getLookup().lookup(PaletteItem.class);
+                            PaletteItem pitem = items[j].getLookup().lookup(PaletteItem.class);
                             boolean supported = false;
                             try {
                                 Class clazz = pitem.getComponentClass();
@@ -306,6 +312,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             return clazz;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof LookAndFeelItem)) return false;
             LookAndFeelItem item = (LookAndFeelItem)obj;
@@ -313,6 +320,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
                 || ((className == null) ? (item.className == null) : className.equals(item.className)));
         }
 
+        @Override
         public int hashCode() {
             return (className == null) ? pitem.hashCode() : className.hashCode();
         }

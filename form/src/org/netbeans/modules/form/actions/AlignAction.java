@@ -59,6 +59,7 @@ public class AlignAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) { }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
@@ -67,6 +68,7 @@ public class AlignAction extends NodeAction {
      * Returns a JMenuItem that presents this action in a Popup Menu.
      * @return the JMenuItem representation for the action
      */
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu popupMenu = new JMenu(
             NbBundle.getMessage(AlignAction.class, "ACT_Align")); // NOI18N
@@ -164,10 +166,10 @@ public class AlignAction extends NodeAction {
         }
         RADComponent rc = (RADComponent)components.get(0);
         FormDesigner formDesigner = FormEditor.getFormDesigner(rc.getFormModel());
-        java.util.Collection col = formDesigner.getDesignerActions(true);
+        java.util.Collection<Action> col = formDesigner.getDesignerActions(true);
         int n = col.size();
         assert n == (items.length / 2);
-        Action[] actions = (Action[]) col.toArray(new Action[n]);
+        Action[] actions = col.toArray(new Action[n]);
         for (int i=0; i < n; i++) {
             items[i].setEnabled(actions[i].isEnabled());
             items[i+n].setEnabled(actions[i].isEnabled());

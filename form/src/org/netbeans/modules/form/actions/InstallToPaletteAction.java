@@ -51,6 +51,7 @@ public class InstallToPaletteAction extends NodeAction {
         return new HelpCtx("beans.adding"); // NOI18N
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

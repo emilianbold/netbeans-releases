@@ -40,6 +40,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class DuplicateAction  extends NodeAction {
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

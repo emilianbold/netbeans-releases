@@ -50,6 +50,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
         return new Class[] { RADComponentCookie.class };
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -70,6 +71,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected String iconResource() {
         return "org/openide/resources/actions/empty.gif"; // NOI18N
     }
@@ -127,6 +129,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
         }
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (super.enable(activatedNodes)) {
             java.util.List comps = FormUtils.getSelectedLayoutComponents(activatedNodes);

@@ -66,6 +66,7 @@ public class SelectLayoutAction extends CallableSystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public boolean isEnabled() {
         Node[] nodes = getNodes();
         for (int i=0; i < nodes.length; i++) {
@@ -76,10 +77,12 @@ public class SelectLayoutAction extends CallableSystemAction {
         return true;
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu layoutMenu = new LayoutMenu(getName());
         layoutMenu.setEnabled(isEnabled());
@@ -87,6 +90,7 @@ public class SelectLayoutAction extends CallableSystemAction {
         return layoutMenu;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -104,8 +108,7 @@ public class SelectLayoutAction extends CallableSystemAction {
     }
 
     private static RADVisualContainer getContainer(Node node) {
-        RADComponentCookie radCookie = (RADComponentCookie)
-            node.getCookie(RADComponentCookie.class);
+        RADComponentCookie radCookie = node.getCookie(RADComponentCookie.class);
         if (radCookie != null) {
             RADComponent metacomp = radCookie.getRADComponent();
             if (metacomp instanceof RADVisualContainer)
@@ -116,7 +119,7 @@ public class SelectLayoutAction extends CallableSystemAction {
 
     private static PaletteItem[] getAllLayouts() {
         PaletteItem[] allItems = PaletteUtils.getAllItems();
-        ArrayList layoutsList = new ArrayList();
+        java.util.List<PaletteItem> layoutsList = new ArrayList<PaletteItem>();
         for (int i = 0; i < allItems.length; i++) {
             if (allItems[i].isLayout()) {
                 layoutsList.add(allItems[i]);
@@ -135,6 +138,7 @@ public class SelectLayoutAction extends CallableSystemAction {
             super(name);
         }
 
+        @Override
         public JPopupMenu getPopupMenu() {
             JPopupMenu popup = super.getPopupMenu();
             Node[] nodes = getNodes();

@@ -28,6 +28,7 @@ import org.netbeans.modules.form.layoutdesign.LayoutModel;
 
 public class DefaultSizeAction extends NodeAction {
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -101,8 +102,7 @@ public class DefaultSizeAction extends NodeAction {
     }
 
     private static RADVisualComponent getValidComponent(Node node) {
-        RADComponentCookie radCookie = (RADComponentCookie)
-                node.getCookie(RADComponentCookie.class);
+        RADComponentCookie radCookie = node.getCookie(RADComponentCookie.class);
         if (radCookie != null) {
             RADComponent metacomp = radCookie.getRADComponent();
             if (metacomp instanceof RADVisualComponent) {

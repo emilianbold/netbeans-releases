@@ -33,6 +33,7 @@ public class CustomCodeAction extends NodeAction {
             CodeCustomizer.show(metacomp);
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -43,8 +44,7 @@ public class CustomCodeAction extends NodeAction {
 
     private static RADComponent getComponent(Node[] nodes) {
         if (nodes != null && nodes.length == 1) {
-            RADComponentCookie radCookie = (RADComponentCookie)
-                    nodes[0].getCookie(RADComponentCookie.class);
+            RADComponentCookie radCookie = nodes[0].getCookie(RADComponentCookie.class);
             if (radCookie != null) {
                 RADComponent metacomp = radCookie.getRADComponent();
                 if (metacomp != null && metacomp != metacomp.getFormModel().getTopRADComponent())

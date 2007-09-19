@@ -59,6 +59,7 @@ public class SetResizabilityAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) { }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
@@ -67,6 +68,7 @@ public class SetResizabilityAction extends NodeAction {
      * Returns a JMenuItem that presents this action in a Popup Menu.
      * @return the JMenuItem representation for the action
      */
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu popupMenu = new JMenu(
             NbBundle.getMessage(SetResizabilityAction.class, "ACT_SetResizability")); // NOI18N

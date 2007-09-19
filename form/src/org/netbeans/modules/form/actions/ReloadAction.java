@@ -51,6 +51,7 @@ public class ReloadAction extends CallableSystemAction {
         return new HelpCtx("gui.quickref"); // NOI18N
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

@@ -102,6 +102,7 @@ public class DesignParentAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
@@ -110,6 +111,7 @@ public class DesignParentAction extends NodeAction {
      * Returns a JMenuItem that presents this action in a Popup Menu.
      * @return the JMenuItem representation for the action
      */
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu popupMenu = new JMenu(
                 NbBundle.getMessage(DesignParentAction.class, "ACT_DesignParentAction")); // NOI18N

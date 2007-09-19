@@ -42,8 +42,7 @@ public class InPlaceEditAction extends NodeAction {
     */
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
-            RADComponentCookie radCookie = (RADComponentCookie)activatedNodes[0]
-                                            .getCookie(RADComponentCookie.class);
+            RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
             RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
             if (metacomp != null) {
@@ -54,6 +53,7 @@ public class InPlaceEditAction extends NodeAction {
         }
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -67,8 +67,7 @@ public class InPlaceEditAction extends NodeAction {
     */
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
-            RADComponentCookie radCookie = (RADComponentCookie)activatedNodes[0]
-                                            .getCookie(RADComponentCookie.class);
+            RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
             RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
             if (metacomp != null) {

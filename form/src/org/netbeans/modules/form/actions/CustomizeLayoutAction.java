@@ -47,6 +47,7 @@ public class CustomizeLayoutAction extends CookieAction {
         return new Class[] { RADComponentCookie.class };
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -75,8 +76,7 @@ public class CustomizeLayoutAction extends CookieAction {
      * @param activatedNodes gives array of actually activated nodes.
      */
     protected void performAction(Node[] activatedNodes) {
-        RADComponentCookie radCookie = (RADComponentCookie)
-            activatedNodes[0].getCookie(RADComponentCookie.class);
+        RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
         if (radCookie != null) {
             RADComponent metacomp = radCookie.getRADComponent();
             if (metacomp instanceof RADVisualContainer) {
@@ -93,10 +93,10 @@ public class CustomizeLayoutAction extends CookieAction {
      *
      * @param activatedNodes gives array of actually activated nodes.
      */
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (super.enable(activatedNodes)) {
-            RADComponentCookie radCookie = (RADComponentCookie)
-                activatedNodes[0].getCookie(RADComponentCookie.class);
+            RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
             if (radCookie != null) {
                 RADComponent metacomp = radCookie.getRADComponent();
                 if (metacomp instanceof RADVisualContainer) {
