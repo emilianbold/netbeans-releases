@@ -49,7 +49,7 @@ rm -f netbeans/nb.cluster.*
 rm -f netbeans/module_tracking.xml
 rm -f netbeans/build_info
 
-BASENAME=netbeans-$BUILDNUM 
+BASENAME=netbeans-$BUILD_TAG
 
 mkdir -p $DIST/zip/moduleclusters
 
