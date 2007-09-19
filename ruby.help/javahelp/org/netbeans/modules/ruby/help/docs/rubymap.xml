@@ -11,4 +11,6 @@
 	<mapID target="org.netbeans.modules.ruby.rubyproject.ui.wizards.PanelConfigureProject_EXT" url="newrubyappwsourcewiz-nameandloc.html"/>
 	<mapID target="org.netbeans.modules.ruby.rubyproject.ui.wizards.PanelSourceFolders" url="newrubyappwsourcewiz-srcfiles.html"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.ui.wizards.PanelConfigureProject_EXT" url="newrailsappwsourcewiz-nameandloc.html"/>
+	<mapID target="org.netbeans.modules.ruby.rubyproject.gems.GemPanel" url="geminstallsettingsdialog.html"/>
+	<mapID target="org.netbeans.modules.ruby.rubyproject.gems.GemAction" url="gemmanager.html"/>
 </map>
