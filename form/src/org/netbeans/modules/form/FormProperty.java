@@ -170,6 +170,7 @@ public abstract class FormProperty extends Node.Property {
     // ----------------------------------------
     // getter, setter & related methods
 
+    @Override
     public String getHtmlDisplayName() {
         if (isChanged()) {
             return "<b>" + getDisplayName(); // NOI18N
@@ -348,10 +349,12 @@ public abstract class FormProperty extends Node.Property {
      * and getDefaultValue() methods.
      * @return true if there is a default value, false otherwise
      */
+    @Override
     public boolean supportsDefaultValue () {
         return false;
     }
     
+    @Override
     public boolean isDefaultValue() {
         return supportsDefaultValue() ? !isChanged() : true;
     }
@@ -367,6 +370,7 @@ public abstract class FormProperty extends Node.Property {
 
     /** Restores the property to its default value.
      */
+    @Override
     public void restoreDefaultValue() throws IllegalAccessException,
                                              InvocationTargetException {
 //        if (!canWrite()) return;
@@ -522,6 +526,7 @@ public abstract class FormProperty extends Node.Property {
      * FormPropertyEditor class here - see: getCurrentEditor(),
      * setCurrentEditor(...) and getExpliciteEditor().
      */
+    @Override
     public PropertyEditor getPropertyEditor() {
         PropertyEditor prEd;
 

@@ -152,6 +152,7 @@ public class RADProperty extends FormProperty {
                                            scrollbarPeerHack);
     }
 
+    @Override
     public void setValue(Object value) throws IllegalAccessException,
                                               IllegalArgumentException,
                                               InvocationTargetException {
@@ -160,6 +161,7 @@ public class RADProperty extends FormProperty {
         component.debugChangedValues(); // do we need this??
     }
 
+    @Override
     protected Object getRealValue(Object value) {
         Object realValue = super.getRealValue(value);
 
@@ -176,10 +178,12 @@ public class RADProperty extends FormProperty {
         return realValue;
     }
 
+    @Override
     public boolean supportsDefaultValue() {
         return defaultValue != BeanSupport.NO_VALUE;
     }
 
+    @Override
     public Object getDefaultValue() {
         Object specialDefaultValue = FormUtils.getSpecialDefaultPropertyValue(
                 component.getBeanInstance(), getName());
@@ -189,12 +193,14 @@ public class RADProperty extends FormProperty {
 
     // ----------
 
+    @Override
     public boolean canWrite() {
          return component.isReadOnly() ? false : super.canWrite();
     }
 
     // ----------
 
+    @Override
     public PropertyEditor getExpliciteEditor() {
         PropertyEditor prEd = null;
 
@@ -267,10 +273,12 @@ public class RADProperty extends FormProperty {
                  new EnumEditor(enumerationValues) : null;
     }
 
+    @Override
     protected Method getWriteMethod() {	    
 	return desc.getWriteMethod();	    
     }
     
+    @Override
     public void setPreCode(String value) {
         if ((preCode == null && value != null)
                 || (preCode != null && !preCode.equals(value))) {
@@ -282,6 +290,7 @@ public class RADProperty extends FormProperty {
         }
     }
 
+    @Override
     public void setPostCode(String value) {
         if ((postCode == null && value != null)
                 || (postCode != null && !postCode.equals(value))) {
@@ -325,6 +334,7 @@ public class RADProperty extends FormProperty {
             propType = type;
         }
 
+        @Override
         public Class getPropertyType() {
             return propType;
         }

@@ -35,11 +35,13 @@ public class FakeRADProperty extends RADProperty {
         setAccessType(NORMAL_RW);
     }
 
+    @Override
     public Object getTargetValue() throws IllegalAccessException,
                                           InvocationTargetException {
         return null; // there is no real target
     }
     
+    @Override
     public void setTargetValue(Object value) throws IllegalAccessException,
                                                  IllegalArgumentException,
                                                  InvocationTargetException {
