@@ -23,6 +23,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -116,7 +117,9 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 DeclaredType dt = (DeclaredType)tm;
                 TypeElement te = (TypeElement)dt.asElement();
                 element = ElementHandle.create(te);
-                if (te.getTypeParameters().isEmpty())
+                Element encl = te.getEnclosingElement();
+                boolean genericOuter = (encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty();
+                if (te.getTypeParameters().isEmpty() && !genericOuter)
                     break;
                 List<? extends TypeMirror> targs = dt.getTypeArguments();
                 if (!targs.isEmpty()) {
@@ -127,7 +130,12 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                             break;
                     }
                 }
-                typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>(targs.size());
+                if (genericOuter) {
+                    typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>(targs.size() + 1);
+                    typeMirrors.add(create(dt.getEnclosingType()));
+                } else {
+                    typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>(targs.size());
+                }
                 for (TypeMirror ta : targs)
                     typeMirrors.add(create(ta));
                 break;
@@ -186,14 +194,24 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                     return null;
                 if (typeMirrors == null)
                     return (T)te.asType();
+                Iterator<TypeMirrorHandle<? extends TypeMirror>> it = typeMirrors.iterator();
+                Element encl = te.getEnclosingElement();
+                boolean genericOuter = (encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty();
+                TypeMirror outer = null;
+                if (genericOuter) {
+                    outer = it.hasNext() ? it.next().resolve(info) : null;
+                    if (outer == null || outer.getKind() != TypeKind.DECLARED)
+                        return null;
+                }
                 List<TypeMirror> resolvedTypeArguments = new ArrayList<TypeMirror>();
-                for (TypeMirrorHandle t : typeMirrors) {
-                    TypeMirror resolved = t.resolve(info);
+                while(it.hasNext()) {
+                    TypeMirror resolved = it.next().resolve(info);
                     if (resolved == null)
                         return null;
                     resolvedTypeArguments.add(resolved);
                 }
-                return (T)info.getTypes().getDeclaredType(te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]));
+                return outer != null ? (T)info.getTypes().getDeclaredType((DeclaredType)outer, te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]))
+                        : (T)info.getTypes().getDeclaredType(te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]));
             case ARRAY:
                 TypeMirror resolved = typeMirrors.get(0).resolve(info);
                 if (resolved == null)

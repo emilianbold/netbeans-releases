@@ -2671,16 +2671,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         }
                                     }
                                 }
-                                List<? extends TypeParameterElement> tpes = e.getTypeParameters();
-                                TypeMirror[] targs = new TypeMirror[tpes.size()];
-                                int i = 0;
-                                for (Iterator<? extends TypeParameterElement> it = tpes.iterator(); it.hasNext();) {
-                                    TypeParameterElement tpe = it.next();
-                                    TypeMirror t = map.get(tpe);
-                                    targs[i++] = t != null ? t : tpe.asType();
-                                }
-                                DeclaredType dt = types.getDeclaredType(e, targs);
-                                bases.add(dt);
+                                bases.add(getDeclaredType(e, map, types));
                             }
                         }
                     } else {
@@ -3760,6 +3751,21 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
 
+        private DeclaredType getDeclaredType(TypeElement e, HashMap<? extends Element, ? extends TypeMirror> map, Types types) {
+            List<? extends TypeParameterElement> tpes = e.getTypeParameters();
+            TypeMirror[] targs = new TypeMirror[tpes.size()];
+            int i = 0;
+            for (Iterator<? extends TypeParameterElement> it = tpes.iterator(); it.hasNext();) {
+                TypeParameterElement tpe = it.next();
+                TypeMirror t = map.get(tpe);
+                targs[i++] = t != null ? t : tpe.asType();
+            }
+            Element encl = e.getEnclosingElement();
+            if ((encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty())
+                    return types.getDeclaredType(getDeclaredType((TypeElement)encl, map, types), e, targs);
+            return types.getDeclaredType(e, targs);
+        }
+        
         private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
             controller.toPhase(Phase.PARSED);
             int offset = controller.getPositionConverter().getJavaSourcePosition(caretOffset);
