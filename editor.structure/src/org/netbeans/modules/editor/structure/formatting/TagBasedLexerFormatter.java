@@ -37,6 +37,43 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtFormatter;
 
 /**
+ * Handling embedded languages:
+ * 
+ * When formatting a language that is split into several blocks:
+ * 
+ * - for each line in block: line indent = indent calculated by formatter + block offset, taken from the first line, e.g.:
+ * 
+ * XXXX
+ *   <p>
+ *   Hello, world!
+ *    	</p>
+ * XXXX
+ * 
+ * will be formatted to:
+ * 
+ * XXXX
+ *   <p>
+ *   	Hello, world!
+ *    </p>
+ * XXXX
+ * 
+ * Note that indent of the first line doesn't change, the rest is formatted accordingly. The containing language formatter should always indent at least the first line of the embedded language block  to desired position.
+ * 
+ * - if 2 blocks of the language being formatted surround a block of a different language the whole block will be shifted right by the indent level calculated for the current language, e.g:
+ * 
+ * XXXXX
+ *   <p>
+ * XXXXX
+ *   </p>
+ * XXXXX
+ * 
+ * will be formatted to:
+ * 
+ * XXXXX
+ *   <p>
+ *   	XXXXX
+ *   </p>
+ * XXXXX
  *
  * @author Tomasz.Slota@Sun.COM
  */
