@@ -101,6 +101,14 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="Projects">
+        <folder name="Debugger_Actions_temporary">
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugProjectAction.instance"/>
+            </file>
+        </folder>
+    </folder>
 
     <!-- Main menu -->
      <folder name="Menu">
