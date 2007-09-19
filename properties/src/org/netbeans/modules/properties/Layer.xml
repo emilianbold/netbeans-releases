@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="properties.properties" url="sample.properties.template">
                 <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/properties/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/properties/propertiesObject.png"/>
