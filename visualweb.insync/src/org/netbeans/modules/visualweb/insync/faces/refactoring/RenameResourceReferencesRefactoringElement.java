@@ -18,12 +18,31 @@
  */
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
+import org.netbeans.modules.visualweb.insync.faces.AnyAttrValueUpdater;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
+import org.netbeans.modules.visualweb.insync.markup.MarkupVisitor;
 import org.openide.filesystems.FileObject;
+import org.w3c.dom.Document;
 
 public class RenameResourceReferencesRefactoringElement extends RenameElExpressionReferencesRefactoringElement {
 
     public RenameResourceReferencesRefactoringElement(FileObject fileObject, MarkupUnit markupUnit, String oldName, String newName) {
         super(fileObject, markupUnit, oldName, newName);
+    }
+    
+    @Override
+    public void performChange() {
+        Document document = markupUnit.getSourceDom();
+        MarkupVisitor v = new AnyAttrValueUpdater(oldName, newName);
+        v.apply(document);
+        markupUnit.flush();        
+    }
+
+    @Override
+    public void undoChange() {
+        Document document = markupUnit.getSourceDom();
+        MarkupVisitor v = new AnyAttrValueUpdater(newName, oldName);
+        v.apply(document);
+        markupUnit.flush();        
     }
 }

@@ -42,8 +42,13 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.visualweb.insync.Model;
+import org.netbeans.modules.visualweb.insync.faces.ElBindingScanner;
+import org.netbeans.modules.visualweb.insync.faces.AnyAttrValueScanner;
+import org.netbeans.modules.visualweb.insync.faces.ElementAttrValueScanner;
+import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
+import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -55,6 +60,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Document;
 
 /**
  * 
@@ -359,6 +365,80 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
 	                                        		  folderPostfixForFileToMoveWithDots + "/": "") + 
 	                                          refactoringSourcefileObject.getNameExt();
 	                    
+	                    // Handle from and to relative references to this page
+	                    FacesModelSet facesModelSet = FacesModelSet.getInstance(refactoringSourcefileObject);
+                        FacesModel refactoringSourceFacesModel = facesModelSet.getFacesModel(refactoringSourcefileObject);
+                        if (refactoringSourceFacesModel != null && refactoringSourceFacesModel.isPageBean()) {
+                            MarkupUnit refactoringSourceMarkupUnit = refactoringSourceFacesModel.getMarkupUnit();
+                            if (refactoringSourceMarkupUnit != null) {
+        	                    AnyAttrValueScanner scanner = new AnyAttrValueScanner();
+                                Model[] models = facesModelSet.getModels();
+                                // Rename the bean name in the value binding expressions
+                                for (int i = 0; i < models.length; i++) {
+                                    Model iModel = models[i];
+                                    if (iModel instanceof FacesModel) {
+                                        FacesModel iFacesModel = (FacesModel) iModel;
+                                        if (!iFacesModel.isBusted()) {
+                                            if (iFacesModel.isPageBean()) {
+                                                FileObject iFacesModelMarkupFileObject = iFacesModel.getMarkupFile();
+                                                if (iFacesModelMarkupFileObject == null || refactoringSourcefileObject.equals(iFacesModelMarkupFileObject)) {
+                                                    continue;
+                                                }
+                                                if (!filesToMove.contains(iFacesModelMarkupFileObject)) {
+                                                    FileObject refactoringSourceParentfileObject = refactoringSourcefileObject.getParent();
+                                                    FileObject iFacesModelMarkupParentFileObject = iFacesModelMarkupFileObject.getParent();
+                                                    String iFacesModelMarkupFileObjectRelativePath = FileUtil.getRelativePath(webFolderFileobject, iFacesModelMarkupFileObject);
+                                                    String iFacesModelMarkupParentFileObjectRelativePath = FileUtil.getRelativePath(webFolderFileobject, iFacesModelMarkupParentFileObject);
+                                                    String toRelativePath = FacesRefactoringUtils.computeRelativePath(iFacesModelMarkupParentFileObject.getPath(),
+                                                            refactoringSourcefileObject.getPath());
+                                                    if (toRelativePath != null) {
+                                                        MarkupUnit iFacesModelMarkupUnit = iFacesModel.getMarkupUnit();
+                                                        if (iFacesModelMarkupUnit != null)
+                                                        {
+                                                            Document iFacesModelMarkupDocument = iFacesModelMarkupUnit.getSourceDom();
+                                                            int referenceCount = scanner.getReferenceCount(iFacesModelMarkupDocument, toRelativePath);
+                                                            if (referenceCount > 0) {
+                                                                String adjustedPath = FacesRefactoringUtils.computeRelativePath(
+                                                                        iFacesModelMarkupParentFileObjectRelativePath, // NII18N
+                                                                        newRelativePagePath);  // NII18N
+                                                                if (adjustedPath != null) {
+                                                                    refactoringElements.add(getRefactoring(),
+                                                                            new RenameResourceReferencesRefactoringElement(iFacesModelMarkupFileObject,
+                                                                                    iFacesModelMarkupUnit,
+                                                                                    toRelativePath,
+                                                                                    adjustedPath));
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+        
+                                                    String fromRelativePath = FacesRefactoringUtils.computeRelativePath(refactoringSourceParentfileObject.getPath(),
+                                                            iFacesModelMarkupFileObject.getPath());
+                                                    if (fromRelativePath != null) {                                                    
+                                                        Document refactoringSourceMarkupDocument = refactoringSourceMarkupUnit.getSourceDom();
+                                                        int referenceCount = scanner.getReferenceCount(refactoringSourceMarkupDocument, fromRelativePath);
+                                                        if (referenceCount > 0) {
+                                                            String adjustedPath = FacesRefactoringUtils.computeRelativePath(
+                                                                    targetRelativePath, // NII18N
+                                                                    iFacesModelMarkupFileObjectRelativePath);  // NII18N
+                                                            if (adjustedPath != null) {
+                                                                refactoringElements.add(getRefactoring(),
+                                                                        new RenameResourceReferencesRefactoringElement(iFacesModelMarkupFileObject,
+                                                                                refactoringSourceMarkupUnit,
+                                                                                fromRelativePath,
+                                                                                adjustedPath));
+                                                            }
+                                                        }
+                                                    }                                        
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // Handle outgoing references to other resources
+	                    
 	                    // Add a refactoring element to set the start page
 	                    if (JsfProjectUtils.isStartPage(refactoringSourcefileObject)) {
 	                        refactoringElements.addFileChange(getRefactoring(), new SetProjectStartPageRefactoringElement(project, oldRelativePagePath, newRelativePagePath));
@@ -490,6 +570,81 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
 	                                        		  folderRelativePath + "/": "") + 
 	                                          refactoringSourcefileObject.getNameExt();
 	                    
+                        // Handle from and to relative references to this page
+                        FacesModelSet facesModelSet = FacesModelSet.getInstance(refactoringSourcefileObject);
+                        FacesModel refactoringSourceFacesModel = facesModelSet.getFacesModel(refactoringSourcefileObject);
+                        if (refactoringSourceFacesModel != null && refactoringSourceFacesModel.isPageBean()) {
+                            MarkupUnit refactoringSourceMarkupUnit = refactoringSourceFacesModel.getMarkupUnit();
+                            if (refactoringSourceMarkupUnit != null) {
+                                AnyAttrValueScanner scanner = new AnyAttrValueScanner();
+                                Model[] models = facesModelSet.getModels();
+                                // Rename the bean name in the value binding expressions
+                                for (int i = 0; i < models.length; i++) {
+                                    Model iModel = models[i];
+                                    if (iModel instanceof FacesModel) {
+                                        FacesModel iFacesModel = (FacesModel) iModel;
+                                        if (!iFacesModel.isBusted()) {
+                                            if (iFacesModel.isPageBean()) {
+                                                FileObject iFacesModelMarkupFileObject = iFacesModel.getMarkupFile();
+                                                if (iFacesModelMarkupFileObject == null || refactoringSourcefileObject.equals(iFacesModelMarkupFileObject)) {
+                                                    continue;
+                                                }
+                                                if (!filesToMove.contains(iFacesModelMarkupFileObject)) {
+                                                    FileObject refactoringSourceParentfileObject = refactoringSourcefileObject.getParent();
+                                                    FileObject iFacesModelMarkupParentFileObject = iFacesModelMarkupFileObject.getParent();
+                                                    String iFacesModelMarkupFileObjectRelativePath = FileUtil.getRelativePath(webFolderFileobject, iFacesModelMarkupFileObject);
+                                                    String iFacesModelMarkupParentFileObjectRelativePath = FileUtil.getRelativePath(webFolderFileobject, iFacesModelMarkupParentFileObject);
+                                                    String toRelativePath = FacesRefactoringUtils.computeRelativePath(iFacesModelMarkupParentFileObject.getPath(),
+                                                            refactoringSourcefileObject.getPath());
+                                                    if (toRelativePath != null) {
+                                                        MarkupUnit iFacesModelMarkupUnit = iFacesModel.getMarkupUnit();
+                                                        if (iFacesModelMarkupUnit != null)
+                                                        {
+                                                            Document iFacesModelMarkupDocument = iFacesModelMarkupUnit.getSourceDom();
+                                                            int referenceCount = scanner.getReferenceCount(iFacesModelMarkupDocument, toRelativePath);
+                                                            if (referenceCount > 0) {
+                                                                String adjustedPath = FacesRefactoringUtils.computeRelativePath(
+                                                                        iFacesModelMarkupParentFileObjectRelativePath, // NII18N
+                                                                        newRelativePagePath);  // NII18N
+                                                                if (adjustedPath != null) {
+                                                                    refactoringElements.add(getRefactoring(),
+                                                                            new RenameResourceReferencesRefactoringElement(iFacesModelMarkupFileObject,
+                                                                                    iFacesModelMarkupUnit,
+                                                                                    toRelativePath,
+                                                                                    adjustedPath));
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+        
+                                                    String fromRelativePath = FacesRefactoringUtils.computeRelativePath(refactoringSourceParentfileObject.getPath(),
+                                                            iFacesModelMarkupFileObject.getPath());
+                                                    if (fromRelativePath != null) {                                                    
+                                                        Document refactoringSourceMarkupDocument = refactoringSourceMarkupUnit.getSourceDom();
+                                                        int referenceCount = scanner.getReferenceCount(refactoringSourceMarkupDocument, fromRelativePath);
+                                                        if (referenceCount > 0) {
+                                                            String adjustedPath = FacesRefactoringUtils.computeRelativePath(
+                                                                    targetRelativePath, // NII18N
+                                                                    iFacesModelMarkupFileObjectRelativePath);  // NII18N
+                                                            if (adjustedPath != null) {
+                                                                refactoringElements.add(getRefactoring(),
+                                                                        new RenameResourceReferencesRefactoringElement(iFacesModelMarkupFileObject,
+                                                                                refactoringSourceMarkupUnit,
+                                                                                fromRelativePath,
+                                                                                adjustedPath));
+                                                            }
+                                                        }
+                                                    }                                        
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Handle outgoing references to other resources
+                        
 	                    // Add a refactoring element to set the start page
 	                    if (JsfProjectUtils.isStartPage(refactoringSourcefileObject)) {
 	                        refactoringElements.addFileChange(getRefactoring(), new SetProjectStartPageRefactoringElement(project, oldRelativePagePath, newRelativePagePath));

@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -718,6 +719,56 @@ final class FacesRefactoringUtils {
             result.add(fileNameParts[i]);
         }        
         return result;
+    }
+    
+    static String computeRelativePath(String from, String to) {
+        if (!from.startsWith("/")) { from = "/" + from; }
+        if (!to.startsWith("/")) { to = "/" + to; }
+        List<String> fromList = new LinkedList<String>(Arrays.<String>asList(from.split("/")));
+        List<String> toList = new LinkedList<String>(Arrays.<String>asList(to.split("/")));
+        Collections.reverse(fromList);
+        Collections.reverse(toList);
+        String relativePath = computeRelativePath(fromList, toList);
+        if (relativePath != null && relativePath.startsWith("/")) {
+            relativePath = relativePath.substring(1);            
+        }
+        return relativePath;
+    }
+    
+    /**
+     * figure out a string representing the relative path of
+     * 'f' with respect to 'r'
+     * @param from home path. Must be a folder.
+     * @param to path of file
+     */
+    static String computeRelativePath(List<String> from, List<String> to) {
+        int i;
+        int j;
+        StringBuilder stringBuilder = new StringBuilder();
+        // start at the beginning of the lists
+        // iterate while both lists are equal
+        i = from.size() - 1;
+        j = to.size() - 1;
+
+        // first eliminate common root
+        while ((i >= 0) && (j >= 0) && (from.get(i).equals(to.get(j)))) {
+            i--;
+            j--;
+        }
+
+        // for each remaining level in the home path, add a ..
+        for (; i >= 0; i--) {
+            stringBuilder.append("../");
+        }
+
+        // for each level in the file path, add the path
+        for (; j >= 1; j--) {
+            stringBuilder.append(to.get(j) + "/");
+        }
+
+        // file name
+        stringBuilder.append(to.get(j));
+        return stringBuilder.toString();
     }
 
     private static Dialog waitDialog = null;
