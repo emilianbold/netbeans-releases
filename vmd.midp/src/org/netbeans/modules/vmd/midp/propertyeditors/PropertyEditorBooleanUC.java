@@ -92,6 +92,15 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
                     PropertyEditorBooleanUC.this.invokeSaveToModel();
                 }
             });
+        } else {
+            PropertyValue propertyValue = (PropertyValue) getValue();
+            Boolean value = (Boolean) propertyValue.getPrimitiveValue();
+            JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
+            if (value == null || value == false) {
+                checkBox.setSelected(false);
+            } else {
+                checkBox.setSelected(true);
+            }
         }
         return inplaceEditor;
     }

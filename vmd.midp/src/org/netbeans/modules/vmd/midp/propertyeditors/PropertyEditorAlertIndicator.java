@@ -115,6 +115,15 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
                     invokeSaveToModel();
                 }
             });
+        } else {
+            PropertyValue propertyValue = (PropertyValue) getValue();
+            DesignComponent value = propertyValue.getComponent();
+            JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
+            if (value != null) {
+                checkBox.setSelected(true);
+            } else {
+                checkBox.setSelected(false);
+            }
         }
         return inplaceEditor;
     }
