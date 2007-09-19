@@ -21,12 +21,15 @@ package org.netbeans.modules.visualweb.complib;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.WeakHashMap;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Index;
@@ -40,16 +43,15 @@ import org.netbeans.modules.visualweb.palette.api.PaletteItemInfoCookie;
 
 /**
  * Facade to simplify interface to underlying NetBeans Palette API
- *
+ * 
  * @author Edwin Goei
  */
 class PaletteUtil {
     /**
-     * Model to represent a palette consisting of three kinds of nodes. Each
-     * node can either be a 1) Palette 2) Category or 3) Item. A Palette can
-     * have Category children. A Category can have Item children. NetBeans does
-     * not support an Item with Item children.
-     *
+     * Model to represent a palette consisting of three kinds of nodes. Each node can either be a 1)
+     * Palette 2) Category or 3) Item. A Palette can have Category children. A Category can have
+     * Item children. NetBeans does not support an Item with Item children.
+     * 
      * @author Edwin Goei
      */
     private static abstract class AbstractPaletteNode {
@@ -71,16 +73,16 @@ class PaletteUtil {
 
         public void remove() {
             /*
-             * Deleting the FileObject itself causes intermittent exceptions so
-             * we destroy the Node instead
+             * Deleting the FileObject itself causes intermittent exceptions so we destroy the Node
+             * instead
              */
             try {
                 DataObject dataObject = DataObject.find(fileObject);
                 Node node = dataObject.getNodeDelegate();
                 node.destroy();
             } catch (IOException e) {
-                IdeUtil.logWarning("Unable to remove FileObject '"
-                        + fileObject.getNameExt() + "'", e);
+                IdeUtil.logWarning("Unable to remove FileObject '" + fileObject.getNameExt() + "'",
+                        e);
             }
         }
 
@@ -98,8 +100,8 @@ class PaletteUtil {
         private static WeakHashMap<FileObject, Category> foMap = new WeakHashMap<FileObject, Category>();
 
         private Palette(String path) {
-            FileObject paletteFileObject = Repository.getDefault()
-                    .getDefaultFileSystem().findResource(path);
+            FileObject paletteFileObject = Repository.getDefault().getDefaultFileSystem()
+                    .findResource(path);
             initFileObject(paletteFileObject);
         }
 
@@ -117,17 +119,15 @@ class PaletteUtil {
         }
 
         /**
-         * Get or create a category. If a new category is created, then it also
-         * tries to make the category first, so the user can easily see it. If
-         * the category exists, don't change its location because the user may
-         * have intentionally moved it there.
-         *
+         * Get or create a category. If a new category is created, then it also tries to make the
+         * category first, so the user can easily see it. If the category exists, don't change its
+         * location because the user may have intentionally moved it there.
+         * 
          * @param catName
          * @return
          * @throws ComplibException
          */
-        public Category getOrCreateCategory(String catName)
-                throws ComplibException {
+        public Category getOrCreateCategory(String catName) throws ComplibException {
             FileObject categoryFo;
             try {
                 FileObject paletteFo = getFileObject();
@@ -135,6 +135,14 @@ class PaletteUtil {
                 if (file == null) {
                     // No category exists yet so create it
                     categoryFo = paletteFo.createFolder(catName);
+
+                    // Tells NB not to issue warning about missing file attribute
+                    categoryFo.setAttribute(POSITION, 0);
+
+                    /*
+                     * Mark this category as one that was created by the complib module so that it
+                     * can be automatically removed later.
+                     */
                     categoryFo.setAttribute(CREATED_BY_COMPLIB, Boolean.TRUE);
 
                     // Try to move new category to the top so user can see it
@@ -147,8 +155,7 @@ class PaletteUtil {
                     // This should not normally happen
                     // Plain file was found
                     throw new ComplibException(
-                            "Unable to create category folder, found plain file: "
-                                    + file);
+                            "Unable to create category folder, found plain file: " + file);
                 } else {
                     // Folder was already created
                     categoryFo = file;
@@ -161,24 +168,17 @@ class PaletteUtil {
         }
 
         private void makeFileObjectFirst(FileObject catFo) throws IOException {
+            // Use DataFolder.setOrder() to set the ordering of categories
+            DataFolder palDf = (DataFolder) DataObject.find(getFileObject());
+            DataObject[] childrenArray = palDf.getChildren();
+            List<DataObject> childrenList = Arrays.asList(childrenArray);
+            // Use a LinkedList which supports List.remove()
+            LinkedList<DataObject> children = new LinkedList<DataObject>(childrenList);
             DataObject catDo = DataObject.find(catFo);
-            Node catNode = catDo.getNodeDelegate();
-            if (catNode != null) {
-                DataObject palDo = DataObject.find(getFileObject());
-                if (palDo != null) {
-                    Node palNode = palDo.getNodeDelegate();
-                    if (palNode != null) {
-                        Index indexCookie = (Index) palNode
-                                .getCookie(Index.class);
-                        if (indexCookie != null) {
-                            int nodeIndex = indexCookie.indexOf(catNode);
-                            indexCookie.move(nodeIndex, 0);
-                            return;
-                        }
-                    }
-                }
-            }
-            throw new IOException("Unable to make FileObject first: " + catFo);
+            children.remove(catDo);
+            children.add(0, catDo);
+            childrenArray = (DataObject[]) children.toArray(new DataObject[children.size()]);
+            palDf.setOrder(childrenArray);
         }
     }
 
@@ -213,8 +213,8 @@ class PaletteUtil {
         }
 
         /**
-         * Try to create an Item child of this parent from a FileObject and
-         * throw an exception if a problem occurs.
+         * Try to create an Item child of this parent from a FileObject and throw an exception if a
+         * problem occurs.
          * 
          * @param fo
          * @return
@@ -260,15 +260,11 @@ class PaletteUtil {
                     new FileSystem.AtomicAction() {
                         public void run() throws IOException {
                             try {
-                                ComplibPaletteItemDataObject.createFile(
-                                        getFileObject(), className, complibId
-                                                .getNamespaceUriString(),
-                                        complibId.getVersionString());
+                                ComplibPaletteItemDataObject.createFile(getFileObject(), className,
+                                        complibId.getNamespaceUriString(), complibId
+                                                .getVersionString());
                             } catch (IOException e) {
-                                IdeUtil
-                                        .logWarning(
-                                                "Unable to create complib palette item file",
-                                                e);
+                                IdeUtil.logWarning("Unable to create complib palette item file", e);
                                 throw e;
                             }
                         }
@@ -295,8 +291,8 @@ class PaletteUtil {
      * @author Edwin Goei
      */
     static class Item extends AbstractPaletteNode {
-        private static final Identifier INVALID_ID = new Identifier(
-                "urn:invalid-complib-id", "1.0.0");
+        private static final Identifier INVALID_ID = new Identifier("urn:invalid-complib-id",
+                "1.0.0");
 
         private String className;
 
@@ -332,11 +328,9 @@ class PaletteUtil {
     }
 
     // TODO Danger: this name needs to remain in sync with DesignerTopComponent
-    private static final Palette J2EE_1_4 = new Palette(
-            "CreatorDesignerPalette");
+    private static final Palette J2EE_1_4 = new Palette("CreatorDesignerPalette");
 
-    private static final Palette JAVA_EE_5 = new Palette(
-            "CreatorDesignerPalette5");
+    private static final Palette JAVA_EE_5 = new Palette("CreatorDesignerPalette5");
 
     private static final List<Palette> PALETTES_FOR_J2EE_1_4;
 
@@ -353,8 +347,14 @@ class PaletteUtil {
     private static final String CREATED_BY_COMPLIB = "created-by-complib";
 
     /**
-     * Return a list of palettes to install components from a complib based on
-     * the required Java EE spec version declared in the complib.
+     * Documented in http://wiki.netbeans.org/wiki/view/FolderOrdering103187 but I don't see where
+     * this constant is defined anywhere so we define it here.
+     */
+    private static final String POSITION = "position";
+
+    /**
+     * Return a list of palettes to install components from a complib based on the required Java EE
+     * spec version declared in the complib.
      * 
      * @param complib
      * @return
@@ -378,9 +378,8 @@ class PaletteUtil {
     }
 
     /**
-     * Return true iff the category represented by the FileObject was
-     * automatically created by the complib module as opposed, for example,
-     * created by the user.
+     * Return true iff the category represented by the FileObject was automatically created by the
+     * complib module as opposed, for example, created by the user.
      * 
      * @param category
      * @return
