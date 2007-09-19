@@ -205,10 +205,7 @@ public final class BuildImplTest extends NbTestCase {
         assertOutput("Compiling 2 source files to " + classes);
         assertEquals(2, classesPackage.list().length);
         // But <depend> is not run:
-        long oldTimestamp = s1.lastModified().getTime();
-        Thread.sleep(1500); // try to force new timestamp
-        s1 = TestFileUtils.writeFile(root, "src/pack/age/Source1.java", "package pack.age; class Source1 {} // modified");
-        assertTrue(s1.lastModified().getTime() > oldTimestamp); // if this fails, try increasing delay above!
+        TestFileUtils.touch(s1, null);
         p.setProperty("javac.includes", "pack/age/Source1.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
         assertOutput("Compiling 1 source file to " + classes);
@@ -234,10 +231,7 @@ public final class BuildImplTest extends NbTestCase {
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test-single"}, p));
         assertOutput("Compiling 2 source files to " + classes);
         assertEquals(2, classesPackage.list().length);
-        oldTimestamp = t1.lastModified().getTime();
-        Thread.sleep(1500);
-        t1 = TestFileUtils.writeFile(root, "src/pack/age/Test1.java", "package pack.age; class Test1 {} // modified");
-        assertTrue(t1.lastModified().getTime() > oldTimestamp);
+        TestFileUtils.touch(t1, null);
         p.setProperty("javac.includes", "pack/age/Test1.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test-single"}, p));
         assertOutput("Compiling 1 source file to " + classes);
@@ -307,22 +301,6 @@ public final class BuildImplTest extends NbTestCase {
         assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile"}, p));
     }
 
-    private void touch(FileObject f, FileObject ref) throws Exception {
-        File ff = FileUtil.toFile(f);
-        long older = ff.lastModified();
-        if (ref != null) {
-            older = Math.max(older, FileUtil.toFile(ref).lastModified());
-        }
-        for (long pause = 1; pause < 9999; pause *= 2) {
-            Thread.sleep(pause);
-            ff.setLastModified(System.currentTimeMillis());
-            if (ff.lastModified() > older) {
-                return;
-            }
-        }
-        fail("Did not manage to touch " + ff);
-    }
-
     /** @see "issue #36033" */
     public void testCompileWithDependencyAnalysis() throws Exception {
         AntProjectHelper aph = setupProject(0, false);
@@ -332,20 +310,20 @@ public final class BuildImplTest extends NbTestCase {
         FileObject y = TestFileUtils.writeFile(d, "src/p/Y.java", "package p; public class Y {static void y1() {}}");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile"}, getProperties()));
         TestFileUtils.writeFile(d, "src/p/Y.java", "package p; public class Y {static void y2() {}}");
-        touch(y, d.getFileObject("build/classes/p/Y.class"));
+        TestFileUtils.touch(y, d.getFileObject("build/classes/p/Y.class"));
         assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile"}, getProperties()));
         TestFileUtils.writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y2();}}");
-        touch(x, null);
+        TestFileUtils.touch(x, null);
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile"}, getProperties()));
         FileObject yt = TestFileUtils.writeFile(d, "test/p/YTest.java", "package p; public class YTest extends junit.framework.TestCase {public void testY() {Y.y2();}}");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()));
         TestFileUtils.writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y1();}}");
-        touch(x, d.getFileObject("build/classes/p/X.class"));
+        TestFileUtils.touch(x, d.getFileObject("build/classes/p/X.class"));
         TestFileUtils.writeFile(d, "src/p/Y.java", "package p; public class Y {static void y1() {}}");
-        touch(y, d.getFileObject("build/classes/p/Y.class"));
+        TestFileUtils.touch(y, d.getFileObject("build/classes/p/Y.class"));
         assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()));
         TestFileUtils.writeFile(d, "test/p/YTest.java", "package p; public class YTest extends junit.framework.TestCase {public void testY() {Y.y1();}}");
-        touch(yt, null);
+        TestFileUtils.touch(yt, null);
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()));
     }
 

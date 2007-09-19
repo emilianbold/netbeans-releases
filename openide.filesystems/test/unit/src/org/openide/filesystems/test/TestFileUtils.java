@@ -18,6 +18,7 @@
 package org.openide.filesystems.test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,6 +49,27 @@ public class TestFileUtils {
         pw.flush();
         os.close();
         return fo;
+    }
+
+    /**
+     * Make sure the timestamp on a file changes.
+     * @param f a file to touch (make newer)
+     * @param ref if not null, make f newer than this file; else make f newer than it was before
+     */
+    public static void touch(FileObject f, FileObject ref) throws IOException, InterruptedException {
+        File ff = FileUtil.toFile(f);
+        long older = ff.lastModified();
+        if (ref != null) {
+            older = Math.max(older, FileUtil.toFile(ref).lastModified());
+        }
+        for (long pause = 1; pause < 9999; pause *= 2) {
+            Thread.sleep(pause);
+            ff.setLastModified(System.currentTimeMillis());
+            if (ff.lastModified() > older) {
+                return;
+            }
+        }
+        fail("Did not manage to touch " + ff);
     }
 
     /**
