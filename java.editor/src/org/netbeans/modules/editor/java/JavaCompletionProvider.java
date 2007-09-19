@@ -2585,18 +2585,12 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void addAllTypes(Env env, EnumSet<ElementKind> kinds) {
-            long t = System.currentTimeMillis();
             String prefix = env.getPrefix();
             CompilationController controller = env.getController();
-            LazyTypeCompletionItem lastItem = null;
             for(ElementHandle<TypeElement> name : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, env.isCamelCasePrefix() ? ClassIndex.NameKind.CAMEL_CASE : Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                 LazyTypeCompletionItem item = LazyTypeCompletionItem.create(name, kinds, anchorOffset, controller.getJavaSource());
-                if (item.isAnnonInner()) {
+                if (item.isAnnonInner())
                     continue;
-                }
-                if (lastItem != null)
-                    lastItem.setNextItem(item);
-                lastItem = item;
                 results.add(item);
             }
         }

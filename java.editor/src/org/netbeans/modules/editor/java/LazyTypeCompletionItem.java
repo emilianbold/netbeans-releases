@@ -55,7 +55,6 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     private String simpleName;
     private String pkgName;
     private JavaCompletionItem delegate = null;
-    private LazyTypeCompletionItem nextItem = null;
     private CharSequence sortText;
     private int prefWidth = -1;
     
@@ -73,7 +72,6 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     
     public boolean accept() {
         if (handle != null) {
-//            if (simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0))) {
             if (isAnnonInner()) {
                 handle = null;
                 return false;
@@ -85,19 +83,19 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                     public void run(CompilationController controller) throws Exception {
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Scope scope = controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset));
-                        LazyTypeCompletionItem item = LazyTypeCompletionItem.this;
-                        for (int i = 0; i < 1 && item != null;) {
-                            if (item.init(controller, scope))
-                                i++;
-                            item = item.nextItem;
+                        if (!isAnnonInner()) {
+                            TypeElement e = handle.resolve(controller);
+                            if (e != null && controller.getTrees().isAccessible(scope, e)) {
+                                if (isOfKind(e, kinds))
+                                    delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), false);
+                            }
                         }
+                        handle = null;
                     }
                 }, true);
-                //System.out.println("ACCEPT took: " + (System.currentTimeMillis() - t));
             } catch(Throwable t) {
             }
         }
-        //System.out.println("accept name=" + name + " " + ( delegate != null ));
         return delegate != null;
     }
 
@@ -150,24 +148,6 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
         return simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0));
     }
     
-    void setNextItem(LazyTypeCompletionItem nextItem) {
-        this.nextItem = nextItem;
-    }
-    
-    boolean init(CompilationController controller, Scope scope) {
-        //if (simpleName.length() >= 0 && !Character.isDigit(simpleName.charAt(0))) {
-        if (!isAnnonInner()) {
-            TypeElement e = handle.resolve(controller);
-            if (e != null && controller.getTrees().isAccessible(scope, e)) {
-                if (isOfKind(e, kinds))
-                    delegate = JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), false);
-            }
-        }
-        handle = null;
-        // System.out.println("   init: name=" + name + " " + ( delegate != null ) );
-        return delegate != null;
-    }
-
     private boolean isOfKind(Element e, EnumSet<ElementKind> kinds) {
         if (kinds.contains(e.getKind()))
             return true;

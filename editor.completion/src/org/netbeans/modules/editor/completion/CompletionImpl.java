@@ -467,7 +467,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         }
         
         if (providersCache.containsKey(mimeType))
-            return (CompletionProvider[])providersCache.get(mimeType);
+            return providersCache.get(mimeType);
 
         Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
         Collection<? extends CompletionProvider> col = lookup.lookupAll(CompletionProvider.class);
@@ -732,78 +732,60 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         pleaseWaitTimer.stop();
         
         // Compute total count of the result sets
-        int sortedResultsSize = 0;
+        int size = 0;
         int qType = 0;
         List<CompletionResultSetImpl> completionResultSets = result.getResultSets();
         for (int i = completionResultSets.size() - 1; i >= 0; i--) {
             CompletionResultSetImpl resultSet = completionResultSets.get(i);
-            sortedResultsSize += resultSet.getItems().size();
+            size += resultSet.getItems().size();
             qType = resultSet.getQueryType();
         }
         
         // Collect and sort the gathered completion items
-        List<CompletionItem> sri = new ArrayList<CompletionItem>(sortedResultsSize);
+        List<CompletionItem> resultItems = new ArrayList<CompletionItem>(size);
         String title = null;
         int anchorOffset = -1;
         boolean hasAdditionalItems = false;
-        int cnt = 0;
-        for (int i = 0; i < completionResultSets.size(); i++) {
-            CompletionResultSetImpl resultSet = (CompletionResultSetImpl)completionResultSets.get(i);
-            List<? extends CompletionItem> resultItems = resultSet.getItems();
-            if (resultItems.size() > 0) {
-//                if (cnt < PRESCAN) {
-//                    for (CompletionItem item : resultItems) {
-//                        if (cnt < PRESCAN && !filter.accept(item)) {
-//                            sortedResultsSize--;
-//                            continue;
-//                        }
-//                        sortedResultItems.add(item);
-//                        cnt++;
-//                    }
-//                } else {
-//                    sortedResultItems.addAll(resultItems);
-//                }
-                sri.addAll(resultItems);
-                if (title == null)
-                    title = resultSet.getTitle();
-                if (!hasAdditionalItems)
-                    hasAdditionalItems = resultSet.hasAdditionalItems();
-                if (anchorOffset == -1)
-                    anchorOffset = resultSet.getAnchorOffset();
+        if (size > 0) {
+            for (int i = 0; i < completionResultSets.size(); i++) {
+                CompletionResultSetImpl resultSet = completionResultSets.get(i);
+                List<? extends CompletionItem> items = resultSet.getItems();
+                if (items.size() > 0) {
+                    resultItems.addAll(items);
+                    if (title == null)
+                        title = resultSet.getTitle();
+                    if (!hasAdditionalItems)
+                        hasAdditionalItems = resultSet.hasAdditionalItems();
+                    if (anchorOffset == -1)
+                        anchorOffset = resultSet.getAnchorOffset();
+                }
             }
         }
-
-        final boolean noSuggestions = sortedResultsSize == 0;
-        if (noSuggestions && qType == CompletionProvider.COMPLETION_QUERY_TYPE) {
-            showCompletion(this.explicitQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
-            return;
-        }
-
-        Collections.sort(sri, CompletionItemComparator.get(getSortType()));
         
-        final ArrayList<CompletionItem> sortedResultItems = new ArrayList<CompletionItem>( sri.size() );
-        
-        if ( sri.size() > 0 ) {
-            // for (Iterator<CompletionItem> it = sortedResultItems.iterator(); it.hasNext() && cnt < PRESCAN;) {
-            for( int i = 0; i < sri.size(); i++) {
-                CompletionItem item = sri.get(i);
-                
+        final ArrayList<CompletionItem> sortedResultItems = new ArrayList<CompletionItem>(size = resultItems.size());
+        if (size > 0) {
+            Collections.sort(resultItems, CompletionItemComparator.get(getSortType()));
+            int cnt = 0;
+            for(int i = 0; i < size; i++) {
+                CompletionItem item = resultItems.get(i);                
                 if (cnt < PRESCAN ) {
-                    if (!filter.accept(item)) {
+                    if (!filter.accept(item))
                         continue;
-                    }
-                    else {
+                    else
                         sortedResultItems.add( item );
-                    }
                 }
                 else {
                     sortedResultItems.add(item);
                 }
-                //sortedResultItems.add(item);
                 cnt++;
             }
         }
-        
+
+        final boolean noSuggestions = sortedResultItems.size() == 0;
+        if (noSuggestions && qType == CompletionProvider.COMPLETION_QUERY_TYPE) {
+            showCompletion(this.explicitQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
+            return;
+        }
        
         // Request displaying of the completion pane in AWT thread
         final String displayTitle = title;
@@ -820,7 +802,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     try {
                         int[] block = Utilities.getIdentifierBlock(c, caretOffset);
                         if (block == null || block[1] == caretOffset) { // NOI18N
-                            CompletionItem item = (CompletionItem) sortedResultItems.get(0);
+                            CompletionItem item = sortedResultItems.get(0);
                             if (item.instantSubstitution(c)) {
                                 return;
                             }
