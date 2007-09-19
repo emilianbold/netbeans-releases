@@ -121,8 +121,12 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
          // getString() ,setString(), etc, etc., etc., will throw
          // a NPE if there is not resultset internally because
          // the rowset wasn't executed
-         if (!isExecuted()) {
-             throw new SQLException(rb.getString("EXECUTE_NEVER_CALLED")); //NOI18N
+         //
+         // If the row set metadata has been set, even though we never
+         // executed a command, then this is OK too.  This is a cached
+         // row set and can be initialized without executing a command.
+         if (!isExecuted() && this.rowSetMD == null) {
+            throw new SQLException(rb.getString("EXECUTE_NEVER_CALLED")); //NOI18N
          }
      }
     
@@ -300,7 +304,7 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
       * the columns in this <code>CachedRowSetXImpl</code> object.
       * @serial
       */
-     protected RowSetMetaDataXImpl rowSetMD;
+     protected RowSetMetaData rowSetMD;
     
      // Properties of this RowSet
     
@@ -713,7 +717,12 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
       *             values for md will be read
       * @throws SQLException if an error occurs
       */
-     private void initMetaData(RowSetMetaDataXImpl md, ResultSetMetaData rsmd) throws SQLException {
+     private void initMetaData(RowSetMetaData md, ResultSetMetaData rsmd) throws SQLException {
+                 
+        RowSetMetaDataX mdx = null;
+        if ( md instanceof RowSetMetaDataX ) {
+            mdx = (RowSetMetaDataX)md;
+        }
 
          Log.getLogger().entering(getClass().getName(), "initMetaData()");
          int numCols = rsmd.getColumnCount();
@@ -767,35 +776,37 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
              md.setColumnType(col, rsmd.getColumnType(col));
              md.setColumnTypeName(col, rsmd.getColumnTypeName(col));
             
-             md.setColumnClassName(col, rsmd.getColumnClassName(col));
-             /*
-              * We face a dilemna here.  The RI always says columns are writable.
-              * We'd like to give a better answer; but since we allow joins that
-              * would result in the database saying all columns are readonly, we
-              * can't just hand back the information the driver gives about the
-              * resultset.  As such, we would really like to compute if the column is
-              * writable in much the same way that CachedRowSetXWriter computes this
-              * information.  For now, we'll return true unless the user has provided
-              * information otherwise in the updatable columns on the rowset.
-              *
-              * Actually, even this will cause problems as there is a difference between
-              * insertable and updatable.  We want to allow new rows to specify insertable
-              * columns that are not updatable.  So we will actually honor insertable if it
-              * is present.  If not, we'll use updatable if present.  If not, we'll say the
-              * column is writable.
-              */
-             if (insertableColumns != null && insertableColumns.length >= col) {
-                 md.setWritable(col, insertableColumns[col-1]);
-                 md.setDefinitelyWritable(col, insertableColumns[col-1]);
-                 md.setReadOnly(col, !insertableColumns[col-1]);
-             } else if (updatableColumns != null && updatableColumns.length >= col) {
-                 md.setWritable(col, updatableColumns[col-1]);
-                 md.setDefinitelyWritable(col, updatableColumns[col-1]);
-                 md.setReadOnly(col, !updatableColumns[col-1]);
-             } else {
-                 md.setWritable(col, true);
-                 md.setDefinitelyWritable(col, false); // We don't know for sure
-                 md.setReadOnly(col, false);
+             if ( mdx != null ) {
+                 mdx.setColumnClassName(col, rsmd.getColumnClassName(col));
+                 /*
+                  * We face a dilemna here.  The RI always says columns are writable.
+                  * We'd like to give a better answer; but since we allow joins that
+                  * would result in the database saying all columns are readonly, we
+                  * can't just hand back the information the driver gives about the
+                  * resultset.  As such, we would really like to compute if the column is
+                  * writable in much the same way that CachedRowSetXWriter computes this
+                  * information.  For now, we'll return true unless the user has provided
+                  * information otherwise in the updatable columns on the rowset.
+                  *
+                  * Actually, even this will cause problems as there is a difference between
+                  * insertable and updatable.  We want to allow new rows to specify insertable
+                  * columns that are not updatable.  So we will actually honor insertable if it
+                  * is present.  If not, we'll use updatable if present.  If not, we'll say the
+                  * column is writable.
+                  */
+                 if (insertableColumns != null && insertableColumns.length >= col) {
+                     mdx.setWritable(col, insertableColumns[col-1]);
+                     mdx.setDefinitelyWritable(col, insertableColumns[col-1]);
+                     mdx.setReadOnly(col, !insertableColumns[col-1]);
+                 } else if (updatableColumns != null && updatableColumns.length >= col) {
+                     mdx.setWritable(col, updatableColumns[col-1]);
+                     mdx.setDefinitelyWritable(col, updatableColumns[col-1]);
+                     mdx.setReadOnly(col, !updatableColumns[col-1]);
+                 } else {
+                     mdx.setWritable(col, true);
+                     mdx.setDefinitelyWritable(col, false); // We don't know for sure
+                     mdx.setReadOnly(col, false);
+                 }
              }
             
              dbmslocatorsUpdateCopy = false;
@@ -2670,6 +2681,7 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
              if (cursorPos + row < 0) {
                  // fell off the front
                  beforeFirst();
+                 return false;
              } else {
                  if (absolutePos >= 0)
                      internalLast();
@@ -4094,7 +4106,7 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
      }
     
      public void setMetaData(RowSetMetaData md) throws SQLException {
-         rowSetMD =(RowSetMetaDataXImpl) md;
+         rowSetMD = md;
      }
     
     // Implemented in CachedRowSetXImpl
