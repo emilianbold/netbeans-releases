@@ -135,12 +135,6 @@
 			throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
 		throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunCmpMappings.VERSION_1_1);
 	}
-	public void setLockWhenModified2(boolean value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
-		throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunCmpMappings.VERSION_1_1);
-	}
-	public boolean isLockWhenModified2() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
-		throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunCmpMappings.VERSION_1_1);
-	}
 		</user-code>
 		<meta-property>
 			<bean-name>None</bean-name>
@@ -156,9 +150,6 @@
 		</meta-property>
 		<meta-property>
 			<bean-name>LockWhenModified</bean-name>
-		</meta-property>
-		<meta-property>
-			<bean-name>CheckAllAtCommit2</bean-name>
 		</meta-property>
 	</meta-element>
 	<meta-element>

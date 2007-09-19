@@ -151,12 +151,6 @@
 		<meta-property>
 			<bean-name>LockWhenModified</bean-name>
 		</meta-property>
-		<meta-property>
-			<bean-name>LockWhenModified2</bean-name>
-		</meta-property>
-		<meta-property>
-			<bean-name>CheckAllAtCommit2</bean-name>
-		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>none</dtd-name>

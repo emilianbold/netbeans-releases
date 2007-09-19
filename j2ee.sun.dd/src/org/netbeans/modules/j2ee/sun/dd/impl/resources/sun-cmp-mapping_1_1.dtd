@@ -17,8 +17,18 @@
 <!ELEMENT entity-mapping (ejb-name, table-name, cmp-field-mapping+, 
         cmr-field-mapping*, secondary-table*, consistency?)>
 
-<!ELEMENT consistency (none | check-modified-at-commit | lock-when-loaded |
+
+<!-- !PW I adjusted the definition of <consistency> slightly so that 
+     schema2beans does not view the second reference to check-all-at-commit 
+     as a distinct property (it isn't).
+
+     Original definition:
+          
+     ELEMENT consistency (none | check-modified-at-commit | lock-when-loaded |
         check-all-at-commit | (lock-when-modified, check-all-at-commit?) ) >
+  -->
+<!ELEMENT consistency (none | check-modified-at-commit | lock-when-loaded |
+        (lock-when-modified?, check-all-at-commit?) ) >
 
 <!ELEMENT read-only EMPTY>
 

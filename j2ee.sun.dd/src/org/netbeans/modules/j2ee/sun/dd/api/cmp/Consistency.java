@@ -27,8 +27,6 @@ public interface Consistency extends org.netbeans.modules.j2ee.sun.dd.api.Common
     public static final String LOCK_WHEN_LOADED = "LockWhenLoaded"; // NOI18N
     public static final String CHECK_ALL_AT_COMMIT = "CheckAllAtCommit"; // NOI18N
     public static final String LOCK_WHEN_MODIFIED = "LockWhenModified"; // NOI18N
-    public static final String LOCK_WHEN_MODIFIED2 = "LockWhenModified2"; // NOI18N
-    public static final String CHECK_ALL_AT_COMMIT2 = "CheckAllAtCommit2"; // NOI18N
     public static final String CHECK_VERSION_OF_ACCESSED_INSTANCES = "CheckVersionOfAccessedInstances"; // NOI18N
 
     public void setNone(boolean value);
@@ -45,12 +43,6 @@ public interface Consistency extends org.netbeans.modules.j2ee.sun.dd.api.Common
 
     public void setLockWhenModified(boolean value);
     public boolean isLockWhenModified();
-
-    public void setLockWhenModified2(boolean value) throws VersionNotSupportedException;
-    public boolean isLockWhenModified2() throws VersionNotSupportedException;
-
-    public void setCheckAllAtCommit2(boolean value);
-    public boolean isCheckAllAtCommit2();
 
     public void setCheckVersionOfAccessedInstances(CheckVersionOfAccessedInstances value) throws VersionNotSupportedException;
     public CheckVersionOfAccessedInstances getCheckVersionOfAccessedInstances() throws VersionNotSupportedException;
