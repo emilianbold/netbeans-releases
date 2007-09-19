@@ -109,7 +109,9 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	} else {
 	    tfFileName.setEditable(true);
 	}
-	tfLineNumber.setText(Integer.toString(b.getLineNumber()));
+        if (b.getLineNumber() > 0) {
+            tfLineNumber.setText(Integer.toString(b.getLineNumber()));
+        }
         tfCondition.setText(b.getCondition());
         setupConditionPane();
         
@@ -330,11 +332,14 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
             return false;
         }
         actionsPanel.ok();
-        breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
+        String lnum = tfLineNumber.getText().trim();
+        if (lnum.length() > 0) {
+            breakpoint.setLineNumber(Integer.parseInt(lnum));
+        }
         breakpoint.setCondition(tfCondition.getText());
         // Check if this breakpoint is already set
-        DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-        Breakpoint[] bs = dm.getBreakpoints ();
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        Breakpoint[] bs = dm.getBreakpoints();
         int i, k = bs.length;
         for (i = 0; i < k; i++) {
             if (bs[i] instanceof LineBreakpoint) {
