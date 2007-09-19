@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.indent.Indent;
 import org.netbeans.api.editor.indent.Reformat;
@@ -198,6 +199,7 @@ public final class IndentImpl {
             if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
                 // Original formatter does not have reindentation of multiple lines
                 // so reformat start line and continue for each line.
+                Position endPos = doc.createPosition(endOffset);
                 do {
                     startOffset = defaultFormatter.indentLine(doc, startOffset);
                     startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
@@ -205,7 +207,7 @@ public final class IndentImpl {
                         break;
                     lineElem = lineRootElem.getElement(startLineIndex);
                     startOffset = lineElem.getStartOffset(); // Move to next line
-                } while (startOffset < endOffset);
+                } while (startOffset < endPos.getOffset());
 
             }
         } finally {
