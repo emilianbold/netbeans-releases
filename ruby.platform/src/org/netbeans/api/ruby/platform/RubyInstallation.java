@@ -284,17 +284,9 @@ public class RubyInstallation {
 
         ChooseRubyPanel panel = new ChooseRubyPanel(displayList);
 
-        javax.swing.JButton closeButton =
-            new javax.swing.JButton(NbBundle.getMessage(RubyInstallation.class, "CTL_Close"));
-        closeButton.getAccessibleContext()
-                   .setAccessibleDescription(NbBundle.getMessage(RubyInstallation.class,
-                "AD_Close")); // NOI18N
-
-        Object[] options = new Object[] { closeButton };
-        DialogDescriptor descriptor =
-            new DialogDescriptor(panel,
-                NbBundle.getMessage(RubyInstallation.class, "ChooseRuby"), true, options,
-                closeButton,
+        DialogDescriptor descriptor = new DialogDescriptor(panel,
+                NbBundle.getMessage(RubyInstallation.class, "ChooseRuby"), true,
+                DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RubyInstallation.class), null);
         descriptor.setMessageType(NotifyDescriptor.Message.INFORMATION_MESSAGE);
 
@@ -310,6 +302,9 @@ public class RubyInstallation {
             }
         }
 
+        if (descriptor.getValue() != DialogDescriptor.OK_OPTION) {
+            return "jruby";
+        }
         String displayItem = panel.getChosenInterpreter();
         if (displayItem == null) {
             // Force user to choose
