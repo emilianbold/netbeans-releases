@@ -375,7 +375,7 @@ public class ElementJavadoc {
             sb.append("interface "); //NOI18N
         else
             sb.append("class "); //NOI18N            
-        sb.append("<b>").append(cdoc.name()); //NOI18N
+        sb.append("<b>").append(cdoc.simpleTypeName()); //NOI18N
         TypeVariable[] tvars = cdoc.typeParameters();
         if (tvars.length > 0) {
             sb.append("&lt;"); //NOI18N
