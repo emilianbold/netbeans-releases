@@ -66,6 +66,7 @@ public class FileStatusCache {
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
+    private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, false);
 
     public static final FileInformation FILE_INFORMATION_CONFLICT = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, false);
     
@@ -343,10 +344,25 @@ public class FileStatusCache {
 
         Map<File, FileInformation> files = getScannedFiles(dir);
         if (files == null || files == FileStatusCache.NOT_MANAGED_MAP ) return;     
-        
         FileInformation current = files.get(file);  
-        if (FileStatusCache.equivalent(fi, current)) return;
-        
+        if (FileStatusCache.equivalent(fi, current))  {
+            if (FileStatusCache.equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) {
+                if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
+                    Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
+                    fi = FILE_INFORMATION_EXCLUDED;
+                 } else {
+                     return;
+                 }
+            } else {
+                return;
+            }
+        }
+        if (FileStatusCache.equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) {
+            if (FileStatusCache.equivalent(FILE_INFORMATION_EXCLUDED, current)) {
+                Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is Excluded", file.getAbsolutePath()); // NOI18N
+                return;
+            }
+        } 
         file = FileUtil.normalizeFile(file);
         dir = FileUtil.normalizeFile(dir);
         Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
@@ -412,34 +428,48 @@ public class FileStatusCache {
     }
     
     /**
-     * Refreshes status of all files inside given context. Files that have some remote status, eg. REMOTELY_ADDED
-     * are brought back to UPTODATE.
+     * Refreshes status of the specfified file or all files inside the 
+     * specified directory. 
+     *
+     * @param file
+     */
+    public void refreshCached(File root) {
+        if (root.isDirectory()) {
+            File repository = Mercurial.getInstance().getTopmostManagedParent(root);
+            if (repository == null) {
+                return;
+            }
+            File roots[] = new File[1];
+            roots[0] = root;
+            File [] files = listFiles(roots, ~0);
+            if (files.length == 0) {
+                return;
+            } 
+            Map<File, FileInformation> allFiles;
+            try {
+                allFiles = HgCommand.getAllStatus(repository, root);
+                for (int i = 0; i < files.length; i++) {
+                    File file = files[i];
+                    FileInformation fi = allFiles.get(file);
+                    refreshFileStatus(file, fi);
+                }
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.FINE, "refreshCached() file: {0} {1} { 2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N
+            }
+        } else {
+            refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        }
+    }
+
+    /**
+     * Refreshes status of all files inside given context. 
      *
      * @param ctx context to refresh
      */
     public void refreshCached(VCSContext ctx) {
         
-        File repository = HgUtils.getRootFile(ctx);
-
         for (File root : ctx.getRootFiles()) {
-            if (root.isDirectory()) {
-                File roots[] = new File[1];
-                roots[0] = root;
-                File [] files = listFiles(roots, ~0);
-                Map<File, FileInformation> allFiles;
-                try {
-                    allFiles = HgCommand.getAllStatus(repository, root);
-                    for (int i = 0; i < files.length; i++) {
-                        File file = files[i];
-                        FileInformation fi = allFiles.get(file);
-                        refreshFileStatus(file, fi);
-                    }
-                } catch (HgException ex) {
-                    Mercurial.LOG.log(Level.FINE, "refreshCached() file: {0} {1} { 2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N
-                }
-            } else {
-                refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            }
+            refreshCached(root);
         }
     }
     
