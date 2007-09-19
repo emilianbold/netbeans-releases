@@ -39,6 +39,7 @@ import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -60,8 +61,7 @@ public class AddSubItemAction extends NodeAction {
     }
     
     public String getName() {
-        return "Insert";
-        //return NbBundle.getMessage(AlignAction.class, "ACT_Align"); // NOI18N
+        return NbBundle.getMessage(AddSubItemAction.class, "ACT_AddFromPalette"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
@@ -80,8 +80,7 @@ public class AddSubItemAction extends NodeAction {
      */
     
     public JMenuItem getPopupPresenter() {
-        JMenu popupMenu = new JMenu("Insert");
-            //NbBundle.getMessage(AlignAction.class, "ACT_Align")); // NOI18N
+        JMenu popupMenu = new JMenu(NbBundle.getMessage(AddSubItemAction.class, "ACT_AddFromPalette")); //NOI18N
         
         popupMenu.setEnabled(isEnabled());
         HelpCtx.setHelpIDString(popupMenu, AlignAction.class.getName());
