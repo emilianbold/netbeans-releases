@@ -46,7 +46,11 @@ public class DerbyWaiter {
     
     public DerbyWaiter(boolean migration) {
         isMigration = migration;
-        JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
+        if (JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET).length == 0) {
+            JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
+        } else  {
+            registerConnections();
+        }
     }
     
     private synchronized void registerConnections() {
