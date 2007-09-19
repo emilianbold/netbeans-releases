@@ -1,4 +1,6 @@
+<#if licenseFirst??>
 ${licenseFirst}
+</#if>
 ${licensePrefix}The contents of this file are subject to the terms of the Common Development
 ${licensePrefix}and Distribution License (the License). You may not use this file except in
 ${licensePrefix}compliance with the License.
@@ -13,4 +15,6 @@ ${licensePrefix}enclosed by brackets [] replaced by your own identifying informa
 ${licensePrefix}"Portions Copyrighted [year] [name of copyright owner]"
 ${licensePrefix}
 ${licensePrefix}Portions Copyrighted ${date?date?string("yyyy")} Sun Microsystems, Inc.
+<#if licenseLast??>
 ${licenseLast}
+</#if>
