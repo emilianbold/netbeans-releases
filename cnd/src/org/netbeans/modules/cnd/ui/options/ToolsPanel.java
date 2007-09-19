@@ -654,6 +654,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (fortranSelections.get(cs.getName()) != null) {
                 model.setFortranCompilerName(fortranSelections.get(cs.getName()));
             }
+            currentCompilerSet = cs;
+            fireCompilerSetChange();
         }
         
         if (model != null) { // model is null for Tools->Options if we don't look at C/C++ panel

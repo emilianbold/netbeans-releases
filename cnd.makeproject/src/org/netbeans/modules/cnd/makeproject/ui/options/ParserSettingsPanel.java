@@ -38,6 +38,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     
     private HashMap predefinedPanels = new HashMap();
     private boolean updating = false;
+    private boolean modified = false;
     private ToolsPanel tp;
     /**
      * Creates new form ParserSettingsPanel
@@ -86,12 +87,15 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private void updateTabs() {
         tabbedPane.removeAll();
         CompilerSet compilerCollection = (CompilerSet)compilerCollectionComboBox.getSelectedItem();
+        if (compilerCollection == null)
+            return;
         for (Tool tool : compilerCollection.getTools()) {
             if (tool instanceof CCCCompiler) { // FIXUP: should implement/use 'capability' of tool
-                PredefinedPanel predefinedPanel = (PredefinedPanel)predefinedPanels.get(tool);
+                PredefinedPanel predefinedPanel = (PredefinedPanel)predefinedPanels.get(tool.getPath());
                 if (predefinedPanel == null) {
                     predefinedPanel = new PredefinedPanel((CCCCompiler)tool, this);
-                    predefinedPanels.put(tool, predefinedPanel);
+                    predefinedPanels.put(tool.getPath(), predefinedPanel);
+                    modified = true;
                 }
                 tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
             }
@@ -245,9 +249,10 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         for (int i = 0; i < viewedPanels.length; i++) {
             wasChanges |= viewedPanels[i].save();
         }
-        if (wasChanges) {
+        if (wasChanges || modified) {
             if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("fireFilesPropertiesChanged in save for ParserSettingsPanel");
             fireFilesPropertiesChanged();
+            modified = false;
         } else {
             if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("not need to fireFilesPropertiesChanged in save for ParserSettingsPanel");
         }
