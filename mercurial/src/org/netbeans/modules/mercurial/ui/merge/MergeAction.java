@@ -87,7 +87,7 @@ public class MergeAction extends AbstractAction {
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP")); // NOI18N
                     doMergeAction(root, revStr);
-                    HgUtils.forceStatusRefresh(root);
+                    HgUtils.forceStatusRefreshProject(context);
                     HgUtils.outputMercurialTab(""); // NOI18N
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

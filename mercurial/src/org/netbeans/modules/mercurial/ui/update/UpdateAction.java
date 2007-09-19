@@ -55,7 +55,7 @@ public class UpdateAction extends AbstractAction {
         update(context, null);
     }
     
-    public static void update(VCSContext ctx, final String revision){
+    public static void update(final VCSContext ctx, final String revision){
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
@@ -93,7 +93,7 @@ public class UpdateAction extends AbstractAction {
                 
                 // Force Status Refresh from this dir and below
                 if(!bNoUpdates)
-                    HgUtils.forceStatusRefresh(root);
+                    HgUtils.forceStatusRefreshProject(ctx);
 
                 HgUtils.outputMercurialTabInRed(
                         NbBundle.getMessage(UpdateAction.class,

@@ -228,7 +228,7 @@ public class PullAction extends AbstractAction {
             }
 
             if (!bNoChanges) {
-                HgUtils.forceStatusRefresh(root);
+                HgUtils.forceStatusRefreshProject(ctx);
                 // refresh filesystem to take account of deleted files.
                 FileObject rootObj = FileUtil.toFileObject(root);
                 try {

@@ -65,6 +65,9 @@ import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.SharabilityQuery;
 
 /**
@@ -463,6 +466,25 @@ itor tabs #66700).
     public static void forceStatusRefresh(VCSContext context) {
         for (File root :  context.getRootFiles()) {
             forceStatusRefresh(root);
+        }
+    }
+
+    /**
+     * Forces refresh of Status for the project of the specified context
+     *
+     * @param VCSContext ctx whose project is be updated.
+     * @return void
+     */
+    public static void forceStatusRefreshProject(VCSContext context) {
+        Project project = getProject(context);
+        if (project == null) return;
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        for (int j = 0; j < sourceGroups.length; j++) {
+            SourceGroup sourceGroup = sourceGroups[j];
+            FileObject srcRootFo = sourceGroup.getRootFolder();
+            File rootFile = FileUtil.toFile(srcRootFo);
+            forceStatusRefresh(rootFile);
         }
     }
 
