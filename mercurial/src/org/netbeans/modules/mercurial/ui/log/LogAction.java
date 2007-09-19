@@ -65,12 +65,11 @@ public class LogAction extends AbstractAction {
     }
     
     private void log(VCSContext ctx){
-        Mercurial hg = Mercurial.getInstance();
+        final File root = HgUtils.getRootFile(ctx);
+        if (root == null) return;
         
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         if (files == null || files.length == 0) return;
-        final File root = hg.getTopmostManagedParent(files[0]);
-        if (root == null) return;
         String projectName = HgProjectUtils.getProjectName(root);
         Boolean projIsRepos = true;
         File projFile = root;
@@ -82,14 +81,11 @@ public class LogAction extends AbstractAction {
         final String prjName = projectName;
         final File prjFile = projFile;
         
-        final boolean bLogAll = root.equals(files[0]);
-        
-        if (!bLogAll){
-            FileStatusCache cache = hg.getFileStatusCache();        
-            addFiles (files, cache);
+        for (File file: files) {
+            logFiles.add(file);
         }
                 
-        RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());        
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());        
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 Mercurial hg = Mercurial.getInstance();
@@ -99,11 +95,7 @@ public class LogAction extends AbstractAction {
                     bMergeNeeded = headRevList.size() > 1;
                     
                     List<String> list = new LinkedList<String>();
-                    if (bLogAll){
-                        list = HgCommand.doLogAll(root);
-                    }else{
-                        list = HgCommand.doLog(root, logFiles);
-                    }
+                    list = HgCommand.doLog(root, logFiles);
                     
                     if (list != null && !list.isEmpty()){
                         String tabTitle;
@@ -130,8 +122,7 @@ public class LogAction extends AbstractAction {
                                 out.println(s);
                             }
                         }
-                        if (!bLogAll)
-                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Files", // NOI18N
+                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Files", // NOI18N
                                 logFiles));
                         
                         outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_PrjName", // NOI18N
@@ -170,16 +161,6 @@ public class LogAction extends AbstractAction {
 
     }
     
-    private void addFiles(File[] files, FileStatusCache cache) {
-        for (File file : files) {
-            if (file.isDirectory()) {
-                addFiles (file.listFiles(), cache);
-            } else if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) != 0){
-                logFiles.add(file);
-            }
-        }
-    }
-
     public boolean isEnabled() {
         // If it's a mercurial managed repository enable log action - Show History
         return HgRepositoryContextCache.hasHistory(context);
