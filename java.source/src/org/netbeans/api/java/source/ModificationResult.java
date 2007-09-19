@@ -131,23 +131,8 @@ public final class ModificationResult {
                                     doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
                                     break;
                                 case CREATE:
-                                    CreateChange change = (CreateChange) diff;
-                                    change.getFileObject().openOutputStream();
-                                    Writer w = null;
-                                    try {
-                                        w = change.getFileObject().openWriter();
-                                        w.append(change.getNewText());
-                                    } catch (IOException e) {
-                                        Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
-                                    } finally {
-                                        if (w != null) {
-                                            try {
-                                                w.close();
-                                            } catch (IOException e) {
-                                                Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
-                                            }
-                                        }
-                                    }
+                                    createUnit(diff);
+                                    break;
                             }
                         } catch (BadLocationException ex) {
                             IOException ioe = new IOException();
@@ -185,8 +170,12 @@ public final class ModificationResult {
             }
             int offset = 0;                
             for (Difference diff : differences) {
-                if (diff.isExcluded() || Difference.Kind.CREATE == diff.getKind())
+                if (diff.isExcluded())
                     continue;
+                if (Difference.Kind.CREATE == diff.getKind()) {
+                    createUnit(diff);
+                    continue;
+                }
                 int pos = diff.getStartPosition().getOffset();
                 int toread = pos - offset;
                 char[] buff = new char[toread];
@@ -228,6 +217,26 @@ public final class ModificationResult {
             if (out != null)
                 out.close();
         }            
+    }
+
+    private void createUnit(Difference diff) throws IOException {
+        CreateChange change = (CreateChange) diff;
+        change.getFileObject().openOutputStream();
+        Writer w = null;
+        try {
+            w = change.getFileObject().openWriter();
+            w.append(change.getNewText());
+        } catch (IOException e) {
+            Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+        } finally {
+            if (w != null) {
+                try {
+                    w.close();
+                } catch (IOException e) {
+                    Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+                }
+            }
+        }
     }
     
     private int convertToLF(byte[] buff) {
