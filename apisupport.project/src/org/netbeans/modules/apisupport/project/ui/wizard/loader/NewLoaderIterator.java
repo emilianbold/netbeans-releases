@@ -379,8 +379,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
     
     private static String formatImageSnippet(String path) {
         if (path == null) {
-            // XXX #115962 Utilities is unconditionally imported
-            return "return super.getIcon(type); // TODO add a custom icon here\n"; //NOI18N
+            return "return super.getIcon(type); // TODO add a custom icon here: Utilities.loadImage(..., true)\n"; //NOI18N
         }
         StringBuffer buff = new StringBuffer();
         buff.append("        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {\n"); //NOI18N

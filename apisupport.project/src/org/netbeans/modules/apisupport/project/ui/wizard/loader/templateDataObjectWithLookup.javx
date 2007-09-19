@@ -16,7 +16,7 @@ public class @@PREFIX@@DataObject extends MultiDataObject {
 @@EDITOR_SUPPORT_SNIPPET@@
     }
     
-    protected Node createNodeDelegate() {
+    protected @Override Node createNodeDelegate() {
         return new @@PREFIX@@DataNode(this, getLookup());
     }
 
