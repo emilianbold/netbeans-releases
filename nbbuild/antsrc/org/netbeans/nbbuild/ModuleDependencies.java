@@ -306,7 +306,7 @@ public class ModuleDependencies extends Task {
                 if (info.friends == null) {
                     continue;
                 }
-                log("Friends for " + info.getName(), Project.MSG_DEBUG);
+                log("Friends for " + info.getName(false), Project.MSG_DEBUG);
                 int cntFriends = 0;
                 boolean printed = false;
                 for (String n : info.friends) {
@@ -317,13 +317,13 @@ public class ModuleDependencies extends Task {
                     
                     if (!printed) {
                         w.print("MODULE ");
-                        w.println(info.getName());
+                        w.println(info.getName(false));
                         printed = true;
                     }
                     
                     if (friend != null) {
                         w.print("  FRIEND ");
-                        w.println(friend.getName());
+                        w.println(friend.getName(false));
                     } else {
                         w.print("  EXTERNAL ");
                         w.println(n);
@@ -331,7 +331,7 @@ public class ModuleDependencies extends Task {
                     cntFriends++;
                 }
                 if (cntFriends > maxFriends) {
-                    throw new BuildException("Too many intercluster friends (" + cntFriends + ") for module " + info.getName());
+                    throw new BuildException("Too many intercluster friends (" + cntFriends + ") for module " + info.getName(false));
                 }
                 
                 if (cntFriends > 0) {
@@ -411,7 +411,7 @@ public class ModuleDependencies extends Task {
                 continue;
             }
             w.print ("MODULE ");
-            w.print (m.getName ());
+            w.print(m.getName(true));
             w.println ();
         }
         w.close ();
@@ -425,7 +425,7 @@ public class ModuleDependencies extends Task {
             }
             if (m.showInAutoupdate) {
                 w.print("KIT ");
-                w.print(m.getName());
+                w.print(m.getName(false));
                 w.println();
                 for (Dependency d : m.depends) {
                     if (regexp != null && !regexp.matcher(m.group).matches()) {
@@ -434,7 +434,7 @@ public class ModuleDependencies extends Task {
                     if (!d.isSpecial()) {
                         ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
                         if (theModuleOneIsDependingOn.showInAutoupdate) {
-                            w.print("  REQUIRES " + theModuleOneIsDependingOn.getName());
+                            w.print("  REQUIRES " + theModuleOneIsDependingOn.getName(false));
                             w.println();
                         }
                     }
@@ -538,7 +538,7 @@ public class ModuleDependencies extends Task {
                 
                 if (first) {
                     w.print ("MODULE ");
-                    w.print (m.getName ());
+                    w.print (m.getName (false));
                     w.println ();
                     first = false;
                 }
@@ -547,7 +547,7 @@ public class ModuleDependencies extends Task {
                     w.print (d.getName ());
                 } else {
                     ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                    w.print (theModuleOneIsDependingOn.getName ());
+                    w.print (theModuleOneIsDependingOn.getName (false));
                 }
                 w.println ();
             }
@@ -614,7 +614,7 @@ public class ModuleDependencies extends Task {
                     first = false;
                 }
                 w.print (print);
-                w.print (ref.getName ());
+                w.print (ref.getName (false));
                 w.println ();
             }
         }
@@ -751,12 +751,16 @@ public class ModuleDependencies extends Task {
             return codebasename.hashCode ();
         }
         
-        public String getName () {
-            return codebasename + " (" + group + ")";
+        public String getName(boolean includeMajorVersion) {
+            if (!includeMajorVersion || majorVersion == -1) {
+                return codebasename + " (" + group + ")";
+            } else {
+                return codebasename + "/" + majorVersion + " (" + group + ")";
+            }
         }
 
         public @Override String toString() {
-            return "ModuleInfo[" + getName () + "]";
+            return "ModuleInfo[" + getName (false) + "]";
         }
     } // end of ModuleInfo
     

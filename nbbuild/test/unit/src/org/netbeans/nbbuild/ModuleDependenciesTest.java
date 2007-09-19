@@ -650,8 +650,8 @@ public class ModuleDependenciesTest extends NbTestCase {
         StringTokenizer tok = new StringTokenizer (res, "\n\r");
         
         assertEquals ("We have two modules: " + res, 2, tok.countTokens ());
-        assertEquals ("First contains another module, as it is sooner in alhabet\n" + res, "MODULE my.another.module (ahoj)", tok.nextToken ());
-        assertEquals ("Second the next one" + res, "MODULE my.module (ahoj)", tok.nextToken ());
+        assertEquals ("First contains another module, as it is sooner in alphabet\n" + res, "MODULE my.another.module/3 (ahoj)", tok.nextToken ());
+        assertEquals ("Second the next one" + res, "MODULE my.module/3 (ahoj)", tok.nextToken ());
         assertFalse ("No next tokens", tok.hasMoreElements ());
     }
     
