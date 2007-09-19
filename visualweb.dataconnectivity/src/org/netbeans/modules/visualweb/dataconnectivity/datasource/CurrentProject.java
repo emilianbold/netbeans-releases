@@ -22,6 +22,12 @@ package org.netbeans.modules.visualweb.dataconnectivity.datasource;
 
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -31,6 +37,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
@@ -40,10 +47,12 @@ import org.openide.windows.TopComponent;
 public class CurrentProject {
     private static CurrentProject _instance = null;
     private Project project = null;
+    protected ProjectsChangedListener changedProjectsListener = new ProjectsChangedListener();
         
     /** Creates a new instance of CurrentProject */
     private CurrentProject() {                        
         DataObject obj = Utilities.actionsGlobalContext().lookup(DataObject.class);
+        OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, changedProjectsListener, OpenProjects.getDefault()));
         
         if (obj != null) {
             FileObject fileObject = obj.getPrimaryFile();
@@ -89,6 +98,26 @@ public class CurrentProject {
         FacesModel model = ((LiveUnit) context).getModel();
         project = model.getProject();
         return project;
+    }
+      
+    public class ProjectsChangedListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent event) {
+            
+            // The list of open projects has changed; clean up any old projects we may be holding on to.
+            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(event.getPropertyName())) {                
+                List<Project> oldOpenProjectsList = Arrays.asList((Project[]) event.getOldValue());
+                List<Project> newOpenProjectsList = Arrays.asList((Project[]) event.getNewValue());
+                Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
+                closedProjectsSet.removeAll(newOpenProjectsList);
+                for (Project project : closedProjectsSet) {
+                    // Project has been closed; null the project
+                    if (_instance.project == project) {
+                        _instance.project = null;
+                        OpenProjects.getDefault().removePropertyChangeListener(this);
+                    }                                         
+                }                                               
+            }
+        }
     }
                
 }
