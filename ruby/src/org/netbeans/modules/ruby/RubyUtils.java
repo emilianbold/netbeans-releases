@@ -16,6 +16,7 @@
  */
 package org.netbeans.modules.ruby;
 
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.filesystems.FileObject;
@@ -474,5 +475,105 @@ public class RubyUtils {
         }
         
         return viewFile;
+    }
+    
+    public static boolean isRowWhite(String text, int offset) throws BadLocationException {
+        try {
+            // Search forwards
+            for (int i = offset; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (c == '\n') {
+                    break;
+                }
+                if (!Character.isWhitespace(c)) {
+                    return false;
+                }
+            }
+            // Search backwards
+            for (int i = offset-1; i >= 0; i--) {
+                char c = text.charAt(i);
+                if (c == '\n') {
+                    break;
+                }
+                if (!Character.isWhitespace(c)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        } catch (Exception ex) {
+            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
+            ble.initCause(ex);
+            throw ble;
+        }
+    }
+
+    public static boolean isRowEmpty(String text, int offset) throws BadLocationException {
+        try {
+            if (offset < text.length()) {
+                char c = text.charAt(offset);
+                if (!(c == '\n' || (c == '\r' && (offset == text.length()-1 || text.charAt(offset+1) == '\n')))) {
+                    return false;
+                }
+            }
+            
+            if (!(offset == 0 || text.charAt(offset-1) == '\n')) {
+                // There's previous stuff on this line
+                return false;
+            }
+
+            return true;
+        } catch (Exception ex) {
+            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
+            ble.initCause(ex);
+            throw ble;
+        }
+    }
+
+    public static int getRowLastNonWhite(String text, int offset) throws BadLocationException {
+        try {
+            // Find end of line
+            int i = offset;
+            for (; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (c == '\n' || (c == '\r' && (i == text.length()-1 || text.charAt(i+1) == '\n'))) {
+                    break;
+                }
+            }
+            // Search backwards to find last nonspace char from offset
+            for (i--; i >= 0; i--) {
+                char c = text.charAt(i);
+                if (c == '\n') {
+                    return -1;
+                }
+                if (!Character.isWhitespace(c)) {
+                    return i;
+                }
+            }
+
+            return -1;
+        } catch (Exception ex) {
+            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
+            ble.initCause(ex);
+            throw ble;
+        }
+    }
+
+    public static int getRowStart(String text, int offset) throws BadLocationException {
+        try {
+            // Search backwards
+            for (int i = offset-1; i >= 0; i--) {
+                char c = text.charAt(i);
+                if (c == '\n') {
+                    return i+1;
+                }
+            }
+
+            return 0;
+        } catch (Exception ex) {
+            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
+            ble.initCause(ex);
+            throw ble;
+        }
     }
 }

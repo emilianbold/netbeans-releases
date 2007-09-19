@@ -51,8 +51,6 @@ import org.netbeans.api.gsf.SemanticAnalyzer;
 import org.netbeans.api.gsf.Severity;
 import org.netbeans.api.gsf.Severity;
 import org.netbeans.api.gsf.SourceFileReader;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstRootElement;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -134,10 +132,6 @@ public class RubyParser implements Parser {
      */
     private boolean sanitizeSource(Context context, Sanitize sanitizing) {
 
-        if (context.noDocument) {
-            return false;
-        }
-        
         if (sanitizing == Sanitize.MISSING_END) {
             context.sanitizedSource = context.source + ";end";
             int start = context.source.length();
@@ -160,54 +154,37 @@ public class RubyParser implements Parser {
         // The user might be editing around the given caretOffset.
         // See if it looks modified
         // Insert an end statement? Insert a } marker?
-        if (context.doc == null) {
-            ParserFile file = context.file;
-            FileObject fileObject = file.getFileObject();
-
-            if (fileObject == null) {
-                context.noDocument = true;
-                return false;
-            }
-
-           context.doc = AstUtilities.getBaseDocument(fileObject, false);
-            if (context.doc == null) {
-                context.noDocument = true;
-                return false;
-            }
-        }
-        
-        BaseDocument doc = context.doc;
-        
-        if (offset > doc.getLength()) {
+        String doc = context.source;
+        if (offset > doc.length()) {
             return false;
         }
 
         try {
             // Sometimes the offset shows up on the next line
-            if (Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset)) {
-                offset = Utilities.getRowStart(doc, offset)-1;
+            if (RubyUtils.isRowEmpty(doc, offset) || RubyUtils.isRowWhite(doc, offset)) {
+                offset = RubyUtils.getRowStart(doc, offset)-1;
                 if (offset < 0) {
                     offset = 0;
                 }
             }
 
-            if (!(Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset))) {
+            if (!(RubyUtils.isRowEmpty(doc, offset) || RubyUtils.isRowWhite(doc, offset))) {
                 if ((sanitizing == Sanitize.EDITED_LINE) || (sanitizing == Sanitize.ERROR_LINE)) {
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineEnd = Utilities.getRowLastNonWhite(doc, offset);
+                    int lineEnd = RubyUtils.getRowLastNonWhite(doc, offset);
 
                     if (lineEnd != -1) {
-                        StringBuilder sb = new StringBuilder(doc.getLength());
-                        int lineStart = Utilities.getRowStart(doc, offset);
+                        StringBuilder sb = new StringBuilder(doc.length());
+                        int lineStart = RubyUtils.getRowStart(doc, offset);
                         int rest = lineStart + 1;
 
-                        sb.append(doc.getText(0, lineStart));
+                        sb.append(doc.substring(0, lineStart));
                         sb.append('#');
 
-                        if (rest < doc.getLength()) {
-                            sb.append(doc.getText(rest, doc.getLength() - rest));
+                        if (rest < doc.length()) {
+                            sb.append(doc.substring(rest, doc.length()));
                         }
-                        assert sb.length() == doc.getLength();
+                        assert sb.length() == doc.length();
 
                         context.sanitizedRange = new OffsetRange(lineStart, lineEnd);
                         context.sanitizedSource = sb.toString();
@@ -218,28 +195,33 @@ public class RubyParser implements Parser {
 
                     // Try nuking dots/colons from this line
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineEnd = Utilities.getRowLastNonWhite(doc, offset);
+                    int lineEnd = RubyUtils.getRowLastNonWhite(doc, offset);
 
                     if (lineEnd != -1) {
-                        StringBuilder sb = new StringBuilder(doc.getLength());
-                        int lineStart = Utilities.getRowStart(doc, offset);
-                        String line = doc.getText(lineStart, lineEnd - lineStart + 1);
+                        StringBuilder sb = new StringBuilder(doc.length());
+                        int lineStart = RubyUtils.getRowStart(doc, offset);
+                        String line = doc.substring(lineStart, lineEnd + 1);
                         int removeChars = 0;
                         int removeOffset = lineEnd;
 
-                        if (line.endsWith(".") || line.endsWith("(")) {
+                        if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
                             removeChars = 1;
-                        } else if (line.endsWith("::")) {
+                        } else if (line.endsWith("::")) { // NOI18N
                             removeChars = 2;
                             removeOffset = lineEnd - 1;
-                        } else if (line.endsWith(",)")) {
+                        } else if (line.endsWith("@@")) { // NOI18N
+                            removeChars = 2;
+                            removeOffset = lineEnd - 1;
+                        } else if (line.endsWith("@")) { // NOI18N
+                            removeChars = 1;
+                        } else if (line.endsWith(",)")) { // NOI18N
                             // Handle lone comma in parameter list - e.g.
                             // type "foo(a," -> you end up with "foo(a,|)" which doesn't parse - but
                             // the line ends with ")", not "," !
                             // Just remove the comma
                             removeChars = 1;
                             removeOffset = lineEnd - 1;
-                        } else if (line.endsWith(", )")) {
+                        } else if (line.endsWith(", )")) { // NOI18N
                             // Just remove the comma
                             removeChars = 1;
                             removeOffset = lineEnd - 2;
@@ -251,16 +233,16 @@ public class RubyParser implements Parser {
 
                         int rest = removeOffset + removeChars;
 
-                        sb.append(doc.getText(0, removeOffset));
+                        sb.append(doc.substring(0, removeOffset));
 
                         for (int i = 0; i < removeChars; i++) {
                             sb.append(' ');
                         }
 
-                        if (rest < doc.getLength()) {
-                            sb.append(doc.getText(rest, doc.getLength() - rest));
+                        if (rest < doc.length()) {
+                            sb.append(doc.substring(rest, doc.length()));
                         }
-                        assert sb.length() == doc.getLength();
+                        assert sb.length() == doc.length();
 
                         context.sanitizedRange = new OffsetRange(removeOffset, removeOffset +
                                 removeChars);
@@ -275,7 +257,7 @@ public class RubyParser implements Parser {
 
         return false;
     }
-
+    
     @SuppressWarnings("fallthrough")
     private ParserResult sanitize(final Context context,
         final Sanitize sanitizing) {
@@ -297,7 +279,9 @@ public class RubyParser implements Parser {
         case EDITED_DOT:
 
             // We've tried editing the caret location - now try editing the error location
-            if (context.errorOffset != -1) {
+            // (Don't bother doing this if errorOffset==caretOffset since that would try the same
+            // source as EDITED_DOT which has no better chance of succeeding...)
+            if (context.errorOffset != -1 && context.errorOffset != context.caretOffset) {
                 return parseBuffer(context, Sanitize.ERROR_DOT);
             }
 
@@ -650,9 +634,6 @@ public class RubyParser implements Parser {
         private final ParserFile file;
         private final ParseListener listener;
         private int errorOffset;
-        /** True if we've looked for a document and this file doesn't have one */
-        private boolean noDocument;
-        private BaseDocument doc;
         private String source;
         private String sanitizedSource;
         private OffsetRange sanitizedRange = OffsetRange.NONE;
@@ -667,10 +648,6 @@ public class RubyParser implements Parser {
 
         }
         
-        void setDocument(BaseDocument doc) {
-            this.doc = doc;
-        }
-
         @Override
         public String toString() {
             return "RubyParser.Context(" + file.toString() + ")"; // NOI18N

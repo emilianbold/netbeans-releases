@@ -153,4 +153,59 @@ public class RubyUtilsTest extends TestCase {
             "nil", "not", "or", "redo", "rescue", "retry", "return", "self", "super", "then", "true",
             "undef", "unless", "until", "when", "while", "yield",
         };
+    
+    public void testGetRowStart() throws Exception {
+        assertEquals(0, RubyUtils.getRowStart("", 0));
+        assertEquals(0, RubyUtils.getRowStart("abc", 0));
+        assertEquals(0, RubyUtils.getRowStart("abc", 1));
+        assertEquals(0, RubyUtils.getRowStart("abc\n", 2));
+        assertEquals(4, RubyUtils.getRowStart("abc\n", 4));
+        assertEquals(4, RubyUtils.getRowStart("abc\nab\n", 4));
+        assertEquals(4, RubyUtils.getRowStart("abc\nab\n", 5));
+        assertEquals(4, RubyUtils.getRowStart("abc\nab\n", 6));
+        assertEquals(4, RubyUtils.getRowStart("abc\n\n", 4));
+        assertEquals(4, RubyUtils.getRowStart("abc\na\rb\n", 4));
+        assertEquals(4, RubyUtils.getRowStart("abc\na\rb\n", 6));
+    }
+
+    public void testGetRowLastNonWhite() throws Exception {
+        assertEquals(-1, RubyUtils.getRowLastNonWhite("", 0));
+        assertEquals(2, RubyUtils.getRowLastNonWhite("abc", 0));
+        assertEquals(2, RubyUtils.getRowLastNonWhite("abc\r", 3));
+        assertEquals(2, RubyUtils.getRowLastNonWhite("abc\r\n", 3));
+        assertEquals(2, RubyUtils.getRowLastNonWhite("abc       ", 10));
+        assertEquals(2, RubyUtils.getRowLastNonWhite("abc       ", 5));
+        assertEquals(7, RubyUtils.getRowLastNonWhite("\ndef\nabc\r", 6));
+    }
+    
+    public void testIsRowEmpty() throws Exception {
+        // TODO - test fake \r without \n's in there
+        assertTrue(RubyUtils.isRowEmpty("", 0));
+        assertTrue(RubyUtils.isRowEmpty("a\n\n", 2));
+        assertTrue(RubyUtils.isRowEmpty("a\n\n", 3));
+        assertTrue(RubyUtils.isRowEmpty("\n", 0));
+        assertTrue(RubyUtils.isRowEmpty("a\n\r\n", 2));
+        assertFalse(RubyUtils.isRowEmpty("a", 0));
+        assertFalse(RubyUtils.isRowEmpty("a", 1));
+        assertFalse(RubyUtils.isRowEmpty("ab", 1));
+        assertFalse(RubyUtils.isRowEmpty("ab\n", 2));
+        assertFalse(RubyUtils.isRowEmpty("ab\n", 0));
+    }
+
+    public void testIsRowWhite() throws Exception {
+        assertTrue(RubyUtils.isRowWhite("", 0));
+        assertTrue(RubyUtils.isRowWhite("  ", 0));
+        assertTrue(RubyUtils.isRowWhite("  ", 1));
+        assertTrue(RubyUtils.isRowWhite("  ", 2));
+        assertFalse(RubyUtils.isRowWhite("a ", 2));
+        assertFalse(RubyUtils.isRowWhite("a ", 1));
+        assertFalse(RubyUtils.isRowWhite("a ", 0));
+        assertTrue(RubyUtils.isRowWhite("\n  \n", 0));
+        assertTrue(RubyUtils.isRowWhite("\n  \n", 1));
+        assertTrue(RubyUtils.isRowWhite("\n  \r\n", 1));
+        assertTrue(RubyUtils.isRowWhite("a\n  \r\n", 2));
+        assertFalse(RubyUtils.isRowWhite("a\na  \r\n", 2));
+        assertFalse(RubyUtils.isRowWhite("a\na  \r\n", 3));
+        assertFalse(RubyUtils.isRowWhite("a\n  a\r\n", 2));
+    }
 }
