@@ -90,7 +90,7 @@ public class RakeSupport {
      * @param rakeParameters Additional parameters to pass to rake
      */
     public void runRake(File pwd, FileObject rakeFile, String displayName,
-        FileLocator fileLocator, boolean warn, String... rakeParameters) {
+        FileLocator fileLocator, boolean warn, boolean debug, String... rakeParameters) {
         if (pwd == null) {
             assert rakeFile != null;
             pwd = FileUtil.toFile(rakeFile.getParent());
@@ -155,7 +155,7 @@ public class RakeSupport {
             desc.addOutputRecognizer(new TestNotifier(true, true));
         }
         
-        desc.addOutputRecognizer(new RakeErrorRecognizer(desc, charsetName));
+        desc.addOutputRecognizer(new RakeErrorRecognizer(desc, charsetName)).debug(debug);
 
         new RubyExecution(desc, charsetName).run();
     }

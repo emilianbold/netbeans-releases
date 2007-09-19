@@ -45,6 +45,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
+import org.netbeans.modules.ruby.rubyproject.RakeTargetsDebugAction;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
@@ -495,6 +496,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null)); // NOI18N
             actions.add(null);
             actions.add(SystemAction.get(RakeTargetsAction.class));
+            actions.add(SystemAction.get(RakeTargetsDebugAction.class));
             actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_RDOC, bundle.getString("LBL_RDocAction_Name"), null)); // NOI18N
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N

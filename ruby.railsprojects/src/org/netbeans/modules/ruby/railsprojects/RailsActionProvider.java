@@ -201,7 +201,7 @@ public class RailsActionProvider implements ActionProvider {
             rake.setTest(true);
             File pwd = FileUtil.toFile(project.getProjectDirectory());
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "Tests");
-            rake.runRake(pwd, null, displayName, new RailsFileLocator(context, project), true, "test"); // NOI18N
+            rake.runRake(pwd, null, displayName, new RailsFileLocator(context, project), true, false, "test"); // NOI18N
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
             if (!RubyInstallation.getInstance().isValidRuby(true)) {
@@ -254,7 +254,7 @@ public class RailsActionProvider implements ActionProvider {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
                 RakeSupport rake = new RakeSupport(project);
-                rake.runRake(null, file, file.getName(), new RailsFileLocator(context, project), true);
+                rake.runRake(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
                 return;
             }
             
@@ -272,7 +272,7 @@ public class RailsActionProvider implements ActionProvider {
                 String name = file.getName();
                 String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
                 RakeSupport rake = new RakeSupport(project);
-                rake.runRake(null, file, file.getName(), new RailsFileLocator(context, project), true, "db:migrate", "VERSION=" + version); // NOI18N
+                rake.runRake(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand, "db:migrate", "VERSION=" + version); // NOI18N
                 return;
             }
             

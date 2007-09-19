@@ -306,9 +306,9 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
             RakeSupport rake = new RakeSupport(project);
             if (version == -1) {
                 // Run to the current migration
-                rake.runRake(pwd, null, displayName, fileLocator, true, "db:migrate"); // NOI18N
+                rake.runRake(pwd, null, displayName, fileLocator, true, false, "db:migrate"); // NOI18N
             } else {
-                rake.runRake(pwd, null, displayName, fileLocator, true, "db:migrate", // NOI18N
+                rake.runRake(pwd, null, displayName, fileLocator, true, false, "db:migrate", // NOI18N
                     "VERSION=" + Integer.toString(version)); // NOI18N
             }
         }

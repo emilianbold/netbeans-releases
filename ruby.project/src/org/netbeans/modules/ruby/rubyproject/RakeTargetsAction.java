@@ -90,7 +90,8 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Tor Norbye
  */
-public final class RakeTargetsAction extends SystemAction implements ContextAwareAction {
+public class RakeTargetsAction extends SystemAction implements ContextAwareAction {
+    
     private static List<RakeTarget> recentTargets = new ArrayList<RakeTarget>();
 
     /** Set during a refresh */
@@ -98,6 +99,8 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
     private static final String RAKE_T_OUTPUT = "nbproject/private/rake-t.txt"; // NOI18N
     private static final String REFRESH_TARGETS = "netbeans-refresh-targets"; // NOI18N
     private static final String RAKE_ABORTED = "rake aborted!"; // NOI18N
+    
+    protected boolean debug;
 
     @Override
     public String getName() {
@@ -115,14 +118,14 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
     }
 
     public Action createContextAwareInstance(Lookup actionContext) {
-        return new ContextAction(actionContext);
+        return new ContextAction(actionContext, debug);
     }
 
     /**
      * Create the submenu.
      */
-    private static JMenu createMenu(Project project) {
-        return new LazyMenu(project);
+    private static JMenu createMenu(Project project, boolean debug) {
+        return new LazyMenu(project, debug);
     }
 
     private static List<RakeTarget> getRakeTargets(Project project) {
@@ -497,10 +500,13 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
      * The particular instance of this action for a given project.
      */
     private static final class ContextAction extends AbstractAction implements Presenter.Popup {
+        
         private final Project project;
+        private final boolean debug;
 
-        public ContextAction(Lookup lkp) {
-            super(SystemAction.get(RakeTargetsAction.class).getName());
+        public ContextAction(Lookup lkp, boolean debug) {
+            super(SystemAction.get(debug ? RakeTargetsDebugAction.class : RakeTargetsAction.class).getName());
+            this.debug = debug;
 
             Collection<?extends Project> apcs = lkp.lookupAll(Project.class);
             Project p = null;
@@ -520,7 +526,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
 
         public JMenuItem getPopupPresenter() {
             if (project != null) {
-                return createMenu(project);
+                return createMenu(project, debug);
             } else {
                 return new Actions.MenuItem(this, false);
             }
@@ -533,11 +539,14 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
     }
 
     private static final class LazyMenu extends JMenu {
+        
         private final Project project;
-        private boolean initialized = false;
+        private boolean initialized;
+        private final boolean debug;
 
-        public LazyMenu(Project project) {
-            super(SystemAction.get(RakeTargetsAction.class).getName());
+        public LazyMenu(Project project, boolean debug) {
+            super(SystemAction.get(debug ? RakeTargetsDebugAction.class : RakeTargetsAction.class).getName());
+            this.debug = debug;
             this.project = project;
         }
 
@@ -569,7 +578,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
 
                     // Show the target name (e.g. doc:app) rather than the display name (app)
                     JMenuItem menuitem = new JMenuItem(target.getTarget());
-                    menuitem.addActionListener(new TargetMenuItemHandler(project, target));
+                    menuitem.addActionListener(new TargetMenuItemHandler(project, target, debug));
                     menuitem.setToolTipText(target.getDescription());
                     add(menuitem);
                     needsep = true;
@@ -584,7 +593,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
                 for (RakeTarget target : targets) {
                     if (target.isTarget()) {
                         JMenuItem menuitem = new JMenuItem(target.getDisplayName());
-                        menuitem.addActionListener(new TargetMenuItemHandler(project, target));
+                        menuitem.addActionListener(new TargetMenuItemHandler(project, target, debug));
                         menuitem.setToolTipText(target.getDescription());
                         add(menuitem);
                     } else {
@@ -603,7 +612,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
                 JMenuItem menuitem =
                     new JMenuItem(NbBundle.getMessage(RakeTargetsAction.class, "RefreshTargets"));
                 menuitem.addActionListener(new TargetMenuItemHandler(project,
-                        new RakeTarget(REFRESH_TARGETS, null, null)));
+                        new RakeTarget(REFRESH_TARGETS, null, null), debug));
                 menuitem.setToolTipText(NbBundle.getMessage(RakeTargetsAction.class,
                         "RefreshTargetsHint"));
                 add(menuitem);
@@ -624,7 +633,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
             for (RakeTarget child : children) {
                 if (child.isTarget()) {
                     JMenuItem menuitem = new JMenuItem(child.getDisplayName());
-                    menuitem.addActionListener(new TargetMenuItemHandler(project, child));
+                    menuitem.addActionListener(new TargetMenuItemHandler(project, child, debug));
                     menuitem.setToolTipText(child.getDescription());
                     submenu.add(menuitem);
                 } else {
@@ -642,12 +651,15 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
      * Action handler for a menu item representing one target.
      */
     private static final class TargetMenuItemHandler implements ActionListener, Runnable {
+        
         private final Project project;
         private final RakeTarget target;
+        private final boolean debug;
 
-        public TargetMenuItemHandler(Project project, RakeTarget target) {
+        public TargetMenuItemHandler(Project project, RakeTarget target, boolean debug) {
             this.project = project;
             this.target = target;
+            this.debug = debug;
         }
 
         public void actionPerformed(ActionEvent ev) {
@@ -714,7 +726,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
                 rake.setTest(true);
             }
 
-            rake.runRake(pwd, rakeFile, displayName, fileLocator, true, targetName);
+            rake.runRake(pwd, rakeFile, displayName, fileLocator, true, debug, targetName);
 
             // Update recent targets list: add or move to end
             recentTargets.remove(target);
