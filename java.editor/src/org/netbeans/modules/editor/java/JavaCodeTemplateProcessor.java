@@ -57,6 +57,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private static final String FALSE = "false"; //NOI18N
     private static final String NULL = "null"; //NOI18N
+    private static final String ERROR = "<error>"; //NOI18N
     
     private CodeTemplateInsertRequest request;
 
@@ -262,7 +263,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (type != null) {
                     Types types = cInfo.getTypes();
                     for (Element e : locals) {
-                        if (e instanceof VariableElement && types.isAssignable(e.asType(), type)) {
+                        if (e instanceof VariableElement && !ERROR.contentEquals(e.getSimpleName()) && types.isAssignable(e.asType(), type)) {
                             if (name == null)
                                 return (VariableElement)e;
                             int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
@@ -297,7 +298,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                             public boolean accept(Element e, TypeMirror t) {
-                                return e.getKind().isField() &&
+                                return e.getKind().isField() && !ERROR.contentEquals(e.getSimpleName()) &&
                                         (!isStatic || e.getModifiers().contains(Modifier.STATIC)) &&
                                         tu.isAccessible(scope, e, t) &&
                                         (e.getKind().isField() && types.isAssignable(((VariableElement)e).asType(), dType) || e.getKind() == ElementKind.METHOD && types.isAssignable(((ExecutableElement)e).getReturnType(), dType));
@@ -342,7 +343,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private VariableElement array() {
         if (initParsing()) {
             for (Element e : locals) {
-                if (e instanceof VariableElement && e.asType().getKind() == TypeKind.ARRAY)
+                if (e instanceof VariableElement && !ERROR.contentEquals(e.getSimpleName()) && e.asType().getKind() == TypeKind.ARRAY)
                     return (VariableElement)e;
             }
         }
@@ -355,7 +356,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             if (iterableTE != null) {
                 TypeMirror iterableType = cInfo.getTypes().getDeclaredType(iterableTE);
                 for (Element e : locals) {
-                    if (e instanceof VariableElement && (e.asType().getKind() == TypeKind.ARRAY || cInfo.getTypes().isAssignable(e.asType(), iterableType)))
+                    if (e instanceof VariableElement && !ERROR.contentEquals(e.getSimpleName()) && (e.asType().getKind() == TypeKind.ARRAY || cInfo.getTypes().isAssignable(e.asType(), iterableType)))
                         return (VariableElement)e;
                 }
             }
