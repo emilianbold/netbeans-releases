@@ -23,6 +23,7 @@ package org.netbeans.core.windows;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -41,7 +42,6 @@ import org.netbeans.core.windows.model.DockingStatus;
 import org.netbeans.core.windows.model.Model;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.model.ModelFactory;
-import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.view.ControllerHandler;
 import org.netbeans.core.windows.view.View;
 import org.openide.windows.Mode;
@@ -1649,7 +1649,11 @@ final class Central implements ControllerHandler {
         // improve performance for such cases.
         if (oldActiveMode != null && oldActiveMode.equals(mode)) {
             if (tc != null && tc.equals(model.getModeSelectedTopComponent(mode))) {
-                return;
+                // #82385: do repeat activation if focus is in another window
+                KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+                if (kfm.getActiveWindow() == SwingUtilities.getWindowAncestor(tc)) {
+                    return;
+                }
             }
         }
         model.setActiveMode(mode);
