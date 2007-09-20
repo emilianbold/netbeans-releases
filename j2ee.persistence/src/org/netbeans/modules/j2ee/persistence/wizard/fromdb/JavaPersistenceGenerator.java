@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.persistence.entitygenerator.RelationshipRole;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+import org.netbeans.modules.j2ee.persistence.util.EntityMethodGenerator;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.WizardDescriptor;
@@ -511,98 +512,6 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 return temporalType;
             }
 
-            protected MethodTree createHashCodeMethod(List<VariableTree> fields) {
-                StringBuilder body = new StringBuilder(20 + fields.size() * 30);
-                body.append("{"); // NOI18N
-                body.append("int hash = 0;"); // NOI18N
-                for (VariableTree field : fields) {
-                    body.append(createHashCodeLineForField(field));
-                }
-                body.append("return hash;"); // NOI18N
-                body.append("}"); // NOI18N
-                TreeMaker make = copy.getTreeMaker();
-                // XXX Javadoc
-                return make.Method(
-                        make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.singletonList(genUtils.createAnnotation("java.lang.Override"))),
-                        "hashCode", // NOI18N
-                        make.PrimitiveType(TypeKind.INT),
-                        Collections.<TypeParameterTree>emptyList(),
-                        Collections.<VariableTree>emptyList(),
-                        Collections.<ExpressionTree>emptyList(),
-                        body.toString(),
-                        null);
-            }
-
-            private String createHashCodeLineForField(VariableTree field) {
-                Name fieldName = field.getName();
-                Tree fieldType = field.getType();
-                if (fieldType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-                    if (((PrimitiveTypeTree)fieldType).getPrimitiveTypeKind() == TypeKind.BOOLEAN) {
-                        return "hash += (" + fieldName + " ? 1 : 0"; // NOI18N
-                    }
-                    return "hash += (int)" + fieldName + ";"; // NOI18N
-                }
-                return "hash += (" + fieldName + " != null ? " + fieldName + ".hashCode() : 0);"; // NOI18N
-            }
-
-            protected MethodTree createEqualsMethod(String simpleClassName, List<VariableTree> fields) {
-                StringBuilder body = new StringBuilder(50 + fields.size() * 30);
-                body.append("{"); // NOI18N
-                body.append("// TODO: Warning - this method won't work in the case the id fields are not set\n"); // NOI18N
-                body.append("if (!(object instanceof "); // NOI18N
-                body.append(simpleClassName + ")) {return false;}"); // NOI18N
-                body.append(simpleClassName + " other = (" + simpleClassName + ")object;"); // NOI18N
-                for (VariableTree field : fields) {
-                    body.append(createEqualsLineForField(field));
-                }
-                body.append("return true;"); // NOI18N
-                body.append("}"); // NOI18N
-                TreeMaker make = copy.getTreeMaker();
-                // XXX Javadoc
-                return make.Method(
-                        make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.singletonList(genUtils.createAnnotation("java.lang.Override"))), // NOI18N
-                        "equals", // NOI18N
-                        make.PrimitiveType(TypeKind.BOOLEAN),
-                        Collections.<TypeParameterTree>emptyList(),
-                        Collections.singletonList(genUtils.createVariable("object", "java.lang.Object")), // NOI18N
-                        Collections.<ExpressionTree>emptyList(),
-                        body.toString(),
-                        null);
-            }
-
-            private String createEqualsLineForField(VariableTree field){
-                Name fieldName = field.getName();
-                Tree fieldType = field.getType();
-                if (fieldType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-                    return "if (this." + fieldName + " != other." + fieldName + ") return false;"; // NOI18N
-                }
-                return "if ((this." + fieldName + " == null && other." + fieldName + " != null) || " + // NOI18N
-                        "(this." + fieldName + " != null && !this." + fieldName + ".equals(other." + fieldName + ")) return false;"; // NOI18N
-            }
-
-            protected MethodTree createToStringMethod(String simpleClassName, List<VariableTree> fields) {
-                StringBuilder body = new StringBuilder(30 + fields.size() * 30);
-                body.append("{"); // NOI18N
-                body.append("return \"" + simpleClassName + "["); // NOI18N
-                for (Iterator<VariableTree> i = fields.iterator(); i.hasNext();) {
-                    String fieldName = i.next().getName().toString();
-                    body.append(fieldName + "=\" + " + fieldName + " + \""); //NOI18N
-                    body.append(i.hasNext() ? ", " : "]\";"); //NOI18N
-                }
-                body.append("}"); // NOI18N
-                TreeMaker make = copy.getTreeMaker();
-                // XXX Javadoc
-                return make.Method(
-                        make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.singletonList(genUtils.createAnnotation("java.lang.Override"))),
-                        "toString", // NOI18N
-                        genUtils.createType("java.lang.String"), // NOI18N
-                        Collections.<TypeParameterTree>emptyList(),
-                        Collections.<VariableTree>emptyList(),
-                        Collections.<ExpressionTree>emptyList(),
-                        body.toString(),
-                        null);
-            }
-
             public void run() throws IOException {
                 initialize();
                 for (Object object : entityClass.getFields()) {
@@ -967,9 +876,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
 
                 // add equals and hashCode methods
-                methods.add(createHashCodeMethod(pkFieldParams));
-                methods.add(createEqualsMethod(entityClassName, pkFieldParams));
-                methods.add(createToStringMethod(entityFQClassName, pkFieldParams));
+                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(copy, genUtils);
+                methods.add(methodGenerator.createHashCodeMethod(pkFieldParams));
+                methods.add(methodGenerator.createEqualsMethod(entityClassName, pkFieldParams));
+                methods.add(methodGenerator.createToStringMethod(entityFQClassName, pkFieldParams));
                 
                 // add the serialVersionUID field
                 fields.add(createSerialVersionUID());
@@ -1031,9 +941,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 constructors.add(genUtils.createAssignmentConstructor(genUtils.createModifiers(Modifier.PUBLIC), pkClassName, parameters));
 
                 // add equals and hashCode methods
-                methods.add(createHashCodeMethod(parameters));
-                methods.add(createEqualsMethod(pkClassName, parameters));
-                methods.add(createToStringMethod(pkFQClassName, parameters));
+                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(copy, genUtils);
+                methods.add(methodGenerator.createHashCodeMethod(parameters));
+                methods.add(methodGenerator.createEqualsMethod(pkClassName, parameters));
+                methods.add(methodGenerator.createToStringMethod(pkFQClassName, parameters));
             }
         }
     }

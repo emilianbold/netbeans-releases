@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+import org.netbeans.modules.j2ee.persistence.util.EntityMethodGenerator;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -186,11 +187,10 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
      * @param isAccessProperty defines the access strategy for the id field.
      * @return a FileObject representing the generated entity.
      */
-    public static FileObject generateEntity(FileObject targetFolder, String targetName,
+    public static FileObject generateEntity(final FileObject targetFolder, final String targetName,
             final String primaryKeyClassName, final boolean isAccessProperty) throws IOException {
         
         FileObject entityFo = GenerationUtils.createClass(targetFolder, targetName, null);
-        
         ClassPath compile = ClassPath.getClassPath(targetFolder, ClassPath.COMPILE);
         Set<ClassPath> compileClassPaths = new HashSet<ClassPath>();
         compileClassPaths.add(compile);
@@ -203,7 +203,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         
 
         JavaSource targetSource = JavaSource.create(cpHelper.createClasspathInfo(), entityFo);
-        AbstractTask task = new AbstractTask<WorkingCopy>() {
+        AbstractTask<WorkingCopy> task = new AbstractTask<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
@@ -245,6 +245,13 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 modifiedClazz = make.addClassMember(modifiedClazz, idGetter);
                 modifiedClazz = genUtils.addImplementsClause(modifiedClazz, "java.io.Serializable");
                 modifiedClazz = genUtils.addAnnotation(modifiedClazz, genUtils.createAnnotation("javax.persistence.Entity"));
+                
+                String entityClassFqn = genUtils.getTypeElement().getQualifiedName().toString();
+                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(workingCopy, genUtils);
+                List<VariableTree> fieldsForEquals = Collections.<VariableTree>singletonList(idField); 
+                modifiedClazz = make.addClassMember(modifiedClazz, methodGenerator.createHashCodeMethod(fieldsForEquals));
+                modifiedClazz = make.addClassMember(modifiedClazz, methodGenerator.createEqualsMethod(targetName, fieldsForEquals));
+                modifiedClazz = make.addClassMember(modifiedClazz, methodGenerator.createToStringMethod(entityClassFqn, fieldsForEquals));
                 workingCopy.rewrite(clazz, modifiedClazz);
             }
         };
