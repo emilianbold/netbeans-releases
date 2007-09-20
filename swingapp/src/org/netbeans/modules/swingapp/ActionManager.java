@@ -288,6 +288,9 @@ public class ActionManager {
                 Iterator<FileObject> it = scanQueue.iterator();
                 while(it.hasNext()) {
                     FileObject fo = it.next();
+                    if (fo == null || !fo.isValid()) { // might have been deleted meanwhile
+                        continue;
+                    }
                     it.remove();
                     //clear all of the actions for this file out of the master list
                     String className = AppFrameworkSupport.getClassNameForFile(fo);
@@ -305,12 +308,10 @@ public class ActionManager {
                         actions.remove(className);
                     }
                     //rescans this file and replaces the list of actions for this file
-                    if(fo != null) {
-                        getActionsFromFile(fo, actions);
-                        if(actions.containsKey(className)) {
-                            List<ProxyAction> newActions = actions.get(className);
-                            actionList.addAll(newActions);
-                        }
+                    getActionsFromFile(fo, actions);
+                    if(actions.containsKey(className)) {
+                        List<ProxyAction> newActions = actions.get(className);
+                        actionList.addAll(newActions);
                     }
                     fireStructureChanged();
                 }
