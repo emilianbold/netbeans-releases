@@ -152,7 +152,7 @@ public final class SMSComposerCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
-            //properties
+            // properties
             createPropertiesPresenter(),
             // code
             createSetterPresenter(),
