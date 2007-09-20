@@ -365,8 +365,7 @@
   <mapID target="netbeans.optionsDialog.editor" url="configure/options_editor.html" />
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
-  <!--ID for CSH in Options | Basic Options - Advanced-Ant Category: --> 
-  <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
+  
 
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions:--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />

@@ -463,6 +463,9 @@ right now the IDs don't seem towork:-->
     <mapID target="gui.configuring" url="configure/options_form_classic.html" />
 <!--ID for CSH in Options | Basic Options -  Miscellaneous GUI Builder Settings : --> 
     <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
+    
+    <!--ID for CSH in Options | Basic Options - Advanced-Ant Category: --> 
+  <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
 
 
     <!-- End of "CSH" section -->
