@@ -464,8 +464,11 @@ right now the IDs don't seem towork:-->
 <!--ID for CSH in Options | Basic Options -  Miscellaneous GUI Builder Settings : --> 
     <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
     
-    <!--ID for CSH in Options | Basic Options - Advanced-Ant Category: --> 
-  <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
+<!--ID for CSH in Options | Basic Options - Advanced-Ant Category: --> 
+    <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
+  
+<!--Tools | Options | Testing | JUnit Module Settings; both node and propsheet-->
+    <mapID target="org.netbeans.modules.junit.JUnitSettings" url="configure/options_junit_settings.html" />
 
 
     <!-- End of "CSH" section -->
