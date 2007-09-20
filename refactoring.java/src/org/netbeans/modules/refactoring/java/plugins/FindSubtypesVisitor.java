@@ -73,7 +73,10 @@ public class FindSubtypesVisitor extends FindVisitor {
     protected boolean isSubtype(TreePath t1, Element t2) {
         Types types = workingCopy.getTypes();
         Trees trees = workingCopy.getTrees();
-        return types.isSubtype(types.erasure(trees.getTypeMirror(t1)), types.erasure(t2.asType()));
+        TypeMirror tm1 = types.erasure(trees.getTypeMirror(t1));
+        TypeMirror tm2 = types.erasure(t2.asType());
+
+        return types.isSubtype(tm1, tm2) && !types.isSameType(tm1, tm2);
     }
 
 }
