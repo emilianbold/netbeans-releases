@@ -52,6 +52,9 @@ abstract class OperationValidator {
     /** Creates a new instance of OperationValidator */
     private OperationValidator() {}
     static boolean isValidOperation(OperationContainerImpl.OperationType type, UpdateUnit updateUnit, UpdateElement updateElement) {
+        if (updateUnit.isPending ()) {
+            return false;
+        }
         boolean isValid = false;
         switch(type){
         case INSTALL:

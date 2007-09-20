@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,7 +47,7 @@ public class RefreshItemsTest extends DefaultTestCase {
         populateCatalog(TestUtils.class.getResourceAsStream("data/updates-subset.xml"));
         UpdateUnitProviderFactory.getDefault ().refreshProviders(null, true);
         assertEquals(UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE).toString(), 
-                updateUnitsCount-1, UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE).size());
+                updateUnitsCount - 2, UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE).size());
         
         UpdateUnit toTestAgain = UpdateManagerImpl.getInstance ().getUpdateUnit ("org.yourorghere.refresh-providers-test");
         assertNotNull ("Unit for org.yourorghere.refresh-providers-test found.", toTestAgain);

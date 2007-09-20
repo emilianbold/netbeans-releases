@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.autoupdate;
@@ -76,7 +76,7 @@ public class RequiredElementsForUninstallTest extends OperationsTestImpl {
         assertTrue(engineModule.isEnabled());
         Module dependingModule = org.netbeans.modules.autoupdate.services.Utilities.toModule(dependingUnit.getCodeName(), null);
         assertTrue(dependingModule.isEnabled());
-        OperationContainer<OperationSupport> uninstallContainer = OperationContainer.createForUninstall();
+        OperationContainer<OperationSupport> uninstallContainer = OperationContainer.createForDirectUninstall();
         independentInfo = uninstallContainer.add(independentUnit.getInstalled());
         assertEquals("engine && depending needs independent",2, independentInfo.getRequiredElements().size());
         

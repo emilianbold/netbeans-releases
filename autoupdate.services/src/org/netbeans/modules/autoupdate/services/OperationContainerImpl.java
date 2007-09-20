@@ -81,7 +81,7 @@ public final class OperationContainerImpl<Support> {
         }
         if (UpdateUnitFactory.getDefault().isScheduledForRestart (updateElement)) {
             Logger.getLogger(this.getClass ().getName ()).log (Level.INFO, updateElement + " is scheduled for restart IDE.");
-            return null;
+            throw new IllegalArgumentException (updateElement + " is scheduled for restart IDE.");
         }
         if (isValid) {
             switch (type) {

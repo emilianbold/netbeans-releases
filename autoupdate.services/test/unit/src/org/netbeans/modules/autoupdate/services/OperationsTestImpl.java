@@ -32,6 +32,7 @@ import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -284,7 +285,10 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             //assertNotNull(support.getCertificate(i, upEl));
             assertFalse (support.isTrusted (i, upEl));
             assertFalse (support.isSigned (i, upEl));
-            support.doInstall (i, null);
+            OperationSupport.Restarter r = support.doInstall (i, null);
+            if (r != null) {
+                support.doRestartLater (r);
+            }
         } else {
             OperationContainer<OperationSupport> container = OperationContainer.createForDirectUpdate ();
             container2 = container;
@@ -292,18 +296,20 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             OperationSupport support = container.getSupport ();
             support.doOperation (null);
         }
-        //Thread.sleep(3000);
+        //UpdateUnitProviderFactory.getDefault ().refreshProviders (null, false);
         assertNotNull (toUpdate.getInstalled ());
-        assertSame (toUpdate.getInstalled (), upEl);
+        if (! toUpdate.isPending ()) {
+            assertSame(toUpdate.getInstalled(), upEl);
+        }
         // XXX need a separated test, mixing two tests together
-        //UpdateUnitProviderFactory.getDefault().refreshProviders();
         UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
-        assertSame (toUpdate.getInstalled (), upEl);
         UpdateUnit uu = UpdateManagerImpl.getInstance ().getUpdateUnit (toUpdate.getCodeName ());
         assertNotNull (uu);
         assertEquals (toUpdate.toString (), uu.toString ());
         assertTrue ("UpdateUnit before update and after update are equals.", toUpdate.equals (uu));
-        assertTrue (toUpdate.getAvailableUpdates ().isEmpty ());
+        if (! toUpdate.isPending ()) {
+            assertTrue(toUpdate.getAvailableUpdates().isEmpty());
+        }
         
         
         List<OperationContainer.OperationInfo> all = container2.listAll ();
@@ -333,7 +339,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         assertSame (toDisable, Utilities.toUpdateUnit (toDisable.getCodeName ()));
         
-        OperationContainer<OperationSupport> container = OperationContainer.createForDisable ();
+        OperationContainer<OperationSupport> container = OperationContainer.createForDirectDisable ();
         assertNotNull (container.add (toDisable.getInstalled ()));
         OperationSupport support = container.getSupport ();
         assertNotNull (support);
@@ -407,7 +413,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         assertSame (toUnInstall, Utilities.toUpdateUnit (toUnInstall.getCodeName ()));
         UpdateElement installElement = toUnInstall.getInstalled();
-        OperationContainer<OperationSupport> container = OperationContainer.createForUninstall ();
+        OperationContainer<OperationSupport> container = OperationContainer.createForDirectUninstall ();
         OperationContainer.OperationInfo operationInfo = container.add (toUnInstall.getInstalled ());
         assertNotNull (operationInfo);
         operationInfo.getRequiredElements ();

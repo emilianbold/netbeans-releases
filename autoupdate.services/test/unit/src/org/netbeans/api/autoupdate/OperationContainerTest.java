@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.autoupdate;
@@ -44,7 +44,7 @@ public class OperationContainerTest extends DefaultTestCase {
         assertNotNull(update);
         assertNull("empty container",update.getSupport());
         
-        OperationContainer<OperationSupport> uninstall = OperationContainer.createForUninstall();
+        OperationContainer<OperationSupport> uninstall = OperationContainer.createForDirectUninstall();
         assertNotNull(uninstall);
         assertNull("empty container",uninstall.getSupport());
         
@@ -56,7 +56,7 @@ public class OperationContainerTest extends DefaultTestCase {
         assertNotNull(enable);
         assertNull("empty container",enable.getSupport());
         
-        OperationContainer<OperationSupport> disable = OperationContainer.createForDisable();
+        OperationContainer<OperationSupport> disable = OperationContainer.createForDirectDisable();
         assertNotNull(disable);
         assertNull("empty container",disable.getSupport());
     }
@@ -96,8 +96,8 @@ public class OperationContainerTest extends DefaultTestCase {
             OperationContainer.createForUpdate(),
             OperationContainer.createForDirectUpdate(),
             OperationContainer.createForEnable(),
-            OperationContainer.createForDisable(),
-            OperationContainer.createForUninstall()
+            OperationContainer.createForDirectDisable(),
+            OperationContainer.createForDirectUninstall()
         };
         for (OperationContainer container : containers) {
             try {

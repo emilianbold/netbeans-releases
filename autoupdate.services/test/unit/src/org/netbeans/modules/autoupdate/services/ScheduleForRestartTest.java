@@ -56,7 +56,7 @@ public class ScheduleForRestartTest extends OperationsTestImpl {
         // try to update again => should throw IAE
         container = OperationContainer.createForUpdate();
         try {
-            container.add (toUpElement);
+            assertNull ("Return null when trying update again.", container.add (toUpElement));
             fail ("Throws IAE when trying update " + toUpElement);
         } catch (IllegalArgumentException x) {
         }

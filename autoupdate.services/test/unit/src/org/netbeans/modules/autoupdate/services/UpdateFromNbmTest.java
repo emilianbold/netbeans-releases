@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.List;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.TestUtils;
 import org.netbeans.api.autoupdate.TestUtils.CustomItemsProvider;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -118,11 +119,12 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         InstallSupport.Installer i = support.doValidate(v, null);
         assertNotNull(i);
         //assertNotNull(support.getCertificate(i, upEl));
-        support.doInstall(i, null);
+        Restarter r = support.doInstall(i, null);
+        assertNotNull ("Install update " + engine1_2 + " needs restart.", r);
+        support.doRestartLater (r);
         
         MockServices.setServices(MyProvider.class, CustomItemsProvider.class);
-        engine1_2 = nbmsEngine.getInstalled();                
-        assertEquals("1.2",engine1_2.getSpecificationVersion().toString());                
+        assertTrue (nbmsEngine + " is waiting for Restart IDE.", nbmsEngine.isPending ());
     }
     
 }
