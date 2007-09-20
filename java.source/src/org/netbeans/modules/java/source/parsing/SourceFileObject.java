@@ -84,7 +84,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         String ext = this.file.getExt();        
         this.kind = FileObjects.getKind(ext);        
         if (renderNow && this.kind == Kind.SOURCE) {
-            text = getCharContentImpl().toString();
+            getCharContentImpl(true);
         }
     }
 
@@ -104,13 +104,13 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
             return CharBuffer.wrap(_text);
         }
         else {
-            return getCharContentImpl();
+            return getCharContentImpl(false);
         }
     }
     
     public TokenHierarchy<Void> getTokenHierarchy() throws IOException {
         if (tokens == null)
-            getCharContentImpl();
+            getCharContentImpl(false);
         
         return tokens;
     }
@@ -326,32 +326,32 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         }
     }
     
-    private CharBuffer getCharContentImpl () throws IOException {
+    private CharBuffer getCharContentImpl (boolean assign) throws IOException {
         final Document doc = getDocument(isOpened());
-	final char[][] result = new char[1][];
-        final int[] length = new int[1];
+	char[] result = null;
+        int length = 0;
         if (doc == null) {
 	    Reader in = this.openReader (true);
             int red = 0, rv;
             try {
                 int len = (int)this.file.getSize();
-                result[0] = new char [len+1];
-                while ((rv=in.read(result[0],red,len-red))>0 && (red=red+rv)<len);
+                result = new char [len+1];
+                while ((rv=in.read(result,red,len-red))>0 && (red=red+rv)<len);
             } finally {
                 in.close();
             }
             int j=0;
             for (int i=0; i<red;i++) {
-                if (result[0][i] =='\r') {                                          //NOI18N
-                    if (i+1>=red || result[0][i+1]!='\n') {                         //NOI18N
-                        result[0][j++] = '\n';                                      //NOI18N
+                if (result[i] =='\r') {                                          //NOI18N
+                    if (i+1>=red || result[i+1]!='\n') {                         //NOI18N
+                        result[j++] = '\n';                                      //NOI18N
                     }
                 }
                 else {
-                    result[0][j++] = result[0][i];
+                    result[j++] = result[i];
                 }
             }
-            length[0] = j;
+            length = j;
         }
         else {            
             final CharSequence[] _text = new CharSequence[1];
@@ -369,14 +369,17 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
                     _text[0] = filter.filterCharSequence(_text[0]);
                 }
                 int len = _text[0].length();
-                result[0] = new char[len+1];
-                _text[0].toString().getChars(0,len,result[0],0);
-                length[0] = len;
+                result = new char[len+1];
+                _text[0].toString().getChars(0,len,result,0);
+                length = len;
             }
         }
-	result[0][length[0]]='\n'; //NOI18N
-	CharBuffer charBuffer = CharBuffer.wrap (result[0],0,length[0]);
+	result[length]='\n'; //NOI18N
+        
+        String str = new String(result,0,length);
+	CharBuffer charBuffer = CharBuffer.wrap (str);
         tokens = TokenHierarchy.create(charBuffer, false, JavaTokenId.language(), null, null); //TODO: .createSnapshot();
+        if (assign) text = str;
         return charBuffer;
     }
             
