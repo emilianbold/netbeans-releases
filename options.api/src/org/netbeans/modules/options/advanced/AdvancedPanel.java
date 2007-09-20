@@ -67,7 +67,7 @@ public final class AdvancedPanel extends JPanel {
     }
     
     public HelpCtx getHelpCtx () {
-        return model.getHelpCtx ((JComponent)tabbedPanel.getSelectedComponent ());
+        return model.getHelpCtx ((tabbedPanel != null) ? ((JComponent)tabbedPanel.getSelectedComponent ()) : null);
     }
     
     public boolean dataValid () {
@@ -84,7 +84,7 @@ public final class AdvancedPanel extends JPanel {
     
     void init (Lookup masterLookup) {
         // init components
-        tabbedPanel = new JTabbedPane();                
+        tabbedPanel = new JTabbedPane();
         
         // define layout
         setLayout (new BorderLayout ());

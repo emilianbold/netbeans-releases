@@ -144,9 +144,11 @@ public final class Model extends TabbedPanelModel {
         Iterator it = categoryToPanel.keySet ().iterator ();
         while (it.hasNext ()) {
             String category = (String) it.next ();
-            if (panel == categoryToPanel.get (category)) {
+            if (panel == null || panel == categoryToPanel.get (category)) {
                 OptionsPanelController controller = categoryToController.get (category);
-                return controller.getHelpCtx ();
+                if (controller != null) {
+                    return controller.getHelpCtx ();
+                }
             }
         }
         return new HelpCtx ("netbeans.optionsDialog.advanced");
