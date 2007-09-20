@@ -198,7 +198,8 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
             selectedServerInstanceID = newServerInstanceID;
         }
         serverInstanceComboBox.setModel(JavaEePlatformUiSupport.createPlatformComboBoxModel(selectedServerInstanceID));
-}//GEN-LAST:event_addServerButtonActionPerformed
+        panel.fireChangeEvent();
+    }//GEN-LAST:event_addServerButtonActionPerformed
     
     private void archiveLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_archiveLocationButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
