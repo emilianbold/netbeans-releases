@@ -20,6 +20,5 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <!--<fontcolor name="cc-highlighting-inactive" bgColor="DFDFDF" type="line" default="default"/>-->
-    <fontcolor name="cc-highlighting-inactive" foreColor="C0C0C0" default="default"/>
+    <fontcolor name="cc-highlighting-inactive" foreColor="969696" default="default"/>
 </fontscolors>
