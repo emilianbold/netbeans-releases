@@ -56,7 +56,7 @@ import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
  */
 public class SimplifiedJSPServlet {
 
-    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends HttpServlet {\n"; //NOI18N
+    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends %s {\n"; //NOI18N
     private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets(\n"
             + "\t\tHttpServletRequest request,\n" 
             + "\t\tHttpServletResponse response,\n" 
@@ -73,6 +73,7 @@ public class SimplifiedJSPServlet {
     private final FileObject fobj;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
 
+    private String header = null;
     private String mergedScriptlets = null;
     private String mergedDeclarations = null;
     private boolean processCalled = false;
@@ -149,6 +150,7 @@ public class SimplifiedJSPServlet {
             throw ex[0];
         }
 
+        header = getClassHeader();
         importStatements = createImportStatements();
         mergedDeclarations = buffDeclarations + "\n" + createBeanVarDeclarations();
         mergedScriptlets = buffScriplets.toString();
@@ -222,6 +224,17 @@ public class SimplifiedJSPServlet {
 
         return importsBuff.toString();
     }
+    
+    private String getClassHeader() {
+        String extendsClass = null; //NOI18N
+        PageInfo pageInfo = getPageInfo();
+        
+        if (pageInfo != null) {
+            extendsClass = pageInfo.getExtends();
+        }
+
+        return String.format(CLASS_HEADER, extendsClass == null ? "HttpServlet" : extendsClass);
+    }
 
     private void assureProcessCalled() {
         if (!processCalled) {
@@ -260,7 +273,7 @@ public class SimplifiedJSPServlet {
 
     public String getVirtualClassBody() {
         assureProcessCalled();
-        return importStatements + CLASS_HEADER + mergedDeclarations + METHOD_HEADER + mergedScriptlets + CLASS_FOOTER;
+        return importStatements + header + mergedDeclarations + METHOD_HEADER + mergedScriptlets + CLASS_FOOTER;
     }
 
     private CodeBlockData getCodeBlockAtOffset(int offset) {
@@ -326,7 +339,7 @@ public class SimplifiedJSPServlet {
         }
 
         public int getNewBlockStart() {
-            int newBlockStart = newRelativeBlockStart + CLASS_HEADER.length() + importStatements.length();
+            int newBlockStart = newRelativeBlockStart + header.length() + importStatements.length();
 
             if (getType() != JavaCodeType.DECLARATION) {
                 newBlockStart += mergedDeclarations.length() + METHOD_HEADER.length();
