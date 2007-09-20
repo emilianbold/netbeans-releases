@@ -1662,7 +1662,31 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationUnitTree root = env.getRoot();
             Tree exp = unwrapErrTree(pa.getExpression());
             if (exp == null || env.getOffset() <= sourcePositions.getStartPosition(root, exp)) {
-                localResult(env);
+                HashSet<TypeElement> toExclude = new HashSet<TypeElement>();
+                if (queryType == COMPLETION_QUERY_TYPE && path.getParentPath().getLeaf().getKind() != Tree.Kind.SWITCH) {
+                    Set<? extends TypeMirror> smarts = env.getSmartTypes();
+                    if (smarts != null) {
+                        Elements elements = env.getController().getElements();
+                        for (TypeMirror smart : smarts) {
+                            if (smart != null) {
+                                if (smart.getKind() == TypeKind.DECLARED) {
+                                    for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
+                                        TypeElement elem = (TypeElement)subtype.asElement();
+                                        results.add(JavaCompletionItem.createTypeItem(elem, subtype, anchorOffset, true, elements.isDeprecated(elem), true));
+                                        toExclude.add(elem);
+                                    }
+                                } else if (smart.getKind() == TypeKind.ARRAY) {
+                                    try {
+                                        results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));                                            
+                                    } catch (IllegalArgumentException iae) {}
+                                }
+                            }
+                        }
+                    }
+                }
+                addLocalMembersAndVars(env);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, toExclude);
+                addPrimitiveTypeKeywords(env);
                 addValueKeywords(env);
             } else {
                 insideExpression(env, new TreePath(path, exp));
@@ -2601,7 +2625,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             LinkedList<DeclaredType> subtypes = new LinkedList<DeclaredType>();
             String prefix = env.getPrefix();
             CompilationController controller = env.getController();
-            Elements elements = controller.getElements();
             Types types = controller.getTypes();
             Trees trees = controller.getTrees();
             Scope scope = env.getScope();

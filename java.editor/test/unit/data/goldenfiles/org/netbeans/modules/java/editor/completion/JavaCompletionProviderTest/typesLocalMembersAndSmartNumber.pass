@@ -1,6 +1,17 @@
 public int field
 public static int staticField
 public native int hashCode()
+AtomicInteger
+AtomicLong
+BigDecimal
+BigInteger
+Byte
+Double
+Float
+Integer
+Long
+Number
+Short
 protected native Object clone()
 public boolean equals(Object arg0)
 protected void finalize()
@@ -32,7 +43,6 @@ ArrayIndexOutOfBoundsException
 ArrayStoreException
 AssertionError
 Boolean
-Byte
 CharSequence
 Character
 Class
@@ -46,13 +56,11 @@ Cloneable
 Comparable
 Compiler
 Deprecated
-Double
 Enum
 EnumConstantNotPresentException
 Error
 Exception
 ExceptionInInitializerError
-Float
 IllegalAccessError
 IllegalAccessException
 IllegalArgumentException
@@ -64,12 +72,10 @@ IndexOutOfBoundsException
 InheritableThreadLocal
 InstantiationError
 InstantiationException
-Integer
 InternalError
 InterruptedException
 Iterable
 LinkageError
-Long
 Math
 NegativeArraySizeException
 NoClassDefFoundError
@@ -78,7 +84,6 @@ NoSuchFieldException
 NoSuchMethodError
 NoSuchMethodException
 NullPointerException
-Number
 NumberFormatException
 Object
 OutOfMemoryError
@@ -93,7 +98,6 @@ RuntimeException
 RuntimePermission
 SecurityException
 SecurityManager
-Short
 StackOverflowError
 StackTraceElement
 StrictMath
