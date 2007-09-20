@@ -46,13 +46,11 @@ import org.w3c.dom.Node;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-
 import org.netbeans.modules.bpel.editors.api.Diagram;
 import org.netbeans.modules.bpel.editors.api.DiagramElement;
 
 import org.netbeans.modules.xml.search.api.SearchException;
 import org.netbeans.modules.xml.search.api.SearchOption;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -61,7 +59,6 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 public final class Construct extends Engine {
 
-  /**{@inheritDoc}*/
   public void search(SearchOption option) throws SearchException {
     Diagram diagram = (Diagram) option.getSource();
     diagram.clearHighlighting();
@@ -111,12 +108,10 @@ public final class Construct extends Engine {
     return accepts(((DocumentComponent) component).getPeer().getTagName());
   }
 
-  /**{@inheritDoc}*/
   public String getDisplayName() {
     return i18n(Engine.class, "CTL_Construct_Display_Name"); // NOI18N
   }
 
-  /**{@inheritDoc}*/
   public String getShortDescription() {
     return i18n(Engine.class, "CTL_Construct_Short_Description"); // NOI18N
   }

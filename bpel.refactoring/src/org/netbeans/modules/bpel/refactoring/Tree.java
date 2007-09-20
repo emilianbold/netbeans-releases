@@ -50,7 +50,6 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
  */
 public final class Tree implements TreeElementFactoryImplementation {
 
-  /**{@inheritDoc}*/
   public TreeElement getTreeElement(Object object) {
     if (object instanceof Component) {
       return new Element((Component) object);
@@ -58,6 +57,5 @@ public final class Tree implements TreeElementFactoryImplementation {
     return null;
   }
 
-  /**{@inheritDoc}*/
   public void cleanUp() {}
 }

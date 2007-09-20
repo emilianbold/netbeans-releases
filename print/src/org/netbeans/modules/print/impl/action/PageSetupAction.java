@@ -42,8 +42,8 @@ package org.netbeans.modules.print.impl.action;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
-import org.netbeans.modules.print.impl.ui.Option;
 
+import org.netbeans.modules.print.impl.util.Util;
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -52,11 +52,10 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 public final class PageSetupAction extends CallableSystemAction {
 
-  /**{@inheritDoc}*/
   @Override
   public synchronized void performAction()
   {
-    Option.showPageSetup();
+    Util.getOption().showPageSetup();
   }
 
   @Override
@@ -65,14 +64,12 @@ public final class PageSetupAction extends CallableSystemAction {
     return false;
   }
 
-  /**{@inheritDoc}*/
   @Override
   public String getName()
   {
     return i18n(PageSetupAction.class, "CTL_PageSetup_Action"); // NOI18N
   }
   
-  /**{@inheritDoc}*/
   @Override
   public HelpCtx getHelpCtx()
   {

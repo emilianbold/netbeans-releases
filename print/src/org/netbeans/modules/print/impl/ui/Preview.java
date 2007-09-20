@@ -78,6 +78,7 @@ import org.openide.DialogDescriptor;
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.ui.PrintUI;
+import org.netbeans.modules.print.impl.util.Percent;
 import org.netbeans.modules.print.impl.util.Util;
 
 /**
@@ -86,9 +87,7 @@ import org.netbeans.modules.print.impl.util.Util;
  */
 public class Preview extends PrintUI implements Percent.Listener {
 
-  /**{@inheritDoc}*/
   public Preview() {
-    myOption = new Option();
     myPrinter = new Printer();
     myKeyListener = new KeyAdapter() {
       public void keyPressed(KeyEvent event) {
@@ -110,7 +109,6 @@ public class Preview extends PrintUI implements Percent.Listener {
     };
   }
 
-  /**{@inheritDoc}*/
   public void print(PrintProvider provider, boolean withPreview) {
     assert provider != null : "Print provider can't be null"; // NOI18N
 //out();
@@ -173,7 +171,6 @@ public class Preview extends PrintUI implements Percent.Listener {
     return panel;
   }
 
-  /**{@inheritDoc}*/
   @Override
   protected void updated()
   {
@@ -298,7 +295,7 @@ public class Preview extends PrintUI implements Percent.Listener {
     c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
     myScale = new Percent(
       this,
-      myOption.getScale(),
+      Util.getOption().getScale(),
       PERCENTS,
       CUSTOMS.length - 1,
       CUSTOMS,
@@ -440,7 +437,6 @@ public class Preview extends PrintUI implements Percent.Listener {
     }
   }
 
-  /**{@inheritDoc}*/
   public double getCustomValue(int index) {
     if (getPaperCount() == 0) {
       return 0.0;
@@ -496,7 +492,6 @@ public class Preview extends PrintUI implements Percent.Listener {
     return Math.min(getWidthScale(w), getHeightScale(h));
   }
 
-  /**{@inheritDoc}*/
   public void valueChanged(double value, int index) {
 //out();
 //out("Set scale: " + value + " " + index);
@@ -543,26 +538,15 @@ public class Preview extends PrintUI implements Percent.Listener {
   }
 
   private void createPapers() {
-    PrintPage [] pages = myPrintProvider.getPages(myOption);
+    PrintPage [][] pages = myPrintProvider.getPages(
+      Util.getOption().getPageWidth(),
+      Util.getOption().getPageHeight(),
+      Util.getOption().getZoom());
 //out("Create papers: " + pages.length);
     myPapers = null;
 
     if (pages == null) {
       return;
-    }
-    myPapers = new Paper [pages.length];
-    boolean useRow = false;
-    boolean useColumn = false;
-
-    for (int i=0; i < pages.length; i++) {
-      PrintPage page = pages [i];
-
-      if (page.getRow() > 0) {
-        useRow = true;
-      }
-      if (page.getColumn() > 0) {
-        useColumn = true;
-      }
     }
     String name = myPrintProvider.getName();
     
@@ -579,24 +563,48 @@ public class Preview extends PrintUI implements Percent.Listener {
     if (myScale != null) {
       scale = myScale.getValue();
     }
+    int number = 0;
+    int count = getCount(pages);
+    myPapers = new Paper [count];
+
     for (int i=0; i < pages.length; i++) {
-      myPapers [i] = new Paper(
-        pages [i],
-        i+1,
-        pages.length,
-        useRow,
-        useColumn
-      );
-      myPapers [i].setInfo(
-        name,
-        modified,
-        scale,
-        myOption
-      );
+      for (int j=0; j < pages [i].length; j++) {
+        PrintPage page = pages [i][j];
+
+        if (page == null) {
+          continue;
+        }
+        myPapers [number] = new Paper(
+          page,
+          number + 1,
+          count,
+          i, j
+        );
+        myPapers [number].setInfo(
+          name,
+          modified,
+          scale
+        );
+        number++;
+      }
     }
   }
 
-  /**{@inheritDoc}*/
+  private int getCount(PrintPage [][] pages) {
+    int count = 0;
+
+    for (int i=0; i < pages.length; i++) {
+      for (int j=0; j < pages [i].length; j++) {
+        PrintPage page = pages [i][j];
+
+        if (page != null) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
   public void invalidValue(String value) {}
 
   private int getPaperCount() {
@@ -696,7 +704,7 @@ public class Preview extends PrintUI implements Percent.Listener {
 //out("Closed");
     myPapers = null;
     myPrintProvider = null;
-    myOption.setScale(myScale.getValue());
+    Util.getOption().setScale(myScale.getValue());
   }
 
   @Override
@@ -765,7 +773,7 @@ public class Preview extends PrintUI implements Percent.Listener {
   }
 
   private void option() {
-    new Attribute(this, myOption).show();
+    new Attribute(this).show();
   }
 
   private int getPaperNumber(String text) {
@@ -847,7 +855,6 @@ public class Preview extends PrintUI implements Percent.Listener {
   private JButton myOptionButton;
   private JButton myCloseButton;
 
-  private Option myOption;
   private Percent myScale;
   private JTextField myGoto;
   private int myPaperNumber;

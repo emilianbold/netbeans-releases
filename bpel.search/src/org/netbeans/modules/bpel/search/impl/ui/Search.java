@@ -70,7 +70,6 @@ import org.netbeans.modules.xml.search.spi.SearchEngine;
  */
 public final class Search extends PrintUI {
 
-  /**{@inheritDoc}*/
   public Component getUIComponent(
     List<SearchEngine> engines,
     Object source,

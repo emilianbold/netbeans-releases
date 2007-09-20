@@ -69,7 +69,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.search.impl.util.Util;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -228,14 +227,12 @@ public final class SearchAction extends NodeAction {
     return false;
   }
 
-  /**{@inheritDoc}*/
   @Override
   public String getName()
   {
     return i18n(SearchAction.class, "CTL_Search_Action"); // NOI18N
   }
   
-  /**{@inheritDoc}*/
   @Override
   public HelpCtx getHelpCtx()
   {
@@ -252,14 +249,12 @@ public final class SearchAction extends NodeAction {
   public static final class Manager
     extends org.netbeans.modules.print.ui.PrintUI.IconAction
   {
-    /**{@inheritDoc}*/
     public Manager() {
       super(
         icon(Util.class, "search"), // NOI18N
         i18n(Manager.class, "TLT_Search_Action")); // NOI18N
     }
 
-    /**{@inheritDoc}*/
     public void actionPerformed(ActionEvent event) {
       performAction(getActiveNode());
     }

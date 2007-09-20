@@ -55,21 +55,18 @@ final class Element extends SearchElement.Adapter {
     highlight(true);
   }
 
-  /**{@inheritDoc}*/
   @Override
   public void gotoSource()
   {
     myElement.gotoSource();
   }
 
-  /**{@inheritDoc}*/
   @Override
   public void select()
   {
     myElement.select();
   }
 
-  /**{@inheritDoc}*/
   @Override
   public void highlight(boolean highlighted)
   {

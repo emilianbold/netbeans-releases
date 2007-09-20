@@ -64,7 +64,6 @@ import org.netbeans.modules.xml.search.api.SearchMatch;
 import org.netbeans.modules.xml.search.api.SearchOption;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
 import org.netbeans.modules.xml.search.spi.SearchListener;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -73,7 +72,6 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 public final class Find extends SearchControlPanel {
 
-  /**{@inheritDoc}*/
   public Find(List<SearchEngine> engines, Object source, JComponent parent) {
     super();
     bindAction(parent);

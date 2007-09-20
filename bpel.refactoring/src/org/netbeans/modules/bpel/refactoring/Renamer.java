@@ -102,7 +102,6 @@ import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**

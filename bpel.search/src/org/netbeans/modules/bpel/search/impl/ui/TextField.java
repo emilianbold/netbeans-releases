@@ -59,24 +59,20 @@ import javax.swing.SwingUtilities;
  */
 public final class TextField {
 
-  /**{@inheritDoc}*/
   public TextField(String items) {
     myItems = new ArrayList<String>();
     createUIComponent();
     setItems(items);
   }
 
-  /**{@inheritDoc}*/
   public String getText() {
     return (String) myComboBox.getEditor().getItem();
   }
 
-  /**{@inheritDoc}*/
   public void requestFocus() {
     myComboBox.getEditor().getEditorComponent().requestFocus();
   }
 
-  /**{@inheritDoc}*/
   public String save() {
     addItem((String) myComboBox.getEditor().getItem()); // save last input item
     StringBuffer items = new StringBuffer();
@@ -91,12 +87,10 @@ public final class TextField {
     return items.toString();
   }
 
-  /**{@inheritDoc}*/
   public void addActionListener(ActionListener listener) {
     myActionListener = listener;
   }
 
-  /**{@inheritDoc}*/
   public JComponent getUIComponent() {
     return myComboBox;
   }

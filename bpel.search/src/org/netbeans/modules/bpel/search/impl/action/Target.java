@@ -42,7 +42,6 @@ package org.netbeans.modules.bpel.search.impl.action;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.search.api.SearchTarget;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -232,7 +231,6 @@ final class Target implements SearchTarget {
     return myClazz;
   }
 
-  /**{@inheritDoc}*/
   public String toString() {
     return i18n(Target.class, name());
   }

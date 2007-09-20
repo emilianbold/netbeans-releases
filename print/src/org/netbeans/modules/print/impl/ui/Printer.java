@@ -47,6 +47,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import org.openide.ErrorManager;
 
+import org.netbeans.modules.print.impl.util.Util;
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -63,7 +64,7 @@ final class Printer implements Printable {
     if (job == null) {
       return;
     }
-    job.setPrintable(this, Option.getPageFormat());
+    job.setPrintable(this, Util.getOption().getPageFormat());
     
     try {
       if (job.printDialog()) {

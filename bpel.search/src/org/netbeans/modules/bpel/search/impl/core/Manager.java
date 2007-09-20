@@ -63,13 +63,11 @@ import org.netbeans.modules.bpel.search.impl.util.Util;
  */
 public final class Manager implements SearchManager {
 
-  /**{@inheritDoc}*/
   public Manager() {
     myEngines = Util.getInstances(SearchEngine.class);
     mySearch = new Search();
   }
 
-  /**{@inheritDoc}*/
   public Component getUI(
     Object source,
     SearchTarget [] targets,
@@ -90,7 +88,6 @@ public final class Manager implements SearchManager {
     }
   }
 
-  /**{@inheritDoc}*/
   public SearchPattern getPattern(
     String text,
     SearchMatch match,
@@ -99,7 +96,6 @@ public final class Manager implements SearchManager {
     return new Pattern(text, match, caseSensitive);
   }
 
-  /**{@inheritDoc}*/  
   public Action getSearchAction() {
     return new SearchAction.Manager();
   }

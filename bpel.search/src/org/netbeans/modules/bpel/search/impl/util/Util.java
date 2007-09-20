@@ -54,7 +54,6 @@ public final class Util {
 
   private Util() {}
 
-  /**{@inheritDoc}*/
   public static <T> List<T> getInstances(Class<T> clazz) {
     Collection<? extends T> collection = Lookup.getDefault().lookupAll(clazz);
     List<T> list = new ArrayList<T>();

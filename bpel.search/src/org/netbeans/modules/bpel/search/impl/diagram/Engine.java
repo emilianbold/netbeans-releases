@@ -41,14 +41,12 @@
 package org.netbeans.modules.bpel.search.impl.diagram;
 
 import java.util.List;
-
 import org.netbeans.modules.bpel.editors.api.Diagram;
 import org.netbeans.modules.bpel.editors.api.DiagramElement;
 
 import org.netbeans.modules.xml.search.api.SearchException;
 import org.netbeans.modules.xml.search.api.SearchOption;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -57,7 +55,6 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 public class Engine extends SearchEngine.Adapter {
 
-  /**{@inheritDoc}*/
   public void search(SearchOption option) throws SearchException {
     Diagram diagram = (Diagram) option.getSource();
     diagram.clearHighlighting();
@@ -81,17 +78,14 @@ public class Engine extends SearchEngine.Adapter {
     }
   }
 
-  /**{@inheritDoc}*/
   public boolean accepts(Object source) {
     return source instanceof Diagram;
   }
 
-  /**{@inheritDoc}*/
   public String getDisplayName() {
     return i18n(Engine.class, "CTL_Engine_Display_Name"); // NOI18N
   }
 
-  /**{@inheritDoc}*/
   public String getShortDescription() {
     return i18n(Engine.class, "CTL_Engine_Short_Description"); // NOI18N
   }

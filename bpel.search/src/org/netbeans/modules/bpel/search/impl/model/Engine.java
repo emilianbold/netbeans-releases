@@ -41,11 +41,9 @@
 package org.netbeans.modules.bpel.search.impl.model;
 
 import java.util.List;
-
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
-
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 
 import org.netbeans.modules.xml.search.api.SearchException;
@@ -53,7 +51,6 @@ import org.netbeans.modules.xml.search.api.SearchMatch;
 import org.netbeans.modules.xml.search.api.SearchOption;
 import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -62,7 +59,6 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 public final class Engine extends SearchEngine.Adapter {
 
-  /**{@inheritDoc}*/
   public void search(SearchOption option) throws SearchException {
     myClazz = null;
     myOption = option;
@@ -132,17 +128,14 @@ public final class Engine extends SearchEngine.Adapter {
     return false;
   }
 
-  /**{@inheritDoc}*/
   public boolean accepts(Object source) {
     return source instanceof List;
   }
 
-  /**{@inheritDoc}*/
   public String getDisplayName() {
     return i18n(Engine.class, "CTL_Engine_Display_Name"); // NOI18N
   }
 
-  /**{@inheritDoc}*/
   public String getShortDescription() {
     return i18n(Engine.class, "CTL_Engine_Short_Description"); // NOI18N
   }

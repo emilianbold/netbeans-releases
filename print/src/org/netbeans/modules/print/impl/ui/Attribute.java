@@ -68,6 +68,8 @@ import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.print.ui.PrintUI;
+import org.netbeans.modules.print.impl.util.Pattern;
+import org.netbeans.modules.print.impl.util.Percent;
 import org.netbeans.modules.print.impl.util.Util;
 
 /**
@@ -77,19 +79,18 @@ import org.netbeans.modules.print.impl.util.Util;
 final class Attribute extends PrintUI
   implements FocusListener, Pattern.Listener, Percent.Listener
 {
-  Attribute(Preview preview, Option option) {
+  Attribute(Preview preview) {
     myPreview = preview;
-    myOption = option;
 
-    myBorderColorValue = myOption.getBorderColor();
-    myTextColorValue = myOption.getTextColor();
-    myTextFontValue = myOption.getTextFont();
-    myBackgroundColorValue = myOption.getBackgroundColor();
+    myBorderColorValue = Util.getOption().getBorderColor();
+    myTextColorValue = Util.getOption().getTextColor();
+    myTextFontValue = Util.getOption().getTextFont();
+    myBackgroundColorValue = Util.getOption().getBackgroundColor();
 
-    myHeaderColorValue = myOption.getHeaderColor();
-    myHeaderFontValue = myOption.getHeaderFont();
-    myFooterColorValue = myOption.getFooterColor();
-    myFooterFontValue = myOption.getFooterFont();
+    myHeaderColorValue = Util.getOption().getHeaderColor();
+    myHeaderFontValue = Util.getOption().getHeaderFont();
+    myFooterColorValue = Util.getOption().getFooterColor();
+    myFooterFontValue = Util.getOption().getFooterFont();
   }
 
   @Override
@@ -150,51 +151,46 @@ final class Attribute extends PrintUI
     if ( !checkValue(zoomWidth, zoomHeight)) {
       return false;
     }
-    myOption.setBorder(myBorder.isSelected());
-    myOption.setBorderColor(myBorderColorValue);
+    Util.getOption().setBorder(myBorder.isSelected());
+    Util.getOption().setBorderColor(myBorderColorValue);
 
-    myOption.setHeader(myHeader.isSelected());
-    myOption.setHeaderLeft(myHeaderLeft.getText());
-    myOption.setHeaderCenter(myHeaderCenter.getText());
-    myOption.setHeaderRight(myHeaderRight.getText());
-    myOption.setHeaderColor(myHeaderColorValue);
-    myOption.setHeaderFont(myHeaderFontValue);
+    Util.getOption().setHeader(myHeader.isSelected());
+    Util.getOption().setHeaderLeft(myHeaderLeft.getText());
+    Util.getOption().setHeaderCenter(myHeaderCenter.getText());
+    Util.getOption().setHeaderRight(myHeaderRight.getText());
+    Util.getOption().setHeaderColor(myHeaderColorValue);
+    Util.getOption().setHeaderFont(myHeaderFontValue);
 
-    myOption.setFooter(myFooter.isSelected());
-    myOption.setFooterLeft(myFooterLeft.getText());
-    myOption.setFooterCenter(myFooterCenter.getText());
-    myOption.setFooterRight(myFooterRight.getText());
-    myOption.setFooterColor(myFooterColorValue);
-    myOption.setFooterFont(myFooterFontValue);
+    Util.getOption().setFooter(myFooter.isSelected());
+    Util.getOption().setFooterLeft(myFooterLeft.getText());
+    Util.getOption().setFooterCenter(myFooterCenter.getText());
+    Util.getOption().setFooterRight(myFooterRight.getText());
+    Util.getOption().setFooterColor(myFooterColorValue);
+    Util.getOption().setFooterFont(myFooterFontValue);
 
-    myOption.setWrapLines(myWrapLines.isSelected());
-    myOption.setLineNumbers(myLineNumbers.isSelected());
-    myOption.setUseFont(myUseFont.isSelected());
-    myOption.setUseColor(myUseColor.isSelected());
-    myOption.setTextColor(myTextColorValue);
-    myOption.setTextFont(myTextFontValue);
-    myOption.setBackgroundColor(myBackgroundColorValue);
-    myOption.setLineSpacing(getDouble(myLineSpacing.getValue()));
+    Util.getOption().setWrapLines(myWrapLines.isSelected());
+    Util.getOption().setLineNumbers(myLineNumbers.isSelected());
+    Util.getOption().setUseFont(myUseFont.isSelected());
+    Util.getOption().setUseColor(myUseColor.isSelected());
+    Util.getOption().setTextColor(myTextColorValue);
+    Util.getOption().setTextFont(myTextFontValue);
+    Util.getOption().setBackgroundColor(myBackgroundColorValue);
+    Util.getOption().setLineSpacing(getDouble(myLineSpacing.getValue()));
 
-    double zoomFactor = myZoomFactor.getValue();
+    double zoom = 0.0;
 
     if (myZoomFactor.isEnabled()) {
-      zoomWidth = -zoomWidth;
-      zoomHeight = -zoomHeight;
+      zoom = myZoomFactor.getValue();
     }
     else if (myZoomWidth.isEnabled()) {
-      zoomFactor = -zoomFactor;
-      zoomHeight = -zoomHeight;
+      zoom = Percent.createZoomWidth(zoomWidth);
     }
     else if (myZoomHeight.isEnabled()) {
-      zoomFactor = -zoomFactor;
-      zoomWidth = -zoomWidth;
+      zoom = Percent.createZoomHeight(zoomHeight);
     }
-    myOption.setZoomWidth(zoomWidth);
-    myOption.setZoomHeight(zoomHeight);
-    myOption.setZoomFactor(zoomFactor);
-//out("SAVE.zoom: " + myZoomFactor.getValue() + " " + zoomFactor);
+    Util.getOption().setZoom(zoom);
     myPreview.updated();
+//out("SAVE.zoom: " + zoom);
 
     return true;
   }
@@ -282,7 +278,7 @@ final class Attribute extends PrintUI
     JButton button = createButton(
       new ButtonAction(i18n("LBL_PageSetup"), i18n("TLT_Page_Setup")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          if (Option.showPageSetup()) {
+          if (Util.getOption().showPageSetup()) {
             updatePreview();
           }
         }
@@ -615,9 +611,13 @@ final class Attribute extends PrintUI
 
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
-    
+    double value = Util.getOption().getLineSpacing();
+
+    if (value < 0) {
+      value = 1.0;
+    }
     myLineSpacing = new JSpinner(new SpinnerNumberModel(
-      myOption.getLineSpacing(),
+      value,
       SPACING_MIN,
       SPACING_MAX,
       SPACING_STP
@@ -632,19 +632,20 @@ final class Attribute extends PrintUI
     GridBagConstraints c = new GridBagConstraints();
     ButtonGroup group = new ButtonGroup();
     c.anchor = GridBagConstraints.WEST;
+    double zoom = Util.getOption().getZoom();
+//out("GET ZOOM: " + zoom);
 
     // (o) Fit width to
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonW = createRadioButton(i18n("LBL_Fit_Width_to")); // NOI18N
-    buttonW.addItemListener(createItemListener(true, false, false));
-    panel.add(buttonW, c);
-    group.add(buttonW);
+    JRadioButton buttonWidth = createRadioButton(i18n("LBL_Fit_Width_to")); // NOI18N
+    buttonWidth.addItemListener(createItemListener(true, false, false));
+    panel.add(buttonWidth, c);
+    group.add(buttonWidth);
 
     // [width]
     c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
-    int zoomWidth = myOption.getZoomWidth();
-    myZoomWidth = new JTextField(getString(zoomWidth));
+    myZoomWidth = new JTextField(getString(Percent.getZoomWidth(zoom, 1)));
     setWidth(myZoomWidth, TEXT_WIDTH);
     panel.add(myZoomWidth, c);
 
@@ -656,23 +657,20 @@ final class Attribute extends PrintUI
     c.weightx = 0.0;
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonF = createRadioButton(i18n("LBL_Zoom_to")); // NOI18N
-    buttonF.addItemListener(createItemListener(false, false, true));
-    panel.add(buttonF, c);
-    group.add(buttonF);
+    JRadioButton buttonFactor = createRadioButton(i18n("LBL_Zoom_to")); // NOI18N
+    buttonFactor.addItemListener(createItemListener(false, false, true));
+    panel.add(buttonFactor, c);
+    group.add(buttonFactor);
 
-    // factor
+    // [zoom]
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
-    double zoomFactor = myOption.getZoomFactor();
     myZoomFactor = new Percent(
       this,
-      getDouble(zoomFactor),
+      Percent.getZoomFactor(zoom, 1.0),
       PERCENTS,
       0,
-      new String [] {
-        i18n("LBL_Fit_to_Page"), // NOI18N
-      },
+      new String [] { i18n("LBL_Fit_to_Page") }, // NOI18N
       i18n("TLT_Print_Zoom") // NOI18N
     );
     panel.add(myZoomFactor, c);
@@ -680,25 +678,23 @@ final class Attribute extends PrintUI
     // (o) Fit height to
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-
-    JRadioButton buttonH = createRadioButton(i18n("LBL_Fit_Height_to")); // NOI18N
-    buttonH.addItemListener(createItemListener(false, true, false));
-    panel.add(buttonH, c);
-    group.add(buttonH);
+    JRadioButton buttonHeight = createRadioButton(i18n("LBL_Fit_Height_to")); // NOI18N
+    buttonHeight.addItemListener(createItemListener(false, true, false));
+    panel.add(buttonHeight, c);
+    group.add(buttonHeight);
 
     // [height]
     c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
-    int zoomHeight = myOption.getZoomHeight();
-    myZoomHeight = new JTextField(getString(zoomHeight));
+    myZoomHeight = new JTextField(getString(Percent.getZoomHeight(zoom, 1)));
     setWidth(myZoomHeight, TEXT_WIDTH);
     panel.add(myZoomHeight, c);
 
     // page(s)
     panel.add(createLabel(i18n("LBL_Pages")), c); // NOI18N
 
-    buttonF.setSelected(zoomFactor >= 0.0);
-    buttonW.setSelected(zoomWidth > 0 && zoomFactor < 0.0);
-    buttonH.setSelected(zoomHeight > 0 && zoomFactor < 0.0);
+    buttonFactor.setSelected(Percent.isZoomFactor(zoom));
+    buttonWidth.setSelected(Percent.isZoomWidth(zoom));
+    buttonHeight.setSelected(Percent.isZoomHeight(zoom));
 //  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
 
     return panel;
@@ -711,7 +707,15 @@ final class Attribute extends PrintUI
   {
     return new ItemListener() {
       public void itemStateChanged(ItemEvent event) {
-        updateZoomControl(width, height, factor);
+        if (myZoomWidth != null) {
+          myZoomWidth.setEnabled(width);
+        }
+        if (myZoomHeight != null) {
+          myZoomHeight.setEnabled(height);
+        }
+        if (myZoomFactor != null) {
+          myZoomFactor.setEnabled(factor);
+        }
       }
     };
   }
@@ -721,25 +725,6 @@ final class Attribute extends PrintUI
       return Integer.toString(-value);
     }
     return Integer.toString(value);
-  }
-
-  private double getDouble(double value) {
-    if (value < 0) {
-      return -value;
-    }
-    return value;
-  }
-
-  private void updateZoomControl(boolean width, boolean height, boolean factor) {
-    if (myZoomWidth != null) {
-      myZoomWidth.setEnabled(width);
-    }
-    if (myZoomHeight != null) {
-      myZoomHeight.setEnabled(height);
-    }
-    if (myZoomFactor != null) {
-      myZoomFactor.setEnabled(factor);
-    }
   }
 
   private void setWidthFocused(JComponent component, int width) {
@@ -842,33 +827,33 @@ final class Attribute extends PrintUI
   }
 
   private void updateControl() {
-    myBorder.setSelected(myOption.hasBorder());
-    myBorderColor.setEnabled(myOption.hasBorder());
+    myBorder.setSelected(Util.getOption().hasBorder());
+    myBorderColor.setEnabled(Util.getOption().hasBorder());
 
-    myHeader.setSelected(myOption.hasHeader());
-    myHeaderLeft.setText(myOption.getHeaderLeft());
-    myHeaderLeft.setEnabled(myOption.hasHeader());
-    myHeaderCenter.setText(myOption.getHeaderCenter());
-    myHeaderCenter.setEnabled(myOption.hasHeader());
-    myHeaderRight.setText(myOption.getHeaderRight());
-    myHeaderRight.setEnabled(myOption.hasHeader());
-    myHeaderColor.setEnabled(myOption.hasHeader());
-    myHeaderFont.setEnabled(myOption.hasHeader());
+    myHeader.setSelected(Util.getOption().hasHeader());
+    myHeaderLeft.setText(Util.getOption().getHeaderLeft());
+    myHeaderLeft.setEnabled(Util.getOption().hasHeader());
+    myHeaderCenter.setText(Util.getOption().getHeaderCenter());
+    myHeaderCenter.setEnabled(Util.getOption().hasHeader());
+    myHeaderRight.setText(Util.getOption().getHeaderRight());
+    myHeaderRight.setEnabled(Util.getOption().hasHeader());
+    myHeaderColor.setEnabled(Util.getOption().hasHeader());
+    myHeaderFont.setEnabled(Util.getOption().hasHeader());
 
-    myFooter.setSelected(myOption.hasFooter());
-    myFooterLeft.setText(myOption.getFooterLeft());
-    myFooterLeft.setEnabled(myOption.hasFooter());
-    myFooterCenter.setText(myOption.getFooterCenter());
-    myFooterCenter.setEnabled(myOption.hasFooter());
-    myFooterRight.setText(myOption.getFooterRight());
-    myFooterRight.setEnabled(myOption.hasFooter());
-    myFooterColor.setEnabled(myOption.hasFooter());
-    myFooterFont.setEnabled(myOption.hasFooter());
+    myFooter.setSelected(Util.getOption().hasFooter());
+    myFooterLeft.setText(Util.getOption().getFooterLeft());
+    myFooterLeft.setEnabled(Util.getOption().hasFooter());
+    myFooterCenter.setText(Util.getOption().getFooterCenter());
+    myFooterCenter.setEnabled(Util.getOption().hasFooter());
+    myFooterRight.setText(Util.getOption().getFooterRight());
+    myFooterRight.setEnabled(Util.getOption().hasFooter());
+    myFooterColor.setEnabled(Util.getOption().hasFooter());
+    myFooterFont.setEnabled(Util.getOption().hasFooter());
 
-    myLineNumbers.setSelected(myOption.isLineNumbers());
-    myWrapLines.setSelected(myOption.isWrapLines());
-    myUseFont.setSelected(myOption.isUseFont());
-    myUseColor.setSelected(myOption.isUseColor());
+    myLineNumbers.setSelected(Util.getOption().isLineNumbers());
+    myWrapLines.setSelected(Util.getOption().isWrapLines());
+    myUseFont.setSelected(Util.getOption().isUseFont());
+    myUseColor.setSelected(Util.getOption().isUseColor());
   }
 
   @Override
@@ -930,7 +915,6 @@ final class Attribute extends PrintUI
   private JTextField myZoomHeight;
   private JTextField mySelectedField;
 
-  private Option myOption;
   private Preview myPreview;
   private DialogDescriptor myDescriptor;
 

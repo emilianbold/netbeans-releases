@@ -51,8 +51,8 @@ import java.util.Date;
 import javax.swing.JComponent;
 
 import org.netbeans.modules.print.spi.PrintPage;
+import org.netbeans.modules.print.impl.util.Pattern;
 import org.netbeans.modules.print.impl.util.Util;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -61,75 +61,65 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 final class Paper extends JComponent {
 
-  Paper (
+  Paper(
     PrintPage page,
     int number,
     int count,
-    boolean useRow,
-    boolean useColumn) 
+    int row,
+    int column)
   {
     myPage = page;
     myNumber = number;
     myCount = String.valueOf(count);
-    String row = String.valueOf(getRow() + 1);
-    String column = String.valueOf(getColumn() + 1);
-
-    if (useRow && useColumn) {
-      myPageNumber = row + "." + column; // NOI18N
-    }
-    else if ( !useRow && useColumn) {
-      myPageNumber = column;
-    }
-    else {
-      myPageNumber = row;
-    }
+    myRow = row;
+    myColumn = column;
+    myPageNumber = String.valueOf(row + 1) + "." + String.valueOf(column + 1); // NOI18N
   }
 
-  void setInfo (
+  void setInfo(
     String name,
     Date modified,
-    double scale,
-    Option option)
+    double scale)
   {
     myName = name;
     myLastModifiedDate = modified;
 
-    myPaperWidth = option.getPaperWidth();
-    myPaperHeight = option.getPaperHeight();
-    myPageX = option.getPageX();
-    myPageY = option.getPageY();
-    myPageWidth = option.getPageWidth();
-    myPageHeight = option.getPageHeight();
+    myPaperWidth = Util.getOption().getPaperWidth();
+    myPaperHeight = Util.getOption().getPaperHeight();
+    myPageX = Util.getOption().getPageX();
+    myPageY = Util.getOption().getPageY();
+    myPageWidth = Util.getOption().getPageWidth();
+    myPageHeight = Util.getOption().getPageHeight();
 
-    myHeaderY = option.getHeaderY();
-    myHasHeader = option.hasHeader();
-    myHeaderLeft = expandTitle(option.getHeaderLeft());
-    myHeaderCenter = expandTitle(option.getHeaderCenter());
-    myHeaderRight = expandTitle(option.getHeaderRight());
-    myHeaderColor = option.getHeaderColor();
-    myHeaderFont = option.getHeaderFont();
+    myHeaderY = Util.getOption().getHeaderY();
+    myHasHeader = Util.getOption().hasHeader();
+    myHeaderLeft = expandTitle(Util.getOption().getHeaderLeft());
+    myHeaderCenter = expandTitle(Util.getOption().getHeaderCenter());
+    myHeaderRight = expandTitle(Util.getOption().getHeaderRight());
+    myHeaderColor = Util.getOption().getHeaderColor();
+    myHeaderFont = Util.getOption().getHeaderFont();
 
-    myFooterY = option.getFooterY();
-    myHasFooter = option.hasFooter();
-    myFooterLeft = expandTitle(option.getFooterLeft());
-    myFooterCenter = expandTitle(option.getFooterCenter());
-    myFooterRight = expandTitle(option.getFooterRight());
-    myFooterColor = option.getFooterColor();
-    myFooterFont = option.getFooterFont();
+    myFooterY = Util.getOption().getFooterY();
+    myHasFooter = Util.getOption().hasFooter();
+    myFooterLeft = expandTitle(Util.getOption().getFooterLeft());
+    myFooterCenter = expandTitle(Util.getOption().getFooterCenter());
+    myFooterRight = expandTitle(Util.getOption().getFooterRight());
+    myFooterColor = Util.getOption().getFooterColor();
+    myFooterFont = Util.getOption().getFooterFont();
 
-    myHasBorder = option.hasBorder();
-    myBorderColor = option.getBorderColor();
+    myHasBorder = Util.getOption().hasBorder();
+    myBorderColor = Util.getOption().getBorderColor();
     myIsPainting = true;
 
     setScale(scale);
   }
 
   int getRow() {
-    return myPage.getRow();
+    return myRow;
   }
 
   int getColumn() {
-    return myPage.getColumn();
+    return myColumn;
   }
 
   void setScale(double scale) {
@@ -365,6 +355,9 @@ final class Paper extends JComponent {
   private String myCount;
   private String myPageNumber;
   private Date myLastModifiedDate;
+
+  private int myRow;
+  private int myColumn;
 
   private static final int NUMBER_FONT_SIZE = 35;
   private static final int SHADOW_WIDTH = 10; // .pt

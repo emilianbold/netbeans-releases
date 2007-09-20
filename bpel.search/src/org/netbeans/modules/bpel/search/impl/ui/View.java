@@ -53,7 +53,6 @@ import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.print.api.PrintManagerAccess;
 import org.netbeans.modules.bpel.search.impl.util.Util;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -62,7 +61,6 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 public final class View extends TopComponent {
 
-  /**{@inheritDoc}*/
   public View() {
     setIcon(icon(Util.class, "find").getImage()); // NOI18N
     setLayout(new GridBagLayout());
@@ -166,35 +164,30 @@ public final class View extends TopComponent {
     button.setPreferredSize(IMAGE_BUTTON_SIZE);
   }
   
-  /**{@inheritDoc}*/
   @Override
   public HelpCtx getHelpCtx()
   {
     return HelpCtx.DEFAULT_HELP;
   }
 
-  /**{@inheritDoc}*/
   @Override
   public int getPersistenceType()
   {
     return PERSISTENCE_ALWAYS;
   }
       
-  /**{@inheritDoc}*/
   @Override
   public String getName()
   {
     return NAME;
   }
   
-  /**{@inheritDoc}*/
   @Override
   public String getDisplayName()
   {
     return i18n(View.class, "CTL_Search_Results_Name"); // NOI18N
   }
 
-  /**{@inheritDoc}*/
   @Override
   public String getToolTipText()
   {

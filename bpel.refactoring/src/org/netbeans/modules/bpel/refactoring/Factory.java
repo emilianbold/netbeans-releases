@@ -49,7 +49,6 @@ import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
@@ -58,7 +57,6 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 public final class Factory implements RefactoringPluginFactory {
    
-  /**{@inheritDoc}*/
   public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
     Referenceable referenceable =
       refactoring.getRefactoringSource().lookup(Referenceable.class);
