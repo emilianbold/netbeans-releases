@@ -344,7 +344,8 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
-            "${libs.junit.classpath}", // NOI18N
+            "${libs.junit.classpath}:", // NOI18N
+            "${libs.junit_4.classpath}", // NOI18N
         });
         ep.setProperty(EjbJarProjectProperties.RUN_TEST_CLASSPATH, new String[] {
             "${javac.test.classpath}:", // NOI18N
