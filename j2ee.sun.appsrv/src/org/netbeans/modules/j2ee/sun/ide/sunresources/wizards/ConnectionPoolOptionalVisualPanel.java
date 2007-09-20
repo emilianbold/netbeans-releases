@@ -40,11 +40,11 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         waitLabel = new javax.swing.JLabel();
         resizeLabel = new javax.swing.JLabel();
         idleLabel = new javax.swing.JLabel();
-        steadyField = new javax.swing.JTextField();
-        maxField = new javax.swing.JTextField();
-        waitField = new javax.swing.JTextField();
-        resizeField = new javax.swing.JTextField();
-        idleField = new javax.swing.JTextField();
+        steadyField = new javax.swing.JTextField(Util.getNumericDocument(), null, 0);
+        maxField = new javax.swing.JTextField(Util.getNumericDocument(), null, 0);
+        waitField = new javax.swing.JTextField(Util.getNumericDocument(), null, 0);
+        resizeField = new javax.swing.JTextField(Util.getNumericDocument(), null, 0);
+        idleField = new javax.swing.JTextField(Util.getNumericDocument(), null, 0);
         transactionPanel = new javax.swing.JPanel();
         transactionLabel = new javax.swing.JLabel();
         isolationLabel = new javax.swing.JLabel();
@@ -77,30 +77,35 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         idleLabel.setLabelFor(idleField);
         org.openide.awt.Mnemonics.setLocalizedText(idleLabel, org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_IdleTime")); // NOI18N
 
+        steadyField.setText(getDefaultValue("steady-pool-size"));
         steadyField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 steadyFieldKeyReleased(evt);
             }
         });
 
+        maxField.setText(getDefaultValue("max-pool-size"));
         maxField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 maxFieldKeyReleased(evt);
             }
         });
 
+        waitField.setText(getDefaultValue("max-wait-time-in-millis"));
         waitField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 waitFieldKeyReleased(evt);
             }
         });
 
+        resizeField.setText(getDefaultValue("pool-resize-quantity"));
         resizeField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 resizeFieldKeyReleased(evt);
             }
         });
 
+        idleField.setText(getDefaultValue("idle-timeout-in-seconds"));
         idleField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 idleFieldKeyReleased(evt);
@@ -153,6 +158,12 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
                 .addContainerGap())
         );
 
+        steadyLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_steady-pool-size")); // NOI18N
+        maxLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_max-pool-size")); // NOI18N
+        waitLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_max-wait-time-in-millis")); // NOI18N
+        resizeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_pool-resize-quantity")); // NOI18N
+        idleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_idle-timeout-in-seconds")); // NOI18N
+
         transactionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_TranIsol_Title"))); // NOI18N
 
         transactionLabel.setLabelFor(transactionCombo);
@@ -203,6 +214,9 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        transactionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_transaction-isolation-level")); // NOI18N
+        isolationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_is-isolation-level-guaranteed")); // NOI18N
+
         validationPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_ConnValid_Title"))); // NOI18N
 
         validationLabel.setLabelFor(validationCombo);
@@ -221,6 +235,7 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         tableNameLabel.setLabelFor(tableNameField);
         org.openide.awt.Mnemonics.setLocalizedText(tableNameLabel, org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_TableName")); // NOI18N
 
+        tableNameField.setText(getDefaultValue("validation-table-name"));
         tableNameField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 tableNameFieldKeyReleased(evt);
@@ -291,6 +306,11 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        validationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_is-connection-validation-required")); // NOI18N
+        methodLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_connection-validation-method")); // NOI18N
+        tableNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_validation-table-name")); // NOI18N
+        failLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_fail-all-connections")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -314,6 +334,16 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
                 .add(validationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        poolSettingsPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_PoolSettings_Title")); // NOI18N
+        poolSettingsPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ACSD_LBL_PoolSettings_Title")); // NOI18N
+        transactionPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_TranIsol_Title")); // NOI18N
+        transactionPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ACSD_LBL_TranIsol_Title")); // NOI18N
+        validationPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_ConnValid_Title")); // NOI18N
+        validationPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ACSD_LBL_ConnValid_Title")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "StepName_OptionalConnectionPool")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ACSD_OptionalConnectionPool_panel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void steadyFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_steadyFieldKeyReleased
@@ -381,8 +411,8 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
     
     private ComboBoxModel getComboBoxModel(String fieldName) {
         ComboBoxModel model = new javax.swing.DefaultComboBoxModel(new String[] {});
-        FieldGroup group1 = FieldGroupHelper.getFieldGroup(this.panel.getWizard(), "pool-setting-2");
-        FieldGroup group2 = FieldGroupHelper.getFieldGroup(this.panel.getWizard(), "pool-setting-3");
+        FieldGroup group1 = FieldGroupHelper.getFieldGroup(this.panel.getWizard(), "pool-setting-2"); //NOI18N
+        FieldGroup group2 = FieldGroupHelper.getFieldGroup(this.panel.getWizard(), "pool-setting-3"); //NOI18N
         Field field = FieldHelper.getField(group1, fieldName);
         if(field == null){
             field = FieldHelper.getField(group2, fieldName);
@@ -393,6 +423,21 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         }
         return model;
     }
+    
+    private String getDefaultValue(String fieldName) {
+        String value = ""; //NOI18N
+        FieldGroup group1 = FieldGroupHelper.getFieldGroup(this.panel.getWizard(), "pool-setting"); //NOI18N
+        FieldGroup group2 = FieldGroupHelper.getFieldGroup(this.panel.getWizard(), "pool-setting-3"); //NOI18N
+        Field field = FieldHelper.getField(group1, fieldName);
+        if(field == null){
+            field = FieldHelper.getField(group2, fieldName);
+        }
+        if (field != null) {
+            value = FieldHelper.getDefaultValue(field);
+        }
+        return value;
+    }
+    
     public boolean isNewResourceSelected() {
         return false;
     }
