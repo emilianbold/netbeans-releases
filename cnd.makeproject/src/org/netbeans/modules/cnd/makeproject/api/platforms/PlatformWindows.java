@@ -40,7 +40,7 @@ public class PlatformWindows extends Platform {
     }
     
     public String getLibraryName(String baseName) {
-        return "cyg" + baseName + ".dll"; // NOI18N // FIXUP: cyg hardcoded... // NOI18N
+        return "lib" + baseName + ".dll"; // NOI18N
     }
     
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
@@ -48,7 +48,7 @@ public class PlatformWindows extends Platform {
             int i = libName.indexOf(".dll"); // NOI18N
             if (i > 0)
                 libName = libName.substring(0, i);
-            if (libName.startsWith("cyg"))// NOI18N // FIXUP: cyg hardcoded... // NOI18N
+            if (libName.startsWith("lib") || libName.startsWith("cyg")) // NOI18N
                 libName = libName.substring(3);
             return compilerSet.getLibrarySearchOption() + libDir + " " + "-l" + libName; // NOI18N
         } else {

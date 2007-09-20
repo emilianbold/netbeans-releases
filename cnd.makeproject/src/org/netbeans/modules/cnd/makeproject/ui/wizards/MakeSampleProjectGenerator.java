@@ -103,9 +103,9 @@ public class MakeSampleProjectGenerator {
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
             if (Utilities.isWindows()) {
-                changeXmlFileByTagName(doc, "output", "cyg", "X-LIBPREFIX-X"); // NOI18N
+                changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "cyg", "X-LIBPREFIX-X"); // NOI18N
+                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
             }
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
