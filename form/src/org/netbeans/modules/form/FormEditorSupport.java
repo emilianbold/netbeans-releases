@@ -847,9 +847,15 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                 break;
             }
         }
-        
+
         if (designerSelected && !Boolean.TRUE.equals(groupVisible)) {
+            // Bug 116008: calling group.open() first time may cause hiding the
+            // FormDesigner (some winsys multiview initialization mess), calling
+            // this method again and hiding the group. By setting the groupVisible
+            // to false we make the re-entrant call effectively do nothing.
+            groupVisible = Boolean.FALSE;
             group.open();
+            groupVisible = Boolean.TRUE;
             final TopComponentGroup paletteGroup = wm.findTopComponentGroup( "commonpalette" ); // NOI18N
             if( null != paletteGroup ) {
                 paletteGroup.open();
@@ -861,9 +867,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
         else if (!designerSelected && !Boolean.FALSE.equals(groupVisible)) {
             group.close();
+            groupVisible = Boolean.FALSE;
         }
-        
-        groupVisible = designerSelected ? Boolean.TRUE : Boolean.FALSE;
     }
     
     /** @return 0 if java editor in form editor multiview is selected
