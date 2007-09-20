@@ -188,8 +188,13 @@ import org.w3c.dom.Text;
         // if "this" is after/equals to the before and before/equal to the after.
         Node curr = element;
         Node parent = element.getParentNode();
+        
+        if (parent == null) {
+            // #116200 Possible NPE.
+            return false;
+        }
+        
         int index = -1;
-
         while (curr != null) {
             curr = curr.getPreviousSibling();
             index++;
