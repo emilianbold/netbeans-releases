@@ -82,6 +82,29 @@ is the proper place.
 
     <changes>
 
+        <change id="HyperlinkProviderExt">
+            <summary>Extending HyperlinkProviders</summary>
+            <version major="1" minor="18"/>
+            <date day="20" month="9" year="2007"/>
+            <author login="jlahoda"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    The hyperlink providers have been extended to allow:
+                </p>
+                
+                <ul>
+                    <li>tooltips for the hyperlinks</li>
+                    <li>future extensions through <code>HyperlinkType</code></li>
+                </ul>
+                    
+                <p>
+                    See newly added <code>HyperlinkProviderExt</code> class.
+                </p>
+            </description>
+            <issue number="115359" />
+        </change>
+        
         <change id="BaseDocumentEvent.getChangeAttributes.added">
             <summary>Added BaseDocumentEvent.getChangeAttributes</summary>
             <version major="1" minor="17"/>
