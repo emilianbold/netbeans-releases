@@ -321,7 +321,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="IDEConfiguration">
                 <folder name="ServerAndExternalToolSettings">
                     <!-- Point to the real settings file (always on the system file system). -->
-                    <file name="org-netbeans-modules-pdf-PDFSettingsNode.instance">
+                    <file name="org-netbeans-modules-pdf-PDFSettingsNode.instance_hidden">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.pdf.Bundle"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.pdf.Settings.createViewNode"/>
                     </file>
