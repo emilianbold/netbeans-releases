@@ -1,5 +1,10 @@
 package org.netbeans.modules.groovy.grails.settings;
 
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
+import org.openide.DialogDisplayer;
+import java.io.File;
+import org.openide.NotifyDescriptor;
 
 final class GrailsRuntimePanel extends javax.swing.JPanel {
 
@@ -23,8 +28,16 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
 
         grailsHomeLocation = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        chooseDir = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "GRAILS_HOME:");
+
+        org.openide.awt.Mnemonics.setLocalizedText(chooseDir, "choose");
+        chooseDir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chooseDirActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -35,7 +48,9 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(45, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(chooseDir)
+                .addContainerGap(81, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -43,10 +58,33 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, Short.MAX_VALUE))
+                    .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(chooseDir))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void chooseDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDirActionPerformed
+        
+            JFileChooser chooser = new JFileChooser (grailsHomeLocation.getText ());
+            chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+            int r = chooser.showDialog (
+                SwingUtilities.getWindowAncestor (this),"Select_Directory");
+            if (r == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile ();
+                if (!new File (new File (file, "bin"), "grails").isFile ()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        "Not_grails_home",
+                        NotifyDescriptor.Message.WARNING_MESSAGE
+                    ));
+                    return;
+                }
+                grailsHomeLocation.setText (file.getAbsolutePath ());
+
+            }
+        
+        
+    }//GEN-LAST:event_chooseDirActionPerformed
 
     void load() {
 
@@ -65,6 +103,7 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton chooseDir;
     private javax.swing.JTextField grailsHomeLocation;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
