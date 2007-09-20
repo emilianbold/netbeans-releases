@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-groovy-support-api-GroovySettings.instance"/>
+        </folder>
+    </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-groovy-support-resources-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/script.gif"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-groovy">
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="org-netbeans-modules-groovy-support-common-RunScriptAction.instance"/>
+                        <attr name="org-netbeans-modules-groovy-support-common-RunScriptAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    </folder>
+                </folder>            
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
