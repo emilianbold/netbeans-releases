@@ -224,9 +224,9 @@ public class HgCommand {
         }
 
         List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorUpdateSpansBranches(list.get(0)))
-            throw new HgException( list.get(0));
-        
+        if (!list.isEmpty() && isErrorUpdateSpansBranches(list.get(0))) {
+            throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_MERGE_TEXT"));
+        } 
         return list;
     }
     
