@@ -51,19 +51,16 @@ public class ETLNavigatorComponent implements NavigatorPanel, NavigatorLookupHin
     }
     
     public String getDisplayHint() {
-        return null;//"Basic dummy implementation of NavigatorPanel interface";
+        return null;
     }
     
     public String getDisplayName() {
-        return null;//"Dummy View";
+        return null;
     }
     
     public JComponent getComponent() {
         if(panelUI == null) {
-            panelUI = new JPanel();
-            //panelUI.setBorder(javax.swing.BorderFactory.createEmptyBorder(50,50,50,50));//, left, bottom, right)createTitledBorder("Navigator Panel Title"));
-            //panelUI.setSize(75,75);
-            //panelUI = new JLabel("Dummy label");            
+            panelUI = new JPanel();                    
         }
         return panelUI; 
     }
@@ -92,7 +89,6 @@ public class ETLNavigatorComponent implements NavigatorPanel, NavigatorLookupHin
     /************* non - public part ************/
     
     private void setNewContent(Collection newData) {
-        java.util.logging.Logger.getLogger(ETLNavigatorComponent.class.getName()).info("_____________________ setNewContent ");
         // put your code here that grabs information you need from given
         // collection of data, recompute UI of your panel and show it.
         // Note - be sure to compute the content OUTSIDE event dispatch thread,
