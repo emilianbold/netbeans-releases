@@ -62,18 +62,13 @@ import com.nwoods.jgo.JGoPort;
 import com.nwoods.jgo.JGoSelection;
 import com.nwoods.jgo.JGoView;
 import com.nwoods.jgo.layout.JGoLayeredDigraphAutoLayout;
-import org.netbeans.modules.etl.ui.ETLDataObject;
-import org.netbeans.modules.etl.ui.ETLNode;
 import org.netbeans.modules.etl.ui.property.JoinNode;
 import org.netbeans.modules.etl.ui.property.RuntimeInputNode;
 import org.netbeans.modules.etl.ui.property.RuntimeOutputNode;
 import org.netbeans.modules.etl.ui.property.SourceTableNode;
 import org.netbeans.modules.etl.ui.property.TargetTableNode;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
-import org.netbeans.modules.etl.ui.view.ETLEditorTopView;
 import org.netbeans.modules.sql.framework.model.RuntimeInput;
 import org.netbeans.modules.sql.framework.model.RuntimeOutput;
-import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
@@ -129,6 +124,8 @@ public abstract class GraphView extends JGoView implements IGraphView {
     
     public static JGoObject selectedObject = null;
     
+    private BirdsEyeView satelliteView;
+    
     static {
         try {
             mDataFlavorArray[0] = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType);
@@ -145,9 +142,10 @@ public abstract class GraphView extends JGoView implements IGraphView {
         setDropEnabled(true);
         //set default primary and secondary selection colors
         resetSelectionColors();
-        
+        satelliteView = new BirdsEyeView();
         //set GraphDocument
         this.setDocument(new GraphDocument());
+        setObserved(this);
     }
     
     /**
@@ -519,11 +517,13 @@ public abstract class GraphView extends JGoView implements IGraphView {
         
         //add this node to document
         this.getDocument().addObjectAtTail(jgoObj);
+        satelliteView.getDocument().addObjectAtTail(jgoObj);
         
         //now select this node
         this.getSelection().selectObject(jgoObj);
         
         //and have focus in this view
+        satelliteView.requestFocus();
         this.requestFocus();
     }
     
@@ -903,34 +903,28 @@ public abstract class GraphView extends JGoView implements IGraphView {
         selectedObject  = getCurrentObject();
         if(getCurrentObject() instanceof SQLJoinTableArea){
             SQLJoinTableArea joinTblArea = (SQLJoinTableArea) getCurrentObject();
-            TableArea tblArea = joinTblArea.getTableArea();
             SourceTable srcTable = (SourceTable) joinTblArea.getDataObject();
-            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new SourceTableNode((SourceTable)srcTable)});
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new SourceTableNode(srcTable)});
         } else if(getCurrentObject() instanceof SQLTargetTableArea){
             SQLTargetTableArea targetTableArea = (SQLTargetTableArea) getCurrentObject();
-            TableArea tblArea = targetTableArea.getTableArea();
             TargetTable tgtTable = (TargetTable) targetTableArea.getDataObject();
-            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new TargetTableNode((TargetTable)tgtTable)});
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new TargetTableNode(tgtTable)});
         } else if(getCurrentObject() instanceof SQLSourceTableArea){
             SQLSourceTableArea srcTableArea = (SQLSourceTableArea) getCurrentObject();
-            TableArea tblArea = srcTableArea.getTableArea();
             SourceTable srcTable = (SourceTable) srcTableArea.getDataObject();
-            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new SourceTableNode((SourceTable)srcTable)});
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new SourceTableNode(srcTable)});
         } else if(getCurrentObject() instanceof JoinViewGraphNode){
             JoinViewGraphNode gn = (JoinViewGraphNode)getCurrentObject();
             SQLJoinView joinView = (SQLJoinView)gn.getDataObject();
-            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new JoinNode((SQLJoinOperator)joinView.getRootJoin())});
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new JoinNode(joinView.getRootJoin())});
         } else if(getCurrentObject() instanceof SQLRuntimeInputArea){
             SQLRuntimeInputArea runIn = (SQLRuntimeInputArea)getCurrentObject();
-            TableArea tblArea = runIn.getTableArea();
             RuntimeInput runInArea = (RuntimeInput)runIn.getDataObject();
-            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeInputNode((RuntimeInput)runInArea)});
-            java.util.logging.Logger.getLogger(GraphView.class.getName()).info("_______________runIntArea "+runInArea);
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeInputNode(runInArea)});           
         } else if(getCurrentObject() instanceof SQLRuntimeOutputArea){
             SQLRuntimeOutputArea runOut = (SQLRuntimeOutputArea)getCurrentObject();
-            TableArea tblArea = runOut.getTableArea();
             RuntimeOutput runOutArea = (RuntimeOutput)runOut.getDataObject();
-            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeOutputNode((RuntimeOutput)runOutArea)});
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeOutputNode(runOutArea)});
         }
         resetSelectionColors();
         
@@ -1213,4 +1207,15 @@ public abstract class GraphView extends JGoView implements IGraphView {
         return this.selectedObject;
     }
     
+   public void setObserved(JGoView observed) {
+       satelliteView.setObserved(this);
+       satelliteView.requestFocus();
+}
+   public BirdsEyeView getSatelliteView(){
+       return satelliteView;
+   }
+   
+   public JGoView getObserved(){
+       return satelliteView.getObserved();
+   }
 }
