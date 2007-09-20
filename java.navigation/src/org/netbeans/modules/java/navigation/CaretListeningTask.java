@@ -21,6 +21,8 @@ package org.netbeans.modules.java.navigation;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationValue;
@@ -28,10 +30,15 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -51,6 +58,12 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     
     private static ElementHandle<Element> lastEh;
     private static ElementHandle<Element> lastEhForNavigator;
+    
+    private static final Set<JavaTokenId> TOKENS_TO_SKIP = EnumSet.of(JavaTokenId.WHITESPACE, 
+                                  JavaTokenId.BLOCK_COMMENT, 
+                                  JavaTokenId.LINE_COMMENT, 
+                                  JavaTokenId.JAVADOC_COMMENT);
+    
     
     CaretListeningTask(CaretListeningFactory whichElementJavaSourceTaskFactory,FileObject fileObject) {
         this.caretListeningFactory = whichElementJavaSourceTaskFactory;
@@ -72,13 +85,42 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         if ( isCancelled() || ( !navigatorShouldUpdate && !javadocShouldUpdate && !declarationShouldUpdate ) ) {
             return;
         }
+                        
+        int lastPosition = CaretListeningFactory.getLastPosition(fileObject);
         
-        // XXX Test for the token and increment the position if in whitespace and
-        // next token is something interesting.
-        
+        TokenHierarchy tokens = compilationInfo.getTokenHierarchy();
+        TokenSequence ts = tokens.tokenSequence();
+        boolean inJavadoc = false;
+        int offset = ts.move(lastPosition);
+        if (ts.moveNext() && ts.token() != null ) {
+            
+            Token token = ts.token();
+            TokenId tid = token.id();
+            if ( tid == JavaTokenId.JAVADOC_COMMENT ) {
+                inJavadoc = true;                
+            }
+            
+            if ( shouldGoBack( token.toString(), offset < 0 ? 0 : offset ) ) {
+                if ( ts.movePrevious() ) {
+                    token = ts.token();
+                    tid = token.id();
+                }
+            }
+            
+            if ( TOKENS_TO_SKIP.contains(tid) ) {
+                skipTokens(ts, TOKENS_TO_SKIP);                
+            }
+            lastPosition = ts.offset();
+        }
+                
+        if (ts.token() != null && ts.token().length() > 1) {
+            // it is magic for TreeUtilities.pathFor to proper tree
+            ++lastPosition;
+        }
+                
         // Find the TreePath for the caret position
         TreePath tp =
-                compilationInfo.getTreeUtilities().pathFor(caretListeningFactory.getLastPosition(fileObject));        
+                compilationInfo.getTreeUtilities().pathFor(lastPosition);        
         // if cancelled, return
         if (isCancelled()) {
             return;
@@ -93,12 +135,21 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         Element element = compilationInfo.getTrees().getElement(tp);
                        
         // if cancelled or no element, return
-        if (isCancelled() || element == null ) {
+        if (isCancelled() ) {
+            return;
+        }
+    
+        if ( element == null ) {
+            element = outerElement(compilationInfo, tp);
+        }
+        
+        // if is canceled or no element
+        if (isCancelled() || element == null) {            
             return;
         }
         
         // Don't update when element is the same
-        if ( lastEh != null && lastEh.signatureEquals(element) ) {
+        if ( lastEh != null && lastEh.signatureEquals(element) && !inJavadoc ) {
             // System.out.println("  stoped because os same eh");
             return;
         }
@@ -315,6 +366,28 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) {
         
         // Try to find the declaration we are in
+        Element e = outerElement(ci, tp);
+                
+        if ( e != null ) {
+            final ElementHandle<Element> eh = ElementHandle.create(e);
+            
+            if ( lastEhForNavigator != null && eh.signatureEquals(lastEhForNavigator)) {
+                return;
+            }
+            
+            lastEhForNavigator = eh;
+            
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    ClassMemberPanel.getInstance().selectElement(eh);
+                }                
+            });
+        }
+        
+    }
+       
+    private static Element outerElement( CompilationInfo ci, TreePath tp ) {
         
         Element e = null;
         
@@ -338,24 +411,50 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             }
             tp = tp.getParentPath();
         }
-        
-        if ( e != null ) {
-            final ElementHandle<Element> eh = ElementHandle.create(e);
-            
-            if ( lastEhForNavigator != null && eh.signatureEquals(lastEhForNavigator)) {
+    
+        return e;
+    }
+    
+    
+    private void skipTokens( TokenSequence ts, Set<JavaTokenId> typesToSkip ) {
+                  
+        while(ts.moveNext()) {
+            if ( !typesToSkip.contains(ts.token().id()) ) {
                 return;
             }
-            
-            lastEhForNavigator = eh;
-            
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    ClassMemberPanel.getInstance().selectElement(eh);
-                }                
-            });
         }
         
+        return;
     }
+    
+    private boolean shouldGoBack( String s, int offset ) {
+        
+        int nlBefore = 0;
+        int nlAfter = 0;
+        
+        for( int i = 0; i < s.length(); i++ ) {
+            if ( s.charAt(i) == '\n' ) { // NOI18N
+                if ( i < offset ) {
+                    nlBefore ++; 
+                }
+                else { 
+                    nlAfter++; 
+                }
+                
+                if ( nlAfter > nlBefore ) {
+                    return true;
+                }                
+            }
+        }
+        
+        if ( nlBefore < nlAfter ) {
+            return false;
+        }
+        
+        return offset < (s.length() - offset);
+        
+    }
+    
+    
     
 }
