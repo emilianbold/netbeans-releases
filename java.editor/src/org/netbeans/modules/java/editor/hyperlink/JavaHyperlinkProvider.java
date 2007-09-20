@@ -13,14 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.editor.hyperlink;
 
+import java.util.EnumSet;
+import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.java.GoToSupport;
 
 /**
@@ -32,22 +35,30 @@ import org.netbeans.modules.editor.java.GoToSupport;
  *
  * @author Jan Lahoda
  */
-public final class JavaHyperlinkProvider implements HyperlinkProvider {
+public final class JavaHyperlinkProvider implements HyperlinkProviderExt {
  
     /** Creates a new instance of JavaHyperlinkProvider */
     public JavaHyperlinkProvider() {
     }
 
-    public void performClickAction(Document doc, final int offset) {
+    public Set<HyperlinkType> getSupportedHyperlinkTypes() {
+        return EnumSet.of(HyperlinkType.GO_TO_DECLARATION);
+    }
+
+    public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
+        return getHyperlinkSpan(doc, offset, type) != null;
+    }
+
+    public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
+        return GoToSupport.getIdentifierSpan(doc, offset, null);
+    }
+
+    public void performClickAction(Document doc, int offset, HyperlinkType type) {
         GoToSupport.goTo(doc, offset, false);
     }
 
-    public boolean isHyperlinkPoint(Document doc, int offset) {
-        return getHyperlinkSpan(doc, offset) != null;
-    }
-
-    public int[] getHyperlinkSpan(Document doc, int offset) {
-        return GoToSupport.getIdentifierSpan(doc, offset, null);
+    public String getTooltipText(Document doc, int offset, HyperlinkType type) {
+        return GoToSupport.getGoToElementTooltip(doc, offset, false);
     }
 
 }
