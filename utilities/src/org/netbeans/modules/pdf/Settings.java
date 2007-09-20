@@ -72,16 +72,4 @@ public class Settings {
                                               : "");                    //NOI18N
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(Settings.class, "PDFSettings");      //NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(Settings.class); 
-    }
-
-    private static BeanNode createViewNode() throws IntrospectionException {
-        return new BeanNode<Settings>(Settings.getDefault());
-    }         
-
 }

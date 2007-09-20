@@ -316,20 +316,6 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder> <!-- Services -->
 
-    <folder name="UI">
-    	<folder name="Services">
-            <folder name="IDEConfiguration">
-                <folder name="ServerAndExternalToolSettings">
-                    <!-- Point to the real settings file (always on the system file system). -->
-                    <file name="org-netbeans-modules-pdf-PDFSettingsNode.instance_hidden">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.pdf.Bundle"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.pdf.Settings.createViewNode"/>
-                    </file>
-                </folder>
-            </folder>
-    	</folder>
-    </folder>
-
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="output">       <!-- "output" is defined in core/ui -->
