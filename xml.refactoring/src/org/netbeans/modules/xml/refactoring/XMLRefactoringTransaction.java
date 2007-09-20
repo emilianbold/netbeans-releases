@@ -59,9 +59,7 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.refactoring.spi.BackupFacility;
 
 /**
  * Single transaction object, ensuring the order of refactoring change across
@@ -84,7 +82,9 @@ public class XMLRefactoringTransaction implements Transaction {
     private boolean commited = false;
     private UndoManager genericChangeUndoManager;
     Map<String, FileObject> targetModelRefs;
-        
+    ArrayList<BackupFacility.Handle> ids = new ArrayList();    
+    private boolean useBackupFacility = false;
+    
     
     
     /**
@@ -109,9 +109,31 @@ public class XMLRefactoringTransaction implements Transaction {
         //System.out.println("COMMIT called");
         try {
             if(commited){
-               redo();
+                //check if we did undo using the Refactoring BackupFacility, if yes then use it
+                //to do redo. If not, use the UndoManagers for redo
+                if(useBackupFacility) {
+                   
+                    //even if we used BackupFacility, use the genericChangeUndoManager for redo since
+                    //move/file rename refactoring involve more than just target rename/move
+                    if (genericChangeUndoManager != null && genericChangeUndoManager.canRedo()) {
+                        genericChangeUndoManager.redo();
+                        
+                    }
+                    for (BackupFacility.Handle id:ids) {
+                        try {
+                            id.restore();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                            throw (RuntimeException) new RuntimeException().initCause(ex);
+                        }
+                    }
+                } else {
+                  redo();
+                }
             }  else{
                commited=true;
+               //backup the files before doing refactoring
+               this.backup();
                process();
              } 
         }catch (IOException ioe) {
@@ -126,23 +148,47 @@ public class XMLRefactoringTransaction implements Transaction {
      * Rollbacks the refactoring changes for all the models
      */
     public void rollback() {
-       // System.out.println("ROLLBACK called");
+        
         UndoRedoProgress progress = new UndoRedoProgress();
 	progress.start();
+        
+        if(useBackupFacility){
+            //we have used the backup to do undo the first time; so now use it again
+            
+            //for target use the genericChangeUndoManager
+            if (genericChangeUndoManager != null && genericChangeUndoManager.canUndo()) {
+                genericChangeUndoManager.undo();                
+            }            
+            for (BackupFacility.Handle id:ids)  { 
+                try {
+                    id.restore();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    throw (RuntimeException) new RuntimeException().initCause(ex);
+                }
+            } 
+            progress.stop();
+            return;
+        }
+        
+        List<UndoManager> temp = new ArrayList<UndoManager>();
 	try {
 	  if(modelsInRefactoring == null)
               modelsInRefactoring = getModels();
             Set<Model> models = modelsInRefactoring.keySet();
                    
-            Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);
+            Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);                      
             if (genericChangeUndoManager != null && genericChangeUndoManager.canUndo()) {
-                genericChangeUndoManager.undo();
+                genericChangeUndoManager.undo();                
             }
             
             if(undoManagers != null ) {
                 for (UndoManager um : undoManagers.values()) {
                     while (um.canUndo()) {
                         um.undo();
+                        //this is really bad. The UndoManager doest throw excetpion in canUndo but in undo
+                        //so there is a possibility some undoManagers may do undo. 
+                        temp.add(um);
                     }
                }
             }
@@ -159,9 +205,27 @@ public class XMLRefactoringTransaction implements Transaction {
             if(! isLocal)
                 RefactoringUtil.save(models, targetModel, excludedFromSave);
          
-      } finally {
-	   progress.stop();
-	}
+      } catch(CannotUndoException e){
+          //When we get the CannotUndoException, use the BackupFacility to undo
+         useBackupFacility = true;
+         //if some undoManagers have already did undo, we have to redo before
+         //doing a file copy. this part is really bad
+         if(temp.size() > 0){
+             for(UndoManager un:temp){
+                 un.redo();
+             }
+         }
+         for (BackupFacility.Handle id:ids) {
+            try {
+                id.restore();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                throw (RuntimeException) new RuntimeException().initCause(ex);
+            }
+        } 
+      }finally {
+      	   progress.stop();
+      }
       
     }
     
@@ -308,7 +372,7 @@ public class XMLRefactoringTransaction implements Transaction {
         
        
        public synchronized boolean canUndo() {
-        if (undoManagers == null || undoManagers.isEmpty()) {
+       if (undoManagers == null || undoManagers.isEmpty()) {
             return false;
         }
         for (UndoManager um : undoManagers.values()) {
@@ -469,15 +533,14 @@ public class XMLRefactoringTransaction implements Transaction {
                         }
                    //special case for move/copy refactoring when a referencedFO is being moved to a subproject
                    //in this case, there is no catalogEntry and a new one needs to be created
-                    if(request instanceof MoveRefactoring || request instanceof SingleCopyRefactoring) {
-                        if(pcs != null && !addedEntry){
+                     if(pcs != null && !addedEntry){
                             Project targetProject = FileOwnerQuery.getOwner(referencedFO);
                             Project project = FileOwnerQuery.getOwner(referencingFO);
                            if( SharedUtils.getProjectReferences(project).contains(targetProject) ){
                                pcs.createCatalogEntry(referencingFO, referencedFO);
                            }
                         }
-                    }
+                  
                 } catch(Exception ex) {
                     Logger.getLogger(SharedUtils.class.getName()).log(Level.FINE, ex.getMessage());
                 }
@@ -805,6 +868,17 @@ public class XMLRefactoringTransaction implements Transaction {
             
     }
     
+    private void backup() throws IOException {
+        if(modelsInRefactoring == null)
+              modelsInRefactoring = getModels();
+            Set<Model> models = modelsInRefactoring.keySet();
+            for(Model mod:models){
+                ids.add(BackupFacility.getDefault().backup(mod.getModelSource().getLookup().lookup(FileObject.class)));
+            }
+                        
+    }
+    
+        
    class GeneralChangeExecutor  {
     private UndoableEditSupport ues;
     
