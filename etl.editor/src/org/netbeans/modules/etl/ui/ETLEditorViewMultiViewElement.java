@@ -46,13 +46,13 @@ import org.netbeans.modules.etl.ui.view.ETLEditorTopView;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.IToolBar;
+import org.netbeans.modules.sql.framework.ui.graph.impl.GraphView;
 import org.netbeans.modules.sql.framework.ui.graph.view.impl.SQLToolBar;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLCollaborationView;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.SaveCookie;
-import org.openide.loaders.DataNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -62,7 +62,6 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -227,6 +226,11 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         }
         getETLDataObject().createNodeDelegate();   
         DataObjectProvider.activeDataObject = mObj;
+        
+        GraphView graphView = (GraphView) this.mTC.getGraphView();
+        if(null != graphView){
+            graphView.setObserved(graphView);
+    }
     }
     
     @Override
