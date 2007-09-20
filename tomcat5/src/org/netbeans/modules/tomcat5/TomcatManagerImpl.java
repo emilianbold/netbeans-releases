@@ -599,7 +599,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, error, StateType.FAILED));
                     failed = true;
                 }
-
+                if (msg == null) {
+                    msg = buff.toString();
+                }
             } catch (Exception e) {
                 if (retries < 0) {
                     LOGGER.log(Level.INFO, "TomcatManagerImpl connecting to: " + urlToConnectTo, e); // NOI18N
@@ -621,7 +623,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     } catch (java.io.IOException ioe) { // ignore this
                     }
                     istream = null;
-                }
+                }                
             }
             if (retries >=0) {
                 try {
