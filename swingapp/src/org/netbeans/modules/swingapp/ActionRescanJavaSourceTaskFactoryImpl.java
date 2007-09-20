@@ -44,24 +44,22 @@ public class ActionRescanJavaSourceTaskFactoryImpl extends EditorAwareJavaSource
     public Phase getPhase() {
         return Phase.RESOLVED;
     }
-}
 
+    private static class RescanTask implements CancellableTask<CompilationInfo> {
+        FileObject file;
 
-class RescanTask implements CancellableTask<CompilationInfo> {
-    FileObject file;
-    public RescanTask(FileObject file) {
-        this.file = file;
-    }
-    public void cancel() {
-//        System.out.println("footask cancel called");
-    }
-    public void run(CompilationInfo info) throws Exception {
-//        System.out.println("footask run called");
-//        System.out.println("file = " + file.getName() + " " + file.getPath());
-        ActionManager am = ActionManager.getActionManager(file);
-        if(am != null && AppFrameworkSupport.getClassNameForFile(file) != null) {
-            //System.out.println("got an action manager");
-            am.lazyRescan(file);
+        public RescanTask(FileObject file) {
+            this.file = file;
+        }
+
+        public void cancel() {
+        }
+
+        public void run(CompilationInfo info) throws Exception {
+            ActionManager am = ActionManager.getActionManager(file);
+            if(am != null && AppFrameworkSupport.getClassNameForFile(file) != null) {
+                am.lazyRescan(file);
+            }
         }
     }
 }
