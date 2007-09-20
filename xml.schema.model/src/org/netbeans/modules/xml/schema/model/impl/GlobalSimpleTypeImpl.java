@@ -68,6 +68,11 @@ public class GlobalSimpleTypeImpl extends CommonSimpleTypeImpl implements Global
         return getAttribute(SchemaAttributes.NAME);
     }
     
+    @Override
+    public String toString() {
+        return getName();
+    }
+            
     public void setFinal(Set<Final> finalValue) {
         setAttribute(FINAL_PROPERTY, SchemaAttributes.FINAL, 
                 finalValue == null ? null : 

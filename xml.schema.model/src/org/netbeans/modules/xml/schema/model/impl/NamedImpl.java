@@ -40,4 +40,10 @@ public abstract class NamedImpl extends SchemaComponentImpl implements Nameable<
     public String getName() {
 	return getAttribute(SchemaAttributes.NAME);
     }
+    
+    @Override
+    public String toString() {
+        return getName();
+    }
+            
 }

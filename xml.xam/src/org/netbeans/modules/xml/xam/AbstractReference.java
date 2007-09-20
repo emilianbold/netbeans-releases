@@ -115,6 +115,11 @@ public abstract class AbstractReference<T extends Referenceable> implements Refe
         return refString;
     }
 
+    @Override
+    public String toString() {
+        return getRefString();
+    }
+
     protected AbstractComponent getParent() {
         return parent;
     }
@@ -145,5 +150,5 @@ public abstract class AbstractReference<T extends Referenceable> implements Refe
     public int hashCode() {
         return parent.hashCode();
     }
-
+    
 }
