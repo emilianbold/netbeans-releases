@@ -75,14 +75,14 @@
                 </folder>
             </folder>
             <folder name="x-c">
-                <folder name="Popup">
-                    <folder name="Keybindings">
-                        <folder name="NetBeans">
-                            <folder name="Defaults">
-                                <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
-                            </folder>
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
+                </folder>
+                <folder name="Popup">
                     <folder name="goto">
                         <file name="cpp-switch-header-source">
                             <attr name="position" intvalue="50"/>

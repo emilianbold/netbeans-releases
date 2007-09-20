@@ -114,7 +114,7 @@ public final class CppSwitchAction extends BaseAction {
     }
 
     protected @Override Object getDefaultShortDescription() {
-        return getMessage("goto-cpp-switch-file"); //NOI18N
+        return getMessage("cpp-switch-header-source"); //NOI18N
     }
 
     private enum NodeKind {
