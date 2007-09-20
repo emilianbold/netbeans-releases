@@ -10,6 +10,7 @@
 		<directory title="C:/!MySunProjects/Rave/cvstree/ruby/help/javahelp/org/netbeans/modules/ruby/help/docs">
 			<file title="about_ruby.html"/>
 			<file title="credits.html"/>
+			<file title="geminstallationdialog.html"/>
 			<file title="geminstallsettingsdialog.html"/>
 			<file title="gemmanager.html"/>
 			<file title="newrailsappwiz-installrails.html"/>
@@ -22,6 +23,7 @@
 			<file title="rubyindex.xml"/>
 			<file title="rubymap.xml"/>
 			<file title="rubytoc.xml"/>
+			<file title="usingirb.html"/>
 		</directory>
     </documents>
 </helenProject>
