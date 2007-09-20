@@ -15,4 +15,6 @@
 	<mapID target="org.netbeans.modules.ruby.rubyproject.gems.GemAction" url="gemmanager.html"/>
 	<mapID target="nbruby_usingirb" url="usingirb.html"/>
 	<mapID target="org.netbeans.modules.ruby.rubyproject.gems.GemManager" url="geminstallationdialog.html"/>
+	<mapID target="org.netbeans.api.ruby.platform.RubyInstallation" url="chooserubyinterpdialog.html"/>
+	<mapID target="nbruby_settingrubyinterpreter" url="settingrubyinterpreter.html"/>
 </map>
