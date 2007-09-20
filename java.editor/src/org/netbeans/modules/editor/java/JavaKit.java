@@ -523,7 +523,7 @@ public class JavaKit extends NbEditorKit {
                 TokenHierarchy<BaseDocument> tokens = TokenHierarchy.get(doc);
                 TokenSequence ts = tokens.tokenSequence();
                 ts.move(dotPosition);
-                if (!ts.moveNext() || ts.token().id() != JavaTokenId.JAVADOC_COMMENT) {
+                if (! ((ts.moveNext() || ts.movePrevious()) && ts.token().id() == JavaTokenId.JAVADOC_COMMENT)) {
                     return null;
                 }
                 
@@ -551,14 +551,15 @@ public class JavaKit extends NbEditorKit {
         private static boolean isOpenJavadoc(CharSequence content, int pos) {
             for (int i = pos; i >= 0; i--) {
                 char c = content.charAt(i);
-                if (c == '*' && i - 2 > 0 && content.charAt(i - 1) == '*' && content.charAt(i - 2) == '/') {
+                if (c == '*' && i - 2 >= 0 && content.charAt(i - 1) == '*' && content.charAt(i - 2) == '/') {
                     // matched /**
                     return true;
                 } else if (c == '\n') {
                     // no javadoc, matched start of line
                     return false;
-                } else if (c == '/' && content.charAt(i - 1) == '*') {
+                } else if (c == '/' && i - 1 >= 0 && content.charAt(i - 1) == '*') {
                     // matched javadoc enclosing tag
+                    return false;
                 }
             }
             
@@ -571,7 +572,7 @@ public class JavaKit extends NbEditorKit {
             for (int i = pos; i < length; i++) {
                 char c = txt.charAt(i);
                 if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
-                    if (quotation == 0) {
+                    if (quotation == 0 || i < length - 2) {
                         return true;
                     }
                     // guess it is not just part of some text constant
