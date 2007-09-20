@@ -192,9 +192,17 @@ public class AutoupdateCatalogCache {
                 if (os != null) os.flush ();
                 if (os != null) os.close ();
                 synchronized (this) {
-                    cache.delete ();
+                    if (cache.exists () && ! cache.delete ()) {
+                        err.log (Level.INFO, "Cannot delete cache " + cache);
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException ie) {
+                            assert false : ie;
+                        }
+                        cache.delete();
+                    }
                     if (! temp.renameTo (cache)) {
-                        throw new IOException ("Cannot move temp " + temp + " to cache " + cache);
+                        err.log (Level.INFO, "Cannot rename temp " + temp + " to cache " + cache);
                     }
                 }                    
             } catch (IOException ioe) {
