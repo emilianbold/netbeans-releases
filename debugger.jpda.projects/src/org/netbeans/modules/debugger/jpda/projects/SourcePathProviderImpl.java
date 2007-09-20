@@ -80,6 +80,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private ClassPath               originalSourcePath;
     /** Contains just the source paths which are selected for debugging. */
     private ClassPath               smartSteppingSourcePath;
+    private String[]                projectSourceRoots;
     private PropertyChangeSupport   pcs;
     private PathRegistryListener    pathRegistryListener;
     
@@ -108,6 +109,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                         smartSteppingSourcePath
                     }
             );
+            projectSourceRoots = getSourceRoots(originalSourcePath);
             Set<FileObject> preferredRoots = new HashSet<FileObject>();
             preferredRoots.addAll(Arrays.asList(originalSourcePath.getRoots()));
             Set<FileObject> globalRoots = new TreeSet<FileObject>(new FileObjectComparator());
@@ -173,6 +175,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 allSourceRoots.toArray 
                     (new FileObject [allSourceRoots.size()])
             );
+            projectSourceRoots = getSourceRoots(originalSourcePath);
             
             JavaPlatform[] platforms = JavaPlatformManager.getDefault ().
                 getInstalledPlatforms ();
@@ -329,13 +332,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         return null; // not found
     }
     
-    /**
-     * Returns allSourceRoots of original source roots.
-     *
-     * @return allSourceRoots of original source roots
-     */
-    public synchronized String[] getOriginalSourceRoots () {
-        FileObject[] sourceRoots = originalSourcePath.getRoots();
+    private String[] getSourceRoots(ClassPath classPath) {
+        FileObject[] sourceRoots = classPath.getRoots();
         List<String> roots = new ArrayList<String>(sourceRoots.length);
         for (FileObject fo : sourceRoots) {
             String root = getRoot(fo);
@@ -344,8 +342,15 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
         }
         return roots.toArray(new String[0]);
-        //return getRoots (GlobalPathRegistry.getDefault ().getSourceRoots ().
-        //    iterator ());
+    }
+    
+    /**
+     * Returns allSourceRoots of original source roots.
+     *
+     * @return allSourceRoots of original source roots
+     */
+    public synchronized String[] getOriginalSourceRoots () {
+        return getSourceRoots(originalSourcePath);
     }
     
     /**
@@ -354,16 +359,16 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      * @return array of source roots
      */
     public synchronized String[] getSourceRoots () {
-        FileObject[] sourceRoots = smartSteppingSourcePath.getRoots();
-        List<String> roots = new ArrayList<String>(sourceRoots.length);
-        for (FileObject fo : sourceRoots) {
-            String root = getRoot(fo);
-            if (root != null) {
-                roots.add(root);
-            }
-        }
-        return roots.toArray(new String[0]);
-        //return sourceRoots;
+        return getSourceRoots(smartSteppingSourcePath);
+    }
+    
+    /**
+     * Returns the project's source roots.
+     * 
+     * @return array of source roots belonging to the project
+     */
+    public String[] getProjectSourceRoots() {
+        return projectSourceRoots;
     }
     
     /**

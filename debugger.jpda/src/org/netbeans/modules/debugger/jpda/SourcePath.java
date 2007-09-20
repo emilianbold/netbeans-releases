@@ -33,6 +33,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * Utility methods for sources.
@@ -176,6 +177,22 @@ public class SourcePath {
      */
     public String[] getOriginalSourceRoots () {
         return getContext ().getOriginalSourceRoots ();
+    }
+    
+    /**
+     * Returns the project's source roots.
+     * 
+     * @return array of source roots belonging to the project
+     */
+    public String[] getProjectSourceRoots() {
+        try {
+            java.lang.reflect.Method getProjectSourceRootsMethod = getContext().getClass().getMethod("getProjectSourceRoots", new Class[] {}); // NOI18N
+            String[] projectSourceRoots = (String[]) getProjectSourceRootsMethod.invoke(getContext(), new Object[] {});
+            return projectSourceRoots;
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return new String[] {};
+        }
     }
     
     /**

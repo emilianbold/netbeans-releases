@@ -33,12 +33,15 @@ import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -119,6 +122,16 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                             " NOT submitted because it's source root "+sourceRoot+
                             " is not contained in debugger's source roots: "+
                             java.util.Arrays.asList(sourceRoots));
+            }
+            String[] projectSourceRoots = getDebugger().getEngineContext().getProjectSourceRoots();
+            for (int i = 0; i < projectSourceRoots.length; i++) {
+                if (sourceRoot.equals(projectSourceRoots[i])) {
+                    setValidity(VALIDITY.INVALID,
+                                NbBundle.getMessage(ClassBasedBreakpoint.class,
+                                            "MSG_DisabledSourceRoot",
+                                            sourceRoot));
+                    break;
+                }
             }
             return false;
         }
