@@ -58,6 +58,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     }
     
     public Image annotateIcon(Image icon, int iconType, Set files) {
+        if (files.size() == 0) return icon;
         FileObject fo = (FileObject) files.iterator().next();
         VersioningSystem vs = getOwner(FileUtil.toFile(fo));
         
@@ -70,6 +71,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     }
 
     public String annotateNameHtml(String name, Set files) {
+        if (files.size() == 0) return name;
         FileObject fo = (FileObject) files.iterator().next();
         VersioningSystem vs = getOwner(FileUtil.toFile(fo));
         
@@ -82,6 +84,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     }
 
     public Action[] actions(Set files) {
+        if (files.size() == 0) return new Action[0];
         FileObject fo = (FileObject) files.iterator().next();
         File file = FileUtil.toFile(fo);
         if (file == null) return new Action[0];
