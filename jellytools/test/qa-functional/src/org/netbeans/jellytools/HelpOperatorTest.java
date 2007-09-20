@@ -152,7 +152,7 @@ public class HelpOperatorTest extends JellyTestCase {
     /** Test btPageSetup() method. */
     public void testPageSetup() {
         String tooltip = help.btPageSetup().getToolTipText();
-        if(!tooltip.equals("Print") && !tooltip.equals("Nastavení stránky")) {
+        if(!tooltip.equals("Page Setup") && !tooltip.startsWith("Nastaven")) { // "Nastavení stránky"
             fail("btPageSetup() returned wrong button: "+tooltip);
         }
     }
