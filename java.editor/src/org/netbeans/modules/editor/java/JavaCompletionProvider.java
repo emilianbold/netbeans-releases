@@ -2571,7 +2571,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
-                    if ((e.getKind().isClass() || e.getKind().isInterface()) && e.getEnclosingElement().getKind() == PACKAGE) {
+                    if ((e.getKind().isClass() || e.getKind().isInterface())) {
                         return (toExclude == null || !toExclude.contains(e)) && (env.isCamelCasePrefix() ? Utilities.startsWithCamelCase(e.getSimpleName().toString(), prefix) : Utilities.startsWith(e.getSimpleName().toString(), prefix)) &&
                                 trees.isAccessible(scope, (TypeElement)e) &&
                                 isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
