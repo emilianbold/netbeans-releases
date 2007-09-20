@@ -130,6 +130,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             handler.setStateCorrect(this.stateCorrect);
         }
 
+        @Override
         public String toString() {
             StringBuilder retValue = new StringBuilder();
             retValue.append(this.cleaned ? "\nCleaned State\n" : "\nNot Cleaned State\n"); // NOI18N
@@ -141,6 +142,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             return retValue.toString();
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj == null || (obj.getClass() != this.getClass())) {
                 return false;
@@ -151,6 +153,14 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             return this.stateCorrect == other.stateCorrect &&
                     ( (this.inclState == null && other.inclState == null) ||
                       (this.inclState.equals(other.inclState)));
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 83 * hash + (this.stateCorrect ? 1 : 0);
+            hash = 83 * hash + (this.inclState != null ? this.inclState.hashCode() : 0);
+            return hash;
         }
                 
         public boolean isStateCorrect() {
@@ -205,6 +215,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     
+    @Override
     public String toString() {
         StringBuilder retValue = new StringBuilder();
         retValue.append(this.stateCorrect ? "\nCorrect State" : "\nDefault/Null State"); // NOI18N
