@@ -115,8 +115,9 @@ public class Mercurial {
         String version = HgCommand.getHgVersion();
         LOG.log(Level.FINE, "version: {0}", version); // NOI18N
         if (version != null) {
-            goodVersion = version.startsWith(MERCURIAL_GOOD_VERSION);
-            if (!goodVersion && !version.startsWith(MERCURIAL_BETTER_VERSION)) {
+            goodVersion = version.startsWith(MERCURIAL_GOOD_VERSION) ||
+                          version.startsWith(MERCURIAL_BETTER_VERSION);
+            if (!goodVersion) {
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
                 String runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
                 if (runVersion == null || !runVersion.equals(version)) {
