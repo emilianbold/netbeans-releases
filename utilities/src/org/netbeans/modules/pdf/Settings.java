@@ -13,18 +13,20 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.pdf;
 
+import java.beans.IntrospectionException;
 import java.io.File;
-import java.util.Properties;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
-import org.openide.ErrorManager;
-
-import org.openide.util.Lookup;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import org.openide.nodes.BeanNode;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import static java.util.logging.Level.FINER;
 
 
 /**
@@ -34,66 +36,52 @@ import org.openide.util.Lookup;
  * @author  Marian Petras
  */
 public class Settings {
+
+    private static final Logger LOG = Logger.getLogger(Settings.class.getName());
+
     public static final String PROP_PDF_VIEWER = "PDFViewer";           //NOI18N
-    private File viewer;
-    private PropertyChangeSupport supp = new PropertyChangeSupport(this);
 
+    private static final Settings INSTANCE = new Settings();
 
+    /**
+     * Default instance of this system option,
+     * for the convenience of associated classes.
+     */
     public static Settings getDefault() {
-        return (Settings) Lookup.getDefault().lookup(Settings.class);
+        return INSTANCE;
+    }
+
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(Settings.class);
     }
 
     public File getPDFViewer() {
-        return viewer;
+        String fileName = getPreferences().get(PROP_PDF_VIEWER, null);
+        return ((fileName != null) && (fileName.length() != 0))
+               ? new File(fileName)
+               : null;
     }
 
     public void setPDFViewer(File viewer) {
-        ErrorManager.getDefault()
-                .getInstance("org.netbeans.modules.pdf")                //NOI18N
-                .log("Settings [" + this + "].setPDFViewer: " + viewer);//NOI18N
-
-        File old = this.viewer;
-        this.viewer = viewer;
-        supp.firePropertyChange(PROP_PDF_VIEWER, old, viewer);
-    }
-
-    /**
-     * @see http://www.netbeans.org/download/dev/javadoc/SettingsAPIs/org/netbeans/spi/settings/doc-files/api.html#xmlprops
-     */
-    private void readProperties(Properties p) {
-        String fileName = p.getProperty(PROP_PDF_VIEWER);
-        if (fileName != null && fileName.length() != 0) {
-            viewer = new File(fileName);
-        } else {
-            viewer = null;
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("Settings[" + this + "].setPDFViewer: " + viewer);//NOI18N
         }
+
+        getPreferences().put(PROP_PDF_VIEWER, (viewer != null)
+                                              ? viewer.toString()
+                                              : null);
     }
 
-    /**
-     * @see http://www.netbeans.org/download/dev/javadoc/SettingsAPIs/org/netbeans/spi/settings/doc-files/api.html#xmlprops
-     */
-    private void writeProperties(Properties p) {
-        p.setProperty(PROP_PDF_VIEWER,
-                      viewer != null ? viewer.toString() : null);
+    public String getDisplayName() {
+        return NbBundle.getMessage(Settings.class, "PDFSettings");      //NOI18N
     }
 
-
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        ErrorManager.getDefault()
-              .getInstance("org.netbeans.modules.pdf")                  //NOI18N
-              .log("Settings [" + this + "].addPropertyChangeListener: "//NOI18N
-                   + l);
-
-        supp.addPropertyChangeListener(l);
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(Settings.class); 
     }
 
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        ErrorManager.getDefault()
-           .getInstance("org.netbeans.modules.pdf")                     //NOI18N
-           .log("Settings [" + this + "].removePropertyChangeListener: "//NOI18N
-                + l);
-
-        supp.removePropertyChangeListener(l);
-    }
+    private static BeanNode createViewNode() throws IntrospectionException {
+        return new BeanNode<Settings>(Settings.getDefault());
+    }         
 
 }

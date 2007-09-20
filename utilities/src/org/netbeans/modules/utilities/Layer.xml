@@ -280,13 +280,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- public ID for pdf link xml -->
                 <file name="DTD_PDF_Document_Menu_Link_1_0" url="nbres:/org/netbeans/modules/pdf/pdf_link.dtd"/>
             </folder> <!-- NetBeans -->
-
-            <folder name="NetBeans_org_netbeans_modules_pdf">
-                <file name="DTD_XML_PDFSettings_1_0" url="nbres:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
-                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.pdf//DTD XML PDFSettings 1.0//EN"/>
-                </file>
-            </folder> <!-- NetBeans_org_netbeans_modules_pdf -->
-
         </folder> <!-- entities -->
 
         <folder name="lookups">
@@ -305,22 +298,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="settings.instanceOf" stringvalue="org.netbeans.modules.pdf.Settings"/>
                 </file>
             </folder> <!-- NetBeans_org_netbeans_modules_pdf -->
-
         </folder> <!-- lookups -->
-
-        <folder name="memory">
-            <folder name="org">
-                <folder name="netbeans">
-                    <folder name="modules">
-                        <folder name="pdf">
-                            <file name="Settings">
-                                <attr name="settings.providerPath" stringvalue="xml/lookups/NetBeans_org_netbeans_modules_pdf/DTD_XML_PDFSettings_1_0.instance"/>
-                            </file>
-                        </folder>
-                    </folder>
-                </folder>
-            </folder>
-        </folder> <!-- memory -->
     </folder> <!-- xml -->
     
     <folder name="Services">
@@ -336,13 +314,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder> <!-- MIMEResolver -->
 
-        <!-- PDF Settings -->
-        <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.pdf.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/pdf/PDFDataIcon.png"/>
-	    <attr name="helpID" stringvalue="org.netbeans.modules.pdf.PDFSettings"/>
-        </file>
-
         <!--
         < ! - - Bookmarks Node - - >
         <file name="org-netbeans-modules-url-BookmarksNode.instance">
@@ -353,6 +324,20 @@ Microsystems, Inc. All Rights Reserved.
         -->
 
     </folder> <!-- Services -->
+
+    <folder name="UI">
+    	<folder name="Services">
+            <folder name="IDEConfiguration">
+                <folder name="ServerAndExternalToolSettings">
+                    <!-- Point to the real settings file (always on the system file system). -->
+                    <file name="org-netbeans-modules-pdf-PDFSettingsNode.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.pdf.Bundle"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.pdf.Settings.createViewNode"/>
+                    </file>
+                </folder>
+            </folder>
+    	</folder>
+    </folder>
 
     <folder name="Windows2">
         <folder name="Modes">
