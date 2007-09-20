@@ -286,11 +286,11 @@ public class MercurialAnnotator extends VCSAnnotator {
         Node [] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         File root = HgUtils.getRootFile(ctx);
+        boolean goodVersion = Mercurial.getInstance().isGoodVersion();
         boolean noneVersioned = isNothingVersioned(files);
         boolean onlyFolders = onlyFolders(files);
         boolean onlyProjects = onlyProjects(nodes);
 
-        boolean goodVersion = Mercurial.getInstance().isGoodVersion();
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (goodVersion && destination == VCSAnnotator.ActionDestination.MainMenu) {

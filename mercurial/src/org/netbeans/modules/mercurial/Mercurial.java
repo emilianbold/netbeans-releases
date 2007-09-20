@@ -87,20 +87,21 @@ public class Mercurial {
     private FileStatusCache     fileStatusCache;
     private HashMap<String, RequestProcessor>   processorsToUrl;
     private boolean goodVersion;
+    private boolean checkedVersion;
 
     private Mercurial() {
     }
     
     
     private void init() {
-        checkVersion();
-        goodVersion = true;
+        checkedVersion = false;
+        setDefaultPath();
         fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
     }
 
-    private void checkVersion() {
+    private void setDefaultPath() {
         // Set default executable location for mercurial on mac
         if (System.getProperty("os.name").equals("Mac OS X")) { // NOI18N
             String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath ();
@@ -108,6 +109,9 @@ public class Mercurial {
                 HgModuleConfig.getDefault().setExecutableBinaryPath ("/Library/Frameworks/Python.framework/Versions/Current/bin"); // NOI18N
             }
         }
+    }
+
+    private void checkVersion() {
         String version = HgCommand.getHgVersion();
         LOG.log(Level.FINE, "version: {0}", version); // NOI18N
         if (version != null) {
@@ -229,6 +233,10 @@ public class Mercurial {
     }
 
     public boolean isGoodVersion() {
+        if (checkedVersion == false) {
+            checkVersion();
+            checkedVersion = true;
+        }
         return goodVersion;
     }
 
