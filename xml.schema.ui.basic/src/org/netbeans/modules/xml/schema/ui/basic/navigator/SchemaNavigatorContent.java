@@ -147,9 +147,10 @@ public class SchemaNavigatorContent extends AbstractXMLNavigatorContent  impleme
     
     private SchemaModel getSchemaModel(DataObject dobj) {
         try {
-            SchemaModelCookie modelCookie = (SchemaModelCookie)
-            dobj.getCookie(SchemaModelCookie.class);
-            assert modelCookie != null;
+            SchemaModelCookie modelCookie = dobj.getCookie(SchemaModelCookie.class);
+            //it is possible that the dobj is no longer for a schema.
+            if(modelCookie == null)
+                return null;
             SchemaModel model = modelCookie.getModel();
             if(model != null) {
                 model.removePropertyChangeListener(this);

@@ -157,8 +157,8 @@ public class NavigatorContent extends AbstractXMLNavigatorContent {
     //Always listens to the active model. Remove earlier listeners.
     private AXIModel getAXIModel(DataObject dobj) {
         try {
-            SchemaModelCookie modelCookie = (SchemaModelCookie)dobj.
-                    getCookie(SchemaModelCookie.class);
+            SchemaModelCookie modelCookie = dobj.getCookie(SchemaModelCookie.class);
+            //it is possible that the dobj is no longer for a schema.
             if(modelCookie == null)
                 return null;
             AXIModel model = AXIModelFactory.getDefault().getModel(modelCookie.getModel());
