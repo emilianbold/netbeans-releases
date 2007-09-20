@@ -329,11 +329,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
         
         actions.add(null);
         
-        String eType=null;
-        if(getParentNode()!=null && getParentNode().getParentNode()!=null)
-            eType=getParentNode().getParentNode().getName();
-        if(eType==null || !eType.equals("Imported Elements")) // NOI18N
-            actions.add(SystemAction.get(DeleteAction.class));
+        actions.add(SystemAction.get(DeleteAction.class));
         actions.add(SystemAction.get(RenameAction.class));
         
         actions.add(null);
