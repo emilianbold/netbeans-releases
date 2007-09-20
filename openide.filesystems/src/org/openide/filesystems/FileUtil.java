@@ -1298,7 +1298,7 @@ public final class FileUtil extends Object {
     private static boolean canBeCanonicalizedOnWindows(final File file) {
         /*#4089199, #95031 - Flopy and empty CD-drives can't be canonicalized*/
         boolean canBeCanonizalized = true;
-        if (file.getParent() == null && is4089199()) {//NOI18N
+        if (file.getParent() == null && Utilities.isWindows()) {//NOI18N
             FileSystemView fsv = getFileSystemView();
             canBeCanonizalized = (fsv != null) ? !fsv.isFloppyDrive(file) && file.exists() : false;
         }
