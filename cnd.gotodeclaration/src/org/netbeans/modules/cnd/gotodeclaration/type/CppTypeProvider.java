@@ -139,7 +139,6 @@ public class CppTypeProvider implements TypeProvider {
                     for( CsmMember member : cls.getMembers() ) {
                         if( ! isCancelled ) {
                             processDeclaration(member, result, comparator);
-                            return;
                         }
                     }
                 }
