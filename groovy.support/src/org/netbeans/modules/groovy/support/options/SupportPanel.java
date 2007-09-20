@@ -19,7 +19,12 @@
 
 package org.netbeans.modules.groovy.support.options;
 
+import java.awt.Cursor;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
 
 /**
  * Groovy settings
@@ -47,12 +52,26 @@ final class SupportPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         groovyHomeTextField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        linkLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.jLabel1.text")); // NOI18N
 
         groovyHomeTextField.setText(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.groovyHomeTextField.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.jLabel2.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(linkLabel, "<html><a href=\"http://groovy.codehaus.org\">http://groovy.codehaus.org</a></html>"); // NOI18N
+        linkLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                linkLabelMousePressed(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                linkLabelMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                linkLabelMouseEntered(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -63,8 +82,11 @@ final class SupportPanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
-                    .add(groovyHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(linkLabel))
+                    .add(groovyHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -75,10 +97,28 @@ final class SupportPanel extends javax.swing.JPanel {
                     .add(jLabel1)
                     .add(groovyHomeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel2)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(linkLabel))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void linkLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMousePressed
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://groovy.codehaus.org")); // NOI18N
+        } catch (MalformedURLException murle) {
+            Exceptions.printStackTrace(murle);
+        }
+    }//GEN-LAST:event_linkLabelMousePressed
+
+    private void linkLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMouseEntered
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_linkLabelMouseEntered
+
+    private void linkLabelMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMouseExited
+        setCursor(Cursor.getDefaultCursor());
+    }//GEN-LAST:event_linkLabelMouseExited
 
     void load() {
         GroovySettings groovyOption = new GroovySettings();
@@ -99,6 +139,7 @@ final class SupportPanel extends javax.swing.JPanel {
     private javax.swing.JTextField groovyHomeTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel linkLabel;
     // End of variables declaration//GEN-END:variables
 
 }
