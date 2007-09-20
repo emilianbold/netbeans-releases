@@ -25,17 +25,28 @@ import org.netbeans.modules.vmd.api.model.Presenter;
  *
  * @author Karol Harezlak
  */
+
+/**
+ * This abstract class attaches InspectorOrderingControllers to the DesignComponent through presenter. 
+ * It has only one method which returns array of InspectorOrderingControllers.
+ */
 public abstract class InspectorOrderingPresenter extends Presenter {
-
+    /**
+     * This factory method creates default InspectorOrderingPresenter for given
+     * array of InspectorOrderingControllers.
+     * @param orderingControllers array of InspectorOrderingControllers
+     */ 
     public static InspectorOrderingPresenter create(final InspectorOrderingController... orderingControllers) {
-
         return new InspectorOrderingPresenter() {
-
             public InspectorOrderingController[] getFolderOrderingControllers() {
                 return orderingControllers;
             }
         };
     }
-     
+    
+    /**
+     * Returns array of InspectorOrderingControllers.
+     * @return array of InspectorOrderingControllers
+     */ 
     public abstract InspectorOrderingController[] getFolderOrderingControllers();
 }

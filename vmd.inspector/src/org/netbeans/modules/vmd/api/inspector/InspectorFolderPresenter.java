@@ -19,32 +19,25 @@
 
 package org.netbeans.modules.vmd.api.inspector;
 
-import java.awt.Image;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import javax.swing.Action;
-
-import org.netbeans.modules.vmd.api.model.Debug;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignEvent;
-import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.DynamicPresenter;
-import org.netbeans.modules.vmd.api.model.PresenterEvent;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
-import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
 
 /**
  *
  * @author Karol Harezlak
  */
 
+/**
+ * This class connects DesignComponent and particular InspectorFolder. It has only one method 
+ * which returns InspectorFolder when needed. It's possible to attach more that one 
+ * InpsectorFolderPresenter to the DesignComponent in this case DesignComponent would have more that one
+ * visiual representation in the tree structure of the Mobility Visual Designer Navigator.
+ */
 public abstract class InspectorFolderPresenter extends DynamicPresenter {
     
+    /**
+     * Returns InspectorFolder.
+     * @return returns InspectorFolder
+     */ 
     public abstract InspectorFolder getFolder();
     
 }

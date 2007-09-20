@@ -34,10 +34,20 @@ public final class InspectorFolderComponentPresenter extends InspectorFolderPres
     private DesignComponentInspectorFolder folder;
     private boolean canRename;
     
+    /**
+     * Creates InspectorFolderComponentPresenter.
+     * 
+     * @param canRename indicates if folder returns by this presenter can be renamed 
+     */ 
     public InspectorFolderComponentPresenter(boolean canRename) {
         this.canRename = canRename;
     }
     
+    /**
+     * Returns InspectorFolder created based on DesignComponent which this presenter is attached to.
+     * 
+     * @return components InspectorFolder 
+     */ 
     public InspectorFolder getFolder() {
         if (folder == null) {
             folder = new DesignComponentInspectorFolder(canRename, getComponent());

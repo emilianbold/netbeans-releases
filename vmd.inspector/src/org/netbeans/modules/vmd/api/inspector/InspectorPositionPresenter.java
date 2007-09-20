@@ -25,12 +25,19 @@ import org.netbeans.modules.vmd.api.model.Presenter;
  *
  * @author Karol Harezlak
  */
+
+/**
+ * This abstract class attaches InspectorPossitionControllers to the DesignComponent through presenter. 
+ * It has only one method which returns array of InspectorPossitonControllers.
+ */
 public abstract class InspectorPositionPresenter extends Presenter {
-
+     /**
+     * This factory method creates default InspectorPositionPresenter for given
+     * array of InspectorPositionControllers.
+     * @param positionControllers array of InspectorPositionPresenters
+     */ 
     public static InspectorPositionPresenter create(final InspectorPositionController... positionControllers) {
-
         return new InspectorPositionPresenter() {
-
             public InspectorPositionController[] getFolderPositionControllers() {
                 return positionControllers;
             }

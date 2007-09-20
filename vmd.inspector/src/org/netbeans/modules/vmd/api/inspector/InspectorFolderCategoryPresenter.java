@@ -31,6 +31,14 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
  *
  * @author Karol Harezlak
  */
+
+/**
+ * Implementation of InspectorFolderPresenter. This class attached to the
+ * DesignComponent creates category in the tree structure of Mobility Visiula Designer Navigator.
+ * Category doesn't represent particular component and could be used (for example)
+ * to keep different types of folders separated in different categories like Commands, Items etc.
+*/ 
+
 public final class InspectorFolderCategoryPresenter extends InspectorFolderPresenter {
 
     private CategoryFolder folder;
@@ -40,9 +48,19 @@ public final class InspectorFolderCategoryPresenter extends InspectorFolderPrese
     private InspectorOrderingController[] orderingControllers;
     private String displayName;
     private TypeID parentTypeID;
-
+    
+    /**
+     * Creates InspectorFolderCategoryPresenter object.
+     * <p>Note: It's not possible to change name of the category folder created by this presenter.</p>
+     * 
+     * @param displayName category folder display name
+     * @param typeID TypeID connected with this category folder
+     * @param icon image icon, visual representation of the category folder
+     * @param filtersTypeID array of allowed TypeIDs underneath of this category
+     * @param parentTypeID parent components TypeId of the component to which this presenter is attached to 
+     * @param orderingControllers array of InspectorOrderingControllers available for this presenter
+     */ 
     public InspectorFolderCategoryPresenter(String displayName, TypeID typeID, Image icon, TypeID[] filtersTypeID, TypeID parentTypeID, InspectorOrderingController... orderingControllers) {
-
         this.displayName = displayName;
         this.typeID = typeID;
         this.icon = icon;
@@ -50,7 +68,11 @@ public final class InspectorFolderCategoryPresenter extends InspectorFolderPrese
         this.orderingControllers = orderingControllers;
         this.parentTypeID = parentTypeID;
     }
-
+    
+    /**
+     * Returns category InspectorFolder.
+     * @return category folder
+     */ 
     public InspectorFolder getFolder() {
         if (folder == null) {
             folder = new CategoryFolder(displayName, typeID, icon, filtersTypeID, orderingControllers);

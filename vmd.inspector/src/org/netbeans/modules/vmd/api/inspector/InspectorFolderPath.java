@@ -30,6 +30,11 @@ import org.netbeans.modules.vmd.inspector.InspectorWrapperTree;
  *
  * @author Karol Harezlak
  */
+
+/**
+ * This class keep tracking status of of the Mobility Visual Designer Navigator structure tree.
+ * 
+ */ 
 public final class InspectorFolderPath {
 
     private final List<InspectorFolder> path;
@@ -38,29 +43,45 @@ public final class InspectorFolderPath {
     private InspectorFolderPath(){
         path = new ArrayList<InspectorFolder>();
     }
-
+    //TODO This method should be only accessable from InspectorWrapperTree!
+    /**
+    * DO NOT USE THIS METHOD.This method not spoused to be used anywhere except InspectorWrapperTree
+    */ 
     public static InspectorFolderPath createInspectorPath(){
         //assert Debug.isFriend(InspectorFolderTree.class);
         instance = new InspectorFolderPath();
         return instance;
     }
-    
+    //TODO This method should be only accessable from InspectorWrapperTree!
+    /**
+    * DO NOT USE THIS METHOD.This method not spoused to be used anywhere except InspectorWrapperTree
+    */ 
     public InspectorFolderPath add(InspectorFolder pathElement){
         //assert Debug.isFriend(InspectorFolderTree.class);
         path.add(pathElement);
         return this;
     }
-    
+    //TODO This method should be only accessable from InspectorWrapperTree!
+    /**
+    * DO NOT USE THIS METHOD.This method not spoused to be used anywhere except InspectorWrapperTree
+    */ 
     public void remove(InspectorFolder pathElement){
         assert Debug.isFriend(InspectorWrapperTree.class);
         assert path.lastIndexOf(pathElement) == (path.size() - 1) : "Path error" ;  // NOI18N
         path.remove( path.size() - 1 );
     }
     
+    /**
+     * Returns current path of the Mobility Visual Designer Navigator as a List<InspectorFolder>
+     * @return returns current path as List<InspectorFolder>
+     */ 
     public List<InspectorFolder> getPath(){
         return Collections.<InspectorFolder>unmodifiableList(path);
     }
-    
+    /**
+     * Returns last element of the current path of the Mobility Visual Designer Navigator as InspectorFolder
+     * @return returns last element od path as InspectorFolder
+     */
     public InspectorFolder getLastElement(){
         int index = path.size() - 1;
         if (index >= 0)
