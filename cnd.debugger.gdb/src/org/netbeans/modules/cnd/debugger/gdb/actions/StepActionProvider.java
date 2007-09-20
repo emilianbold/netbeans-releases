@@ -26,15 +26,10 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-
 import org.openide.util.RequestProcessor;
-
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
-
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
@@ -44,6 +39,13 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  * 
  */
 public class StepActionProvider extends GdbDebuggerActionProvider {
+    
+    private final Set actions  = new HashSet<Object>(Arrays.asList(new Object[] {
+            ActionsManager.ACTION_STEP_INTO,
+            ActionsManager.ACTION_STEP_OUT,
+            ActionsManager.ACTION_STEP_OVER,
+            ActionsManager.ACTION_CONTINUE
+        }));
     
     /** 
      * Creates a new instance of StepActionProvider
@@ -62,12 +64,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      * @return set of actions supported by this ActionsProvider
      */
     public Set getActions() {
-        return new HashSet (Arrays.asList (new Object[] {
-            ActionsManager.ACTION_STEP_INTO,
-            ActionsManager.ACTION_STEP_OUT,
-            ActionsManager.ACTION_STEP_OVER,
-            ActionsManager.ACTION_CONTINUE
-        }));
+        return actions;
     }
 
     /**
@@ -117,6 +114,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      *        done.
      * @since 1.5
      */
+    @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -129,9 +127,9 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
         });
     }    
     protected void checkEnabled(String debuggerState) {
-        Iterator i = getActions().iterator();
-        while (i.hasNext()) {
-            setEnabled(i.next(), debuggerState == getDebugger().STATE_STOPPED);
+        boolean en = debuggerState.equals(GdbDebugger.STATE_STOPPED);
+        for (Object action : getActions()) {
+            setEnabled(action, en);
         }
     }
 }

@@ -32,7 +32,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 *
 * @author  Gordon Prieur (copied from Jan Jancura's and Marian Petras' JPDA implementation)
 */
-abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
+public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
                 implements PropertyChangeListener {
     
     private GdbDebugger debugger;
@@ -41,8 +41,7 @@ abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
     
     GdbDebuggerActionProvider(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        this.debugger = debugger;
-        debugger.addPropertyChangeListener(debugger.PROP_STATE, this);
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -51,6 +50,7 @@ abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
     
     protected abstract void checkEnabled(String debuggerState);
     
+    @Override
     public boolean isEnabled(Object action) {
         if (!disabled) {
             checkEnabled(debugger.getState());
