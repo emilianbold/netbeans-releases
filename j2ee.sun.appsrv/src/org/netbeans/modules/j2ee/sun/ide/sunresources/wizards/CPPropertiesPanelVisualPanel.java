@@ -30,6 +30,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.ListSelectionModel;
 import java.util.ResourceBundle;
+import javax.swing.ComboBoxModel;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
@@ -79,9 +80,10 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         
         this.typeField = FieldHelper.getField(generalGroup, __ResType);         
         String resType = this.helper.getData().getString(__ResType);
-        if (resType.length() == 0)
+        if (resType.length() == 0) {
             resType = FieldHelper.getDefaultValue(typeField);
-        resTypeField.setText(resType);
+        }    
+        resTypeCombo.setSelectedItem(resType);
     }
     
     /** This method is called from within the constructor to
@@ -97,9 +99,9 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         classNameField = new javax.swing.JTextField();
         classNameLabel = new javax.swing.JLabel();
         resTypeLabel = new javax.swing.JLabel();
-        resTypeField = new javax.swing.JTextField();
         descField = new javax.swing.JTextField();
         descLabel = new javax.swing.JLabel();
+        resTypeCombo = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         tableButtonsPane = new javax.swing.JPanel();
@@ -110,8 +112,6 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("TITLE_ConnPoolWizardPanel_properties"));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("CPPropertyPanel_Description"));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         classNameField.setText(this.helper.getData().getString(__DatasourceClassname));
@@ -125,7 +125,6 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
                 classNameFieldKeyReleased(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -147,29 +146,16 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         classNameLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ToolTip_datasource-classname"));
 
         resTypeLabel.setDisplayedMnemonic(bundle.getString("LBL_res-type_Mnemonic").charAt(0));
-        resTypeLabel.setLabelFor(resTypeField);
+        resTypeLabel.setLabelFor(resTypeCombo);
         resTypeLabel.setText(bundle.getString("LBL_res-type"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.ipadx = 43;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(resTypeLabel, gridBagConstraints);
         resTypeLabel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_res-type"));
         resTypeLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_res-typefieldA11yDesc"));
-
-        resTypeField.setEditable(false);
-        resTypeField.setText("jTextField2");
-        resTypeField.setFocusable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        jPanel1.add(resTypeField, gridBagConstraints);
-        resTypeField.getAccessibleContext().setAccessibleName(bundle.getString("LBL_res-type"));
-        resTypeField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_res-typefieldA11yDesc"));
 
         descField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -181,7 +167,6 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
                 descFieldKeyReleased(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -192,7 +177,8 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
 
         descLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_description_Mnemonic").charAt(0));
         descLabel.setLabelFor(descField);
-        descLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_description"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle"); // NOI18N
+        descLabel.setText(bundle.getString("LBL_description")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -200,33 +186,49 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         gridBagConstraints.ipadx = 49;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(descLabel, gridBagConstraints);
-        descLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_description"));
-        descLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("ToolTip_description"));
+        descLabel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_description")); // NOI18N
+        descLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ToolTip_description")); // NOI18N
+
+        resTypeCombo.setModel(getResourceTypeComboBoxModel());
+        resTypeCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resTypeComboActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        jPanel1.add(resTypeCombo, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
-        jPanel1.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("TITLE_ConnPoolWizardPanel_properties"));
-        jPanel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("CPPropertyPanel_Description"));
+        jPanel1.getAccessibleContext().setAccessibleName(bundle.getString("TITLE_ConnPoolWizardPanel_properties")); // NOI18N
+        jPanel1.getAccessibleContext().setAccessibleDescription(bundle.getString("CPPropertyPanel_Description")); // NOI18N
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(453, 17));
+
         jTable1.setModel(tableModel);
         jScrollPane1.setViewportView(jTable1);
-        jTable1.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_properties"));
-        jTable1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("ACS_propTableCommon_A11yDesc"));
+        jTable1.getAccessibleContext().setAccessibleName(bundle.getString("LBL_properties")); // NOI18N
+        jTable1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_propTableCommon_A11yDesc")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 12, 10, 11);
         add(jScrollPane1, gridBagConstraints);
-        jScrollPane1.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_properties"));
-        jScrollPane1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("ACS_propTableCommon_A11yDesc"));
+        jScrollPane1.getAccessibleContext().setAccessibleName(bundle.getString("LBL_properties")); // NOI18N
+        jScrollPane1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_propTableCommon_A11yDesc")); // NOI18N
 
         tableButtonsPane.setLayout(new java.awt.GridBagLayout());
 
@@ -237,7 +239,6 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
                 addButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -253,7 +254,6 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
                 removeButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -270,8 +270,8 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.ipady = 100;
         add(tableButtonsPane, gridBagConstraints);
-        tableButtonsPane.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_properties"));
-        tableButtonsPane.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("ACS_propTableCommon_A11yDesc"));
+        tableButtonsPane.getAccessibleContext().setAccessibleName(bundle.getString("LBL_properties")); // NOI18N
+        tableButtonsPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_propTableCommon_A11yDesc")); // NOI18N
 
         descriptionTextArea.setEditable(false);
         descriptionTextArea.setText(bundle.getString("CPPropertyPanel_Description"));
@@ -279,6 +279,7 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -289,15 +290,17 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_properties_Mnemonic").charAt(0));
         jLabel1.setLabelFor(jTable1);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_properties"));
+        jLabel1.setText(bundle.getString("LBL_properties")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
         add(jLabel1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        getAccessibleContext().setAccessibleName(bundle.getString("TITLE_ConnPoolWizardPanel_properties")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(bundle.getString("CPPropertyPanel_Description")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
 
     private void classNameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_classNameFieldKeyReleased
         // Add your handling code here:
@@ -374,6 +377,12 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         tableModel.fireTableDataChanged();
     }//GEN-LAST:event_addButtonActionPerformed
 
+    private void resTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resTypeComboActionPerformed
+        String itemValue = (String)resTypeCombo.getSelectedItem();
+        ResourceConfigData data = this.helper.getData();
+        data.setString(__ResType, itemValue);
+    }//GEN-LAST:event_resTypeComboActionPerformed
+
     public void tableChanged(javax.swing.event.TableModelEvent e) {
          setPropTableCellEditor();
          this.panel.fireChangeEvent(this);
@@ -402,16 +411,29 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         if (!item.equals(val))
             classNameField.setText(val);
         
-        item = resTypeField.getText();
+        item = (String)resTypeCombo.getSelectedItem();
         val = data.getString(__ResType);  
-        if (!item.equals(val))
-            resTypeField.setText(val);        
+        if (!item.equals(val)) {
+            resTypeCombo.setSelectedItem(val);
+        }    
         ((PropertiesTableModel)jTable1.getModel()).setData(this.helper.getData());
     }
      
     public void setInitialFocus(){
         new setFocus(classNameField);
     }
+    
+    private String[] resourceTypes = {
+        WizardConstants.__Type_Datasource,    
+        WizardConstants.__Type_XADatasource, 
+        WizardConstants.__Type_ConnectionPoolDataSource
+    };
+    
+    private ComboBoxModel getResourceTypeComboBoxModel() {
+        ComboBoxModel model = new javax.swing.DefaultComboBoxModel(resourceTypes);
+        return model;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JTextField classNameField;
@@ -424,7 +446,7 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JButton removeButton;
-    private javax.swing.JTextField resTypeField;
+    private javax.swing.JComboBox resTypeCombo;
     private javax.swing.JLabel resTypeLabel;
     private javax.swing.JPanel tableButtonsPane;
     // End of variables declaration//GEN-END:variables

@@ -1001,7 +1001,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         
         JdbcConnectionPool jdbcConnectionPool = resources.newJdbcConnectionPool();
         jdbcConnectionPool.setName(name);
-        jdbcConnectionPool.setResType(getResourceType(false));
+        jdbcConnectionPool.setResType(WizardConstants.__Type_Datasource);
                       
         // XXX Refactor database abstractions into own object.  For example,
         // due to lack of member data, we're parsing CPWizard.xml twice here,

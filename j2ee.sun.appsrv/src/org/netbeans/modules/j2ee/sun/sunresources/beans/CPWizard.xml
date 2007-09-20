@@ -79,6 +79,7 @@ Microsystems, Inc. All Rights Reserved.
             <tag>
                 <tag-item>javax.sql.DataSource</tag-item>
                 <tag-item>javax.sql.XADataSource</tag-item>
+                <tag-item>javax.sql.ConnectionPoolDataSource</tag-item>
             </tag>
         </field>
         <field field-type="string">

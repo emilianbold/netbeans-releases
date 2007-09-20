@@ -18,13 +18,14 @@
  */
 package org.netbeans.modules.j2ee.sun.ide.editors;
 
-import org.netbeans.modules.j2ee.sun.ide.editors.*;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 
 public class DataSourceTypeEditor extends BooleanEditor {
 
-    public String[] choices = {
-        "javax.sql.DataSource",    //NOI18N
-        "javax.sql.XADataSource"   //NOI18N
+    public String[] tags = {
+        WizardConstants.__Type_Datasource,    
+        WizardConstants.__Type_XADatasource, 
+        WizardConstants.__Type_ConnectionPoolDataSource
     };
 
     public DataSourceTypeEditor() {
@@ -32,7 +33,7 @@ public class DataSourceTypeEditor extends BooleanEditor {
     }
 
     public String[] getTags () {
-	return choices;
+	return tags;
     }
 }
 
