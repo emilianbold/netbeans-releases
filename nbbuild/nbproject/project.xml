@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
                 <property-file>user.build.properties</property-file>
                 <property-file>site.build.properties</property-file>
                 <property name="nbjdk.home">${java.home}/..</property>
-                <property name="nbjdk.bootclasspath">${nbjdk.home}/jre/lib/rt.jar</property>
+                <property name="nbjdk.bootclasspath">${nbjdk.home}/jre/lib/rt.jar:${nbjdk.home}/Classes/classes.jar</property>
             </properties>
             <folders>
                 <source-folder>
