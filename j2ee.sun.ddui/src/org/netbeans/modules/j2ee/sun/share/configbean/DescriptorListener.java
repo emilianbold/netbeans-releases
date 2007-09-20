@@ -44,6 +44,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 
 /** Listens for changes made in the standard and webservice descriptor files.
@@ -65,8 +66,10 @@ public class DescriptorListener implements PropertyChangeListener {
 
     private final SunONEDeploymentConfiguration config;
     private RootInterface stdRootDD = null;
+    private PropertyChangeListener stdRootDDWeakListener = null;
     private RootInterface wsRootDD = null;
-
+    private PropertyChangeListener wsRootDDWeakListener = null;
+    
     private static final int EVENT_DELAY = 100;
     private PropertyChangeEvent lastEvent = null;
     private Object lastEventMonitor = new Object();
@@ -88,38 +91,43 @@ public class DescriptorListener implements PropertyChangeListener {
     }
     
     public void addListener(final RootInterface rootDD) {
+        PropertyChangeListener weakListener = WeakListeners.propertyChange(this, rootDD);
+        
         if(rootDD instanceof Webservices) {
-            if(wsRootDD != null) {
-                wsRootDD.removePropertyChangeListener(this);
+            if(wsRootDD != null && wsRootDDWeakListener != null) {
+                wsRootDD.removePropertyChangeListener(wsRootDDWeakListener);
             }
             wsRootDD = rootDD;
+            wsRootDDWeakListener = weakListener;
         } else {
-            if(stdRootDD != null) {
-                stdRootDD.removePropertyChangeListener(this);
+            if(stdRootDD != null && stdRootDDWeakListener != null) {
+                stdRootDD.removePropertyChangeListener(stdRootDDWeakListener);
             }
             stdRootDD = rootDD;
+            stdRootDDWeakListener = weakListener;
         }
         
-        rootDD.addPropertyChangeListener(this);
+        rootDD.addPropertyChangeListener(weakListener);
     }
     
     public void removeListener(final RootInterface rootDD) {
-        rootDD.removePropertyChangeListener(this);
         if(wsRootDD == rootDD) {
+            wsRootDD.removePropertyChangeListener(wsRootDDWeakListener);
+            wsRootDDWeakListener = null;
             wsRootDD = null;
         } else if(stdRootDD == rootDD) {
+            stdRootDD.removePropertyChangeListener(stdRootDDWeakListener);
+            stdRootDDWeakListener = null;
             stdRootDD = null;
         }
     }
     
     public void removeListeners() {
         if(stdRootDD != null) {
-            stdRootDD.removePropertyChangeListener(this);
-            stdRootDD = null;
+            removeListener(stdRootDD);
         }
         if(wsRootDD != null) {
-            wsRootDD.removePropertyChangeListener(this);
-            wsRootDD = null;
+            removeListener(wsRootDD);
         }
     }
     
@@ -153,7 +161,6 @@ public class DescriptorListener implements PropertyChangeListener {
             } else {
                 if(isDeleteBeanEvent(evt)) {
                     // store delete bean event and return.
-                    // FIXME add background thread to process this event in 100ms if it's still pending.
                     lastEvent = evt;
                     lastEventTask.schedule(EVENT_DELAY);
                 } else {
@@ -188,7 +195,7 @@ public class DescriptorListener implements PropertyChangeListener {
             return false;
         }
         
-        // FIXME Must check bean properties (except for name).
+        // FIXME Should check bean properties (except for name).
         
         return true;
     }
@@ -460,7 +467,7 @@ public class DescriptorListener implements PropertyChangeListener {
             result = new PortComponentVisitor();
         } else if(bean instanceof PortComponentRef) {
             result = new PortComponentRefVisitor();
-        } 
+        }
         return result;
     }
     
@@ -592,7 +599,7 @@ public class DescriptorListener implements PropertyChangeListener {
         handlerCache.put("/EjbJar/EnterpriseBeans/Entity", entitySessionVistor);
         handlerCache.put("/EjbJar/EnterpriseBeans/Entity/Remote", entitySessionRemoteVistor);
 //        handlerCache.put("/EjbJar/EnterpriseBeans/MessageDriven", new MessageDrivenVisitor());
-        
+
         WebserviceDescriptionBeanVisitor wsDescVisitor = new WebserviceDescriptionBeanVisitor();
         handlerCache.put("/Webservices/WebserviceDescription", wsDescVisitor);
         handlerCache.put("/Webservices/WebserviceDescription/PortComponent", wsDescVisitor);
@@ -633,9 +640,9 @@ public class DescriptorListener implements PropertyChangeListener {
                 Object sourceDD, Object oldValue, Object newValue) {
         }
     }
-    
-    public static final class WebserviceDescriptionBeanVisitor extends AbstractBeanVisitor {
 
+    public static final class WebserviceDescriptionBeanVisitor extends AbstractBeanVisitor {
+        
         @Override
         public void beanCreated(final SunONEDeploymentConfiguration config, final String xpath, 
                 final CommonDDBean sourceDD, final CommonDDBean newDD) {
@@ -803,5 +810,5 @@ public class DescriptorListener implements PropertyChangeListener {
         }
         
     }
-    
+
 }
