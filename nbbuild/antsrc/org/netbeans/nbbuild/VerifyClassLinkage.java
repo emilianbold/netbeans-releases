@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -51,9 +52,9 @@ import org.apache.tools.ant.types.Path;
  * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html">Class file spec</a>
  */
 public class VerifyClassLinkage extends Task {
-    
+
     public VerifyClassLinkage() {}
-    
+
     /*
     private boolean verifyMainJar = true;
     private boolean verifyClassPathExtensions = true;
@@ -70,6 +71,7 @@ public class VerifyClassLinkage extends Task {
     private boolean warnOnDefaultPackage = true;
     private Path classpath = new Path(getProject());
     private String ignores;
+    private int maxWarnings = Integer.MAX_VALUE;
 
     /**
      * Intended static classpath for this JAR.
@@ -95,8 +97,8 @@ public class VerifyClassLinkage extends Task {
     public void setFailOnError(boolean failOnError) {
         this.failOnError = failOnError;
     }
-    
-    /** 
+
+    /**
      * Sets the pattern for classes that are not verified.
      * Allows to skip linkage verification of some classes.
      */
@@ -112,7 +114,18 @@ public class VerifyClassLinkage extends Task {
         this.warnOnDefaultPackage = warnOnDefaultPackage;
     }
 
-    public void execute() throws BuildException {
+    /**
+     * Limit the number of warnings that will be generated in one task run.
+     * If there are more warnings than this, they will not be reported.
+     */
+    public void setMaxWarnings(int maxWarnings) {
+        if (maxWarnings <= 0) {
+            throw new IllegalArgumentException();
+        }
+        this.maxWarnings = maxWarnings;
+    }
+
+    public @Override void execute() throws BuildException {
         if (jar == null) {
             throw new BuildException("Must specify a JAR file", getLocation());
         }
@@ -129,10 +142,14 @@ public class VerifyClassLinkage extends Task {
                 }
             }
             ClassLoader loader = new AntClassLoader(ClassLoader.getSystemClassLoader().getParent(), getProject(), classpath, true);
+            AtomicInteger max = new AtomicInteger(maxWarnings);
             for (Map.Entry<String, byte[]> entry: classfiles.entrySet()) {
                 String clazz = entry.getKey();
                 byte[] data = entry.getValue();
-                verify(clazz, data, loadable, loader);
+                verify(clazz, data, loadable, loader, max);
+                if (max.get() < 0) {
+                    break;
+                }
             }
         } catch (IOException e) {
             throw new BuildException("While verifying " + jar + " or its Class-Path extensions: " + e, e, getLocation());
@@ -196,7 +213,7 @@ public class VerifyClassLinkage extends Task {
             throw new IOException("Truncated class file");
         }
     }
-    private void verify(String clazz, byte[] data, Map<String,Boolean> loadable, ClassLoader loader) throws IOException, BuildException {
+    private void verify(String clazz, byte[] data, Map<String,Boolean> loadable, ClassLoader loader, AtomicInteger maxWarn) throws IOException, BuildException {
         //log("Verifying linkage of " + clazz.replace('/', '.'), Project.MSG_DEBUG);
         DataInput input = new DataInputStream(new ByteArrayInputStream(data));
         skip(input, 8); // magic, minor_version, major_version
@@ -260,20 +277,23 @@ public class VerifyClassLinkage extends Task {
             }
             Boolean exists = loadable.get(clazz2.replace('/', '.'));
             if (exists == null) {
-                exists = Boolean.valueOf(loader.getResource(clazz2 + ".class") != null);
+                exists = loader.getResource(clazz2 + ".class") != null;
                 loadable.put(clazz2, exists);
             }
-            if (!exists.booleanValue()) {
+            if (!exists) {
                 String message = clazz + " cannot access " + clazz2.replace('/', '.');
                 if (failOnError) {
                     throw new BuildException(message, getLocation());
-                } else {
+                } else if (maxWarn.getAndDecrement() > 0) {
                     log("Warning: " + message, Project.MSG_WARN);
+                } else {
+                    log("(additional warnings not reported)", Project.MSG_WARN);
+                    return;
                 }
             } else {
                 //log("Working reference to " + clazz2.replace('/', '.'), Project.MSG_DEBUG);
             }
         }
     }
-    
+
 }
