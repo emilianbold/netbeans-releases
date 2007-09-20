@@ -100,7 +100,7 @@ public class WatchesNodeModel extends VariablesNodeModel {
     }
     
     public boolean canRename(Object node) throws UnknownTypeException {
-        return (node instanceof JPDAWatch);
+        return false;//(node instanceof JPDAWatch);
     }
 
     public boolean canCopy(Object node) throws UnknownTypeException {
