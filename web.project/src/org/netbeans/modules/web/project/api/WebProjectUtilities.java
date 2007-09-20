@@ -609,7 +609,8 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
-            "${libs.junit.classpath}", // NOI18N
+            "${libs.junit.classpath}:", // NOI18N
+            "${libs.junit_4.classpath}", // NOI18N
         });
         ep.setProperty(WebProjectProperties.RUN_TEST_CLASSPATH, new String[] {
             "${javac.test.classpath}:", // NOI18N

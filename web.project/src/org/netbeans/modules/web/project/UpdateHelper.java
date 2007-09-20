@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -272,7 +272,8 @@ public class UpdateHelper {
             props.setProperty(WebProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
                 "${javac.classpath}:", // NOI18N
                 "${build.classes.dir}:", // NOI18N
-                "${libs.junit.classpath}", // NOI18N
+                "${libs.junit.classpath}:", // NOI18N
+                "${libs.junit_4.classpath}", // NOI18N
             });
             props.setProperty(WebProjectProperties.RUN_TEST_CLASSPATH, new String[] {
                 "${javac.test.classpath}:", // NOI18N
