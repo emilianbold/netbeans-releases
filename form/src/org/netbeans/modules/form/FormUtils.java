@@ -800,12 +800,19 @@ public class FormUtils
 
     public static void copyPropertiesToBean(RADProperty[] props,
                                             Object targetBean,
+                                            Collection relativeProperties) {
+        copyPropertiesToBean(Arrays.asList(props).iterator(), targetBean, relativeProperties);
+    }
+
+    public static void copyPropertiesToBean(Iterator<RADProperty> props,
+                                            Object targetBean,
                                             Collection relativeProperties)
     {
-        for (int i = 0; i < props.length; i++) {
-            RADProperty prop = props[i];
-            if (!prop.isChanged() || !prop.canWriteToTarget())
+        while (props.hasNext()) {
+            RADProperty prop = props.next();
+            if (!prop.isChanged() || !prop.canWriteToTarget()) {
                 continue;
+            }
 
             try {
                 if (relativeProperties != null) {

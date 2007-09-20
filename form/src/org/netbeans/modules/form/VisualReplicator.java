@@ -617,7 +617,18 @@ public class VisualReplicator {
             if (convert != null) {
                 clone = convert.getConverted();
                 compClone = convert.getEnclosed();
-                FormUtils.copyPropertiesToBean(metacomp.getKnownBeanProperties(),
+
+                Iterator<RADProperty> applyProperties;
+                if (clone instanceof Window) { // some properties should not be set to Window, e.g. visible
+                    applyProperties = metacomp.getBeanPropertiesIterator(new FormProperty.Filter() {
+                        public boolean accept(FormProperty property) {
+                            return !"visible".equals(property.getName()); // NOI18N
+                        }
+                    }, false);
+                } else {
+                    applyProperties = Arrays.asList(metacomp.getKnownBeanProperties()).iterator();
+                }
+                FormUtils.copyPropertiesToBean(applyProperties,
                                                compClone != null ? compClone : clone,
                                                relativeProperties);
                 break;
@@ -959,7 +970,9 @@ public class VisualReplicator {
                 Component enclosed = null;
 
                 if (converted instanceof JFrame) {
-                    if (JComponent.class.isAssignableFrom(compClass)) {
+                    if (JComponent.class.isAssignableFrom(compClass)
+                            && !RootPaneContainer.class.isAssignableFrom(compClass)) {
+                        // JComponent but not JInternalFrame
                         enclosed = (Component) CreationFactory.createDefaultInstance(compClass);
                         ((JFrame)converted).getContentPane().add(enclosed);
                     }
