@@ -170,12 +170,12 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {     
-                JbiProject.this.lvp.refreshRootNode();
-                CasaHelper.registerCasaFileListener(JbiProject.this);
-            }
-        });
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {     
+//                JbiProject.this.lvp.refreshRootNode();
+//                CasaHelper.registerCasaFileListener(JbiProject.this);
+//            }
+//        });
     }
     
     /**
@@ -279,11 +279,22 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
         );
         
         casaFileListener = new FileChangeAdapter() {
-            public void fileChanged(FileEvent fe) {
-                JbiProject.this.lvp.refreshRootNode();
+            @Override
+            public void fileChanged(FileEvent fe) {                
+                refreshRootNode();
             }
+            
+            @Override
             public void fileDeleted(FileEvent fe) {
-                JbiProject.this.lvp.refreshRootNode();
+                refreshRootNode();
+            }
+            
+            private void refreshRootNode() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {                        
+                        JbiProject.this.lvp.refreshRootNode();
+                    }
+                });
             }
         };
         

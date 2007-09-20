@@ -61,7 +61,6 @@ import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -79,7 +78,7 @@ import java.io.IOException;
 import javax.swing.JEditorPane;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.CasaModelFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
@@ -87,6 +86,7 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.util.TaskListener;
 
 /**
@@ -452,12 +452,23 @@ implements
     
     /** {@inheritDoc} */
     public void saveDocument() throws IOException {
+        DataObject casaDO = getDataObject();
+        FileObject casaFO = casaDO.getPrimaryFile();
+        CasaWrapperModel model = getModel();
+        Project project = model.getJBIProject();
+        FileChangeListener listener =
+                    project.getLookup().lookup(FileChangeListener.class);
+        if (listener != null) {
+            casaFO.removeFileChangeListener(listener);
+            casaFO.addFileChangeListener(listener);
+        }
+        
         super.saveDocument();
         
-        getModel().saveDocument();
+        model.saveDocument();
         
 //        syncModel();
-        getDataObject().setModified(false);
+        casaDO.setModified(false);
     }
     
     /**

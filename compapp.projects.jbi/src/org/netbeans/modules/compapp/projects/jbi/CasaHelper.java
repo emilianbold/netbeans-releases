@@ -62,9 +62,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import static org.netbeans.modules.compapp.projects.jbi.CasaConstants.*;
 
 /**
  * A helper class to handle CASA related functions.
@@ -143,7 +143,7 @@ public class CasaHelper {
                     "org-netbeans-modules-compapp-projects-jbi/project.casa" // NOI18N
                     ), confFO, projName
                     );        
-            registerCasaFileListener(project);
+//            registerCasaFileListener(project);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -160,7 +160,7 @@ public class CasaHelper {
     }
     
     /**
-     * Checks whether the CASA file contains a user-created port.
+     * Checks whether the CASA file contains any non-deleted defined WSDL Port.
      */
     public static boolean containsWSDLPort(JbiProject project) {
         FileObject casaFO = getCasaFileObject(project, false);
@@ -172,25 +172,31 @@ public class CasaHelper {
                 
                 is = casaFO.getInputStream();
                 Document doc = builder.parse(is);
-                NodeList portNodeList = doc.getElementsByTagName("port"); // NOI18N
+                
+                NodeList endpointNodeList = doc.getElementsByTagName(CASA_ENDPOINT_ELEM_NAME);
+                NodeList portNodeList = doc.getElementsByTagName(CASA_PORT_ELEM_NAME); 
                 for (int i = 0; i < portNodeList.getLength(); i++) {
-                    Element portNode = (Element) portNodeList.item(i);
-                    NamedNodeMap attrMap = portNode.getAttributes();
-                    Node stateNode = attrMap.getNamedItem("state"); // NOI18N
-                    if (stateNode == null || 
-                            ! ("deleted".equals(stateNode.getNodeValue()))) { // NOI18N
-                        NodeList linkNodes = portNode.getElementsByTagName("link"); // NOI18N
-                        for (int j = 0; j < linkNodes.getLength(); j++) {
-                            Element linkNode = (Element) linkNodes.item(j);
-                            String href = linkNode.getAttribute("href"); // NOI18N
-                            if (href.startsWith("../jbiasa/")) { // NOI18N
-                                return true;
+                    Element port = (Element) portNodeList.item(i);
+                    String state = port.getAttribute(CASA_STATE_ATTR_NAME);
+                    if (!state.equals(CASA_DELETED_ATTR_VALUE)) { 
+                        Element consumes = (Element) port.getElementsByTagName(CASA_CONSUMES_ELEM_NAME).item(0);
+                        String endpointName = consumes.getAttribute(CASA_ENDPOINT_ATTR_NAME);
+                        
+                        for (int j = 0; j < endpointNodeList.getLength(); j++) {
+                            Element endpoint = (Element) endpointNodeList.item(j);
+                            if (endpoint.getAttribute(CASA_NAME_ATTR_NAME).equals(endpointName)) {
+                                String interfaceName = endpoint.getAttribute(CASA_INTERFACE_NAME_ATTR_NAME);
+                                if (interfaceName.endsWith(":" + CASA_DUMMY_PORTTYPE)) { // NOI18N
+                                    break;
+                                } else {
+                                    return true;
+                                }
                             }
                         }
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Error parsing XML: " + e);
+                System.out.println("Error parsing CASA file: " + e); // NOI18N
             } finally {
                 if (is != null) {
                     try {
@@ -203,17 +209,17 @@ public class CasaHelper {
         return false;
     }
     
-    public static void registerCasaFileListener(JbiProject project) {        
-        FileObject casaFO = CasaHelper.getCasaFileObject(project, false);
-        if (casaFO != null) {
-            FileChangeListener listener =
-                    project.getLookup().lookup(FileChangeListener.class);
-            if (listener != null) {
-                casaFO.removeFileChangeListener(listener);
-                casaFO.addFileChangeListener(listener);
-            }
-        }
-    }
+//    public static void registerCasaFileListener(JbiProject project) {        
+//        FileObject casaFO = CasaHelper.getCasaFileObject(project, false);
+//        if (casaFO != null) {
+//            FileChangeListener listener =
+//                    project.getLookup().lookup(FileChangeListener.class);
+//            if (listener != null) {
+//                casaFO.removeFileChangeListener(listener);
+//                casaFO.addFileChangeListener(listener);
+//            }
+//        }
+//    }
         
     public static void saveCasa(JbiProject project) {
         FileObject casaFO = getCasaFileObject(project, false);

@@ -90,4 +90,6 @@ public interface CasaConstants {
     public static final String CASA_NEW_ATTR_VALUE = "new";  // NO18N
     public static final String CASA_DELETED_ATTR_VALUE = "deleted";  // NO18N
     public static final String CASA_UNCHANGED_ATTR_VALUE = "unchanged";  // NO18N
+    
+    public static final String CASA_DUMMY_PORTTYPE="dummyCasaPortType"; // NOI18N
 }

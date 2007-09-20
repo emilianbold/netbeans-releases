@@ -286,7 +286,7 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
                 if (oldCasaFO != null) { 
                     try {
                         FileUtil.moveFile(oldCasaFO, casaDir, newName);
-                        CasaHelper.registerCasaFileListener(project); // FIXME: need the new project.
+//                        CasaHelper.registerCasaFileListener(project); // FIXME: need the new project.
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }

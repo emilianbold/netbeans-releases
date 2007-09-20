@@ -288,16 +288,16 @@ public class JbiActionProvider implements ActionProvider {
                 });
             }
 
-            if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) || 
-                    command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) || 
-                    command.equals(JbiProjectConstants.COMMAND_JBIBUILD) || 
-                    command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
-                executorTask.addTaskListener(new TaskListener() {
-                    public void taskFinished(Task task) {
-                        CasaHelper.registerCasaFileListener(project);
-                    }
-                });
-            }
+//            if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) || 
+//                    command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) || 
+//                    command.equals(JbiProjectConstants.COMMAND_JBIBUILD) || 
+//                    command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
+//                executorTask.addTaskListener(new TaskListener() {
+//                    public void taskFinished(Task task) {
+//                        CasaHelper.registerCasaFileListener(project);
+//                    }
+//                });
+//            }
 
             if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
                 executorTask.addTaskListener(new TaskListener() {
