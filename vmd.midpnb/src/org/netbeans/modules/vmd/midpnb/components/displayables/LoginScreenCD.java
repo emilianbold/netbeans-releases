@@ -70,6 +70,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
     public static final String PROP_PASSWORD_LABEL = "passwordLabel"; //NOI18N
     public static final String PROP_BGK_COLOR = "backgroundColor"; //NOI18N
     public static final String PROP_FRG_COLOR = "foregroungColor"; //NOI18N
+    public static final String PROP_LOGIN_BUTTON_TEXT = "loginButtonText"; //NOI18N
     
     public static final String USERNAME_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_Username"); //NOI18N 
     public static final String PASSWORD_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_Password"); //NOI18N  
@@ -95,7 +96,9 @@ public final class LoginScreenCD extends ComponentDescriptor {
             new PropertyDescriptor(PROP_BGK_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(-3355444), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_FRG_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(-16777216), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_USERNAME_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_PASSWORD_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_PASSWORD_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_LOGIN_BUTTON_TEXT, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+        
         );
     }
     
@@ -123,14 +126,16 @@ public final class LoginScreenCD extends ComponentDescriptor {
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_BackgroundColor"), // NOI18N
                         new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_ForegroundColor"), // NOI18N
-                        new PropertyEditorColorChooser(true), PROP_FRG_COLOR);
+                        new PropertyEditorColorChooser(true), PROP_FRG_COLOR)
+                   .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_LoginButtonText"), // NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_LoginButtonText")), PROP_LOGIN_BUTTON_TEXT); //NOI18N
     }
     
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
             .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
             .addParameters(MidpParameter.create(PROP_BGK_COLOR, PROP_FRG_COLOR, PROP_USERNAME, PROP_PASSWORD, PROP_LOGIN_TITLE,
-                                                PROP_USE_LOGIN_BUTTON, PROP_USERNAME_LABEL, PROP_PASSWORD_LABEL))
+                                                PROP_USE_LOGIN_BUTTON, PROP_USERNAME_LABEL, PROP_PASSWORD_LABEL, PROP_LOGIN_BUTTON_TEXT))
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2)
             .addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
             .addSetters(MidpSetter.createSetter("setBGColor", MidpVersionable.MIDP).addParameters(PROP_BGK_COLOR)) //NOI18N
@@ -139,7 +144,8 @@ public final class LoginScreenCD extends ComponentDescriptor {
             .addSetters(MidpSetter.createSetter("setUsername", MidpVersionable.MIDP).addParameters(PROP_USERNAME)) //NOI18N
             .addSetters(MidpSetter.createSetter("setLoginTitle", MidpVersionable.MIDP).addParameters(PROP_LOGIN_TITLE)) //NOI18N
             .addSetters(MidpSetter.createSetter("setUseLoginButton", MidpVersionable.MIDP).addParameters(PROP_USE_LOGIN_BUTTON)) //NOI18N
-            .addSetters(MidpSetter.createSetter("setLabelTexts", MidpVersionable.MIDP).addParameters(PROP_USERNAME_LABEL, PROP_PASSWORD_LABEL)); //NOI18N
+            .addSetters(MidpSetter.createSetter("setLabelTexts", MidpVersionable.MIDP).addParameters(PROP_USERNAME_LABEL, PROP_PASSWORD_LABEL)) //NOI18N
+            .addSetters(MidpSetter.createSetter("setLoginButtonText", MidpVersionable.MIDP).addParameters(PROP_LOGIN_BUTTON_TEXT)); //NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {
