@@ -757,7 +757,7 @@ public class GlobalSourcePath {
     
     private class Listener implements GlobalPathRegistryListener, PropertyChangeListener, ChangeListener {
         
-            private Object lastPropagationId;
+            private WeakReference<Object> lastPropagationId;
         
             public void pathsAdded(GlobalPathRegistryEvent event) {
                 resetCacheAndFire ();
@@ -777,11 +777,15 @@ public class GlobalSourcePath {
                     _excludesListener = excludesListener;
                     if (_excludesListener != null) {
                         final Object newPropagationId = evt.getPropagationId();
-                        if (newPropagationId == null || lastPropagationId != newPropagationId) {                                                    
+                        boolean fire;
+                        synchronized (this) {
+                            fire = (newPropagationId == null || lastPropagationId == null || lastPropagationId.get() != newPropagationId);                                                    
+                            lastPropagationId = new WeakReference<Object>(newPropagationId);
+                        }                                                
+                        if (fire) {
                             PropertyChangeEvent event = new PropertyChangeEvent (GlobalSourcePath.this,PROP_INCLUDES,evt.getSource(),evt.getSource());
                             _excludesListener.propertyChange(event);
-                        }                        
-                        lastPropagationId = newPropagationId;
+                        }
                     }
                 }
             }
