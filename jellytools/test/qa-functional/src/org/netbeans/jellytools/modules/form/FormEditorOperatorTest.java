@@ -108,7 +108,7 @@ public class FormEditorOperatorTest extends JellyTestCase {
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         // attach Palette to better position because components are not visible
         // when screen resolution is too low
-        palette.attachTo(new OutputOperator(), AttachWindowAction.RIGHT);
+        palette.attachTo(OutputOperator.invoke(), AttachWindowAction.RIGHT);
         //add something there
         palette.expandSwingControls();
         palette.selectComponent("Label"); // NOI18N
