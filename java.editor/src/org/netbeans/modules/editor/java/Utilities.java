@@ -29,6 +29,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -58,7 +59,9 @@ public class Utilities {
     private static SettingsChangeListener settingsListener = new SettingsListener();
     private static boolean inited;
     
-
+    private static String cachedPrefix = null;
+    private static Pattern cachedPattern = null;
+    
     public static boolean startsWith(String theString, String prefix) {
         if (theString == null || theString.length() == 0 || ERROR.equals(theString))
             return false;
@@ -71,17 +74,29 @@ public class Utilities {
     public static boolean startsWithCamelCase(String theString, String prefix) {
         if (theString == null || theString.length() == 0 || prefix == null || prefix.length() == 0)
             return false;
-        int pi = 0;
-        int sni = 0;
-        while (sni < theString.length() && pi < prefix.length()) {
-            char ch = theString.charAt(sni++);
-            if (Character.isUpperCase(ch)) {
-                if (ch != prefix.charAt(pi++)) {
-                    return false;
-                }
-            }
+        if (!prefix.equals(cachedPrefix) || cachedPattern == null) {
+            StringBuilder sb = new StringBuilder();
+            int lastIndex = 0;
+            int index;
+            do {
+                index = findNextUpper(prefix, lastIndex + 1);
+                String token = prefix.substring(lastIndex, index == -1 ? prefix.length(): index);
+                sb.append(token); 
+                sb.append(index != -1 ? "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
+                lastIndex = index;
+            } while (index != -1);
+            cachedPrefix = prefix;
+            cachedPattern = Pattern.compile(sb.toString());
         }
-        return pi == prefix.length();
+        return cachedPattern.matcher(theString).matches();
+    }
+    
+    private static int findNextUpper(String text, int offset) {        
+        for (int i = offset; i < text.length(); i++) {
+            if (Character.isUpperCase(text.charAt(i)))
+                return i;
+        }
+        return -1;
     }
 
     public static boolean isCaseSensitive() {

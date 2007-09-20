@@ -3165,7 +3165,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (prefix.length() == 0)
                 return data;
             List ret = new ArrayList();
-            boolean camelCase = prefix.length() > 1 && prefix.equals(prefix.toUpperCase());
+            boolean camelCase = prefix.length() > 1 && camelCasePattern.matcher(prefix).matches();
             for (Iterator<JavaCompletionItem> it = data.iterator(); it.hasNext();) {
                 CompletionItem itm = it.next();
                 if (Utilities.startsWith(itm.getInsertPrefix().toString(), prefix)
@@ -3979,7 +3979,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             private Env(int offset, String prefix, CompilationController controller, TreePath path, SourcePositions sourcePositions, Scope scope) {
                 this.offset = offset;
                 this.prefix = prefix;
-                // this.isCamelCasePrefix = prefix != null && prefix.length() > 1 && prefix.equals(prefix.toUpperCase());
                 this.isCamelCasePrefix = prefix != null && prefix.length() > 1 && camelCasePattern.matcher(prefix).matches();
                 this.controller = controller;
                 this.path = path;
