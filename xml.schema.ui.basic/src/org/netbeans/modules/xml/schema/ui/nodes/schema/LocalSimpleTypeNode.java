@@ -52,7 +52,9 @@ public class LocalSimpleTypeNode extends SchemaComponentNode<LocalSimpleType>
 	@Override
 	protected GlobalSimpleType getSuperDefinition()
 	{
-		SimpleTypeDefinition definition = getReference().get().getDefinition();
+		if(getReference() == null || getReference().get() == null)
+                    return null;
+                SimpleTypeDefinition definition = getReference().get().getDefinition();
                 if(!getReference().get().isInDocumentModel() ||
                     !definition.isInDocumentModel())
                     return null;
