@@ -213,6 +213,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
             switch (evt.getKeyChar()) {
+                case ':':
                 case ';':
                 case ',':
                 case '(':
