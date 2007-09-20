@@ -23,9 +23,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.logging.Logger;
 import javax.swing.Action;
-import org.netbeans.modules.etl.ui.ETLNode;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
@@ -34,15 +32,9 @@ import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
-
-/**
- *
- * @author nithya
- */
 
 public class PaletteSupport {
     
