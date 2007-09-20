@@ -296,7 +296,7 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         
         // TODO MetadataModel:
         public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
-            throw new NotImplementedException();
+            return inner.getMetadataModel(type);
         }
         
         public File getResourceDirectory() {
