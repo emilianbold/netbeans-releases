@@ -110,7 +110,7 @@ fi
 ###############  Commit validation tests  ##########################
 TESTS_STARTED=`date`
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
-JDK_TESTS=-Djdkhome=/opt/jdk1.5.0_14
+JDK_TESTS=/opt/jdk1.5.0_14
 # standard NetBeans unit and UI validation tests
 ant -f nbbuild/build.xml commit-validation
 # Init application server for tests
