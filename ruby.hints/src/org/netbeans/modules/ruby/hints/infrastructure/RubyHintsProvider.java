@@ -291,9 +291,10 @@ public class RubyHintsProvider implements HintsProvider {
     }
     
     /** For testing purposes only! */
-    public void setTestingHints(Map<Integer,List<AstRule>> testHints, Map<Integer,List<AstRule>> testSuggestions) {
+    public void setTestingHints(Map<Integer,List<AstRule>> testHints, Map<Integer,List<AstRule>> testSuggestions, Map<String,List<ErrorRule>> testErrors) {
         this.testHints = testHints;
         this.testSuggestions = testSuggestions;
+        this.testErrors = testErrors;
     }
     
     private static class FixWrapper implements Fix {

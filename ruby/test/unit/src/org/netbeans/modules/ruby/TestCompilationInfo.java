@@ -104,6 +104,7 @@ class TestCompilationInfo extends CompilationInfo {
                     
                     public void error(Error e) {
                         //ParserTaskImpl.this.listener.error(e);
+                        TestCompilationInfo.this.addError(e);
                     }
                     
                     public void exception(Exception e) {

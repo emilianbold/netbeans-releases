@@ -17,6 +17,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.Collections;
+import org.netbeans.api.gsf.Error;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -43,7 +44,10 @@ import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider;
 import org.netbeans.modules.ruby.hints.infrastructure.RulesManager;
+import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
@@ -183,18 +187,22 @@ public abstract class HintTestBase extends RubyTestBase {
     
     protected boolean parseErrorsOk;
     
-    protected ComputedHints getHints(NbTestCase test, AstRule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
+    protected ComputedHints getHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
         assert relFilePath == null || fileObject == null;
+        UserConfigurableRule ucr = null;
+        if (hint instanceof UserConfigurableRule) {
+            ucr = (UserConfigurableRule)hint;
+        }
 
         // Make sure the hint is enabled
-        if (!HintsSettings.isEnabled(hint)) {
-            Preferences p = RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId());
+        if (ucr != null && !HintsSettings.isEnabled(ucr)) {
+            Preferences p = RulesManager.getInstance().getPreferences(ucr, HintsSettings.getCurrentProfileId());
             HintsSettings.setEnabled(p, true);
         }
         
         CompilationInfo info = fileObject != null ? getInfo(fileObject) : getInfo(relFilePath);
         Node root = AstUtilities.getRoot(info);
-        if (root == null) {
+        if (root == null && !(hint instanceof ErrorRule)) { // only expect testcase source errors in error tests
             if (parseErrorsOk) {
                 List<ErrorDescription> result = new ArrayList<ErrorDescription>();
                 int caretOffset = 0;
@@ -220,27 +228,45 @@ public abstract class HintTestBase extends RubyTestBase {
 
         RubyHintsProvider provider = new RubyHintsProvider();
 
-        // Create a hint registry which contains ONLY our hint (so other registered
-        // hints don't interfere with the test)
-        Map<Integer, List<AstRule>> testHints = new HashMap<Integer, List<AstRule>>();
-        if (hint.appliesTo(info)) {
-            for (int nodeId : hint.getKinds()) {
-                testHints.put(nodeId, Collections.singletonList(hint));
-            }
-        }
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        if (RulesManager.getInstance().getSeverity(hint) == HintSeverity.CURRENT_LINE_WARNING) {
-            provider.setTestingHints(null, testHints);
-            provider.computeSuggestions(info, result, caretOffset);
+        if (hint instanceof ErrorRule) {
+            // It's an error!
+            // Create a hint registry which contains ONLY our hint (so other registered
+            // hints don't interfere with the test)
+            Map<String, List<ErrorRule>> testHints = new HashMap<String, List<ErrorRule>>();
+            if (hint.appliesTo(info)) {
+                ErrorRule errorRule = (ErrorRule)hint;
+                for (String key : errorRule.getCodes()) {
+                    testHints.put(key, Collections.singletonList(errorRule));
+                }
+            }
+            provider.setTestingHints(null, null, testHints);
+            provider.computeErrors(info, result);
+            
         } else {
-            provider.setTestingHints(testHints, null);
-            provider.computeHints(info, result);
+            assert hint instanceof AstRule && ucr != null;
+            AstRule astRule = (AstRule)hint;
+            // Create a hint registry which contains ONLY our hint (so other registered
+            // hints don't interfere with the test)
+            Map<Integer, List<AstRule>> testHints = new HashMap<Integer, List<AstRule>>();
+            if (hint.appliesTo(info)) {
+                for (int nodeId : astRule.getKinds()) {
+                    testHints.put(nodeId, Collections.singletonList(astRule));
+                }
+            }
+            if (RulesManager.getInstance().getSeverity(ucr) == HintSeverity.CURRENT_LINE_WARNING) {
+                provider.setTestingHints(null, testHints, null);
+                provider.computeSuggestions(info, result, caretOffset);
+            } else {
+                provider.setTestingHints(testHints, null, null);
+                provider.computeHints(info, result);
+            }
         }
 
         return new ComputedHints(info, result, caretOffset);
     }
 
-    protected void assertNoJRubyMatches(AstRule hint, Set<String> exceptions) throws Exception {
+    protected void assertNoJRubyMatches(Rule hint, Set<String> exceptions) throws Exception {
         List<FileObject> files = findJRubyRubyFiles();
         assertTrue(files.size() > 0);
         
@@ -268,17 +294,17 @@ public abstract class HintTestBase extends RubyTestBase {
     }
     
     // TODO - rename to "checkHints"
-    protected void findHints(NbTestCase test, AstRule hint, String relFilePath, String caretLine) throws Exception {
+    protected void findHints(NbTestCase test, Rule hint, String relFilePath, String caretLine) throws Exception {
         findHints(test, hint, relFilePath, null, caretLine);
     }
 
     // TODO - rename to "checkHints"
-    protected void findHints(NbTestCase test, AstRule hint, FileObject fileObject, String caretLine) throws Exception {
+    protected void findHints(NbTestCase test, Rule hint, FileObject fileObject, String caretLine) throws Exception {
         findHints(test, hint, null, fileObject, caretLine);
     }
     
     // TODO - rename to "checkHints"
-    protected void findHints(NbTestCase test, AstRule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
+    protected void findHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
         ComputedHints r = getHints(test, hint, relFilePath, fileObject, caretLine);
         CompilationInfo info = r.info;
         List<ErrorDescription> result = r.hints;
@@ -293,7 +319,7 @@ public abstract class HintTestBase extends RubyTestBase {
         }
     }
 
-    protected void applyHint(NbTestCase test, AstRule hint, String relFilePath,
+    protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
             String caretLine, String fixDesc) throws Exception {
         ComputedHints r = getHints(test, hint, relFilePath, null, caretLine);
         CompilationInfo info = r.info;
