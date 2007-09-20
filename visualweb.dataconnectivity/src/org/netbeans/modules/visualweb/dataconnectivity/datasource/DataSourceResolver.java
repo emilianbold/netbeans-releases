@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.progress.ProgressHandle;
@@ -52,6 +53,7 @@ import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
@@ -59,7 +61,7 @@ import org.openide.windows.TopComponent;
  *
  * @author John Baker
  */
-public class DataSourceResolver implements DataSourceInfoListener {
+public class DataSourceResolver implements DataSourceInfoListener, Runnable {
     private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N    
     private static final String DATASOURCE_PREFIX = "java:comp/env/"; // NOI18N
     private static DataSourceResolver dataSourceResolver;
@@ -68,7 +70,10 @@ public class DataSourceResolver implements DataSourceInfoListener {
     private Project project;
     private ProgressHandle handle = null;
     private TopComponent topComponent;
-
+    private RequestProcessor.Task task = null;
+    private final RequestProcessor WAIT_FOR_MODELING_RP = new RequestProcessor("DataSourceResolver.WAIT_FOR_MODELING_RP"); //NOI18N    
+    private Model[] modelSets = null;
+    
     /** Creates a new instance of DataSourceResolver */
     private DataSourceResolver() {
     }
@@ -230,23 +235,70 @@ public class DataSourceResolver implements DataSourceInfoListener {
         topComponent = TopComponent.getRegistry().getActivated();
         topComponent.setCursor(Utilities.createProgressCursor(topComponent));
         String progressBarLabel = org.openide.util.NbBundle.getMessage(DataSourceResolver.class, "ProgressBarLabel"); //NOI18N
-        FacesModelSet modelSet = FacesModelSet.startModeling(project);
-        if (modelSet == null) {
-            handle = ProgressHandleFactory.createHandle(progressBarLabel);
-            handle.start();
-            handle.switchToIndeterminate();
-        }
         
-        if (modelSet != null) {
-            ModelSet.removeModelSetsListener(modelingListener);    
-            ProjectDataSourceTracker.refreshDataSourceReferences(project);                 
-            
-            if (handle != null) {
-                handle.finish();
+        try {
+            // model project 
+            FacesModelSet modelSet = FacesModelSet.startModeling(project);
+
+            if (modelSet == null) {
+                handle = ProgressHandleFactory.createHandle(progressBarLabel);
+                handle.start();
+                handle.switchToIndeterminate();
             }
-            
+
+            // If modeling has been completed then terminate the progress cursor and update the project
+            if (modelSet != null) {
+                if (handle != null) {
+                    handle.finish();
+                }
+
+                ModelSet.removeModelSetsListener(modelingListener);
+                ProjectDataSourceTracker.refreshDataSourceReferences(project);
+            }
+        } finally {
             topComponent.setCursor(null);
         }
+    }
+    
+    /*
+     * Schedule update task
+     */
+    public synchronized void updateTask() {
+        if (task == null) {
+            task = WAIT_FOR_MODELING_RP.create(this);
+        }
+        task.schedule(50);
+    }
+
+    /*
+     * Update data sources in the project
+     */
+    public synchronized void run() {        
+        // make sure the sources are modeled
+        for (Model mModel : modelSets) {
+            String filenameExt = mModel.getFile().getExt();
+            if (filenameExt.equals("java")) {
+                FacesModelSet.getFacesModelIfAvailable(mModel.getFile());
+            }
+        }
+
+        // Refresh data sources in a project
+        ProjectDataSourceTracker.refreshDataSourceReferences(project);
+        // Update the resource references in the project
+        update(project);
+        
+        // Terminate the progress cursor when done
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (handle != null) {
+                    handle.finish();
+                }
+            }
+        });
+        
+        // clean up
+        modelSets = null;
+        ModelSet.removeModelSetsListener(modelingListener);
     }
     
     public boolean isDatasourceCreationSupported(Project project) {
@@ -254,31 +306,18 @@ public class DataSourceResolver implements DataSourceInfoListener {
         return dataSourceService.isDatasourceCreationSupported(project);        
     }
 
-    public class WaitForModelingListener implements ModelSetsListener {
+    public class WaitForModelingListener implements ModelSetsListener {        
         
         /*---------- ModelSetsListener------------*/
 
         public void modelSetAdded(ModelSet modelSet) {
-            // update data sources nodes, if necessary
-            Model[] modelSets = modelSet.getModels();
-            
-            // make sure the sources are modeled
-            for (Model mModel : modelSets) {
-                String filenameExt = mModel.getFile().getExt();
-                if (filenameExt.equals("java")) {
-                    FacesModelSet.getFacesModelIfAvailable(mModel.getFile());                   
-                }
-            }            
-                        
-            ProjectDataSourceTracker.refreshDataSourceReferences(project);
-            if (handle != null) {
-                handle.finish();
+            try {
+                // update data sources, if necessary
+                modelSets = modelSet.getModels();
+                updateTask();                
+            } finally {
+                topComponent.setCursor(null);
             }
-
-            topComponent.setCursor(null);
-            update(project);
-
-            ModelSet.removeModelSetsListener(modelingListener);
         }
 
         public void modelSetRemoved(ModelSet modelSet) {
