@@ -22,7 +22,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Debug Project" popup menu item on project's root node,
+/** Used to call "Debug" popup menu item on project's root node,
  * "Run|Debug Main Project" main menu item or Ctrl+F5 shortcut.
  * @see Action
  * @see org.netbeans.jellytools.nodes.ProjectRootNode
@@ -31,8 +31,10 @@ import org.netbeans.jellytools.Bundle;
  */
 public class DebugProjectAction extends Action {
 
-    // "Debug Project"
-    private static final String debugProjectPopup = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_DebugAction_Name");
+    // "Debug"
+    private static final String debugProjectPopup = 
+            Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
+                                    "LBL_DebugProjectActionOnProject_Name");
     // "Run|Debug Main Project"
     private static final String debugProjectMenu = 
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")+
