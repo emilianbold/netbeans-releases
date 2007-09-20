@@ -85,7 +85,7 @@ public class RubyUtils {
         case '+':
             return name.equals("+") || name.equals("+@");
         case '-':
-            return name.equals("-@");
+            return name.equals("-") || name.equals("-@");
         case '*':
             return name.equals("*") || name.equals("**");
         case '<':

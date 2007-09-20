@@ -92,6 +92,8 @@ public class RubyUtilsTest extends TestCase {
         assertTrue(RubyUtils.isValidRubyMethodName("cde?"));
         assertTrue(RubyUtils.isValidRubyMethodName("[]"));
         assertTrue(RubyUtils.isValidRubyMethodName("[]="));
+        assertTrue(RubyUtils.isValidRubyMethodName("-"));
+        assertTrue(RubyUtils.isValidRubyMethodName("+"));
         assertTrue(RubyUtils.isValidRubyMethodName("<=>"));
         assertTrue(RubyUtils.isValidRubyMethodName("<="));
         assertTrue(RubyUtils.isValidRubyMethodName("`"));
