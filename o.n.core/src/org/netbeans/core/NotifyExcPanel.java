@@ -231,7 +231,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
 
     /** Adds new exception into the queue.
      */
-    public static void notify (
+    static void notify (
         final NbErrorManager.Exc t
     ) {
         if (!shallNotify(t.getSeverity(), false)) {
@@ -274,8 +274,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 }
 
                 
-                if( null == exceptions )
+                if( null == exceptions ) {
                     exceptions = new ArrayListPos();
+                }
                 exceptions.add(t);
                 exceptions.position = exceptions.size()-1;
 
@@ -355,19 +356,24 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             dialog.setVisible(true);
             //throw new RuntimeException ("I am not so exceptional"); //uncomment to test
         } catch (Exception e) {
-            exceptions.add(new NbErrorManager().createExc(
+            exceptions.add(NbErrorManager.createExc(
                 e, Level.SEVERE, null));
             next.setVisible(true);
         }
     }
 
     private void ensurePreferredSize() {
-        if( null != lastBounds )
+        if( null != lastBounds ) {
             return; //we remember the last window position
+        } //we remember the last window position
         Dimension sz = dialog.getSize();
         Dimension pref = dialog.getPreferredSize();
-        if (pref.height == 0) pref.height = SIZE_PREFERRED_HEIGHT;
-        if (pref.width == 0) pref.width = SIZE_PREFERRED_WIDTH;
+        if (pref.height == 0) {
+            pref.height = SIZE_PREFERRED_HEIGHT;
+        }
+        if (pref.width == 0) {
+            pref.width = SIZE_PREFERRED_WIDTH;
+        }
         if (!sz.equals(pref)) {
             dialog.setSize(pref.width, pref.height);
             dialog.validate();
@@ -475,7 +481,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             } catch (Exception e) {
                 //Do not allow an exception thrown here to trigger an endless
                 //loop
-                exceptions.add(new NbErrorManager().createExc(e, //ugly but works
+                exceptions.add(NbErrorManager.createExc(e, //ugly but works
                     Level.SEVERE, null));
                 next.setVisible(true);
             }
@@ -554,6 +560,8 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     }
 
     private static class ExceptionFlasher extends FlashingIcon {
+        static final long serialVersionUID = 1L;
+        
         public ExceptionFlasher( Icon img1 ) {
             super( img1 );
         }
@@ -577,17 +585,21 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         protected void timeout() {
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {
-                    if( null != INSTANCE )
+                    if( null != INSTANCE ) {
                         return;
-                    if( null != exceptions )
+                    }
+                    if( null != exceptions ) {
                         exceptions.clear();
+                    }
                     exceptions = null;
                 }
             });
         }
     }
 
-    protected static class ArrayListPos extends ArrayList<NbErrorManager.Exc> {
+    static class ArrayListPos extends ArrayList<NbErrorManager.Exc> {
+        static final long serialVersionUID = 2L;
+        
         protected int position;
 
         protected ArrayListPos () {
@@ -608,15 +620,17 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         }
 
         protected boolean setNextElement () {
-            if(!existsNextElement())
+            if(!existsNextElement()) {
                 return false;
+            }
             position++;
             return true;
         }
 
         protected boolean setPreviousElement () {
-            if(!existsPreviousElement())
+            if(!existsPreviousElement()) {
                 return false;
+            }
             position--;
             return true;
         }

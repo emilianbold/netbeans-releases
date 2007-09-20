@@ -279,9 +279,9 @@ public final class NbErrorManager extends Handler {
                 // Unlocalized log message - this is for developers of NB, not users
                 Logger l = Logger.getAnonymousLogger();
                 l.warning("WARNING - ErrorManager detected cyclic exception nesting:"); // NOI18N
-                for (Throwable t : nestingCheck) {
-                    l.warning("\t" + t); // NOI18N
-                    LogRecord[] anns = findAnnotations(t, null);
+                for (Throwable thrw : nestingCheck) {
+                    l.warning("\t" + thrw); // NOI18N
+                    LogRecord[] anns = findAnnotations(thrw, null);
                     if (anns != null) {
                         for (int i = 0; i < anns.length; i++) {
                             Throwable t2 = anns[i].getThrown();
@@ -309,12 +309,16 @@ public final class NbErrorManager extends Handler {
              */
             /*Annotations */
             for (LogRecord rec : arr) {
-                if (rec == null) continue;
+                if (rec == null) {
+                    continue;
+                }
                 
                 Throwable thr = rec.getThrown();
                 String annotation = NbErrorManager.getLocalizedMessage(rec);
                 
-                if (annotation == null) annotation = rec.getMessage();
+                if (annotation == null) {
+                    annotation = rec.getMessage();
+                }
                 /*
                 if (annotation == null && thr != null) annotation = thr.getLocalizedMessage();
                 if (annotation == null && thr != null) annotation = thr.getMessage();
@@ -340,7 +344,9 @@ public final class NbErrorManager extends Handler {
             }
             /*Nested annotations */
             for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == null) continue;
+                if (arr[i] == null) {
+                    continue;
+                }
                 
                 Throwable thr = arr[i].getThrown();
                 if (thr != null) {
@@ -395,8 +401,9 @@ public final class NbErrorManager extends Handler {
                 }
             }
             
-            if (!def)
+            if (!def) {
                 return null;
+            }
             switch (kind) {
                 case 1: // message
                     return t.getMessage();

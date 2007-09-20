@@ -19,7 +19,7 @@
 
 package org.netbeans.beaninfo.editors;
 
-import java.beans.*;
+import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.text.MessageFormat;
 import org.netbeans.core.UIExceptions;
@@ -50,6 +50,7 @@ public class DataFolderEditor extends PropertyEditorSupport implements ExPropert
     * <p>   If a non-null value is returned, then the PropertyEditor should
     *       be prepared to parse that string back in setAsText().
     */
+    @Override
     public String getAsText() {
         DataFolder df = (DataFolder)getValue ();
         String result;
@@ -70,6 +71,7 @@ public class DataFolderEditor extends PropertyEditorSupport implements ExPropert
     * as text.
     * @param text  The string to be parsed.
     */
+    @Override
     public void setAsText(String text) {
         if (text==null || 
             "".equals(text) || 
@@ -89,10 +91,12 @@ public class DataFolderEditor extends PropertyEditorSupport implements ExPropert
         }        
     }
 
+    @Override
     public boolean supportsCustomEditor () {
         return true;
     }
 
+    @Override
     public java.awt.Component getCustomEditor () {
         dfPanel = getDFPanel();
         Object val = getValue();
@@ -106,6 +110,7 @@ public class DataFolderEditor extends PropertyEditorSupport implements ExPropert
      * the look of the associated DataFolderPanel by
      * providing appropriate node to display.
      */
+    @Override
     public void setValue(Object newValue) {
         Object oldValue = getValue();
         super.setValue(newValue);
@@ -123,7 +128,7 @@ public class DataFolderEditor extends PropertyEditorSupport implements ExPropert
         super.setValue(newDf);
     }
     
-    public DataFolderPanel getDFPanel() {
+    DataFolderPanel getDFPanel() {
         if (dfPanel == null) {
             dfPanel = new DataFolderPanel(this);
         }
