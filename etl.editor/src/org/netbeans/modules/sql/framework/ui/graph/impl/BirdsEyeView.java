@@ -47,7 +47,9 @@ public class BirdsEyeView extends JGoView {
     public BirdsEyeView() {
         setHidingDisabledScrollbars(true);
         setInternalMouseActions(DnDConstants.ACTION_MOVE);
-        setScale(1.0d / 8);
+        setScale(1.0d / 4);
+        this.setDocument(new GraphDocument());
+        setMouseEnabled(true);
     }
 
     // when the Overview window is no longer needed, make sure the observed view doesn't
@@ -122,7 +124,7 @@ public class BirdsEyeView extends JGoView {
             // the pen is extra wide so that it can show up reasonably in the
             // scaled-down overview
             //setPen(JGoPen.make(JGoPen.SOLID, 8, new Color(0, 128, 128)));
-            setPen(JGoPen.make(JGoPen.SOLID, 8, Color.BLUE));
+            setPen(JGoPen.make(JGoPen.SOLID, 4, Color.GRAY));
             setResizable(false);
         }
 
@@ -301,5 +303,20 @@ public class BirdsEyeView extends JGoView {
     // State
     private JGoView myObserved = null;
     private OverviewRectangle myOverviewRect = null;
+
+    @Override
+    public void setSize(int arg0, int arg1) {
+        super.setSize(150, 150);
+}
+
+    @Override
+    public Dimension getSize() {
+        return super.getSize();
+    }   
+
+    @Override
+    public void setLocation(int x, int y) {
+        super.setLocation(10, 10);
+    }
 }
 
