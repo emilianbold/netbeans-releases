@@ -326,8 +326,7 @@
    <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
-<!--CSH ID for Options | Misc | Profiler :-->
-  <mapID target="ProfilerOptions.Help" url="configure/options_profiler.html"/>
+
 
 <!--CSH ID for generic nodes -->
   <mapID target="org.openide.nodes.BeanNode" url="pending.html"/>
