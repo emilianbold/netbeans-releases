@@ -24,7 +24,7 @@ import javax.swing.JPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public final class CustomizerLibraries extends JPanel implements ArchiveCustomizerPanel, HelpCtx.Provider {
+public final class CustomizerLibraries extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = 1L;
     
     // Helper for storing properties
@@ -47,6 +47,7 @@ public final class CustomizerLibraries extends JPanel implements ArchiveCustomiz
                 new JButton(),
                 new JButton(), true);
         vps = new VisualPropertySupport(earProperties);
+        initValues();
     }
     
     public void initValues() {

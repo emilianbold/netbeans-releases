@@ -39,7 +39,7 @@ import org.openide.util.NbBundle;
  *
  * @author  phrebejk
  */
-public class CustomizerGeneral extends JPanel implements ArchiveCustomizerPanel, HelpCtx.Provider {
+public class CustomizerGeneral extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = 1L;
     
     private EarProjectProperties projProperties;
@@ -57,6 +57,7 @@ public class CustomizerGeneral extends JPanel implements ArchiveCustomizerPanel,
         jLabelTarget.setVisible(false);
         this.projProperties = projProperties;
         vps = new VisualPropertySupport(projProperties);
+        initValues();
     }
     
     public void initValues() {

@@ -42,9 +42,9 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.earproject.ui.EarCustomizerProvider;
 import org.netbeans.modules.j2ee.earproject.ui.IconBaseProvider;
 import org.netbeans.modules.j2ee.earproject.ui.J2eeArchiveLogicalViewProvider;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
@@ -75,7 +75,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -182,7 +181,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             new EarActionProvider(this, updateHelper),
             new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, abpt),
             new MyIconBaseProvider(),
-            new EarCustomizerProvider( this, helper, refHelper, abpt ),
+            new CustomizerProviderImpl(this, helper, refHelper, abpt),
             new ClassPathProviderImpl(helper, evaluator()),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),

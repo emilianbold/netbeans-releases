@@ -38,7 +38,7 @@ import org.openide.util.NbBundle;
 /**
  * Customizer for Enterprise Application packaging.
  */
-public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPanel, ListSelectionListener, HelpCtx.Provider {
+public class CustomizerJarContent extends JPanel implements ListSelectionListener, HelpCtx.Provider {
     private static final long serialVersionUID = 1L;
     
     private Dialog dialog;
@@ -80,6 +80,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         
         jListExContent.getSelectionModel().addListSelectionListener(this);
         initTableVisualProperties(jTableAddContent);
+        initValues();
     }
     
     private void initTableVisualProperties(JTable table) {

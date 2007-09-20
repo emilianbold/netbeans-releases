@@ -30,11 +30,10 @@ import javax.swing.JPanel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.earproject.ProjectEar;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public final class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, HelpCtx.Provider {
+public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = 1L;
     
     // Helper for storing properties
@@ -53,7 +52,7 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
     
     private final EarProjectProperties earProperties;
     
-    public CustomizerRun(final EarProjectProperties earProperties, final ProjectEar wm) {
+    public CustomizerRun(final EarProjectProperties earProperties/*, final ProjectEar wm*/) {
         this.earProperties = earProperties;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(
@@ -74,6 +73,7 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
         } else if (J2eeModule.J2EE_14.equals(j2eeVersion)) {
             jTextFieldVersion.setText(EarProjectProperties.J2EE_SPEC_14_LABEL);
         }
+        initValues();
     }
     
     private boolean isWebModuleSelected() {
