@@ -101,7 +101,11 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="lib"/>
             </fileset>
         </copy>
-        <antcall target="sign-jar"/>        
+        <antcall target="sign-jar"/>  
+        
+        <!--default deployment method -->
+        <property name="ricoh.deployment.deploy.method" value="sdcard"/>
+        
         <taskIf if="ricoh.deployment.deploy.method" value="sdcard">
             <echo message="Deploying to SD Card @ ${ricoh.deployment.sdcard.path}"/>
             <copy todir="${ricoh.deployment.sdcard.path}/sdk/dsdk/dist/${ricoh.application.uid}" overwrite="true" >
@@ -114,10 +118,14 @@ Microsystems, Inc. All Rights Reserved.
         
         
         <taskIf if="ricoh.deployment.deploy.method" value="httppost">
+            <!-- SetDefaulf values if they are not already set -->
+            <property name="ricoh.deployment.http.port" value="8080"/>
+            <property name="ricoh.deployment.http.platform" value="SDK/J 2.0+"/>    
+            
             <echo message="Installing directly to MFD:"/>
             <echo message="Host:        ${ricoh.deployment.server.name}"/>
             <echo message="Port:        ${ricoh.deployment.http.port}"/>
-            <echo message="Deploy Type: ${ricoh.application.type}, Java ME Ricoh MFD (SDK/J) version ${ricoh.platform.target.version}"/>
+            <echo message="Deploy Type: ${main.class.class}, Java ME Ricoh MFD (SDK/J) version ${ricoh.deployment.http.platform}"/>
             <taskdef name="post" classname="ricoh.ant.http.PostTask" classpath="${libs.ricoh-ant-utils.classpath}"/>
             <condition property="no.ricoh.http.install-server.username" value="true">
                 <or>
@@ -127,7 +135,7 @@ Microsystems, Inc. All Rights Reserved.
             </condition>
             <fail if="no.ricoh.http.install-server.username">Username for HTTP post unspecified.</fail>
             <property name="ricoh.http.install-server.password" value=""/>
-            <taskIf if="ricoh.application.type" value="xlet">
+            <taskIf if="main.class.class" value="xlet">
                 <post to="http://${ricoh.deployment.server.name}:${ricoh.deployment.http.port}/dsdk/GetInfoServlet" verbose="true" user="${ricoh.deployment.server.user}" password="${ricoh.deployment.server.password}">
                     <prop name="Type" value="xlet"/>
                 </post>

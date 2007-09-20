@@ -17,8 +17,8 @@
             <istrue value="${{ricoh.dalp.display-mode.color}}"/>
         </condition>
         <property name="xml.dir" value="${{build.dir}}/dalp"/>
-        <property name="xlet.dalp" value="RICOH.dalp"/>
-        <property name="xlet.dalp.name-only" value="RICOH.dalp"/>
+        <property name="xlet.dalp" value="${application.name}.dalp"/>
+        <property name="xlet.dalp.name-only" value="${application.name}.dalp"/>
         <property name="deploy.dir" value="${{dist.dir}}/deploy"/>
         <property name="signed.jar" value="${{dist.dir}}/RICOH.jar"/>
         <property name="rideploy.zip" value="${{dist.dir}}/RICOH.zip"/>
@@ -32,11 +32,11 @@
         <property name="ricoh.dalp.information.abbreviation" value="RICOH"/>
         <taskdef name="taskIf" classname="ricoh.ant.ConditionalTask" classpath="${{libs.ricoh-ant-utils.classpath}}"/>
         <taskdef name="dalp" classname="org.netbeans.modules.j2me.cdc.project.ricoh.DalpBuilder" classpath="${{libs.ricoh-ant-utils.classpath}}"/>
-        <property name="dalp.dist" value="${{build.dir}}/dalp/RICOH.dalp"/>
+        <property name="dalp.dist" value="${{build.dir}}/dalp/${application.name}.dalp"/>
         <property name="deployment.dir" location="${{dist.dir}}"/>
         <patternset id="deployment.patternset">
             <include name="${{dist.jar}}"/>
-            <include name="RICOH.dalp"/>
+            <include name="${application.name}.dalp"/>
             <include name="lib/*"/>
         </patternset>
     </target>
