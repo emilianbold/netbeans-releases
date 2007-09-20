@@ -48,7 +48,9 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     
     private JButton btnOk;
     
-    public IntroduceFieldPanel(String name, int[] allowInitMethods, int numOccurrences, boolean allowFinalInCurrentMethod) {
+    public IntroduceFieldPanel(String name, int[] allowInitMethods, int numOccurrences, boolean allowFinalInCurrentMethod, JButton btnOk) {
+        this.btnOk = btnOk;
+        
         initComponents();
         
         this.name.setText(name);
@@ -143,10 +145,6 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     }
     
         
-    public void setOkButton( JButton btn ) {
-        this.btnOk = btn;
-    }
-    
     private JLabel createErrorLabel() {
         ErrorLabel.Validator validator = new ErrorLabel.Validator() {
 

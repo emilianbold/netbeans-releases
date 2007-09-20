@@ -42,7 +42,9 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
     
     private JButton btnOk;
     
-    public IntroduceVariablePanel(int numDuplicates, String defaultName, boolean introduceConstant) {
+    public IntroduceVariablePanel(int numDuplicates, String defaultName, boolean introduceConstant, JButton btnOk) {
+        this.btnOk = btnOk;
+        
         initComponents();
         
         this.introduceConstant = introduceConstant;
@@ -95,10 +97,6 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         return NbPreferences.forModule( IntroduceVariablePanel.class ).node( introduceConstant ? "introduceConstant" : "introduceVariable" ); //NOI18N
     }
 
-    public void setOkButton( JButton btn ) {
-        this.btnOk = btn;
-    }
-    
     private JLabel createErrorLabel() {
         ErrorLabel.Validator validator = new ErrorLabel.Validator() {
 
