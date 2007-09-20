@@ -696,7 +696,13 @@ public class ADProjectTreeEngine
                             {
                                 curChild = kids.nextElement();
                                 if (curChild == childItem || curChild.equals(childItem))
-                                    curChild.sortChildren();
+                                {
+                                    // if the folder has been expanded (or initialized),
+                                    // refresh the folder to get the latest updated
+                                    // children
+                                    if (curChild.isInitalized())   
+                                        curChild.sortChildren();
+                                }
                             }
                       }
                   }

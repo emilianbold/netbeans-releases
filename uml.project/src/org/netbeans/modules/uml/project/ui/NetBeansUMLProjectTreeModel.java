@@ -417,6 +417,9 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 //
 //				diagramsNode.recalculateChildren();
 //			}
+                        // refresh parent node if parent node is a folder node
+                        // and parent node is current expanded.
+                        
 		}
 	}
 	
@@ -808,14 +811,19 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                         // cvc - 6294480 (end)
                     }
                 }
-                ETList<WeakReference<ITreeItem>> nodeList = mNodeMap.get(key);
                 
-                if(nodeList == null)
+                // I've seen a lot of null reference in the the nodeList; thus 
+                // adding a null check to prevent storing null values in nodeList
+                if (node != null) 
                 {
-                    nodeList = new ETArrayList<WeakReference<ITreeItem>>();
-                    mNodeMap.put(key, nodeList);
+                    ETList<WeakReference<ITreeItem>> nodeList = mNodeMap.get(key);
+                    if (nodeList == null)
+                    {
+                        nodeList = new ETArrayList<WeakReference<ITreeItem>>();
+                        mNodeMap.put(key, nodeList);
+                    }
+                    nodeList.add(new WeakReference<ITreeItem>(node));
                 }
-                nodeList.add(new WeakReference<ITreeItem>(node));
             }
         }
 	

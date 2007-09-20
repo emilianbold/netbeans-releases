@@ -78,13 +78,11 @@ import com.tomsawyer.drawing.TSConnector;
 import com.tomsawyer.editor.TSEConnector;
 import com.tomsawyer.editor.TSEEdge;
 import com.tomsawyer.editor.TSENode;
-//import com.tomsawyer.editor.TSEWindowState;
 import com.tomsawyer.editor.TSEWindowTool;
-//import com.tomsawyer.editor.state.TSEResizeGraphObjectState;
 import com.tomsawyer.editor.tool.TSEResizeGraphObjectTool;
 import com.tomsawyer.graph.TSGraphObject;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationshipEventsHelper;
 
 
 /**
@@ -480,7 +478,13 @@ public class ETLifelineCompartment extends ETCompartment
                                                             IMessageKind.MK_RESULT);
                IMessage returnMsg = returnMsgInfo.getParamOne();
                
-               returnMsg.setSendingMessage(sendMsg);
+               // Fixed 115117 for Message To Self.
+               // Fire the event to refresh the project tree
+               if (returnMsg != null) 
+               {
+                   returnMsg.setSendingMessage(sendMsg);
+                   fireRelationCreated(returnMsg);
+               }
             }
          }
       }
@@ -1961,4 +1965,13 @@ public class ETLifelineCompartment extends ETCompartment
 			}			
 		}		
 	}
+        
+    public void fireRelationCreated(IElement elem)
+    {
+        if (elem != null)
+        {
+            RelationshipEventsHelper helper = new RelationshipEventsHelper(elem);
+            helper.fireRelationCreated();
+        }
+    }
 }

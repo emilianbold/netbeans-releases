@@ -37,9 +37,7 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import org.netbeans.modules.uml.ui.swing.drawingarea.cursors.ETCrossHairCursor;
 import org.netbeans.modules.uml.ui.swing.drawingarea.cursors.ETInvalidCrossHair;
 import com.tomsawyer.editor.TSEObject;
-//import com.tomsawyer.editor.TSEWindowInputState;
 import com.tomsawyer.editor.TSEWindowInputTool;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
 
 /**
@@ -95,7 +93,7 @@ public class NodeDecoratorTool extends TSEWindowInputTool
          }
       }
 
-      if (pEvent.isPopupTrigger() == true)
+       if (pEvent.isPopupTrigger() == true)
       {
          exitState();
       }
