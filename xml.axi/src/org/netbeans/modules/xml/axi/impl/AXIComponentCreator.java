@@ -108,6 +108,8 @@ public class AXIComponentCreator extends AbstractModelBuilder {
      * Visit ElementReference.
      */
     public void visit(ElementReference component) {
+        if(component == null || component.getRef() == null)
+            return;
         SchemaComponent originalElement = component.getRef().get();
         if(originalElement == null)
             return;
