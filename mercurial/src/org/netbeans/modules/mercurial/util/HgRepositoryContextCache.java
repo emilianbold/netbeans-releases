@@ -93,7 +93,7 @@ public class HgRepositoryContextCache {
     }
     
     private static File getRoot(VCSContext ctx){
-        if(ctx == rootCtx && ctx != null){
+        if(ctx == rootCtx && root != null){
             return root;
         }else{
             root = HgUtils.getRootFile(ctx);
