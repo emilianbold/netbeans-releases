@@ -74,7 +74,7 @@ public class ProjectClassLocator implements IProjectClassLocator
          {
             IProject proj = m_Projects.get(i);
             
-            if((pack.length() > 0) && (className.indexOf("::") == -1))
+            if(pack != null && (pack.length() > 0) && (className.indexOf("::") == -1))
             {
                 className = pack + "::" + className;
             }
