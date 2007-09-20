@@ -55,6 +55,7 @@ import org.netbeans.modules.bpel.nodes.validation.ValidationProxyListener;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.Query;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.model.api.events.EntityInsertEvent;
 import org.netbeans.modules.bpel.model.api.events.EntityRemoveEvent;
@@ -67,7 +68,6 @@ import org.netbeans.modules.bpel.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
-import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -191,51 +191,64 @@ public class CopyNode extends BpelNode<Copy> {
         return true;
     }
     
-    // TODO Need to be corrected!!!
     public static String serializeFrom(From from) {
         if (from == null) {
             return null;
         }
         //
-        StringBuffer result = new StringBuffer(200);
+        String fromContent = from.getContent();
+        if (fromContent != null && fromContent.length() != 0) {
+            return fromContent;
+        }
+        //
+        FromChild child = from.getFromChild();
+        if (child != null) {
+            if (child instanceof Literal) {
+                Literal literal = (Literal)child;
+                String literalText = literal.getContent();
+                if (literalText != null && literalText.length() != 0) {
+                    return literal.getContent();
+                }
+            }
+        }
         //
         BpelReference<VariableDeclaration> varRef = from.getVariable();
-        WSDLReference<Part> partRef = from.getPart();
-        String expression = from.getContent();
-        WSDLReference<CorrelationProperty> propRef = from.getProperty();
         BpelReference<PartnerLink> pLinkRef = from.getPartnerLink();
-        Roles role = from.getEndpointReference();
-        FromChild child = from.getFromChild();
         //
-        if ( !(child instanceof Literal)) {
-          return result.toString();
-        }
-        Literal literal = (Literal) child;
+        StringBuilder result = new StringBuilder(200);
         //
-        if (expression != null && expression.length() != 0) {
-            result.append(expression);
-        } else if (literal != null) {
-            result.append(literal.getContent());
-        } else if (varRef != null) {
+        if (varRef != null) {
             String varName = ResolverUtility.getNameByRef(varRef);
             if (varName != null) {
+                result.append(varName);
+                //
+                WSDLReference<CorrelationProperty> propRef = from.getProperty();
                 if (propRef != null) {
                     String propName = ResolverUtility.getNameByRef(propRef);
-                    if (propName != null) {
-                        result.append(varName).append(DELIMITER).append(propName);
+                    if (propName != null && propName.length() != 0) {
+                        result.append(DELIMITER).append(propName);
                     }
-                } else {
-                    result.append(varName);
+                } 
                     //
+                WSDLReference<Part> partRef = from.getPart();
+                if (partRef != null) {
                     String partName = ResolverUtility.getNameByRef(partRef);
-                    if (partName != null ) {
-                        result.append(DELIMITER).append(partName);
+                    if (partName != null && partName.length() != 0) {
+                        result.append(".").append(partName);
                     }
+                }
+                //
+                if (child != null && child instanceof Query) {
+                    String queryText = ((Query)child).getContent();
+                    if (queryText != null && queryText.length() != 0) {
+                        result.append(DELIMITER).append(queryText);
+            }
                 }
             }
         } else if (pLinkRef != null) {
             String pLinkName = ResolverUtility.getNameByRef(pLinkRef);
             if (pLinkName != null) {
+                Roles role = from.getEndpointReference();
                 if (role == null) {
                     result.append(pLinkName);
                 } else {
@@ -274,37 +287,47 @@ public class CopyNode extends BpelNode<Copy> {
         return result.toString();
     }
     
-    // TODO Need to be corrected!!!
     public static String serializeTo(To to) {
         if (to == null) {
             return null;
         }
         //
-        StringBuffer result = new StringBuffer(100);
+        String toContent = to.getContent();
+        if (toContent != null && toContent.length() != 0) {
+            return toContent;
+        }
+        //
+        StringBuilder result = new StringBuilder(100);
         //
         BpelReference<VariableDeclaration> varRef = to.getVariable();
-        WSDLReference<Part> partRef = to.getPart();
-        String query = to.getContent();
-        WSDLReference<CorrelationProperty> propRef = to.getProperty();
         BpelReference<PartnerLink> pLinkRef = to.getPartnerLink();
-        //
-        if (query != null && query.length() != 0) {
-            result.append(query);
-        } else if (varRef != null) {
+        if (varRef != null) {
             String varName = ResolverUtility.getNameByRef(varRef);
             if (varName != null) {
+                result.append(varName);
+                //
+                WSDLReference<CorrelationProperty> propRef = to.getProperty();
                 if (propRef != null) {
                     String propName = ResolverUtility.getNameByRef(propRef);
-                    if (propName != null) {
-                        result.append(varName).append(DELIMITER).append(propName);
+                    if (propName != null && propName.length() != 0) {
+                        result.append(DELIMITER).append(propName);
                     }
-                } else {
-                    result.append(varName);
+                } 
                     //
+                WSDLReference<Part> partRef = to.getPart();
+                if (partRef != null) {
                     String partName = ResolverUtility.getNameByRef(partRef);
-                    if (partName != null ) {
-                        result.append(DELIMITER).append(partName);
+                    if (partName != null && partName.length() != 0) {
+                        result.append(".").append(partName);
                     }
+                }
+                //
+                Query query = to.getQuery();
+                if (query != null) {
+                    String queryText = query.getContent();
+                    if (queryText != null && queryText.length() != 0) {
+                        result.append(queryText);
+            }
                 }
             }
         } else if (pLinkRef != null) {
