@@ -81,7 +81,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.groovy.grails</friend>
+                <package>org.netbeans.modules.groovy.grailsproject</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
