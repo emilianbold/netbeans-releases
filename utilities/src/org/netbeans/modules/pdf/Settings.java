@@ -69,7 +69,7 @@ public class Settings {
 
         getPreferences().put(PROP_PDF_VIEWER, (viewer != null)
                                               ? viewer.toString()
-                                              : null);
+                                              : "");                    //NOI18N
     }
 
     public String getDisplayName() {
