@@ -52,11 +52,13 @@ public class CommonAttributePanel extends ResourceWizardPanel {
      * If you need to access the component from this class,
      * just use getComponent().
      */
-    private CommonAttributeVisualPanel component;
+    private Component component;
     private ResourceConfigHelper helper;    
     private Wizard wizardInfo;
     private String[] groupNames;
     private boolean setupValid = true;
+    private String panelType;
+    private boolean isConnPool = false;
     
     /** Create the wizard panel descriptor. */
     public CommonAttributePanel(ResourceConfigHelper helper, Wizard wizardInfo, String[] groupNames) {
@@ -75,13 +77,17 @@ public class CommonAttributePanel extends ResourceWizardPanel {
                 for (int i = 0; i < this.groupNames.length; i++) {
                     groups[i] = FieldGroupHelper.getFieldGroup(wizardInfo, this.groupNames[i]);  //NOI18N
                 }
-                String panelType = CommonAttributeVisualPanel.TYPE_JDBC_RESOURCE;
                 if (wizardInfo.getName().equals(__JdbcConnectionPool)) {
-                     panelType = CommonAttributeVisualPanel.TYPE_CP_POOL_SETTING;
+                    panelType = CommonAttributeVisualPanel.TYPE_CP_POOL_SETTING;
+                    component = new ConnectionPoolOptionalVisualPanel(this, this.helper); 
+                }else if (wizardInfo.getName().equals(__JdbcResource)) {
+                    panelType = CommonAttributeVisualPanel.TYPE_JDBC_RESOURCE;
+                    component = new CommonAttributeVisualPanel(this, groups, panelType, this.helper);
                 }else if (wizardInfo.getName().equals(__PersistenceManagerFactoryResource)) {
                     panelType = CommonAttributeVisualPanel.TYPE_PERSISTENCE_MANAGER;
+                    component = new CommonAttributeVisualPanel(this, groups, panelType, this.helper);
                 }
-                component = new CommonAttributeVisualPanel(this, groups, panelType, this.helper);
+                setIsConnPool();
         }
         return component;
     }
@@ -89,19 +95,28 @@ public class CommonAttributePanel extends ResourceWizardPanel {
     public boolean isNewResourceSelected() {
         if (component == null)
             return false;
-        else
-            return component.isNewResourceSelected();
+        else {
+            if(! getIsConnPool()) {
+                return ((CommonAttributeVisualPanel)component).isNewResourceSelected(); 
+            } else {
+                return false;
+            }
+        }    
     }
     
     public void setInitialFocus(){
         if(component != null) {
-            component.setInitialFocus();
+            if(! getIsConnPool()) {
+                ((CommonAttributeVisualPanel)component).setInitialFocus(); 
+            }
         }
     }
     
     public void setPropInitialFocus(){
         if(component != null) {
-            component.setPropInitialFocus();
+            if(! getIsConnPool()) {
+                ((CommonAttributeVisualPanel)component).setPropInitialFocus(); 
+            }
         }
     }
     
@@ -130,15 +145,19 @@ public class CommonAttributePanel extends ResourceWizardPanel {
     }
     
     public String getJndiName() {
-        if (component != null && component.jLabels != null && component.jFields != null) {
-            int i;
-            for (i=0; i < component.jLabels.length; i++) {
-                String jLabel = (String)component.jLabels[i].getText();
-                if (jLabel.equals(bundle.getString("LBL_" + __JndiName))) { // NO18N
-                    return (String)((JTextField)component.jFields[i]).getText();
+        if(! getIsConnPool()) {
+            CommonAttributeVisualPanel visComponent = (CommonAttributeVisualPanel) component;
+            if (visComponent != null && visComponent.jLabels != null && visComponent.jFields != null) {
+                int i;
+                for (i = 0; i < visComponent.jLabels.length; i++) {
+                    String jLabel = (String) visComponent.jLabels[i].getText();
+                    if (jLabel.equals(bundle.getString("LBL_" + __JndiName))) {
+                        // NO18N
+                        return (String) ((JTextField)visComponent.jFields[i]).getText();
+                    }
                 }
             }
-        }
+        }    
         return null;
     }
     
@@ -157,68 +176,71 @@ public class CommonAttributePanel extends ResourceWizardPanel {
               return false;
           }
           setErrorMsg (bundle.getString ("Empty_String"));
-          if (component != null && component.jLabels != null && component.jFields != null) {
-              int i;
-              for (i=0; i < component.jLabels.length; i++) {
-                  String jLabel = (String)component.jLabels[i].getText ();
-                  if (jLabel.equals (bundle.getString ("LBL_" + __JndiName))) { // NO18N
-                      String jndiName = (String)((JTextField)component.jFields[i]).getText ();
-                      if (jndiName == null || jndiName.length () == 0) {
-                          setErrorMsg (bundle.getString ("Err_InvalidJndiName"));
-                          return false;
-                      }else if(! ResourceUtils.isLegalResourceName (jndiName)){
-                          return false;
-                      }else{
-                          FileObject resFolder = this.helper.getData ().getTargetFileObject ();
-                          if(resFolder != null){
-                              if (wizardInfo.getName ().equals (__JdbcResource)){
-                                  if(! ResourceUtils.isUniqueFileName (jndiName, resFolder, __JDBCResource)){
-                                      setErrorMsg (bundle.getString ("Err_DuplFileJndiName"));
-                                      return false;
-                                  }
-                              }else if(wizardInfo.getName ().equals (__PersistenceManagerFactoryResource)){
-                                  if(! ResourceUtils.isUniqueFileName (jndiName, resFolder, __PersistenceResource)){
-                                      setErrorMsg (bundle.getString ("Err_DuplFileJndiName"));
-                                      return false;
+          if(! getIsConnPool()) {
+              CommonAttributeVisualPanel visComponent = (CommonAttributeVisualPanel) component;
+              if (visComponent != null && visComponent.jLabels != null && visComponent.jFields != null) {
+                  int i;
+                  for (i = 0; i < visComponent.jLabels.length; i++) {
+                      String jLabel = (String) visComponent.jLabels[i].getText ();
+                      if (jLabel.equals(bundle.getString("LBL_" + __JndiName))) {
+                          // NO18N
+                          String jndiName = (String) ((JTextField)visComponent.jFields[i]).getText ();
+                          if (jndiName == null || jndiName.length() == 0) {
+                              setErrorMsg(bundle.getString("Err_InvalidJndiName"));
+                              return false;
+                          } else if (!ResourceUtils.isLegalResourceName(jndiName)) {
+                              return false;
+                          } else {
+                              FileObject resFolder = this.helper.getData().getTargetFileObject();
+                              if (resFolder != null) {
+                                  if (wizardInfo.getName().equals(__JdbcResource)) {
+                                      if (!ResourceUtils.isUniqueFileName(jndiName, resFolder, __JDBCResource)) {
+                                          setErrorMsg(bundle.getString("Err_DuplFileJndiName"));
+                                          return false;
+                                      }
+                                  } else if (wizardInfo.getName().equals(__PersistenceManagerFactoryResource)) {
+                                      if (!ResourceUtils.isUniqueFileName(jndiName, resFolder, __PersistenceResource)) {
+                                          setErrorMsg(bundle.getString("Err_DuplFileJndiName"));
+                                          return false;
+                                      }
                                   }
                               }
                           }
-                      }
-                  }else{
-                      Set commonAttr =  new HashSet (Arrays.asList (COMMON_ATTR_INTEGER));
-                      if(commonAttr.contains (jLabel.trim ())){
-                          String fieldValue = (String)((JTextField)component.jFields[i]).getText ();
-                          if (fieldValue == null || fieldValue.length () == 0) {
-                              setErrorMessage (bundle.getString ("Err_EmptyValue"), jLabel);
-                              return false;
+                      } else {
+                          Set commonAttr = new HashSet(Arrays.asList(COMMON_ATTR_INTEGER));
+                          if (commonAttr.contains(jLabel.trim())) {
+                              String fieldValue = (String) ((JTextField)visComponent.jFields[i]).getText ();
+                              if (fieldValue == null || fieldValue.length() == 0) {
+                                  setErrorMessage(bundle.getString("Err_EmptyValue"), jLabel);
+                                  return false;
+                              }
                           }
                       }
                   }
               }
-              
-          }
-          if(!isNewResourceSelected ()){
-              //Need to check the poolname for jdbc
-              if((this.helper.getData ().getResourceName ()).equals (__JdbcResource)){
-                  String cpname = this.helper.getData ().getString (__PoolName);
-                  if(cpname == null || cpname.trim ().equals ("") ) { //NOI18N
-                      setErrorMsg (bundle.getString ("Err_ChooseOrCreatePool"));
-                      return false;
-                  }
-              }
-              //Need to get jdbc data if pmf and make sure it has a poolname
-              if((this.helper.getData ().getResourceName ()).equals (__PersistenceManagerFactoryResource)){
-                  if(this.helper.getData ().getHolder ().hasDSHelper ()){
-                      String cpname = this.helper.getData ().getHolder ().getDSHelper ().getData ().getString (__PoolName);
-                      if(cpname == null || cpname.trim ().equals ("") ) {//NOI18N
-                          setErrorMsg (bundle.getString ("Err_ChooseOrCreatePool"));
+              if (!isNewResourceSelected()) {
+                  //Need to check the poolname for jdbc
+                  if ((this.helper.getData().getResourceName()).equals(__JdbcResource)) {
+                      String cpname = this.helper.getData().getString(__PoolName);
+                      if (cpname == null || cpname.trim().equals("")) { //NOI18N
+                          setErrorMsg(bundle.getString("Err_ChooseOrCreatePool"));
                           return false;
                       }
-                  }else{
-                      String dsname = this.helper.getData ().getString (__JdbcResourceJndiName);
-                      if(dsname == null || dsname.trim ().equals ("") ) {//NOI18N
-                          setErrorMsg (bundle.getString ("Err_ChooseOrCreateDS"));
-                          return false;
+                  }
+                  //Need to get jdbc data if pmf and make sure it has a poolname
+                  if ((this.helper.getData().getResourceName()).equals(__PersistenceManagerFactoryResource)) {
+                      if (this.helper.getData().getHolder().hasDSHelper()) {
+                          String cpname = this.helper.getData().getHolder().getDSHelper().getData().getString(__PoolName);
+                          if (cpname == null || cpname.trim().equals("")) { //NOI18N
+                              setErrorMsg(bundle.getString("Err_ChooseOrCreatePool"));
+                              return false;
+                          }
+                      } else {
+                          String dsname = this.helper.getData().getString(__JdbcResourceJndiName);
+                          if (dsname == null || dsname.trim().equals("")) { //NOI18N
+                              setErrorMsg(bundle.getString("Err_ChooseOrCreateDS"));
+                              return false;
+                          }
                       }
                   }
               }
@@ -227,7 +249,10 @@ public class CommonAttributePanel extends ResourceWizardPanel {
       }
     
     public void initData() {
-        this.component.initData();
+        if(! getIsConnPool()) {
+            CommonAttributeVisualPanel visComponent = (CommonAttributeVisualPanel) component;
+            visComponent.initData();
+        }      
     }
     
     public void readSettings(Object settings) {
@@ -245,11 +270,13 @@ public class CommonAttributePanel extends ResourceWizardPanel {
                 }
                 targetName = ResourceUtils.createUniqueFileName (targetName, resFolder, __JDBCResource);
                 this.helper.getData ().setTargetFile (targetName);
-                component.setHelper (this.helper);
             }else if(wizardInfo.getName ().equals (__PersistenceManagerFactoryResource)){
                 targetName = ResourceUtils.createUniqueFileName (targetName, resFolder, __PersistenceResource);
                 this.helper.getData ().setTargetFile (targetName);
-                component.setHelper (this.helper);
+            }
+            if(! getIsConnPool()) {
+              CommonAttributeVisualPanel visComponent = (CommonAttributeVisualPanel) component;
+              visComponent.setHelper (this.helper);
             }
         }else
             setupValid = false;
@@ -264,6 +291,18 @@ public class CommonAttributePanel extends ResourceWizardPanel {
     
     private boolean setupValid(){
         return setupValid;
+    }
+    
+    private void setIsConnPool(){
+        if (panelType.equals(CommonAttributeVisualPanel.TYPE_JDBC_RESOURCE) || (panelType.equals(CommonAttributeVisualPanel.TYPE_PERSISTENCE_MANAGER))){
+            isConnPool = false;
+        }else{
+            isConnPool = true;
+        }
+    }
+    
+    private boolean getIsConnPool(){
+        return isConnPool;
     }
 }
 
