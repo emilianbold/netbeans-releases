@@ -90,7 +90,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     protected final ProjectConfigurationsHelper pcp;
     protected final AntProjectHelper helper;
     protected final J2MEProject project;
-    protected J2MEProjectRootNode rootNode;
+    J2MEProjectRootNode rootNode;
     
     public J2MEPhysicalViewProvider(Project project, AntProjectHelper helper, ReferenceHelper refHelper, ProjectConfigurationsHelper pcp) {
         this.project = (J2MEProject)project;
