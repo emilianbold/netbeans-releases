@@ -1907,29 +1907,35 @@ final class Central implements ControllerHandler {
         updateViewAfterDnD(true);
     }
 
-    public void userUndockedTopComponent(TopComponent tc, int modeKind) {
+    public void userUndockedTopComponent(TopComponent tc, ModeImpl mode) {
         Point tcLoc = tc.getLocation();
         Dimension tcSize = tc.getSize();
         SwingUtilities.convertPointToScreen(tcLoc, tc);
         Rectangle bounds = new Rectangle(tcLoc, tcSize);
         // #89100: update mode kind when undocking view in sliding mode
+        int modeKind = mode.getKind();
         if (modeKind == Constants.MODE_KIND_SLIDING) {
             modeKind = Constants.MODE_KIND_VIEW;
         }
-        switchMaximizedMode(null);
+        // #81479: unmaximize only if desirable
+        if (getCurrentMaximizedMode() == mode &&
+            mode.getOpenedTopComponents().size() == 1 &&
+            mode.getOpenedTopComponents().get(0) == tc) {
+            switchMaximizedMode(null);
+        }
         attachTopComponentsIntoNewMode(new TopComponent[] { tc }, bounds, modeKind, Constants.MODE_STATE_SEPARATED);
-        updateViewAfterDnD(true);
+        updateViewAfterDnD(false);
     }
 
-    public void userDockedTopComponent(TopComponent tc, int modeKind) {
-        switchMaximizedMode(null);
-        
+    public void userDockedTopComponent(TopComponent tc, ModeImpl mode) {
         ModeImpl dockTo = null;
         // find saved previous mode or at least constraints (=the place) to dock back into
         String tcID = WindowManagerImpl.getInstance().findTopComponentID(tc);
         ModeImpl source = (ModeImpl) WindowManagerImpl.getInstance().findMode(tc);
         dockTo = model.getModeTopComponentPreviousMode(source, tcID);
         int dockIndex = model.getModeTopComponentPreviousIndex(source, tcID);
+        int modeKind = mode.getKind();
+        
         if ((dockTo == null) || !model.getModes().contains(dockTo)) {
             // mode to dock to back isn't valid anymore, try constraints
             SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(source, tcID);
@@ -1940,14 +1946,15 @@ final class Central implements ControllerHandler {
                 model.addMode(dockTo, constraints);
             }
         }
+        
         if (dockTo == null) {
             // fallback, previous saved mode not found somehow, use default modes
             dockTo = modeKind == Constants.MODE_KIND_EDITOR
                     ? WindowManagerImpl.getInstance().getDefaultEditorMode()
                     : WindowManagerImpl.getInstance().getDefaultViewMode();
         }
-
-        updateViewAfterDnD(moveTopComponentsIntoMode(dockTo, new TopComponent[] { tc }, dockIndex));
+        moveTopComponentsIntoMode(dockTo, new TopComponent[] { tc }, dockIndex);
+        updateViewAfterDnD(false);
     }
 
     private boolean moveTopComponentsIntoMode(ModeImpl mode, TopComponent[] tcs) {

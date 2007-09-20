@@ -88,9 +88,9 @@ public interface ControllerHandler {
     // DnD<<
 
     // undock/dock
-    public void userUndockedTopComponent(TopComponent tc, int modeKind);
+    public void userUndockedTopComponent(TopComponent tc, ModeImpl mode);
 
-    public void userDockedTopComponent(TopComponent tc, int modeKind);
+    public void userDockedTopComponent(TopComponent tc, ModeImpl mode);
 
     // Sliding>>
     public void userEnabledAutoHide(TopComponent tc, ModeImpl source, String target);

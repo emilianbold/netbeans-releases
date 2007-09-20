@@ -61,12 +61,12 @@ public final class UndockWindowAction extends AbstractAction {
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         TopComponent contextTC = getTC2WorkWith();
         boolean isDocked = wmi.isDocked(contextTC);
-        int kind = ((ModeImpl)wmi.findMode(contextTC)).getKind();
+        ModeImpl mode = (ModeImpl)wmi.findMode(contextTC);
 
         if (isDocked) {
-            wmi.userUndockedTopComponent(contextTC, kind);
+            wmi.userUndockedTopComponent(contextTC, mode);
         } else {
-            wmi.userDockedTopComponent(contextTC, kind);
+            wmi.userDockedTopComponent(contextTC, mode);
         }
     }
     

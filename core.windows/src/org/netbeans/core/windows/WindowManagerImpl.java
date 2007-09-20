@@ -884,31 +884,31 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * new separate floating window.
      *
      * @param tc TopComponent to make floating
-     * @param modeKind kind of mode where TopComponent currently lives (before undock)
+     * @param mode mode where TopComponent currently lives (before undock)
      *
      * @throws IllegalStateException when given top component is already floating
      */
-    public void userUndockedTopComponent(TopComponent tc, int modeKind) {
+    public void userUndockedTopComponent(TopComponent tc, ModeImpl mode) {
         if (!isDocked(tc)) {
             throw new IllegalStateException("TopComponent is already in floating state: " + tc);
         }
 
-        central.userUndockedTopComponent(tc, modeKind);
+        central.userUndockedTopComponent(tc, mode);
     }
 
     /** Puts given top component back into main window.
      *
      * @param tc TopComponent to put back into main window
-     * @param modeKind kind of mode where TopComponent currently lives (before dock)
+     * @param mode mode where TopComponent currently lives (before dock)
      *
      * @throws IllegalStateException when given top component is already inside main window
      */
-    public void userDockedTopComponent(TopComponent tc, int modeKind) {
+    public void userDockedTopComponent(TopComponent tc, ModeImpl mode) {
         if (isDocked(tc)) {
             throw new IllegalStateException("TopComponent is already inside main window: " + tc);
         }
 
-        central.userDockedTopComponent(tc, modeKind);
+        central.userDockedTopComponent(tc, mode);
     }
 
     // PENDING>>
