@@ -22,11 +22,7 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
 import javax.swing.text.Caret;
-import javax.swing.text.Keymap;
 import javax.swing.text.Position;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -34,9 +30,7 @@ import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.TokenItem;
 
-import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -46,17 +40,16 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.NbEditorKit.NbGenerateGoToPopupAction;
 
 import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
+import org.netbeans.modules.cnd.editor.spi.cplusplus.CppSwitchActionProvider;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.GotoDeclarationProvider;
 
@@ -119,7 +112,7 @@ public class CCKit extends NbEditorKit {
         return new ToggleCommentAction("//"); // NOI18N
     }
     
-    protected Action[] createActions() {
+    protected @Override Action[] createActions() {
         Action[] ccActions = new Action[] {
 	    new CCDefaultKeyTypedAction(),
 	    new CCFormatAction(),
@@ -133,11 +126,15 @@ public class CCKit extends NbEditorKit {
 	};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
         GotoDeclarationProvider gotoDeclaration = Lookup.getDefault().lookup(GotoDeclarationProvider.class);
-        if (gotoDeclaration == null)  {
-            return ccActions;
-        } else {
-            return TextAction.augmentList(ccActions, new Action[]{gotoDeclaration.getGotoDeclarationAction()});
+        if (gotoDeclaration != null)  {
+            ccActions = TextAction.augmentList(ccActions, new Action[]{gotoDeclaration.getGotoDeclarationAction()});
         }
+
+        CppSwitchActionProvider cppSwitchActionProvider = Lookup.getDefault().lookup(CppSwitchActionProvider.class);
+        if (cppSwitchActionProvider != null)  {
+            ccActions = TextAction.augmentList(ccActions, new Action[]{cppSwitchActionProvider.getCppSwitchAction()});
+        }
+        return ccActions;
     }
     
 //    public static class CppFoldTestAction extends BaseAction {

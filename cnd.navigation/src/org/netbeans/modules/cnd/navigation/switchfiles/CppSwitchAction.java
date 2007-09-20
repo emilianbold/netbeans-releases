@@ -18,11 +18,13 @@
 
 package org.netbeans.modules.cnd.navigation.switchfiles;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseAction;
@@ -46,15 +48,32 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.ExtensionList;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.CookieAction;
+import org.openide.windows.TopComponent;
 
-public final class CppSwitchAction extends CookieAction {
+public final class CppSwitchAction extends BaseAction {
 
-    protected void performAction(Node[] activatedNodes) {
-        // fast search
+    private static final String actionName = "cpp-switch-header-source"; // NOI18N
+    private static final String ICON = "org/netbeans/modules/cnd/navigation/resources/header_source_icon.png"; // NOI18N
+    private static CppSwitchAction instance;
+
+    public static synchronized CppSwitchAction getInstance() {
+        if (instance == null) {
+            instance = new CppSwitchAction();
+        }
+        return instance;
+    }
+
+    public CppSwitchAction() {
+        super(actionName);
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        putValue(BaseAction.ICON_RESOURCE_PROPERTY, ICON);
+    }
+
+    public void actionPerformed(ActionEvent evt, JTextComponent txt) {
+        final Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
+
         FileObject res = findToggleFile(activatedNodes);
         if (res != null) {
             doToggle(res);
@@ -66,7 +85,7 @@ public final class CppSwitchAction extends CookieAction {
             } else {
                 StatusDisplayer.getDefault().setStatusText(getMessage("cpp-switch-file-not-found")); // NOI18N
             }
-        } 
+        }
     }
 
     private CsmFile getTarget(Node[] activatedNodes) {
@@ -83,10 +102,9 @@ public final class CppSwitchAction extends CookieAction {
         return target;
     }
 
-    public String getName() {
+    public @Override String getPopupMenuText(JTextComponent target) {
         String trimmedNameKey = "goto-cpp-switch-file"; //NOI18N
-        String fullNameKey = "CTL_CppSwitchAction"; //NOI18N
-        switch (getTargetNodeKind(getActivatedNodes())) {
+        switch (getTargetNodeKind(TopComponent.getRegistry().getActivatedNodes())) {
             case HEADER:
                 trimmedNameKey = "goto-cpp-header-file"; //NOI18N
                 break;
@@ -94,10 +112,11 @@ public final class CppSwitchAction extends CookieAction {
                 trimmedNameKey = "goto-cpp-source-file"; //NOI18N
                 break;
         }
-        String trimmedName = getMessage(trimmedNameKey);
-        putValue(ExtKit.TRIMMED_TEXT, trimmedName);
-        putValue(BaseAction.POPUP_MENU_TEXT, trimmedName);
-        return getMessage(fullNameKey);
+        return getMessage(trimmedNameKey);
+    }
+
+    protected @Override Object getDefaultShortDescription() {
+        return getMessage("goto-cpp-switch-file"); //NOI18N
     }
 
     private enum NodeKind {
@@ -120,7 +139,7 @@ public final class CppSwitchAction extends CookieAction {
         String name = getName(source.getAbsolutePath());
         // first look at the list of includes
         for (CsmInclude h : source.getIncludes()) {
-            if (h.getIncludeFile()!=null && name.equals(h.getIncludeFile().getAbsolutePath())) {
+            if (h.getIncludeFile() != null && name.equals(h.getIncludeFile().getAbsolutePath())) {
                 return h.getIncludeFile();
             }
         }
@@ -149,7 +168,7 @@ public final class CppSwitchAction extends CookieAction {
         String name = getName(header.getAbsolutePath());
 
         Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(header);
-        
+
         for (CsmFile f : includers) {
             if (getName(f.getAbsolutePath()).equals(name)) {
                 // we found source file with the same name
@@ -251,18 +270,9 @@ public final class CppSwitchAction extends CookieAction {
         }
         return suffixes.toArray(new String[suffixes.size()]);
     }
-    
-//    @Override
-//    public boolean isEnabled() {
-//        boolean enabled = false;
-//        if (super.isEnabled()) {
-//            enabled = getTarget(getActivatedNodes()) != null;
-//        }
-//        return enabled;
-//    }
-    
-    // Utility
 
+    // Utility
+    
     private static String getName(String path) {
         int idxSlash = path.lastIndexOf(File.separatorChar);
         String name = path.substring(idxSlash == -1 ? 0 : idxSlash + 1);
@@ -279,41 +289,4 @@ public final class CppSwitchAction extends CookieAction {
     private static String getMessage(String key) {
         return NbBundle.getMessage(CppSwitchAction.class, key);
     }
-    
-//    private static Collection<CsmProject> geProjectsScope(CsmFile file) {
-//        Collection<CsmProject> projects = CsmModelAccessor.getModel().projects();
-//        for (CsmProject prj : CsmModelAccessor.getModel().projects()) {
-//            projects.addAll(prj.getLibraries());
-//        }
-//        return projects;
-//    }
-    
-    // System
-
-    protected Class[] cookieClasses() {
-        return new Class[]{HDataObject.class, CDataObject.class, CCDataObject.class};
-    }
-
-    protected int mode() {
-        return CookieAction.MODE_EXACTLY_ONE;
-    }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
-        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected @Override boolean asynchronous() {
-        return false;
-    }
-    
-    public @Override String iconResource() {
-        return "org/netbeans/modules/cnd/navigation/resources/header_source_icon.png"; //NOI18N
-    }
-    
 }
