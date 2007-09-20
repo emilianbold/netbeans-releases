@@ -43,7 +43,7 @@ import javax.servlet.jsp.tagext.TagLibraryInfo;
 
 public abstract class PageInfo {
 
-    public static final String JSP_SERVLET_BASE = "org.apache.jasper.runtime.HttpJspBase";
+    public static final String JSP_SERVLET_BASE = "javax.servlet.http.HttpServlet";
     
     private List<String> imports;
     private List<String> dependants;
