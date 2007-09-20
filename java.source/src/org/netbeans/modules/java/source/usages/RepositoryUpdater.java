@@ -164,7 +164,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private Set<URL> scannedBinaries;
     private Map<URL,List<URL>> deps;        //todo: may be shared with scannedRoots, may save some HashMap.Entry
     private static final RequestProcessor WORKER = new RequestProcessor(RepositoryUpdater.class.getName(),1);
-    private Delay delay;
     private Work currentWork;
     private boolean dirty;
     private int noSubmited;
@@ -194,7 +193,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
         this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());            
         this.deps = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
-        this.delay = new Delay();
         this.cpImpl = GlobalSourcePath.getDefault();            
         this.cp = ClassPathFactory.createClassPath (this.cpImpl.getSourcePath());
         this.ucp = ClassPathFactory.createClassPath (this.cpImpl.getUnknownSourcePath());
@@ -356,7 +354,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             final URL original = new File (parentFile,originalName).toURI().toURL();
                             submit(Work.delete(original,root,fo.isFolder()));
                         }
-                        delay.post(Work.compile (fo,root));
+                        final Work work = Work.compile (fo,root);
+                        RepositoryUpdater.WORKER.post(new Runnable () {
+                            public void run () {
+                                submit(work);
+                            }
+                        },DELAY);                        
                     }
                 }
             }
@@ -2236,39 +2239,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         return waited;
     }
-    
-    private final class Delay {
-        
-        private final List<Work> tasks;
-        
-        public Delay () {
-            this.tasks = new LinkedList<Work> ();
-        }
-        
-        public synchronized void post (final Work work) {
-            assert work != null;
-            this.tasks.add (work);
-            RepositoryUpdater.WORKER.post(new DelayTask (work),DELAY);
-        }
-                       
-        private class DelayTask implements Runnable {
             
-            final Work work;
-            
-            public DelayTask (final Work work) {
-                this.work = work;
-            }
-            
-            public void run() {
-                submit(work);
-                synchronized (Delay.this) {
-                    Delay.this.tasks.remove (work);
-                    Delay.this.notifyAll();
-                }                
-            }
-        }                
-    }
-    
     private static class CompilerListener implements DiagnosticListener<JavaFileObject>, LowMemoryListener, TaskListener {
                                
         final List<Diagnostic> errors = new LinkedList<Diagnostic> ();
