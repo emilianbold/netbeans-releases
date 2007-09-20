@@ -62,6 +62,11 @@ import com.nwoods.jgo.JGoPort;
 import com.nwoods.jgo.JGoSelection;
 import com.nwoods.jgo.JGoView;
 import com.nwoods.jgo.layout.JGoLayeredDigraphAutoLayout;
+
+import org.netbeans.modules.etl.ui.DataObjectProvider;
+import org.netbeans.modules.etl.ui.ETLDataObject;
+import org.netbeans.modules.etl.ui.property.CollaborationGraphNode;
+
 import org.netbeans.modules.etl.ui.property.JoinNode;
 import org.netbeans.modules.etl.ui.property.RuntimeInputNode;
 import org.netbeans.modules.etl.ui.property.RuntimeOutputNode;
@@ -104,6 +109,8 @@ public abstract class GraphView extends JGoView implements IGraphView {
     private Object graphViewContainer;
     
     private Object graphModel;
+    
+    private ETLDataObject mObj;
     
     private Object graphFactory;
     
@@ -900,7 +907,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
     }
     
     public boolean doMouseUp(int modifiers, java.awt.Point dc, java.awt.Point vc) {
-        selectedObject  = getCurrentObject();
+        selectedObject  = getCurrentObject();        
         if(getCurrentObject() instanceof SQLJoinTableArea){
             SQLJoinTableArea joinTblArea = (SQLJoinTableArea) getCurrentObject();
             SourceTable srcTable = (SourceTable) joinTblArea.getDataObject();
@@ -921,10 +928,14 @@ public abstract class GraphView extends JGoView implements IGraphView {
             SQLRuntimeInputArea runIn = (SQLRuntimeInputArea)getCurrentObject();
             RuntimeInput runInArea = (RuntimeInput)runIn.getDataObject();
             WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeInputNode(runInArea)});           
+
         } else if(getCurrentObject() instanceof SQLRuntimeOutputArea){
             SQLRuntimeOutputArea runOut = (SQLRuntimeOutputArea)getCurrentObject();
             RuntimeOutput runOutArea = (RuntimeOutput)runOut.getDataObject();
-            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeOutputNode(runOutArea)});
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeOutputNode((RuntimeOutput)runOutArea)});
+        }else{
+            mObj = DataObjectProvider.getProvider().getActiveDataObject();
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new CollaborationGraphNode((ETLDataObject) mObj)});
         }
         resetSelectionColors();
         
