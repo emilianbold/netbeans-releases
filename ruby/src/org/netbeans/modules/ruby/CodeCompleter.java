@@ -363,8 +363,7 @@ public class CodeCompleter implements Completable {
         selectionTemplates.add("begin"); // NOI18N
         selectionTemplates.add("do"); // NOI18N
         selectionTemplates.add("if"); // NOI18N
-        selectionTemplates.add("ifelse"); // NOI18N
-        selectionTemplates.add("{"); // NOI18N
+        selectionTemplates.add("ife"); // NOI18N
     }
 
     private boolean caseSensitive;
@@ -983,7 +982,6 @@ public class CodeCompleter implements Completable {
 
         RubyIndex index = request.index;
         String prefix = request.prefix;
-        TokenHierarchy<Document> th = request.th;
         NameKind kind = request.kind;
         
         int classAnchor = anchor;
@@ -2367,10 +2365,62 @@ public class CodeCompleter implements Completable {
 
     public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin,
         int selectionEnd) {
+
         // TODO - check the code at the AST path and determine whether it makes sense to
         // wrap it in a begin block etc.
         // TODO - I'd like to be able to pass any selection-based templates I'm not familiar with
-        return selectionTemplates;
+        
+        boolean valid = false;
+
+        if (selectionEnd != -1) {
+            try {
+                assert selectionBegin < selectionEnd;
+                BaseDocument doc = (BaseDocument) info.getDocument();
+
+                boolean startLineIsEmpty = Utilities.isRowEmpty(doc, selectionBegin);
+                boolean endLineIsEmpty = Utilities.isRowEmpty(doc, selectionEnd);
+
+                if ((startLineIsEmpty || selectionBegin <= Utilities.getRowFirstNonWhite(doc, selectionBegin)) &&
+                        (endLineIsEmpty || selectionEnd > Utilities.getRowLastNonWhite(doc, selectionEnd))) {
+                    // I have no text to the left of the beginning or text to the right of the end, but I might
+                    // have just selected whitespace - check that
+                    String text = doc.getText(selectionBegin, selectionEnd-selectionBegin);
+                    for (int i = 0; i < text.length(); i++) {
+                        if (!Character.isWhitespace(text.charAt(i))) {
+
+                            // Make sure that we're not in a string etc
+                            Token<? extends TokenId> token = LexUtilities.getToken(doc, selectionBegin);
+                            if (token != null) {
+                                TokenId id = token.id();
+                                if (id != RubyTokenId.STRING_LITERAL && id != RubyTokenId.LINE_COMMENT &&
+                                        id != RubyTokenId.QUOTED_STRING_LITERAL && id != RubyTokenId.REGEXP_LITERAL &&
+                                        id != RubyTokenId.DOCUMENTATION) {
+                                    // Yes - allow surround with here
+
+                                    // TODO - make this smarter by looking at the AST and see if
+                                    // we have a complete set of nodes
+                                    valid = true;
+                                }
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            valid = true;
+        }
+        
+        if (valid) {
+            return selectionTemplates;
+        } else {
+            return Collections.emptySet();
+        }
     }
 
     private String suggestName(CompilationInfo info, int caretOffset, String prefix, Map params) {
