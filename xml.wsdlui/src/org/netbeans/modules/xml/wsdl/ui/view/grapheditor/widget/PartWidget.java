@@ -25,6 +25,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -123,15 +124,31 @@ public class PartWidget extends AbstractWidget<Part> {
     }
     
     
-    private void removeContent() {
-        removeChildren();
-    }
-    
     PartTypeChooserWidget getPartChooserWidget() {
         return typeWidget;
     }
     
     private void createContent() {
+        nameWidget = createLabelWidget(getScene(), getName());
+        typeWidget = new PartTypeChooserWidget(getScene(), getWSDLComponent());
+        
+        addChild(nameWidget);
+        addChild(typeWidget);
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() == getWSDLComponent()) {
+            if (evt.getPropertyName().equals(Part.ELEMENT_PROPERTY) || 
+                    evt.getPropertyName().equals(Part.TYPE_PROPERTY)) {
+                typeWidget.typeOrElementChanged();
+            } else if (evt.getPropertyName().equals(Part.NAME_PROPERTY)) {
+                nameWidget.setLabel(getName());                
+            }
+        }
+    }
+    
+    private String getName() {
         Part part = getWSDLComponent();
         String name = part.getName();
         
@@ -140,19 +157,8 @@ public class PartWidget extends AbstractWidget<Part> {
         } else if (name.trim().equals("")) { // NOI18N
             name = NbBundle.getMessage(PartWidget.class, "LBL_Empty"); // NOI18N
         }
-
-        nameWidget = createLabelWidget(getScene(), name);
-        typeWidget = new PartTypeChooserWidget(getScene(), part);
-        
-        addChild(nameWidget);
-        addChild(typeWidget);
+        return name;
     }
-    
-    
-    public void updateContent() {
-        removeContent();
-        createContent();
-    }    
     
     
     private LabelWidget createLabelWidget(Scene scene, String text) {

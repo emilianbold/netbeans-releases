@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.HierarchyBoundsAdapter;
 import java.awt.event.HierarchyEvent;
@@ -120,9 +121,10 @@ public class GraphView extends JPanel {
             }
             public void sceneValidated () {
                 int width = panel.getViewport().getWidth();
-                if (width <= scene.getBounds().width) {
+                Rectangle bounds = contentWidget.getBounds();
+                if (width < scene.getBounds().width && bounds != null && bounds.width != width) {
                     contentWidget.setMinimumSize(new Dimension(width, 0));
-                    contentWidget.getScene().validate();
+                    scene.validate();
                 }
             }
         });
@@ -146,7 +148,7 @@ public class GraphView extends JPanel {
                     int width = panel.getViewport().getWidth();
                     if (width <= scene.getBounds().width) {
                         contentWidget.setMinimumSize(new Dimension(width, 0));
-                        contentWidget.getScene().validate();
+                        scene.validate();
                     }
                 }
             }

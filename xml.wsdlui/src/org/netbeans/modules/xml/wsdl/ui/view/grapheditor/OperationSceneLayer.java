@@ -30,14 +30,13 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
@@ -45,63 +44,52 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.OneSideJustifiedLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.OperationWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerLinkTypeContentWidget;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerScene;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.RectangleWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.RoleWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.WidgetConstants;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.WidgetFactory;
-import org.netbeans.modules.xml.xam.ComponentEvent;
-import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.WidgetHelper;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author radval
  */
-public class OperationSceneLayer extends Widget implements ComponentListener, PropertyChangeListener {
+public class OperationSceneLayer extends Widget {
     
     private static final int OPERATION_GAP = 25;
-    private PartnerLinkTypeContentWidget mOuterWidget;
+    private final PartnerLinkTypeContentWidget mOuterWidget;
     private Widget dummyOperationWidget;
     private PortType leftPortType;
     private PortType rightPortType;
     private Widget dummyEndWidget;
-    private PropertyChangeListener weakModelListener;
-    private Widget rightsideWidgetsHolder;
-    private Widget leftsideWidgetsHolder;
-    private Widget dummyRightEndWidget;
+    private final Widget rightsideWidgetsHolder;
+    private final Widget leftsideWidgetsHolder;
     
     public OperationSceneLayer(Scene scene, PartnerLinkTypeContentWidget outerWidget) {
         super(scene);
         mOuterWidget = outerWidget;
-        WSDLModel model = mOuterWidget.getWSDLComponent().getModel();
-        model.addComponentListener(this);
-        
-        weakModelListener = WeakListeners.propertyChange(this, model);
-        model.addPropertyChangeListener(weakModelListener);
         
         // Get the port types involved so we can detect when they are deleted.
         rightPortType = getPortType(mOuterWidget.getRightRoleWidget());
         leftPortType = getPortType(mOuterWidget.getLeftRoleWidget());
-        init();
-    }
-    
-    private void init() {
+        
         Layout layout = LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, OPERATION_GAP);
-        setLayout(LayoutFactory.createVerticalFlowLayout());
+        setLayout(layout);
         rightsideWidgetsHolder = new Widget(getScene());
         rightsideWidgetsHolder.setLayout(layout);
         addChild(rightsideWidgetsHolder);
         leftsideWidgetsHolder = new Widget(getScene());
         leftsideWidgetsHolder.setLayout(layout);
         addChild(leftsideWidgetsHolder);
+        init();
+    }
+    
+    private void init() {
         
         dummyOperationWidget = new Widget(getScene());
         
@@ -109,36 +97,14 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
         rectangleWidget.setThickness(4);
         rectangleWidget.setColor(WidgetConstants.HIT_POINT_BORDER);
         dummyOperationWidget.addChild(new Widget(getScene()));
+        dummyOperationWidget.setBorder(BorderFactory.createEmptyBorder(3));
         dummyOperationWidget.addChild(rectangleWidget);
         dummyEndWidget = new Widget(getScene());
         dummyEndWidget.setPreferredBounds(new Rectangle(0, OPERATION_GAP));//67 = height of a operation widget
-        dummyRightEndWidget = new Widget(getScene());
-        dummyRightEndWidget.setPreferredBounds(new Rectangle(0, OPERATION_GAP));//67 = height of a operation widget
         refreshOperations();
         setMinimumSize(new Dimension(400, 0));
     }
 
-    public void childrenAdded(ComponentEvent evt) {
-    }
-
-    
-    public void childrenDeleted(ComponentEvent evt) {
-
-        // Assume the source is the Definitions instance.
-        PortType rpt = getPortType(mOuterWidget.getRightRoleWidget());
-        PortType lpt = getPortType(mOuterWidget.getLeftRoleWidget());
-        if (lpt != leftPortType || rpt != rightPortType) {
-            // Looks like one or more of our port types changed.
-            leftPortType = lpt;
-            rightPortType = rpt;
-            refreshOperations();
-        }
-    }
-    
-    
-    public void valueChanged(ComponentEvent evt) {
-    }
-    
     /**
      * Remove all of the children and reconstruct based on the current
      * state of the port types.
@@ -177,13 +143,15 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
      */
     private void renderOperations(boolean right) {
         PortType pt = right ? rightPortType : leftPortType;
+        Widget parent = right ? rightsideWidgetsHolder : leftsideWidgetsHolder;
         if (pt != null) {
             Collection<Operation> operations = pt.getOperations();
             WidgetFactory factory = WidgetFactory.getInstance();
             List<Widget> widgets = new ArrayList<Widget>();
+
             for (Operation operation : operations) {
                 OperationWidget operationWidget =
-                    (OperationWidget) factory.createWidget(getScene(), operation);
+                    (OperationWidget) factory.getOrCreateWidget(getScene(), operation, parent);
                 operationWidget.setRightSided(right);
                 widgets.add(operationWidget);
             }
@@ -233,14 +201,10 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
 
     public void showBlankWidget(boolean right) {
         dummyOperationWidget.removeFromParent();
-        dummyRightEndWidget.removeFromParent();
         dummyEndWidget.removeFromParent();
         dummyOperationWidget.setLayout(new OneSideJustifiedLayout(right));
         if (right) {
             rightsideWidgetsHolder.addChild(dummyOperationWidget);
-            if (leftsideWidgetsHolder.getChildren().size() > 0) {
-                rightsideWidgetsHolder.addChild(dummyRightEndWidget);
-            }
         } else {
             leftsideWidgetsHolder.addChild(dummyOperationWidget);
         }
@@ -249,57 +213,41 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
 
     public void removeBlankWidget() {
         dummyOperationWidget.removeFromParent();
-        dummyRightEndWidget.removeFromParent();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(PortType.OPERATION_PROPERTY)) {
-            boolean isRight = evt.getSource() == rightPortType;
-            boolean isLeft = evt.getSource() == leftPortType;
-            if (isRight || isLeft) {
-                clearHotSpot();
-                mOuterWidget.revalidate();
-                mOuterWidget.getRightRoleWidget().revalidate();
-                mOuterWidget.getLeftRoleWidget().revalidate();
-                Object value = null;
-                if ((value = evt.getNewValue()) != null) {
-                    if (value instanceof Operation) {
-                        WidgetFactory factory = WidgetFactory.getInstance();
-                        OperationWidget operationWidget =
-                            (OperationWidget) factory.createWidget(getScene(), (Operation) value);
-                        operationWidget.setRightSided(isRight);
-                        if (isRight) {
-                            rightsideWidgetsHolder.addChild(operationWidget);
-                        }
-                        
-                        if (isLeft) {
-                            leftsideWidgetsHolder.addChild(operationWidget);
-                        }
-                        getScene().validate();
-                        ActionHelper.selectNode((Operation) value);
-                    }
-                } else if (evt.getOldValue() != null) {
-                    List<Widget> widgets = ((PartnerScene)getScene()).findWidgets(evt.getOldValue());
-                    for (Widget w : widgets) {
-                        if (w.getParentWidget() != null) {
-                            w.getParentWidget().removeChild(w);
-                        }
-                    }
-                    getScene().validate();
+    public void updateOperations(boolean rightSided) {
+        if (rightSided) {
+            PortType pt = getPortType(mOuterWidget.getRightRoleWidget());
+            if (rightPortType != pt) {
+                WidgetHelper.removeWidgetFromScene(getScene(), rightsideWidgetsHolder);
+                rightPortType = pt;
+                if (pt != null) {
+                    renderOperations(rightSided);
                 }
+            } else {
+                rightsideWidgetsHolder.removeChildren();
+                renderOperations(rightSided);
             }
-        } else if (evt.getPropertyName().equals(Role.PORT_TYPE_PROPERTY)) {
-            if (evt.getSource() instanceof Role) {
-                Role role = (Role) evt.getSource();
-                //Check whether the role that changed was what we are interested in.
-                if (role.equals(mOuterWidget.getRightRoleWidget().getWSDLComponent())) {
-                    rightPortType = getPortType(mOuterWidget.getRightRoleWidget());
-                    refreshOperations();
-                } else if (role.equals(mOuterWidget.getLeftRoleWidget().getWSDLComponent())) {
-                    leftPortType = getPortType(mOuterWidget.getLeftRoleWidget());
-                    refreshOperations();
+        } else {
+            PortType pt = getPortType(mOuterWidget.getLeftRoleWidget());
+            if (leftPortType != pt) {
+                WidgetHelper.removeWidgetFromScene(getScene(), leftsideWidgetsHolder);
+                leftsideWidgetsHolder.removeChildren();
+                leftPortType = pt;
+                if (pt != null) {
+                    renderOperations(rightSided);
                 }
+            } else {
+                leftsideWidgetsHolder.removeChildren();
+                renderOperations(rightSided);
             }
         }
+    }
+    
+    @Override
+    protected void notifyRemoved() {
+        super.notifyRemoved();
+        leftPortType = null;
+        rightPortType = null;
     }
 }

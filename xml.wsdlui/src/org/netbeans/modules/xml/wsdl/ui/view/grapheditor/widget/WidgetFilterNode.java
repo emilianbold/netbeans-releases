@@ -20,6 +20,7 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +44,7 @@ import org.openide.util.datatransfer.NewType;
  */
 public class WidgetFilterNode extends FilterNode {
 
-    private AbstractWidget widget;
+    private WeakReference<AbstractWidget> widgetWeakRef;
     
     /**
      * Creates a new instance of WidgetFilterNode.
@@ -56,7 +57,7 @@ public class WidgetFilterNode extends FilterNode {
     
     public WidgetFilterNode(Node original, AbstractWidget widget) {
         this(original);
-        this.widget = widget;
+        this.widgetWeakRef = new WeakReference<AbstractWidget>(widget);
     }
 
     @Override
@@ -97,9 +98,10 @@ public class WidgetFilterNode extends FilterNode {
 
     @Override
     public void destroy() throws IOException {
-        if (widget != null) {
-            widget.deleteComponent();
+        if (widgetWeakRef != null && widgetWeakRef.get() != null) {
+            widgetWeakRef.get().deleteComponent();
         }
+
         super.destroy();
         
     }

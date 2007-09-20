@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.netbeans.core.api.multiview.MultiViewHandler;
-import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.validation.ShowCookie;
@@ -36,7 +35,6 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Implementation of various cookie interfaces, in particular

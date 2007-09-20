@@ -101,14 +101,15 @@ public class TreeEditorView extends JPanel
         // Must do this when the component is in the UI tree.
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                //mRootNode = new AbstractNode(new Children.Array());
-                populateRootNode(mModel.getDefinitions());
-                //Initially expand root node and the folder nodes below it.
-                btv.expandNode(mRootNode);
-                Utility.expandNodes(btv, 1, mRootNode);
-                try {
-                    explorerManager.setSelectedNodes(new Node[] {mRootNode});
-                } catch (PropertyVetoException pve) {
+                if (btv != null) {
+                    populateRootNode(mModel.getDefinitions());
+                    //Initially expand root node and the folder nodes below it.
+                    btv.expandNode(mRootNode);
+                    Utility.expandNodes(btv, 1, mRootNode);
+                    try {
+                        explorerManager.setSelectedNodes(new Node[] {mRootNode});
+                    } catch (PropertyVetoException pve) {
+                    }
                 }
             }
         });
@@ -201,13 +202,18 @@ public class TreeEditorView extends JPanel
     @Override
     public void requestFocus() {
         super.requestFocus();
-        btv.requestFocus();
+        if (btv != null) {
+            btv.requestFocus();
+        }
     }
 
     @Override
     public boolean requestFocusInWindow() {
-        super.requestFocusInWindow();
-        return btv.requestFocusInWindow();
+        boolean ret = super.requestFocusInWindow();
+        if (btv != null) {
+            return btv.requestFocusInWindow();
+        }
+        return ret;
     }
     
     @Override

@@ -20,8 +20,7 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Fault;
@@ -33,16 +32,11 @@ import org.openide.util.Lookup;
  * @author rico
  */
 public abstract class OperationWithFaultWidget<T extends Operation> extends OperationWidget<T> {
-    private List<Fault> currentFaults;
-    private List<Fault> deletedFaults;
-    private List<Fault> newFaults;
     private Widget dummyWidget;
     
     /** Creates a new instance of OperationWithFaultWidget */
     public OperationWithFaultWidget(Scene scene, T operation, Lookup lookup) {
         super(scene, operation, lookup);
-        deletedFaults = new ArrayList();
-        currentFaults = new ArrayList(getWSDLComponent().getFaults());
         dummyWidget = new Widget(scene);
         dummyWidget.setMinimumSize(new Dimension(5, 10));
     }
@@ -51,67 +45,24 @@ public abstract class OperationWithFaultWidget<T extends Operation> extends Oper
     public void setRightSided(boolean rightSided) {
         super.setRightSided(rightSided);
         init();
-        populateFaults(getVerticalWidget());
+        refreshFaults(getVerticalWidget());
     }
 
     protected abstract Widget getVerticalWidget();
     protected abstract void init();
     
-    @Override
-    public void updateContent() {
-        super.updateContent();
-        refreshFaults(getVerticalWidget());
-    }
-    
-    private void populateFaults(Widget verticalWidget){
-        if(currentFaults.size() > 0 ){
-            for(Fault fault : currentFaults){
-                Widget faultWidget = WidgetFactory.getInstance().createWidget(getScene(), fault, getLookup(), true);
-                if (faultWidget.getParentWidget() != null && faultWidget.getParentWidget() != this) {
-                    faultWidget = WidgetFactory.getInstance().createWidget(getScene(), fault, getLookup());
-                }
-                verticalWidget.addChild(faultWidget);
-            }
+    private void refreshFaults(Widget verticalWidget) {
+        dummyWidget.removeFromParent();
+        for(Fault fault : getWSDLComponent().getFaults()){
+            Widget faultWidget = WidgetFactory.getInstance().getOrCreateWidget(getScene(), fault, getLookup(), verticalWidget);
+            verticalWidget.addChild(faultWidget); //adjust for dummy widget. add the fault before dummy widget.
         }
         verticalWidget.addChild(dummyWidget);
     }
     
-    private void refreshFaults(Widget verticalWidget){
-        deletedFaults.clear();
-        deletedFaults.addAll(currentFaults);
-        newFaults = new ArrayList(getWSDLComponent().getFaults());
-        
-        //remove deleted faults
-        currentFaults.retainAll(newFaults);
-        //get new faults
-        newFaults.removeAll(currentFaults);
-        //add new faults
-        currentFaults.addAll(newFaults);
-        //get deleted faults
-        deletedFaults.removeAll(currentFaults);
-        if(newFaults.size() > 0){
-            verticalWidget.removeChild(dummyWidget);
-            for(Fault fault : newFaults){
-                Widget faultWidget = WidgetFactory.getInstance().createWidget(getScene(), fault, getLookup(), true);
-                if (faultWidget.getParentWidget() != null && faultWidget.getParentWidget() != this) {
-                    faultWidget = WidgetFactory.getInstance().createWidget(getScene(), fault, getLookup());
-                }
-                 verticalWidget.addChild(faultWidget); //adjust for dummy widget. add the fault before dummy widget.
-            }
-            verticalWidget.addChild(dummyWidget);
-        }
-        if(deletedFaults.size() > 0){
-            List<Widget> children = new ArrayList(verticalWidget.getChildren());
-            for(Fault fault : deletedFaults){
-                for(Widget child : children){
-                    if(child instanceof FaultWidget){
-                        FaultWidget fw = (FaultWidget)child;
-                        if(fw.getWSDLComponent() == fault){
-                            verticalWidget.removeChild(child);
-                        }
-                    }
-                }
-            }
-        }
+    @Override
+    public void childrenAdded() {
+        refreshFaults(getVerticalWidget());
     }
+    
 }

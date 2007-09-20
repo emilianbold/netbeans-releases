@@ -33,6 +33,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -80,12 +81,12 @@ import org.openide.windows.TopComponent;
 public class CollaborationsWidget extends Widget
         implements DnDHandler, PopupMenuProvider {
 
-    private WSDLModel mModel;
-    private Widget mCollaborationContentWidget;
+    private final WSDLModel mModel;
+    private final Widget mCollaborationContentWidget;
     private Image IMAGE = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/grapheditor/palette/resources/partnerlinkTypesFolder.png");
     public static final Border MAIN_BORDER = new FilledBorder(1, 1, 8, 8, new Color(0x888888), Color.WHITE);
-    private ImageLabelWidget mLabelWidget;
-    private Widget mHeaderWidget;
+    private final ImageLabelWidget mLabelWidget;
+    private final Widget mHeaderWidget;
     private ButtonWidget createButtonWidget;
     private PartnerLinkTypeHitPointWidget partnerLinkTypeHitPoint; 
     private Object draggedObject = null;
@@ -111,10 +112,13 @@ public class CollaborationsWidget extends Widget
         mHeaderWidget = new Widget(scene);
         mHeaderWidget.setMinimumSize(new Dimension(
                 WidgetConstants.HEADER_MINIMUM_WIDTH, 0));
+        mLabelWidget = new ImageLabelWidget(getScene(), IMAGE, NbBundle.getMessage(CollaborationsWidget.class, "LBL_CollaborationsWidget_PartnerLinkTypes"), 
+                "(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
         mHeaderWidget.setLayout(new LeftRightLayout(32));
         mHeaderWidget.setBorder(WidgetConstants.HEADER_BORDER);
         addChild(mHeaderWidget);
         
+        mHeaderWidget.addChild(mLabelWidget);
         mHeaderWidget.addChild(createActionWidget(scene));
         
         mCollaborationContentWidget = new Widget(scene);
@@ -214,23 +218,41 @@ public class CollaborationsWidget extends Widget
         return mModel.getDefinitions().getName();
     }
 
-    public void updateContent() {
-        mLabelWidget.setComment("(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
-        mCollaborationContentWidget.removeChildren();
-        createContent();
+    private void update() {
+        int noOfPLT = mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size();
+        mLabelWidget.setComment("(" + noOfPLT + ")");
+        // Disable/hide buttons based on current widget availability.
+        Collection<PortType> ports = getUnusedPortTypes();
+        createButtonWidget.setVisible(ports.size() > 0);
+        
+        if (noOfPLT == 0) {
+            mCollaborationContentWidget.addChild(stubWidget);
+        } else {
+            stubWidget.removeFromParent();
+        }
     }
 
+    public void updateContent(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(Definitions.EXTENSIBILITY_ELEMENT_PROPERTY)) {
+            Object obj = evt.getNewValue();
+            if (obj != null && obj instanceof PartnerLinkType) {
+                update();
+                if (evt.getOldValue() == null) {
+                    Widget widget = WidgetFactory.getInstance().getOrCreateWidget(getScene(), (PartnerLinkType) obj, mCollaborationContentWidget);
+                    mCollaborationContentWidget.addChild(widget);
+                }
+            } else {
+                obj = evt.getOldValue();
+                if (obj != null && obj instanceof PartnerLinkType) {
+                    update();
+                    WidgetHelper.removeObjectFromScene(getScene(), obj);
+                }
+            }
+            getScene().validate();
+        }
+    }
+    
     private void createContent() {
-        if (mLabelWidget == null) {
-            mLabelWidget = new ImageLabelWidget(getScene(), IMAGE, NbBundle.getMessage(CollaborationsWidget.class, "LBL_CollaborationsWidget_PartnerLinkTypes"), 
-                    "(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
-            mHeaderWidget.addChild(0, mLabelWidget);
-        }
-        
-        if (stubWidget.getParentWidget() != null) {
-            stubWidget.getParentWidget().removeChild(stubWidget);
-        }
-        
         List<PartnerLinkType> partnerLinkTypes = mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class);
         if (partnerLinkTypes == null || partnerLinkTypes.isEmpty()) {
             mCollaborationContentWidget.addChild(stubWidget);
@@ -238,7 +260,7 @@ public class CollaborationsWidget extends Widget
             Scene scene = getScene();
             WidgetFactory factory = WidgetFactory.getInstance();
             for (PartnerLinkType plType : partnerLinkTypes) {
-                Widget widget = factory.createWidget(scene, plType, true);
+                Widget widget = factory.getOrCreateWidget(scene, plType, mCollaborationContentWidget);
                 mCollaborationContentWidget.addChild(widget);
             }
         }
@@ -352,16 +374,12 @@ public class CollaborationsWidget extends Widget
             partnerLinkTypeHitPoint.getParentWidget().removeChild(partnerLinkTypeHitPoint);
         }
         
-        if (stubWidget.getParentWidget() != null) {
-            stubWidget.getParentWidget().removeChild(stubWidget);
-        }
+        stubWidget.removeFromParent();
         mCollaborationContentWidget.addChild(partnerLinkTypesHitPointIndex, partnerLinkTypeHitPoint);
     }
     
     private void hideHitPoint() {
-        if (partnerLinkTypeHitPoint.getParentWidget() != null) {
-            partnerLinkTypeHitPoint.getParentWidget().removeChild(partnerLinkTypeHitPoint);
-        }
+        partnerLinkTypeHitPoint.removeFromParent();
         
         if (!hasPartnerLinkTypes() && stubWidget.getParentWidget() == null) {
             mCollaborationContentWidget.addChild(stubWidget);

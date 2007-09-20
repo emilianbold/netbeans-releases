@@ -19,18 +19,15 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 
@@ -49,23 +46,23 @@ import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.DragOverSceneLayer;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author anjeleevich
  */
-public class PartnerScene extends ObjectScene implements ComponentListener, DnDHandler {
+public class PartnerScene extends ObjectScene implements ComponentListener, DnDHandler, PropertyChangeListener {
     private ButtonAction buttonAction;
     private WidgetAction selectAction;
     private DnDAction dndAction;
     private WidgetAction focusAction;
     
-    private WSDLModel model;
+    private final WSDLModel model;
     private MessagesWidget messagesWidget;
     private CollaborationsWidget collaborationsWidget;
     private DragOverSceneLayer dragOverLayer;
@@ -74,12 +71,13 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     private PartnerSceneCycleFocusProviderAndSceneListener cycleFocusProviderAndSceneListener;
     private PartnerSceneCycleFocusProvider mycycleFocusProvider;
     private List<Widget> selectedWidgets;
+    private PropertyChangeListener weakModelListener;
+    private ComponentListener weakComponentListener;
 
     public PartnerScene(WSDLModel model) {
         super();
 
         this.model = model;
-        model.addComponentListener(this);
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS);
         cycleFocusProviderAndSceneListener = new PartnerSceneCycleFocusProviderAndSceneListener();
         
@@ -98,6 +96,30 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         this.addObjectSceneListener(cycleFocusProviderAndSceneListener, ObjectSceneEventType.OBJECT_FOCUS_CHANGED, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         selectedWidgets = new ArrayList<Widget>();
     }
+    
+    @Override
+    protected void notifyAdded() {
+        super.notifyAdded();
+        weakModelListener = WeakListeners.propertyChange(this, model);
+        model.addPropertyChangeListener(weakModelListener);
+        weakComponentListener = WeakListeners.create(ComponentListener.class, this, model);
+        model.addComponentListener(weakComponentListener);
+    }
+    
+    @Override
+    protected void notifyRemoved() {
+        super.notifyRemoved();
+        if (weakModelListener != null) {
+            model.removePropertyChangeListener(weakModelListener);
+            weakModelListener = null;
+        }
+        
+        if (weakComponentListener != null) {
+            model.removeComponentListener(weakComponentListener);
+            weakComponentListener = null;
+        }
+    }
+    
     /*private Logger mLogger = Logger.getLogger(PartnerScene.class.getName());
     protected void printFocusCycle(Widget widget, String indent, boolean onlyFocusables, boolean onlyFocusableTrue) {
         for (Widget w : widget.getChildren()) {
@@ -166,81 +188,28 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         return dragOverLayer;
     }
 
-    /**
-     * Scan the scene's object-to-widget mapping for components that are
-     * no longer in the component model, and remove them if so.
-     */
-    private void pruneStaleBindings() {
-        // Create a new set to avoid concurrent modification exceptions.
-        Set<Object> objects = new HashSet<Object>(getObjects());
-        for (Object object : objects) {
-            if (object instanceof WSDLComponent &&
-                    !isInModel((WSDLComponent) object)) {
-                removeObject(object);
-            }
-        }
-    }
-
-    /**
-     * Determine if the component is in the model or not.
-     *
-     * @param  component  the component to query.
-     * @return  true if component is in model, false otherwise.
-     */
-    private boolean isInModel(WSDLComponent component) {
-        WSDLComponent root = model.getRootComponent();
-        for (WSDLComponent c = component; c != null; c = c.getParent()) {
-            if (c == root) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void valueChanged(ComponentEvent componentEvent) {
-        updateContent(componentEvent);
-    }
-
     public void childrenAdded(ComponentEvent componentEvent) {
-        updateContent(componentEvent);
+        //do nothing
     }
-
+    
     public void childrenDeleted(ComponentEvent componentEvent) {
-        updateContent(componentEvent);
-        // Perform the pruning in one place, as opposed to in the
-        // AbstractWidget class, which would be invoked many times.
-        if (EventQueue.isDispatchThread()) {
-            pruneStaleBindings();
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    pruneStaleBindings();
-                }
-            });
-        }
+        //do nothing, handled by property change
     }
-
-    /**
-     * If the event source is the model root, update the top-level widgets
-     * manually, since they are not registered as model listeners.
-     */
-    private void updateContent(ComponentEvent componentEvent) {
-        if (componentEvent.getSource() instanceof Definitions) {
-            Runnable updater = new Runnable() {
-                public void run() {
-                    getMessagesWidget().updateContent();
-                    getCollaborationsWidget().updateContent();
-                    // Validate the scene after making changes.
-                    validate();
-                }
-            };
-            if (EventQueue.isDispatchThread()) {
-                updater.run();
-            } else {
-                EventQueue.invokeLater(updater);
+    
+    public void valueChanged(ComponentEvent componentEvent) {
+        //do nothing.
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() == model.getDefinitions()) {
+            if (evt.getPropertyName().equals(Definitions.MESSAGE_PROPERTY)) {
+                getMessagesWidget().updateContent(evt);
+            } else if (evt.getPropertyName().equals(Definitions.EXTENSIBILITY_ELEMENT_PROPERTY)) {
+                getCollaborationsWidget().updateContent(evt);
             }
         }
     }
+    
 
     @Override
     public Font getDefaultFont() {
@@ -353,7 +322,7 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     }
 
     public void expandForDragAndDrop() {
-        
+        //do nothing
     }
 
     public boolean isCollapsed() {

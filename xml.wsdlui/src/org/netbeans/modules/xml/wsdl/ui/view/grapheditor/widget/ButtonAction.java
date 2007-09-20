@@ -155,7 +155,7 @@ public class ButtonAction extends WidgetAction.Adapter {
     }
 
     @Override
-    public State keyTyped (Widget widget, WidgetKeyEvent event) {
+    public State keyPressed (Widget widget, WidgetKeyEvent event) {
         boolean state = false;
         if (event.getKeyChar() == KeyEvent.VK_ENTER || event.getKeyChar() == KeyEvent.VK_SPACE) {
             Widget w = widget.getScene().getFocusedWidget();

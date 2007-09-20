@@ -96,6 +96,8 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeEvent;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -120,26 +122,26 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
     
     protected static final Logger mLogger = Logger.getLogger(WSDLElementNode.class.getName());
     
-    private T mElement;
+    private final T mElement;
     /** Customizer soft reference; */
     private Reference<Customizer> customizerReference;
     private NewTypesFactory mNewTypesFactory;
     
     public static final String WSDL_NAMESPACE = "http://schemas.xmlsoap.org/wsdl/";//NOI18N
-    private InstanceContent mLookupContents;
-  //  protected Sheet mSheet;
+    private final InstanceContent mLookupContents;
+    
     private PropertyChangeListener weakModelListener;
     private ComponentListener weakComponentListener;
-    //private NodeListener weakNodeListener;
+
     /** Used for the highlighting API. */
     private Set<Component> referenceSet;
     /** Ordered list of highlights applied to this node. */
     private List<Highlight> highlights;
     
     /** cached so that during destroy all listeners can be cleaned up, nullified in destroy*/
-    private WeakReference<WSDLModel> wsdlmodel;
+    private final WeakReference<WSDLModel> wsdlmodel;
 
-	private Children children;
+	private final Children children;
     
     private static final SystemAction[] ACTIONS = new SystemAction[] {
         SystemAction.get(CutAction.class),
@@ -219,6 +221,25 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         referenceSet = Collections.singleton((Component) element);
         highlights = new LinkedList<Highlight>();
         HighlightManager.getDefault().addHighlighted(this);
+        
+        addNodeListener(new NodeAdapter() {
+        
+            public void nodeDestroyed(NodeEvent ev) {
+                if (wsdlmodel != null && wsdlmodel.get() != null) {
+                    //remove the xml element listener when node is destroyed
+                    if (weakModelListener != null) {
+                        wsdlmodel.get().removePropertyChangeListener(weakModelListener);
+                        weakModelListener = null;
+                    }
+                    if (weakComponentListener != null) {
+                        wsdlmodel.get().removeComponentListener(weakComponentListener);
+                        weakComponentListener = null;
+                    }
+                    //remove reference for WSDLModel
+                    wsdlmodel.clear();
+                }
+            }
+        });
     }
     
     private static Lookup createLookup(WSDLModel model, InstanceContent contents) {
@@ -272,7 +293,7 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
             wsdlmodel.get().removePropertyChangeListener(weakModelListener);
             wsdlmodel.get().removeComponentListener(weakComponentListener);
             //remove reference for WSDLModel
-            wsdlmodel = null;
+            wsdlmodel.clear();
         }
         
         //removeNodeListener(weakNodeListener);

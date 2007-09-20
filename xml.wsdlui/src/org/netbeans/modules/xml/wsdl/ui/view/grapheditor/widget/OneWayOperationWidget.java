@@ -42,9 +42,13 @@ import org.openide.util.Lookup;
  */
 public class OneWayOperationWidget extends OperationWidget<OneWayOperation> {
 
+    private final Widget verticalWidget;
+
     /** Creates a new instance of PortTypeColumnWidget */
     public OneWayOperationWidget(Scene scene, OneWayOperation operation, Lookup lookup) {
         super(scene, operation, lookup);
+        verticalWidget = new Widget(getScene());
+        verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
     }
     
     @Override
@@ -58,15 +62,8 @@ public class OneWayOperationWidget extends OperationWidget<OneWayOperation> {
         if (getChildren().size() > 0) return;
         
         Scene scene = getScene();
-        Widget inputWidget = WidgetFactory.getInstance().createWidget(scene,
-                getWSDLComponent().getInput(), getLookup(), true);
-        if (inputWidget.getParentWidget() != null && inputWidget.getParentWidget() != this) {
-            inputWidget = WidgetFactory.getInstance().createWidget(scene,
-                    getWSDLComponent().getInput(), getLookup());
-        }
-
-        Widget verticalWidget = new Widget(getScene());
-        verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
+        Widget inputWidget = WidgetFactory.getInstance().getOrCreateWidget(scene,
+                getWSDLComponent().getInput(), getLookup(), verticalWidget);
         verticalWidget.addChild(inputWidget);
         
         Widget horizontalWidget = new Widget(scene);

@@ -22,7 +22,9 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -41,6 +43,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.dom.Utils;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
@@ -59,7 +62,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
 
     private static final boolean EXPANDED_DEFAULT = true;
     private final PartnerLinkType mPartnerLinkType;
-    private Widget mLabelWidget;
+    private ImageLabelWidget mLabelWidget;
 
     private PartnerLinkTypeContentWidget mContentWidget;
 
@@ -162,30 +165,47 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         getActions().addAction(((PartnerScene) getScene()).getDnDAction());
     }
 
-    private Widget createLabelWidget() {
-        Widget labelWidget = new ImageLabelWidget(getScene(), IMAGE, mPartnerLinkType.getName());
+    private ImageLabelWidget createLabelWidget() {
+        ImageLabelWidget labelWidget = new ImageLabelWidget(getScene(), IMAGE, mPartnerLinkType.getName());
         labelWidget.setBorder(new EmptyBorder(4, 4, 1, 1));
         labelWidget.getActions().addAction(editorAction);
         return labelWidget;
     }
-
+    
     @Override
-    public void updateContent() {
-        if (mHeaderWidget.getChildren().contains(mLabelWidget)) {
-            mHeaderWidget.removeChild(mLabelWidget);
-        }
-        mLabelWidget = createLabelWidget();
-        
-        mHeaderWidget.addChild(0, mLabelWidget);
-        
-        mContentWidget.updateContent();
+    public void updated() {
+        mLabelWidget.setLabel(getName());
     }
-
+    
+    private String getName() {
+        return getWSDLComponent().getName();
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
+        if (evt.getSource() == getWSDLComponent()) {
+            if (evt.getOldValue() != null && evt.getOldValue() instanceof Role) {
+                mContentWidget.roleDeleted((Role)evt.getOldValue());
+                getScene().validate();
+            } else if (evt.getNewValue() != null && evt.getNewValue() instanceof Role) {
+                mContentWidget.roleAdded((Role)evt.getNewValue());
+                getScene().validate();
+            }
+        }
+    }
+    
     public void expandWidget(ExpanderWidget expander) {
         mContentWidget.setVisible(true);
     }
 
     public void collapseWidget(ExpanderWidget expander) {
+        Rectangle bounds = getBounds();
+        Dimension d = getMinimumSize();
+        if (bounds != null && d.width < bounds.width) {
+            d.width = bounds.width;
+            setMinimumSize(d);
+        }
         mContentWidget.setVisible(false);
     }
     

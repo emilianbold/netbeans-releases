@@ -70,7 +70,6 @@ import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditor;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditorProvider;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.HoverActionProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageNode;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.DisplayObject;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
@@ -107,13 +106,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 1));
         mParameterMessage = new LabelWidget (scene);
         mParameterMessage.setBackground (Color.WHITE);
-        if (parameter.getMessage() != null &&
-                parameter.getMessage().get() != null) {
-            mParameterMessage.setLabel(parameter.getMessage().get().getName());
-        } else {
-            mParameterMessage.setLabel(NbBundle.getMessage(OperationParameterWidget.class,
-                    "LBL_OperationParamterWidget_NoMessageSelected"));
-        }
+        mParameterMessage.setLabel(getMessageName());
         mParameterMessage.setVerticalAlignment(VerticalAlignment.CENTER);
         mParameterMessage.setAlignment(Alignment.CENTER);
         editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
@@ -214,7 +207,6 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
                 mNameLabel.setLabel (mParameter.getName());
                 mNameLabel.getActions().addAction(editorAction);
             }
-            mNameLabel.getActions().addAction(HoverActionProvider.getDefault(getScene()).getHoverAction());
             Font font = scene.getDefaultFont ().deriveFont (Font.BOLD);
             mNameLabel.setFont (font);
             mNameLabel.setAlignment(Alignment.CENTER);
@@ -248,6 +240,15 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     
     public String getText() {
         return this.mParameterMessage.getLabel();
+    }
+    
+    private String getMessageName() {
+        if (getWSDLComponent().getMessage() != null &&
+                getWSDLComponent().getMessage().get() != null) {
+            return getWSDLComponent().getMessage().get().getName();
+        }
+        return NbBundle.getMessage(OperationParameterWidget.class,
+                "LBL_OperationParamterWidget_NoMessageSelected");
     }
     
     protected boolean isImported() {
@@ -300,22 +301,10 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     }
 
     @Override
-    public void updateContent() {
-        String msg = null;
-        
-        if (msg != null && !msg.equals(getText())) {
-            setText(msg);
-        }
-
-    }
-    
-    @Override
     public void propertyChange(PropertyChangeEvent evt) {
     	if (evt.getSource() != getWSDLComponent()) return;
     	if (evt.getPropertyName().equals(OperationParameter.MESSAGE_PROPERTY)) {
-    		if (mParameter.getMessage() != null && mParameter.getMessage().get() != null) {
-                setText(mParameter.getMessage().get().getName());
-            }
+    		setText(getMessageName());
     		ActionHelper.selectNode(getWSDLComponent());
     	} else if (evt.getPropertyName().equals(OperationParameter.NAME_PROPERTY)) {
             if (mNameLabel != null && mParameter.getName() != null) {

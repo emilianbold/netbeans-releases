@@ -33,6 +33,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -74,13 +75,13 @@ import org.openide.windows.TopComponent;
 public class MessagesWidget extends Widget implements
         ActionListener, DnDHandler, PopupMenuProvider {
 
-    private WSDLModel model;
-    private Widget headerLabel;
+    private final WSDLModel model;
+    private ImageLabelWidget headerLabel;
     private Widget headerWidget;
     private ButtonWidget addMessageButton;
     private Widget buttons;
 
-    private Widget contentWidget;
+    private final Widget contentWidget;
     
     private MessageHitPointWidget messageHitPoint;
     private int messageHitPointIndex = -1;
@@ -136,10 +137,6 @@ public class MessagesWidget extends Widget implements
     private void createContent() {
         Collection<Message> messages = model.getDefinitions().getMessages();
         
-        if (stubWidget.getParentWidget() != null) {
-            stubWidget.getParentWidget().removeChild(stubWidget);
-        }
-        
         if (messages == null) {
             messages = new LinkedList<Message>();
         }
@@ -156,7 +153,7 @@ public class MessagesWidget extends Widget implements
             contentWidget.addChild(stubWidget);
         } else {
             for (Message message : messages) {
-                Widget widget = factory.createWidget(scene, message, true);
+                Widget widget = factory.getOrCreateWidget(scene, message, contentWidget);
                 contentWidget.addChild(widget);
             }
         }
@@ -164,14 +161,35 @@ public class MessagesWidget extends Widget implements
     }
     
     
-    public void updateContent() {
-        if (headerWidget.getChildren().contains(headerLabel)) {
-    		headerWidget.removeChild(headerLabel);
-    	}
-        contentWidget.removeChildren();
-        createContent();
+    private void update() {
+        stubWidget.removeFromParent();
+        
+        Collection<Message> messages = model.getDefinitions().getMessages();
+        headerLabel.setComment("(" + messages.size() + ")");
+        if (messages.isEmpty()) {
+            contentWidget.addChild(stubWidget);
+        }
     }
     
+    void updateContent(PropertyChangeEvent evt) {
+        //called only if source is definitions.
+        if (evt.getPropertyName().equals(Definitions.MESSAGE_PROPERTY)) {
+            update();
+            Object obj = evt.getNewValue();
+            if (obj != null && obj instanceof Message) {
+                if (evt.getOldValue() == null) {//New message added
+                    Widget widget = WidgetFactory.getInstance().getOrCreateWidget(getScene(), (Message) obj, contentWidget);
+                    contentWidget.addChild(widget);
+                }
+            } else {
+                obj = evt.getOldValue();
+                if (obj != null && obj instanceof Message) {
+                    WidgetHelper.removeObjectFromScene(getScene(), obj);
+                }
+            }
+            getScene().validate();
+        }
+    }
     
     public void actionPerformed(ActionEvent event) {
         if (event.getSource() == addMessageButton) {
@@ -187,8 +205,6 @@ public class MessagesWidget extends Widget implements
                     //newPart.setType(MessagesUtils.getDefaultTypeReference(model));
 
                     message.addPart(newPart);
-
-                    copyView(null, message);
 
                     model.getDefinitions().addMessage(message);
                 }
@@ -258,7 +274,6 @@ public class MessagesWidget extends Widget implements
                     //newPart.setType(MessagesUtils.getDefaultTypeReference(model)); 
                     newMessage.addPart(newPart);
 
-                    copyView(null, newMessage);
                     if (index == messages.length) {
                         model.getDefinitions().addMessage(newMessage);
                     } else {
@@ -275,28 +290,6 @@ public class MessagesWidget extends Widget implements
         return false;
     }
     
-    
-    private void copyView(Message oldMessage, Message newMessage) {
-        MessageWidget newWidget = (MessageWidget) WidgetFactory.getInstance()
-                .createWidget(getScene(), newMessage);
-        
-        MessageWidget oldWidget = null;
-        
-        if (oldMessage != null) {
-            oldWidget = (MessageWidget) ((PartnerScene) getScene())
-                    .findWidget(oldMessage);
-        }
-        
-        if (oldWidget == null || !oldWidget.isCollapsed()) {
-            newWidget.expandForDragAndDrop();
-        }
-        
-//        if (oldWidget != null) {
-//            newWidget.setState(oldWidget.getState());
-//        }
-    }
-    
-    
     public boolean isCollapsed() {
         return !contentWidget.isVisible();
     }
@@ -306,10 +299,7 @@ public class MessagesWidget extends Widget implements
 
     
     private void hideHitPoint() {
-        if (messageHitPoint.getParentWidget() != null) {
-            messageHitPoint.getParentWidget()
-                    .removeChild(messageHitPoint);
-        }
+        messageHitPoint.removeFromParent();
         
         if (!hasMessages() && stubWidget.getParentWidget() == null) {
             contentWidget.addChild(stubWidget);
@@ -328,13 +318,8 @@ public class MessagesWidget extends Widget implements
         
         messageHitPointIndex = index;
         
-        if (messageHitPoint.getParentWidget() != null) {
-            messageHitPoint.getParentWidget().removeChild(messageHitPoint);
-        }
-        
-        if (stubWidget.getParentWidget() != null) {
-            stubWidget.getParentWidget().removeChild(stubWidget);
-        }
+        messageHitPoint.removeFromParent();
+        stubWidget.removeFromParent();
         
         contentWidget.addChild(messageHitPointIndex, messageHitPoint);
     }

@@ -42,10 +42,13 @@ import org.openide.util.Lookup;
 public class NotificationOperationWidget
         extends OperationWidget<NotificationOperation> {
     
+    private final Widget horizontalWidget;
+    
     /** Creates a new instance of PortTypeColumnWidget */
     public NotificationOperationWidget(Scene scene, NotificationOperation operation,
             Lookup lookup) {
         super(scene, operation, lookup);
+        horizontalWidget = new Widget(getScene());
     }
     
     @Override
@@ -59,13 +62,8 @@ public class NotificationOperationWidget
         if (getChildren().size() > 0) return;
         
         Scene scene = getScene();
-        Widget outputWidget = WidgetFactory.getInstance().createWidget(
-                scene, getWSDLComponent().getOutput(), getLookup(), true);
-        if (outputWidget.getParentWidget() != null && outputWidget.getParentWidget() != this) {
-            outputWidget = WidgetFactory.getInstance().createWidget(
-                    scene, getWSDLComponent().getOutput(), getLookup());
-        }
-        Widget horizontalWidget = new Widget(scene);
+        Widget outputWidget = WidgetFactory.getInstance().getOrCreateWidget(
+                scene, getWSDLComponent().getOutput(), getLookup(), horizontalWidget);
         horizontalWidget.setLayout(new OneSideJustifiedLayout(isRightSided()));
         horizontalWidget.addChild(outputWidget);
         horizontalWidget.addChild(mOperationRectangleWidget);

@@ -19,44 +19,57 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.BorderFactory;
 
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.OperationSceneLayer;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.PartnerLinkTypeContentLayout;
+import org.netbeans.modules.xml.xam.Model;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
  * Class PartnerLinkTypeContentWidget is a widget container for the
  * PartnerLinkType widgets.
  */
-public class PartnerLinkTypeContentWidget extends Widget {
+public class PartnerLinkTypeContentWidget extends Widget implements PropertyChangeListener {
 
     private Lookup mLookup;
-    private final PartnerLinkType mPartnerLinkType;
     private RoleWidget mRightRoleWidget;
     private RoleWidget mLeftRoleWidget;
 
     private OperationSceneLayer mOperationSceneLayer;
+    private PropertyChangeListener weakModelListener;
 
     public PartnerLinkTypeContentWidget(Scene scene, PartnerLinkType partnerLinkType) {
         super(scene);
         assert partnerLinkType != null : "partnerLinkTypeWidget cannot be created";
-        mPartnerLinkType = partnerLinkType;
+        mLookup = Lookups.fixed(new Object[] {
+                partnerLinkType,
+                this
+        });
         init();
     }
     
     private void init() {
-        mLookup = Lookups.fixed(new Object[] {
-            mPartnerLinkType,
-            this
-        });
-        refreshRoles();
+        
+        setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(2, 0, 0, 0, Color.LIGHT_GRAY), BorderFactory.createEmptyBorder(10, 14, 0, 14)));
+        
+        setLayout(new PartnerLinkTypeContentLayout(90));
+        createRoles();
+        mOperationSceneLayer = new OperationSceneLayer(getScene(), this);
+        addChild(mOperationSceneLayer);
 
     }
     
@@ -64,56 +77,38 @@ public class PartnerLinkTypeContentWidget extends Widget {
         return mOperationSceneLayer;
     }
     
-    private void refreshRoles() {
-        removeChildren();
+    private void createRoles() {
         Scene scene = getScene();
-        setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(2, 0, 0, 0, Color.LIGHT_GRAY), BorderFactory.createEmptyBorder(10, 14, 0, 14)));
-        
-        setLayout(new PartnerLinkTypeContentLayout(90));
-        
         
         WidgetFactory factory = WidgetFactory.getInstance();
-
-        Role role1 = mPartnerLinkType.getRole1();
-        Role role2 = mPartnerLinkType.getRole2();
+        PartnerLinkType partnerLinkType = getWSDLComponent();
+        Role role1 = partnerLinkType.getRole1();
+        Role role2 = partnerLinkType.getRole2();
         
         //if role1 is deleted then role1 becomes previous role2.
         //we need to find out which rolewidget was for role2 and keep it in the same place.
         RoleWidget role1Widget = null;
         if (role1 != null) {
-            role1Widget = (RoleWidget) factory.createWidget(scene, role1, mLookup, true);
+            role1Widget = (RoleWidget) factory.getOrCreateWidget(scene, role1, mLookup, this);
         } else {
             role1Widget = (RoleWidget) factory.createWidget(scene, Role.class, mLookup);
         }
         RoleWidget role2Widget = null;
         if (role2 != null) {
-            role2Widget = (RoleWidget) factory.createWidget(scene, role2, mLookup, true);
+            role2Widget = (RoleWidget) factory.getOrCreateWidget(scene, role2, mLookup, this);
         } else {
             role2Widget = (RoleWidget) factory.createWidget(scene, Role.class, mLookup);
         }
 
         //Check did left one become right one?
-        if (role1Widget.isLeftSided() || role2Widget.isLeftSided()) {
-            if (role1Widget.isLeftSided()) {
-                mLeftRoleWidget = role1Widget;
-                mRightRoleWidget = role2Widget;
-            } else if (role2Widget.isLeftSided()){
-                mLeftRoleWidget = role2Widget;
-                mRightRoleWidget = role1Widget;
-            }
-        } else {
-            mRightRoleWidget = role1Widget;
-            mLeftRoleWidget = role2Widget;
-        }
+        mRightRoleWidget = role1Widget;
+        mLeftRoleWidget = role2Widget;
         
         mLeftRoleWidget.setLeftSided(true);
         mRightRoleWidget.setLeftSided(false);
         addChild(mLeftRoleWidget);
         addChild(mRightRoleWidget);
         
-        mOperationSceneLayer = new OperationSceneLayer(scene, this);
-        addChild(mOperationSceneLayer);
-
     }
     
     public RoleWidget getLeftRoleWidget() {
@@ -125,11 +120,127 @@ public class PartnerLinkTypeContentWidget extends Widget {
     }
 
     public PartnerLinkType getWSDLComponent() {
-        return mPartnerLinkType;
+        return mLookup.lookup(PartnerLinkType.class);
     }
 
-    public void updateContent() {
-        refreshRoles();
+    void roleDeleted(Role deletedRole) {
+        if (mRightRoleWidget.getWSDLComponent() == deletedRole) {
+            WidgetHelper.removeObjectFromScene(getScene(), deletedRole);
+            mRightRoleWidget = (RoleWidget) WidgetFactory.getInstance().createWidget(getScene(), Role.class, mLookup);
+            addChild(1, mRightRoleWidget);
+            mOperationSceneLayer.updateOperations(true);
+        } else if (mLeftRoleWidget.getWSDLComponent() == deletedRole) {
+            WidgetHelper.removeObjectFromScene(getScene(), deletedRole);
+            mLeftRoleWidget = (RoleWidget) WidgetFactory.getInstance().createWidget(getScene(), Role.class, mLookup);
+            addChild(0, mLeftRoleWidget);
+            mOperationSceneLayer.updateOperations(false);
+        }
+    }
+
+    void roleAdded(Role role) {
+        RoleWidget rw = (RoleWidget) WidgetFactory.getInstance().getOrCreateWidget(getScene(), role, mLookup, this);
+        if (mRightRoleWidget.getWSDLComponent() == null) {
+            rw.setLeftSided(false);
+            mRightRoleWidget.removeFromParent();
+            mRightRoleWidget = rw;
+            addChild(1, rw);
+            mOperationSceneLayer.updateOperations(true);
+        } else if (mLeftRoleWidget.getWSDLComponent() == null) {
+            rw.setLeftSided(true);
+            mLeftRoleWidget.removeFromParent();
+            mLeftRoleWidget = rw;
+            addChild(0, rw);
+            mOperationSceneLayer.updateOperations(false);
+        }
+    }
+    public void propertyChange(PropertyChangeEvent evt) {
+        Object source = evt.getSource();
+        Object newObj = evt.getNewValue();
+        Object oldObj = evt.getOldValue();
+        if (evt.getPropertyName().equals(Role.PORT_TYPE_PROPERTY)) {
+            if (source instanceof Role) {
+                boolean right = false;
+                //Role's porttype changed.
+                RoleWidget affectedRoleWidget = null;
+                if (source == mRightRoleWidget.getWSDLComponent()) {
+                    affectedRoleWidget = mRightRoleWidget;
+                    right = true;
+                } else if (source == mLeftRoleWidget.getWSDLComponent()) {
+                    affectedRoleWidget = mLeftRoleWidget;
+                } else {
+                    return;
+                }
+                affectedRoleWidget.refreshPortTypeWidget();
+                mOperationSceneLayer.updateOperations(right);
+            } else if (source instanceof Definitions) {
+                //Port type deleted. act if any of the roles have it.
+                if (oldObj != null && oldObj instanceof PortType) {
+                    if (mRightRoleWidget.getPortTypeWidget().getWSDLComponent() == oldObj) {
+                        mRightRoleWidget.refreshPortTypeWidget();
+                        mOperationSceneLayer.updateOperations(true);
+                    }
+
+                    if (mLeftRoleWidget.getPortTypeWidget().getWSDLComponent() == oldObj) {
+                        mLeftRoleWidget.refreshPortTypeWidget();
+                        mOperationSceneLayer.updateOperations(false);
+                    }
+                }
+            }
+
+            revalidate();
+            getScene().validate();
+            
+        } else if (evt.getPropertyName().equals(PortType.OPERATION_PROPERTY)) {
+            if (source instanceof PortType) {
+                PortType left = mLeftRoleWidget.getPortTypeWidget().getWSDLComponent();
+                PortType right = mRightRoleWidget.getPortTypeWidget().getWSDLComponent();
+                if (source == left || source == right) {
+                    Operation operation = null;
+                    if (newObj != null && oldObj == null) {
+                        if (source == left) {
+                            mOperationSceneLayer.updateOperations(false);
+                        }
+
+                        if (source == right) {
+                            mOperationSceneLayer.updateOperations(true);
+                        }
+                        getScene().revalidate(true);
+                        getScene().validate();
+                        ActionHelper.selectNode(operation);
+                    } else if (oldObj != null && newObj == null) {
+                        operation = (Operation) oldObj;
+                        WidgetHelper.removeObjectFromScene(getScene(), operation);
+                    }
+                    revalidate();
+                    getScene().validate();
+                }
+            }
+        }
+    }
+
+    public void postDeleteComponent(Model model) {
+        if (weakModelListener != null) {
+            model.removePropertyChangeListener(weakModelListener);
+        }
     }
     
+    @Override
+    protected void notifyAdded() {
+        super.notifyAdded();
+        if (getWSDLComponent() != null) {
+            if (weakModelListener == null) {
+                weakModelListener = WeakListeners.propertyChange(this, getWSDLComponent().getModel());
+            }
+            getWSDLComponent().getModel().addPropertyChangeListener(weakModelListener);
+        }
+    }
+    
+    @Override
+    protected void notifyRemoved() {
+        super.notifyRemoved();
+        if (getWSDLComponent() != null && getWSDLComponent().getModel() != null && weakModelListener != null) {
+            getWSDLComponent().getModel().removePropertyChangeListener(weakModelListener);
+            weakModelListener = null;
+        }
+    }
 }

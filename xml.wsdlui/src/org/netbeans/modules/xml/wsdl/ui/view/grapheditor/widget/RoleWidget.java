@@ -22,7 +22,6 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -32,6 +31,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -60,7 +60,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortTypeNode;
-import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.dom.Utils;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
@@ -77,7 +76,6 @@ import org.openide.util.NbBundle;
 public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     private PortTypeWidget mPortTypeWidget;
     private LabelWidget mLabelWidget;
-    private PartnerLinkType mPartnerLinkType;
     private boolean leftSided;
     private int GAP = 25;
     private int MINIMUM_WIDTH = 225;
@@ -92,7 +90,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
      */
     public RoleWidget(Scene scene, Role role, Lookup lookup) {
         super(scene, role, lookup);
-        mPartnerLinkType = getLookup().lookup(PartnerLinkType.class);
+        //mPartnerLinkType = getLookup().lookup(PartnerLinkType.class);
         init();
     }
 
@@ -100,6 +98,10 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         setMinimumSize(new Dimension(MINIMUM_WIDTH, 0));
         setLayout(new RoleWidgetLayout(GAP));
         setOpaque(true);
+        mLabelWidget = new LabelWidget(getScene(), getName());
+        mLabelWidget.setAlignment(Alignment.CENTER);
+        mLabelWidget.setVerticalAlignment(VerticalAlignment.CENTER);
+        
         editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
 
             public void setText(Widget widget, String text) {
@@ -115,31 +117,27 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
                     DialogDisplayer.getDefault().notify(desc);
                     return;
                 }
-                
-                WSDLModel model = mPartnerLinkType.getModel();
-                boolean newRoleCreated = false;
+                PartnerLinkType partnerLinkType = getPartnerLinkType();
+                WSDLModel model = partnerLinkType.getModel();
                 Role role = getWSDLComponent();
                 try {
                     if (model.startTransaction()) {
                         if (role == null) {
-                            role = (Role) mPartnerLinkType.getModel().
-                                    getFactory().create(mPartnerLinkType,
+                            role = (Role) partnerLinkType.getModel().
+                                    getFactory().create(partnerLinkType,
                                     BPELQName.ROLE.getQName());
-                            if (mPartnerLinkType.getRole1() == null) {
-                                mPartnerLinkType.setRole1(role);
-                            } else if (mPartnerLinkType.getRole2() == null) {
-                                mPartnerLinkType.setRole2(role);
+                            if (partnerLinkType.getRole1() == null) {
+                                partnerLinkType.setRole1(role);
+                            } else if (partnerLinkType.getRole2() == null) {
+                                partnerLinkType.setRole2(role);
                             }
-                            newRoleCreated = true;
                         }
                         role.setName(text);
                     }
                 } finally {
                     model.endTransaction();
                 }
-                if (newRoleCreated) {
-                    updateContent();
-                }
+
                 if (role != null) {
                     ActionHelper.selectNode(role);
                 }
@@ -147,8 +145,9 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
             }
 
             public boolean isEnabled(Widget widget) {
-                if (mPartnerLinkType != null) {
-                    return XAMUtils.isWritable(mPartnerLinkType.getModel());
+                PartnerLinkType partnerLinkType = getPartnerLinkType();
+                if (partnerLinkType != null) {
+                    return XAMUtils.isWritable(partnerLinkType.getModel());
                 }
                 return false;
             }
@@ -156,9 +155,10 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
             public String getText(Widget widget) {
                 Role role = getWSDLComponent();
                 if (role == null) {
-                    String name = mPartnerLinkType.getName() + "Role"; //generate a new name;
-                    if (mPartnerLinkType.getRole1() != null && mPartnerLinkType.getRole1().getName().equals(name)
-                            || mPartnerLinkType.getRole2() != null && mPartnerLinkType.getRole2().getName().equals(name)) {
+                    PartnerLinkType plt = getPartnerLinkType();
+                    String name = plt.getName() + "Role"; //generate a new name;
+                    if (plt.getRole1() != null && plt.getRole1().getName().equals(name)
+                            || plt.getRole2() != null && plt.getRole2().getName().equals(name)) {
                         name = name + "1";
                     }
                     
@@ -168,7 +168,13 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
             }
 
         }, null);
-        updateContent();
+        
+        mLabelWidget.setMinimumSize(new Dimension(MINIMUM_WIDTH, WidgetConstants.TEXT_LABEL_HEIGHT));
+        addChild(mLabelWidget);
+        mLabelWidget.getActions().addAction(editorAction);
+        
+        setPortType();
+        
         if (getWSDLComponent() != null)
             getActions().addAction(((PartnerScene)getScene()).getDnDAction());
         getActions().addAction(new WidgetAction.Adapter() {
@@ -189,6 +195,11 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         });
     }
     
+    protected PartnerLinkType getPartnerLinkType() {
+        PartnerLinkType plt = getLookup().lookup(PartnerLinkType.class);
+        return plt;
+    }
+
     private String getName() {
         Role role = getWSDLComponent();
         if (role == null) {
@@ -200,43 +211,37 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
 
     protected void setLeftSided(boolean isLeftSided) {
         leftSided = isLeftSided;
-    }
-    
-    protected boolean isLeftSided() {
-        return leftSided;
-    }
-    
-
-    @Override
-    public void updateContent() {
-        refreshPortTypeColumn();
-    }
-
-    @Override
-    public void childrenDeleted(ComponentEvent event) {
-        super.childrenDeleted(event);
-        // Ignore whether this event is for our component or not, since it
-        // may be for a PortType shared between multiple roles.
-        if (event.getSource() instanceof Definitions) {
-            // Check if the port type is no longer in the model.
-            PortType portType = getPortType();
-            PortType widgetPT = mPortTypeWidget.getWSDLComponent();
-            if (widgetPT != null && portType == null) {
-                if (EventQueue.isDispatchThread()) {
-                    updateContent();
-                    getScene().validate();
-                } else {
-                    EventQueue.invokeLater(new Runnable(){
-                        public void run() {
-                            updateContent();
-                            getScene().validate();
-                        }
-                    });
-                }
-            }
+        if (mPortTypeWidget != null) {
+            mPortTypeWidget.setRightSided(!leftSided);
         }
     }
-
+    
+    void refreshPortTypeWidget() {
+        WidgetHelper.removeWidgetFromScene(getScene(), mPortTypeWidget);
+        setPortType();
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
+        if (evt.getSource() == getWSDLComponent()) {
+            if (evt.getPropertyName() == Role.NAME_PROPERTY) {
+                mLabelWidget.setLabel(getName());
+            }
+            getScene().validate();
+        } else if (evt.getPropertyName().equals(Definitions.PORT_TYPE_PROPERTY) && evt.getSource() instanceof Definitions) {
+            PortType widgetPT = mPortTypeWidget.getWSDLComponent();
+            
+            if (widgetPT != null && !widgetPT.isInDocumentModel()) {
+                if (getWSDLComponent().getAttribute(Role.PORT_TYPE_PROPERTY) != null) {// 
+                    WidgetHelper.removeWidgetFromScene(getScene(), mPortTypeWidget);
+                    setPortType();
+                }
+            }
+            getScene().validate();
+        }
+    }
+    
     /**
      * Retrieve the PortType for this RoleWidget.
      *
@@ -258,38 +263,17 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         return null;
     }
 
-    private void refreshPortTypeColumn() {
-        removeChildren();
-        if (getWSDLComponent() == null) {
-            mLabelWidget = new LabelWidget(getScene(), getName());
-            mLabelWidget.setAlignment(Alignment.CENTER);
-            mLabelWidget.setVerticalAlignment(VerticalAlignment.CENTER);
-            mLabelWidget.setForeground(Color.LIGHT_GRAY);
-            mLabelWidget.setToolTipText(NbBundle.getMessage(RoleWidget.class, "RoleWidget_DBL_CLICK_CREATE_NEW_ROLE_TT"));
-        } else {
-            mLabelWidget = new LabelWidget(getScene(), getName());
-            mLabelWidget.setAlignment(Alignment.CENTER);
-            mLabelWidget.setVerticalAlignment(VerticalAlignment.CENTER);
-            mLabelWidget.setToolTipText(null);
-        }
-       // mLabelWidget.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        mLabelWidget.setMinimumSize(new Dimension(MINIMUM_WIDTH, WidgetConstants.TEXT_LABEL_HEIGHT));
-        addChild(mLabelWidget);
-        mLabelWidget.getActions().addAction(editorAction);
+    private void setPortType() {
         WidgetFactory factory = WidgetFactory.getInstance();
         PortType portType = getPortType();
         if (portType != null) {
-            mPortTypeWidget = (PortTypeWidget) factory.createWidget(
-                    getScene(), portType, getLookup(), true);
-            //if already being used, create new one.
-            if (mPortTypeWidget.getParentWidget() != null && mPortTypeWidget.getParentWidget() != this) {
-                mPortTypeWidget = (PortTypeWidget) factory.createWidget(
-                        getScene(), portType, getLookup());
-            }
+            mPortTypeWidget = (PortTypeWidget) factory.getOrCreateWidget(
+                    getScene(), portType, getLookup(), this);
         } else {
             mPortTypeWidget = (PortTypeWidget) factory.createWidget(
                     getScene(), PortType.class, getLookup());
         }
+        mPortTypeWidget.setRightSided(!leftSided);
         
         addChild(mPortTypeWidget);
     }
@@ -405,7 +389,9 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         ActionHelper.selectNode(pt);
     }
 
-    public void expandForDragAndDrop() {}
+    public void expandForDragAndDrop() {
+        //No expansion supported.
+    }
 
     public boolean isCollapsed() {
         return false;
@@ -451,4 +437,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         g.setStroke(stk);
     }
 
+    PortTypeWidget getPortTypeWidget() {
+        return mPortTypeWidget;
+    }
 }

@@ -79,7 +79,6 @@ import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
@@ -114,7 +113,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     private WidgetAction editorAction;
     
     
-    public static enum State {
+    public enum State {
 
         ENABLED, DISABLED, NOT_REFERENCEABLE, IMPORTED
     }
@@ -171,13 +170,6 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         }, null);
         mPLTContentWidget = getLookup().lookup(PartnerLinkTypeContentWidget.class);
         mRole = getLookup().lookup(Role.class);
-        if (mRole != null) {
-            PartnerLinkType plt = (PartnerLinkType) mRole.getParent();
-            boolean rightSided = mRole == plt.getRole1();
-            DirectionCookie dc = new DirectionCookie(rightSided);
-            getLookupContent().add(dc);
-        }
-        
         init();
         
         getActions().addAction(new WidgetAction.Adapter() {
@@ -198,6 +190,18 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         });
     }
 
+    final void setRightSided(boolean rightSided) {
+        DirectionCookie dc = getLookup().lookup(DirectionCookie.class);
+        if (dc != null) {
+            if (dc.isRightSided() ^ rightSided) {
+                dc.setRightSided(rightSided);
+            }
+        } else {
+            dc = new DirectionCookie(rightSided);
+            getLookupContent().add(dc);
+        }
+    }
+    
     private void init() {
         setLayout(LayoutFactory.createVerticalFlowLayout());
         
@@ -604,21 +608,14 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         }
     }
 
-
-
-    @Override
-    public void updateContent() {
-        if (!getName().equals(mNameWidget.getLabel())) {
-            mNameWidget.setLabel(getName());
-        }
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
     	super.propertyChange(evt);
-    	if (evt.getSource() == getWSDLComponent() && evt.getPropertyName().equals(PortType.OPERATION_PROPERTY)) {
-    		revalidate();
-    		getScene().validate();
+    	if (evt.getSource() == getWSDLComponent()) {
+    	    if (evt.getPropertyName().equals(PortType.NAME_PROPERTY)) {
+    	        mNameWidget.setLabel(getName());
+    	        getScene().validate();
+    	    }
     	}
     }
     

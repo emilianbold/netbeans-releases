@@ -43,9 +43,11 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.List;
 
@@ -86,7 +88,7 @@ public class MessageWidget extends AbstractWidget<Message>
     
     private Widget contentWidget;
     private Widget header;
-    private Widget table;
+    private final Widget tableWidget;
     private Widget buttons;
     
     private PartHitPointWidget partHitPointWidget; 
@@ -96,13 +98,12 @@ public class MessageWidget extends AbstractWidget<Message>
     
     private ExpanderWidget expanderWidget;
 	private WidgetAction editorAction;
-	private Widget labelWidget;
+	private ImageLabelWidget labelWidget;
     
     
     public MessageWidget(Scene scene, Message message, Lookup lookup) {
         super(scene, message, lookup);
         setMinimumSize(new Dimension(WidgetConstants.MESSAGE_MINIMUM_WIDTH, 0));
-        
         editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
             
             public boolean isEnabled(Widget widget) {
@@ -176,7 +177,16 @@ public class MessageWidget extends AbstractWidget<Message>
         setOpaque(true);
         setLayout(LayoutFactory.createVerticalFlowLayout());
         
-        createContent();
+        header = createHeader(getScene());
+        addChild(0, header);
+
+        tableWidget = createEmptyTable(scene);
+        refreshParts();
+        contentWidget.addChild(tableWidget);
+        
+        contentWidget.addChild(buttons);
+        updateButtonState();
+        
         addChild(contentWidget);
         contentWidget.setVisible(expanded);
         
@@ -185,7 +195,7 @@ public class MessageWidget extends AbstractWidget<Message>
 
             @Override
             public State keyPressed (Widget widget, WidgetKeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.VK_ENTER && (event.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+                if (event.getKeyCode() == KeyEvent.VK_ENTER && (event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
                     if (header != null) {
                         return header.getActions().keyPressed(widget, event);
                     }
@@ -202,36 +212,11 @@ public class MessageWidget extends AbstractWidget<Message>
 
         });
     }
-    
-    private void removeContent() {
-        if (table != null) {
-            table.removeChildren();
-        }
-        
-        contentWidget.removeChildren();
-        
-        removeChild(header);
-    }
-    
-    
-    private void createContent() {
-        header = createHeader(getScene(), getWSDLComponent());
-        addChild(0, header);
-
-        table = createPartsTable(getScene(), getWSDLComponent());
-        if (table != null) {
-            contentWidget.addChild(table);
-        }
-        
-        contentWidget.addChild(buttons);
-
-        updateButtonState();
-    }
 
     void updateButtonState() {
         boolean enabled = false;
-        if (table != null && table.getChildren() != null) {
-            for (Widget w : table.getChildren()) {
+        if (tableWidget != null && tableWidget.getChildren() != null) {
+            for (Widget w : tableWidget.getChildren()) {
                 if (w instanceof PartWidget) {
                     enabled |= w.getState().isSelected();
                 }
@@ -263,7 +248,7 @@ public class MessageWidget extends AbstractWidget<Message>
             	ActionHelper.selectNode(newPart);
             }
         } else if (event.getSource() == removePartButton) {
-            for (Widget w : table.getChildren()) {
+            for (Widget w : tableWidget.getChildren()) {
                 if (w instanceof PartWidget) {
                     PartWidget partWidget = (PartWidget) w;
                     if (partWidget.getState().isSelected()) {
@@ -292,7 +277,7 @@ public class MessageWidget extends AbstractWidget<Message>
             return new PartHitPointPosition(0, 0);
         }
         
-        Widget[] children = table.getChildren().toArray(new Widget[0]);
+        Widget[] children = tableWidget.getChildren().toArray(new Widget[0]);
         
         int partIndex = 0;
         boolean hitPointIsAbove = false;
@@ -365,8 +350,8 @@ public class MessageWidget extends AbstractWidget<Message>
     }
     
     
-    private String getPartCount(Message message) {
-        Collection<Part> parts = message.getParts(); 
+    private String getPartCount() {
+        Collection<Part> parts = getWSDLComponent().getParts(); 
         int count = (parts == null) ? 0 : parts.size();
         return (count == 1) ? "(1 part)" : ("(" + count + " parts)"); // NOI18N
     }
@@ -379,24 +364,13 @@ public class MessageWidget extends AbstractWidget<Message>
         PartHitPointPosition newPosition = getPartHitPointPosition(scenePoint);
         PartHitPointPosition oldPosition = partHitPointPosition;
                 
-        if (table == null) {
-            table = createEmptyTable(getScene());
-            contentWidget.addChild(0, table);
-        }
+
+        tableWidget.setVisible(true);
         
         if (!newPosition.equals(oldPosition)) {
+            partHitPointWidget.removeFromParent();
             if (newPosition.column == 0) {
-                if (partHitPointWidget.getParentWidget() != null) {
-                    table.removeChild(partHitPointWidget);
-                }
-
-                table.addChild(newPosition.row + 1, partHitPointWidget);
-            } else {
-                if (partHitPointWidget.getParentWidget() != null) {
-                    table.removeChild(partHitPointWidget);
-                }
-
-                repaint();
+                tableWidget.addChild(newPosition.row + 1, partHitPointWidget);
             }
         }
         
@@ -406,38 +380,38 @@ public class MessageWidget extends AbstractWidget<Message>
     
     private void hideHitPoint() {
     	if (partHitPointWidget == null) return;
-        if (partHitPointWidget.getParentWidget() != null) {
-            partHitPointWidget.getParentWidget().removeChild(partHitPointWidget);
-        }
+    	partHitPointWidget.removeFromParent();
         
-        if (!hasParts() && (table != null)) {
-            if (table.getParentWidget() != null) {
-                table.getParentWidget().removeChild(table);
-            }
+        if (!hasParts()) {
+            tableWidget.setVisible(false);
         }
         
         partHitPointPosition = null;
         draggedObject = null;
     }
+    
+    private String getName() {
+        String name = getWSDLComponent().getName();
 
-    private Widget createHeaderLabel(Scene scene, Message message) {
-        String name = message.getName();
-        
         if (name == null) {
             name = NbBundle.getMessage(MessageWidget.class, "LBL_Undefined"); // NOI18N
         } else if (name.trim().equals("")) { // NOI18N
             name = NbBundle.getMessage(MessageWidget.class, "LBL_Empty"); // NOI18N
         }
-        
-        Widget result = new ImageLabelWidget(scene, IMAGE, name, 
-                getPartCount(message));
+        return name;
+    }
+
+    private ImageLabelWidget createHeaderLabel(Scene scene) {
+        String name = getName();
+        ImageLabelWidget result = new ImageLabelWidget(scene, IMAGE, name, 
+                getPartCount());
         result.getActions().addAction(editorAction);
         return result;
     }
 
-    private Widget createHeader(Scene scene, Message message) {
+    private Widget createHeader(Scene scene) {
         Widget result = new HeaderWidget(scene, expanderWidget);
-        labelWidget = createHeaderLabel(scene, message);
+        labelWidget = createHeaderLabel(scene);
         result.addChild(labelWidget);
         
         if (expanderWidget.getParentWidget() != null) {
@@ -471,20 +445,20 @@ public class MessageWidget extends AbstractWidget<Message>
         return result;
     }
 
-    private Widget createPartsTable(Scene scene, Message message) {
-        List<Part> parts = message.getChildren(Part.class);
-        
-        if (parts == null) return null;
-        if (parts.isEmpty()) return null;
-        
-        Widget result = createEmptyTable(scene);
-        
-        for (Part part : parts) {
-            result.addChild(WidgetFactory.getInstance().createWidget(scene, 
-                    part, getLookup(), true));
+    private void refreshParts() {
+        List<Part> parts = getWSDLComponent().getChildren(Part.class);
+        if (parts == null || parts.isEmpty()) {
+            tableWidget.setVisible(false);
+            return;
         }
-        
-        return result;
+        if (!tableWidget.isVisible()) {
+            tableWidget.setVisible(true);
+        }
+        WidgetFactory factory = WidgetFactory.getInstance();
+        for (Part part : parts) {
+            tableWidget.addChild(factory.getOrCreateWidget(getScene(), 
+                    part, getLookup(), tableWidget));
+        }
     }
 
     private Widget createEmptyTable(Scene scene) {
@@ -526,13 +500,33 @@ public class MessageWidget extends AbstractWidget<Message>
                 rect.height - 4);
     }    
     
+    void update() {
+        labelWidget.setComment(getPartCount());
+    }
     
     @Override
-    public void updateContent() {
-        removeContent();
-        createContent();
+    public void childrenAdded() {
+        update();
+        refreshParts();
+    }
+    
+    @Override
+    public void updated() {
+        labelWidget.setLabel(getName());
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
+        if (evt.getSource() == getWSDLComponent() && evt.getPropertyName().equals(Message.PART_PROPERTY)) {
+            if (evt.getOldValue() != null) {
+                update();
+                WidgetHelper.removeObjectFromScene(getScene(), evt.getOldValue());
+                refreshParts();
+            }
+        }
+    }
+    
     
     public void dragExit() {
         hideHitPoint();
@@ -652,7 +646,7 @@ public class MessageWidget extends AbstractWidget<Message>
         
         int row = partHitPointPosition.row;
         
-        PartWidget partWidget = (PartWidget) table.getChildren().get(row + 1);
+        PartWidget partWidget = (PartWidget) tableWidget.getChildren().get(row + 1);
         PartTypeChooserWidget typeChooserWidget = partWidget
                 .getPartChooserWidget();
         ButtonWidget buttonWidget = typeChooserWidget

@@ -186,9 +186,8 @@ public class WSDLColumn extends JPanel
                 node.getCookie(DefinitionsNode.class) != null)) {
             return NbBundle.getMessage(WSDLColumn.class,
                     "LBL_DefinitionsNode_Title");
-        } else {
-            return node.getDisplayName();
         }
+        return node.getDisplayName();
     }
 
     public String getDescription() {

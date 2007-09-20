@@ -80,59 +80,12 @@ public class WidgetFactory {
      *
      * @param  scene      the widgets will be created in this Scene.
      * @param  component  the WSDL component to represent.
-     * @return  the new widget.
-     */
-    public Widget createWidget(Scene scene, WSDLComponent component) {
-        return createWidget(scene, component, false);
-    }
-    
-    /**
-     * Creates a Widget to represent the given WSDL model component.
-     *
-     * @param  scene      the widgets will be created in this Scene.
-     * @param  component  the WSDL component to represent.
-     * @param  reuse      if true, find and re-use an existing widget.
-     * @return  the new widget.
-     */
-    public Widget createWidget(Scene scene, WSDLComponent component,
-            boolean reuse) {
-        // Default to using an empty Lookup, if none is given.
-        return createWidget(scene, component, Lookup.EMPTY, reuse);
-    }
-    
-    /**
-     * Creates a Widget to represent the given WSDL model component.
-     *
-     * @param  scene      the widgets will be created in this Scene.
-     * @param  component  the WSDL component to represent.
      * @param  lookup     the Lookup for the widget.
      * @return  the new widget.
      */
     public Widget createWidget(Scene scene, WSDLComponent component,
             Lookup lookup) {
-        return createWidget(scene, component, lookup, false);
-    }
-    
-    /**
-     * Creates a Widget to represent the given WSDL model component.
-     *
-     * @param  scene      the widgets will be created in this Scene.
-     * @param  component  the WSDL component to represent.
-     * @param  lookup     the Lookup for the widget.
-     * @param  reuse      if true, find and re-use an existing widget.
-     * @return  the new widget.
-     */
-    public Widget createWidget(Scene scene, WSDLComponent component,
-            Lookup lookup, boolean reuse) {
         Widget widget = null;
-        
-        if (reuse) {
-            widget = ((PartnerScene) scene).findWidget(component);
-            if (widget != null) {
-                return widget;
-            }
-        }
-        
         if (component instanceof Fault) {
             Fault fault = (Fault)component;
             widget = new FaultWidget(scene, fault, lookup,
@@ -170,6 +123,55 @@ public class WidgetFactory {
         }
         return widget;
     }
+    
+    /**
+    /**
+     * Creates a Widget to represent the given WSDL model component.
+     *
+     * @param  scene      the widgets will be created in this Scene.
+     * @param  component  the WSDL component to represent.
+     * @param  lookup     the Lookup for the widget.
+     * @param  reuse      if true, find and re-use an existing widget.
+     * @return  the new widget.
+     */
+    public Widget getOrCreateWidget(Scene scene, WSDLComponent component,
+            Lookup lookup, Widget parent) {
+        
+        List<Widget> widgets = ((PartnerScene) scene).findWidgets(component);
+        if (widgets != null) {
+            for (Widget w : widgets) {
+                if (w.getParentWidget() == null) {
+                    return w;
+                }
+                if (w.getParentWidget() == parent) {
+                    w.removeFromParent();
+                    return w;
+                }
+            }
+        }
+        
+        return createWidget(scene, component, lookup);
+    }
+    
+    public Widget getOrCreateWidget(Scene scene, WSDLComponent component,
+            Widget parent) {
+        
+        List<Widget> widgets = ((PartnerScene) scene).findWidgets(component);
+        if (widgets != null && !widgets.isEmpty()) {
+            for (Widget w : widgets) {
+                if (w.getParentWidget() == null) {
+                    return w;
+                }
+                if (w.getParentWidget() == parent) {
+                    w.removeFromParent();
+                    return w;
+                }
+            }
+        }
+        
+        return createWidget(scene, component, Lookup.EMPTY);
+    }
+    
     
     /**
      * Creates a Widget to represent a WSDL component of the given type.

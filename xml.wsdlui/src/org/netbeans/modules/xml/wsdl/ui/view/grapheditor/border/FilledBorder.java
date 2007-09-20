@@ -24,8 +24,8 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Rectangle;
+
 import org.netbeans.api.visual.border.Border;
-import org.netbeans.api.visual.widget.Widget;
 
 /**
  *

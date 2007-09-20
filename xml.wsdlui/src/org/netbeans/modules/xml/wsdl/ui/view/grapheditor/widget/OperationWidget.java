@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
 import java.util.EnumSet;
 
 import org.netbeans.api.visual.action.ActionFactory;
@@ -145,9 +146,23 @@ public abstract class OperationWidget<T extends Operation>
     }
     
     @Override
-    public void updateContent() {
+    public void updated() {
         if (!mOperationNameLabelWidget.getLabel().equals(mOperationConstruct.getName())) {
             mOperationNameLabelWidget.setLabel(mOperationConstruct.getName());
+        }
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() == getWSDLComponent()) {
+            if (evt.getPropertyName().equals(Operation.INPUT_PROPERTY) ||
+                    evt.getPropertyName().equals(Operation.OUTPUT_PROPERTY) ||
+                    evt.getPropertyName().equals(Operation.FAULT_PROPERTY)) {
+                if (evt.getNewValue() == null && evt.getOldValue() != null) {
+                    WidgetHelper.removeObjectFromScene(getScene(), evt.getOldValue());
+                }
+            }
+                
         }
     }
     

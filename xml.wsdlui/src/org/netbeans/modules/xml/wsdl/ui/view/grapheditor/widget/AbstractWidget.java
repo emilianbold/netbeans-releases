@@ -28,7 +28,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.BasicStroke;
-import java.awt.EventQueue;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Paint;
@@ -85,17 +84,17 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         implements ComponentListener, PopupMenuProvider, FocusableWidget, PropertyChangeListener {
     
     /** The WSDL component this widget represents; may be null. */
-    private T wsdlComponent;
+    private final T wsdlComponent;
     /** The Lookup for this widget. */
-    private Lookup widgetLookup;
+    private final Lookup widgetLookup;
     /** The content of our customized Lookup. */
-    private InstanceContent lookupContent;
+    private final InstanceContent lookupContent;
     /** The Node for the WSDLComponent, if it has been created. */
     private Node componentNode;
     /** Used to weakly listen to the component model. */
     private ComponentListener weakComponentListener;
     /** store the WSDLModel representing the wsdl being edited **/
-    private WSDLModel model;
+    private final WSDLModel model;
     
     private Border currentBorder;
 	private PropertyChangeListener weakModelListener;
@@ -116,6 +115,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
             new AbstractLookup(lookupContent),
             lookup
         });
+        this.wsdlComponent = component; 
         if (component != null) {
             lookupContent.add(component);
             setWSDLComponent(component);
@@ -146,7 +146,6 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         } finally {
             model.endTransaction();
         }
-        model = null;
     }
 
     public WSDLModel getModel() {
@@ -324,7 +323,6 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
      */
     protected void setWSDLComponent(T component) {
         registerListener(component);
-        wsdlComponent = component;
     }
 
     @Override
@@ -386,49 +384,32 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         }
     }
 
-    /**
-     * Invoked when the model component has changed in some way (either
-     * values changed, children were added, or children were removed).
-     * Subclasses should override this method to update their content.
-     */
-    protected void updateContent() {
-    }
-
-    /**
-     * Check if this widget should update its content based on the given
-     * component event. If so, the contents and scene validation will be
-     * performed on the event dispatching thread.
-     *
-     * @param  event  component event.
-     */
-    private void checkUpdate(ComponentEvent event) {
-        Object src = event.getSource();
-        if (src.equals(wsdlComponent)) {
-            Runnable updater = new Runnable() {
-                public void run() {
-                    updateContent();
-                    getScene().validate();
-                }
-            };
-            if (EventQueue.isDispatchThread()) {
-                updater.run();
-            } else {
-                EventQueue.invokeLater(updater);
-            }
+    public final void childrenAdded(ComponentEvent event) {
+        if (event.getSource() == getWSDLComponent()) {
+            childrenAdded();
+            getScene().validate();
         }
     }
 
-    public void childrenAdded(ComponentEvent event) {
-        checkUpdate(event);
+    public final void childrenDeleted(ComponentEvent event) {
+        if (event.getSource() == getWSDLComponent()) {
+            childrenDeleted();
+            getScene().validate();
+        }
     }
 
-    public void childrenDeleted(ComponentEvent event) {
-        checkUpdate(event);
+    public final void valueChanged(ComponentEvent event) {
+        if (event.getSource() == getWSDLComponent()) {
+            updated();
+            getScene().validate();
+        }
     }
-
-    public void valueChanged(ComponentEvent event) {
-        checkUpdate(event);
-    }
+    
+    public void childrenAdded() {}
+    
+    public void childrenDeleted() {}
+        
+    public void updated() {}        
     
     public boolean isFocusable() {
         Widget temp = this;
@@ -452,6 +433,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
     protected void notifyRemoved() {
         super.notifyRemoved();
         registerListener(null);
+        componentNode = null;
     }
     
 }

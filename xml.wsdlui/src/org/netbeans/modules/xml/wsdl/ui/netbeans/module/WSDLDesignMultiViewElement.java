@@ -161,11 +161,11 @@ public class WSDLDesignMultiViewElement extends TopComponent
         cpl = null;
         
         
-        graphComponent = null;
         
         if (mToolbar != null) mToolbar.removeAll();
         mToolbar = null;
         removeAll();
+        graphComponent = null;
     }
     
     public ExplorerManager getExplorerManager() {

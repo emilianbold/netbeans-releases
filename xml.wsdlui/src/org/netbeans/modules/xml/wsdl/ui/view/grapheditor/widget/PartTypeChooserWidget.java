@@ -62,7 +62,7 @@ public class PartTypeChooserWidget extends Widget implements ActionListener {
     
     private LabelWidget partTypeLabel;
     private ButtonWidget showPartTypeChooserButton;
-    private Part part;
+    private final Part part;
     
     public PartTypeChooserWidget(Scene scene, Part part) {
         super(scene);
@@ -176,5 +176,9 @@ public class PartTypeChooserWidget extends Widget implements ActionListener {
     
     public static final Border BORDER = new FilledBorder(
             new Insets(0, 0, 0, 0), new Insets(1, 8, 1, 1), null, Color.WHITE);
+
+    void typeOrElementChanged() {
+        partTypeLabel.setLabel(MessagesUtils.getPartTypeOrElementString(part));
+    }
     
 }

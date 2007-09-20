@@ -47,7 +47,7 @@ public class ArrowWidget extends Widget {
     private ParameterType _type;
     private Stroke _stroke;
     
-    public static enum ParameterType {
+    public enum ParameterType {
 
         INPUT, OUTPUT, FAULT
     }

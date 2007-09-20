@@ -43,15 +43,15 @@ import org.openide.util.Lookup;
  */
 public class RequestReplyOperationWidget
         extends OperationWithFaultWidget<RequestResponseOperation> {
-    private Widget verticalWidget;
-
     
+    private final Widget verticalWidget;
     
     /** Creates a new instance of PortTypeColumnWidget */
     public RequestReplyOperationWidget(Scene scene, RequestResponseOperation operation,
             Lookup lookup) {
         super(scene, operation, lookup);
-        //setBorder(BorderFactory.createLineBorder(Color.RED));
+        verticalWidget = new Widget(scene);
+        verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));
     }
     
     @Override
@@ -64,21 +64,12 @@ public class RequestReplyOperationWidget
         Scene scene = getScene();
         Lookup lookup = getLookup();
         WidgetFactory factory = WidgetFactory.getInstance();
-        Widget inputWidget = factory.createWidget(scene,
-                getWSDLComponent().getInput(), lookup, true);
-        if (inputWidget.getParentWidget() != null && inputWidget.getParentWidget() != this) {
-            inputWidget = factory.createWidget(scene,
-                    getWSDLComponent().getInput(), lookup);
-        }
-        Widget outputWidget = factory.createWidget(scene,
-                getWSDLComponent().getOutput(), lookup, true);
-        if (outputWidget.getParentWidget() != null && outputWidget.getParentWidget() != this) {
-            outputWidget = factory.createWidget(scene,
-                    getWSDLComponent().getOutput(), lookup);
-        }
+        Widget inputWidget = factory.getOrCreateWidget(scene,
+                getWSDLComponent().getInput(), lookup, verticalWidget);
         
-        verticalWidget = new Widget(scene);
-        verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));
+        Widget outputWidget = factory.getOrCreateWidget(scene,
+                getWSDLComponent().getOutput(), lookup, verticalWidget);
+        
         verticalWidget.addChild(inputWidget);
         verticalWidget.addChild(outputWidget);
         
