@@ -146,6 +146,8 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
                 return false;
             }
             StateImpl other = (StateImpl)obj;
+            // we do not compare macroStates because in case of 
+            // parsing from the same include sequence they are equal
             return this.stateCorrect == other.stateCorrect &&
                     ( (this.inclState == null && other.inclState == null) ||
                       (this.inclState.equals(other.inclState)));
