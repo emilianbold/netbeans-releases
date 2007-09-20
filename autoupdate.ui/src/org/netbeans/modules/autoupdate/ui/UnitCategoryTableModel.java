@@ -129,7 +129,9 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         String retval = null;
         if (col == 0) {
             retval = getTooltipForCheckBox(row);
-        } 
+        } else if (col == 1) {
+            retval = (String)getValueAt (row, 1);
+        }
         return retval;
     }
     public int getMinWidth (JTableHeader header, int col) {
