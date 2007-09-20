@@ -55,7 +55,7 @@
    </tocitem>
    
 <tocitem text="Plugins" >
-      <tocitem text="About Managing Plugin" target="managing_a_module" />
+      <tocitem text="About Managing Plugins" target="managing_a_module" />
       <tocitem text="Updating the IDE" target="ide.autoupdate" />
       <tocitem text="Managing IDE Update Centers" target="managing_updatecenters" />
       <tocitem text="Installing Plugins Offline" target="update.offline" />
