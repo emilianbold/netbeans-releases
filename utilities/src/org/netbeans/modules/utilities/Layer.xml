@@ -289,15 +289,6 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.pdf.LinkProcessor"/>
                 </file>
             </folder> <!-- NetBeans -->
-
-            <folder name="NetBeans_org_netbeans_modules_pdf">
-                <file name="DTD_XML_PDFSettings_1_0.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.api.settings.Factory.create"/>
-                    <attr name="settings.convertor" methodvalue="org.netbeans.api.settings.Factory.properties"/>
-                    <attr name="settings.instanceClass" stringvalue="org.netbeans.modules.pdf.Settings"/>
-                    <attr name="settings.instanceOf" stringvalue="org.netbeans.modules.pdf.Settings"/>
-                </file>
-            </folder> <!-- NetBeans_org_netbeans_modules_pdf -->
         </folder> <!-- lookups -->
     </folder> <!-- xml -->
     
