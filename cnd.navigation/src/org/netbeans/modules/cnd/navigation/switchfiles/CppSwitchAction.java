@@ -24,12 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.JumpList;
-import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
@@ -139,7 +137,7 @@ public final class CppSwitchAction extends BaseAction {
         String name = getName(source.getAbsolutePath());
         // first look at the list of includes
         for (CsmInclude h : source.getIncludes()) {
-            if (h.getIncludeFile() != null && name.equals(h.getIncludeFile().getAbsolutePath())) {
+            if (h.getIncludeFile() != null && name.equals(getName(h.getIncludeFile().getAbsolutePath()))) {
                 return h.getIncludeFile();
             }
         }
