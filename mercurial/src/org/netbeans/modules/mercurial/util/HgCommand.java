@@ -1547,7 +1547,9 @@ public class HgCommand {
                 // For instance, the command line could be too long.
                 if (proc.exitValue() == 255) {
                     Mercurial.LOG.log(Level.FINE, "execEnv():  process returned 255"); // NOI18N
-                    throw new HgException(HG_UNABLE_EXECUTE_COMMAND_ERR);
+                    if (list.isEmpty()) {
+                        throw new HgException(HG_UNABLE_EXECUTE_COMMAND_ERR);
+                    }
                 }
             } catch (InterruptedException e) {
                 Mercurial.LOG.log(Level.FINE, "execEnv():  process interrupted " + e); // NOI18N
