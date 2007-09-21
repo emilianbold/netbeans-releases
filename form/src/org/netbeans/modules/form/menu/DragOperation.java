@@ -142,7 +142,7 @@ class DragOperation {
                     }
                     if(comp instanceof JSeparator) {
                         p("it's a separator");
-                        jcomp.setBorder(BorderFactory.createLineBorder(Color.RED, 2));//, thickness)MenuEditLayer.DRAG_SEPARATOR_BORDER);
+                        jcomp.setBorder(BorderFactory.createLineBorder(new Color(0xFFA400), 1));//, thickness)MenuEditLayer.DRAG_SEPARATOR_BORDER);
                         jcomp.setPreferredSize(new Dimension(80,5));
                         p("border = " + jcomp.getBorder());
                     }
