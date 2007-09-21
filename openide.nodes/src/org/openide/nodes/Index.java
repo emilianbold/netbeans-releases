@@ -339,20 +339,18 @@ public interface Index extends Node.Cookie {
         * @exception IllegalArgumentException if the perm is not valid permutation
         */
         public void reorder(final int[] perm) {
-            try {
-                PR.enterWriteAccess();
+            MUTEX.postWriteRequest(new Runnable() {
+                public void run() {
+                    Node[] n = nodes.toArray(new Node[nodes.size()]);
+                    List<Node> l = (List<Node>) nodes;
 
-                Node[] n = nodes.toArray(new Node[nodes.size()]);
-                List<Node> l = (List<Node>) nodes;
+                    for (int i = 0; i < n.length; i++) {
+                        l.set(perm[i], n[i]);
+                    }
 
-                for (int i = 0; i < n.length; i++) {
-                    l.set(perm[i], n[i]);
+                    refresh();
                 }
-
-                refresh();
-            } finally {
-                PR.exitWriteAccess();
-            }
+            });
         }
 
         /** Invokes a dialog for reordering children using {@link IndexedCustomizer}.
