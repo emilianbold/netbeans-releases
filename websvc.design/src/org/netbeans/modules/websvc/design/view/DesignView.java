@@ -161,10 +161,9 @@ public class DesignView extends JPanel  {
             }
         });
         
-        
+        // vlv: print
+        getContent().putClientProperty(java.awt.print.Printable.class, "");
     }
-    
-    
     
     /**
      * Adds the graph actions to the given toolbar.
