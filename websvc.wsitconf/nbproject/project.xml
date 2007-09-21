@@ -297,8 +297,10 @@
                 <friend>org.netbeans.modules.websvc.metro.samples</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
+                <friend>org.netbeans.modules.websvc.wsitest</friend>
                 <package>org.netbeans.modules.websvc.wsitconf.api</package>
                 <package>org.netbeans.modules.websvc.wsitconf.spi</package>
+                <package>org.netbeans.modules.websvc.wsitconf.wsdlmodelext</package>
             </friend-packages>
         </data>
     </configuration>
