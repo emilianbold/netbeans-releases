@@ -1,8 +1,12 @@
+<#if licenseFirst??>
 ${licenseFirst}
+</#if>
 ${licensePrefix}${nameAndExt}
 ${licensePrefix}
 ${licensePrefix}Created on ${date}, ${time}
 ${licensePrefix}
 ${licensePrefix}To change this template, choose Tools | Templates
 ${licensePrefix}and open the template in the editor.
+<#if licenseLast??>
 ${licenseLast}
+</#if>
