@@ -276,7 +276,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         FileFilter[] filters;
         if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
             filters = new FileFilter[] {PeExecutableFileFilter.getInstance()};
-        } if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+        } else if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
             filters = new FileFilter[] {MacOSXExecutableFileFilter.getInstance()};
         } else {
             filters = new FileFilter[] {ElfExecutableFileFilter.getInstance()};
