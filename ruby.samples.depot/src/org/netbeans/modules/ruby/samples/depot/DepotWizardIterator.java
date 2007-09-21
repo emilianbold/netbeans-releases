@@ -84,7 +84,7 @@ public class DepotWizardIterator implements WizardDescriptor.InstantiatingIterat
         if (parent != null  && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-
+        resultSet.add(dir.getFileObject("README")); // NOI18N
         return resultSet;
     }
 
