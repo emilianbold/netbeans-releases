@@ -2748,6 +2748,14 @@ public class CssBox implements Box {
             int leftOver =
                 parentWidth - contentWidth - leftBorderWidth - leftPadding - rightPadding -
                 rightBorderWidth;
+            
+            // XXX #113437 If the viewport is smaller, we can't push the box to the left.
+            if (leftOver < 0) {
+                if (context.initialWidth < (contentWidth - leftBorderWidth - leftPadding - rightPadding - rightBorderWidth)) {
+                    leftOver = 0;
+                }
+            }
+            
             int margin = leftOver / 2;
             int remainder = leftOver % 2;
             leftMargin = margin;
@@ -2816,9 +2824,10 @@ public class CssBox implements Box {
             }
         }
 
-        // Check that we made it:
-        assert (leftMargin + leftBorderWidth + leftPadding + contentWidth + rightPadding +
-        rightBorderWidth + rightMargin) == parentWidth;
+        // XXX #113437 This assertion is now incorrect.
+//        // Check that we made it:
+//        assert (leftMargin + leftBorderWidth + leftPadding + contentWidth + rightPadding +
+//        rightBorderWidth + rightMargin) == parentWidth;
     }
 
     /** Compute the horizontal "static position" of an element.
