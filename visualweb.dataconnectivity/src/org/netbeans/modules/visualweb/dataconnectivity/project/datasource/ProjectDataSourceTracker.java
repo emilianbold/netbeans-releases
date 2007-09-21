@@ -209,7 +209,7 @@ public class ProjectDataSourceTracker{
     }
     
     // Refresh data source references node
-    public static void refreshDataSourceReferences(Project project) {
+    public static synchronized void refreshDataSourceReferences(Project project) {
         getDSTracker(project).fireProjectDSReferencesChangeEvent();
     }
     
