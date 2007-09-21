@@ -114,7 +114,8 @@ public class AnnotationManager extends ASTEvaluator {
                     LanguagesAnnotation oldAnnotation = it.hasNext () ? it.next () : null;
                     Iterator<ASTItem> it2 = items.iterator ();
                     Iterator<Feature> it3 = marks.iterator ();
-                    while (it2.hasNext ()) {
+                    int count = 0;
+                    while (it2.hasNext () && count < 100) {
                         ASTItem item = it2.next ();
                         Feature mark = it3.next ();
                         String message = (String) mark.getValue ("message");
@@ -131,6 +132,7 @@ public class AnnotationManager extends ASTEvaluator {
                             doc.removeAnnotation (oldAnnotation);
                             oldAnnotation = it.hasNext () ? it.next () : null;
                         }
+                        count++;
                         if (
                             oldAnnotation != null &&
                             oldAnnotation.getPosition ().getOffset () == item.getOffset () &&
