@@ -30,8 +30,9 @@ public class ExceptionsSettings {
     
     private static final String userProp = "UserName";       // NOI18N
     private static final String passwdProp = "Passwd";
-    
-    
+    private static final String guestProp = "Guest";
+
+
     /** Creates a new instance of ExceptionsSettings */
     public ExceptionsSettings() {
     }
@@ -41,7 +42,7 @@ public class ExceptionsSettings {
     }
     
     public String getUserName() {
-        return prefs().get(userProp, "GUEST");
+        return prefs().get(userProp, "");
     }
 
     public void setUserName(String userName) {
@@ -55,4 +56,14 @@ public class ExceptionsSettings {
     public void setPasswd(String passwd) {
         prefs().put(passwdProp, passwd);
     }
+    
+    public boolean isGuest() {
+        String isGuest = prefs().get(guestProp, "false");
+        return Boolean.parseBoolean(isGuest);
+    }
+
+    public void setGuest(Boolean guest){
+        prefs().put(guestProp, guest.toString());
+    }
+    
 }

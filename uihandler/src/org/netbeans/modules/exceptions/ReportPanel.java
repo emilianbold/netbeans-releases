@@ -36,6 +36,7 @@ public class ReportPanel extends javax.swing.JPanel {
     public ReportPanel() {
         initComponents();
         jLabel10.setVisible(false);
+        jCheckBox1ActionPerformed(null);
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -106,6 +107,7 @@ public class ReportPanel extends javax.swing.JPanel {
 
         jPasswordField1.setText(exSettings.getPasswd());
 
+        jCheckBox1.setSelected(exSettings.isGuest());
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ReportPanel.class, "jCheckBox1.text")); // NOI18N
         jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
@@ -228,7 +230,10 @@ public class ReportPanel extends javax.swing.JPanel {
         }//GEN-LAST:event_jCheckBox1ActionPerformed
         
         public void saveUserName() {
-            if (jCheckBox1.isSelected()) return;
+            if (jCheckBox1.isSelected()){
+                exSettings.setGuest(true);
+                return;
+            }
             String login = loginField.getText();
             if ((login != null) && (login.length() != 0)) {
                 exSettings.setUserName(login);
@@ -237,6 +242,7 @@ public class ReportPanel extends javax.swing.JPanel {
             if ((passwd != null) && (passwd.length() != 0)) {
                 exSettings.setPasswd(passwd);
             }
+            exSettings.setGuest(false);
         }
         
         public boolean asAGuest(){

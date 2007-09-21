@@ -55,4 +55,16 @@ public class ExceptionsSettingsTest extends NbTestCase {
         assertEquals(previous, settings.getPasswd());
     }
 
+    public void testIsGuest() {
+        ExceptionsSettings settings = new ExceptionsSettings();
+        assertNotNull(settings);
+        boolean previous = settings.isGuest();
+        settings.setGuest(true);
+        assertTrue(settings.isGuest());
+        settings.setGuest(false);
+        assertFalse(settings.isGuest());
+        settings.setGuest(previous);
+        assertEquals(previous, settings.isGuest());
+    }
+
 }
