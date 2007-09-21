@@ -84,7 +84,7 @@ final class RubyOptionsPanelController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx() {
-	return null; // new HelpCtx("...ID") if you have a help set
+	return new HelpCtx("nbruby_rubyoptions"); // NOI18N
     }
     
     public synchronized JComponent getComponent(Lookup masterLookup) {
