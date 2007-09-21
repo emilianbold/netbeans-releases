@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTEvaluator;
@@ -314,7 +313,7 @@ public class ParserManagerImpl extends ParserManager {
                 tokens.add (ASTToken.create (
                     ts.language ().mimeType (),
                     type, 
-                    t.text (), 
+                    t.text ().toString (), 
                     offset,
                     t.length (),
                     children
@@ -370,7 +369,7 @@ public class ParserManagerImpl extends ParserManager {
                 tokens.add (ASTToken.create (
                     ts.language ().mimeType (),
                     type, 
-                    sb, 
+                    sb.toString (), 
                     offset,
                     no - offset,
                     children
