@@ -51,9 +51,9 @@ public class APTHandlersSupport {
     
     ////////////////////////////////////////////////////////////////////////////
     // help methods for preprocessor states
-    public static APTPreprocHandler.State copyPreprocState(APTPreprocHandler.State orig) {
-        return APTHandlersSupportImpl.copyPreprocState(orig);
-    }
+//    public static APTPreprocHandler.State copyPreprocState(APTPreprocHandler.State orig) {
+//        return APTHandlersSupportImpl.copyPreprocState(orig);
+//    }
     
     public static APTPreprocHandler.State createCleanPreprocState(APTPreprocHandler.State orig) {
         return APTHandlersSupportImpl.createCleanPreprocState(orig);

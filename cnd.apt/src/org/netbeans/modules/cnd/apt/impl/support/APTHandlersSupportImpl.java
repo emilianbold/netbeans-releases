@@ -69,9 +69,9 @@ public class APTHandlersSupportImpl {
             new ArrayList<APTIncludeHandler.IncludeInfo>(inclStack);
     }
 
-    public static APTPreprocHandler.State copyPreprocState(APTPreprocHandler.State orig) {
-        return ((APTPreprocHandlerImpl.StateImpl)orig).copy();
-    }
+//    public static APTPreprocHandler.State copyPreprocState(APTPreprocHandler.State orig) {
+//        return ((APTPreprocHandlerImpl.StateImpl)orig).copy();
+//    }
     
     public static List<String> extractSystemIncludePaths(APTPreprocHandler.State state) {
         assert state != null;
