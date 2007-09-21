@@ -98,20 +98,19 @@ public class GenerateCodePanel extends javax.swing.JPanel
         initComponents();
         this.umlProject = umlProject;
 
-	statusLabel.setText(""); // NIO18N
+        statusLabel.setText(""); // NIO18N
 
         String folder = prjProps.getCodeGenFolderLocation();
 
         if (folder == null || folder.length() == 0)
             folder = retrieveFolderLocationDefault(prjProps);
         
-	// added target project comps
-	if (setTargetElementsFromFolder(folder)) 
-	{
-	    targetPrj = origPrj;
-	}
-	populateExistingProjectElementGroup();
-	// end added target project comps
+        // added target project comps
+        if (setTargetElementsFromFolder(folder))
+            targetPrj = origPrj;
+
+        populateExistingProjectElementGroup();
+        // end added target project comps
                         
         backupSourcesCheck.setSelected(prjProps.isCodeGenBackupSources());
         generateMarkersCheck.setSelected(prjProps.isCodeGenUseMarkers());
@@ -140,11 +139,6 @@ public class GenerateCodePanel extends javax.swing.JPanel
         {
             if (!noTemplatesEnabled)
             {
-//                advancedBtn.setText(NbBundle.getMessage(
-//                    GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
-//                 org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
-//                     NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
-
                 setSize(getWidth(), getHeight() - 200);
                 scrollPlaceHolder.setVisible(false);
                 templatesLabel.setVisible(false);
@@ -152,26 +146,17 @@ public class GenerateCodePanel extends javax.swing.JPanel
 
             else
             {
-//                advancedBtn.setText(NbBundle.getMessage(
-//                    GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
-//                 org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
-//                     NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
-
                 statusLabel.setText(NbBundle.getMessage(
                     GenerateCodePanel.class, "MSG_AtLeastOneTemplate")); // NIO18N
             }
         }
         
-        else
-        {
-//            advancedBtn.setVisible(false);
-        }
-	statusLabel.setVisible(true);
+        statusLabel.setVisible(true);
     }
 
     public void requestFocus()
     {
-        //locationText.requestFocus();
+        propertyChange(null);
     }
     
     
@@ -321,25 +306,25 @@ public class GenerateCodePanel extends javax.swing.JPanel
     private ChooseLocationDialog chooser = null;
     
     private void generateMarkersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateMarkersActionPerformed
-	if (addMarkersCheck != null) 
-	{	    
-	    if (! generateMarkersCheck.isSelected()) 
-	    {
-		addMarkersCheck.setSelected(false);
-	    }
-	    addMarkersCheck.setEnabled(generateMarkersCheck.isSelected());
-	}
+        if (addMarkersCheck != null)
+        {
+            if (!generateMarkersCheck.isSelected())
+            {
+                addMarkersCheck.setSelected(false);
+            }
+            addMarkersCheck.setEnabled(generateMarkersCheck.isSelected());
+        }
     }//GEN-LAST:event_generateMarkersActionPerformed
 
     private void targetProjectComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_targetProjectComboItemStateChanged
         // TODO add your handling code here:
-	targetPrj = (Project)targetProjectCombo.getSelectedItem();
-	populateSourceFolderCombo(targetPrj);
+        targetPrj = (Project) targetProjectCombo.getSelectedItem();
+        populateSourceFolderCombo(targetPrj);
     }//GEN-LAST:event_targetProjectComboItemStateChanged
 
     private void srcFolderComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_srcFolderComboItemStateChanged
         // TODO add your handling code here:
-	srcGroup = (SourceGroup)srcFolderCombo.getSelectedItem();
+        srcGroup = (SourceGroup)srcFolderCombo.getSelectedItem();
     }//GEN-LAST:event_srcFolderComboItemStateChanged
 
     
@@ -369,9 +354,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
     public void actionPerformed(ActionEvent actionEvent)
     {
         if (actionEvent.getActionCommand().equals("OK")) // NOI18N
-        {
-	    storeProjectProperties();
-        }
+            storeProjectProperties();
         
         else if (actionEvent.getActionCommand().equals("TEMPLATES")) // NOI18N
         {
@@ -411,27 +394,29 @@ public class GenerateCodePanel extends javax.swing.JPanel
 
     public void storeProjectProperties() 
     { 
-	UMLProjectProperties props = model.getUMLProjectProperties();
-	props.setCodeGenFolderLocation(getSelectedFolderName());
-	props.setCodeGenBackupSources(isBackupSources());
-	props.setCodeGenUseMarkers(isGenerateMarkers());
-	props.setCodeGenShowDialog(isShowDialog());
-	props.setCodeGenAddMarkers(isAddMarkers());
-	props.save();
+        UMLProjectProperties props = model.getUMLProjectProperties();
+        props.setCodeGenFolderLocation(getSelectedFolderName());
+        props.setCodeGenBackupSources(isBackupSources());
+        props.setCodeGenUseMarkers(isGenerateMarkers());
+        props.setCodeGenShowDialog(isShowDialog());
+        props.setCodeGenAddMarkers(isAddMarkers());
+        props.save();
     }
     
     public String getSelectedFolderName()
     {
-	try {
-	    if (srcGroup != null && srcGroup.getRootFolder() != null) 
-	    {
-		return FileUtil.toFile(srcGroup.getRootFolder()).getCanonicalPath();
-	    }
-	} 
-	catch (IOException e) 
-	{
-	}
-	return null;
+        try
+        {
+            if (srcGroup != null && srcGroup.getRootFolder() != null)
+            {
+                return FileUtil.toFile(srcGroup.getRootFolder()).getCanonicalPath();
+            }
+        }
+        catch (IOException e)
+        {
+        }
+        
+        return null;
     }
 
     public boolean isBackupSources()
@@ -489,7 +474,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
         // if the export source folder hasn't been saved to file yet,
         // provide a suggestion for a place to put the sources
 
-	String genCodeFolder = null;
+        String genCodeFolder = null;
         if (umlProject != null)
             genCodeFolder = umlProject.getProjectDirectory().getParent().getPath();
         
@@ -498,6 +483,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
             // defensive code: if all else fails use user's home dir as the base dir
             genCodeFolder = System.getProperty("user.home"); // NOI18N
         }
+        
         // append suggested Java project name + "src" dir
         return genCodeFolder + File.separatorChar + projectProps.getProject().getName() + 
             PROJECT_SOURCES_SUFFIX + File.separatorChar + PROJECT_SRC_FOLDER;
@@ -548,7 +534,8 @@ public class GenerateCodePanel extends javax.swing.JPanel
         
 
         statusLabel.setText(msg);
-	statusLabel.setVisible(noSourceFolder || noTemplatesEnabled);
+        statusLabel.setVisible(noSourceFolder || noTemplatesEnabled);
+        
         firePropertyChange(GenerateCodeDescriptor.PROP_VALID, null, 
             !(noSourceFolder || noTemplatesEnabled));
     }
@@ -558,172 +545,184 @@ public class GenerateCodePanel extends javax.swing.JPanel
     // target project added elements processing
     //
 
-    private void enableExistingProjectElementGroup(boolean enable) 
+    private void enableExistingProjectElementGroup(boolean enable)
     {
-	targetProjectCombo.setEnabled(enable);
-	srcFolderCombo.setEnabled(enable);
+        targetProjectCombo.setEnabled(enable);
+        srcFolderCombo.setEnabled(enable);
     }
 
 
-    private void enablePlainFolderElementGroup(boolean enable) 
+    private void populateExistingProjectElementGroup()
     {
-	//locationText.setEnabled(enable);
-    }
-
-
-    private void populateExistingProjectElementGroup() 
-    {
-	
         ProjectCellRenderer projectCellRenderer = new ProjectCellRenderer();
         targetProjectCombo.setRenderer(projectCellRenderer);
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+        ArrayList<Project> list = new ArrayList<Project>();
+        
+        if (openProjects != null)
+        {
+            for (Project prj : openProjects)
+            {
+                Sources sources = ProjectUtils.getSources(prj);
+                if (sources == null)
+                    continue;
+                
+                SourceGroup[] srcGrps = sources.getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+                
+                if (srcGrps != null && srcGrps.length > 0)
+                    list.add(prj);
+            }
+        }
 
-	Project openProjects[] = OpenProjects.getDefault().getOpenProjects();
-	ArrayList<Project> list = new ArrayList<Project>();
-	if (openProjects != null) 
-	{
-	    for(Project prj : openProjects) 
-	    {
-		Sources sources = ProjectUtils.getSources(prj);
-		if (sources == null)
-		    continue;
+        if (origPrj != null && !list.contains(origPrj))
+            list.add(origPrj);
+        
+        if (list == null || list.size() == 0)
+        {
+            targetProjectCombo.setModel(new DefaultComboBoxModel(
+                new String[]{NbBundle.getMessage(
+                GenerateCodePanel.class, "MSG_NoValidOpenTargetProjects")}));
             
-		SourceGroup[] srcGrps = sources.getSourceGroups(
-		    JavaProjectConstants.SOURCES_TYPE_JAVA);
-		if (srcGrps != null && srcGrps.length > 0) 
-		{
-		    list.add(prj);
-	       
-		}
-	    }
-	}
-	if (origPrj != null && ! list.contains(origPrj)) 
-	{
-	    list.add(origPrj);
-	}
- 	DefaultComboBoxModel projectsModel = 
-	    new DefaultComboBoxModel(list.toArray());
-	targetProjectCombo.setModel(projectsModel);
-	if (list.size() > 0) 
-	{
-	    selectTargetProject();
-	}
-	else 
-	{
-	    noSourceFolder = true;
-	}
-	propertyChange(null);
+            noSourceFolder = true;
+            enableExistingProjectElementGroup(false);
+        }
+        
+        else
+        {
+            DefaultComboBoxModel projectsModel = 
+                new DefaultComboBoxModel(list.toArray());
+        
+            targetProjectCombo.setModel(projectsModel);
+            selectTargetProject();
+            noSourceFolder = false;
+            enableExistingProjectElementGroup(true);
+        }
+
+        propertyChange(null);
     }
 
-    
     private void selectTargetProject()
-    {	    
-	if (targetPrj == null) 
-	{
-	    targetProjectCombo.setSelectedIndex(0);
-	    targetPrj = (Project)targetProjectCombo.getSelectedItem();
-	}
-	else 
-	{
-	    targetProjectCombo.setSelectedItem(targetPrj);
-	}
-	Project prj = (Project)targetProjectCombo.getSelectedItem();
-	populateSourceFolderCombo(prj);
+    {
+        if (targetPrj == null)
+        {
+            targetProjectCombo.setSelectedIndex(0);
+            targetPrj = (Project) targetProjectCombo.getSelectedItem();
+        }
+        
+        else
+        {
+            targetProjectCombo.setSelectedItem(targetPrj);
+        }
+        
+        Project prj = (Project) targetProjectCombo.getSelectedItem();
+        populateSourceFolderCombo(prj);
     }
 
     private void populateSourceFolderCombo(Project prj)
     {
         SourceRootCellRenderer srcCellRenderer = new SourceRootCellRenderer();
         srcFolderCombo.setRenderer(srcCellRenderer);
-	ArrayList<SourceGroup> srcRoots = new ArrayList<SourceGroup>(); 
-	int index = 0;
-	FileObject sfo = null;
-	if (srcGroup != null) 
-	{
-	    sfo =  srcGroup.getRootFolder();
-	}
-	if (prj != null) 
-	{
-	    Sources sources = ProjectUtils.getSources(prj);
-	    if (sources != null)
-	    {            
-		SourceGroup[] srcGrps = sources.getSourceGroups(
-		    JavaProjectConstants.SOURCES_TYPE_JAVA);
-		if (srcGrps != null) 
-		{	
-		    for (SourceGroup g: srcGrps)
-		    {			
-			if (g != null) 
-			{
-			    srcRoots.add(g);
-			    if (g.getRootFolder() != null 
-				&& g.getRootFolder().equals(sfo))
-			    {
-				index = srcRoots.size() - 1;
-			    }
-			}
-		    }
-		}
-	    }
-	}
-	DefaultComboBoxModel rootsModel = 
-	    new DefaultComboBoxModel(srcRoots.toArray());
-	srcFolderCombo.setModel(rootsModel);
-	if (srcRoots.size() > 0) 
-	{
-	    srcFolderCombo.setSelectedIndex(index);
-	    srcGroup = srcRoots.get(index);
-	}
+        ArrayList<SourceGroup> srcRoots = new ArrayList<SourceGroup>();
+        int index = 0;
+        FileObject sfo = null;
+        
+        if (srcGroup != null)
+        {
+            sfo = srcGroup.getRootFolder();
+        }
+        
+        if (prj != null)
+        {
+            Sources sources = ProjectUtils.getSources(prj);
+            if (sources != null)
+            {
+                SourceGroup[] srcGrps = sources.getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+                
+                if (srcGrps != null)
+                {
+                    for (SourceGroup g : srcGrps)
+                    {
+                        if (g != null)
+                        {
+                            srcRoots.add(g);
+                            
+                            if (g.getRootFolder() != null && 
+                                g.getRootFolder().equals(sfo))
+                            {
+                                index = srcRoots.size() - 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        DefaultComboBoxModel rootsModel = 
+            new DefaultComboBoxModel(srcRoots.toArray());
+        
+        srcFolderCombo.setModel(rootsModel);
+        
+        if (srcRoots.size() > 0)
+        {
+            srcFolderCombo.setSelectedIndex(index);
+            srcGroup = srcRoots.get(index);
+        }
     }
 
-    private boolean setTargetElementsFromFolder(String path) 
+    private boolean setTargetElementsFromFolder(String path)
     {
-	if (path == null) 
-	{
-	    return false;
-	}
-	FileObject fo = null;
-	try 
-	{
-	    fo = FileUtil.toFileObject(new File(new File(path).getCanonicalPath()));
-	}
-	catch (IOException ex) 	
-	{
-	    return false;
-	}
-	if (fo == null) 
-	{
-	    return false;
-	}
-	Project prj = FileOwnerQuery.getOwner(fo);
-	if (prj == null) 
-	{
-	    return false;
-	}
+        if (path == null)
+            return false;
+        
+        FileObject fo = null;
+        
+        try
+        {
+            fo = FileUtil.toFileObject(new File(new File(path).getCanonicalPath()));
+        }
+        
+        catch (IOException ex)
+        {
+            return false;
+        }
+        
+        if (fo == null)
+            return false;
+        
+        Project prj = FileOwnerQuery.getOwner(fo);
+        if (prj == null)
+            return false;
+        
+        Sources sources = ProjectUtils.getSources(prj);
+        if (sources == null)
+            return false;
+        
+        SourceGroup[] srcGrps = sources.getSourceGroups(
+            JavaProjectConstants.SOURCES_TYPE_JAVA);
+        
+        if (srcGrps != null && srcGrps.length > 0)
+        {
+            for (SourceGroup g : srcGrps)
+            {
+                FileObject root = g.getRootFolder();
 
-	Sources sources = ProjectUtils.getSources(prj);
-	if (sources == null)
-	    return false;
-	
-	SourceGroup[] srcGrps = sources.getSourceGroups(
-	    JavaProjectConstants.SOURCES_TYPE_JAVA);
-	if (srcGrps != null && srcGrps.length > 0) 
-	{
-	    for (SourceGroup g: srcGrps)
-	    {
-		FileObject root = g.getRootFolder();;
-		if (! fo.equals(root)) 
-		{
-		    continue;
-		}
-		else 
-		{
-		    origPrj = prj;
-		    srcGroup = g;
-		    return true;
-		}
-	    }
-	}
-	return false;	
+                if (!fo.equals(root))
+                {
+                    continue;
+                }
+
+                else
+                {
+                    origPrj = prj;
+                    srcGroup = g;
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
 
@@ -800,33 +799,34 @@ public class GenerateCodePanel extends javax.swing.JPanel
     private static class SourceRootCellRenderer extends JLabel 
         implements ListCellRenderer
     {
+
         public SourceRootCellRenderer()
         {
             setOpaque(true);
         }
-        
+
         public Component getListCellRendererComponent(
-            JList list,
-            Object value,
-            int index,
-            boolean isSelected,
+            JList list, 
+            Object value, 
+            int index, 
+            boolean isSelected, 
             boolean cellHasFocus)
         {
-            
-            if (value instanceof SourceGroup)		
+
+            if (value instanceof SourceGroup)
             {
-		SourceGroup sg = (SourceGroup)value;
-		String desc = sg.getDisplayName();
-		if (desc == null || desc.length() == 0) 
-		{
-		    FileObject fo = sg.getRootFolder();
-		    desc = fo.getPath();
-		}
+                SourceGroup sg = (SourceGroup) value;
+                String desc = sg.getDisplayName();
+                if (desc == null || desc.length() == 0)
+                {
+                    FileObject fo = sg.getRootFolder();
+                    desc = fo.getPath();
+                }
                 setText(desc);
             }
             else
             {
-                setText( value == null ? " " : value.toString() ); // NOI18N
+                setText(value == null ? " " : value.toString()); // NOI18N
             }
 
             if (isSelected)
@@ -834,17 +834,15 @@ public class GenerateCodePanel extends javax.swing.JPanel
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
             }
-            
+             
             else
             {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
-                
             }
-            
+
             return this;
         }
     }
 
-   
 }
