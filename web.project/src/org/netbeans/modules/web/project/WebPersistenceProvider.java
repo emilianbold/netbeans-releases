@@ -122,7 +122,7 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
+                ClassPathProviderImpl cpProvider = project.getClassPathProvider();
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                     cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),

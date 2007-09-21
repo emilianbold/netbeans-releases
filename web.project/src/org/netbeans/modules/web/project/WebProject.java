@@ -144,6 +144,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private final WebProjectClassPathExtender classPathExtender;
     private final WebProjectClassPathModifier cpMod;
     private PropertyChangeListener evalListener;
+    private final ClassPathProviderImpl cpProvider;
     
     private AntBuildExtender buildExtender;
             
@@ -266,7 +267,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, UpdateHelper.createDefaultNotifier());
-        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
+        this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         webModule = new ProjectWebModule (this, updateHelper, cpProvider);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
         WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
@@ -338,7 +339,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebActionProvider( this, this.updateHelper ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
-            cpProvider,
+            new ClassPathProviderMerger(cpProvider),
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
             new JavadocForBinaryQueryImpl(this.helper, evaluator()),
             new AntArtifactProviderImpl(),
@@ -372,6 +373,10 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebTemplateAttributesProvider(this.helper),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
+    }
+    
+    public ClassPathProviderImpl getClassPathProvider () {
+        return this.cpProvider;
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
@@ -765,7 +770,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             }
             
             // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -891,7 +895,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             }
             
             // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));

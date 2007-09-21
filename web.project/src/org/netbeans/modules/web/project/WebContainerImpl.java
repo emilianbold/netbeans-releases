@@ -69,12 +69,12 @@ import org.openide.util.Exceptions;
  */
 class WebContainerImpl implements EnterpriseReferenceContainer {
     
-    private Project webProject;
+    private WebProject webProject;
     private AntProjectHelper antHelper;
     private static final String SERVICE_LOCATOR_PROPERTY = "project.serviceLocator.class"; //NOI18N
     private WebApp webApp;
     
-    public WebContainerImpl(Project p, ReferenceHelper helper, AntProjectHelper antHelper) {
+    public WebContainerImpl(WebProject p, ReferenceHelper helper, AntProjectHelper antHelper) {
         webProject = p;
         this.antHelper = antHelper;
     }
@@ -180,7 +180,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
     }
     
     private void writeDD(FileObject referencingFile, final String referencingClass) throws IOException {
-        ClassPathProviderImpl cppImpl = webProject.getLookup().lookup(ClassPathProviderImpl.class);
+        ClassPathProviderImpl cppImpl = webProject.getClassPathProvider();
         ClasspathInfo classpathInfo = ClasspathInfo.create(
             cppImpl.getProjectSourcesClassPath(ClassPath.BOOT), 
             cppImpl.getProjectSourcesClassPath(ClassPath.COMPILE), 

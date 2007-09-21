@@ -143,7 +143,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
     
     public void testClassPaths() throws Exception {
         System.out.println("ClassPathProviderImplTest - WebApplication1");
-        ClassPathProvider cpp = (ClassPathProvider)project.getLookup().lookup(ClassPathProvider.class);
+        ClassPathProvider cpp = ((WebProject)project).getClassPathProvider();
         assertTrue("No ClassPathProvider in project lookup!", cpp != null);
         
         ClassPath cp;
@@ -206,7 +206,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         //===========================================================
         //TODO: test also ClassPath.COMPILE, ClassPath.EXECUTE, ClassPath.BOOT for WebApplication59055
         System.out.println("ClassPathProviderImplTest - WebApplication59055");
-        cpp = (ClassPathProvider) project59055.getLookup().lookup(ClassPathProvider.class);
+        cpp = ((WebProject)project59055).getClassPathProvider();
         assertTrue("No ClassPathProvider in project lookup!", cpp != null);
         
         //ordinary sources

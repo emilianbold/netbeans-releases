@@ -329,7 +329,7 @@ public class ServiceModuleImpl extends ServiceModule {
     }
     
     private ClassPath getSourcesClassPath() {
-        ClassPathProviderImpl cpProvider = project.getLookup().lookup(ClassPathProviderImpl.class);
+        ClassPathProviderImpl cpProvider = project.getClassPathProvider();
         return cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE);
     }
 }

@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -39,6 +38,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -63,7 +63,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     
     private static final String DEFAULT_WEB_MODULE_ELEMENT_NAME = ClassPathSupport.TAG_WEB_MODULE_LIBRARIES;
 
-    private final Project project;
+    private final WebProject project;
     private final UpdateHelper helper;
     private final PropertyEvaluator eval;    
     private final ClassPathSupport cs;    
@@ -75,7 +75,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     private final PropertyChangeListener listener = WeakListeners.propertyChange(this, null);
 
     /** Creates a new instance of J2SEProjectClassPathModifier */
-    public WebProjectClassPathModifier(final Project project, final UpdateHelper helper, final PropertyEvaluator eval, final ReferenceHelper refHelper) {
+    public WebProjectClassPathModifier(final WebProject project, final UpdateHelper helper, final PropertyEvaluator eval, final ReferenceHelper refHelper) {
         assert project != null;
         assert helper != null;
         assert eval != null;
@@ -302,7 +302,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     private String getClassPathProperty (final SourceGroup sg, final String type) throws UnsupportedOperationException {
         assert sg != null : "SourceGroup cannot be null";  //NOI18N
         assert type != null : "Type cannot be null";  //NOI18N
-        final String classPathProperty = ((ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class)).getPropertyName (sg, type);
+        final String classPathProperty = project.getClassPathProvider().getPropertyName (sg, type);
         if (classPathProperty == null) {
             throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI8N
         }
