@@ -378,7 +378,8 @@ private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST
             this.messageArea.setText(text);
             if (text.trim().length() > 0) {
                 icon = new ImageIcon(
-                  Utilities.loadImage("org/netbeans/modules/uml/resources/error.gif")); // NOI18N
+                  Utilities.loadImage(
+                  "org/netbeans/modules/uml/resources/images/error.png")); // NOI18N
             }
             this.messageIcon.setIcon(icon); 
         }
