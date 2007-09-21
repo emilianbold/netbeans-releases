@@ -48,6 +48,7 @@ import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -343,6 +344,22 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue(TaskCache.getDefault().getErrors(fileB).toString(), TaskCache.getDefault().isInError(fileB, false));
         
         //XXX: test isTasklistEnabled and isDependencyTrackingEnabled separately
+    }
+    
+    public void testFileMove() throws Exception {
+        prepareTest("package pack; public class A { B.Inner x; }", "package pack; public class B {}");
+        assertTrue(TaskCache.getDefault().getErrors(fileA).toString(), TaskCache.getDefault().isInError(fileA, false));
+        assertFalse(TaskCache.getDefault().getErrors(fileB).toString(), TaskCache.getDefault().isInError(fileB, false));
+        
+        DataObject.find(fileA).rename("Aa.java");
+        
+        waitScanFinished();
+        
+        TestUtilities.copyStringToFile(fileA, "package pack; public class Aa { }");
+        
+        waitScanFinished();
+        
+        assertFalse(TaskCache.getDefault().isInError(fileB.getParent(), true));
     }
     
     private void waitScanFinished() throws Exception {

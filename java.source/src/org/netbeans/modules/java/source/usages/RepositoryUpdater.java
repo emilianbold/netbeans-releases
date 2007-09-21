@@ -353,6 +353,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             originalName = originalName+'.'+originalExt;  //NOI18N
                             final URL original = new File (parentFile,originalName).toURI().toURL();
                             submit(Work.delete(original,root,fo.isFolder()));
+                            if (TasklistSettings.isTasklistEnabled()) {
+                                Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, original, FileUtil.toFile(fo), Collections.<Diagnostic>emptyList());
+                                if (TasklistSettings.isBadgesEnabled()) {
+                                    ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+
+                                    if (an != null) {
+                                        an.updateInError(toRefresh);
+                                    }
+                                }
+                            }
                         }
                         final Work work = Work.compile (fo,root);
                         RepositoryUpdater.WORKER.post(new Runnable () {
