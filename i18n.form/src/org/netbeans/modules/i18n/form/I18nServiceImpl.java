@@ -510,6 +510,9 @@ public class I18nServiceImpl implements I18nService {
      * is discarded later, all relevant changes in the properties file are reverted.
      */
     private void registerChange(DataObject srcDO, DataObject propertiesDO, String key, Object allData) {
+        if (propertiesDO == null) {
+            return;
+        }
         Map/*<DataObject, ChangeInfo>*/ relatedMap = (Map) changesMap.get(srcDO);
         if (relatedMap == null) {
             relatedMap = new HashMap();
