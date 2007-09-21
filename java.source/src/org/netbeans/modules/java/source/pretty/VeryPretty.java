@@ -414,7 +414,7 @@ public final class VeryPretty extends JCTree.Visitor {
                                 break;
                             }
                         }
-                        printStat(l.head);
+                        printStat(l.head, true, false);
                     } else if (!isSynthetic(l.head))
                         hasNonEnumerator = true;
                 }
