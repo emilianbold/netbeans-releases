@@ -64,10 +64,9 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
         FileImpl csmFile = null;
         boolean foundDirective = false;
         if (searchInterestedFile) {
-            // in fact, we know, that the first correct inclusion has priority,
-            // may be check for inclPath and interestedFile correspondence only?
-            if ((apt.getToken().getLine() == stopDirective.getIncludeDirectiveLine() ||
-                    inclPath.equals(interestedFile))) {
+            // check if stop directive is met
+            if ((apt.getToken().getLine() == stopDirective.getIncludeDirectiveLine() &&
+                    inclPath.equals(stopDirective.getIncludedPath()))) {
                 foundDirective = true;
             }            
         }
