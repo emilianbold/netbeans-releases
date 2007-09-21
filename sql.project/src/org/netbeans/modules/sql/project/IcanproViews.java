@@ -62,7 +62,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.sql.project.IcanproProject;
 import org.netbeans.modules.sql.project.ui.PackageView;
-import org.netbeans.modules.sql.project.ui.customizer.IcanproProjectProperties;
+//import org.netbeans.modules.sql.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.filesystems.FileChangeListener;
 
 public class IcanproViews {

@@ -50,7 +50,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.sql.project.ui.customizer.IcanproProjectProperties;
+//import org.netbeans.modules.sql.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 

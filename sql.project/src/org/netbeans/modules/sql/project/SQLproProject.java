@@ -55,9 +55,10 @@
 package org.netbeans.modules.sql.project;
 
 import org.netbeans.modules.sql.project.spi.JbiArtifactProvider;
-import org.netbeans.modules.sql.project.ui.IcanproCustomizerProvider;
-import org.netbeans.modules.sql.project.IcanproLogicalViewProvider;
-import org.netbeans.modules.sql.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
+//import org.netbeans.modules.sql.project.IcanproLogicalViewProvider;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
 import org.netbeans.modules.sql.project.SQLproConstants;
 import org.netbeans.modules.sql.project.ui.SQLproLogicalViewProvider;
 import java.beans.PropertyChangeListener;
@@ -99,7 +100,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.logging.Logger;
+import org.netbeans.api.queries.FileEncodingQuery;
 
 
 
@@ -116,6 +121,7 @@ public final class SQLproProject implements Project, AntProjectListener {
     public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-sql-project.jar";
     public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.sql.project";
     public static final String MODULE_INSTALL_DIR = "module.install.dir";
+	    private static final Logger LOG = Logger.getLogger(SQLproProject.class.getName());
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -196,6 +202,7 @@ public final class SQLproProject implements Project, AntProjectListener {
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
+			new IcanproProjectEncodingQueryImpl(evaluator()),
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(),
                 new String[] {"${"+IcanproProjectProperties.SOURCE_ROOT+"}"},
@@ -365,6 +372,18 @@ public final class SQLproProject implements Project, AntProjectListener {
                     }
 
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+					EditableProperties projectEP = helper.getProperties(
+                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (projectEP.getProperty(IcanproProjectProperties.SOURCE_ENCODING) == null) {
+                        projectEP.setProperty(IcanproProjectProperties.SOURCE_ENCODING,
+                                // FIXME: maybe we should use Charset.defaultCharset() instead?
+                                // See comments in IcanproProjectEncodingQueryImpl.java
+                                FileEncodingQuery.getDefaultEncoding().name());
+                    }            
+                    helper.putProperties(
+                            AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
+
+
                     try {
                         ProjectManager.getDefault().saveProject(SQLproProject.this);
                     } catch (IOException e) {
@@ -376,7 +395,28 @@ public final class SQLproProject implements Project, AntProjectListener {
             if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
+			checkEncoding();
         }
+
+		private void checkEncoding() {
+            // TODO m
+            // Should we show ErrorManager dialog to inform user in case wrong encoding parameter ?
+            String prop = eval.getProperty(IcanproProjectProperties.SOURCE_ENCODING);
+            if (prop != null) {
+                try {
+                    Charset c = Charset.forName(prop);
+                } catch (IllegalCharsetNameException e) {
+                    //Broken property, log & ignore
+                    LOG.warning("Illegal charset: " + prop+ " in project: " + // NOI18N
+                            getProjectDirectory()); 
+                } catch (UnsupportedCharsetException e) {
+                    //todo: Needs UI notification like broken references.
+                    LOG.warning("Unsupported charset: " + prop+ " in project: " + // NOI18N
+                            getProjectDirectory()); 
+                }
+            }            
+         }
+
 
         protected void projectClosed() {
             // Probably unnecessary, but just in case:

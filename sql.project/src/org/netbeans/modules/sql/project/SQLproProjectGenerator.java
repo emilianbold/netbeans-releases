@@ -54,6 +54,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import java.nio.charset.Charset;
+import org.netbeans.api.queries.FileEncodingQuery;
 
 /**
  * Create a fresh EjbProject from scratch or by importing and exisitng web module 
@@ -157,6 +159,8 @@ public class SQLproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.DIST_JAVADOC_DIR, "${"+IcanproProjectProperties.DIST_DIR+"}/javadoc");
         ep.setProperty(IcanproProjectProperties.JAVA_PLATFORM, "default_platform");
         ep.setProperty(IcanproProjectProperties.DEBUG_CLASSPATH, "${"+IcanproProjectProperties.JAVAC_CLASSPATH+"}:${"+IcanproProjectProperties.BUILD_CLASSES_DIR+"}");
+		Charset enc = FileEncodingQuery.getDefaultEncoding();
+        ep.setProperty(IcanproProjectProperties.SOURCE_ENCODING, enc.name());
 
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "sun-sql-engine"); // NOI18N

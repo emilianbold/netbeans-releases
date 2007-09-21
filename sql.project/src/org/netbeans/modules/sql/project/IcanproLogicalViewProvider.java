@@ -66,7 +66,8 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.modules.sql.project.SQLproConstants;
 import org.netbeans.modules.sql.project.IcanproViews;
-import org.netbeans.modules.sql.project.ui.customizer.IcanproProjectProperties;
+//import org.netbeans.modules.sql.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.loaders.DataFolder;
 import org.openide.util.lookup.Lookups;
 
