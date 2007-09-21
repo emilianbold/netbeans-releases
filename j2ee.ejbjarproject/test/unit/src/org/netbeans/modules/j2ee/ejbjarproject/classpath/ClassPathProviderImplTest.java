@@ -31,6 +31,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.TestPlatformProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.test.TestBase;
 import org.netbeans.modules.j2ee.ejbjarproject.test.TestUtil;
@@ -87,7 +88,7 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     public void testClassPaths() throws Exception {
-        ClassPathProvider cpp = (ClassPathProvider)project.getLookup().lookup(ClassPathProvider.class);
+        ClassPathProvider cpp = ((EjbJarProject)project).getClassPathProvider();
         assertTrue("No ClassPathProvider in project lookup!", cpp != null);
         
         ClassPath cp;

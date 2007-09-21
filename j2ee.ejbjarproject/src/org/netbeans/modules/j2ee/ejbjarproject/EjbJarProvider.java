@@ -100,7 +100,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
     
     /** @deprecated use getJavaSources */
     public ClassPath getClassPath() {
-        ClassPathProvider cpp = (ClassPathProvider) project.getLookup().lookup(ClassPathProvider.class);
+        ClassPathProvider cpp = project.getClassPathProvider();
         if (cpp != null) {
             return cpp.findClassPath(getFileObject(EjbJarProjectProperties.SRC_DIR), ClassPath.SOURCE);
         }
@@ -150,7 +150,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
     
     public ClassPathProvider getClassPathProvider() {
-        return (ClassPathProvider) project.getLookup().lookup(ClassPathProvider.class);
+        return project.getClassPathProvider();
     }
     
     public FileObject getArchive() {

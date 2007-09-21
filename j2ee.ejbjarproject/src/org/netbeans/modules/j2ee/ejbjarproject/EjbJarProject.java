@@ -152,6 +152,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private PropertyChangeListener j2eePlatformListener;
     private PropertyChangeListener evalListener;
     private AntBuildExtender buildExtender;
+    private final ClassPathProviderImpl cpProvider;
     
     // TODO: AB: replace the code in EjbJarProjectProperties.setNewServerInstanceValue with this 
     /*private String propJ2eeServerInstance;
@@ -219,7 +220,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         buildExtender = AntBuildExtenderFactory.createAntExtender(new EjbExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
-        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         ejbModule = new EjbJarProvider(this, helper, cpProvider);
         apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
@@ -314,7 +315,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarActionProvider( this, helper, refHelper ),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
-                cpProvider,
+                new ClassPathProviderMerger(cpProvider),
                 new CompiledSourceForBinaryQuery(helper,evaluator(),getSourceRoots(),getTestSourceRoots()),
                 new JavadocForBinaryQueryImpl(helper, evaluator()),
                 new AntArtifactProviderImpl(),
@@ -343,6 +344,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
             return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
+    }
+    
+    public ClassPathProviderImpl getClassPathProvider () {
+        return this.cpProvider;
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
@@ -820,8 +825,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
-            // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            // register project's classpaths to GlobalPathRegistry;
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -924,7 +928,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             }
             
             // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
