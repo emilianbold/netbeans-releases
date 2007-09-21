@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
@@ -44,6 +45,7 @@ public class EditorContextBridge {
     public static final String LINE = "line"; // NOI18N
     
     private static EditorContext context;
+    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public static EditorContext getContext() {
         if (context == null) {
@@ -63,20 +65,29 @@ public class EditorContextBridge {
     
     public static boolean showSource(CallStackFrame csf) {
         String fullname = csf.getFullname();
+        log.fine("ECB.showSource: csf.getFullname got [" + fullname + "]");
         
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
+                log.fine("ECB.showSource: File.exists for [" + file.getAbsolutePath() + "]");
                 try {
                     File f2 = file.getCanonicalFile();
                     file = f2;
                 } catch (IOException ioe) {
                 }
 		FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    log.fine("ECB.showSource: Got FileObject");
+                } else {
+                    log.fine("ECB.showSource: Didn't get FileObject");
+                }
 		String url;
 		try {
 		    url = fo.getURL().toExternalForm();
+                    log.fine("ECB.showSource: Got url [" + url + "]");
 		} catch (FileStateInvalidException ex) {
+                    log.fine("ECB.showSource: Didn't get url (got FSIE: " + ex.getLocalizedMessage() + ")");
 		    if (Utilities.isWindows()) {
 			url = "file:/" + fo.getPath().replace(" ", "%20"); // NOI18N
 		    } else {

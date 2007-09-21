@@ -22,11 +22,11 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -58,6 +58,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
     private Map<Watch, GdbWatchVariable> watchToVariable = new WeakHashMap<Watch, GdbWatchVariable>(); 
     private Set<Object> expandedNodes = new WeakSet<Object>();
     private Set<Object> collapsedNodes = new WeakSet<Object>();
+    private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
@@ -72,7 +73,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
-        if (ev.getPropertyName().equals(GdbDebugger.PROP_WATCH_VIEW_UPDATE) &&
+        if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE) &&
                 debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
             fireTreeChanged();
         }
@@ -212,22 +213,8 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
             ((ModelListener) v.get(i)).modelChanged(event);
         }
     }
-    
-    void fireTableValueChangedChanged(Object node, String propertyName) {
-        synchronized (watchToVariable) {
-            for (Iterator it = watchToVariable.keySet().iterator(); it.hasNext(); ) {
-                Object w = it.next();
-                if (node.equals(watchToVariable.get(w))) {
-//                    System.err.println("WTM.fireTableValueChanged:" + ((GdbWatchVariable) node).getName());
-//                    ((GdbWatchVariable) node).setEvaluated(null);
-                    break;
-                }
-            }
-        }
-        fireTableValueChangedComputed(node, propertyName);
-    }
         
-    void fireTableValueChangedComputed(Object node, String propertyName) {
+    void fireTableValueChanged(Object node, String propertyName) {
         Vector v = (Vector) listeners.clone();
         int i, k = v.size();
         for (i = 0; i < k; i++) {
@@ -362,7 +349,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
                     node = m.watchToVariable.get(evt.getSource());
                 }
                 if (node != null) {
-                    m.fireTableValueChangedChanged(node, null);
+                    m.fireTableValueChanged(node, null);
                     return;
                 }
             }

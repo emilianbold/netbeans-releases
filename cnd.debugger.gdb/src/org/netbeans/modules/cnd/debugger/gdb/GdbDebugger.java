@@ -41,6 +41,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
@@ -81,7 +82,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
     public static final String          PROP_LOCALS_VIEW_UPDATE = "localsViewUpdate"; // NOI18N
     public static final String          PROP_KILLTERM = "killTerm"; // NOI18N
-    public static final String          PROP_WATCH_VIEW_UPDATE = "watchViewUpdate"; // NOI18N
 
     public static final String          STATE_NONE = "state_none"; // NOI18N
     public static final String          STATE_STARTING = "state_starting"; // NOI18N
@@ -454,8 +454,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if ((watch = watchValueMap.remove(itok)) != null) {
                 watch.setValue(msg.substring(13, msg.length() - 1));
-                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
-//                firePropertyChange(PROP_LOCALS_VIEW_UPDATE, true, false);
+                firePropertyChange(Watch.PROP_VALUE, watch, null);
+                if (watchValueMap.isEmpty()) {
+                    setStopped(); // done evaluating watches
+                }
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.setModifiedValue(msg.substring(13, msg.length() - 1));
 //                firePropertyChange(PROP_LOCALS_VIEW_UPDATE, true, false);
@@ -495,7 +497,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 firePropertyChange(PROP_LOCALS_VIEW_UPDATE, 0, 1);
             } else if ((watch = watchTypeMap.remove(itok)) != null) {
                 watch.setType(watch.getTypeBuf());
-                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
+                firePropertyChange(Watch.PROP_VALUE, watch, null);
             } else if (pendingBreakpointMap.get(itok) != null) {
                 breakpointValidation(token, null);
             }
@@ -516,14 +518,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (watchValueMap.get(itok) != null) {
                 watch = watchValueMap.remove(itok);
                 watch.setValueToError(msg.substring(1, msg.length() - 1));
-                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
+                firePropertyChange(Watch.PROP_VALUE, watch, null);
+                if (watchValueMap.isEmpty()) {
+                    setStopped(); // done evaluating watches
+                }
             } else if (watchTypeMap.get(itok) != null) {
                 watch = watchTypeMap.remove(itok);
                 watch.setTypeToError(msg.substring(1, msg.length() - 1));
-                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
+                firePropertyChange(Watch.PROP_VALUE, watch, null);
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.restoreOldValue();
-                firePropertyChange(PROP_WATCH_VIEW_UPDATE, true, false);
+                firePropertyChange(Watch.PROP_VALUE, avar, null);
                 firePropertyChange(PROP_LOCALS_VIEW_UPDATE, true, false);
             } else if (msg.startsWith("\"No symbol ") && msg.endsWith(" in current context.\"")) { // NOI18N
                 String type = msg.substring(13, msg.length() - 23);
@@ -695,11 +700,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 msg.startsWith("&\"info threads") || // NOI18N
                 msg.startsWith("&\"directory ") || // NOI18N
                 msg.startsWith("&\"set new-console") || // NOI18N
+                msg.startsWith("&\"whatis ") || // NOI18N
                 msg.startsWith("&\"warning: Temporarily disabling breakpoints for unloaded shared library") || // NOI18N
                 msg.contains("/usr/lib/ld.so")) { // NOI18N
             // ignore these messages
         } else {
-            log.fine("GDI.logStreamOutput: " + msg); // NOI18N
+            log.finest("GDI.logStreamOutput: " + msg); // NOI18N
         }
     }
     
@@ -1516,13 +1522,26 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
+    /** Count watches by counting GdbWatchVariables listening for property changes */
+    private int getWatchCount() {
+        PropertyChangeListener[] pcl = pcs.getPropertyChangeListeners();
+        int count = 0;
+        
+        for (int i = 0; i < pcl.length; i++) {
+            if (pcl[i] instanceof GdbWatchVariable) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
     public void requestWatchValue(GdbWatchVariable var) {
         if (state.equals(STATE_STOPPED) || !watchValueMap.isEmpty()) {
             int token;
             if (var.getName().indexOf('(') != -1) {
-                suspendBreakpoints();
+                suspendBreakpointsAndSignals();
                 token = gdb.data_evaluate_expression('"' + var.getName() + '"'); // NOI18N
-                restoreBreakpoints();
+                restoreBreakpointsAndSignals();
             } else {
                 token = gdb.data_evaluate_expression('"' + var.getName() + '"'); // NOI18N
             }
@@ -1548,19 +1567,21 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * Suspend all breakpoints. This is used to suspend breakpoints during Watch
      * updates so functions called don't stop.
      */
-    public void suspendBreakpoints() {
+    private void suspendBreakpointsAndSignals() {
         for (BreakpointImpl impl : getBreakpointList().values()) {
             if (impl.getBreakpoint().isEnabled()) {
                 gdb.break_disable(impl.getBreakpointNumber());
             }
         }
+        gdb.set_unwindonsignal("on"); // NOI18N
     }
     
     /**
      * Resume all breakpoints. This is used to re-enable breakpoints after a Watch
      * update.
      */
-    public void restoreBreakpoints() {
+    private void restoreBreakpointsAndSignals() {
+        gdb.set_unwindonsignal("off"); // NOI18N
         for (BreakpointImpl impl : getBreakpointList().values()) {
             if (impl.getBreakpoint().isEnabled()) {
                 gdb.break_enable(impl.getBreakpointNumber());

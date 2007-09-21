@@ -30,13 +30,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -81,6 +81,7 @@ public class EditorContextImpl extends EditorContext {
     private Object currentLock = new Object();
     private String currentURL = null;
     private EditorCookie currentEditorCookie = null;
+    private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     
     {
@@ -108,18 +109,25 @@ public class EditorContextImpl extends EditorContext {
     public boolean showSource(String url, int lineNumber, Object timeStamp) {
         Line l = getLine(url, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
+            log.fine("ECI.showSource(" + url + ", " + lineNumber + "): Didn't get Line");
             return false;
         }
+        log.fine("ECI.showSource(" + url + ", " + lineNumber + "): Got Line");
         if (fronting != null) {
-            if (fronting.equals("true")) // NOI18N
+            if (fronting.equals("true")) { // NOI18N
+                log.fine("ECI.showSource(" + url + ", " + lineNumber + "): show(LIne.SHOW_TOFRONT");
                 l.show(Line.SHOW_TOFRONT); //FIX 47825
-            else
+            } else {
+                log.fine("ECI.showSource(" + url + ", " + lineNumber + "): show(LIne.SHOW_GOTO");
                 l.show(Line.SHOW_GOTO);
+            }
             return true;
         }
         if (Utilities.isWindows()) {
+            log.fine("ECI.showSource(" + url + ", " + lineNumber + "): show(LIne.SHOW_TOFRONT");
             l.show(Line.SHOW_TOFRONT); //FIX 47825
         } else  {
+            log.fine("ECI.showSource(" + url + ", " + lineNumber + "): show(LIne.SHOW_GOTO");
             l.show(Line.SHOW_GOTO);
         }
         return true;

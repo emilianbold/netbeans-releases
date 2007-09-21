@@ -387,6 +387,14 @@ public class GdbProxy implements GdbMiDefinitions {
     }
 
     /**
+     * Send "set new-console" to the debugger
+     * This command tells gdb to execute inferior program with console.
+     */
+    public int set_unwindonsignal(String on_off) {
+        return engine.sendCommand("set unwindonsignal " + on_off); // NOI18N
+    }
+
+    /**
      * Request the type of a symbol. As of gdb 6.6, this is unimplemented so we send a
      * non-mi command "ptype". We should only be called when symbol is in scope.
      */
