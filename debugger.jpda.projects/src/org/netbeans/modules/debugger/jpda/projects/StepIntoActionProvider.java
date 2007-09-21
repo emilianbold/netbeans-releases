@@ -27,6 +27,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
@@ -37,6 +38,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -46,11 +48,14 @@ import org.openide.ErrorManager;
 public class StepIntoActionProvider extends ActionsProviderSupport {
 
 //    private MethodBreakpoint breakpoint;
+    Listener listener;
     
     {
-        Listener listener = new Listener ();
-        MainProjectManager.getDefault ().addPropertyChangeListener (listener);
-//        DebuggerManager.getDebuggerManager ().addDebuggerListener (listener);
+        listener = new Listener ();
+        MainProjectManager.getDefault ().addPropertyChangeListener(
+                WeakListeners.propertyChange(listener, MainProjectManager.getDefault()));
+        DebuggerManager.getDebuggerManager ().addDebuggerListener(
+                WeakListeners.create(DebuggerManagerListener.class, listener, DebuggerManager.getDebuggerManager()));
         
         setEnabled (
             ActionsManager.ACTION_STEP_INTO,
@@ -112,6 +117,10 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
                 break;
         if (i == k) return false;
         
+        if (DebuggerManager.getDebuggerManager().getDebuggerEngines().length > 0) {
+            // Do not enable this non-contextual action when some debugging session is already running.
+            return false;
+        }
         // check if this action should be enabled
         return actionProvider.isActionEnabled (
             ActionProvider.COMMAND_DEBUG_STEP_INTO,
@@ -120,29 +129,31 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
     }
     
     
-    private class Listener implements PropertyChangeListener/*, 
-    DebuggerManagerListener */{
-        public void propertyChange (PropertyChangeEvent e) {
+    private class Listener implements PropertyChangeListener, DebuggerManagerListener {
+        
+        public void propertyChange (PropertyChangeEvent e) {}
+        public void sessionRemoved (Session session) {}
+        public void breakpointAdded (Breakpoint breakpoint) {}
+        public void breakpointRemoved (Breakpoint breakpoint) {}
+        public Breakpoint[] initBreakpoints () {
+            return new Breakpoint [0];
+        }
+        public void initWatches () {}
+        public void sessionAdded (Session session) {}
+        public void watchAdded (Watch watch) {}
+        public void watchRemoved (Watch watch) {}
+        
+        public void engineAdded(DebuggerEngine engine) {
             setEnabled (
                 ActionsManager.ACTION_STEP_INTO,
                 shouldBeEnabled ()
             );
         }
-//        public void sessionRemoved (Session session) {
-//            if (breakpoint != null) {
-//                DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
-//                breakpoint = null;
-//            }
-//        }
-//        
-//        public void breakpointAdded (Breakpoint breakpoint) {}
-//        public void breakpointRemoved (Breakpoint breakpoint) {}
-//        public Breakpoint[] initBreakpoints () {
-//            return new Breakpoint [0];
-//        }
-//        public void initWatches () {}
-//        public void sessionAdded (Session session) {}
-//        public void watchAdded (Watch watch) {}
-//        public void watchRemoved (Watch watch) {}
+        public void engineRemoved(DebuggerEngine engine) {
+            setEnabled (
+                ActionsManager.ACTION_STEP_INTO,
+                shouldBeEnabled ()
+            );
+        }
     }
 }
