@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -658,6 +659,7 @@ public class Installer extends ModuleInstall implements Runnable {
     }
     
     private static abstract class Submit implements ActionListener, Runnable {
+        private AtomicBoolean isSubmiting;// #114505 , report is sent two times
         protected String exitMsg;
         protected DialogDescriptor dd;
         protected String msg;
@@ -671,6 +673,7 @@ public class Installer extends ModuleInstall implements Runnable {
         
         public Submit(String msg) {
             this.msg = msg;
+            isSubmiting = new AtomicBoolean(false);
             if ("ERROR_URL".equals(msg)) report = true; // NOI18N
             else report = false;
         }
@@ -871,6 +874,10 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             
             if (submit) { // NOI18N
+                if (isSubmiting.getAndSet(true)){
+                    LOG.info("ALREADY SUBMITTING"); // NOI18N
+                    return;
+                }
                 final List<LogRecord> recs = getLogs();
                 saveUserName();
                 LogRecord userData = getUserData(true);
@@ -879,10 +886,13 @@ public class Installer extends ModuleInstall implements Runnable {
                     try{
                         if (!checkUserName()){
                             reportPanel.showWrongPassword();
+                            isSubmiting.set(false);
                             return;
                         }
                     }catch(InterruptedException exc){
                         LOG.log(Level.INFO, "PASSWORD CHECKING FAILED", exc);// NOI18N
+                    }finally{
+                        isSubmiting.set(false);
                     }
                 }
                 RP.post(new Runnable() {
@@ -893,6 +903,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 okToExit = false;
                 // this should close the descriptor
                 doCloseDialog();
+                isSubmiting.set(false);
                 return;
             }
             
