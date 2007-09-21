@@ -90,10 +90,6 @@ public final class WebServiceManager {
             if (! wsdl.toLowerCase().endsWith("wsdl")) {
                 return;
             }
-            /*FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(wsdl)));
-            if (fo == null || ! FileUtil.getMIMEType(fo).equals("text/x-wsdl+xml")) {
-                return;
-            }*/
             
             File localWsdlFile;
             File catalogFile;
@@ -478,7 +474,7 @@ public final class WebServiceManager {
                     
                     List<WebServiceData> wsDataList = listModel.getWebServiceSet();
                     for (WebServiceData data : wsDataList) {
-                        if (!data.isCompiled()) continue;
+                        if (data.getName() == null) continue;
                         if (data.getName().equals(svc.getName())) {
                             String message = NbBundle.getMessage(WebServiceManager.class, "WS_ALREADY_EXISTS_ERROR") + " " + svc.getName();
                             NotifyDescriptor d = new NotifyDescriptor.Message(message);
