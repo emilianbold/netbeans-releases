@@ -284,10 +284,8 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
     protected void initDocument(BaseDocument doc) {
         doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
                 JavaDrawLayerFactory.JAVA_LAYER_VISIBILITY);
-        doc.addDocumentListener(new JavaDrawLayerFactory.LParenWatcher());
         doc.addLayer(new ELDrawLayerFactory.ELLayer(),
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
-        doc.addDocumentListener(new ELDrawLayerFactory.LParenWatcher());
         
         //listen on the HTML parser and create javascript and css embeddings
         SyntaxParser.get(doc).addSyntaxParserListener(new EmbeddingUpdater(doc));

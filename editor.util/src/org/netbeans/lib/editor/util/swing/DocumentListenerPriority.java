@@ -29,6 +29,18 @@ package org.netbeans.lib.editor.util.swing;
 public final class DocumentListenerPriority {
 
     /**
+     * Level that gets notified first (before all other levels).
+     * <br/>
+     * It may be used in cooperation with other levels to pre-mark that there was
+     * a document modification performed that may change some of the data
+     * that will be updated later on another level. For example the view hierarchy
+     * may mark that it is temporarily invalid until its update will be triggered
+     * on {@link #VIEW} level.
+     */
+    public static final DocumentListenerPriority FIRST
+            = new DocumentListenerPriority(6, "first"); // NOI18N
+
+    /**
      * Lexer gets notified early to allow other levels to use the udpated
      * token list.
      */

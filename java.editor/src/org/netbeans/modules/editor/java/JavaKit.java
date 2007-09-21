@@ -180,7 +180,6 @@ public class JavaKit extends NbEditorKit {
     protected void initDocument(BaseDocument doc) {
 //        doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
 //                JavaDrawLayerFactory.JAVA_LAYER_VISIBILITY);
-        doc.addDocumentListener(new JavaDrawLayerFactory.LParenWatcher());
         doc.putProperty(SyntaxUpdateTokens.class,
               new SyntaxUpdateTokens() {
                   
