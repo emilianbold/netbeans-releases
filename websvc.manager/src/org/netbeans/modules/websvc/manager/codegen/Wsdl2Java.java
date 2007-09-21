@@ -147,7 +147,7 @@ public class Wsdl2Java {
                 webServiceData.setJaxRpcEnabled(false);
                 
                 // Suppress the redundant error message if the JAX-RPC library is not available
-                if (!jaxRPCAvailable) {
+                if (jaxRPCAvailable) {
                     String errorMessage = NbBundle.getMessage(Wsdl2Java.class, "CODEGEN_ERROR_JAXRPC");
                     NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
                     DialogDisplayer.getDefault().notify(d);
