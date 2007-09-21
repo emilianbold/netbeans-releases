@@ -402,7 +402,13 @@ public final class ElementHandle<T extends Element> {
     /**@inheritDoc*/
     @Override
     public int hashCode () {
-        return signatures.length == 0 || signatures[0] == null ? 0 : signatures[0].hashCode();
+        int hashCode = 0;
+        
+        for (String sig : signatures) {
+            hashCode = hashCode ^ (sig != null ? sig.hashCode() : 0);
+        }
+        
+        return hashCode;
     }
     
     /**@inheritDoc*/
