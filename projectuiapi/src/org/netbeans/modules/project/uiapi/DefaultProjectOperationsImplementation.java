@@ -552,7 +552,10 @@ public final class DefaultProjectOperationsImplementation {
                 DataObject dobj = DataObject.find(toDelete);
                 dobj.delete();
             } catch (DataObjectNotFoundException ex) {
-                toDelete.delete();
+                //In case of MultiDataObjects the file may be laready deleted
+                if (toDelete.isValid()) {                    
+                    toDelete.delete();
+                }
             }
             return true;
         }
