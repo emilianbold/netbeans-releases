@@ -18,10 +18,9 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
-import java.util.ArrayList;
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents a SQL Atomic Formula
@@ -86,8 +85,8 @@ public final class Predicate implements Expression {
     }
 
     // Return the Where clause as a SQL string
-    public String genText(QueryBuilderMetaData qbMD) {
-        return _val1.genText(qbMD) + " " + _op + " " + _val2.genText(qbMD); // NOI18N
+    public String genText(SQLIdentifiers.Quoter quoter) {
+        return _val1.genText(quoter) + " " + _op + " " + _val2.genText(quoter); // NOI18N
     }
 
     public Value getVal1() {

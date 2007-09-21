@@ -27,17 +27,20 @@
 
 package org.netbeans.modules.visualweb.dataconnectivity.model;
 
-import org.netbeans.modules.visualweb.dataconnectivity.DataconnectivitySettings;
-
 import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
 import org.netbeans.modules.visualweb.dataconnectivity.explorer.RowSetBeanCreateInfoSet;
+import org.netbeans.modules.visualweb.dataconnectivity.DataconnectivitySettings;
 
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.Result;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -74,16 +77,18 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 if(transferData != null){
                     if(transferData.getClass().isAssignableFrom(DatabaseMetaDataTransfer.Table.class)){
                         DatabaseMetaDataTransfer.Table tableInfo = (DatabaseMetaDataTransfer.Table) transferData;
-                        DatabaseConnection dbConnection = tableInfo.getDatabaseConnection();
+                        DatabaseConnection dbConnection = tableInfo.getDatabaseConnection();   
                         String schemaName = dbConnection.getSchema();
+                        Connection conn = dbConnection.getJDBCConnection();
+                        DatabaseMetaData metaData = (conn == null) ? null : conn.getMetaData();
                         String tableName =
                                 ((schemaName == null) || (schemaName.equals(""))) ?
-                                    tableInfo.getTableName() :
-                                    schemaName + "." + tableInfo.getTableName();
-                        // String tableName = tableInfo.getTableName();
-                        JDBCDriver jdbcDriver = tableInfo.getJDBCDriver();     
+                                 tableInfo.getTableName() :
+                                 schemaName + "." + tableInfo.getTableName();
+                        JDBCDriver jdbcDriver = tableInfo.getJDBCDriver();
+                        
                         // Create the Bean Create Infoset and return
-                        return new DatasourceBeanCreateInfoSet(dbConnection, jdbcDriver, tableName);
+                        return new DatasourceBeanCreateInfoSet(dbConnection, jdbcDriver, tableName, metaData);
                     }
                 }
             } else if (transferable.isDataFlavorSupported(viewFlavor)){
@@ -93,14 +98,16 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                         DatabaseMetaDataTransfer.View viewInfo = (DatabaseMetaDataTransfer.View) transferData;
                         DatabaseConnection dbConnection = viewInfo.getDatabaseConnection();
                         String schemaName = dbConnection.getSchema();
+                        Connection conn = dbConnection.getJDBCConnection();
+                        DatabaseMetaData metaData = (conn == null) ? null : conn.getMetaData();
                         String viewName =
                                 ((schemaName == null) || (schemaName.equals(""))) ?
-                                    viewInfo.getViewName() :
-                                    schemaName + "." + viewInfo.getViewName();
+                                  viewInfo.getViewName() :
+                                  schemaName + "." + viewInfo.getViewName();
                         JDBCDriver jdbcDriver = viewInfo.getJDBCDriver();
                         
                         // Create the Bean Create Infoset and return
-                        return new DatasourceBeanCreateInfoSet(dbConnection, jdbcDriver, viewName);
+                        return new DatasourceBeanCreateInfoSet(dbConnection, jdbcDriver, viewName, metaData);
                     }
                 }
             }
@@ -110,16 +117,16 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
         return null;
     }
     
-    private static final class DatasourceBeanCreateInfoSet extends RowSetBeanCreateInfoSet{
+    private static final class DatasourceBeanCreateInfoSet extends RowSetBeanCreateInfoSet {
+        
         DatabaseConnection dbConnection = null;
         JDBCDriver jdbcDriver = null;
         
-        public DatasourceBeanCreateInfoSet(DatabaseConnection connection,  JDBCDriver driver, String tableName ) {
-            super(tableName);
+        public DatasourceBeanCreateInfoSet(DatabaseConnection connection,  JDBCDriver driver, String tableName, DatabaseMetaData metaData ) {
+            super(tableName, metaData);
             dbConnection = connection;
             jdbcDriver = driver;
         }
-        
         public Result beansCreatedSetup(DesignBean[] designBeans) {
             DesignBean designBean = designBeans[0];
             

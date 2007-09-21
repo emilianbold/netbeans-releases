@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents an identifier (schema/table/column name)
@@ -49,13 +49,15 @@ public class Identifier {
     
     // Accessors
     
-    public String genText(QueryBuilderMetaData qbMetaData) {
-        if (_delimited) {
-	    String delimiter = qbMetaData.getIdentifierQuoteString();
-	    return delimiter + _name + delimiter;
-	} else {
-            return _name;
-	}
+    public String genText(SQLIdentifiers.Quoter quoter) {
+        return quoter.quoteIfNeeded(_name);
+        
+//        if (_delimited) {
+//	    String delimiter = qbMetaData.getIdentifierQuoteString();
+//	    return delimiter + _name + delimiter;
+//	} else {
+//            return _name;
+//	}
     }
     
     

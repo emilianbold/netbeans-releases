@@ -27,8 +27,9 @@ package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
 import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
 
-import java.util.ArrayList;
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 public class JoinTableNode implements JoinTable {
 
@@ -58,15 +59,15 @@ public class JoinTableNode implements JoinTable {
 
     // Return the SQL string that corresponds to this From clause
     // For now, assume no joins
-    public String genText(QueryBuilderMetaData qbMD) {
+    public String genText(SQLIdentifiers.Quoter quoter) {
         String res =
             (((_joinType==null)||(_joinType.equals("CROSS")))
              ? ", "
              : "\n          " +_joinType + " JOIN ")  // NOI18N
-            + _table.genText(qbMD, true);
+            + _table.genText(quoter, true);
 
         if (_condition != null) {
-            res += " ON " + _condition.genText(qbMD);  // NOI18N
+            res += " ON " + _condition.genText(quoter);  // NOI18N
         }
 
         return res;
@@ -75,8 +76,8 @@ public class JoinTableNode implements JoinTable {
 
     // Special processing for the first table in the list
     // Omit the join specification
-    public String genText(QueryBuilderMetaData qbMD, boolean first) {
-        return (first ? _table.genText(qbMD, true) : this.genText(qbMD));
+    public String genText(SQLIdentifiers.Quoter quoter, boolean first) {
+        return (first ? _table.genText(quoter, true) : this.genText(quoter));
     }
 
 

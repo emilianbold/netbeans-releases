@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents a SQL Set function (AVG, COUNT, MAX, MIN, SUM)
@@ -29,8 +29,8 @@ public abstract class ColumnItem implements Value {
 
     abstract Column getReferencedColumn();
 
-    public String genText(QueryBuilderMetaData qbMetaData, boolean select) {
-        return genText(qbMetaData);
+    public String genText(SQLIdentifiers.Quoter quoter, boolean select) {
+        return genText(quoter);
     }
 }
 

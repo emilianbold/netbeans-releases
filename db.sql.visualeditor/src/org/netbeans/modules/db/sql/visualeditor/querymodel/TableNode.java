@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents a generalized table
@@ -67,27 +67,27 @@ public class TableNode implements Table {
 
 
     // Methods
-    public String genText(QueryBuilderMetaData qbMD) {
-        return genText(qbMD, false);
+    public String genText(SQLIdentifiers.Quoter quoter) {
+        return genText(quoter, false);
     }
 
     // Return the SQL string that corresponds to this Table
     // This was originally called only in FROM clauses, but is now used as
     // part of column specifications.
     // For now, assume no joins
-    public String genText(QueryBuilderMetaData qbMD, boolean from) {
+    public String genText(SQLIdentifiers.Quoter quoter, boolean from) {
         if (from)       // Calling from within a FROM clause
             return
-                ((_schemaName==null) ? "" : _schemaName.genText(qbMD)+".") +  // NOI18N
-                _tableName.genText(qbMD) +
+                ((_schemaName==null) ? "" : _schemaName.genText(quoter)+".") +  // NOI18N
+                _tableName.genText(quoter) +
                 // remove AS to fix CR5097412
-                ((_corrName==null) ? "" : " " + _corrName.genText(qbMD));  // NOI18N
+                ((_corrName==null) ? "" : " " + _corrName.genText(quoter));  // NOI18N
         else            // Calling from within a column
             return
                 ((_corrName!=null)
-                 ? _corrName.genText(qbMD)
-                 : ((_schemaName==null) ? "" : _schemaName.genText(qbMD)+".") +  // NOI18N
-                 _tableName.genText(qbMD));
+                 ? _corrName.genText(quoter)
+                 : ((_schemaName==null) ? "" : _schemaName.genText(quoter)+".") +  // NOI18N
+                 _tableName.genText(quoter));
     }
 
 

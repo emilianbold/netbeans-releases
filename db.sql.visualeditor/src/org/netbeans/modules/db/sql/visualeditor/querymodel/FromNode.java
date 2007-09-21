@@ -18,11 +18,11 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents a SQL FROM clause
@@ -49,15 +49,15 @@ public class FromNode implements From {
     // Methods
 
     // Return the SQL string that corresponds to this From clause
-    public String genText(QueryBuilderMetaData qbMetaData) {
+    public String genText(SQLIdentifiers.Quoter quoter) {
         String res = "";    // NOI18N
 
         if (_tableList.size() > 0) {
 
-            res = "\nFROM " + ((JoinTableNode)_tableList.get(0)).genText(qbMetaData, true);  // NOI18N
+            res = "\nFROM " + ((JoinTableNode)_tableList.get(0)).genText(quoter, true);  // NOI18N
 
             for (int i=1; i<_tableList.size(); i++)
-                res += ((JoinTableNode)_tableList.get(i)).genText(qbMetaData);
+                res += ((JoinTableNode)_tableList.get(i)).genText(quoter);
         }
 
         return res;

@@ -18,16 +18,16 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
 import java.util.Collection;
 
-// the comon base type of every item present in a query
-// provides common functionalities to all items
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
+
+// The comon base type of every item present in a query
+
 public interface  QueryItem {
 
     // generate text that represent the item
-    public String genText(QueryBuilderMetaData qbMD);
+    public String genText(SQLIdentifiers.Quoter quoter);
 
     // walks recursively the specific item to find all teh columns that are referenced from this item.
     // For instance, called on a WHERE cluase will return all teh columns used in the expression of the WHERE clause

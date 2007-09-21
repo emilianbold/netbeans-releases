@@ -47,8 +47,7 @@ import java.sql.Connection;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
+
 import org.netbeans.api.db.explorer.ConnectionManager;
 
 import org.openide.NotifyDescriptor;
@@ -75,6 +74,7 @@ import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditor;
 import org.netbeans.modules.db.sql.visualeditor.Log;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * The top-level class for the QueryBuilder.
@@ -102,13 +102,10 @@ public class QueryBuilder extends TopComponent
     
     // Used to delay updating text pane until all changes have been made
     boolean                             _updateText = true;
+    SQLIdentifiers.Quoter               quoter;
 
-    
     // Private variables
-
-    // this stores the cache of query build objects
-    private static Map                  qbMap = new HashMap();
-    private String lastQuery;
+    private String                      lastQuery;
 
     // the boolean below is used to determine if we need to store the query in the 
     // backing file. The first time that generateText is called, we avoid saving
@@ -173,13 +170,16 @@ public class QueryBuilder extends TopComponent
         this.dbconn = dbconn;
         this.statement = statement;
 	this.vse = vse;
+        
 	// Either pass in metadata, or have it created from db
 	this.qbMetaData = 
  	    (metadata==null) ?
             new QueryBuilderMetaData(dbconn, this) :
 	    new QueryBuilderMetaData(metadata, this) ;
+        
+        // Create a quoter to be used for delimiting identifiers
+        this.quoter =  SQLIdentifiers.createQuoter(getConnection().getMetaData());
 
-	
 	// It would be nice to have a short title, but there isn't a convenient one
         String title = dbconn.getName();
      
@@ -958,7 +958,7 @@ public class QueryBuilder extends TopComponent
 
         // Initialize the QueryModel object if necessary
         if (_queryModel==null)
-            _queryModel = new QueryModel(qbMetaData);
+            _queryModel = new QueryModel(quoter);
 
         _queryModel.parse(query);
     }
@@ -1370,7 +1370,7 @@ public class QueryBuilder extends TopComponent
         String command = getSqlCommand();
 
         if (_queryModel==null)
-            _queryModel = new QueryModel(qbMetaData);
+            _queryModel = new QueryModel(quoter);
 
         Log.getLogger().finest("  * command=" + command) ;
 

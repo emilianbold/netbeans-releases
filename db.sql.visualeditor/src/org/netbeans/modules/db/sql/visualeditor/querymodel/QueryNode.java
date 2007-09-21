@@ -18,11 +18,11 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 public class QueryNode implements Query {
 
@@ -60,20 +60,20 @@ public class QueryNode implements Query {
 
     // Generate the SQL string corresponding to this model
 
-    public String genText(QueryBuilderMetaData qbMD) {
-        String res = _select.genText(qbMD) + " " + _from.genText(qbMD);    // NOI18N
+    public String genText(SQLIdentifiers.Quoter quoter) {
+        String res = _select.genText(quoter) + " " + _from.genText(quoter);    // NOI18N
 
         if (_where!=null)
-            res += _where.genText(qbMD);
+            res += _where.genText(quoter);
 
         if (_groupBy!=null)
-            res += _groupBy.genText(qbMD);
+            res += _groupBy.genText(quoter);
 
         if (_having!=null)
-            res += _having.genText(qbMD);
+            res += _having.genText(quoter);
 
         if (_orderBy!=null)
-            res += _orderBy.genText(qbMD);
+            res += _orderBy.genText(quoter);
 
         return res;
     }

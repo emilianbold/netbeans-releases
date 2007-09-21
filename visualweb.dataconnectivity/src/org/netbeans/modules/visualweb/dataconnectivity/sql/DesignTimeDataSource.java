@@ -18,14 +18,12 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.sql;
 
-import org.netbeans.modules.visualweb.dataconnectivity.naming.ContextPersistance;
-import org.netbeans.modules.visualweb.dataconnectivity.naming.ObjectChangeListener;
-import org.netbeans.modules.visualweb.dataconnectivity.naming.ObjectChangeEvent;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.SQLException;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -34,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
+
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.SortedSet;
@@ -45,11 +43,20 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
+import org.netbeans.modules.visualweb.dataconnectivity.naming.ContextPersistance;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.ObjectChangeListener;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.ObjectChangeEvent;
+
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.DatabaseException;
+
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * DataSource adapter for java.sql.Driver classes.  Used at designtime for all datasources.
@@ -650,16 +657,21 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
         }
     }
 
-    public static String composeSelect(String tableName) {
+
+    public static String composeSelect(String tableName, DatabaseMetaData metaData) {
+        
+        SQLIdentifiers.Quoter quoter;
+        quoter = SQLIdentifiers.createQuoter(metaData);
+        
         String[] names = tableName.split("\\.");
         String selectName = "";
         for (int i = 0; i < names.length; i++) {
             if (i != 0) {
                 selectName += ".";
             }
-            selectName += (names[i].indexOf(' ') == -1)? names[i]: "\"" + names[i] + "\"";
+            // Delimit identifiers if necessary
+            selectName += quoter.quoteIfNeeded(names[i]);
         }
-
         return "SELECT * FROM " + selectName; // NOI18N
     }
 

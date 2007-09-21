@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
 
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 import org.netbeans.modules.db.sql.visualeditor.Log;
 
@@ -48,15 +49,15 @@ class QueryModel {
 
     // Fields
 
-    // The parsed query produced by the parser
-    private Query                       _query = null;
-    static boolean                      DEBUG = false;
+    private static boolean              DEBUG = false;
+    private Query                       _query = null; // The parsed query produced by the parser
     private QueryBuilderMetaData        qbMetaData;
+    private SQLIdentifiers.Quoter       quoter;
 
     // Constructors
 
-    QueryModel(QueryBuilderMetaData qbMetaData) {
-        this.qbMetaData = qbMetaData;
+    QueryModel(SQLIdentifiers.Quoter quoter) {
+        this.quoter = quoter;
     }
 
     // Methods
@@ -79,7 +80,7 @@ class QueryModel {
         if ( _query == null )
             return null;
         else
-            return (_query.genText(qbMetaData));
+            return (_query.genText(quoter));
     }
 
 
@@ -351,17 +352,17 @@ class QueryModel {
                 // we will support only a.x = ?  OR
                 // a.x IN ( ?, ?, ? ) for thresher.
                 if ( val1.isParameterized() ) {
-                    String val1String = val1.genText(qbMetaData);
+                    String val1String = val1.genText(quoter);
                     for (int i=0; i<val1String.length(); i++) {
                         if (val1String.charAt(i) == '?' )
-                            predicates.add(val2.genText(qbMetaData));
+                            predicates.add(val2.genText(quoter));
                     }
                 }
                 else if ( val2.isParameterized() ) {
-                    String val2String = val2.genText(qbMetaData);
+                    String val2String = val2.genText(quoter);
                     for (int i=0; i<val2String.length(); i++) {
                         if (val2String.charAt(i) == '?' )
-                            predicates.add(val1.genText(qbMetaData));
+                            predicates.add(val1.genText(quoter));
                     }
                 }
         }

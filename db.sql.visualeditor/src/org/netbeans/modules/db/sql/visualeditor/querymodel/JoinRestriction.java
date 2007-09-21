@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents the restriction in a JOIN clause
@@ -48,8 +48,8 @@ public class JoinRestriction {
 
     // Return the SQL string that corresponds to this From clause
     // For now, assume no joins
-    public String genText(QueryBuilderMetaData qbMetaData) {
-        return " " + _col1.genText(qbMetaData) + " " + _op + " " + _col2.genText(qbMetaData);    // NOI18N
+    public String genText(SQLIdentifiers.Quoter quoter) {
+        return " " + _col1.genText(quoter) + " " + _op + " " + _col2.genText(quoter);    // NOI18N
     }
 
     // Methods

@@ -18,10 +18,10 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
 import java.util.ArrayList;
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 public class SelectNode implements Select {
 
@@ -52,7 +52,7 @@ public class SelectNode implements Select {
 
     // Return the Select clause as a SQL string
 
-    public String genText(QueryBuilderMetaData qbMD) {
+    public String genText(SQLIdentifiers.Quoter quoter) {
         String res = "";  // NOI18N
         String res_select_quantifier = "";  // NOI18N
 
@@ -60,13 +60,13 @@ public class SelectNode implements Select {
 
             res_select_quantifier  = "SELECT " + _quantifier + " " ;
             res = res_select_quantifier
-		+ ((ColumnItem)_selectItemList.get(0)).genText(qbMD, true);  // NOI18N
+		+ ((ColumnItem)_selectItemList.get(0)).genText(quoter, true);  // NOI18N
 
             for (int i=1; i<_selectItemList.size(); i++) {
                 ColumnItem col = (ColumnItem)_selectItemList.get(i);
                 if (col != null)
                 {
-                    res += ", " + "\n                    " + col.genText(qbMD, true);  // NOI18N
+                    res += ", " + "\n                    " + col.genText(quoter, true);  // NOI18N
                 }
             }
         }

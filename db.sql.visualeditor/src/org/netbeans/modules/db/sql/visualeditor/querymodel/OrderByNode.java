@@ -18,11 +18,10 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents a SQL ORDER BY clause
@@ -49,15 +48,15 @@ public class OrderByNode implements OrderBy {
     // Methods
 
     // Return the SQL string that corresponds to this From clause
-    public String genText(QueryBuilderMetaData qbMD) {
+    public String genText(SQLIdentifiers.Quoter quoter) {
         String res = "";    // NOI18N
         if (_sortSpecificationList != null && _sortSpecificationList.size() > 0) {
 
-            res = "\nORDER BY " + ((SortSpecification)_sortSpecificationList.get(0)).genText(qbMD);  // NOI18N
+            res = "\nORDER BY " + ((SortSpecification)_sortSpecificationList.get(0)).genText(quoter);  // NOI18N
 
             for (int i=1; i<_sortSpecificationList.size(); i++) {
                 res += ", " + "\n                    " +    // NOI18N
-                  ((SortSpecification)_sortSpecificationList.get(i)).genText(qbMD);
+                  ((SortSpecification)_sortSpecificationList.get(i)).genText(quoter);
             }
         }
 

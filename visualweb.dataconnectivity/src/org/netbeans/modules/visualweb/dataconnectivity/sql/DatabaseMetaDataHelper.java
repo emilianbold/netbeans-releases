@@ -21,12 +21,9 @@ package org.netbeans.modules.visualweb.dataconnectivity.sql;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Hashtable;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.sql.DataSource;
@@ -263,7 +260,7 @@ public class DatabaseMetaDataHelper {
             if (schema_name != null) {
                 table_name = schema_name + "." + table_name;
             }
-            validationQuery = DesignTimeDataSource.composeSelect(table_name);
+            validationQuery = DesignTimeDataSource.composeSelect(table_name, getMetaData());
         }
         rs.close();
         return validationQuery;

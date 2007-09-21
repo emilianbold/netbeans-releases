@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents a column in an ORDER BY clause
@@ -49,8 +49,8 @@ public final class SortSpecification implements QueryItem {
 
     // Methods
 
-    public String genText(QueryBuilderMetaData qbMD) {
-        return _column.genText(qbMD) + " " +  // NOI18N
+    public String genText(SQLIdentifiers.Quoter quoter) {
+        return _column.genText(quoter) + " " +  // NOI18N
               _direction;
     }
 

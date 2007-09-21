@@ -18,22 +18,25 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.explorer;
 
+import java.awt.Image;
+import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
+import javax.swing.SwingUtilities;
+
 import org.netbeans.modules.visualweb.dataconnectivity.DataconnectivitySettings;
 import org.netbeans.modules.visualweb.dataconnectivity.Log;
 import org.netbeans.modules.visualweb.dataconnectivity.customizers.RowSetSelection;
-import java.awt.Image;
-import java.sql.SQLException;
-import javax.swing.SwingUtilities;
+
 import org.openide.ErrorManager;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
+
 import com.sun.rave.designtime.BeanCreateInfoSet;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignInfo;
 import com.sun.rave.designtime.Result;
-
 
 // XXX Originally RowSetPaletteItem, but extracted the uneeded palette stuff.
 /**
@@ -54,21 +57,17 @@ public class RowSetBeanCreateInfoSet implements BeanCreateInfoSet {
     String tableName;
     String bareTableName;
     String rowSetInstanceName;
+    DatabaseMetaData metaData;
 
     protected static String rowSetNameSuffix = DataconnectivitySettings.getRsSuffix() ;
     public static Class rowSetClass = com.sun.sql.rowset.CachedRowSetXImpl.class;
     protected static String dataProviderProperty = "cachedRowSet" ; // NOI18N ,
     protected static String dataProviderClassName = "com.sun.data.provider.impl.CachedRowSetDataProvider" ; // NOI18N
 
-    public RowSetBeanCreateInfoSet(DataSourceInfo dsi, String tableName ) {
-        this(tableName);
-        setDataSourceInfo(dsi);
-    }
-
     /*
      * Lazily set the datasource info
      */
-    public RowSetBeanCreateInfoSet(String tableName){
+    public RowSetBeanCreateInfoSet(String tableName, DatabaseMetaData metaData){
         this.tableName = tableName;
         int bt = tableName.lastIndexOf('.') ;
         if ( bt >= 0 ) {
@@ -76,6 +75,7 @@ public class RowSetBeanCreateInfoSet implements BeanCreateInfoSet {
         } else {
             this.bareTableName = tableName ;
         }
+        this.metaData = metaData;
         Log.log("RowSetPaletteItem ="+tableName+","+bareTableName);
     }
 
@@ -105,13 +105,17 @@ public class RowSetBeanCreateInfoSet implements BeanCreateInfoSet {
 
     String dsName = null ;
     private String getDataSourceName() {
-        if (dsName == null) dsName = "java:comp/env/jdbc/" + dsInfo.getName(); // NOI18N
+        if (dsName == null) {
+            dsName = "java:comp/env/jdbc/" + dsInfo.getName(); // NOI18N
+        }
         return dsName ;
     }
 
     String command = null ;
     private String getCommand() {
-        if (command == null) command = DesignTimeDataSource.composeSelect(tableName);
+        if (command == null) {
+            command = DesignTimeDataSource.composeSelect(tableName, metaData);
+        }
         return command ;
     }
 

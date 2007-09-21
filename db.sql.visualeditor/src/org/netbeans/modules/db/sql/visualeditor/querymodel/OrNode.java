@@ -18,11 +18,9 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents a SQL Or term in a clause
@@ -43,13 +41,13 @@ public class OrNode extends BooleanExpressionList implements Or {
     //
 
     // Return the Where clause as a SQL string
-    public String genText(QueryBuilderMetaData qbMD) {
+    public String genText(SQLIdentifiers.Quoter quoter) {
         if (_expressions==null)
             return "";    // NOI18N
-        String res = " ( " + ((Expression)_expressions.get(0)).genText(qbMD);    // NOI18N
+        String res = " ( " + ((Expression)_expressions.get(0)).genText(quoter);    // NOI18N
 
         for (int i=1; i<_expressions.size(); i++)
-            res += " OR " + ((Expression)_expressions.get(i)).genText(qbMD);  // NOI18N
+            res += " OR " + ((Expression)_expressions.get(i)).genText(quoter);  // NOI18N
 
         res += " ) ";    // NOI18N
 

@@ -18,10 +18,9 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
-import java.util.ArrayList;
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents a SQL And term in a WHERE clause
@@ -56,8 +55,8 @@ public class NotNode implements Expression {
     }
 
     // Return the Where clause as a SQL string
-    public String genText(QueryBuilderMetaData qbMD) {
-        return " ( NOT " + _cond.genText(qbMD) + ") ";  // NOI18N
+    public String genText(SQLIdentifiers.Quoter quoter) {
+        return " ( NOT " + _cond.genText(quoter) + ") ";  // NOI18N
     }
 
     public String toString() {

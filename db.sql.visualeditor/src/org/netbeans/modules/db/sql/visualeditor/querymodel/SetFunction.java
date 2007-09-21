@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
-
 import java.util.Collection;
+
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
 
 /**
  * Represents a SQL Set function (AVG, COUNT, MAX, MIN, SUM)
@@ -56,7 +56,7 @@ public class SetFunction extends ColumnItem implements UnaryExpression {
         columns.add(_argument);
     }
 
-    public String genText(QueryBuilderMetaData qbMD) {
+    public String genText(SQLIdentifiers.Quoter quoter) {
         String funcType = null;
         switch (_type) {
             case AVG:
@@ -77,10 +77,10 @@ public class SetFunction extends ColumnItem implements UnaryExpression {
             default:
                 break;
         }
-        funcType += _argument.genText(qbMD);
+        funcType += _argument.genText(quoter);
         funcType += ")";
         if (_alias != null) {
-            funcType += " AS " + _alias.genText(qbMD);
+            funcType += " AS " + _alias.genText(quoter);
         }
         return funcType;
     }
