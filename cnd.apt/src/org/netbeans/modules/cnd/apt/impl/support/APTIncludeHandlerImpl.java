@@ -38,9 +38,7 @@ import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
-import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -181,6 +179,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             }
         }
 
+        @Override
         public String toString() {
             return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
         }
@@ -298,6 +297,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             }
         }        
 
+        @Override
         public boolean equals(Object obj) {
             if (obj == null || (obj.getClass() != this.getClass())) {
                 return false;
@@ -305,6 +305,14 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             StateImpl other = (StateImpl)obj;
             return this.startFile.equals(other.startFile) &&
                     compareStacks(this.inclStack, other.inclStack);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 67 * hash + (this.startFile != null ? this.startFile.hashCode() : 0);
+            hash = 67 * hash + (this.inclStack != null ? this.inclStack.hashCode() : 0);
+            return hash;
         }
         
         private boolean compareStacks(Stack<IncludeInfo> inclStack1, Stack<IncludeInfo> inclStack2) {
@@ -386,8 +394,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             assert input != null;
             final APTStringManager pathManager = FilePathCache.getManager();
             
-            String path = input.readUTF();
-            this.path = (pathManager == null)? path: pathManager.getString(path);
+            String readPath = input.readUTF();
+            this.path = (pathManager == null)? readPath: pathManager.getString(readPath);
             
             directiveLine = input.readInt();
             
@@ -402,6 +410,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return directiveLine;
         }
 
+        @Override
         public String toString() {
             String retValue;
             
@@ -410,13 +419,23 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return retValue;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj == null || (obj.getClass() != this.getClass())) {
                 return false;
             }
             IncludeInfoImpl other = (IncludeInfoImpl)obj;
             return this.directiveLine == other.directiveLine &&
-                    this.path.equals(other.path);
+                    this.path.equals(other.path) && (resolvedDirIndex == other.resolvedDirIndex);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 73 * hash + (this.path != null ? this.path.hashCode() : 0);
+            hash = 73 * hash + this.directiveLine;
+            hash = 73 * hash + this.resolvedDirIndex;
+            return hash;
         }
 
         public void write(final DataOutput output) throws IOException {
@@ -449,6 +468,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         return path;
     }
     
+    @Override
     public String toString() {
         return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
     }    

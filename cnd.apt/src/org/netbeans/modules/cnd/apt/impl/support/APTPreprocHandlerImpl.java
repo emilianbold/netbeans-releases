@@ -110,8 +110,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
                 // own copy of include information and macro state
                 this.inclState = APTHandlersSupportImpl.copyIncludeState(other.inclState, true);
                 this.macroState = APTHandlersSupportImpl.createCleanMacroState(other.macroState);
-                // set the real "cleaned" state. for source files nothing is cleaned in fact
-                this.cleaned = APTHandlersSupportImpl.isCleanedIncludeState(this.inclState);
+                this.cleaned = true;
             } else {
                 // share states
                 this.macroState = other.macroState;
@@ -135,10 +134,10 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             StringBuilder retValue = new StringBuilder();
             retValue.append(this.cleaned ? "\nCleaned State\n" : "\nNot Cleaned State\n"); // NOI18N
             retValue.append(this.stateCorrect ? "Correct State" : "Default/Null State"); // NOI18N
-            retValue.append("\nMACROS state info:\n"); // NOI18N
-            retValue.append(this.macroState);
             retValue.append("\nInclude state Info:\n"); // NOI18N
             retValue.append(inclState);
+            retValue.append("\nMACROS state info:\n"); // NOI18N
+            retValue.append(this.macroState);
             return retValue.toString();
         }
 
@@ -219,11 +218,10 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     public String toString() {
         StringBuilder retValue = new StringBuilder();
         retValue.append(this.stateCorrect ? "\nCorrect State" : "\nDefault/Null State"); // NOI18N
-        retValue.append("\nMACROS info:\n"); // NOI18N
-        retValue.append(this.macroMap);
         retValue.append("\nInclude Info:\n"); // NOI18N
         retValue.append(this.inclHandler);
+        retValue.append("\nMACROS info:\n"); // NOI18N
+        retValue.append(this.macroMap);
         return retValue.toString();
     }    
-
 }
