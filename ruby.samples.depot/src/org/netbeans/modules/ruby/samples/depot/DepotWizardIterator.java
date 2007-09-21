@@ -106,22 +106,22 @@ public class DepotWizardIterator implements WizardDescriptor.InstantiatingIterat
                 // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps);
+                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
         }
     }
 
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir", null);
-        this.wiz.putProperty("name", null);
+        this.wiz.putProperty("projdir", null); // NOI18N
+        this.wiz.putProperty("name", null); // NOI18N
         this.wiz = null;
         panels = null;
     }
 
     public String name() {
-        return MessageFormat.format("{0} of {1}", index + 1, panels.length);
+        return MessageFormat.format("{0} of {1}", index + 1, panels.length); // NOI18N
     }
 
     public boolean hasNext() {
