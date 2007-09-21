@@ -66,6 +66,23 @@ final class AbstractFileObject extends AbstractFolder {
         super(fs, parent, name);
     }
 
+    private boolean initLastModified(boolean force) {
+        boolean retval = force || (getLastModified() == null);
+        if (retval) {
+            putLastModified(getAbstractFileSystem().info.lastModified(getPath()));
+        }
+        return retval;
+    }
+    
+    private synchronized Date getLastModified() {
+        return lastModified;
+    }
+    
+    private synchronized Date putLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+        return this.lastModified;
+    }
+            
     /** Getter for the right file system */
     private AbstractFileSystem getAbstractFileSystem() {
         return (AbstractFileSystem) getFileSystem();
@@ -133,14 +150,8 @@ final class AbstractFileObject extends AbstractFolder {
     * @return the date
     */
     public Date lastModified() {
-        if ((lastModified == null) || !getAbstractFileSystem().isLastModifiedCacheEnabled()) {
-            String path = getPath();
-            AbstractFileSystem.Info i = getAbstractFileSystem().info;
-            lastModified = i.lastModified(path);
-            assert lastModified != null : "Null lastModified from " + i.getClass().getName() + " on " + path;
-        }
-
-        return lastModified;
+        initLastModified(!getAbstractFileSystem().isLastModifiedCacheEnabled());
+        return getLastModified();
     }
 
     @Deprecated // have to override for compat
@@ -241,7 +252,7 @@ final class AbstractFileObject extends AbstractFolder {
             }
             
             if (currentLock == fLock) {
-                lastModified = null;
+                putLastModified(null);
                 // clear my lock
                 lock = null;
             }
@@ -789,9 +800,8 @@ final class AbstractFileObject extends AbstractFolder {
                     // check the time of a file last modification
                     Date l = null;
 
-                    if (lastModified == null) {
-                        lastModified = l = getAbstractFileSystem().info.lastModified(getPath());
-
+                    boolean isInitialization = initLastModified(false);
+                    if (isInitialization) {
                         return;
                     } else {
                         l = getAbstractFileSystem().info.lastModified(getPath());
@@ -808,14 +818,14 @@ final class AbstractFileObject extends AbstractFolder {
                     // Solution: if (Math.abs(lastModified.getTime() - l.getTime ()) >= 5000) {
                     // I think that above mentioned solution is not necessary. Because
                     // events should not be fired until stream was closed.
-                    if (Math.abs(lastModified.getTime() - l.getTime()) != 0) {
+                    if (Math.abs(getLastModified().getTime() - l.getTime()) != 0) {
                         /*
                         System.out.println("file     : " + getPath ());
                         System.out.println("prev date: " + lastModified.getTime ());
                         System.out.println("now  date: " + l.getTime());
                         System.out.println("diff     : " + (lastModified.getTime () - l.getTime()));
                          */
-                        lastModified = l;
+                        putLastModified(l);
 
                         if (fire && hasAtLeastOneListeners()) {
                             ev = new FileEvent(this, this, expected);
@@ -856,7 +866,7 @@ final class AbstractFileObject extends AbstractFolder {
      */
     protected void outputStreamClosed(boolean fireFileChanged) {
         synchronized (this) {
-            lastModified = null;
+            putLastModified(null);
             lastModified();
         }
 
