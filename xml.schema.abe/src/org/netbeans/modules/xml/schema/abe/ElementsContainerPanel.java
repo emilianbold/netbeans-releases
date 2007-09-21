@@ -59,7 +59,8 @@ public abstract class ElementsContainerPanel extends ContainerPanel{
     protected void setupAXIComponentListener() {
         getAXIParent().addPropertyChangeListener(new ModelEventMediator(this, getAXIParent()) {
             public void _propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().startsWith(Element.PROP_ELEMENT)){
+                String property = evt.getPropertyName();
+                if(property.equals(Element.PROP_ELEMENT) || property.equals(Element.PROP_ELEMENT_REF)) {
                     if(context.isUserInducedEventMode())
                         setVisible(true);
                     //event is for child element
@@ -70,7 +71,6 @@ public abstract class ElementsContainerPanel extends ContainerPanel{
                         //old element removed
                         removeElement((AbstractElement)evt.getOldValue());
                     }
-
                 }
             }
         });

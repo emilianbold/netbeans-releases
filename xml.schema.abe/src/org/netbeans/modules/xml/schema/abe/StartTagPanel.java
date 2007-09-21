@@ -80,12 +80,14 @@ public class StartTagPanel extends TagPanel {
         //add listener for name changes
         elementPanel.getAXIContainer().addPropertyChangeListener(new ModelEventMediator(this, elementPanel.getAXIContainer()) {
             public void _propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(Element.PROP_NAME)){
+                String property = evt.getPropertyName();
+                if(property.equals(Element.PROP_NAME)){
                     setTagName(getElementPanel().getAXIContainer().getName());
                     forceSizeRecalculate();
                     revalidate();
                     repaint();
-                }else if(evt.getPropertyName().startsWith(Attribute.PROP_ATTRIBUTE)){
+                } else if(property.equals(Attribute.PROP_ATTRIBUTE) ||
+                          property.equals(Attribute.PROP_ATTRIBUTE_REF)){
                     updateAttributes();
                     if(evt.getNewValue() != null){
                         //its a new attribute add event
