@@ -505,15 +505,11 @@ Microsystems, Inc. All Rights Reserved.
         <name>pool-setting-2</name>        
         <field field-type="list">
             <name>transaction-isolation-level</name>
-            <field-value>
-                <default-field-value>JDBC Driver Default</default-field-value>
-            </field-value>
             <tag>
                 <tag-item>read-uncommitted</tag-item>
                 <tag-item>read-committed</tag-item>
                 <tag-item>repeatable-read</tag-item>
                 <tag-item>serializable</tag-item>
-                <tag-item>JDBC Driver Default</tag-item>
             </tag>
         </field>
         <field field-type="list">

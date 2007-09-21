@@ -24,6 +24,7 @@
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 
+import java.util.ResourceBundle;
 import java.util.Vector;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
@@ -63,7 +64,7 @@ public class ConnPoolBean extends JdbcCP implements java.io.Serializable{
         bean.setIdleIimeoutSecond(pool.getIdleTimeoutInSeconds());
         String tranxIsolation = pool.getTransactionIsolationLevel();
         if(tranxIsolation == null){
-            tranxIsolation = WizardConstants.__IsolationLevelDefault;
+            tranxIsolation = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle").getString("LBL_driver_default");     //NOI18N
         }
         bean.setTranxIsoLevel(tranxIsolation);
         bean.setIsIsoLevGuaranteed(pool.getIsIsolationLevelGuaranteed());
@@ -107,7 +108,8 @@ public class ConnPoolBean extends JdbcCP implements java.io.Serializable{
         connPool.setPoolResizeQuantity(getPoolResizeQty());
         connPool.setIdleTimeoutInSeconds(getIdleIimeoutSecond());
         String isolation = getTranxIsoLevel();
-        if (isolation != null && (isolation.length() == 0 || isolation.equals(WizardConstants.__IsolationLevelDefault))) {  
+        String defaultChoice = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle").getString("LBL_driver_default");     //NOI18N
+        if (isolation != null && (isolation.length() == 0 || isolation.equals(defaultChoice))) {  
             isolation = null;
         }
         connPool.setTransactionIsolationLevel(isolation);

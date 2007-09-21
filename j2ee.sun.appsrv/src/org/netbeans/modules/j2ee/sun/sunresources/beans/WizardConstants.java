@@ -196,9 +196,6 @@ public interface WizardConstants {
     public static final String __CreateConnector = "createConnectorResource";
     public static final String __CreateConnPool = "createConnectorConnectionPool";
     
-    //match to isolation level default value in CPWizard.xml
-    public static final String __IsolationLevelDefault = "JDBC Driver Default";
-    
     public static final String __Type_Datasource = "javax.sql.DataSource"; //NOI18N
     public static final String __Type_XADatasource = "javax.sql.XADataSource"; //NOI18N
     public static final String __Type_ConnectionPoolDataSource = "javax.sql.ConnectionPoolDataSource"; //NOI18N

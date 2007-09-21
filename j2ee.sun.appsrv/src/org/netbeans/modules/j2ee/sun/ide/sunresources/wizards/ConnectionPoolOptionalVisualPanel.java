@@ -1,5 +1,8 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+import java.util.Arrays;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -173,6 +176,7 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(isolationLabel, org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_Guarantee")); // NOI18N
 
         transactionCombo.setModel(getComboBoxModel("transaction-isolation-level"));
+        transactionCombo.setSelectedItem(getDefaultValue("transaction-isolation-level"));
         transactionCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 transactionComboActionPerformed(evt);
@@ -419,9 +423,24 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         }
         if (field != null) {
             String[] tags = FieldHelper.getTags(field);
-            model = new javax.swing.DefaultComboBoxModel(tags);
+            if(fieldName.equals("transaction-isolation-level")){ //NOI18N
+                String[] updateTags = updateTags(tags);
+                model = new javax.swing.DefaultComboBoxModel(updateTags);
+            }else{
+                model = new javax.swing.DefaultComboBoxModel(tags);
+            }   
         }
         return model;
+    }
+
+    private String[] updateTags(String[] tags){
+        int size = tags.length;
+        String[] updatedTags = new String[size + 1];
+        for(int i=0; i<size; i++){
+            updatedTags[i] = tags[i];
+        }
+        updatedTags[size] = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle").getString("LBL_driver_default"); //NOI18N
+        return updatedTags;
     }
     
     private String getDefaultValue(String fieldName) {
@@ -434,6 +453,9 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         }
         if (field != null) {
             value = FieldHelper.getDefaultValue(field);
+        }
+        if (fieldName.equals("transaction-isolation-level")) { //NOI18N
+            value = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle").getString("LBL_driver_default"); //NOI18N
         }
         return value;
     }

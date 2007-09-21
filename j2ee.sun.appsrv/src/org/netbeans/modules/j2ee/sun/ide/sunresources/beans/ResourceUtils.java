@@ -398,7 +398,8 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__PoolResizeQuantity, connPool.getPoolResizeQuantity()));
         attrs.add(new Attribute(__IdleTimeoutInSeconds, connPool.getIdleTimeoutInSeconds()));
         String isolation = connPool.getTransactionIsolationLevel();
-        if (isolation != null && (isolation.length() == 0 || isolation.equals(__IsolationLevelDefault)) ){  
+        String defaultChoice = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle").getString("LBL_driver_default");     //NOI18N
+        if (isolation != null && (isolation.length() == 0 || isolation.equals(defaultChoice)) ){  
             isolation = null;
         }
         attrs.add(new Attribute(__TransactionIsolationLevel, isolation));
@@ -559,7 +560,8 @@ public class ResourceUtils implements WizardConstants{
                     else if (key.equals(__IdleTimeoutInSeconds))
                         connPool.setIdleTimeoutInSeconds(value);
                     else if (key.equals(__TransactionIsolationLevel)){
-                        if (value.equals(__IsolationLevelDefault)){  
+                        String defaultChoice = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle").getString("LBL_driver_default");     //NOI18N
+                        if (value.equals(defaultChoice)){  
                             value = null;
                         }
                         connPool.setTransactionIsolationLevel(value);
