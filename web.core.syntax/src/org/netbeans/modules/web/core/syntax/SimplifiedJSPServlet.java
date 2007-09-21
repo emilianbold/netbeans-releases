@@ -232,8 +232,14 @@ public class SimplifiedJSPServlet {
         if (pageInfo != null) {
             extendsClass = pageInfo.getExtends();
         }
+        
+        if (extendsClass == null || 
+                // workaround for issue #116314
+                "org.apache.jasper.runtime.HttpJspBase".equals(extendsClass)){ //NOI18N
+            extendsClass = "HttpServlet"; //NOI18N
+        }
 
-        return String.format(CLASS_HEADER, extendsClass == null ? "HttpServlet" : extendsClass);
+        return String.format(CLASS_HEADER, extendsClass);
     }
 
     private void assureProcessCalled() {
