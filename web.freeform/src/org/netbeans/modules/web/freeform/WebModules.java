@@ -65,15 +65,17 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     
     private ArrayList modules = new ArrayList ();
     private HashMap cache = new HashMap ();
-    private Project project;
-    private AntProjectHelper helper;
-    private PropertyEvaluator evaluator;
+    private final Project project;
+    private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
+    private final AuxiliaryConfiguration aux;
     
-    public WebModules (Project project, AntProjectHelper helper, PropertyEvaluator evaluator) {
+    public WebModules (Project project, AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
         assert project != null;
         this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
+        this.aux = aux;
         helper.addAntProjectListener(this);
     }
     
@@ -115,8 +117,6 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     public synchronized void readAuxData () {
         modules.clear();
         cache.clear();
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
-        assert aux != null;
         Element web = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true);
         if (web == null) {
             return;

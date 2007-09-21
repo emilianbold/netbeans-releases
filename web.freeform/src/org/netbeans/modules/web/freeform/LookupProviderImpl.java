@@ -84,7 +84,7 @@ public class LookupProviderImpl implements LookupProvider {
         return Lookups.fixed(new Object[] {
             new ProjectOpenedHookImpl(webcp),       // register webroots as source classpath
             new PrivilegedTemplatesImpl(),          // List of templates in New action popup
-            new WebModules(project, projectHelper, projectEvaluator), // WebModuleProvider, ClassPathProvider
+            new WebModules(project, projectHelper, projectEvaluator, aux), // WebModuleProvider, ClassPathProvider
             new WebFreeFormActionProvider(project, projectHelper, aux),   //ActionProvider
             new HelpIDFragmentProviderImpl(),
         });
