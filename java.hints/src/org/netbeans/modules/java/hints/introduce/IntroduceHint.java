@@ -415,6 +415,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         List<VariableElement> additionalLocalVariables = new LinkedList<VariableElement>(scanner.selectionWrittenLocalVariables);
         
         additionalLocalVariables.removeAll(scanner.usedLocalVariables);
+        additionalLocalVariables.removeAll(scanner.selectionLocalVariables);
         
         List<TypeMirrorHandle> additionaLocalTypes = new LinkedList<TypeMirrorHandle>();
         List<String> additionaLocalNames = new LinkedList<String>();
