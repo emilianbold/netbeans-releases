@@ -102,15 +102,12 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                 rootPane.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
             }
         }
-        int count = tpTabs.getComponentCount ();
-        for (int i = 0; i < count; i++) {
-            Component c = tpTabs.getComponentAt (i);
+        Component[] components = tpTabs.getComponents();
+        for (Component c : components) {
             if (c instanceof UnitTab) {
                 ((UnitTab)c).setWaitingState (waitingState);
-            }
-            
-        }
-        
+            }            
+        }        
     }
     @Override
     public void addNotify () {
