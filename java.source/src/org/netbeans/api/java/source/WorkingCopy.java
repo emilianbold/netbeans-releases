@@ -25,15 +25,16 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
+import javax.tools.JavaFileObject;
 import static org.netbeans.api.java.source.ModificationResult.*;
 import org.netbeans.modules.java.source.transform.ChangeSet;
 import org.netbeans.modules.java.source.query.QueryException;
@@ -60,7 +61,7 @@ import org.openide.text.CloneableEditorSupport;
 public class WorkingCopy extends CompilationController {
     
     private ChangeSet changes;
-    private List<CreateChange> externalChanges;
+    private Map<JavaFileObject, CompilationUnitTree> externalChanges;
     private boolean afterCommit = false;
     private WorkingCopyContext wcc;
     private TreeMaker treeMaker;
@@ -187,12 +188,18 @@ public class WorkingCopy extends CompilationController {
         }
         
         try {
-            RootTree newRoot = changes.commit((RootTree) ASTService.instance(getContext()).getRoot());
-            
-            if (changes.hasChanges()) {
-                ASTService.instance(getContext()).setRoot(newRoot);
+            RootTree root = (RootTree) ASTService.instance(getContext()).getRoot();
+            List<CompilationUnitTree> cuts = null;
+            if (externalChanges != null) {
+                cuts = new ArrayList<CompilationUnitTree>(root.getCompilationUnits());
+                cuts.addAll(externalChanges.values());
+                root = new RootTree(cuts);
             }
-            
+            root = changes.commit(root);
+            if (changes.hasChanges()) {
+                ASTService.instance(getContext()).setRoot(root);
+            }
+            cuts = root.getCompilationUnits();
             Commit save = new Commit(this, wcc.getSourceRewriter());
             save.attach(getContext());
             save.commit();
@@ -201,7 +208,13 @@ public class WorkingCopy extends CompilationController {
                 return wcc.diffs;
             } else {
                 List<Difference> diffs = wcc.diffs;
-                diffs.addAll(externalChanges);
+                for (CompilationUnitTree unitTree : cuts) {
+                    if (externalChanges.containsKey(unitTree.getSourceFile())) {
+                        VeryPretty printer = new VeryPretty(getContext());
+                        printer.print((JCTree.JCCompilationUnit) unitTree);
+                        diffs.add(new CreateChange(unitTree.getSourceFile(), printer.toString()));
+                    }
+                }
                 return diffs;
             }
         } catch (QueryException qe) {
@@ -214,11 +227,8 @@ public class WorkingCopy extends CompilationController {
     }
     
     private void createCompilationUnit(JCTree.JCCompilationUnit unitTree) {
-        VeryPretty printer = new VeryPretty(getContext());
-        CompilationUnitTree cut = unitTree;
-        printer.print(unitTree);
-        if (externalChanges == null) externalChanges = new ArrayList<CreateChange>();
-        externalChanges.add(new CreateChange(cut.getSourceFile(), printer.toString()));
+        if (externalChanges == null) externalChanges = new HashMap<JavaFileObject, CompilationUnitTree>();
+        externalChanges.put(unitTree.getSourceFile(), unitTree);
         return;
     }
     
