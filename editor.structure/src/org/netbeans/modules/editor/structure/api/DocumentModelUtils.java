@@ -34,6 +34,14 @@ import javax.swing.text.BadLocationException;
  */
 public final class DocumentModelUtils {
 
+    /** Returns all model's elements. 
+     * @return An array with document elements.
+     */
+    public static DocumentElement[] elements(DocumentModel model) {
+        return model.elements();
+    }
+    
+    
     /** Returns and element starting on the specified position with specied name and type.
      * If any of these conditions is not true (there isn't any element on the offset, or
      * there is an element, but the name or the type does't match) it returns null.

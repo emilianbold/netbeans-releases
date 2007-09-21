@@ -380,6 +380,7 @@ public final class DocumentModel {
     }
     
     /** Returns a DocumentElement instance if there is such one with given boundaries. */
+    //noone except tests use this method so the linear complexity doesn't matter
     DocumentElement getDocumentElement(int startOffset, int endOffset) throws BadLocationException {
         readLock();
         checkDocumentDirty();
@@ -402,22 +403,48 @@ public final class DocumentModel {
         }
     }
     
+    /** Finds all {@link DocumentElement}s whose start offset = given startOfset. 
+     * @return List of {@link DocumentElement}s with start offset = startOffset
+     */
     List<DocumentElement> getDocumentElements(int startOffset) throws BadLocationException {
         readLock();
         checkDocumentDirty();
         try {
-            ArrayList<DocumentElement> found = new ArrayList<DocumentElement>();
-            for(int i = 0; i < elements.size(); i++) {
-                DocumentElement de = elements.get(i);
+            int elementIndex = elements.binarySearchForOffset(startOffset);
+            if(elementIndex < 0) {
+                return Collections.emptyList();
+            } else {
+                //we found an element with the startoffset
+                //there might be some others just before or just after this one
+                //in the elements array - find them.
+                ArrayList<DocumentElement> found = new ArrayList<DocumentElement>();
+                found.add(elements.get(elementIndex)); //add the found one
                 
-                if(de.getStartOffset() == startOffset) found.add(de);
+                //find previous
+                int eli = elementIndex;
+                while(--eli >= 0) {
+                    DocumentElement previous = elements.get(eli);
+                    if(previous.getStartOffset() == startOffset) {
+                        //previous element has still the same start offset
+                        found.add(0, previous);
+                    } else {
+                        break; //no more elements with the same startoffset
+                    }
+                }
                 
-                //we are far behind => there isn't such element => break the loop
-                if(de.getStartOffset() > startOffset) break;
+                //find next
+                while(++elementIndex < elements.size()) {
+                    DocumentElement next = elements.get(elementIndex);
+                    if(next.getStartOffset() == startOffset) {
+                        //next element has still the same start offset
+                        found.add(next);
+                    } else {
+                        break; //no more elements with the same startoffset
+                    }
+                }
+                
+                return found;
             }
-            
-            //nothing found
-            return found;
             
         }finally{
             readUnlock();
@@ -634,6 +661,9 @@ public final class DocumentModel {
                 int el_so = el.getStartOffset();
                 int el_eo = el.getEndOffset();
                 if(el_so < de_so && el_so != el_eo && isDescendantOf(el_so, el_eo, de_so, de_eo)) {
+//                    //measurement - average deepness of the find
+//                    parent_count++;
+//                    parent += index - i;
                     return el;
                 }
             }
@@ -761,6 +791,17 @@ public final class DocumentModel {
         System.out.println("*****\n");
     }
     
+    DocumentElement[] elements() {
+        readLock();
+        try {
+            DocumentElement[] clone = new DocumentElement[elements.size()];
+            System.arraycopy(elements.elements, 0, clone, 0, clone.length);
+            return clone;
+        } finally {
+            readUnlock();
+        }
+    }
+    
     //-------------------------------------
     // --------- inner classes -------------
     //-------------------------------------
@@ -867,6 +908,8 @@ public final class DocumentModel {
         
         
         private void commit() throws DocumentModelTransactionCancelledException {
+//            parent=0;
+//            parent_count = 0;
             long a = System.currentTimeMillis();
             writeLock();
             try {
@@ -879,6 +922,10 @@ public final class DocumentModel {
                 if(debug) System.out.println("\n# commiting REMOVEs");
                 Iterator<DocumentModelModification> mods = modifications.iterator();
                 int removes = 0;
+                //reset last parent cache
+                last_empty_element_start_offset = -1;
+                last_parent = null;
+                
                 while(mods.hasNext()) {
                     DocumentModelModification dmm = mods.next();
                     if(dmm.type == DocumentModelModification.ELEMENT_REMOVED) {
@@ -940,6 +987,8 @@ public final class DocumentModel {
             }
             if(debug) System.out.println("# commit finished\n");
             if(measure) System.out.println("[xmlmodel] commit done in " + (System.currentTimeMillis() - a));
+//            System.out.println("parent root count = " + parent_count);
+//            System.out.println("parent root average = " + (parent / (parent_count == 0 ? 1 : parent_count)));
             
         }
         
@@ -986,21 +1035,39 @@ public final class DocumentModel {
         private boolean removeDE(DocumentElement de) {
             if(debug) System.out.println("[DTM] removing " + de);
             
+            //I need to get the parent before removing from the list!
+            DocumentElement parent = null;
+            
+            //empty element parent optimalization
+            //when a bigger part of a document is deleted then a number of 
+            //elements gets to the same start and end offsets, in such
+            //case having a simple last empty element offset -> parent cache helps a lot.
+            int de_so = de.getStartOffset();
+            int de_eo = de.getEndOffset();
+            boolean empty = (de_eo - de_so) == 0;
+            if(empty) { //empty element
+                if(last_empty_element_start_offset == de_so) {
+                    //we already know the parent
+                    parent = last_parent;
+                }
+            }
+
+            if(parent == null) {
+                parent = getParent(de);
+                //cache the parent if empty element
+                if(empty) {
+                    last_empty_element_start_offset = de_so;
+                    last_parent = parent;
+                }
+            }
+            
             int index = elements.indexof(de);
             if(index <= 0) {
                 return false; //element not found or root element (cannot be removed)
             }
-
-            //I need to get the parent before removing from the list!
-            DocumentElement parent = getParent(de);
-            if(parent == null) {
-                System.out.println("[DTM] WARNING: element has no parent (no events are fired to it!!!) " + de);
-                System.out.println("[DTM] Trying to recover by returning root element...");
-                parent = getRootElement();
-            }
             
             //get children of the element to be removed
-            List<DocumentElement> children = de.isEmpty() ? EMPTY_ELEMENTS_LIST : de.getChildren();
+            List<DocumentElement> children = empty ? null : de.getChildren();
             
             /* events firing:
              * If the removed element had a children, we have to fire add event
@@ -1008,11 +1075,13 @@ public final class DocumentModel {
              */
             elements.remove(index);
             
-            //fire events for all affected children
-            for(DocumentElement child : children) {
-                if(debug) System.out.println("switching child " + child + "from removed " + de + "to parent " + parent);
-                de.childRemoved(child);
-                parent.childAdded(child);
+            if(!empty) {
+                //fire events for all affected children
+                for(DocumentElement child : children) {
+                    if(debug) System.out.println("switching child " + child + "from removed " + de + "to parent " + parent);
+                    de.childRemoved(child);
+                    parent.childAdded(child);
+                }
             }
             
             //notify the parent element that one of its children has been removed
@@ -1368,7 +1437,7 @@ public final class DocumentModel {
             }
         }
         
-        public int binarySearch(DocumentElement key) {
+        private int binarySearch(DocumentElement key) {
             int low = 0;
             int high = size() - 1;
             
@@ -1387,7 +1456,42 @@ public final class DocumentModel {
             return -(low + 1);  // key not found.
         }
         
+        /** finds a DocumentElement starting on the given offset. 
+         * Note: there might be mode elements with the same startposition.
+         * The method can return any of them.
+         */
+        public int binarySearchForOffset(int offset) {
+            checkIntegrity();
+            
+            int low = 0;
+            int high = size() - 1;
+            
+            while (low <= high) {
+                int mid = (low + high) >> 1;
+                DocumentElement midVal = elements[mid];
+                int so = midVal.getStartOffset();
+                int cmp = so - offset;
+                
+                if (cmp < 0)
+                    low = mid + 1;
+                else if (cmp > 0)
+                    high = mid - 1;
+                else
+                    return mid; // key found
+            }
+            return -(low + 1);  // key not found.
+        }
+        
     }
+    
+    //some measurement
+    private long parent = 0;
+    private long parent_count = 0;
+    
+    //performance hack>>>
+    private DocumentElement last_parent = null; 
+    private int last_empty_element_start_offset = -1;
+    //<<<
     
     //root document element - always present in the model - even in an empty one
     private static final String DOCUMENT_ROOT_ELEMENT_TYPE = "ROOT_ELEMENT";
