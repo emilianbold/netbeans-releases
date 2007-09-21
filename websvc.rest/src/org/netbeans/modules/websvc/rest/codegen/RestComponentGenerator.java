@@ -116,7 +116,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         modifyTargetConverter();
         FileObject[] result = new FileObject[]{targetFile, wrapperResourceFile, refConverterFO, outputWrapperFO};
         if (outputWrapperFO == null) {
-            result = new FileObject[]{targetFile, wrapperResourceFile, refConverterFO };
+            result = new FileObject[]{targetFile, wrapperResourceFile, refConverterFO};
         }
         JavaSourceHelper.saveSource(result);
 
@@ -179,20 +179,31 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                 Object[] paramAnnotationAttrs = null;
 
                 String uriParamAnnotationAttribute = getUriParam(JavaSourceHelper.getTopLevelClassElement(copy));
+                boolean addTryFinallyBlock = false;
                 if (uriParamAnnotationAttribute != null) {
                     params = new String[]{"id"}; //NOI18N
                     paramTypes = new Object[]{Integer.class.getName()};
                     paramAnnotations = new String[]{Constants.URI_PARAM_ANNOTATION};
                     paramAnnotationAttrs = new Object[]{uriParamAnnotationAttribute};
+                    addTryFinallyBlock = true;
                 }
 
                 String body = "{";
+
+                if (addTryFinallyBlock) {
+                    body += "try {";
+                }
+
                 body += getParamInitStatements(copy);
                 body += "return new $CLASS$($ARGS$);}";
                 body = body.replace("$CLASS$", JavaSourceHelper.getClassName(wrapperResourceJS));
                 body = body.replace("$ARGS$", getParamList());
 
                 String comment = "Returns " + bean.getName() + " sub-resource.\n";
+
+                if (addTryFinallyBlock) {
+                    body += "finally { PersistenceService.getInstance().close()";
+                }
 
                 ClassTree modifiedTree = JavaSourceHelper.addMethod(copy, tree, Constants.PUBLIC, annotations, annotationAttrs, getSubresourceLocatorName(), bean.getQualifiedClassName(), params, paramTypes, paramAnnotations, paramAnnotationAttrs, body, comment);
                 copy.rewrite(tree, modifiedTree);
@@ -206,7 +217,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
      */
     protected void addSupportingMethods() throws IOException {
     }
-    
+
     /**
      *  Return target and generated file objects
      */
@@ -225,7 +236,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
                 methodBody += "}"; //NOI18N
                 // currently component resource only generate for one mime.
-                MimeType mime = bean.getMimeTypes()[0]; 
+                MimeType mime = bean.getMimeTypes()[0];
                 MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, bean.getGetMethodName(mime));
                 JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
             }
@@ -271,9 +282,10 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
     }
 
     private String getParamInitStatements(WorkingCopy copy) {
-        String text = "// TODO: Assign a value to one of the following variables if you want to \n" +
-                      "// override the corresponding default value or value from the query \n" +
-                      "// parameter in the subresource class.\n";       //NOI18N
+        String comment = "// TODO: Assign a value to one of the following variables if you want to \n" + "// override the corresponding default value or value from the query \n" + "// parameter in the subresource class.\n"; //NOI18N
+        
+        String statements = "";     //NOI18N
+        boolean addGetEntityStatement = false;
         
         for (ParameterInfo param : bean.getInputParameters()) {
             String initValue = "null"; //NOI18N
@@ -281,12 +293,20 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
             if (access != null) {
                 initValue = access;
+                addGetEntityStatement = true;
             }
 
-            text += param.getTypeName() + " " + param.getName() + " = " + initValue + ";"; //NOI18N
+            statements += param.getTypeName() + " " + param.getName() + " = " + initValue + ";"; //NOI18N
         }
 
-        return text;
+        String getEntityStatement = "";
+        
+        if (addGetEntityStatement) {
+            getEntityStatement = getEntityType(JavaSourceHelper.getTopLevelClassElement(copy)) +
+                    " entity = getEntity(id)";
+        }
+        
+        return comment + getEntityStatement + statements;
     }
 
     private String getParamList() {
@@ -309,7 +329,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         return JavaSourceHelper.getClassType(jaxbOutputWrapperJS);
     }
 
-    private static String getUriParam(TypeElement typeElement) {
+    private String getUriParam(TypeElement typeElement) {
         List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
         boolean hasMethodGetEntity = false;
         String uriParam = null;
@@ -333,6 +353,17 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                         }
                     }
                 }
+            }
+        }
+        return null;
+    }
+
+    private String getEntityType(TypeElement typeElement) {
+        List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
+ 
+        for (ExecutableElement method : methods) {
+            if (method.getSimpleName().contentEquals("getEntity")) {
+               return method.getReturnType().toString();
             }
         }
         return null;
@@ -419,7 +450,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                     for (ExecutableElement m : eMethods) {
                         String mName = m.getSimpleName().toString().toLowerCase();
                         if (mName.startsWith("get") && match(mName.substring(3), argName)) {
-                            return "getEntity(id)." + m.getSimpleName().toString() + "()"; //NOI18N
+                            return "entity." + m.getSimpleName().toString() + "()"; //NOI18N
                         }
                     }
                 }
@@ -455,15 +486,14 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         String[] annotations = new String[]{Constants.XML_ELEMENT_ANNOTATION};
         String uriTemplate = getSubresourceLocatorUriTemplate();
         String xmlElementName = null;
-        
+
         if (uriTemplate.endsWith("/")) {
-            xmlElementName = uriTemplate.substring(0, uriTemplate.length()-1) + "Ref";
+            xmlElementName = uriTemplate.substring(0, uriTemplate.length() - 1) + "Ref";
         } else {
             xmlElementName = uriTemplate + "Ref";
         }
-        
-        Object[] annotationAttrs = new Object[]{JavaSourceHelper.createAssignmentTree(copy, "name", 
-                xmlElementName)};
+
+        Object[] annotationAttrs = new Object[]{JavaSourceHelper.createAssignmentTree(copy, "name", xmlElementName)};
 
         String body = "{ return new $CLASS$(uri.resolve(\"$URITEMPLATE$\")); }";
         body = body.replace("$CLASS$", GENERIC_REF_CONVERTER);
@@ -498,9 +528,8 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         int counter = 1;
         String uriTemplate = Inflector.getInstance().camelize(bean.getShortName(), true);
         String temp = uriTemplate;
-        
-        while (existingUriTemplates.contains(temp) || 
-                existingUriTemplates.contains(temp + "/")) {
+
+        while (existingUriTemplates.contains(temp) || existingUriTemplates.contains(temp + "/")) {
             //NOI18N
             temp = uriTemplate + counter++;
         }
