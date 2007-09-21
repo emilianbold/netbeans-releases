@@ -32,6 +32,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.TestPlatformProvider;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -87,7 +88,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
     }
     
     public void testClassPaths() throws Exception {
-        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+        ClassPathProvider cpp = ((AppClientProject)project).getClassPathProvider();
         assertNotNull("No ClassPathProvider in project lookup!", cpp);
         
         ClassPath cp;

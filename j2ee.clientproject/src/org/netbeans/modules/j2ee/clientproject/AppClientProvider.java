@@ -149,7 +149,7 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
     
     public ClassPathProvider getClassPathProvider() {
-        return project.getLookup().lookup(ClassPathProvider.class);
+        return project.getClassPathProvider();
     }
     
     public FileObject getArchive() {

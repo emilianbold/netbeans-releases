@@ -142,7 +142,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
     private final Car apiJar;
     private JarContainerImpl enterpriseResourceSupport;
     private FileObject libFolder;
-    private final AppClientProjectClassPathExtender classpathExtender; 
+    private final AppClientProjectClassPathExtender classpathExtender;
+    private final ClassPathProviderImpl cpProvider;
     
     // use AntBuildExtender to enable Ant Extensibility
     private AntBuildExtender buildExtender;
@@ -160,7 +161,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         jaxWsClientSupport = new AppClientProjectJAXWSClientSupport(this, helper);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(carProjectWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
-        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
+        cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         appClient = new AppClientProvider(this, helper, cpProvider);
         apiJar = CarFactory.createCar(appClient);
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
@@ -231,7 +232,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
-            cpProvider,
+            new ClassPathProviderMerger(cpProvider),
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new AntArtifactProviderImpl(),
@@ -260,6 +261,10 @@ public final class AppClientProject implements Project, AntProjectListener, File
             LookupProviderSupport.createSourcesMerger()
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-clientproject/Lookup"); //NOI18N
+    }
+    
+    public ClassPathProviderImpl getClassPathProvider () {
+        return this.cpProvider;
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
@@ -639,7 +644,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
 
             
             // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -742,7 +746,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
             }
             
             // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
