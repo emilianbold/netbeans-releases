@@ -188,7 +188,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
                     wrapperChildren.addAll(tempWrapperChildren);
                 }
             }
-            if ((!InspectorRegistry.getDefault().getRegistry().isEmpty()) && InspectorRegistry.getDefault().getRegistry().contains(component)) {
+            if ((!InspectorRegistry.getInstance(document).getComponentsToUpdate().isEmpty()) && InspectorRegistry.getInstance(document).getComponentsToUpdate().contains(component)) {
                 if (wrapperChildren == null) {
                     wrapperChildren = changedComponentsRecursion(path, parentWrapper, component);
                 } else {
@@ -399,8 +399,8 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
             }
         }
 
-        InspectorRegistry.getDefault().removeAll(componentsToAdd);
-        InspectorRegistry.getDefault().removeAll(componentsToDelete);
+        InspectorRegistry.getInstance(document).remove(componentsToAdd);
+        InspectorRegistry.getInstance(document).remove(componentsToDelete);
     }
 
     private void updateTreeStructureView() {

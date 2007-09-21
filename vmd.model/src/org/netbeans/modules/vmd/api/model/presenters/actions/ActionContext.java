@@ -25,8 +25,20 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
  *
  * @author Karol Harezlak
  */
-public interface ActionContext {
 
+/** 
+ * This interface delivers DesignComponent references to the Action which 
+ * implements this interface. DesignComponent passed to this interface represents DesignComponent to whose
+ * Action is attached to through ActionsPresters.
+ */ 
+public interface ActionContext {
+    /**
+     * This method delivers DesignComponent references to the Action which
+     * implements this interface.  DesignComponent passed to this method 
+     * represents DesignComponent to whose Action is attached to through the ActionsPresters.
+     * @param component DesignComponent connected with Action whose implemented this interface
+     * 
+     */ 
     void setComponent(DesignComponent component);
 
 }

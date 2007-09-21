@@ -30,7 +30,7 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
  */
 
 /**
- * This class suits as a descriptor for the folder which is visuals in the Visual Designer Navigator.
+ * This class suits as a descriptor for the Mobility Visual Designer Navigator node.
  */
 public abstract class InspectorFolder implements  InspectorPositionController {
     
@@ -89,10 +89,9 @@ public abstract class InspectorFolder implements  InspectorPositionController {
     public abstract InspectorOrderingController[] getOrderingControllers();
     
      /**
-     * Creates object with implemented interface AcceptSuggestion. Created object 
-     * is not restricted in any way. Created object can have any type of functionality
-     * that helps with folder dragging and dropping. AcceptSuggestion interface 
-     * is used as a marker and has no methods.
+     * Creates object with implemented interface AcceptSuggestion.Created object 
+     * can have any type of functionality that helps with folder dragging and dropping.
+     * AcceptSuggestion interface is just a empty interface used as a marker.
      * @return default implementation returns null
      */
     public AcceptSuggestion createSuggestion(Transferable transferable) {

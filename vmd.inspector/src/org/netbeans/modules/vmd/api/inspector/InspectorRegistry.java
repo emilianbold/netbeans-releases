@@ -21,59 +21,96 @@ package org.netbeans.modules.vmd.api.inspector;
 
 import java.util.Collection;
 import java.util.Collections;
-
+import java.util.WeakHashMap;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.inspector.InspectorManagerView;
+import org.netbeans.modules.vmd.inspector.InspectorWrapperTree;
 import org.openide.util.WeakSet;
 
 /**
  *
  * @author Karol Harezlak
  */
-
 /**
- * This class store information about DesigneComponents   
- * 
- */ 
+ * This class store information about DesigneComponents to update in the Mobility Visual Designer Navigator.
+ * When registry contains any DesignComponents then scans all DesignComponents for
+ * folders attached to the added DesignComponents through InspectorFolderPresenter and
+ * updating them in the structure of Navigator. After end of the update registry all DesignComponents are removed from registry.
+ * Mobility Visual Designer Navigator updates its self automatically on following events:
+ * <ul>
+ * <li>DesignComponent removed from the DesignDocument</li>
+ * <li>DesignComponent added to the DesignDocument</li>
+ * <li>DesignComponent chenged in the DesignDocument</li>
+ * <li>DesignComponent added to the DesignDocument</li>
+ * </ul>
+ * If it's necessary to update some DesignComponents in the Navigator at some 
+ * other event or any other reason, simply add necessary DesignComponents to this registry
+ */
 public final class InspectorRegistry {
+
+    private static WeakHashMap<DesignDocument, InspectorRegistry> registryMap;
+    private WeakSet<DesignComponent> components = new WeakSet<DesignComponent>();
     
-    private static InspectorRegistry INSTANCE;
-    
-    private WeakSet<DesignComponent> registry = new WeakSet<DesignComponent>();;
+    /**
+     * Returns instance of InspectorRegistry for given DesignDocument.
+     * @param DesignDocument 
+     */ 
+    public static InspectorRegistry getInstance(DesignDocument document) {
+        if (registryMap == null) {
+            registryMap = new WeakHashMap<DesignDocument, InspectorRegistry>();
+        }
+        if (registryMap.get(document) == null) {
+            registryMap.put(document, new InspectorRegistry());
+        }
+        return registryMap.get(document);
+    }
 
     private InspectorRegistry() {
     }
-    
-    public static InspectorRegistry getDefault() {
-        if (INSTANCE == null)
-            INSTANCE = new InspectorRegistry();
-        
-        return INSTANCE;
-    }
-    
+
+    /**
+     * Add DesignComponent to update in the Mobility Designer Navigator.
+     * @param DesignComponent component to update
+     */
     public void addComponent(DesignComponent component) {
-        registry.add(component);
+        components.add(component);
     }
 
-    public Collection<DesignComponent> getRegistry() {
-        if (registry == null)
-            return null;
-        
-        return Collections.unmodifiableCollection(registry);
+    /**
+     * Returns Collection of DesignComponents to update.
+     * @return Collection of DesignComponents to update or Collections.EMTY_SET when registry is empty
+     */
+    @SuppressWarnings(value = "unchecked")
+    public Collection<DesignComponent> getComponentsToUpdate() {
+        if (components == null) {
+            return Collections.EMPTY_SET;
+        }
+        return Collections.unmodifiableCollection(components);
+    }
+
+    /**
+     * DO NOT USE THIS METHOD. This method is only accessible from class InspectorWrapperTree.
+     */
+    public void cleanUpRegistry() {
+        if (!Debug.isFriend(InspectorManagerView.class)) {
+            throw new IllegalStateException("This method is only accessible from class InspectorWrapperTree"); //NOI18N
+        }
+        if (components != null) {
+            components.clear();
+        }
     }
     
-    public void clearRegistry() {
-        if (registry != null)
-            registry.clear();
+     /**
+     * DO NOT USE THIS METHOD. This method is only accessible from class InspectorWrapperTree.
+     */
+    public void remove(Collection<DesignComponent> components) {
+        if (!Debug.isFriend(InspectorWrapperTree.class)) {
+            throw new IllegalStateException("This method is only accessible from class InspectorWrapperTree"); //NOI18N
+        }
+        if ((this.components != null && this.components.size() > 0) && (components != null && components.size() == 0)) {
+            this.components.removeAll(components);
+        }
     }
-    
-    public void removeAll(Collection<DesignComponent> components) {
-        if ((registry != null && registry.size() > 0) && (components != null && components.size() == 0))
-            registry.removeAll(components);
-    }
-    
-    public void remove(DesignComponent component) {
-        if (registry != null || component != null)
-            registry.remove(component);
-    }
-    
 }

@@ -29,6 +29,11 @@ import org.netbeans.modules.vmd.api.model.PresenterEvent;
  *
  * @author Karol Harezlak
  */
+
+/**
+ * Default implementation of InspectorFolderPresenter. InspectorFolder inside of this presenter is
+ * created based on the DesignComponent to whose this preseter is attached to.
+ */
 public final class InspectorFolderComponentPresenter extends InspectorFolderPresenter {
     
     private DesignComponentInspectorFolder folder;

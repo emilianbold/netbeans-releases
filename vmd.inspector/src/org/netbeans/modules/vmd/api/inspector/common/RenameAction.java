@@ -37,6 +37,12 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Karol Harezlak
  */
+
+/**
+ * This class provides GUI to change DesignComponent display name and DesignComponent's 
+ * property which keeps information about DesignCompoent name. It needs to be attache to the DesignComponent
+ * through ActionsPresenter.
+ */ 
 public final class RenameAction extends SystemAction implements ActionContext {
     
     public static final String DISPLAY_NAME = NbBundle.getMessage(RenameAction.class, "NAME_RenameAction"); //NOI18N

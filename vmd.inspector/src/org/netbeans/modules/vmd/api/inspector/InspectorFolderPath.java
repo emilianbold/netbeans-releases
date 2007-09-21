@@ -43,37 +43,34 @@ public final class InspectorFolderPath {
     }
 
     /**
-     * DO NOT USE THIS METHOD.This method not spoused to be used anywhere else except InspectorWrapperTree
-     * @throw IllegalStateException
+     * DO NOT USE THIS METHOD.This method is only accessible from InspectorWrapperTree.class
      */
     public static InspectorFolderPath createInspectorPath() {
-        if (! Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run")) //NOI18N
-            throw new IllegalStateException("This method is only accesable from InspectorWrapperTree.class"); //NOI18N
+        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run")) {
+            //NOI18N
+            throw new IllegalStateException("This method is accessible only from InspectorWrapperTree.class"); //NOI18N
+        }
         instance = new InspectorFolderPath();
         return instance;
     }
 
-   /**
-     * DO NOT USE THIS METHOD.This method not spoused to be used anywhere else except InspectorWrapperTree
-     * @throw IllegalStateException
+    /**
+     * DO NOT USE THIS METHOD.This method is only accessible from InspectorWrapperTree.class
      */
     public InspectorFolderPath add(InspectorFolder pathElement) {
-        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run") && //NOI18N
-                !Debug.isFriend(InspectorWrapperTree.class)) {
-            throw new IllegalStateException("This method is only accesable from InspectorWrapperTree.class"); //NOI18N
+        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run") && !Debug.isFriend(InspectorWrapperTree.class)) {
+            throw new IllegalStateException("This method is accessible only from InspectorWrapperTree.class"); //NOI18N
         }
         path.add(pathElement);
         return this;
     }
 
-   /**
-     * DO NOT USE THIS METHOD.This method not spoused to be used anywhere else except InspectorWrapperTree
-     * @throw IllegalStateException
+    /**
+     * DO NOT USE THIS METHOD.This method is only accessible from InspectorWrapperTree.class
      */
     public void remove(InspectorFolder pathElement) {
-        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run") && //NOI18N
-                !Debug.isFriend(InspectorWrapperTree.class)) {
-            throw new IllegalStateException("This method is only accesable from InspectorWrapperTree.class"); //NOI18N
+        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run") && !Debug.isFriend(InspectorWrapperTree.class)) {
+            throw new IllegalStateException("This method is accessible only from InspectorWrapperTree.class"); //NOI18N
         }
         assert path.lastIndexOf(pathElement) == (path.size() - 1) : "Path error"; // NOI18N
         path.remove(path.size() - 1);

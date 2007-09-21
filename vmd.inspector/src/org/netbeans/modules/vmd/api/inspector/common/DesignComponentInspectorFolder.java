@@ -41,6 +41,12 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
  *
  * @author Karol Harezlak
  */
+
+ /**
+ * This class suits as a descriptor for the Mobility Visual Designer Navigator node.
+ * InspectorFolder in this class is created based on DesignComponent passed in the class constructor.
+ * This class creates visual representation of DesignComponent in the Mobility Visual Designer Navigator.
+ */
  public class DesignComponentInspectorFolder extends InspectorFolder {
         
         private String displayName;
@@ -50,6 +56,11 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
         private List<InspectorOrderingController> ocs;
         private DesignComponent component;
         
+        /**
+         * Creates  DesignComponentInspectorFolder
+         * @param canRename - indicates if name of the InspectorFolder can be changed
+         * @param component - InspectorFolder is created based on this parameter 
+         */ 
         public DesignComponentInspectorFolder(boolean canRename, DesignComponent component) {
             assert (component != null);
             this.component = component;

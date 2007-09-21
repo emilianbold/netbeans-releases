@@ -32,6 +32,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
  */
 public final class FolderPositionControllerFactory {
     //TODO This Controllers could be singeltons !!
+    
     public static InspectorPositionController createHierarchical(){
         return new InspectorPositionController() {
             public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {

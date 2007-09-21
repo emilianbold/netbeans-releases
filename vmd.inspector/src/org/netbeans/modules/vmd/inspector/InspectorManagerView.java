@@ -40,7 +40,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Karol Harezlak
  */
-final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocumentSupport.Listener, DesignListener {
+public final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocumentSupport.Listener, DesignListener {
 
     private static WeakHashMap<DataObjectContext, InspectorManagerView> INSTANCES = new WeakHashMap<DataObjectContext, InspectorManagerView>();
     private static final JLabel emptyPanel = new JLabel(NbBundle.getMessage(InspectorManagerView.class, "LBL_emptyPanel"), JLabel.CENTER); //NOI18N
@@ -166,6 +166,6 @@ final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocum
         if (event.isSelectionChanged()) {
             notifyUISelectionChanged();
         }
-        InspectorRegistry.getDefault().clearRegistry();
+        InspectorRegistry.getInstance(document).cleanUpRegistry();
     }
 }

@@ -38,6 +38,11 @@ import org.netbeans.modules.vmd.api.model.TypeID;
  *
  * @author Karol Harezlak 
  */
+
+/**
+ * Implementation of InspectorOrderingController. This class sorts InspectorFolders in the Mobility Visual Designer Navigator
+ * based on given TypeIDs. Folders are gruped and sorted based on the TypeID and display name inside of the same TypeID group.
+ */
 public class OrderingControllerByTypeID implements InspectorOrderingController {
     
     private Integer order;
@@ -53,6 +58,13 @@ public class OrderingControllerByTypeID implements InspectorOrderingController {
         }
     };
     
+     /**
+     * Creates OrderingControllerByTypeID.
+     * @param order Insteger number of the ordering controller, 
+     * higher number means higher position in the tree branch
+     * @param supportedTypeID array of TypeIDs accepted by this ordering controller,
+     * this array is also used as a criterion in the InspectorFolders sorting 
+     */
     public OrderingControllerByTypeID(Integer order, TypeID... types) {
         if (types == null )
             throw new IllegalArgumentException("types argument cant be null"); //NOI18N
@@ -60,7 +72,11 @@ public class OrderingControllerByTypeID implements InspectorOrderingController {
         this.order = order;
         this.types = Arrays.asList(types);
     }
-    
+    /**
+     * Returns List of sorted InspectorFolders based on the provided TypeIDs.
+     * @param component current DeesignComponent
+     * @param folders Collection of InspectorFolders to sort
+     */ 
     public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders) {
         Map<TypeID , List<InspectorFolder>> foldersMap = new TreeMap<TypeID, List<InspectorFolder>>(comparatorByType);
         List<InspectorFolder> sortedList = new ArrayList<InspectorFolder>();
