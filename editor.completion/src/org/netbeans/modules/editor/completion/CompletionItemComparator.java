@@ -68,6 +68,10 @@ public class CompletionItemComparator implements Comparator<CompletionItem> {
     }
     
     private static int compareText(CharSequence text1, CharSequence text2) {
+        if (text1 == null)
+            text1 = ""; //NOI18N
+        if (text2 == null)
+            text2 = ""; //NOI18N
         int len = Math.min(text1.length(), text2.length());
         for (int i = 0; i < len; i++) {
             char ch1 = text1.charAt(i);
