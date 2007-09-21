@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.logging.Logger;
 import junit.framework.Assert;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
@@ -56,11 +57,12 @@ public class InputOutputProviderImpl extends IOProvider {
     
     private static class OW extends OutputWriter {
         
-        private ErrorManager err;
+        private Logger err;
         
         public OW(String prefix) {
             super(new StringWriter());
-            err = ErrorManager.getDefault().getInstance("output[" + prefix + "]");
+            err = Logger.getLogger("test.output." + prefix);
+            err.info("create output " + prefix);
         }
         
         public void println(String s, OutputListener l) throws IOException {
@@ -89,7 +91,7 @@ public class InputOutputProviderImpl extends IOProvider {
             write(s.substring(off, off + len));
         }
         public void write(String s) {
-            err.log(s);
+            err.info(s);
         }
     }
     
