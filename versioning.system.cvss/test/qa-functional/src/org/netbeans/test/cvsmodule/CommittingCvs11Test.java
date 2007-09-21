@@ -163,7 +163,7 @@ public class CommittingCvs11Test extends JellyTestCase {
         open.push();
         
         ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
+        TestKit.waitForQueueEmpty();
         ProjectSupport.waitScanFinished();
         
         //create new elements for testing

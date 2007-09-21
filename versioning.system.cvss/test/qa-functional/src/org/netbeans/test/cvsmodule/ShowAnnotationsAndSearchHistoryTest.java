@@ -157,7 +157,7 @@ public class ShowAnnotationsAndSearchHistoryTest extends JellyTestCase {
         open.push();
         
         ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
+        TestKit.waitForQueueEmpty();
         ProjectSupport.waitScanFinished();
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");

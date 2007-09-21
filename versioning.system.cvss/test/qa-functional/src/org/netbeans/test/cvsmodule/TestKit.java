@@ -38,6 +38,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -407,5 +408,9 @@ public class TestKit {
         JCheckBoxMenuItemOperator cbmio = new JCheckBoxMenuItemOperator((JCheckBoxMenuItem) mo.getSource());
         if (!cbmio.getState())
             cbmio.push();
+    }
+    
+    public static void waitForQueueEmpty() {
+        new QueueTool().waitEmpty(1000);
     }
 }
