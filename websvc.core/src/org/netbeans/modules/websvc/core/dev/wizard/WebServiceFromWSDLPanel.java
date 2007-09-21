@@ -41,6 +41,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -379,6 +380,12 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     boolean isValid(WizardDescriptor wizardDescriptor) {
         //first check for JDK compliance (for non-JSR 109)
         if(!checkNonJsr109Valid()){
+            return false;
+        }
+        
+        if (!Util.isJavaEE5orHigher(project) && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+            // check if jaxrpc plugin installed
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;
         }
         

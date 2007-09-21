@@ -17,36 +17,28 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.websvc.client;
+package org.netbeans.modules.websvc.jaxrpc.project;
 
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportProvider;
 
-public class ProjectWebServicesClientSupportProvider implements WebServicesClientSupportProvider {
+public class ProjectWebServicesSupportProvider implements WebServicesSupportProvider {
 
-    public ProjectWebServicesClientSupportProvider() {
-    }
-    
-    
-    public WebServicesClientSupport findWebServicesClientSupport(FileObject file) {
-        // jaxrpc client support provider moved to jaxrpc support module
-        return null;
+    public ProjectWebServicesSupportProvider() {
     }
 
-    public JAXWSClientSupport findJAXWSClientSupport(FileObject file) {
+    public WebServicesSupport findWebServicesSupport(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
         if (project != null) {
-            WebServicesClientSupportProvider provider = project.getLookup().lookup(WebServicesClientSupportProvider.class);
+            WebServicesSupportProvider provider = project.getLookup().lookup(WebServicesSupportProvider.class);
+            
             if (provider != null) {
-                return provider.findJAXWSClientSupport(file);
+                return provider.findWebServicesSupport(file);
             }
         }
         return null;
     }
-    
-
 }

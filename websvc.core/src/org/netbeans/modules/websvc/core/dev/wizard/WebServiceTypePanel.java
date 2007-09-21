@@ -37,6 +37,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -257,6 +258,12 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     boolean valid(WizardDescriptor wizardDescriptor) {
         //first check for JDK compliance (for non-JSR 109)
         if(!checkNonJsr109Valid(wizardDescriptor)){
+            return false;
+        }
+        
+        if (!Util.isJavaEE5orHigher(project) && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+            // check if jaxrpc plugin installed
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;
         }
         

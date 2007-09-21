@@ -910,6 +910,11 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         //        }
         
         if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)) {
+            if(WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory())==null) {
+                // check if jaxrpc plugin installed
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
+                return false;
+            }
             SourceGroup[] sgs = JaxWsClientCreator.getJavaSourceGroups(project);
             //no source root -> there must be at least one source root to create JAX-RPC client
             if (sgs.length <= 0) {

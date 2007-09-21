@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.websvc.client;
+package org.netbeans.modules.websvc.jaxrpc.project;
 
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.openide.filesystems.FileObject;
@@ -26,25 +26,24 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider;
 
-public class ProjectWebServicesClientSupportProvider implements WebServicesClientSupportProvider {
+public class JaxRpcProjectWebServicesClientSupportProvider implements WebServicesClientSupportProvider {
 
-    public ProjectWebServicesClientSupportProvider() {
+    public JaxRpcProjectWebServicesClientSupportProvider() {
     }
-    
     
     public WebServicesClientSupport findWebServicesClientSupport(FileObject file) {
-        // jaxrpc client support provider moved to jaxrpc support module
-        return null;
-    }
-
-    public JAXWSClientSupport findJAXWSClientSupport(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
         if (project != null) {
             WebServicesClientSupportProvider provider = project.getLookup().lookup(WebServicesClientSupportProvider.class);
             if (provider != null) {
-                return provider.findJAXWSClientSupport(file);
+                return provider.findWebServicesClientSupport(file);
             }
         }
+        return null;
+    }
+
+    public JAXWSClientSupport findJAXWSClientSupport(FileObject file) {
+        // we dont need to return jaxws client support
         return null;
     }
     
