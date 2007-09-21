@@ -90,9 +90,20 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
         dump(global,"", isReparsed);
     }
     
-    private void dump(HostKeyArray children, String ident, boolean trace){
-        Node[] nodes = children.getNodes();
-        for(Node node : nodes){
+    private void dump(final HostKeyArray children, String ident, boolean trace){
+        final Node[][] nodes = new Node[][] { null };
+        try {
+            // let NB to do remained work on children
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            // skip
+        }
+        HostKeyArray.MUTEX.writeAccess(new Runnable() {
+            public void run() {
+                nodes[0] = children.getNodes();
+            }
+        });
+        for(Node node : nodes[0]){
             String res = ident+node.getDisplayName()+" / "+getNodeIcon(node); // NOI18N
             if (trace) {
                 System.out.println(res);
