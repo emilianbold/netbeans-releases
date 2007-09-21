@@ -51,10 +51,23 @@ public class MethodReturnStateHandler extends MethodDetailStateHandler
     
     public StateHandler createSubStateHandler(String stateName, String language) 
     {
+        
         StateHandler retVal = this;
         
-        m_ReturnExpression.addState(stateName, language);
-   
+        if ("Conditional Expression".equals(stateName)) {
+          //kris richards - 
+          // It is now assumed that the "Conditional Expression" state
+          // will occur as a substate of the MethodVariableStateHandler. Therefore
+          // the state is trap in the MethodVariableStateHandler.createSubStateHandler 
+          // which in turn instantiates a MethodConditionalStateHandler instead of a 
+          // ConditionalExpression. Essentially we are making the trinary ('?') operator
+          // look like a basic if-else statement for SQD-REOperation.
+            retVal = StatementFactory.retrieveStatementHandler("Conditional", language, getOpParserOptions(), getSymbolTable()) ;
+        }
+        else {        
+            m_ReturnExpression.addState(stateName, language);
+        }
+        
         return retVal;
     }
     
