@@ -36,8 +36,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -46,6 +44,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.DialogDisplayer;
@@ -94,7 +93,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
             project = ProjectUtils.getProject(document);
-            updateModel();
+            updateModel(document);
         }
 
         if (wrapper == null) {
@@ -188,19 +187,15 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         chooserButton.setEnabled(isEnabled);
     }
 
-    private void updateModel() {
+    private void updateModel(DesignDocument document) {
         doNotFireEvent = true;
         comboBoxModel.removeAllElements();
         doNotFireEvent = false;
         FileObject sourceFolder = getSourceFolder();
         searchImagesInDirectory(sourceFolder);
-        for (Entry e : ClassPath.getClassPath(sourceFolder, ClassPath.COMPILE).entries()) {
-            if (e.getRoot() == null) {
-                continue;
-            }
-            if (e.getRoot().getName().trim().length() > 0) {
-                searchImagesInDirectory(e.getRoot());
-            }
+        Map<FileObject, String> fileMap = MidpProjectSupport.getImagesForProject(document, false);
+        for (FileObject fo : fileMap.keySet()) {
+            checkFile(fo);
         }
     }
 
@@ -209,15 +204,19 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             if (fo.isFolder()) {
                 searchImagesInDirectory(fo);
             } else {
-                for (String ext : EXTENSIONS) {
-                    if (ext.equals(fo.getExt().toLowerCase())) {
-                        String path = convertFile(fo, false);
-                        if (path != null) {
-                            addImage(path);
-                        }
-                        break;
-                    }
+                checkFile(fo);
+            }
+        }
+    }
+
+    private void checkFile(FileObject fo) {
+        for (String ext : EXTENSIONS) {
+            if (ext.equals(fo.getExt().toLowerCase())) {
+                String path = convertFile(fo, false);
+                if (path != null) {
+                    addImage(path);
                 }
+                break;
             }
         }
     }
@@ -271,19 +270,20 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         return ProjectUtils.getSourceGroups(projectID).iterator().next().getRootFolder();
     }
 
-    private String convertFile(FileObject file, boolean needCopy) {
-        String fullPath = file.getPath();
+    private String convertFile(FileObject fo, boolean needCopy) {
+        File file = FileUtil.toFile(fo);
+        String fullPath = file != null ? file.getAbsolutePath() : fo.getPath();
         FileObject sourceFolder = getSourceFolder();
         String sourcePath = sourceFolder.getPath();
 
         if (needCopy && !fullPath.contains(sourcePath)) {
-            File possible = new File(sourcePath + File.separator + file.getNameExt());
+            File possible = new File(sourcePath + File.separator + fo.getNameExt());
             if (possible.exists()) {
                 return null;
             }
 
             try {
-                file = file.copy(sourceFolder, file.getName(), file.getExt());
+                fo = fo.copy(sourceFolder, fo.getName(), fo.getExt());
             } catch (IOException ex) {
                 Debug.warning("ImageEditorElement.convertFile()", fullPath, ex); // NOI18N
             }
@@ -291,11 +291,11 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
 
         String relativePath;
         if (needCopy || fullPath.contains(sourcePath)) { // file was copied or is in some package, not in roof folder in sources
-            fullPath = file.getPath();
+            fullPath = fo.getPath();
             int i = fullPath.indexOf(sourcePath) + sourcePath.length();
             relativePath = fullPath.substring(i);
         } else {
-            relativePath = "/" + file.getNameExt(); // NOI18N
+            relativePath = "/" + fo.getNameExt(); // NOI18N
         }
         paths.put(relativePath, fullPath);
 
