@@ -20,11 +20,14 @@
 			<file title="newrubyappwiz-nameandloc.html"/>
 			<file title="newrubyappwsourcewiz-nameandloc.html"/>
 			<file title="newrubyappwsourcewiz-srcfiles.html"/>
+			<file title="ruby_quickref.html"/>
 			<file title="rubyhelp.hs"/>
 			<file title="rubyindex.xml"/>
 			<file title="rubymap.xml"/>
+			<file title="rubyoptions.html"/>
 			<file title="rubytoc.xml"/>
 			<file title="settingrubyinterpreter.html"/>
+			<file title="usedatabase.html"/>
 			<file title="usingirb.html"/>
 		</directory>
     </documents>

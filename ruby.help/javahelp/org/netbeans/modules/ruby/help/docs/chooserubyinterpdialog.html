@@ -13,10 +13,15 @@
 <p> <small><a href="#seealso">See Also</a></small> 
 
 
-<p>This dialog box enables you to select a different Ruby interpreter if you have your own Ruby or Rails software installed. If the path to your installed Ruby interpreter is in your  PATH system variable, this dialog box opens the first time you create a Ruby or Ruby on Rails project in the IDE.  
+<p>This dialog box enables you to select a different Ruby interpreter if you have your own Ruby or Rails software installed. If the path to your installed Ruby interpreter is in your  PATH system variable, this dialog box opens the first time you create a Ruby or Ruby on Rails project in the IDE.
 <ul>
   <li>If you want to use JRuby, either leave it selected on the list and click OK or just click Cancel.</li>
-  <li>If you prefer to use an installed native Ruby interpreter that is on the list,  select it from the list and click OK.</li>
+  <li>If you prefer to use an installed native Ruby interpreter that is on the list,  select it from the list and click OK.
+<ul class="note">
+  <li>If you change the interpreter, you also change the Ruby platform used by the IDE, including all the gems that are loaded.</li>
+</ul>  
+
+</li>
   <li>If you want to use a Ruby interpreter that isn't on the list, click Other. The Options window opens with the Ruby Platform tab selected. Click the Browse button next to the Ruby Interpreter field and navigate to the interpreter file in your Ruby or Rails installation, then click the Open button. </li>
 </ul>
 <dl>

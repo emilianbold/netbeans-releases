@@ -5,6 +5,8 @@
 <toc version="2.0">
 	<tocitem text="Ruby Development" expand="false">
 		<tocitem text="About Ruby Development in NetBeans" target="nbruby_about_ruby" />
+		<tocitem text="NetBeans Ruby Tasks: Quick Reference" target="nbruby_ruby_quickref" />
+		<tocitem text="Using Database Servers With JRuby" target="nbruby_usedatabase" />
 		<tocitem text="Setting the Ruby Interpreter" target="nbruby_settingrubyinterpreter" />
 		<tocitem text="Using Interactive Ruby (IRB)" target="nbruby_usingirb" />
 	</tocitem>
