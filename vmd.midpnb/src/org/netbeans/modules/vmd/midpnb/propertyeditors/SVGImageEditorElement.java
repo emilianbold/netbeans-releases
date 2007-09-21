@@ -63,10 +63,10 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
     private String lastDir;
     private SVGImageComponent imageView;
     private DefaultComboBoxModel comboBoxModel;
-    private Map<String, String> paths;
+    private Map<String, FileObject> paths;
 
     public SVGImageEditorElement() {
-        paths = new HashMap<String, String>();
+        paths = new HashMap<String, FileObject>();
         comboBoxModel = new DefaultComboBoxModel();
         initComponents();
         imageView = new SVGImageComponent();
@@ -185,6 +185,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         doNotFireEvent = true;
         comboBoxModel.removeAllElements();
         doNotFireEvent = false;
+        paths.clear();
         FileObject sourceFolder = getSourceFolder();
         searchImagesInDirectory(sourceFolder);
         Map<FileObject, String> fileMap = MidpProjectSupport.getAllFilesForProjectByExt(document, Collections.<String>singleton(EXTENSION));
@@ -214,14 +215,11 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
 
     private void updatePreview() {
         String relativePath = (String) pathTextComboBox.getSelectedItem();
-        String path = paths.get(relativePath);
+        FileObject fo = paths.get(relativePath);
         SVGImage svgImage = null;
         try {
-            if (path != null) {
-                FileObject svgFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
-                if (svgFileObject != null) {
-                    svgImage = Util.createSVGImage(svgFileObject, true);
-                }
+            if (fo != null) {
+                svgImage = Util.createSVGImage(fo, true);
             }
         } catch (IOException e) {
         }
@@ -278,9 +276,16 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         } else {
             relativePath = "/" + fo.getNameExt(); // NOI18N
         }
-        paths.put(relativePath, fullPath);
+        paths.put(relativePath, fo);
 
         return relativePath;
+    }
+
+    @Override
+    public void removeNotify() {
+        paths.clear();
+        project = null;
+        super.removeNotify();
     }
 
     private static class ImageFilter extends FileFilter {
