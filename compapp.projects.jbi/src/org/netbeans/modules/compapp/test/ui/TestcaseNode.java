@@ -576,10 +576,10 @@ public class TestcaseNode extends FilterNode {
      */
     public static void setTestCaseRunning(FileObject testcaseDirFO, boolean isRunning) {
         if (isRunning) {
-            System.out.println("Set test case running: " + testcaseDirFO);
+//            System.out.println("Set test case running: " + testcaseDirFO);
             runningTestCases.add(testcaseDirFO);
         } else {
-            System.out.println("Set test case not running: " + testcaseDirFO);
+//            System.out.println("Set test case not running: " + testcaseDirFO);
             runningTestCases.remove(testcaseDirFO);            
         }
     }

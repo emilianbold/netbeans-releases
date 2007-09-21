@@ -65,38 +65,73 @@ import org.xml.sax.InputSource;
  */
 public class JBIMBeanTaskResultHandler {
     
-    public static final String LINE_SEPARATOR =
-            System.getProperty("line.separator"); // NOI18N
+    static final String LINE_SEPARATOR = System.getProperty("line.separator"); // NOI18N
     
     /**
      * @param actionName      remote action name
      * @param target          action target (JBI component name,
      *                        service assembly name, or the artifact)
      * @param result          remote invocation result
+     * 
+     * @return <code>true</code> if the action is a complete success or a
+     *          partial success; <code>false</code> if it is a failure.
      */
-    public static void showRemoteInvokationResult(String actionName,
+    public static boolean showRemoteInvokationResult(String actionName,
             String target, String result) {
+        Object[] value = getProcessResult(actionName, target, result, true);        
+        String message = (String) value[0];
+        boolean failed = !( (Boolean) value[1] );
+        if (message != null) {
+            int msgType = failed ? NotifyDescriptor.ERROR_MESSAGE : NotifyDescriptor.WARNING_MESSAGE;
+            NotifyDescriptor d = new NotifyDescriptor.Message(message, msgType);
+            DialogDisplayer.getDefault().notify(d); 
+        } 
+        
+        return message == null ||   // complete success
+                !failed;            // partial success
+    }
+    
+    /**
+     * @param actionName      remote action name
+     * @param target          action target (JBI component name,
+     *                        service assembly name, or the artifact)
+     * @param result          remote invocation result
+     * @param html            <code>true</code> to produce message in HTML;
+     *                        <code>false</code> otherwise.
+     * 
+     * @return  a two-object array; the first one (String) being the error 
+     *          message if there is a failure or partial success, it would 
+     *          be null if it is a complete success; the second one (Boolean) 
+     *          indicate whether it is a partial success.
+     */
+    public static Object[] getProcessResult(String actionName, String target,
+            String result, boolean html) {
         
         if (result == null || result.trim().length() == 0) {
-            return;
+            return new Object[] {null, true};
         }
         
-        System.out.println(result);
+//        System.out.println(result);
         
-        StringBuffer ret = new StringBuffer();
-        ret = ret.append("<html>"); // NOI18N
+        StringBuffer msg = new StringBuffer();
+        
+        if (html) {
+            msg = msg.append("<html>"); // NOI18N
+        }
         
         boolean failed = false;
         
         if (result.indexOf("<?xml") == -1) { // NOI18N
             // No XML, certain exception (IO) occurred during invoke()
-            if (result.indexOf("Exception") == -1) {
-                return;
+            if (result.indexOf("Exception") == -1) { // NOI18N
+                return new Object[] {null, true};
             } else {
                 failed = true;
-                ret = ret.append(result);
+                msg = msg.append(result);
             }
         } else {
+            String lineSeparator = System.getProperty("line.separator"); // NOI18N
+            
             // Need to extract info from the XML result
             result = result.substring(result.indexOf("<?xml")); // NOI18N
             Document document = getDocument(result);
@@ -107,42 +142,53 @@ public class JBIMBeanTaskResultHandler {
                     JBIMBeanTaskResultHandler.getTaskResultProblems(document, true);
             
             if (failed) {
-                ret = ret.append("Failed execution of ");  // NOI18N
+                msg = msg.append("Failed execution of ");  // NOI18N
             } else { 
                 // complete or partial success, can't determine yet
                 // See the example in IZ #108114
-                ret = ret.append("Successful execution of ");  // NOI18N
+                msg = msg.append("Successful execution of ");  // NOI18N
             }
             
-            ret = ret.append(actionName);
-            ret = ret.append(": ");  // NOI18N
-            ret = ret.append(target);
+            msg = msg.append(actionName);
+            msg = msg.append(": ");  // NOI18N
+            msg = msg.append(target);
             
             List<TaskResult> componentTaskResults =
                     JBIMBeanTaskResultHandler.getTaskResultProblems(document, false);
             
             if (!failed && componentTaskResults.size() == 0) {
                 // complete success
-                return;
+                return new Object[] {null, true};
             }
             
-            for (TaskResult frameworkTaskResult : frameworkTaskResults) {
-                ret = ret.append("<br>"); // NOI18N
-                ret = ret.append(frameworkTaskResult.toHtmlString());
+            if (html) {
+                for (TaskResult frameworkTaskResult : frameworkTaskResults) {
+                    msg = msg.append("<br>"); 
+                    msg = msg.append(frameworkTaskResult.toHtmlString());
+                }
+
+                msg = msg.append("<ul>"); 
+                for (TaskResult componentTaskResult : componentTaskResults) {
+                    msg = msg.append(componentTaskResult.toHtmlString());
+                }
+
+                msg = msg.append("</ul>");   // NOI18N
+                msg = msg.append("</html>"); // NOI18N
+                
+            } else {
+                for (TaskResult frameworkTaskResult : frameworkTaskResults) {
+                    msg = msg.append(lineSeparator); 
+                    msg = msg.append(frameworkTaskResult);
+                }
+
+                msg = msg.append(lineSeparator); 
+                for (TaskResult componentTaskResult : componentTaskResults) {
+                    msg = msg.append(componentTaskResult);
+                }
             }
-            
-            ret = ret.append("<ul>"); // NOI18N
-            for (TaskResult componentTaskResult : componentTaskResults) {
-                ret = ret.append(componentTaskResult.toHtmlString());
-            }
-            ret = ret.append("</ul>"); // NOI18N
         }
         
-        ret.append("</html>");
-        
-        int msgType = failed ? NotifyDescriptor.ERROR_MESSAGE : NotifyDescriptor.WARNING_MESSAGE;
-        NotifyDescriptor d = new NotifyDescriptor.Message(ret.toString(), msgType);
-        DialogDisplayer.getDefault().notify(d);
+        return new Object[]{msg, !failed};
     }
     
     public static boolean isFrameworkTaskResultSuccessful(Document document) {
@@ -172,31 +218,31 @@ public class JBIMBeanTaskResultHandler {
     }
     
     static List<TaskResult> getTaskResultExceptions(Document document, boolean framework) {
-        String expression = getMyXPathExpression("EXCEPTION", framework);
-        return getMsgLocInfoOfType("ERROR", document, expression, framework);
+        String expression = getMyXPathExpression("EXCEPTION", framework); // NOI18N
+        return getMsgLocInfoOfType("ERROR", document, expression, framework); // NOI18N
     }
     
     static List<TaskResult> getTaskResultErrors(Document document, boolean framework) {
-        String expression = getMyXPathExpression("ERROR", framework);
-        return getMsgLocInfoOfType("ERROR", document, expression, framework);
+        String expression = getMyXPathExpression("ERROR", framework); // NOI18N
+        return getMsgLocInfoOfType("ERROR", document, expression, framework); // NOI18N
     }
     
     static List<TaskResult> getTaskResultWarnings(Document document, boolean framework) {
-        String expression = getMyXPathExpression("WARNING", framework);
-        return getMsgLocInfoOfType("WARNING", document, expression, framework);
+        String expression = getMyXPathExpression("WARNING", framework); // NOI18N
+        return getMsgLocInfoOfType("WARNING", document, expression, framework); // NOI18N
     }
     
     static List<TaskResult> getTaskResultInfos(Document document, boolean framework) {
-        String expression = getMyXPathExpression("INFO", framework);
-        return getMsgLocInfoOfType("INFO", document, expression, framework);
+        String expression = getMyXPathExpression("INFO", framework); // NOI18N
+        return getMsgLocInfoOfType("INFO", document, expression, framework); // NOI18N
     }
     
     
     private static String getMyXPathExpression(String messageType, boolean framework) {
         String ret = null;
         
-        String taskResult = framework? "frmwk-task-result" : "component-task-result";
-        if (messageType.equals("EXCEPTION")) {
+        String taskResult = framework? "frmwk-task-result" : "component-task-result"; // NOI18N
+        if (messageType.equals("EXCEPTION")) { // NOI18N
             ret = "//" + taskResult + "/*/task-result-details/exception-info/msg-loc-info"; // NOI18N
         } else {
             ret = "//" + taskResult + "/*/task-result-details[message-type='" + messageType +"']/task-status-msg/msg-loc-info"; // NOI18N
@@ -231,7 +277,7 @@ public class JBIMBeanTaskResultHandler {
                             ret.add(new TaskResult(type, locTokenValue, locMessageValue));
                         } else {                            
                             Node parent = msgLocInfoNode;
-                            while (!parent.getNodeName().equals("component-task-result")) {
+                            while (!parent.getNodeName().equals("component-task-result")) { // NOI18N
                                 parent = parent.getParentNode();
                             }
                             String componentName = 
@@ -276,8 +322,7 @@ public class JBIMBeanTaskResultHandler {
             System.out.println("Error parsing XML file: " + e); // NOI18N
             return null;
         }
-    }
-    
+    }    
 }
 
 class TaskResult {
@@ -335,7 +380,8 @@ class TaskResult {
 class ComponentTaskResult extends TaskResult {
     private String componentName;
     
-    ComponentTaskResult(String messageType, String locToken, String locMessage, String componentName) {
+    ComponentTaskResult(String messageType, String locToken, 
+            String locMessage, String componentName) {
         super(messageType, locToken, locMessage);
         this.componentName = componentName;
     }

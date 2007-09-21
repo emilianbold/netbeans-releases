@@ -42,7 +42,6 @@
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import java.io.StringReader;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -50,14 +49,15 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyDocument;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 
@@ -234,7 +234,7 @@ public class DeployServiceAssembly extends Task {
                 
         startServer(serverInstanceID);
         
-        ServerInstance serverInstance = AdminServiceHelper.getServerInstance(
+        ServerInstance serverInstance = AdministrationServiceHelper.getServerInstance(
                 nbUserDir, serverInstanceID);
         AdministrationService adminService = null;
         try {
@@ -364,7 +364,8 @@ public class DeployServiceAssembly extends Task {
         
         String result = adminService
                 .deployServiceAssembly(serviceAssemblyLocation);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessedResult("Deploy", result);
+        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Deploy", serviceAssemblyLocation, result, false);
         if (value[0] != null) {
             log((String) value[0]);
         }
@@ -380,7 +381,8 @@ public class DeployServiceAssembly extends Task {
         log("        name=" + serviceAssemblyID);
         
         String result = adminService.startServiceAssembly(serviceAssemblyID);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessedResult("Start", result);
+        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Start", serviceAssemblyID, result, false);
         if (value[0] != null) {
             log((String) value[0]);
         }
@@ -396,7 +398,8 @@ public class DeployServiceAssembly extends Task {
         log("        name=" + serviceAssemblyID);
         
         String result = adminService.stopServiceAssembly(serviceAssemblyID);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessedResult("Stop", result);
+        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Stop", serviceAssemblyID, result, false);
         if (value[0] != null) {
             log((String) value[0]);
         }
@@ -412,7 +415,8 @@ public class DeployServiceAssembly extends Task {
         log("        name=" + serviceAssemblyID);
         
         String result = adminService.shutdownServiceAssembly(serviceAssemblyID, FORCE);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessedResult("Shutdown", result);
+        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Shutdown", serviceAssemblyID, result, false);
         if (value[0] != null) {
             log((String) value[0]);
         }
@@ -428,7 +432,8 @@ public class DeployServiceAssembly extends Task {
         log("        name=" + serviceAssemblyID);
         
         String result = adminService.undeployServiceAssembly(serviceAssemblyID, FORCE);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessedResult("Undeploy", result);
+        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Undeploy", serviceAssemblyID, result, false);
         if (value[0] != null) {
             log((String) value[0]);
         }

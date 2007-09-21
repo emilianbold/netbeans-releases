@@ -60,12 +60,14 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import javax.management.MalformedObjectNameException;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JTable;
@@ -81,10 +83,10 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
+import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiActionProvider;
 import org.netbeans.modules.compapp.projects.jbi.ui.NoSelectedServerWarning;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
-import org.netbeans.modules.sun.manager.jbi.management.JBIClassLoader;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
@@ -106,7 +108,7 @@ final class VisualArchiveIncludesSupport {
     private static final int COMPONENT_TYPE_COLUMN = 0;
     private static final int COMPONENT_NAME_COLUMN = 1;
         
-    private JbiProjectProperties webProperties;
+    private JbiProjectProperties projProperties;
     
     private Project project;    
     
@@ -135,7 +137,7 @@ final class VisualArchiveIncludesSupport {
     /**
      * Creates a new VisualArchiveIncludesSupport object.
      *
-     * @param webProperties 
+     * @param projProperties 
      * @param componentTable 
      * @param classpathTable 
      * @param updateComponentsButton 
@@ -143,22 +145,22 @@ final class VisualArchiveIncludesSupport {
      * @param removeProjectButton 
      */
     public VisualArchiveIncludesSupport(
-            JbiProjectProperties webProperties, 
+            JbiProjectProperties projProperties, 
             JTable componentTable, 
             JTable classpathTable,
             JButton updateComponentsButton, 
             JButton addProjectButton,
             JButton removeProjectButton) {
         
-        this.webProperties = webProperties;
+        this.projProperties = projProperties;
         this.componentTable = componentTable;
         this.classpathTable = classpathTable;
         this.updateComponentsButton = updateComponentsButton;
         this.addProjectButton = addProjectButton;
         this.removeProjectButton = removeProjectButton;        
-        this.project = webProperties.getProject();       
+        this.project = projProperties.getProject();       
                 
-        this.bindingVisualClassPathItems = webProperties.getBindingList();
+        this.bindingVisualClassPathItems = projProperties.getBindingList();
                 
         initClassPathTable();          
         
@@ -176,10 +178,10 @@ final class VisualArchiveIncludesSupport {
         csl.valueChanged(null);
         
         // init locals        
-        Project p = webProperties.getProject();
+        Project p = projProperties.getProject();
         File pf = FileUtil.toFile(p.getProjectDirectory());
         
-        List os = (List) webProperties.get(JbiProjectProperties.META_INF);        
+        List os = (List) projProperties.get(JbiProjectProperties.META_INF);        
         if ((os != null) && (os.size() > 0)) {            
             String path = pf.getPath() + "/" + os.get(0).toString(); // NOI18N
             compInfoFileLoc = path + "/" + COMPONENT_INFO_FILE_NAME; // NOI18N
@@ -323,7 +325,7 @@ final class VisualArchiveIncludesSupport {
             newData[data.length + i][0] = vi;
             newData[data.length + i][1] = vi.getAsaType();
             if (VisualClassPathItem.isJavaEEProjectAntArtifact(artifact)){
-                webProperties.addSunResourceProject(artifact);
+                projProperties.addSunResourceProject(artifact);
             }
         }
         
@@ -355,7 +357,7 @@ final class VisualArchiveIncludesSupport {
                     vcpi = ((VisualClassPathItem)data[i][0]).getObject();
                     if ((vcpi instanceof AntArtifact) &&
                             (VisualClassPathItem.isJavaEEProjectAntArtifact((AntArtifact)vcpi))){
-                        webProperties.removeSunResourceProject((AntArtifact)vcpi);
+                        projProperties.removeSunResourceProject((AntArtifact)vcpi);
                     }
                 }
             }
@@ -565,7 +567,7 @@ final class VisualArchiveIncludesSupport {
     }
         
     private boolean isSelectedServer() {
-        String instance = (String) webProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
+        String instance = (String) projProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
         boolean selected = true;
         
         if ((instance == null) || !JbiManager.isAppServer(instance)) {
@@ -600,8 +602,8 @@ final class VisualArchiveIncludesSupport {
                 selected = instance != null;
                 
                 if (selected) {
-                    webProperties.put(JbiProjectProperties.J2EE_SERVER_INSTANCE, instance);
-                    webProperties.store();
+                    projProperties.put(JbiProjectProperties.J2EE_SERVER_INSTANCE, instance);
+                    projProperties.store();
                 }
             }
             
@@ -628,14 +630,33 @@ final class VisualArchiveIncludesSupport {
     }
     
     private void fetchInfo() {
+        try {
+            AdministrationService adminService = getAdministrationService();
+            if (adminService != null) {
+                adminService.clearJBIComponentStatusCache(JBIComponentType.SERVICE_ENGINE);
+                adminService.clearJBIComponentStatusCache(JBIComponentType.BINDING_COMPONENT);
+                List<JBIComponentStatus> compList = new ArrayList<JBIComponentStatus>();
+                compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.SERVICE_ENGINE));
+                compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.BINDING_COMPONENT));
+                updateComponentTable(compList);
+            }
+        } catch (Exception e) {
+            NotifyDescriptor d =
+                    new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+    }
+    
+    private AdministrationService getAdministrationService() 
+        throws MalformedURLException, IOException, MalformedObjectNameException {
         
-        String serverInstance = (String) webProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
+        String serverInstance = (String) projProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
         
         if (serverInstance == null) {
             if (!isSelectedServer()) {
-                return;
+                return null;
             }
-            serverInstance = (String) webProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
+            serverInstance = (String) projProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
             
         } else if (!JbiManager.isRunningAppServer(serverInstance)) {
             String msg = NbBundle.getMessage(
@@ -643,58 +664,10 @@ final class VisualArchiveIncludesSupport {
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-            return;
+            return null;
         }
         
-        String hostName = (String) webProperties.get(JbiProjectProperties.HOST_NAME_PROPERTY_KEY);
-        String port = (String) webProperties.get(JbiProjectProperties.ADMINISTRATION_PORT_PROPERTY_KEY);
-        String userName = (String) webProperties.get(JbiProjectProperties.USER_NAME_PROPERTY_KEY);
-        String password = (String) webProperties.get(JbiProjectProperties.PASSWORD_PROPERTY_KEY);
-        String location = (String) webProperties.get(JbiProjectProperties.LOCATION_PROPERTY_KEY);
-        
-        if (hostName == null || port == null || userName == null || 
-                password == null || location == null) {
-            
-            Properties properties = JbiManager.getServerInstanceProperties(serverInstance);
-            
-            hostName = properties.getProperty(JbiManager.HOSTNAME_ATTR);
-            port = properties.getProperty(JbiManager.PORT_ATTR);
-            userName = properties.getProperty(JbiManager.USERNAME_ATTR);
-            password = properties.getProperty(JbiManager.PASSWORD_ATTR);
-            
-            webProperties.put(JbiProjectProperties.HOST_NAME_PROPERTY_KEY, hostName);
-            webProperties.put(JbiProjectProperties.ADMINISTRATION_PORT_PROPERTY_KEY, port);
-            webProperties.put(JbiProjectProperties.USER_NAME_PROPERTY_KEY, userName);
-            webProperties.put(JbiProjectProperties.PASSWORD_PROPERTY_KEY, password);
-        }
-        
-        JBIClassLoader jbiClassLoader = JbiManager.getJBIClassLoader(serverInstance);
-        
-        if (hostName == null || port == null || userName == null || 
-                password == null || jbiClassLoader == null) {
-            String msg = "The application server is not set up correctly or it is not running.";   // NOI18N
-            NotifyDescriptor d =
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-        } else {
-            try {
-                AdministrationService adminService = new AdministrationService(
-                        jbiClassLoader, hostName, port, userName, password);
-                if (adminService != null) {
-                    adminService.clearJBIComponentStatusCache(JBIComponentType.SERVICE_ENGINE);
-                    adminService.clearJBIComponentStatusCache(JBIComponentType.BINDING_COMPONENT);
-                    List<JBIComponentStatus> compList = new ArrayList<JBIComponentStatus>();
-                    compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.SERVICE_ENGINE));
-                    compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.BINDING_COMPONENT));
-                    updateComponentTable(compList);
-                }
-            } catch (Exception e) {
-                String msg = e.getMessage();  
-                NotifyDescriptor d =
-                        new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
-            }
-        }
+        return AdministrationServiceHelper.getAdminService(serverInstance);
     }
         
     private void updateProperties(JbiProjectProperties prop, 
@@ -788,7 +761,7 @@ final class VisualArchiveIncludesSupport {
         
         //--------------------------- TableModelListener -----------------------
         public void tableChanged(TableModelEvent e) {
-            updateProperties(webProperties, classpathTableModel);
+            updateProperties(projProperties, classpathTableModel);
             
             if (e.getColumn() == 1) {
                 fireActionPerformed();

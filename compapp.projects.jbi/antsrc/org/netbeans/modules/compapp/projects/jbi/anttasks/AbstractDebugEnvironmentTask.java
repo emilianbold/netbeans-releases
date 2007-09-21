@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 
 
@@ -113,7 +114,8 @@ public class AbstractDebugEnvironmentTask extends Task {
         String serverInstance = getJ2eeServerInstance();
         
         try {
-            return AdminServiceHelper.getAdminService(nbUserDir, serverInstance);
+            return AdministrationServiceHelper.getAdminService(
+                    nbUserDir, serverInstance);
         } catch (Exception e) {
             throw new BuildException(e.getMessage());
         }

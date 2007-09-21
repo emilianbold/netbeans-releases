@@ -43,11 +43,21 @@ package org.netbeans.modules.compapp.test.ui.actions;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
+import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
 import org.netbeans.modules.compapp.test.ui.wizards.NewTestcaseConstants;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -89,8 +99,58 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
             return;
         }
         
+        String[] targetNames = { getAntTargetName() };
+        
         /*tc.getTestcaseNode().showDiffTopComponentVisible();*/        
         JbiProject project = tc.getTestcaseNode().getProject();
+        
+        // Make sure the SA is deployed and started. It is more effiecient 
+        // this way than calling the deploy Ant task blindly in the Ant script.
+        {
+            AntProjectHelper antProjectHelper = project.getAntProjectHelper();
+            String serverInstance = antProjectHelper.getStandardPropertyEvaluator().
+                        getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
+            AdministrationService adminService = null;
+            try {
+                 adminService = AdministrationServiceHelper.getAdminService(serverInstance);
+            } catch (Exception e) {
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                return;
+            }
+
+            JbiProjectProperties properties = project.getProjectProperties();
+            String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+            JBIServiceAssemblyStatus saStatus = adminService.getServiceAssemblyStatus(saID);
+            if (saStatus == null) { // not deployed
+                /*
+                String msg = NbBundle.getMessage(JbiActionProvider.class, 
+                        "MSG_SERVICE_ASSEMBLY_NOT_DEPLOYED", saID); // NOI18N
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        msg, NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                return;
+                */
+                // Add the deploy target to the target list. 
+                // (Alternatively, we could call adminService.deployServiceAssembly
+                // directly, but then we need to worry about project build.)
+                List<String> targetList = new ArrayList<String>();
+                targetList.add("run"); // NOI18N
+                targetList.addAll(Arrays.asList(targetNames));
+                targetNames = targetList.toArray(new String[]{});
+            } else if (!saStatus.getStatus().equals(JBIServiceAssemblyStatus.START_STATUS)) {
+                // simply start the service assembly
+                String result = adminService.startServiceAssembly(saID);
+                boolean success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                        "Start", saID, result); // NOI18N
+                if (!success) {
+                    return;
+                }
+            } 
+        }
+        
+        
         FileObject projectDir = project.getProjectDirectory();
         FileObject buildXMLFile = projectDir.getFileObject(project.getBuildXmlName());
         
@@ -122,7 +182,6 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
                 node.setTestCaseRunning(true);
             }
             
-            String[] targetNames = { getAntTargetName() };
             ExecutorTask task = ActionUtils.runTarget(buildXMLFile, targetNames, null);
             
             task.addTaskListener(new TaskListener() {

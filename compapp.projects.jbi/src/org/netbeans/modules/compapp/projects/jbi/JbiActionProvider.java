@@ -70,14 +70,17 @@ import java.awt.Dialog;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.util.Arrays;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
@@ -237,6 +240,53 @@ public class JbiActionProvider implements ActionProvider {
             if (!validateSubProjects()) {
                 return;
             }
+            
+            // Make sure the SA is deployed and started. It is more effiecient 
+            // this way than calling the deploy Ant task blindly in the Ant script.
+            if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
+                String serverInstance = antProjectHelper.getStandardPropertyEvaluator().
+                        getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
+                AdministrationService adminService = null;
+                try {
+                     adminService = AdministrationServiceHelper.getAdminService(serverInstance);
+                } catch (Exception e) {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                    return;
+                }
+                
+                JbiProjectProperties properties = project.getProjectProperties();
+                String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+                JBIServiceAssemblyStatus saStatus = adminService.getServiceAssemblyStatus(saID);
+                if (saStatus == null) { // not deployed
+                    /*
+                    String msg = NbBundle.getMessage(JbiActionProvider.class, 
+                            "MSG_SERVICE_ASSEMBLY_NOT_DEPLOYED", saID); // NOI18N
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            msg, NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                    return;
+                    */
+                    // Add the deploy target to the target list. 
+                    // (Alternatively, we could call adminService.deployServiceAssembly
+                    // directly, but then we need to worry about project build.)
+                    List<String> targetList = new ArrayList<String>();
+                    String[] extraTargetNames = commands.get(JbiProjectConstants.COMMAND_DEPLOY);
+                    targetList.addAll(Arrays.asList(extraTargetNames));
+                    targetList.addAll(Arrays.asList(targetNames));
+                    targetNames = targetList.toArray(new String[]{});
+                } else if (!saStatus.getStatus().equals(JBIServiceAssemblyStatus.START_STATUS)) {
+                    // simply start the service assembly
+                    String result = adminService.startServiceAssembly(saID);
+                    boolean success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                            "Start", saID, result); // NOI18N
+                    if (!success) {
+                        return;
+                    }
+                } 
+            }
+            
         } else if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) || 
                 command.equals(JbiProjectConstants.COMMAND_JBIBUILD) || 
                 command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
@@ -263,7 +313,8 @@ public class JbiActionProvider implements ActionProvider {
                 throw new IllegalArgumentException(command);
             }
         }
-
+        
+        
         final JbiBuildListener jbiBuildListener = getBuildListener(command);
 
         try {
