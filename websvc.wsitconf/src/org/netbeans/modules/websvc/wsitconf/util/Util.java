@@ -719,7 +719,7 @@ public class Util {
                 } else {              
                     Certificate cert = srcStore.getCertificate(srcAlias);
                     Certificate[] chain = new Certificate[] {cert};
-                    dstStore.setKeyEntry(dstAlias, privKey, srcKeyPasswd.toCharArray(), chain);
+                    dstStore.setKeyEntry(dstAlias, privKey, dstPasswd.toCharArray(), chain);
                 }
                 dstStore.store(os, dstPasswd.toCharArray());
             } finally {
