@@ -244,6 +244,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         return myFiles.size();
     }
     
+    @Override
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
 	// maps are concurrent, so we don't need synchronization here
