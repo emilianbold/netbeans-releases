@@ -27,6 +27,7 @@ import javax.lang.model.element.Modifier;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -150,8 +151,8 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
 
             public String validate(String text) {
                 if( null == text 
-                    || text.length() == 0
-                    || text.indexOf( ' ' ) >= 0 )
+                    || text.length() == 0 ) return "";
+                if (!Utilities.isJavaIdentifier(text))
                     return getDefaultErrorMessage( text );
                 return null;
             }
@@ -160,7 +161,7 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
         final ErrorLabel errorLabel = new ErrorLabel( name.getDocument(), validator );
         errorLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID,new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
-                btnOk.setEnabled( errorLabel.isInputTextValid() );
+                btnOk.setEnabled(errorLabel.isInputTextValid());
             }
         });
         return errorLabel;

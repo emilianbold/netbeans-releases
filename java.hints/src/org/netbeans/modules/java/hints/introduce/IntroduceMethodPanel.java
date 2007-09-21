@@ -27,6 +27,7 @@ import javax.lang.model.element.Modifier;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -80,6 +81,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
     
     public void setOkButton( JButton btn ) {
         this.btnOk = btn;
+        btnOk.setEnabled(((ErrorLabel)errorLabel).isInputTextValid());
     }
     
     private JLabel createErrorLabel() {
@@ -88,7 +90,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
             public String validate(String text) {
                 if( null == text 
                     || text.length() == 0 ) return "";
-                if (text.indexOf( ' ' ) >= 0 )
+                if (!Utilities.isJavaIdentifier(text))
                     return getDefaultErrorMessage( text );
                 return null;
             }
@@ -97,7 +99,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
         final ErrorLabel eLabel = new ErrorLabel( name.getDocument(), validator );
         eLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
-                btnOk.setEnabled( eLabel.isInputTextValid() );
+                btnOk.setEnabled(eLabel.isInputTextValid());
             }
         });
         return eLabel;
