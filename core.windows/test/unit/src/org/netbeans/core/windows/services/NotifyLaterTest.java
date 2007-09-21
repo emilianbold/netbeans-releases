@@ -43,7 +43,7 @@ public class NotifyLaterTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.FINEST;
+        return Level.FINE;
     }
     
     
