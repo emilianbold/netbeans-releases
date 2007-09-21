@@ -178,9 +178,8 @@ public class NBSLanguageReader {
                 pattern = Pattern.create (".");
         } else {
             ASTNode regularExpressionNode = node.getNode ("token2.regularExpression");
-            String patternString = regularExpressionNode.getAsText ().trim ();
             endState = node.getTokenTypeIdentifier ("token2.token3.state.identifier");
-            pattern = readPattern (source, sourceName, patternString, regularExpressionNode.getOffset ());
+            pattern = readPattern (source, sourceName, regularExpressionNode, regularExpressionNode.getOffset ());
         }
         if (startState != null && state != null) 
             throw new ParseException ("Start state should not be specified inside token group block!");
@@ -274,7 +273,7 @@ public class NBSLanguageReader {
             return Feature.createMethodCallFeature (keyword, selector, readClass (classNode));
         ASTNode regExprNode = valueNode.getNode ("regularExpression");
         if (regExprNode != null) {
-            Pattern pat = readPattern(source, sourceName, regExprNode.getAsText().trim(), regExprNode.getOffset());
+            Pattern pat = readPattern(source, sourceName, regExprNode, regExprNode.getOffset());
             return Feature.createExpressionFeature (keyword, selector, pat);
         }
         String s = valueNode.getTokenTypeIdentifier ("string");
@@ -308,8 +307,8 @@ public class NBSLanguageReader {
                 value = readClass (n.getNode ("propertyValue.class"));
                 methods.put (key, value);
             } else {
-                value = n.getNode ("propertyValue.regularExpression").getAsText ().trim ();
-                Pattern pattern = readPattern (source, sourceName, value, n.getOffset ());
+                ASTNode regularExpressionNode = n.getNode ("propertyValue.regularExpression");
+                Pattern pattern = readPattern (source, sourceName, regularExpressionNode, n.getOffset ());
                 patterns.put (key, pattern);
             }
         }
@@ -355,9 +354,12 @@ public class NBSLanguageReader {
     private static Pattern readPattern (
         String      source,
         String      sourceName, 
-        String      pattern, 
+        ASTNode     node, 
         int         offset
     ) throws ParseException {
+        StringBuilder sb = new StringBuilder ();
+        getText (node, sb);
+        String pattern = sb.toString ();
         StringInput input = new StringInput (pattern);
         try {
             return Pattern.create (input);
@@ -368,6 +370,24 @@ public class NBSLanguageReader {
                 p.x + "," + p.y + ": " + 
                 e.getMessage ()
             );
+        }
+    }
+    
+    private static void getText (ASTItem item, StringBuilder sb) {
+        Iterator<ASTItem> it = item.getChildren ().iterator ();
+        while (it.hasNext ()) {
+            ASTItem elem = it.next ();
+            if (elem instanceof ASTNode)
+                getText (elem, sb);
+            else {
+                ASTToken token = (ASTToken) elem;
+                String type = token.getType ();
+                if (type.equals ("whitespace") ||
+                    type.equals ("comment")
+                ) 
+                    continue;
+                sb.append (token.getIdentifier ());
+            }
         }
     }
     
