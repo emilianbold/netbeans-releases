@@ -423,6 +423,10 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
                 try {
                     if (projectBuiltQueryStatus != null && projectBuiltQueryStatus.isBuilt()) {
                         classPathChanged();
+                        // Now refresh all models
+                        for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); ) {
+                            ((FacesModel)i.next()).refresh(true);
+                        }
                     }
                 } catch (IllegalStateException ise) {
                     ErrorManager.getDefault().notify(ise);
