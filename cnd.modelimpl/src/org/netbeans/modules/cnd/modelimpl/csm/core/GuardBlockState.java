@@ -30,10 +30,11 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
  * @author Alexander Simon
  */
 public class GuardBlockState {
+    public static final int NOT_INITIED = -2;
     public static final int SKIPPED = 1;
     public static final int PARSED = -1;
     public static final int NO_GUARD = 0;
-    private int guardBlockState = 0;
+    private volatile int guardBlockState = NOT_INITIED;
     public Token guard;
     
     /** Creates a new instance of GuardBlockState */
@@ -41,22 +42,24 @@ public class GuardBlockState {
     }
     
     public void setGuardBlockState(final APTPreprocHandler preprocHandler, Token guard) {
-        if (guard != null) {
-            this.guard = new MyToken(guard.getText());
-            assert preprocHandler.getMacroMap() != null;
-            if (preprocHandler.getMacroMap().isDefined(guard)){
-                if (guardBlockState != SKIPPED) {
-                    guardBlockState = SKIPPED;
+        synchronized (this) {
+            if (guard != null) {
+                this.guard = new MyToken(guard.getText());
+                assert preprocHandler.getMacroMap() != null;
+                if (preprocHandler.getMacroMap().isDefined(guard)){
+                    if (guardBlockState != SKIPPED) {
+                        guardBlockState = SKIPPED;
+                    }
+                } else {
+                    if (guardBlockState != PARSED) {
+                        guardBlockState = PARSED;
+                    }
                 }
             } else {
-                if (guardBlockState != PARSED) {
-                    guardBlockState = PARSED;
+                this.guard = null;
+                if (guardBlockState != NO_GUARD) {
+                    guardBlockState = NO_GUARD;
                 }
-            }
-        } else {
-            this.guard = null;
-            if (guardBlockState != NO_GUARD) {
-                guardBlockState = NO_GUARD;
             }
         }
     }
@@ -65,22 +68,26 @@ public class GuardBlockState {
      *----------------------------------------
      *last state\macros  Not defined  defined
      *----------------------------------------
+     *NOT_INITIED        false        false
      *NO_GUARD           false        false
      *PARSED             false        false
      *SKIPPED            true         true
      */
     public boolean isNeedReparse(final APTPreprocHandler preprocHandler) {
-        switch (guardBlockState) {
-            case NO_GUARD:
-                return false;
-            case PARSED:
-                return false;
-            case SKIPPED:
-                assert guard != null : "Guard is null";
-                assert preprocHandler.getMacroMap() != null : "Macro map is null";
-                return !preprocHandler.getMacroMap().isDefined(guard);
+        synchronized (this) {
+            switch (guardBlockState) {
+                case NOT_INITIED:
+                case NO_GUARD:
+                    return false;
+                case PARSED:
+                    return false;
+                case SKIPPED:
+                    assert guard != null : "Guard is null";
+                    assert preprocHandler.getMacroMap() != null : "Macro map is null";
+                    return !preprocHandler.getMacroMap().isDefined(guard);
+            }
+            return false;
         }
-        return false;
     }
     
     // for tests only
@@ -104,7 +111,13 @@ public class GuardBlockState {
         if (input.readBoolean()){
             guard = new MyToken(input.readUTF());
         }
-    }       
+    }
+
+    public boolean isInited() {
+        synchronized (this) {
+            return this.guardBlockState != NOT_INITIED;
+        }
+    }
 
     private class MyToken implements Token{
         private final String text;

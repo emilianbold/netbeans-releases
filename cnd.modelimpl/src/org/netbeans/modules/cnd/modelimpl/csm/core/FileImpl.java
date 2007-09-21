@@ -582,7 +582,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 System.err.println("CACHE: parsing using full APT for " + getAbsolutePath());
             }      
             // init guard info
-            setGuardState(preprocHandler, aptFull);
+            initGuardIfNeeded(preprocHandler, aptFull);
             // make real parse
             APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartProject(preprocHandler.getIncludeHandler()), aptFull, this, preprocHandler);
             if (TraceFlags.DEBUG) {
@@ -642,23 +642,31 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 		getAbsolutePath(), fileBuffer.lastModified(), lastParsed, fileBuffer.lastModified()-lastParsed);
         return ast;
     }
-
-    private void setGuardState(APTPreprocHandler preprocHandler, APTFile aptLight) {
-        GuardBlockWalker guard = new GuardBlockWalker(aptLight, preprocHandler);
-        TokenStream ts = guard.getTokenStream();
-        try {
-            Token token = ts.nextToken();
-            while (!APTUtils.isEOF(token)) {
-                if (!APTUtils.isCommentToken(token)) {
-                    guard.clearGuard();
-                    break;
-                }
-                token = ts.nextToken();
-            }
-        } catch (TokenStreamException ex) {
-            guard.clearGuard();
+    
+    /*package*/void initGuardIfNeeded(APTPreprocHandler preprocHandler, APTFile apt) {
+        if (!getGuardState().isInited()) {
+            setGuardState(preprocHandler, apt);
         }
-        getGuardState().setGuardBlockState(preprocHandler, guard.getGuard());
+    }
+    
+    private void setGuardState(APTPreprocHandler preprocHandler, APTFile aptLight) {
+        synchronized (getGuardState()) {
+            GuardBlockWalker guard = new GuardBlockWalker(aptLight, preprocHandler);
+            TokenStream ts = guard.getTokenStream();
+            try {
+                Token token = ts.nextToken();
+                while (!APTUtils.isEOF(token)) {
+                    if (!APTUtils.isCommentToken(token)) {
+                        guard.clearGuard();
+                        break;
+                    }
+                    token = ts.nextToken();
+                }
+            } catch (TokenStreamException ex) {
+                guard.clearGuard();
+            }
+            getGuardState().setGuardBlockState(preprocHandler, guard.getGuard());
+        }
     }
     
     public void addInclude(IncludeImpl includeImpl) {
