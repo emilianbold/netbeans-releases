@@ -163,18 +163,25 @@ public class EncloseAction extends NodeAction {
                     MetaComponentCreator creator = formModel.getComponentCreator();
                     if (metacont.getLayoutSupport() == null) { // free design
                         LayoutModel layoutModel = formModel.getLayoutModel();
-                        Object layoutUndoMark = layoutModel.getChangeMark();
-                        UndoableEdit layoutEdit = layoutModel.getUndoableEdit();
+                        Object layoutUndoMark = null;
+                        UndoableEdit layoutEdit = null;
                         boolean autoUndo = true; // in case of unexpected error, for robustness
                         try {
+                            // create and add the new container
                             RADVisualContainer newCont = (RADVisualContainer)
                                     creator.createComponent(paletteItem.getComponentClassSource(), metacont, null);
+                            // This also added the container's layout component to
+                            // layout model (and registered undo edit). But we want
+                            // the layout component to be added by LayoutDesigner as
+                            // part of the enclosing operation, so we remove it here.
+                            // From now we also need to care about layout undo.
+                            layoutUndoMark = layoutModel.getChangeMark();
+                            layoutEdit = layoutModel.getUndoableEdit();
                             layoutModel.removeComponent(newCont.getId(), false); // to be added by LayoutDesigner
-//                            creator.moveComponent(newCont, metacont);
                             String[] compIds = new String[components.size()];
                             int i = 0;
                             for (RADComponent metacomp : components) {
-                                creator.moveComponent(metacomp, newCont);
+                                creator.moveComponent(metacomp, newCont); // this does not affect layout model
                                 compIds[i++] = metacomp.getId();
                             }
                             FormEditor.getFormDesigner(formModel).getLayoutDesigner()

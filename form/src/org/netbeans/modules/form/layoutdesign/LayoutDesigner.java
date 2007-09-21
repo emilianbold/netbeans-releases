@@ -1951,7 +1951,7 @@ public class LayoutDesigner implements LayoutConstants {
                 assert root.isParallel();
                 LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
                 seq.add(new LayoutInterval(SINGLE),-1);
-                seq.add(extractedInts[dim], -1);
+                layoutModel.addInterval(extractedInts[dim], seq, -1);
                 seq.add(new LayoutInterval(SINGLE), -1);
                 layoutModel.addInterval(seq, root, -1);
             }
