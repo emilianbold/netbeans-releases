@@ -58,7 +58,8 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 public final class VeryPretty extends JCTree.Visitor {
     
     private static final char[] hex = "0123456789ABCDEF".toCharArray();
-    private static final String REPLACEMENT = "%[a-z]*%";    
+    private static final String REPLACEMENT = "%[a-z]*%";
+    private static final String ERROR = "<error>"; //NOI18N
 
     private final CodeStyle cs;
     private final CharBuffer out;
@@ -502,7 +503,8 @@ public final class VeryPretty extends JCTree.Visitor {
             }
         }
         needSpace();
-        print(tree.name);
+        if (!ERROR.contentEquals(tree.name))
+            print(tree.name);
         if (tree.init != null) {
             if (notEnumConst) {
                 printVarInit(tree);
