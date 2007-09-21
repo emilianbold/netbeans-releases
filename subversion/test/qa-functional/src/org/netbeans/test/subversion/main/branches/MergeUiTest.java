@@ -34,26 +34,25 @@ import org.netbeans.test.subversion.utils.TestKit;
  * @author peter
  */
 public class MergeUiTest extends JellyTestCase {
-    
+
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
-    
     String os_name;
+
     /** Creates a new instance of MergeUiTest */
     public MergeUiTest(String name) {
         super(name);
     }
-    
-    protected void setUp() throws Exception {        
+
+    protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
-        System.out.println("### "+getName()+" ###");
-        
+        System.out.println("### " + getName() + " ###");
     }
-    
+
     protected boolean isUnix() {
         boolean unix = false;
         if (os_name.indexOf("Windows") == -1) {
@@ -61,18 +60,18 @@ public class MergeUiTest extends JellyTestCase {
         }
         return unix;
     }
-    
+
     public static void main(String[] args) {
         // TODO code application logic here
         TestRunner.run(suite());
     }
-    
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new MergeUiTest("testInvokeCloseMerge"));
         return suite;
     }
-    
+
     public void testInvokeCloseMerge() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
@@ -82,7 +81,7 @@ public class MergeUiTest extends JellyTestCase {
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
 
             ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
@@ -115,7 +114,7 @@ public class MergeUiTest extends JellyTestCase {
             rbo.selectFolder("tags");
             rbo.ok();
             assertEquals("Wrong folder selection!!!", "tags", moro.getRepositoryFolder());
-
+            moro.setRepositoryFolder("");
             //1. two repository operator
             moro.cboMergeFrom().selectItem(1);
             MergeTwoRepoOperator mtro = new MergeTwoRepoOperator();
@@ -126,12 +125,14 @@ public class MergeUiTest extends JellyTestCase {
             rbo.selectFolder("tags");
             rbo.ok();
             assertEquals("Wrong folder selection!!!", "tags", mtro.getRepositoryFolder1());
+            mtro.setRepositoryFolder1("");
             rbo = mtro.browseRepositoryFolder2();
             rbo.selectFolder("tags");
             rbo.selectFolder("branches");
             rbo.selectFolder("trunk");
             rbo.ok();
             assertEquals("Wrong folder selection!!!", "trunk", mtro.getRepositoryFolder2());
+            mtro.setRepositoryFolder2("");
 
             //2. two repository operator
             moro.cboMergeFrom().selectItem(2);
@@ -145,9 +146,9 @@ public class MergeUiTest extends JellyTestCase {
             assertEquals("Wrong folder selection!!!", "tags", moo.getRepositoryFolder());
             moo.cancel();
         } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
+            throw new Exception("Test failed: "  + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
-        }    
+        }
     }
 }
