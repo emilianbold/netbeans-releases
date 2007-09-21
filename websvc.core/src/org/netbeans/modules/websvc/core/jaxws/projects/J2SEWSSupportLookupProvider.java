@@ -48,6 +48,6 @@ public class J2SEWSSupportLookupProvider implements LookupProvider {
         WebServicesClientSupportImpl jaxrpcClientSupport = new J2SEProjectJaxRpcClientSupport(project);
         WebServicesClientSupport jaxRpcClientSupportApi = WebServicesClientSupportFactory.createWebServicesClientSupport(jaxrpcClientSupport);
         
-        return Lookups.fixed(new Object[] {jaxWsClientSupportApi,jaxRpcClientSupportApi,new J2SEProjectWSClientSupportProvider()});
+        return Lookups.fixed(new Object[] {jaxWsClientSupportApi,jaxRpcClientSupportApi,new J2SEProjectWSClientSupportProvider(), new JaxWsArtifactsClassPathProvider(project)});
     }
 }
