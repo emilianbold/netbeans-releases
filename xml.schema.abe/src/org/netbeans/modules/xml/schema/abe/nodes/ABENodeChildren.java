@@ -67,16 +67,12 @@ public class ABENodeChildren extends Children.Keys
         
         return new Node[0];
     }
-    
-    private void refreshChildren() {
-        setKeys(sortComponents(component.getChildren()));
-    }
-    
+        
+    @Override
     protected void addNotify() {
         super.addNotify();
         refreshChildren();
-        ComponentListener cl = (ComponentListener)
-        WeakListeners.create(ComponentListener.class, this,
+        ComponentListener cl = WeakListeners.create(ComponentListener.class, this,
                 component.getModel());
         component.getModel().addComponentListener(cl);
     }
@@ -101,37 +97,28 @@ public class ABENodeChildren extends Children.Keys
         }
     }
     
-    private List sortComponents(List<AXIComponent> list){
-        //sort only for AXIDocument.
+    private void refreshChildren() {
+        setKeys(divideComponents(component.getChildren()));
+    }
+    
+    /**
+     * Divide components and keep them in different buckets.
+     */
+    private List divideComponents(List<AXIComponent> list){
+        //applicable only for AXIDocument's children.
         if(! (this.component instanceof AXIDocument) )
             return list;
-        //separate out elements and CMs
+        //separate out elements and complex types
         List<AXIContainer> el = new ArrayList<AXIContainer>();
         List<AXIContainer> cml = new ArrayList<AXIContainer>();
-        for(AXIComponent comp: list){
-            if(comp instanceof AbstractElement){
+        for(AXIComponent comp: list) {
+            if(comp instanceof AbstractElement) {
                 el.add((AXIContainer) comp);
-            }else if(comp instanceof ContentModel){
+            }else if(comp instanceof ContentModel) {
                 if( ((ContentModel)comp).getType() == ContentModel.ContentModelType.COMPLEX_TYPE)
                     cml.add((AXIContainer)comp);
             }
         }
-        //sort GEs
-        Collections.sort(el,
-                new Comparator<AXIContainer>() {
-            public int compare(AXIContainer e1, AXIContainer e2) {
-                return e1.getName().compareTo(e2.getName());
-            }
-            
-        });
-        //sort GCTs
-        Collections.sort(cml,
-                new Comparator<AXIContainer>() {
-            public int compare(AXIContainer e1, AXIContainer e2) {
-                return e1.getName().compareTo(e2.getName());
-            }
-            
-        });
         List<AXIContainer> result = new ArrayList<AXIContainer>();
         //club both arrays
         result.addAll(el);
