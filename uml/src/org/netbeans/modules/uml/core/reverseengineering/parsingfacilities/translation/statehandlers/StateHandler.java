@@ -28,6 +28,7 @@ package org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.trans
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
+import org.dom4j.XPath;
 
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLParser;
@@ -377,7 +378,7 @@ public class StateHandler
         // someone else did not create it already.
         Node pDescriptors = ensureElementExists(pNode,
                                 "TokenDescriptors",
-                                "TokenDescriptors");
+                                XMLManip.getCreateCachedXPath("TokenDescriptors"));
 
         if(pDescriptors != null)
         {
@@ -435,6 +436,35 @@ public class StateHandler
         }
         return node;
     }
+
+    /** 
+     *  pre-compiled XPath instead of String query version
+     */ 
+    protected Node ensureElementExists(Node curNode,String name,
+                                        XPath query)
+
+    {
+        if(curNode == null) return null;
+	
+	if (query == null) return null;
+
+        Node node = query.selectSingleNode(curNode);
+
+        // If not able to find the node then create it.
+        if( node == null )
+        {
+            // Node doesn't exist, so we need to create it.
+
+            Document doc = curNode.getDocument();
+
+            if(doc != null)
+            {
+                node = XMLManip.createElement((Element)curNode, name);
+            }
+        }
+        return node;
+    }
+
 
     protected ILanguage getLanguageDef(String name)
     {

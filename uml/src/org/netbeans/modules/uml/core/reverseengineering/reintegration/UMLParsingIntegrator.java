@@ -457,6 +457,8 @@ public class UMLParsingIntegrator
         {
             reportHeapExceeded() ;
         }
+	
+	XMLManip.clearCachedXPaths();
         
         return m_Cancelled ? true : false;
     }
@@ -1822,8 +1824,8 @@ public class UMLParsingIntegrator
                     
                     if (!isNodeContainer(injectNodeName))
                     {
-                        String destFile = retrieveSourceFile(childInDestinationNamespace);
-                        String injectFile = retrieveSourceFile(elementBeingInjected);
+                        //String destFile = retrieveSourceFile(childInDestinationNamespace);
+                        //String injectFile = retrieveSourceFile(elementBeingInjected);
                         // displayConflictDialog(childName, destFile, injectFile);
                         
                         overwrite = displayConflictDialog(
@@ -3442,12 +3444,12 @@ public class UMLParsingIntegrator
         return artifact;
     }
     
-    protected String retrieveSourceFile(Node element)
+    protected String retrieveSourceFile(Node element, String pathToNode)
     {
         String fileName = null;
         try
         {
-            Node pNode = element.selectSingleNode(".//UML:SourceFileArtifact");
+            Node pNode = element.selectSingleNode(pathToNode);
             fileName = null;
             if (pNode != null)
             {
@@ -4256,7 +4258,7 @@ public class UMLParsingIntegrator
                 // to the class node.  Since pAttrNode is an attribute I can make
                 // the assumption that the parent is the class element.
                 Node pParent = pAttrNode.getParent();
-                String fileName = retrieveSourceFile(pParent);
+                String fileName = retrieveSourceFile(pParent, "./UML:SourceFileArtifact");
                 
                 if ((m_LanguageManager != null) && (fileName != null && fileName.length() > 0))
                 {
@@ -4320,15 +4322,18 @@ public class UMLParsingIntegrator
     {
         try
         {
-            // Since we are reverse engineering, there will only be one language
-            ILanguage lang = clazzObj.getLanguages().get(0);
-            if ((param != null) && (lang != null))
+            if (param != null)
             {
                 Node derivation = isDerivationPresent(param, false);
                 
                 if (derivation != null)
                 {
-                    convertCollection(derivation, param, lang);
+		    // Since we are reverse engineering, there will only be one language
+		    ILanguage lang = clazzObj.getLanguages().get(0);
+		    if (lang != null) 
+		    {
+			convertCollection(derivation, param, lang);
+		    }
                 }
             }
         }
@@ -4357,9 +4362,7 @@ public class UMLParsingIntegrator
             List attrs = clazz.selectNodes(
                     "./UML:Element.ownedElement/UML:Attribute");
             
-            // Since we are reverse engineering, there will only be one language
-            ILanguage lang = clazzObj.getLanguages().get(0);
-            if ((attrs != null) && (lang != null))
+            if (attrs != null)
             {
                 int numAttrs = attrs.size();
                 if (numAttrs > 0)
@@ -4375,7 +4378,12 @@ public class UMLParsingIntegrator
                             
                             if (derivation != null)
                             {
-                                convertCollection(derivation, attr, lang);
+				// Since we are reverse engineering, there will only be one language
+				ILanguage lang = clazzObj.getLanguages().get(0);
+				if (lang != null) 
+				{
+				    convertCollection(derivation, attr, lang);
+				}
                             }
                         }
                     }

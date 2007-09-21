@@ -1468,12 +1468,6 @@ public class XMLManip
     }
 
     
-    
-    // Some "precompiled" statements. Unfortunately, the library doesn't 
-    // support pre-compilation of statements nor indexing, so here is 
-    // "manual" implementation  of some of frequently used 
-    // XPath queries.
-
     /**
      *  A query of "ancestor::*[@attrName='attrValue']" type
      *  
@@ -1505,6 +1499,30 @@ public class XMLManip
 	}
 	return result;
     } 
+
+    private static HashMap<String, XPath> cachedXPaths;
+
+    public static XPath getCreateCachedXPath(String query) {
+	if (cachedXPaths == null) 
+	{
+	    cachedXPaths = new HashMap<String, XPath>();
+	}
+	XPath res = cachedXPaths.get(query);
+	if (res == null) 
+	{	    	
+	    DocumentFactory fact = DOMDocumentFactory.getInstance();
+	    res = fact.createXPath(query);
+	    if (res != null) 
+	    {
+		cachedXPaths.put(query, res);
+	    }
+	}
+	return res;
+    }
+
+    public static void clearCachedXPaths() {
+	cachedXPaths = null;
+    }
 
 
 }
