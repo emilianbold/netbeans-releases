@@ -263,10 +263,15 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     
     private void cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelActionPerformed
         synchronized (this) {
-            rui.getRefactoring().cancelRequest();
-            result = null;
-            dialog.setVisible(false);
-            cancelRequest = true;
+            if (evt!=null && evt.getSource() instanceof Cancellable) {
+                result=null;
+                dialog.setVisible(false);
+            } else {
+                rui.getRefactoring().cancelRequest();
+                result = null;
+                dialog.setVisible(false);
+                cancelRequest = true;
+            }
         }
     }//GEN-LAST:event_cancelActionPerformed
     private void refactor(final boolean previewAll) {
@@ -279,7 +284,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (currentState == POST_CHECK && previewAll && currentProblemAction!=null) {
             Cancellable doCloseParent = new Cancellable() {
                 public boolean cancel() {
-                    cancelActionPerformed(null);
+                    cancelActionPerformed(new ActionEvent(this,0,null));
                     return true;
                 }
             };
