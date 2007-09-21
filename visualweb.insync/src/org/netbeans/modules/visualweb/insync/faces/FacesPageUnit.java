@@ -517,28 +517,19 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
         // lost
         String binding = getCompBinding(name);
         Element element = findCompElement(binding);
-        if (element == null) {
-            //!CQ TODO: we should try to restore parentage using affinity somehow
-            //!CQ TODO: also determine if we should instead remove the java peer
-            Element eparent = null;
-            String section = getBeanMarkupSection(bi);
-            if (section != null)
-                eparent = findMarkupSectionElement(section);
-            element = addCompElement(eparent, tlUri, tlPre, tag, null, null);
-            assert Trace.trace("insync.faces", "FU.newBoundBean binding:" + binding
-                               + " created element:" + element);
+        if (element != null) {
+            assert Trace.trace("insync.faces", "FU.newBoundBean binding:" + binding + " elem:" + element);
+
+            FacesBean fbean = new FacesBean(this, bi, name, element);
+            fbean.setBindingProperties();
+
+            // snag the form bean as it goes by for later use as the default parent
+            if (defaultParent == null && tag.equals(HtmlTag.FORM.name)) {
+                defaultParent = fbean;
+            }
+            return fbean;
         }
-
-        assert Trace.trace("insync.faces", "FU.newBoundBean binding:" + binding + " elem:" + element);
-
-        FacesBean fbean = new FacesBean(this, bi, name, element);
-        fbean.setBindingProperties();
-
-        // snag the form bean as it goes by for later use as the default parent
-        if (defaultParent == null && tag.equals(HtmlTag.FORM.name))
-            defaultParent = fbean;
-
-        return fbean;
+        return null;
     }
 
     /**
