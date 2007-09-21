@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -114,7 +115,10 @@ public final class DDProvider {
                     baseBeanMap.put(fo.getURL(), new WeakReference<AppClient>(original));
                     errorMap.put(fo.getURL(), error);
                 } else {
-                    version = original.getVersion().toPlainString();
+                    BigDecimal orgVersion = original.getVersion();
+                    if (orgVersion != null){
+                        version = orgVersion.toPlainString();
+                    }
                     error = errorMap.get(fo.getURL());
                 }
             }

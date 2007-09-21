@@ -23,7 +23,10 @@ package org.netbeans.modules.j2ee.dd.impl.client;
  *
  * @author  Nitya Doraisamy
  */
+import java.math.BigDecimal;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -39,6 +42,7 @@ public class AppClientProxy implements AppClient {
     private org.xml.sax.SAXParseException error;
     private int ddStatus;
     
+    private static final Logger LOGGER = Logger.getLogger(AppClientProxy.class.getName());
 //    private static CommonDDAccess cDDA = new
     
     /**
@@ -61,7 +65,10 @@ public class AppClientProxy implements AppClient {
                 
             }
             this.app = app;
-            if (app != null) setProxyVersion(app.getVersion().toString());
+            if (app != null){
+                String version = app.getVersion() != null ? app.getVersion().toString() : "";
+                setProxyVersion(version);
+            }
         }
     }
     
@@ -70,7 +77,7 @@ public class AppClientProxy implements AppClient {
     }
     
     public void setProxyVersion(java.lang.String value) {
-        if ((version==null && value!=null) || !version.equals(value)) {
+        if ((version == null && value != null) || (version != null && !version.equals(value))) {
             java.beans.PropertyChangeEvent evt =
                     new java.beans.PropertyChangeEvent(this, PROPERTY_VERSION, version, value);
             version=value;
@@ -189,8 +196,20 @@ public class AppClientProxy implements AppClient {
         return app==null?null:app.getValue(propertyName);
     }
     
-    public java.math.BigDecimal getVersion() {
-        return new java.math.BigDecimal(version);
+    /**
+     * @return the dd version or null the version is not specified correctly,
+     * i.e. it is null or not a number.
+     */ 
+    public BigDecimal getVersion() {
+        if (version == null){
+            return null;
+        }
+        try{
+            return new BigDecimal(version);
+        } catch (NumberFormatException nfe){
+            LOGGER.log(Level.INFO, "Not a valid version: " + version, nfe);//NO18N
+            return null;
+        }
     }
     
     public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface root, int mode) {

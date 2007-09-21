@@ -20,13 +20,10 @@
 package org.netbeans.modules.j2ee.dd.impl.client;
 
 import java.io.IOException;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.netbeans.modules.j2ee.dd.api.client.AppClient;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.impl.common.ParseUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -40,7 +37,8 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ClientParseUtils {
   
-    
+    private static final Logger LOGGER = Logger.getLogger(ClientParseUtils.class.getName());
+
     /** Parsing just for detecting the version  SAX parser used
      */
     public static String getVersion(java.io.InputStream is) throws java.io.IOException, SAXException {
@@ -56,8 +54,22 @@ public class ClientParseUtils {
     private static class VersionHandler extends DefaultHandler {
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if ("application-client".equals(rawName)) { //NOI18N
-                String version = atts.getValue("version"); //NOI18N
-                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?AppClient.VERSION_1_3:version));
+                String version = parseVersion(atts.getValue("version")); //NOI18N
+                String msg = version != null ? ParseUtils.EXCEPTION_PREFIX + version : "Invalid version " +version; //NO18N
+                throw new SAXException(msg);
+            }
+        }
+        
+        private String parseVersion(String version){
+            if (version == null){
+                return null;
+            }
+            try {
+                Double.valueOf(version);
+                return version;
+            } catch (NumberFormatException nfe) {
+                LOGGER.log(Level.INFO, "Not a valid version: " + version, nfe); //NO18N
+                return null;
             }
         }
     }
