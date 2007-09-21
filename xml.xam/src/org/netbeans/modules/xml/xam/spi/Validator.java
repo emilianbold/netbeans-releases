@@ -82,7 +82,7 @@ public interface Validator {
             this.type = type;
             this.component = component;
             this.description = desc;            
-            this.model = component.getModel();
+            this.model = (component == null) ? null : component.getModel();
         }         
         
         

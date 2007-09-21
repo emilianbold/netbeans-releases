@@ -104,23 +104,25 @@ public class SchemaSourceMultiViewElement extends CloneableEditor
      * create lookup, caretlistener, timer
      */
     private void initialize() {
-        ShowCookie showCookie = new ShowCookie() {
-            
+        ShowCookie showCookie = new ShowCookie() {            
             public void show(ResultItem resultItem) {
                 if(isActiveTC()) {
-                    Component component = resultItem.getComponents();
-                    if(component instanceof SchemaComponent) {
-                        int position = ((SchemaComponent)component).findPosition();
-                        getEditorPane().setCaretPosition(position);
-                    } else {
-                        int line = resultItem.getLineNumber();
-                        try {
-                            int position = NbDocument.findLineOffset(
-                                    (StyledDocument)getEditorPane().getDocument(),line);
+                    try {
+                        int position = 0;
+                        Component component = resultItem.getComponents();
+                        if(component instanceof SchemaComponent) {
+                            position = ((SchemaComponent)component).findPosition();
                             getEditorPane().setCaretPosition(position);
-                        } catch (IndexOutOfBoundsException iob) {
-                            // nothing
+                            return;
                         }
+                        int line = resultItem.getLineNumber();
+                        position = NbDocument.findLineOffset(
+                                (StyledDocument)getEditorPane().getDocument(),line);
+                        getEditorPane().setCaretPosition(position);
+                    } catch (Exception ex) {
+                        getEditorPane().setCaretPosition(0);
+                        //worst case, let open the document in editor
+                        //do not throw one exception.
                     }
                 }
             }
