@@ -43,18 +43,7 @@ public class UpdateManagerImpl extends Object {
     private static final UpdateManagerImpl INSTANCE = new UpdateManagerImpl();
     private static final UpdateManager.TYPE [] DEFAULT_TYPES = new UpdateManager.TYPE [] {  UpdateManager.TYPE.KIT_MODULE };
     
-    private Reference<Map<String, UpdateUnit>> updateUnitsRef = null;
-    
-    /*
-     private Reference<Set<UpdateElement>> availableEagers = new SoftReference<Set<UpdateElement>> (new HashSet<UpdateElement> ());
-    private Reference<Set<UpdateElement>> installedEagers = new SoftReference<Set<UpdateElement>> (new HashSet<UpdateElement> ());
-     */
-    private Set<UpdateElement> availableEagers = null;
-    private Set<UpdateElement> installedEagers = null;
-    
-    
-    private List<UpdateUnit> holderUnits; // XXX: temporary only
-    private Map<String, UpdateUnit> holderMap; // XXX: temporary only
+    private Reference<Cache> cacheReference = null;            
     private Logger logger = null;
     
     // package-private for tests only
@@ -65,126 +54,59 @@ public class UpdateManagerImpl extends Object {
     
     /** Creates a new instance of UpdateManagerImpl */
     private UpdateManagerImpl () {}
-    
-    private List<UpdateUnit> getUpdateUnits () {
-        Reference<Map<String, UpdateUnit>> tmpUpdateUnitsRef = null;
-        synchronized(UpdateManagerImpl.class) {
-            tmpUpdateUnitsRef = updateUnitsRef;
-        }        
-        if (tmpUpdateUnitsRef == null || tmpUpdateUnitsRef.get() == null) {
-            tmpUpdateUnitsRef = new WeakReference<Map<String, UpdateUnit>> (UpdateUnitFactory.getDefault ().getUpdateUnits ());
-            synchronized(UpdateManagerImpl.class) {
-                updateUnitsRef = tmpUpdateUnitsRef;
-            }
-        }
-        return unitsFromReference (tmpUpdateUnitsRef);
-    }
-    
-    public List<UpdateUnit> getUpdateUnits (UpdateManager.TYPE... types) {
-        if (updateUnitsRef == null) {
-            getUpdateUnits ();
-        }
-        assert updateUnitsRef != null : "updateUnits must be initialized.";
-        
-        holderUnits = unitsFromReference (updateUnitsRef);
-        holderMap = mapFromReference (updateUnitsRef);
-        
-        return filterUnitsByAskedTypes (unitsFromReference (updateUnitsRef), type2checkedList (types));
-    }
-    
-    public Set<UpdateElement> getAvailableEagers () {
-        if (availableEagers == null) {
-            availableEagers = new HashSet<UpdateElement> ();
-            for (UpdateUnit unit : getUpdateUnits ()) {
-                if (! unit.getAvailableUpdates ().isEmpty ()) {
-                    UpdateElement el = unit.getAvailableUpdates ().get (0);
-                    if (Trampoline.API.impl (el).isEager ()) {
-                        availableEagers.add (el);
-                    }
-                }
-            }
-        }
 
-        return availableEagers;
+    public void clearCache () {
+        synchronized(UpdateManagerImpl.Cache.class) {
+            cacheReference = null;
+        }
+    }    
+    
+    public static List<UpdateUnit> getUpdateUnits (UpdateProvider provider, UpdateManager.TYPE... types) {
+        return filterUnitsByAskedTypes (UpdateUnitFactory.getDefault().getUpdateUnits (provider).values (), type2checkedList (types));
+    }
+    
+    public List<UpdateUnit> getUpdateUnits (UpdateManager.TYPE... types) {                
+        final Cache c = getCache();        
+        return new ArrayList(filterUnitsByAskedTypes (c.getUnits(), type2checkedList (types))) {
+            Cache keepIt = c;
+        };        
+    }
+        
+    public Set<UpdateElement> getAvailableEagers () {
+        final Cache c = getCache();        
+        return new HashSet(c.getAvailableEagers()) {
+            Cache keepIt = c;
+        };        
     }
     
 
     public Set<UpdateElement> getInstalledEagers () {
-        if (installedEagers == null) {
-            installedEagers = new HashSet<UpdateElement> ();
-            for (UpdateUnit unit : getUpdateUnits ()) {
-                UpdateElement el;
-                if ((el = unit.getInstalled ()) != null) {
-                    if (Trampoline.API.impl (el).isEager ()) {
-                        installedEagers.add (el);
-                    }
-                }
-            }
-        }
-
-        return installedEagers;
+        final Cache c = getCache();        
+        return new HashSet(c.getInstalledEagers()) {
+            Cache keepIt = c;
+        };        
     }
-    
-    private static List<UpdateUnit> unitsFromReference(Reference<Map<String, UpdateUnit>> reference) {
-        final Map<String, UpdateUnit> m = reference.get();
-        List<UpdateUnit>  retval = null;
-        if (m != null) {
-            retval = new ArrayList<UpdateUnit> (m.values()) {
-                Map<String, UpdateUnit> keepIt = m;
-            };
-        } else {    
-            retval = Collections.emptyList();
-        }        
-        return retval;        
-    }
-    
-    private static Map<String, UpdateUnit> mapFromReference(Reference<Map<String, UpdateUnit>> reference) {
-        Map<String, UpdateUnit> retval = null;
-        if (reference != null) {
-            retval = reference.get();
-        } 
-        if (retval == null) {
-            retval = Collections.emptyMap(); 
-        }
-        return retval;        
-    }
-    
-    // XXX: wrong usage; replace with something better
+            
     public UpdateUnit getUpdateUnit (String moduleCodeName) {
-        // trim release impl.
         if (moduleCodeName.indexOf('/') != -1) {
             int to = moduleCodeName.indexOf('/');
             moduleCodeName = moduleCodeName.substring(0, to);
-        }
-        if (updateUnitsRef == null) {
-            getUpdateUnits ();
-            holderUnits = unitsFromReference (updateUnitsRef);
-            holderMap = mapFromReference (updateUnitsRef);
-        }
-        assert updateUnitsRef != null : "updateUnits must be initialized.";
-        
-        return mapFromReference(updateUnitsRef).get(moduleCodeName);
+        }        
+        return getCache().getUpdateUnit(moduleCodeName);
     }
-    
-    public List<UpdateUnit> getUpdateUnits (UpdateProvider provider, UpdateManager.TYPE... types) {
-        return filterUnitsByAskedTypes (UpdateUnitFactory.getDefault().getUpdateUnits (provider).values (), type2checkedList (types));
-    }
-    
-    public void cleanupUpdateUnits () {
-        synchronized(UpdateManagerImpl.class) {
-            if (updateUnitsRef != null) {
-                updateUnitsRef = null;
-            }
-            availableEagers = null;
-            installedEagers = null;
-        }
-    }
-    
+            
     private Logger getLogger () {
         if (logger == null) {
             logger = Logger.getLogger (UpdateManagerImpl.class.getName ());
         }
         return logger;
+    }
+    
+    public List<UpdateUnit> getUpdateUnits() {
+        final Cache c = getCache();
+        return new ArrayList(c.getUnits()) {
+            Cache keepIt = c; 
+        };
     }
     
    private static List<UpdateUnit> filterUnitsByAskedTypes (Collection<UpdateUnit> units, List<UpdateManager.TYPE> types) {
@@ -217,4 +139,70 @@ public class UpdateManagerImpl extends Object {
         }
         return l;
     }
+
+    private UpdateManagerImpl.Cache getCache() {
+        Reference<UpdateManagerImpl.Cache> ref =  getCacheReference();
+        UpdateManagerImpl.Cache retval = (ref != null) ? ref.get() : null;
+        if (retval == null) {
+            retval = new Cache();
+            initCache(retval);
+        }
+        return retval;
+    }        
+
+    public Reference<UpdateManagerImpl.Cache> getCacheReference() {        
+        synchronized(UpdateManagerImpl.Cache.class) {        
+            return cacheReference;
+        }
+    }    
+    
+    private void initCache(UpdateManagerImpl.Cache c) {
+        synchronized(UpdateManagerImpl.Cache.class) {        
+            cacheReference = new WeakReference<UpdateManagerImpl.Cache>(c);
+        }        
+    }
+    
+    private class Cache {
+        private Map<String, UpdateUnit> units;
+        private Set<UpdateElement> availableEagers = null;
+        private Set<UpdateElement> installedEagers = null;
+
+        Cache() {
+            units = UpdateUnitFactory.getDefault ().getUpdateUnits ();
+        }        
+        public Set<UpdateElement> getAvailableEagers() {
+            if (availableEagers == null) {
+                availableEagers = new HashSet<UpdateElement>();
+                for (UpdateUnit unit : getUnits()) {
+                    if (!unit.getAvailableUpdates().isEmpty()) {
+                        UpdateElement el = unit.getAvailableUpdates().get(0);
+                        if (Trampoline.API.impl(el).isEager()) {
+                            availableEagers.add(el);
+                        }
+                    }
+                }
+            }
+            return availableEagers;
+        }
+        public Set<UpdateElement> getInstalledEagers() {
+            if (installedEagers == null) {
+                installedEagers = new HashSet<UpdateElement>();
+                for (UpdateUnit unit : getUnits()) {
+                    UpdateElement el;
+                    if ((el = unit.getInstalled()) != null) {
+                        if (Trampoline.API.impl(el).isEager()) {
+                            installedEagers.add(el);
+                        }
+                    }
+                }
+            }            
+            return installedEagers;
+        }                        
+        public Collection<UpdateUnit> getUnits() {
+            return units.values();
+        }
+        public UpdateUnit getUpdateUnit (String moduleCodeName) {
+            return units.get(moduleCodeName);
+        }        
+    }    
 }

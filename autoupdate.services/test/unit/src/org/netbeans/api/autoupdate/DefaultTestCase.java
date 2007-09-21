@@ -42,7 +42,7 @@ public class DefaultTestCase extends NbTestCase {
     private static File catalogFile;
     private static URL catalogURL;
     protected boolean modulesOnly = true;
-    List<UpdateUnit> keepItNotToGC;
+    protected List<UpdateUnit> keepItNotToGC;
     public DefaultTestCase(String testName) {
         super(testName);
     }

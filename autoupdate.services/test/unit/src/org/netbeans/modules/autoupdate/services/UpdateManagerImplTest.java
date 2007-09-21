@@ -35,21 +35,33 @@ public class UpdateManagerImplTest extends DefaultTestCase {
     public UpdateManagerImplTest(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        keepItNotToGC = null;
+    }
+            
     public void testNoMemoryLeak() throws Exception {
-        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits();
+        List<UpdateUnit> units = UpdateManagerImpl.getInstance().getUpdateUnits();
         assertTrue(units.size() != 0);
-        Reference ref = new WeakReference(units);
+        Reference ref = UpdateManagerImpl.getInstance().getCacheReference();
+        assertNotNull(ref);
+        assertNotNull(ref.get());
+        
         units = null;
-        assertGC("", ref);
-    }
-    
-    public void testNoMemoryLeakModuleOnly () throws Exception {
-        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
-        assertTrue(units.size() != 0);
-        Reference ref = new WeakReference(units);
-        units = null;
-        assertGC("", ref);
-    }
+        assertGC("", ref);        
+        assertNotNull(ref);
+        assertNull(ref.get());        
+        
+        units = UpdateManagerImpl.getInstance().getUpdateUnits();
+        ref = UpdateManagerImpl.getInstance().getCacheReference();
+        assertNotNull(ref);
+        assertNotNull(ref.get());
+        
+        UpdateManagerImpl.getInstance().clearCache();
+        ref = UpdateManagerImpl.getInstance().getCacheReference();
+        assertNull(ref);        
+    }    
 }
 

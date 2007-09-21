@@ -20,6 +20,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -136,6 +137,9 @@ public class InstallEagerModuleTest extends NbmAdvancedTestCase {
         UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
         UpdateUnit u1 = UpdateManagerImpl.getInstance ().getUpdateUnit (regularModule1);
         assertTrue (UpdateManager.TYPE.KIT_MODULE.equals (u1.getType ()));
+        
+        //keep it to prevent GC-ed cache in UpdateManagerImpl
+        List<UpdateUnit> uuu =   UpdateManagerImpl.getInstance ().getUpdateUnits();
         UpdateUnit u2 = UpdateManagerImpl.getInstance ().getUpdateUnit (regularModule2);
         UpdateUnit ea = UpdateManagerImpl.getInstance ().getUpdateUnit (eagerModule);
         assertNotNull ("Unit " + regularModule1 + " found.", u1);

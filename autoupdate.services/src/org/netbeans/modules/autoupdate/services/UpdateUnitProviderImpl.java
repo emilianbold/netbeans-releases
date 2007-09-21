@@ -148,13 +148,13 @@ public final class UpdateUnitProviderImpl {
             }
         }
         // don't remember update units while refreshing the content
-        UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
+        UpdateManagerImpl.getInstance().clearCache ();
         return res;
     }
     
     public void setEnable (boolean state) {
         // don't remember clean-up update units
-        UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
+        UpdateManagerImpl.getInstance().clearCache ();
         storeState (getUpdateProvider (), state);
     }
     
@@ -185,7 +185,7 @@ public final class UpdateUnitProviderImpl {
             Exceptions.printStackTrace(bsx);
         }
         // don't remember clean-up update units
-        UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
+        UpdateManagerImpl.getInstance().clearCache ();
     }
 
     public static UpdateUnitProvider createUpdateUnitProvider (String codeName, String displayName, URL url) {
@@ -306,7 +306,7 @@ public final class UpdateUnitProviderImpl {
             AutoupdateSettings.setLastCheck (new Date ());
         }
         // don't remember clean-up update units
-        UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
+        UpdateManagerImpl.getInstance().clearCache ();
     }
     
     private static void storeProvider (String codeName, String displayName, URL url) {
