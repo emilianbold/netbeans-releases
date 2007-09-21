@@ -301,8 +301,7 @@ public final class DeepReparsingUtils {
         APTPreprocHandler.State state;
         //if (file.isSourceFile()) {
             state = project.createPreprocHandler(nativeFile).getState();
-            APTPreprocHandler.State copy = APTHandlersSupport.copyPreprocState(state);
-            project.putPreprocState(file.getFile(), copy);
+            project.putPreprocState(file.getFile(), state);
         //} else {
         //    state = project.getPreprocHandler(nativeFile.getFile()).getState();
         //}
