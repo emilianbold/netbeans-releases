@@ -259,7 +259,7 @@ public final class AddDomainWizardIterator implements
         this.wizard = wizard;
     }
     
-    public java.util.Set instantiate() {
+    public java.util.Set instantiate() throws java.io.IOException {
         InstanceProperties ip = null;
         if (null != wizard) {
             ip = createInstance();
@@ -267,6 +267,9 @@ public final class AddDomainWizardIterator implements
         Set result = new HashSet();
         if (ip != null) {
             result.add(ip);
+        } else {
+            if (null != wizard && wizard.getProperty(TYPE) != PERSONAL)
+                throw new java.io.IOException("Could not create instance");     // NOI18N
         }
         return result;
     }

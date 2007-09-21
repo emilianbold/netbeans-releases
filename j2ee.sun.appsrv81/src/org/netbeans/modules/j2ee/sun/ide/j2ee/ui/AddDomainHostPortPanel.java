@@ -86,20 +86,6 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
             return false;                        
         }
         int p = component.getPort();
-        try {
-            InetAddress ia = InetAddress.getByName(h);
-            new InetSocketAddress(ia,p);
-        } catch (UnknownHostException uhe) {
-            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(AddDomainHostPortPanel.class, 
-                    "MSG_UnknownHost2",h));                                     //NOI18N
-            return false;
-        } catch (IllegalArgumentException iae) {
-            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(AddDomainHostPortPanel.class, 
-                    "Msg_ValidPortNumber"));                                    //NOI18N
-            return false;
-        }
         // TODO verify no listener OR listener is an admin instance
         wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,null);
         wiz.putProperty(AddDomainWizardIterator.HOST,h);
