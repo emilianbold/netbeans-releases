@@ -30,8 +30,8 @@ public interface FetchedWith extends org.netbeans.modules.j2ee.sun.dd.api.Common
     public void setDefault(boolean value) throws VersionNotSupportedException;
     public boolean isDefault() throws VersionNotSupportedException;
 
-    public void setLevel(String value);
-    public String getLevel();
+    public void setLevel(Integer value);
+    public Integer getLevel();
 
     public void setNamedGroup(String value);
     public String getNamedGroup();

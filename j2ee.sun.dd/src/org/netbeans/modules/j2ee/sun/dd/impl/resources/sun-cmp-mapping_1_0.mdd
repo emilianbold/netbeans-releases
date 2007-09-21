@@ -233,7 +233,7 @@
 	<meta-element>
 		<dtd-name>level</dtd-name>
 		<bean-name>Level</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<wrapper-class>Integer</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>named-group</dtd-name>
