@@ -242,19 +242,15 @@ public final class Actions implements ActionProvider {
      * path to actual file object. Otherwise an empty map is returned.
      */
     private static Map<String,FileObject> findSelection(Element contextEl, Lookup context, FreeformProject project) {
-        Collection<? extends FileObject> files = context.lookupAll(FileObject.class);
-        if (files.isEmpty()) {
-            // Try again with DataObject's.
-            Collection<? extends DataObject> filesDO = context.lookupAll(DataObject.class);
-            if (filesDO.isEmpty()) {
-                 return Collections.emptyMap();
-            }
-            Collection<FileObject> _files = new ArrayList<FileObject>(filesDO.size());
-            for (DataObject d : filesDO) {
-                _files.add(d.getPrimaryFile());
-            }
-            files = _files;
+        Collection<? extends DataObject> filesDO = context.lookupAll(DataObject.class);
+        if (filesDO.isEmpty()) {
+             return Collections.emptyMap();
         }
+        Collection<FileObject> _files = new ArrayList<FileObject>(filesDO.size());
+        for (DataObject d : filesDO) {
+            _files.add(d.getPrimaryFile());
+        }
+        Collection<? extends FileObject> files = _files;
         Element folderEl = Util.findElement(contextEl, "folder", FreeformProjectType.NS_GENERAL); // NOI18N
         assert folderEl != null : "Must have <folder> in <context>";
         String rawtext = Util.findText(folderEl);

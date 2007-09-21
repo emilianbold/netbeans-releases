@@ -620,7 +620,7 @@ final class JavaActions implements ActionProvider {
      * Check to see if a (node-like) selection contains one or more Java sources (or folders) inside the root.
      */
     static boolean containsSelectedJavaSources(FileObject root, Lookup context) {
-        Set<FileObject> selection = new HashSet<FileObject>(context.lookupAll(FileObject.class));
+        Set<FileObject> selection = new HashSet<FileObject>();
         for (DataObject dob : context.lookupAll(DataObject.class)) {
             selection.add(dob.getPrimaryFile());
         }

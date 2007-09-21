@@ -98,41 +98,41 @@ public class JavaActionsTest extends TestBase {
     }
     
     public void testContainsSelectedJavaSources() throws Exception {
-        assertTrue(ja.containsSelectedJavaSources(src, context(new FileObject[] {myAppJava})));
-        assertFalse(ja.containsSelectedJavaSources(src, context(new FileObject[] {myAppJava, someResourceTxt})));
+        assertTrue(ja.containsSelectedJavaSources(src, contextDO(new FileObject[] {myAppJava})));
+        assertFalse(ja.containsSelectedJavaSources(src, contextDO(new FileObject[] {myAppJava, someResourceTxt})));
     }
     
     public void testFindPackageRoot() throws Exception {
-        Lookup context = context(new FileObject[] {myAppJava});
+        Lookup context = contextDO(new FileObject[] {myAppJava});
         JavaActions.AntLocation loc = ja.findPackageRoot(context);
         assertNotNull("found a package root for " + context, loc);
         assertEquals("right name", "${src.dir}", loc.virtual);
         assertEquals("right physical", src, loc.physical);
-        context = context(new FileObject[] {myAppJava, someFileJava});
+        context = contextDO(new FileObject[] {myAppJava, someFileJava});
         loc = ja.findPackageRoot(context);
         assertNotNull("found a package root for " + context, loc);
         assertEquals("right name", "${src.dir}", loc.virtual);
         assertEquals("right physical", src, loc.physical);
-        context = context(new FileObject[] {src});
+        context = contextDO(new FileObject[] {src});
         loc = ja.findPackageRoot(context);
         assertNotNull("found a package root for " + context, loc);
         assertEquals("right name", "${src.dir}", loc.virtual);
         assertEquals("right physical", src, loc.physical);
-        context = context(new FileObject[] {myAppJava, someResourceTxt});
+        context = contextDO(new FileObject[] {myAppJava, someResourceTxt});
         loc = ja.findPackageRoot(context);
         assertNull("found no package root for " + context + ": " + loc, loc);
-        context = context(new FileObject[] {myAppJava, specialTaskJava});
+        context = contextDO(new FileObject[] {myAppJava, specialTaskJava});
         loc = ja.findPackageRoot(context);
         assertNull("found no package root for " + context, loc);
-        context = context(new FileObject[] {});
+        context = contextDO(new FileObject[] {});
         loc = ja.findPackageRoot(context);
         assertNull("found no package root for " + context, loc);
-        context = context(new FileObject[] {specialTaskJava});
+        context = contextDO(new FileObject[] {specialTaskJava});
         loc = ja.findPackageRoot(context);
         assertNotNull("found a package root for " + context, loc);
         assertEquals("right name", "${ant.src.dir}", loc.virtual);
         assertEquals("right physical", antsrc, loc.physical);
-        context = context(new FileObject[] {buildProperties});
+        context = contextDO(new FileObject[] {buildProperties});
         loc = ja.findPackageRoot(context);
         assertNull("found no package root for " + context, loc);
     }
@@ -165,6 +165,14 @@ public class JavaActionsTest extends TestBase {
         for (int i = 0; i < files.length; i++) {
             objs[i] = useDO ? (Object) DataObject.find(files[i]) : files[i];
             useDO = !useDO;
+        }
+        return Lookups.fixed(objs);
+    }
+    
+    private Lookup contextDO(FileObject[] files) throws Exception {
+        Object[] objs = new Object[files.length];
+        for (int i = 0; i < files.length; i++) {
+            objs[i] = (Object) DataObject.find(files[i]);
         }
         return Lookups.fixed(objs);
     }
@@ -534,7 +542,7 @@ public class JavaActionsTest extends TestBase {
 
     public void testCreateRunSingleTargetElem() throws Exception {
         Document doc = XMLUtil.createDocument("project", null, null, null);
-        Lookup context = context(new FileObject[] {myAppJava});
+        Lookup context = contextDO(new FileObject[] {myAppJava});
         JavaActions.AntLocation root = ja.findPackageRoot(context);
         Element targetElem = ja.createRunSingleTargetElem(doc, "run-single-test-target", "test.class", root);
         doc.getDocumentElement().appendChild(targetElem);
@@ -558,7 +566,7 @@ public class JavaActionsTest extends TestBase {
 
     public void testCreateDebugSingleTargetElem() throws Exception {
         Document doc = XMLUtil.createDocument("project", null, null, null);
-        Lookup context = context(new FileObject[] {myAppJava});
+        Lookup context = contextDO(new FileObject[] {myAppJava});
         JavaActions.AntLocation root = ja.findPackageRoot(context);
         Element targetElem = ja.createDebugSingleTargetElem(doc, "debug-single-test-target", "test.class", root);
         doc.getDocumentElement().appendChild(targetElem);
@@ -622,7 +630,7 @@ public class JavaActionsTest extends TestBase {
 
     public void testGetPathFromCU() throws Exception {
         Document doc = XMLUtil.createDocument("testdoc", null, null, null);
-        Lookup context = context(new FileObject[] {myAppJava});
+        Lookup context = contextDO(new FileObject[] {myAppJava});
         JavaActions.AntLocation root = ja.findPackageRoot(context);
         Element cpElem = ja.getPathFromCU(doc, root.virtual, "classpath");
         String expectedXml =
