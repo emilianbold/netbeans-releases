@@ -1,10 +1,7 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
-import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.Arrays;
 import javax.swing.ComboBoxModel;
-import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
@@ -62,6 +59,10 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         failLabel = new javax.swing.JLabel();
         failCombo = new javax.swing.JComboBox();
         validationCombo = new javax.swing.JComboBox();
+        nonTransactionalLabel = new javax.swing.JLabel();
+        allowCallersLabel = new javax.swing.JLabel();
+        nonTransactionalCombo = new javax.swing.JComboBox();
+        allowCallersCombo = new javax.swing.JComboBox();
 
         poolSettingsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_PoolSettings_Title"))); // NOI18N
 
@@ -263,30 +264,60 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
             }
         });
 
+        nonTransactionalLabel.setLabelFor(nonTransactionalCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(nonTransactionalLabel, org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_NonTransactional")); // NOI18N
+
+        allowCallersLabel.setLabelFor(allowCallersCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(allowCallersLabel, org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_AllowCallers")); // NOI18N
+
+        nonTransactionalCombo.setModel(getComboBoxModel("non-transactional-connections"));
+        nonTransactionalCombo.setSelectedItem(getDefaultValue("nonTransactionalCombo"));
+        nonTransactionalCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nonTransactionalComboActionPerformed(evt);
+            }
+        });
+
+        allowCallersCombo.setModel(getComboBoxModel("allow-non-component-callers"));
+        allowCallersCombo.setSelectedItem(getDefaultValue("allow-non-component-callers"));
+        allowCallersCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                allowCallersComboActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout validationPanelLayout = new org.jdesktop.layout.GroupLayout(validationPanel);
         validationPanel.setLayout(validationPanelLayout);
         validationPanelLayout.setHorizontalGroup(
             validationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(validationPanelLayout.createSequentialGroup()
-                .add(validationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, validationPanelLayout.createSequentialGroup()
+                .add(validationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, validationPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(allowCallersLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 176, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(validationPanelLayout.createSequentialGroup()
                         .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(validationLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 176, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(validationPanelLayout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, validationPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(methodLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 176, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(validationPanelLayout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, validationPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(tableNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 176, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(validationPanelLayout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, validationPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(failLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 176, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(failLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 176, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, validationPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(nonTransactionalLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 176, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(validationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(methodCombo, 0, 209, Short.MAX_VALUE)
                     .add(tableNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
                     .add(failCombo, 0, 209, Short.MAX_VALUE)
-                    .add(validationCombo, 0, 209, Short.MAX_VALUE))
+                    .add(validationCombo, 0, 209, Short.MAX_VALUE)
+                    .add(nonTransactionalCombo, 0, 209, Short.MAX_VALUE)
+                    .add(allowCallersCombo, 0, 209, Short.MAX_VALUE))
                 .addContainerGap())
         );
         validationPanelLayout.setVerticalGroup(
@@ -307,6 +338,14 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
                 .add(validationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(failCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(failLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(validationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(nonTransactionalLabel)
+                    .add(nonTransactionalCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(validationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(allowCallersLabel)
+                    .add(allowCallersCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -314,6 +353,10 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         methodLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_connection-validation-method")); // NOI18N
         tableNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_validation-table-name")); // NOI18N
         failLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_fail-all-connections")); // NOI18N
+        nonTransactionalLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_NonTransactional")); // NOI18N
+        nonTransactionalLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_non-transactional-connections")); // NOI18N
+        allowCallersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "LBL_AllowCallers")); // NOI18N
+        allowCallersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionPoolOptionalVisualPanel.class, "ToolTip_allow-non-component-callers")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -323,19 +366,19 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, validationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, transactionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, poolSettingsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, poolSettingsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, transactionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(poolSettingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(poolSettingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 153, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(transactionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(transactionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 75, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(validationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(validationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 176, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -404,6 +447,16 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         String itemValue = (String)failCombo.getSelectedItem();
         updateFieldValue("fail-all-connections", itemValue);
     }//GEN-LAST:event_failComboActionPerformed
+
+    private void allowCallersComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allowCallersComboActionPerformed
+        String itemValue = (String)allowCallersCombo.getSelectedItem();
+        updateFieldValue("allow-non-component-callers", itemValue);
+    }//GEN-LAST:event_allowCallersComboActionPerformed
+
+    private void nonTransactionalComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nonTransactionalComboActionPerformed
+        String itemValue = (String)nonTransactionalCombo.getSelectedItem();
+        updateFieldValue("non-transactional-connections", itemValue);
+    }//GEN-LAST:event_nonTransactionalComboActionPerformed
     
     private void updateFieldValue(String fieldName, String itemValue){
         String val = data.getString(fieldName);
@@ -412,7 +465,7 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         }
         panel.fireChange(this);
     }
-    
+
     private ComboBoxModel getComboBoxModel(String fieldName) {
         ComboBoxModel model = new javax.swing.DefaultComboBoxModel(new String[] {});
         FieldGroup group1 = FieldGroupHelper.getFieldGroup(this.panel.getWizard(), "pool-setting-2"); //NOI18N
@@ -464,6 +517,8 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
         return false;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox allowCallersCombo;
+    private javax.swing.JLabel allowCallersLabel;
     private javax.swing.JComboBox failCombo;
     private javax.swing.JLabel failLabel;
     private javax.swing.JTextField idleField;
@@ -474,6 +529,8 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
     private javax.swing.JLabel maxLabel;
     private javax.swing.JComboBox methodCombo;
     private javax.swing.JLabel methodLabel;
+    private javax.swing.JComboBox nonTransactionalCombo;
+    private javax.swing.JLabel nonTransactionalLabel;
     private javax.swing.JPanel poolSettingsPanel;
     private javax.swing.JTextField resizeField;
     private javax.swing.JLabel resizeLabel;
