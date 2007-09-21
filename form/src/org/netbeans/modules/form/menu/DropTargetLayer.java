@@ -362,6 +362,9 @@ class DropTargetLayer extends JComponent {
     // with a calculated value
     private static int getIconLeft(JMenuItem item) {
         if(isWindows()) {
+            if(isVista()) {
+                return 1;
+            }
             if(hasRadioOrCheckSibling(item)) {
                 return 20;
             } else {
@@ -413,6 +416,13 @@ class DropTargetLayer extends JComponent {
     }
     private static boolean isWindows() {
         if(System.getProperty("os.name").startsWith("Windows")) {
+            return true;
+        }
+        return false;
+    }
+    
+    private static boolean isVista() {
+        if(System.getProperty("os.name").startsWith("Windows Vista")) {
             return true;
         }
         return false;
