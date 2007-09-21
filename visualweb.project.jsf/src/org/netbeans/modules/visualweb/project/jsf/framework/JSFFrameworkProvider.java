@@ -525,30 +525,39 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
 
             // set locale in faces-config.xml
-            FileObject facesConfig = FileUtil.toFileObject(fileConfig);
+            final FileObject facesConfig = FileUtil.toFileObject(fileConfig);
             if (facesConfig != null) {
-                JSFConfigModel facesModel = ConfigurationUtils.getConfigModel(facesConfig, true);
-                if (facesModel != null) {
-                    facesModel.startTransaction();
-                    JSFConfigComponentFactory facesFactory = facesModel.getFactory();
-                    LocaleConfig newLocale = facesFactory.createLocaleConfig();
+                ProjectManager.mutex().postReadRequest(new Runnable() {
+                    public void run() {
+                        JSFConfigModel facesModel = ConfigurationUtils.getConfigModel(facesConfig, true);
+                        if (facesModel != null) {
+                            facesModel.startTransaction();
+                            JSFConfigComponentFactory facesFactory = facesModel.getFactory();
+                            LocaleConfig newLocale = facesFactory.createLocaleConfig();
+        
+                            DefaultLocale defaultLC = facesFactory.createDefatultLocale();
+                            defaultLC.setLocale(DEFAULT_LOCALE);
+                            newLocale.setDefaultLocale(defaultLC);
+        
+                            for (String locale : SUPPORTED_LOCALES) {
+                                SupportedLocale supportedLC = facesFactory.createSupportedLocale();
+                                supportedLC.setLocale(locale);
+                                newLocale.addSupportedLocales(supportedLC);
+                            }
+        
+                            Application newApplication = facesFactory.createApplication();
+                            facesModel.getRootComponent().addApplication(newApplication);
+                            newApplication.addLocaleConfig(newLocale);
+                            facesModel.endTransaction();
 
-                    DefaultLocale defaultLC = facesFactory.createDefatultLocale();
-                    defaultLC.setLocale(DEFAULT_LOCALE);
-                    newLocale.setDefaultLocale(defaultLC);
-
-                    for (String locale : SUPPORTED_LOCALES) {
-                        SupportedLocale supportedLC = facesFactory.createSupportedLocale();
-                        supportedLC.setLocale(locale);
-                        newLocale.addSupportedLocales(supportedLC);
+                            try {
+                                facesModel.sync();
+                            } catch (IOException ioe) {
+                                LOGGER.log(Level.WARNING, "Exception during setting locale in faces-config.xml", ioe); //NOI18N
+                            }
+                        }
                     }
-
-                    Application newApplication = facesFactory.createApplication();
-                    facesModel.getRootComponent().addApplication(newApplication);
-                    newApplication.addLocaleConfig(newLocale);
-                    facesModel.endTransaction();
-                    facesModel.sync();
-                }
+                }); 
             }
         }
     }
