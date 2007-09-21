@@ -561,6 +561,8 @@ public class SchemaEditorSupport extends DataEditorSupport
                 public void taskFinished(Task task) {
                     QuietUndoManager undo = getUndoManager();
                     StyledDocument doc = getDocument();
+                    if(doc == null)
+                        return;
                     synchronized (undo) {
                         // Now that the document is ready, pass it to the manager.
                         undo.setDocument((AbstractDocument) doc);
