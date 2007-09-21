@@ -67,7 +67,7 @@ public class GoToAction extends CookieAction {
      */
     private static GotoType[] getGotoTypes(Node[] activatedNodes) {
         List<GotoType> types = new ArrayList<GotoType>();
-        if (activatedNodes != null || activatedNodes.length == 1) {
+        if (activatedNodes != null && activatedNodes.length == 1) {
             Node node = activatedNodes[0];
             GotoCookie cookie = node.getCookie(GotoCookie.class);
             if (cookie != null) {
