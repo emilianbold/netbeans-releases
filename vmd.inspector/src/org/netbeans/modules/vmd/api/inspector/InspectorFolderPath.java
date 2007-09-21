@@ -22,7 +22,6 @@ package org.netbeans.modules.vmd.api.inspector;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.inspector.InspectorWrapperTree;
 
@@ -30,75 +29,83 @@ import org.netbeans.modules.vmd.inspector.InspectorWrapperTree;
  *
  * @author Karol Harezlak
  */
-
 /**
  * This class keep tracking status of of the Mobility Visual Designer Navigator structure tree.
- * 
- */ 
+ *
+ */
 public final class InspectorFolderPath {
 
     private final List<InspectorFolder> path;
     private static InspectorFolderPath instance;
 
-    private InspectorFolderPath(){
+    private InspectorFolderPath() {
         path = new ArrayList<InspectorFolder>();
     }
-    //TODO This method should be only accessable from InspectorWrapperTree!
+
     /**
-    * DO NOT USE THIS METHOD.This method not spoused to be used anywhere except InspectorWrapperTree
-    */ 
-    public static InspectorFolderPath createInspectorPath(){
-        //assert Debug.isFriend(InspectorFolderTree.class);
+     * DO NOT USE THIS METHOD.This method not spoused to be used anywhere else except InspectorWrapperTree
+     * @throw IllegalStateException
+     */
+    public static InspectorFolderPath createInspectorPath() {
+        if (! Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run")) //NOI18N
+            throw new IllegalStateException("This method is only accesable from InspectorWrapperTree.class"); //NOI18N
         instance = new InspectorFolderPath();
         return instance;
     }
-    //TODO This method should be only accessable from InspectorWrapperTree!
-    /**
-    * DO NOT USE THIS METHOD.This method not spoused to be used anywhere except InspectorWrapperTree
-    */ 
-    public InspectorFolderPath add(InspectorFolder pathElement){
-        //assert Debug.isFriend(InspectorFolderTree.class);
+
+   /**
+     * DO NOT USE THIS METHOD.This method not spoused to be used anywhere else except InspectorWrapperTree
+     * @throw IllegalStateException
+     */
+    public InspectorFolderPath add(InspectorFolder pathElement) {
+        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run") && //NOI18N
+                !Debug.isFriend(InspectorWrapperTree.class)) {
+            throw new IllegalStateException("This method is only accesable from InspectorWrapperTree.class"); //NOI18N
+        }
         path.add(pathElement);
         return this;
     }
-    //TODO This method should be only accessable from InspectorWrapperTree!
-    /**
-    * DO NOT USE THIS METHOD.This method not spoused to be used anywhere except InspectorWrapperTree
-    */ 
-    public void remove(InspectorFolder pathElement){
-        assert Debug.isFriend(InspectorWrapperTree.class);
-        assert path.lastIndexOf(pathElement) == (path.size() - 1) : "Path error" ;  // NOI18N
-        path.remove( path.size() - 1 );
+
+   /**
+     * DO NOT USE THIS METHOD.This method not spoused to be used anywhere else except InspectorWrapperTree
+     * @throw IllegalStateException
+     */
+    public void remove(InspectorFolder pathElement) {
+        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run") && //NOI18N
+                !Debug.isFriend(InspectorWrapperTree.class)) {
+            throw new IllegalStateException("This method is only accesable from InspectorWrapperTree.class"); //NOI18N
+        }
+        assert path.lastIndexOf(pathElement) == (path.size() - 1) : "Path error"; // NOI18N
+        path.remove(path.size() - 1);
     }
-    
+
     /**
      * Returns current path of the Mobility Visual Designer Navigator as a List<InspectorFolder>
      * @return returns current path as List<InspectorFolder>
-     */ 
-    public List<InspectorFolder> getPath(){
+     */
+    public List<InspectorFolder> getPath() {
         return Collections.<InspectorFolder>unmodifiableList(path);
     }
+
     /**
      * Returns last element of the current path of the Mobility Visual Designer Navigator as InspectorFolder
      * @return returns last element od path as InspectorFolder
      */
-    public InspectorFolder getLastElement(){
+    public InspectorFolder getLastElement() {
         int index = path.size() - 1;
-        if (index >= 0)
+        if (index >= 0) {
             return Collections.<InspectorFolder>unmodifiableList(path).get(index);
-        else
+        } else {
             return null;
-    }
-    
-    public String toString(){
-        StringBuffer pathString = new StringBuffer();
-        for (InspectorFolder folder : path){
-            pathString.append("/").append(folder.getTypeID());  // NOI18N
         }
-        
+    }
+
+    public String toString() {
+        StringBuffer pathString = new StringBuffer();
+        for (InspectorFolder folder : path) {
+            pathString.append("/").append(folder.getTypeID()); // NOI18N
+        }
+
         return pathString.toString();
     }
-    
 }
-
-

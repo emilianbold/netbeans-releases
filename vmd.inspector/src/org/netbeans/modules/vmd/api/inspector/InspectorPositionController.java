@@ -39,8 +39,6 @@ public interface InspectorPositionController {
     /**
      * This method checks if InspectorFolder connected with this position controller
      * belongs to the particular place inside of the Mobility Visual Designer Navigator tree structure.
-     * To check if this folder "isInside" particular place there is parameters like
-     * current navigator path, folder and component.
      * @param path current navigator tree path
      * @param folder current inspector folder
      * @param component current component

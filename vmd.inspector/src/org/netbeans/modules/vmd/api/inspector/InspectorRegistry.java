@@ -29,6 +29,11 @@ import org.openide.util.WeakSet;
  *
  * @author Karol Harezlak
  */
+
+/**
+ * This class store information about DesigneComponents   
+ * 
+ */ 
 public final class InspectorRegistry {
     
     private static InspectorRegistry INSTANCE;
