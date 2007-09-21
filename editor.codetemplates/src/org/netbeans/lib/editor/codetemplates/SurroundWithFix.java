@@ -43,7 +43,7 @@ public class SurroundWithFix implements Fix {
         Document doc = component.getDocument();
         CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
         op.waitLoaded();
-        Collection<? extends CodeTemplateFilter> filters = op.getTemplateFilters(component, component.getSelectionStart());
+        Collection<? extends CodeTemplateFilter> filters = CodeTemplateManagerOperation.getTemplateFilters(component, component.getSelectionStart());
         for (CodeTemplate template : op.findSelectionTemplates()) {
             if (accept(template, filters)) {
                 fixes.add(new SurroundWithFix(template, component));
@@ -62,7 +62,11 @@ public class SurroundWithFix implements Fix {
     }
 
     public String getText() {
-        return SURROUND_WITH + CodeTemplateApiPackageAccessor.get().getSingleLineText(template);
+        String description = template.getDescription();
+        if (description == null) {
+            description = CodeTemplateApiPackageAccessor.get().getSingleLineText(template);
+        }
+        return SURROUND_WITH + description;
     }
 
     public ChangeInfo implement() {

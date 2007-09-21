@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
     <codetemplate abbreviation="St"><code><![CDATA[String]]></code></codetemplate> 
 
 
-    <codetemplate abbreviation="fori" contexts="BLOCK,CASE" descriptionId="CT_fori">
+    <codetemplate abbreviation="fori" contexts="BLOCK,CASE">
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${ARR array default="arr"}.length; ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR}[${IDX}];
@@ -155,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="iff" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="iff" contexts="BLOCK,CASE" descriptionId="CT_iff">
         <code>
 <![CDATA[if (${EXP instanceof="java.lang.Boolean" default="exp"}) {
    ${selection line}${cursor}
@@ -163,7 +163,7 @@ Microsystems, Inc. All Rights Reserved.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE" descriptionId="CT_ifelse">
         <code>
 <![CDATA[if (${EXP instanceof="java.lang.Boolean" default="exp"}) {
    ${selection line}${cursor}
