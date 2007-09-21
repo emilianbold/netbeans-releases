@@ -152,13 +152,25 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         ignoreRootCombo = false;
         Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
         if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE ) {
+            final String baseName = DEFAULT_NEW_PACKAGE_NAME;
+            String activeName = baseName;
+            if (preselectedFolder != null) {
+                int index = 0;
+                while (true) {
+                    FileObject _tmp = preselectedFolder.getFileObject(activeName, null);
+                    if (_tmp == null) {
+                        break;
+                    }
+                    activeName = baseName + ++index;
+                }
+            }
             String docName = preselectedPackage == null || preselectedPackage.toString().length() == 0 ? 
-                DEFAULT_NEW_PACKAGE_NAME : 
-                preselectedPackage.toString() + "." + DEFAULT_NEW_PACKAGE_NAME;
+                activeName : 
+                preselectedPackage.toString() + "." + activeName;
 
             documentNameTextField.setText( docName );                    
             int docNameLen = docName.length();
-            int defPackageNameLen = DEFAULT_NEW_PACKAGE_NAME.length();
+            int defPackageNameLen = activeName.length();
 
             documentNameTextField.setSelectionEnd( docNameLen - 1 );
             documentNameTextField.setSelectionStart( docNameLen - defPackageNameLen );                
@@ -174,7 +186,19 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                     }
                     else {
                         //Ordinary file
-                        documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName ());
+                        final String baseName = NEW_CLASS_PREFIX + template.getName ();
+                        String activeName = baseName;
+                        if (preselectedFolder != null) {
+                            int index = 0;                            
+                            while (true) {
+                                FileObject _tmp = preselectedFolder.getFileObject(activeName, template.getExt());    //NOI18N
+                                if (_tmp == null) {
+                                    break;
+                                }
+                                activeName = baseName + ++index;
+                            }
+                        }
+                        documentNameTextField.setText (activeName);
                         documentNameTextField.selectAll ();
                     }
                 }
