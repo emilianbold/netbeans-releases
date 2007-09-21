@@ -1498,7 +1498,11 @@ public class MenuEditLayer extends JPanel {
                     } else {
                         openMenu(rad, c);
                         glassLayer.requestFocusInWindow();                        
-                        setSelectedRADComponent(rad);
+                        if(DropTargetLayer.isMultiselectPressed(e)) {
+                            addSelectedRADComponent(rad);
+                        } else {
+                            setSelectedRADComponent(rad);
+                        }
                         if(e.isPopupTrigger()) {
                             showContextMenu(e.getPoint());
                             return;
@@ -1595,10 +1599,10 @@ public class MenuEditLayer extends JPanel {
                         glassLayer.requestFocusInWindow();
                         RADComponent rad = formDesigner.getMetaComponent(c);
                         //add to selection if shift is down, instead of replacing
-                        if(e.isShiftDown()) {
+                        if(DropTargetLayer.isMultiselectPressed(e)) {
                             addSelectedRADComponent(rad);
                         } else {
-                            setSelectedRADComponent(rad);//(RADComponent)formDesigner.getMetaComponent(c));
+                            setSelectedRADComponent(rad);
                         }
                     }
                 }

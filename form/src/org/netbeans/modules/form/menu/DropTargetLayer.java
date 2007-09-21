@@ -25,6 +25,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -430,5 +431,15 @@ class DropTargetLayer extends JComponent {
         if(DEBUG) {
             System.out.println(s);
         }
+    }
+    
+    public static boolean isMultiselectPressed(MouseEvent evt) {
+        if(evt.isShiftDown()) {
+            return true;
+        }
+        if(!isAqua() && evt.isControlDown()) {
+            return true;
+        }
+        return false;
     }
 }
