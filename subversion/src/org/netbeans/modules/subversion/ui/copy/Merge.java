@@ -63,9 +63,9 @@ public class Merge extends CopyDialog implements ItemListener {
 
         panel.typeComboBox.setModel(new DefaultComboBoxModel(
                 new MergeType[] {
+                       new MergeSinceOriginType(repositoryRoot, root),
                        new MergeOneFolderType(repositoryRoot, root),
-                       new MergeTwoFoldersType(repositoryRoot, root),
-                       new MergeSinceOriginType(repositoryRoot, root)
+                       new MergeTwoFoldersType(repositoryRoot, root)                       
                 }
         ));
         panel.typeComboBox.setRenderer(createTypeRenderer());
