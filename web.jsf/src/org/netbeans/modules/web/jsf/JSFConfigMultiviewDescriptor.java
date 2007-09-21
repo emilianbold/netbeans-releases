@@ -20,7 +20,6 @@
 package org.netbeans.modules.web.jsf;
 
 import java.awt.Image;
-import java.io.IOException;
 import java.io.Serializable;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -30,21 +29,26 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.openide.awt.UndoRedo;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditor;
+import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-/**
- *
+/*
  * @author Petr Pisl
  */
+
 public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Serializable{
     static final long serialVersionUID = -6305897237371751564L;
+    private final static String XML_CONSTANT = "XML"; //NOI18N
     
     private JSFConfigEditorContext context;
     
@@ -58,7 +62,7 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
     }
     
     public String getDisplayName() {
-        return "XML";
+        return XML_CONSTANT;
     }
     
     private static final Image JSFConfigIcon = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
@@ -71,57 +75,60 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
     }
     
     public String preferredID() {
-        return "XML";
+        return XML_CONSTANT;
     }
     
     public MultiViewElement createElement() {
-        return new JSFConfigMultiviewElement(context);
+        MultiViewElement element = null;
+        try {
+            DataObject dObject = DataObject.find(context.getFacesConfigFile());
+            JSFConfigDataObject jsfDataObject = (JSFConfigDataObject) dObject;
+            element =  new JSFConfigMultiviewElement(context, jsfDataObject.getEditorSupport());
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return element;
     }
     
     
     
-    class JSFConfigMultiviewElement implements MultiViewElement, Serializable {
+    class JSFConfigMultiviewElement extends CloneableEditor implements MultiViewElement, Serializable {
         static final long serialVersionUID = -6305897237371751564L;
         
-        private transient TopComponent tc;
         private JSFConfigEditorContext context;
-        private transient CloneableEditor editor;
         private transient JComponent toolbar;
         private transient JSFConfigDataObject jsfDataObject;
         
-        public JSFConfigMultiviewElement(JSFConfigEditorContext context) {
+        public JSFConfigMultiviewElement(JSFConfigEditorContext context, DataEditorSupport support) {
+            super(support);
             this.context = context;
             init();
         }
         
         private void init() {            
-            try         {
-                org.openide.loaders.DataObject dObject = org.openide.loaders.DataObject.find(context.getFacesConfigFile());
+            try {
+                DataObject dObject = DataObject.find(context.getFacesConfigFile());
 
                 jsfDataObject = (org.netbeans.modules.web.jsf.JSFConfigDataObject) dObject;
-                editor = new org.openide.text.CloneableEditor(jsfDataObject.getEditorSupport());
-                tc = new org.netbeans.modules.web.jsf.JSFConfigEditorTopComponent(context,
-                                                                                  null,
-                                                                                  editor);
             }
             catch (DataObjectNotFoundException ex) {
                 java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
                                                                  ex.getMessage(),
                                                                  ex);
             }
-}
+        }
         
         public JComponent getVisualRepresentation() {
-            return editor;
+            return this;
         }
         
         public JComponent getToolbarRepresentation() {
             if (toolbar == null) {
-                JEditorPane pane = editor.getEditorPane();
-                if (pane != null) {
-                    Document doc = pane.getDocument();
+                JEditorPane editorPane = getEditorPane();
+                if (editorPane != null) {
+                    Document doc = editorPane.getDocument();
                     if (doc instanceof NbDocument.CustomToolbar)
-                        toolbar = ((NbDocument.CustomToolbar) doc).createToolbar(pane);
+                        toolbar = ((NbDocument.CustomToolbar) doc).createToolbar(editorPane);
                 }
                 if (toolbar == null)
                     toolbar = new JPanel();
@@ -130,36 +137,44 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
         }
         
         
+        @Override
         public Lookup getLookup() {
             return jsfDataObject.getLookup();
         }
         
+        @Override
         public void componentOpened() {
-            
+            super.componentOpened();
         }
         
+        @Override
         public void componentClosed() {
-            
+            super.componentClosed();
         }
         
+        @Override
         public void componentShowing() {
-            
+            super.componentShowing();
         }
         
+        @Override
         public void componentHidden() {
-            
+             super.componentHidden();
         }
         
+        @Override
         public void componentActivated() {
-            
+            super.componentActivated();
         }
         
+        @Override
         public void componentDeactivated() {
-            
+            super.componentDeactivated();
         }
         
+        @Override
         public UndoRedo getUndoRedo() {
-            return editor.getUndoRedo();
+            return super.getUndoRedo();
         }
         
         public void setMultiViewCallback(MultiViewElementCallback callback) {
@@ -167,24 +182,13 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
         }
         
         public CloseOperationState canCloseElement() {
-            return CloseOperationState.STATE_OK;
+            // the savin operation is handled by CloseHander form JSFCOnfigEditorSuport
+            return MultiViewFactory.createUnsafeCloseState("ID_FACES_CONFIG_CLOSING", MultiViewFactory.NOOP_CLOSE_ACTION, MultiViewFactory.NOOP_CLOSE_ACTION);
         }
         
+        @Override
         public javax.swing.Action[] getActions() {
-            return editor.getActions();
-        }
-        
-        private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-            out.writeObject(context);
-        }
-        
-        private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-            Object object = in.readObject();
-            if (! (object instanceof JSFConfigEditorContext))
-                throw new ClassNotFoundException("JSFConfigEditorContext expected but not found");
-            context = (JSFConfigEditorContext) object;
-            init();
+            return super.getActions();
         }
     }
-    
 }

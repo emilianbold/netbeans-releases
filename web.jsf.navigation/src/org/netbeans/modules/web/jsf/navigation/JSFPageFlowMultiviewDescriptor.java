@@ -37,6 +37,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.openide.DialogDescriptor;
 import org.openide.awt.UndoRedo;
@@ -224,7 +225,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
 
         public CloseOperationState canCloseElement() {
-            return CloseOperationState.STATE_OK;
+            return MultiViewFactory.createUnsafeCloseState("ID_FACES_CONFIG_CLOSING", MultiViewFactory.NOOP_CLOSE_ACTION, MultiViewFactory.NOOP_CLOSE_ACTION);
         }
 
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {

@@ -21,6 +21,7 @@ package org.netbeans.modules.web.jsf;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,6 +31,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.spi.multiview.CloseOperationHandler;
+import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
@@ -48,6 +51,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 /**
@@ -113,10 +117,21 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 new ArrayList<MultiViewDescription> (JSFConfigEditorViewFactorySupport.createViewDescriptions(context));
         if (descriptions.size() > 0) {
             descriptions.add( new JSFConfigMultiviewDescriptor(context));
-            return (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView(descriptions.toArray(new MultiViewDescription[descriptions.size()]), descriptions.get(0), null);
+            return (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView(
+                            descriptions.toArray(new MultiViewDescription[descriptions.size()]), 
+                            descriptions.get(0),
+                            new CloseHandler((JSFConfigDataObject)getDataObject()));
         } else {
             return super.createPane();
         }
+    }
+    
+    @Override
+    protected CloneableTopComponent createCloneableTopComponent() {
+        CloneableTopComponent tc = super.createCloneableTopComponent();
+        this.mvtc = tc;
+        updateDisplayName ();
+        return tc;
     }
     
     public UndoRedo.Manager getUndoRedoManager() {
@@ -191,10 +206,10 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                     defaultEncoding} ),
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE);
-            nd.setValue(NotifyDescriptor.NO_OPTION);
-            DialogDisplayer.getDefault().notify(nd);
+                        nd.setValue(NotifyDescriptor.NO_OPTION);
+                        DialogDisplayer.getDefault().notify(nd);
             if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
-            changeEncodingToDefault = true;
+                        changeEncodingToDefault = true;
         }
         
         if (!changeEncodingToDefault){
@@ -313,6 +328,12 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         return true;
     }
     
+    @Override
+    protected void notifyClosed() {
+        mvtc = null;
+        super.notifyClosed();
+    }
+    
     /** Overrides superclass method. Adds removing of save cookie. */
     @Override
     protected void notifyUnmodified() {
@@ -374,6 +395,29 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         }
         
     }
+    
+    /** Implementation of CloseOperationHandler for multiview. 
+     */
+    private static class CloseHandler implements CloseOperationHandler, Serializable {
+        private static final long serialVersionUID = 1L;
+        
+        private JSFConfigDataObject dataObject;
+        
+        private CloseHandler() {
+        }
+        
+        public CloseHandler(JSFConfigDataObject facesConfig) {
+            dataObject = facesConfig;
+        }
+        
+        public boolean resolveCloseOperation(CloseOperationState[] elements) {
+            boolean can = dataObject.getEditorSupport().canClose();
+            if (can)
+                dataObject.getEditorSupport().notifyClosed();
+            return can;
+        }
+    }
+    
     private static class XmlEnv extends DataEditorSupport.Env {
         
         private static final long serialVersionUID = -800036748848958489L;
@@ -384,7 +428,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
          * @param obj the data object to edit
          */
         public XmlEnv(JSFConfigDataObject obj) {
-            super(obj);
+            super(obj); 
         }
         
         /** Get the file to edit.
