@@ -118,6 +118,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     private MainClassUpdater mainClassUpdater;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
+    private final ClassPathProviderImpl cpProvider;
 
     private AntBuildExtender buildExtender;
 
@@ -138,6 +139,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
 
+        this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
     }
@@ -222,7 +224,6 @@ public final class J2SEProject implements Project, AntProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         final J2SEProjectClassPathModifier cpMod = new J2SEProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
-        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         Lookup base = Lookups.fixed(new Object[] {
             J2SEProject.this,
             new Info(),
@@ -233,7 +234,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
-            cpProvider,
+            new ClassPathProviderMerger(cpProvider),
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new AntArtifactProviderImpl(),
@@ -261,6 +262,10 @@ public final class J2SEProject implements Project, AntProjectListener {
             new BinaryForSourceQueryImpl(this.sourceRoots, this.testRoots, this.helper, this.eval) //Does not use APH to get/put properties/cfgdata
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
+    }
+    
+    public ClassPathProviderImpl getClassPathProvider () {
+        return this.cpProvider;
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
@@ -447,8 +452,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             
-            // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+            // register project's classpaths to GlobalPathRegistry            
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -565,8 +569,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                 }
             }
             
-            // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+            // unregister project's classpaths to GlobalPathRegistry            
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));

@@ -97,7 +97,7 @@ public class SourcePathImplAddonsTest extends NbTestCase{
      * Test's newly added source root appears in source classpath.
      **/
     public void testAddonsCreateSourceRoot () throws Exception {
-        ClassPathProviderImpl cpProvider = pp.getLookup().lookup(ClassPathProviderImpl.class);
+        ClassPathProviderImpl cpProvider = pp.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
         List<ClassPath.Entry> entries = cp.entries();
@@ -127,7 +127,7 @@ public class SourcePathImplAddonsTest extends NbTestCase{
      * Since Deletion is recognized only after new folder creation event.
      **/    
     public void testAddonsRemoveSourceRoot () throws Exception {
-        ClassPathProviderImpl cpProvider = pp.getLookup().lookup(ClassPathProviderImpl.class);
+        ClassPathProviderImpl cpProvider = pp.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
         String buildDir = (String) J2SEProjectUtil.getEvaluatedProperty(pp,"${build.dir}"); // No I18N        
@@ -163,7 +163,7 @@ public class SourcePathImplAddonsTest extends NbTestCase{
      * Test's newly added multiple source root appears in source classpath.
      **/
     public void testAddonsMultipleSourceRoot () throws Exception {
-        ClassPathProviderImpl cpProvider = pp.getLookup().lookup(ClassPathProviderImpl.class);
+        ClassPathProviderImpl cpProvider = pp.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
         List<ClassPath.Entry> entries = cp.entries();

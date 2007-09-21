@@ -79,7 +79,7 @@ public class SourcePathImplementationTest extends NbTestCase {
     }
 
     public void testSourcePathImplementation () throws Exception {
-        ClassPathProviderImpl cpProvider = pp.getLookup().lookup(ClassPathProviderImpl.class);
+        ClassPathProviderImpl cpProvider = pp.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
         FileObject[] roots = cp.getRoots();
@@ -99,7 +99,7 @@ public class SourcePathImplementationTest extends NbTestCase {
     }
     
     public void testWSClientSupport () throws Exception {
-        ClassPathProviderImpl cpProvider = pp.getLookup().lookup(ClassPathProviderImpl.class);
+        ClassPathProviderImpl cpProvider = pp.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
         List<ClassPath.Entry> entries = cp.entries();
@@ -139,7 +139,7 @@ public class SourcePathImplementationTest extends NbTestCase {
     }
 
     public void testIncludesExcludes() throws Exception {
-        ClassPath cp = pp.getLookup().lookup(ClassPathProviderImpl.class).getProjectSourcesClassPath(ClassPath.SOURCE);
+        ClassPath cp = pp.getClassPathProvider().getProjectSourcesClassPath(ClassPath.SOURCE);
         assertEquals(Collections.singletonList(sources), Arrays.asList(cp.getRoots()));
         FileObject objectJava = FileUtil.createData(sources, "java/lang/Object.java");
         FileObject jcJava = FileUtil.createData(sources, "javax/swing/JComponent.java");

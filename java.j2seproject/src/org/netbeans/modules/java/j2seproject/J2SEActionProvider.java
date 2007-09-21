@@ -662,7 +662,7 @@ class J2SEActionProvider implements ActionProvider {
             }
         }
         else {
-            ClassPathProviderImpl cpProvider = project.getLookup().lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = project.getClassPathProvider();
             if (cpProvider != null) {
                 ClassPath bootPath = cpProvider.getProjectSourcesClassPath(ClassPath.BOOT);
                 ClassPath compilePath = cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE);

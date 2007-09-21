@@ -33,6 +33,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
@@ -54,14 +55,14 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
     static final int ADD = 1;
     static final int REMOVE = 2;
     
-    private final Project project;
+    private final J2SEProject project;
     private final UpdateHelper helper;
     private final ReferenceHelper refHelper;
     private final PropertyEvaluator eval;    
     private final ClassPathSupport cs;    
     
     /** Creates a new instance of J2SEProjectClassPathModifier */
-    public J2SEProjectClassPathModifier(final Project project, final UpdateHelper helper, final PropertyEvaluator eval, final ReferenceHelper refHelper) {
+    public J2SEProjectClassPathModifier(final J2SEProject project, final UpdateHelper helper, final PropertyEvaluator eval, final ReferenceHelper refHelper) {
         assert project != null;
         assert helper != null;
         assert eval != null;
@@ -269,7 +270,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
     private String getClassPathProperty (final SourceGroup sg, final String type) throws UnsupportedOperationException {
         assert sg != null : "SourceGroup cannot be null";  //NOI18N
         assert type != null : "Type cannot be null";  //NOI18N
-        final String classPathProperty = ((ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class)).getPropertyName (sg, type);
+        final String classPathProperty = project.getClassPathProvider().getPropertyName (sg, type);
         if (classPathProperty == null) {
             throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI8N
         }
