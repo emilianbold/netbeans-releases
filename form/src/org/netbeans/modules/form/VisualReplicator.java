@@ -178,15 +178,17 @@ public class VisualReplicator {
             BindingGroup group = getBindingGroup();
             boolean restrictions = getDesignRestrictions();
             for (String id : mapToClones.keySet()) {
-                RADComponent comp = formModel.getMetaComponent(id);
-                if (restrictions) { // this is an updated view (designer)
-                    bindingSupport.establishUpdatedBindings(
-                            comp, false, mapToClones, group, false);
-                    // BindingDesignSupport will unbind and remove these bindings
-                    // automatically if user removes a binding or whole component
-                } else { // this is a one-off view (preview)
-                    BindingDesignSupport.establishOneOffBindings(
-                            comp, false, mapToClones, group);
+                RADComponent rc = formModel.getMetaComponent(id);
+                if (rc != null) {
+                    if (restrictions) { // this is an updated view (designer)
+                        bindingSupport.establishUpdatedBindings(
+                                rc, false, mapToClones, group, false);
+                        // BindingDesignSupport will unbind and remove these bindings
+                        // automatically if user removes a binding or whole component
+                    } else { // this is a one-off view (preview)
+                        BindingDesignSupport.establishOneOffBindings(
+                                rc, false, mapToClones, group);
+                    }
                 }
             }
         }
