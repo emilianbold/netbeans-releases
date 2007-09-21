@@ -20,26 +20,6 @@
                     public boolean isEventSource(org.netbeans.modules.j2ee.sun.dd.api.RootInterface rootDD) {
                         return this == rootDD;
                     }
-                    public void setJmsResource(int index, org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value){}
-                    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource getJmsResource(int index){
-                        return null;
-                    }
-                    public int sizeJmsResource(){
-                        return -1;
-                    }
-                    public void setJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource[] value){}
-                    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource[] getJmsResource(){
-                        return null;
-                    }
-                    public int addJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value){
-                        return -1;
-                    }
-                    public int removeJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value){
-                        return -1;
-                    }
-                    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource newJmsResource(){
-                        return null;
-                    }
                 </user-code>
 	</meta-element>
 	<meta-element>
@@ -91,6 +71,11 @@
 		<dtd-name>connector-connection-pool</dtd-name>
 		<bean-name>ConnectorConnectionPool</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorConnectionPool</implements>
+	</meta-element>
+        <meta-element>
+		<dtd-name>jms-resource</dtd-name>
+		<bean-name>JmsResource</bean-name>
+		<implements>org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource</implements>
 	</meta-element>
 	<meta-element>
 		<dtd-name>description</dtd-name>

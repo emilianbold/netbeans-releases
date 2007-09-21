@@ -71,7 +71,7 @@
     ((custom-resource | external-jndi-resource | jdbc-resource | mail-resource 
     | persistence-manager-factory-resource | admin-object-resource |           
     connector-resource | resource-adapter-config | jdbc-connection-pool |      
-    connector-connection-pool)*)>                                              
+    connector-connection-pool| jms-resource)*)>                                              
 
 
 
@@ -670,6 +670,13 @@
     max-connection-usage-count CDATA "0">
 
 
+<!ELEMENT jms-resource (description? , property*)>
+
+<!ATTLIST jms-resource 
+    jndi-name     CDATA  #REQUIRED
+    res-type      CDATA  #REQUIRED
+    enabled       CDATA "true">
+        
 <!-- property
     Syntax for supplying properties as name value pairs               
 

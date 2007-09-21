@@ -33,6 +33,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PropertyElement;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.AdminObjectResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorConnectionPool;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource;
 
 /**
  *
@@ -93,6 +94,35 @@ public class JMSBean extends JavaMsgServiceResource implements java.io.Serializa
         bean.setResType(aoresource.getResType());
         
         PropertyElement[] extraProperties = aoresource.getPropertyElement();
+        Vector vec = new Vector();       
+        for (int i = 0; i < extraProperties.length; i++) {
+            NameValuePair pair = new NameValuePair();
+            pair.setParamName(extraProperties[i].getName());
+            pair.setParamValue(extraProperties[i].getValue());
+            vec.add(pair);
+        }
+        
+        if (vec != null && vec.size() > 0) {
+            NameValuePair[] props = new NameValuePair[vec.size()];
+            bean.setExtraParams((NameValuePair[])vec.toArray(props));
+        }    
+        
+        return bean;
+    }
+    
+    public static JMSBean createBean(JmsResource jmsresource) {
+        JMSBean bean = new JMSBean();
+        
+        //name attribute in bean is for studio display purpose. 
+        //It is not part of the resource dtd. 
+        bean.setName(jmsresource.getJndiName());
+        bean.setDescription(jmsresource.getDescription());
+        bean.setIsEnabled(jmsresource.getEnabled());
+        bean.setJndiName(jmsresource.getJndiName());
+        bean.setResAdapter("jmsra"); //NOI18N
+        bean.setResType(jmsresource.getResType());
+        
+        PropertyElement[] extraProperties = jmsresource.getPropertyElement();
         Vector vec = new Vector();       
         for (int i = 0; i < extraProperties.length; i++) {
             NameValuePair pair = new NameValuePair();

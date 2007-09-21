@@ -41,6 +41,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.AdminObjectResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorConnectionPool;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.MailResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
@@ -190,6 +191,15 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                     JavaMailSessionBean currMailBean = JavaMailSessionBean.createBean(mailResources[0]);
                     type = this.MAIL;
                     setMailSession(currMailBean);
+                    return type;
+                }
+                
+                // import JMS Resources and convert to Admin Object
+                JmsResource[] jmsResources = resources.getJmsResource();
+                if (jmsResources.length != 0) {
+                    JMSBean jmsBean = JMSBean.createBean(jmsResources[0]);
+                    type = this.JMS;
+                    setJMS(jmsBean);
                     return type;
                 }
                 

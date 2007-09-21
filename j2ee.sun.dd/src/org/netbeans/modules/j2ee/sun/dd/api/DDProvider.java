@@ -967,7 +967,7 @@ public final class DDProvider {
         publicIdToInfoMap.put(DTDRegistry.SUN_RESOURCE_13_DTD_PUBLIC_ID, new DocTypeInfo(
                 Resources.VERSION_1_3, ResourcesProxy.class, Resources.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class,
-                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-resources.dtd")); // NOI18N
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-resources_1_3.dtd")); // NOI18N
         
     }
 }

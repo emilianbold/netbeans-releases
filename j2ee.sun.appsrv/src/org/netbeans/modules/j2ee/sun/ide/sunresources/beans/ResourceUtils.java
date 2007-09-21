@@ -1597,6 +1597,12 @@ public class ResourceUtils implements WizardConstants{
             currMailBean.getBeanInGraph(consolidatedGraph);
         }
         
+        JmsResource[] jmsResources = existResource.getJmsResource();
+        if(jmsResources.length != 0){
+            JMSBean jmsBean = JMSBean.createBean(jmsResources[0]);
+            jmsBean.getAdminObjectBeanInGraph(consolidatedGraph);
+        }
+        
         AdminObjectResource[] aoResources = existResource.getAdminObjectResource();
         if(aoResources.length != 0){
             JMSBean jmsBean = JMSBean.createBean(aoResources[0]);
