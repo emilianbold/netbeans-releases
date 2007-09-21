@@ -195,19 +195,25 @@ public class JBDeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
         
-        DeploymentFactory df = getFactory(uri);
-        if (df == null)
-            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
-
-        String jbURI = uri;
         try {
-            jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
+            DeploymentFactory df = getFactory(uri);
+            if (df == null)
+                throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
+
+            String jbURI = uri;
+            try {
+                jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
+            }
+            catch (Exception e) {
+                Logger.getLogger("global").log(Level.INFO, null, e);
+            }
+
+            return new JBDeploymentManager(df.getDeploymentManager(jbURI, uname, passwd), uri, uname, passwd);
+        } catch (NoClassDefFoundError e) {
+            DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
+            dmce.initCause(e);
+            throw dmce;
         }
-        catch (Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-        }
-        
-        return new JBDeploymentManager(df.getDeploymentManager(jbURI, uname, passwd), uri, uname, passwd);
     }
      
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
@@ -215,30 +221,36 @@ public class JBDeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
         
-        DeploymentFactory df = null;
-        InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
-        if (ip == null) {
-            // null ip either means that the instance is not registered, or that this is the disconnected URL
-            if (!DISCONNECTED_URI.equals(uri)) {
-                throw new DeploymentManagerCreationException("JBoss instance " + uri + " is not registered in the IDE."); // NOI18N
-            }
-        }
-        else {
-            df = getFactory(uri);
-            if (df == null) {
-                throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
-            }
-        }
-
-        String jbURI = uri;
         try {
-            jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
-        }
-        catch (Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-        }
+            DeploymentFactory df = null;
+            InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+            if (ip == null) {
+                // null ip either means that the instance is not registered, or that this is the disconnected URL
+                if (!DISCONNECTED_URI.equals(uri)) {
+                    throw new DeploymentManagerCreationException("JBoss instance " + uri + " is not registered in the IDE."); // NOI18N
+                }
+            }
+            else {
+                df = getFactory(uri);
+                if (df == null) {
+                    throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
+                }
+            }
 
-        return new JBDeploymentManager((df != null ? df.getDisconnectedDeploymentManager(jbURI) : null), uri, null, null);
+            String jbURI = uri;
+            try {
+                jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
+            }
+            catch (Exception e) {
+                Logger.getLogger("global").log(Level.INFO, null, e);
+            }
+
+            return new JBDeploymentManager((df != null ? df.getDisconnectedDeploymentManager(jbURI) : null), uri, null, null);
+        } catch (NoClassDefFoundError e) {
+            DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
+            dmce.initCause(e);
+            throw dmce;
+        }
     }
     
     public String getProductVersion() {

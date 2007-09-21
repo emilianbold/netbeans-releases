@@ -93,15 +93,20 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         return "JBoss Server AddInstanceIterator";  // NOI18N
     }
     
-    public static void showInformation(final String msg,  final String title){
-        SwingUtilities.invokeLater(new Runnable() {
+    public static void showInformation(final String msg,  final String title) {
+        Runnable info = new Runnable() {
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
                 d.setTitle(title);
-                DialogDisplayer.getDefault().notify(d);
+                DialogDisplayer.getDefault().notify(d); 
             }
-        });
+        };
         
+        if (SwingUtilities.isEventDispatchThread()) {
+            info.run();
+        } else {
+            SwingUtilities.invokeLater(info);
+        }
     }
     
     public Set instantiate() throws IOException {
