@@ -106,12 +106,16 @@ public class BuildExtension {
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
-        FileObject jnlpBuildFile = projDir.getFileObject("nbproject/extendArchiveGF.xml"); // NOI18N
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
-        if (extender != null && jnlpBuildFile != null) {
-            AntBuildExtender.Extension ext = extender.getExtension("gfarchiveextend");
-            if (extender.getExtension("gfarchiveextend") != null) { // NOI18N
-                ext.removeDependency(target, "-extend-archive"); // NOI18N
+        if (extender != null) {
+            AntBuildExtender.Extension ext = extender.getExtension("gfarchiveextend");  // NOI18N
+            if (ext != null) {
+                try {
+                    ext.removeDependency(target, "-extend-archive"); // NOI18N
+                } catch (IllegalArgumentException iae) {
+                    Logger.getLogger(BuildExtension.class.getName()).log(Level.FINER,null,
+                            iae);
+                }
                 extender.removeExtension("gfarchiveextend"); // NOI18N
             }
             ProjectManager.getDefault().saveProject(proj);
