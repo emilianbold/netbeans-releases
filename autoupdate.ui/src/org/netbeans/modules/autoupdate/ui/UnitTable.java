@@ -104,10 +104,6 @@ public class UnitTable extends JTable {
         int columnCount = model.getColumnCount ();
         for (int i = 0; i < columnCount; i++) {
             TableColumn activeColumn = getColumnModel ().getColumn (i);
-            if (i == 0 /*checkbox*/ || i == 3 /*Enabled/Disables*/) { // XXX: danger when add a new column
-                activeColumn.setMaxWidth (this.model.getMinWidth (getTableHeader (), i));
-            }
-            activeColumn.setMinWidth (this.model.getMinWidth (getTableHeader (), i));
             activeColumn.setPreferredWidth (this.model.getPreferredWidth (getTableHeader (), i));
         }
     }
