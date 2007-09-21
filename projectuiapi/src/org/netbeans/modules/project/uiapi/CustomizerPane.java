@@ -30,7 +30,7 @@ import java.util.HashMap;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.JLabel;
 import javax.swing.UIManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
@@ -46,7 +46,7 @@ public class CustomizerPane extends JPanel
     public static final String HELP_CTX_PROPERTY = "helpCtxProperty";
     
     private Component currentCustomizer;
-    private JTextArea errorMessageValue = new JTextArea();
+    private JLabel errorMessageValue = new JLabel();
     private HelpCtx currentHelpCtx;
     
     private GridBagConstraints fillConstraints;
@@ -78,10 +78,7 @@ public class CustomizerPane extends JPanel
         categoryPanel.add( categoryView, fillConstraints );
         
         // init errorMessageValue
-        errorMessageValue.setWrapStyleWord(true);
-        errorMessageValue.setLineWrap(true);
         errorMessageValue.setBorder(BorderFactory.createEmptyBorder());
-        errorMessageValue.setEditable(false);
         errorMessageValue.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         errorMessageValue.setBackground(customizerPanel.getBackground());
         
