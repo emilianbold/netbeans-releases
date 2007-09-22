@@ -64,6 +64,7 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider;
+import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -151,6 +152,7 @@ public class PageFlowController {
     }
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
+    private ComponentListener cl;
 
     public void registerListeners() {
         if (pcl == null) {
@@ -159,12 +161,18 @@ public class PageFlowController {
                 configModel.addPropertyChangeListener(pcl);
             }
         }
-        FileObject webFolder = getWebFolder();
+        if (cl == null) {
+            cl = new FacesModelComponentEventListener(this);
+            if (configModel != null) {
+                configModel.addComponentListener(cl);
+            }
+        }
+        FileObject myWebFolder = getWebFolder();
         if (fcl == null) {
             fcl = new WebFolderListener(this);
-            if (webFolder != null) {
+            if (myWebFolder != null) {
                 try {
-                    webFolder.getFileSystem().addFileChangeListener(fcl);
+                    myWebFolder.getFileSystem().addFileChangeListener(fcl);
                 } catch (FileStateInvalidException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -179,6 +187,10 @@ public class PageFlowController {
         if (pcl != null && configModel != null) {
             configModel.removePropertyChangeListener(pcl);
             pcl = null;
+        }
+        if (cl != null && configModel != null) {
+            configModel.removeComponentListener(cl);
+            cl = null;
         }
 
         FileObject myWebFolder = getWebFolder();
@@ -382,55 +394,61 @@ public class PageFlowController {
             return false;
         }
 
-        List<NavigationRule> rules = null;
-        if (isCurrentScope(Scope.SCOPE_FACESCONFIG)) {
-            rules = facesConfig.getNavigationRules();
-            for (NavigationRule navRule : rules) {
-                navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
-            }
-            Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
-            createFacesConfigPages(pagesInConfig);
-        } else if (isCurrentScope(Scope.SCOPE_PROJECT)) {
-            rules = facesConfig.getNavigationRules();
-            for (NavigationRule navRule : rules) {
-                navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
-            }
-            Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
-            createAllProjectPages(pagesInConfig);
-        } else if (isCurrentScope(Scope.SCOPE_ALL_FACESCONFIG)) {
-            List<NavigationRule> allRules = new ArrayList<NavigationRule>();
-            FileObject webFolder = getWebFolder();
-            if (webFolder != null) {
-                WebModule webModule = WebModule.getWebModule(webFolder);
-                FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
-                for (FileObject aConfigFile : configFiles) {
-                    JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile, true);
-                    allRules.addAll(aConfigModel.getRootComponent().getNavigationRules());
-                    if (!configModel.equals(aConfigModel)) {
-                        aConfigModel.addPropertyChangeListener(getOtherFacesConfigListener());
-                    }
-                }
-                for (NavigationRule navRule : allRules) {
+        /* If the most recently saved xml doc is malformed, we should know about it through this try statement. */
+        try {
+            List<NavigationRule> rules = null;
+            if (isCurrentScope(Scope.SCOPE_FACESCONFIG)) {
+                rules = facesConfig.getNavigationRules();
+                for (NavigationRule navRule : rules) {
                     navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
                 }
-                Collection<String> pagesInConfig = getFacesConfigPageNames(allRules);
+                Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
                 createFacesConfigPages(pagesInConfig);
-                rules = allRules;
-            } else {
-                /* If no web module exists don't worry about other faces-config files */
+            } else if (isCurrentScope(Scope.SCOPE_PROJECT)) {
                 rules = facesConfig.getNavigationRules();
                 for (NavigationRule navRule : rules) {
                     navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
                 }
                 Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
                 createAllProjectPages(pagesInConfig);
+            } else if (isCurrentScope(Scope.SCOPE_ALL_FACESCONFIG)) {
+                List<NavigationRule> allRules = new ArrayList<NavigationRule>();
+                FileObject webFolder = getWebFolder();
+                if (webFolder != null) {
+                    WebModule webModule = WebModule.getWebModule(webFolder);
+                    FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
+                    for (FileObject aConfigFile : configFiles) {
+                        JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile, true);
+                        allRules.addAll(aConfigModel.getRootComponent().getNavigationRules());
+                        if (!configModel.equals(aConfigModel)) {
+                            aConfigModel.addPropertyChangeListener(getOtherFacesConfigListener());
+                        }
+                    }
+                    for (NavigationRule navRule : allRules) {
+                        navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
+                    }
+                    Collection<String> pagesInConfig = getFacesConfigPageNames(allRules);
+                    createFacesConfigPages(pagesInConfig);
+                    rules = allRules;
+                } else {
+                    /* If no web module exists don't worry about other faces-config files */
+                    rules = facesConfig.getNavigationRules();
+                    for (NavigationRule navRule : rules) {
+                        navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
+                    }
+                    Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
+                    createAllProjectPages(pagesInConfig);
+                }
             }
+            createAllEdges(rules);
+            view.validateGraph();
+            LOGGER.log(new LogRecord(Level.FINE, "PageFlowEditor # Rules: " + rules.size() + "\n" + "               # WebPages: " + webFiles.size() + "\n" + "               # TotalPages: " + pageName2Page.size()));
+        } catch (IllegalStateException ise) {
+            view.warnUserMalFormedFacesConfig();
+            view.validateGraph();
+            LOGGER.log(new LogRecord(Level.FINE, "Illegal SateException thrown: " + ise.toString()));
         }
-        createAllEdges(rules);
-        view.validateGraph();
-        LOGGER.log(new LogRecord(Level.INFO, "PageFlowEditor # Rules: " + rules.size() + "\n" + "               # WebPages: " + webFiles.size() + "\n" + "               # TotalPages: " + pageName2Page.size()));
         LOGGER.exiting(PageFlowController.class.toString(), "setupGraphNoSaveData()");
-
         return true;
     }
 
@@ -599,7 +617,7 @@ public class PageFlowController {
             }
         }
     }
-    private static final Logger LOGGER = Logger.getLogger(PageFlowController.class.toString());
+    private static final Logger LOGGER = Logger.getLogger(PageFlowController.class.getName());
 
     public Page removePageName2Page(Page pageNode, boolean destroy) {
         return removePageName2Page(pageNode.getDisplayName(), destroy);
@@ -738,7 +756,6 @@ public class PageFlowController {
             Exceptions.printStackTrace(ex);
         }
     }
-
 
     /**
      * Gets the WebFolder which contains the jsp pages.
@@ -926,8 +943,8 @@ public class PageFlowController {
     }
 
     /**
-     * Moved this out of Page.java so that WebFolderListener also has an opportunity  to 
-     * access the providers so that it can listen and decide wether or not to update 
+     * Moved this out of Page.java so that WebFolderListener also has an opportunity  to
+     * access the providers so that it can listen and decide wether or not to update
      * contents should be updated given a page.
      **/
     public static final Collection<? extends PageContentModelProvider> getPageContentModelProviders() {
