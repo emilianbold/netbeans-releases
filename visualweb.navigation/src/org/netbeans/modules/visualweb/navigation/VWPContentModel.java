@@ -640,11 +640,24 @@ public class VWPContentModel extends PageContentModel {
     }
 
     private DesignBean addComponent(String lockDesc, String className) {
+        LOGGER.entering(VWPContentModel.class.getName(), "addComponent");
         UndoEvent undo = null;
         DesignBean bean = null;
         try {
             undo = facesModel.writeLock(lockDesc);
-            bean = facesModel.getLiveUnit().createBean(className, null, null);
+            LiveUnit liveUnit = facesModel.getLiveUnit();
+            if( liveUnit == null ) {                
+                LOGGER.finest("First attempt to get LiveUnit failed.");
+                /* sync model to try to get the live unit */
+                facesModel.sync();                
+                LOGGER.finest("Trying to get LiveUnit by Syncing.");
+                liveUnit = facesModel.getLiveUnit();
+                if( liveUnit == null ) {
+                    LOGGER.fine("LiveUnit is still null.");
+                    return null;
+                }
+            }
+            bean = liveUnit.createBean(className, null, null);
             if (bean == null) {
                 return bean;
             }
@@ -661,6 +674,7 @@ public class VWPContentModel extends PageContentModel {
             facesModel.writeUnlock(undo);
         }
         facesModel.flush();
+        LOGGER.exiting(VWPContentModel.class.getName(), "addComponent");
         return bean;
     }
 

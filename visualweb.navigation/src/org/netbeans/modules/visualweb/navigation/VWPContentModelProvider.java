@@ -11,9 +11,7 @@ package org.netbeans.modules.visualweb.navigation;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -33,7 +31,7 @@ import org.openide.filesystems.FileObject;
  */
 public class VWPContentModelProvider implements PageContentModelProvider {
 
-    private Map<FileObject, Reference<VWPContentModel>> map = Collections.synchronizedMap(new HashMap<FileObject, Reference<VWPContentModel>>());
+    private Map<FileObject, Reference<VWPContentModel>> map = Collections.synchronizedMap(new WeakHashMap<FileObject, Reference<VWPContentModel>>());
 
     /** Creates a new instance of PageContentProviderImpl */
     public VWPContentModelProvider() {
