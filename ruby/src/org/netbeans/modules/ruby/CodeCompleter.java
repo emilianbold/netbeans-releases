@@ -147,6 +147,7 @@ import org.openide.util.Exceptions;
  *    to fix require'java' etc.
  * @todo http://www.innovationontherun.com/scraping-dynamic-websites-using-jruby-and-htmlunit/
  *    Idea: Use a quicktip to require all the jars in the project?
+ * @todo The "h" method in <%= %> doesn't show up in RHTML files... where is it?
  *
  * @author Tor Norbye
  */
@@ -2374,7 +2375,13 @@ public class CodeCompleter implements Completable {
 
         if (selectionEnd != -1) {
             try {
-                assert selectionBegin < selectionEnd;
+                if (selectionBegin == selectionEnd) {
+                    return Collections.emptySet();
+                } else if (selectionEnd < selectionBegin) {
+                    int temp = selectionBegin;
+                    selectionBegin = selectionEnd;
+                    selectionEnd = temp;
+                }
                 BaseDocument doc = (BaseDocument) info.getDocument();
 
                 boolean startLineIsEmpty = Utilities.isRowEmpty(doc, selectionBegin);
