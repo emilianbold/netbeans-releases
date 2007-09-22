@@ -228,9 +228,14 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
      */
     public J2EEBaseVersion getJ2eeModuleVersion() {
         File fileKey = FileUtil.toFile(getPrimaryFile());
-        if("sun-cmp-mappings.xml".equals(fileKey.getName())) {
-            fileKey = new File(fileKey.getParentFile(), "sun-ejb-jar.xml");
+        if(fileKey != null) {
+            // Find configuration via key derived from primary file.
+            if("sun-cmp-mappings.xml".equals(fileKey.getName())) {
+                fileKey = new File(fileKey.getParentFile(), "sun-ejb-jar.xml");
+            }
         }
+        // If we can't locate the configuration (either not there or no valid key)
+        // then just return null version.  Nothing else we can do.
         SunONEDeploymentConfiguration config = SunONEDeploymentConfiguration.getConfiguration(fileKey);
         return (config != null) ? config.getJ2eeVersion() : null;
     }
