@@ -152,7 +152,7 @@ public class PageFlowController {
     }
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
-    private ComponentListener cl;
+//    private ComponentListener cl;
 
     public void registerListeners() {
         if (pcl == null) {
@@ -161,12 +161,12 @@ public class PageFlowController {
                 configModel.addPropertyChangeListener(pcl);
             }
         }
-        if (cl == null) {
-            cl = new FacesModelComponentEventListener(this);
-            if (configModel != null) {
-                configModel.addComponentListener(cl);
-            }
-        }
+//        if (cl == null) {
+//            cl = new FacesModelComponentEventListener(this);
+//            if (configModel != null) {
+//                configModel.addComponentListener(cl);
+//            }
+//        }
         FileObject myWebFolder = getWebFolder();
         if (fcl == null) {
             fcl = new WebFolderListener(this);
@@ -188,10 +188,10 @@ public class PageFlowController {
             configModel.removePropertyChangeListener(pcl);
             pcl = null;
         }
-        if (cl != null && configModel != null) {
-            configModel.removeComponentListener(cl);
-            cl = null;
-        }
+//        if (cl != null && configModel != null) {
+//            configModel.removeComponentListener(cl);
+//            cl = null;
+//        }
 
         FileObject myWebFolder = getWebFolder();
         if (fcl != null && myWebFolder != null) {
