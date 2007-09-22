@@ -105,6 +105,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
      **/
     private static final int MAX_EDGES = 20; 
     private static final int MAX_PAGES = 20;
+    private static final int MAX_ELEMENTS = 30;
     private final Router routerDirect = RouterFactory.createDirectRouter();
 
     private final WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction();
@@ -411,7 +412,10 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         } else {
             connectionWidget = new VMDConnectionWidget(this, new PFENotModifiableScheme());
         }
-        if (getEdges().size() > MAX_EDGES || getNodes().size() > MAX_PAGES) {
+        /* Do this to avoid graph scene delays due to large number of elements */
+        if (getEdges().size() > MAX_EDGES || 
+                getNodes().size() > MAX_PAGES || 
+                getEdges().size() + getNodes().size() > MAX_ELEMENTS) {
             connectionWidget.setRouter(routerDirect);
         } else {
             connectionWidget.setRouter(router);
