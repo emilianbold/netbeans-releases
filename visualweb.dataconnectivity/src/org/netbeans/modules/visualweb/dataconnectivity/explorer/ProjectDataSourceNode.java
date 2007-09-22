@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.explorer;
 
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.BrokenDataSourceSupport;
 import javax.swing.Action;
 import org.openide.util.NbBundle;
@@ -26,10 +28,8 @@ import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.Projec
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourcesChangeEvent;
 import java.awt.Image;
 import java.io.CharConversionException;
-import java.util.Set;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.openide.nodes.AbstractNode;
@@ -88,11 +88,37 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         addListener();      
     }
   
+    public Action[] getActions(boolean context) {
+         Action a = new Action() {
+            public Object getValue(String key) {
+                return null;
+            }
 
-    public Action getPreferredAction() {
-        return null;
+            public void putValue(String key, Object value) {               
+            }
+
+            public void setEnabled(boolean b) {                
+            }
+
+            public boolean isEnabled() {
+                return false;
+            }
+
+            public void addPropertyChangeListener(PropertyChangeListener listener) {                
+            }
+
+            public void removePropertyChangeListener(PropertyChangeListener listener) {                
+            }
+
+            public void actionPerformed(ActionEvent e) {                
+            }
+        };    
+        
+        return new Action[]{a};
     }
-
+    
+    
+    
     public org.netbeans.api.project.Project getNbProject(){
         return nbProject;
     }

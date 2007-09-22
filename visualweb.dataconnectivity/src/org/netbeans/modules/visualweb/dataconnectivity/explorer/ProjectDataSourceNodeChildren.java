@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.explorer;
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 
 import java.util.ArrayList;
@@ -32,8 +33,17 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceListener;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceChangeEvent;
 import java.awt.Image;
+import java.beans.PropertyEditor;
 import java.io.CharConversionException;
+import java.util.logging.Logger;
+import javax.naming.NamingException;
+import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.BrokenDataSourceSupport;
+import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 
@@ -44,7 +54,8 @@ import org.openide.xml.XMLUtil;
 public class ProjectDataSourceNodeChildren extends Children.Keys implements Node.Cookie, ProjectDataSourceListener {
 
     Project nbProject = null;
-
+    String url;
+    
     private final String DYNAMIC_DATA_SOURCES = "dynamic_data_sources"; // NOI18N
     private final String HARD_CODED_DATA_SOURCES = "hard_coded_data_sources"; // NOI18N
 
@@ -54,19 +65,7 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Node
     protected void addNotify() {
         super.addNotify();
         updateKeys();
-
-         ProjectDataSourceTracker.addListener( nbProject,this);
-                
-                
-         // make sure insync has done it's stuff so that we know the datasources.
-//         if (Boolean.getBoolean("vwp.designer.jsf.loadModelSync")) { // NOI18N
-//             FacesModelSet.getInstance(nbProject);
-//         } else {
-//             FacesModelSet.startModeling(nbProject);
-//         }
-
-        ProjectDataSourceTracker.addListener( nbProject,this);
-
+        ProjectDataSourceTracker.addListener(nbProject, this);
     }
 
     protected void removeNotify() {
@@ -126,10 +125,11 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Node
             final Image disconnectedIcon =  Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png"); // NOI18N            
             Image brokenBadgedImage = Utilities.mergeImages(icon, disconnectedIcon, 8, 0);
             Image datasourceImage = Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png");  // NOI18N                        
+            String dispName;
             
             public Image getIcon(int type) {
                 
-                String dispName = super.getDisplayName();
+                dispName = super.getDisplayName();
                 try {
                      if (BrokenDataSourceSupport.isBroken(nbProject)) {
                         dispName = "<font color=\"#A40000\">" + dispName + "</font>"; //NOI18N;
@@ -149,8 +149,41 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Node
             
             public Image getOpenedIcon(int type){
                 return getIcon(type);
-            }                        
+            }     
             
+            protected Sheet createSheet() {
+                Sheet result = super.createSheet();
+                Sheet.Set set = result.createPropertiesSet();
+                set.put(new DataSourceURLProperty());
+                result.put(set);
+                return result;
+            }
+
+            final class DataSourceURLProperty extends PropertySupport.ReadOnly {
+                private String url;
+                
+                DataSourceURLProperty() {
+                    super("URL", DataSourceURLProperty.class, NbBundle.getMessage(DataSourceURLProperty.class, "LBL_URL"), NbBundle.getMessage(DataSourceURLProperty.class, "DESC_URL") + ", " + dispName);
+                    try {
+                        url = (String) getValue();
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+                public Object getValue() throws IllegalAccessException, InvocationTargetException {                    
+                    ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(nbProject);
+                    RequestedJdbcResource jdbcResource = projectDataSourceManager.getDataSourceWithName(dispName);
+                    url = jdbcResource.getUrl();                                     
+                    return url;
+                }
+
+                public PropertyEditor getPropertyEditor() {
+                    return new DataSourcePropertyEditor(url);
+                }
+            }                                          
         };
         
 
