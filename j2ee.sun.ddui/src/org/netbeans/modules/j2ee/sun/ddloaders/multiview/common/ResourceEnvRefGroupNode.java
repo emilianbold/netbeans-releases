@@ -63,7 +63,7 @@ public class ResourceEnvRefGroupNode extends NamedBeanGroupNode {
 
     protected CommonDDBean addNewBean() {
         ResourceEnvRef newResourceEnvRef = (ResourceEnvRef) createBean();
-        newResourceEnvRef.setResourceEnvRefName("resource_env_ref" + getNewBeanId()); // NOI18N
+        newResourceEnvRef.setResourceEnvRefName(getNewBeanId(PFX_RESOURCE_ENV_REF)); // NOI18N
         return addBean(newResourceEnvRef);
     }
     

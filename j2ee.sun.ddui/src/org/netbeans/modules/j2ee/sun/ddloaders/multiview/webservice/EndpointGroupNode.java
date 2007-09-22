@@ -64,7 +64,7 @@ public class EndpointGroupNode extends NamedBeanGroupNode {
     
     protected CommonDDBean addNewBean() {
         WebserviceEndpoint newWebserviceEndpoint = (WebserviceEndpoint) createBean();
-        newWebserviceEndpoint.setPortComponentName("endpoint" + getNewBeanId()); // NOI18N
+        newWebserviceEndpoint.setPortComponentName(getNewBeanId(PFX_ENDPOINT)); // NOI18N
         return addBean(newWebserviceEndpoint);
     }
     

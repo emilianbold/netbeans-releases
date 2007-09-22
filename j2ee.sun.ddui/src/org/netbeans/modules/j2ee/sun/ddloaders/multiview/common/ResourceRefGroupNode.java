@@ -63,7 +63,7 @@ public class ResourceRefGroupNode extends NamedBeanGroupNode {
 
     protected CommonDDBean addNewBean() {
         ResourceRef newResourceRef = (ResourceRef) createBean();
-        newResourceRef.setResRefName("resource_ref" + getNewBeanId()); // NOI18N
+        newResourceRef.setResRefName(getNewBeanId(PFX_RESOURCE_REF)); // NOI18N
         return addBean(newResourceRef);
     }
     

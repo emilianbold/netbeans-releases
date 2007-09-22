@@ -62,7 +62,7 @@ public class ServletGroupNode extends NamedBeanGroupNode {
     
     protected CommonDDBean addNewBean() {
         Servlet newServlet = sunWebApp.newServlet();
-        newServlet.setServletName("servlet" + getNewBeanId()); // NOI18N
+        newServlet.setServletName(getNewBeanId(PFX_SERVLET)); // NOI18N
         return addBean(newServlet);
     }
     

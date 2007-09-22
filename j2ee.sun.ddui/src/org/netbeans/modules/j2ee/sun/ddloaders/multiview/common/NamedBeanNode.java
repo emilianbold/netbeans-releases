@@ -78,11 +78,13 @@ public abstract class NamedBeanNode extends BaseSectionNode {
                 String newDisplayName = generateTitle();
                 if (!oldDisplayName.equals(newDisplayName)) {
                     setDisplayName(newDisplayName);
+                    setName(newDisplayName);
                     firePropertyChange(Node.PROP_DISPLAY_NAME, oldDisplayName, newDisplayName);
                 }
             }
         });
         
+        setName(beanTitle);
         helpProvider = true;
     }
     

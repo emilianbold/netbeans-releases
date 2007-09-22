@@ -64,7 +64,7 @@ public class SecurityRoleMappingGroupNode extends NamedBeanGroupNode {
 
     protected CommonDDBean addNewBean() {
         SecurityRoleMapping newSecurityRoleMapping = (SecurityRoleMapping) createBean();
-        newSecurityRoleMapping.setRoleName("role" + getNewBeanId()); // NOI18N
+        newSecurityRoleMapping.setRoleName(getNewBeanId(PFX_ROLE)); // NOI18N
         return addBean(newSecurityRoleMapping);
     }
     

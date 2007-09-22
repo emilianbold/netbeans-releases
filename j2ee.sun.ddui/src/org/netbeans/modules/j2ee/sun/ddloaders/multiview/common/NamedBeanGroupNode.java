@@ -20,6 +20,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -60,6 +61,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
@@ -84,6 +86,19 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     public static final String STANDARD_MSGDEST_REF_NAME = MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME; // e.g. "MessageDestinationRef"
     public static final String STANDARD_PORTCOMPONENT_REF_NAME = "PortComponentRef"; // NOI18N
     
+    // Prefixes for default bean names when new beans are created by the user.
+    protected static final String PFX_ROLE = "role"; // NOI18N
+    protected static final String PFX_SERVLET = "servlet"; // NOI18N
+    protected static final String PFX_EJB = "ejb"; // NOI18N
+    protected static final String PFX_SERVICE = "service"; // NOI18N
+    protected static final String PFX_ENDPOINT = "endpoint"; // NOI18N
+    protected static final String PFX_DESTINATION = "destination"; // NOI18N
+    protected static final String PFX_EJB_REF = "ejb_ref"; // NOI18N
+    protected static final String PFX_RESOURCE_ENV_REF = "resource_env_ref"; // NOI18N
+    protected static final String PFX_RESOURCE_REF = "resource_ref"; // NOI18N
+    protected static final String PFX_DESTINATION_REF = "destination_ref"; // NOI18N
+    protected static final String PFX_SERVICE_REF = "service_ref"; // NOI18N
+    
     private static RequestProcessor processor = new RequestProcessor("SunDDNodeBuilder", 1);
     
     protected CommonDDBean commonDD;
@@ -94,7 +109,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     private volatile boolean doCheck = false;
     private volatile boolean checking = false;
 
-    private static AtomicInteger newBeanId = new AtomicInteger(1);
+    private AtomicInteger newBeanId = new AtomicInteger(1);
     
     public NamedBeanGroupNode(SectionNodeView sectionNodeView, CommonDDBean commonDD,
             String beanNameProperty, Class beanClass, String header, String iconBase,
@@ -459,8 +474,16 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         return wsRootDD;
     }
     
-    public int getNewBeanId() {
-        return newBeanId.getAndIncrement();
+    public String getNewBeanId(String prefix) {
+        String newId;
+        int count = 0;
+
+        // Create unique ID, but not too many tries (avoid infinite or long loops).
+        do {
+            newId = prefix + newBeanId.getAndIncrement();
+        } while(getChildren().findChild(newId) != null && ++count < 100);
+        
+        return newId;
     }
     
     // ------------------------------------------------------------------------
@@ -562,6 +585,23 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         public NamedChildren() {
             setComparator(this);
         }
+
+        @Override
+        public Node findChild(String name) {
+            Node result = null;
+            Node[] list = getNodes();
+
+            if (list.length > 0 && name != null) {
+                Node key = new AbstractNode(Children.LEAF);
+                key.setName(name);
+                int index = Arrays.binarySearch(list, key, this);
+                if(index >= 0) {
+                    result = list[index];
+                }
+            }
+            
+            return result;
+        }
         
         @Override
         public boolean add(Node[] arr) {
@@ -589,9 +629,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         }
 
         public int compare(Node n1, Node n2) {
-            NamedBeanNode node1 = (NamedBeanNode) n1;
-            NamedBeanNode node2 = (NamedBeanNode) n2;
-            return node1.getBinding().compareTo(node2.getBinding());
+            return Utils.strCompareTo(n1.getName(), n2.getName());
         }
     }
 }

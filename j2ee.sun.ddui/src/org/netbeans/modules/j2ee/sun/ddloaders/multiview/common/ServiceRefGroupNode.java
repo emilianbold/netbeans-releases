@@ -63,7 +63,7 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
 
     protected CommonDDBean addNewBean() {
         ServiceRef newServiceRef = (ServiceRef) createBean();
-        newServiceRef.setServiceRefName("service" + getNewBeanId()); // NOI18N
+        newServiceRef.setServiceRefName(getNewBeanId(PFX_SERVICE_REF)); // NOI18N
         return addBean(newServiceRef);
     }
     

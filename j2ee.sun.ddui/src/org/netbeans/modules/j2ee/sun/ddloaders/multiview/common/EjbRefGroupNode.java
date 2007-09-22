@@ -63,7 +63,7 @@ public class EjbRefGroupNode extends NamedBeanGroupNode {
     
     protected CommonDDBean addNewBean() {
         EjbRef newEjbRef = (EjbRef) createBean();
-        newEjbRef.setEjbRefName("ejb_ref" + getNewBeanId()); // NOI18N
+        newEjbRef.setEjbRefName(getNewBeanId(PFX_EJB_REF)); // NOI18N
         return addBean(newEjbRef);
     }
     

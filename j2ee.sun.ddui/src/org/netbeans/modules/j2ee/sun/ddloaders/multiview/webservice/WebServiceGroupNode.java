@@ -75,7 +75,7 @@ public class WebServiceGroupNode extends NamedBeanGroupNode {
 
     protected CommonDDBean addNewBean() {
         WebserviceDescription newWebServiceDesc = (WebserviceDescription) createBean();
-        newWebServiceDesc.setWebserviceDescriptionName("service" + getNewBeanId()); // NOI18N
+        newWebServiceDesc.setWebserviceDescriptionName(getNewBeanId(PFX_SERVICE)); // NOI18N
         return addBean(newWebServiceDesc);
     }
     

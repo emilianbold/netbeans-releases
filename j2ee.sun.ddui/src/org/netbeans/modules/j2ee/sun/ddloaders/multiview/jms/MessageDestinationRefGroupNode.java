@@ -73,7 +73,7 @@ public class MessageDestinationRefGroupNode extends NamedBeanGroupNode {
 
     protected CommonDDBean addNewBean() {
         MessageDestinationRef newMsgDestRef = (MessageDestinationRef) createBean();
-        newMsgDestRef.setMessageDestinationRefName("destinationRef" + getNewBeanId()); // NOI18N
+        newMsgDestRef.setMessageDestinationRefName(getNewBeanId(PFX_DESTINATION_REF)); // NOI18N
         return addBean(newMsgDestRef);
     }
     
