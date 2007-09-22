@@ -54,9 +54,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * DataSource adapter for java.sql.Driver classes.  Used at designtime for all datasources.
@@ -64,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author John Kline
  */
-public class DesignTimeDataSource implements DataSource, ContextPersistance {
+public class DesignTimeDataSource implements DataSource, ContextPersistance, Runnable {
 
     protected static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.sql.Bundle", //NOI18N
         Locale.getDefault());
@@ -86,6 +84,8 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
     private static boolean isConnectionAttempted = false;
     private DatabaseConnection dbConn;    
     private static URL[]  urls;
+    private RequestProcessor.Task task = null;
+    private final RequestProcessor CONNECT_RP = new RequestProcessor("DataSourceResolver.WAIT_FOR_MODELING_RP"); //NOI18N    
     
     private static final String alphabet = "abcdefghijklmnopqrstuvwxyz"; // NOI18N
     private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N 
@@ -796,10 +796,21 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
     public Object unwrap(Class iface) throws SQLException {
         throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
     }
-    
-    public void ensureConnection() {        
+        
+    /*
+     * Make connection if needed
+     */
+    public synchronized void run() {        
         JDBCDriver jdbcDriver = DataSourceResolver.getInstance().findMatchingDriver(driverClassName);
-        DatabaseConnection conn = DatabaseConnection.create(jdbcDriver, url, username, username.toUpperCase(), password, true);                
+        DatabaseConnection conn = DatabaseConnection.create(jdbcDriver, url, username, username.toUpperCase(), password, true);
         ConnectionManager.getDefault().showConnectionDialog(conn);
     }
+    
+    public void ensureConnection() {        
+         if (task == null) {
+            task = CONNECT_RP.create(this);
+        }
+        task.schedule(10);
+    }
+        
 }
