@@ -20,6 +20,7 @@ package org.netbeans.modules.web.jsf.navigation;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
@@ -31,20 +32,22 @@ import org.openide.util.Exceptions;
  * @author joelle
  */
 public class FacesModelUtility {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(FacesModelUtility.class.getName());
+
     private FacesModelUtility() {
-        
     }
-    public static String getToViewIdFiltered( NavigationCase navCase ) {
+
+    public static String getToViewIdFiltered(NavigationCase navCase) {
         final String viewId = navCase.getToViewId();
         return getViewIdFiltiered( viewId );
     }
-    
+
     public static String getFromViewIdFiltered( NavigationRule navRule ){
         final String viewId = navRule.getFromViewId();
         return getViewIdFiltiered( viewId );
     }
-    
+
     public static String getViewIdFiltiered( String paramViewId ){
         String viewId = paramViewId;
         if( viewId != null && viewId.length() > 0 && viewId.charAt(0) == '/') {
@@ -52,7 +55,7 @@ public class FacesModelUtility {
         }
         return viewId;
     }
-    
+
     public static void setToViewId(NavigationCase navCase, String filteredName ){
         if( filteredName != null && filteredName.length() > 0 ) {
             final String unfilteredName = "/".concat(filteredName);
@@ -62,9 +65,9 @@ public class FacesModelUtility {
         }
         
     }
-    
+
     public static void setFromViewId( NavigationRule navRule, String filteredName ){
-        
+
         if( filteredName != null && filteredName.length() > 0 ) {
             final String unfilteredName = "/".concat(filteredName);
             navRule.setFromViewId(unfilteredName);
@@ -72,7 +75,7 @@ public class FacesModelUtility {
             navRule.setFromViewId(filteredName);
         }
     }
-    
+
     /**
      * Renames a page in the faces configuration file.
      * @param oldDisplayName
@@ -98,7 +101,7 @@ public class FacesModelUtility {
                 }
             }
         }
-        
+
         configModel.endTransaction();
         try {
             configModel.sync();
