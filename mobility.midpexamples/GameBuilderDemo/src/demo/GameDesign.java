@@ -162,19 +162,19 @@ public class GameDesign {
             // write pre-init user code here
             Things = new TiledLayer(15, 15, getTopview_tiles(), 16, 16);//GEN-BEGIN:|31-getter|1|31-midInit
             int[][] tiles = {
-                { 0, 0, 0, 0, 0, 0, 0, 68, 0, 0, 78, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 68, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 67, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 67, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 67, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 70, 78, 0 },
+                { 0, 67, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 70, 0, 0 },
                 { 0, 0, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0 },
-                { 0, 0, 0, 67, 0, 78, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 0, 0, 0, 79, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 69, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
             };//GEN-END:|31-getter|1|31-midInit
@@ -190,78 +190,78 @@ public class GameDesign {
     }
 //GEN-END:|31-getter|3|
 
-        public Sprite getThomas() throws java.io.IOException {//GEN-BEGIN:|51-getter|0|51-preInit
-            if (Thomas == null) {//GEN-END:|51-getter|0|51-preInit
+    public Sprite getThomas() throws java.io.IOException {//GEN-BEGIN:|51-getter|0|51-preInit
+        if (Thomas == null) {//GEN-END:|51-getter|0|51-preInit
                 // write pre-init user code here
-                Thomas = new Sprite(getTopview_tiles(), 16, 16);//GEN-BEGIN:|51-getter|1|51-postInit
-                Thomas.setFrameSequence(ThomasSeqWalkVert);//GEN-END:|51-getter|1|51-postInit
+            Thomas = new Sprite(getTopview_tiles(), 16, 16);//GEN-BEGIN:|51-getter|1|51-postInit
+            Thomas.setFrameSequence(ThomasSeqWalkVert);//GEN-END:|51-getter|1|51-postInit
                 // write post-init user code here
-            }//GEN-BEGIN:|51-getter|2|
-            return Thomas;
-        }
+        }//GEN-BEGIN:|51-getter|2|
+        return Thomas;
+    }
 //GEN-END:|51-getter|2|
 
-        public Sprite getKarel() throws java.io.IOException {//GEN-BEGIN:|70-getter|0|70-preInit
-            if (Karel == null) {//GEN-END:|70-getter|0|70-preInit
+    public Sprite getKarel() throws java.io.IOException {//GEN-BEGIN:|70-getter|0|70-preInit
+        if (Karel == null) {//GEN-END:|70-getter|0|70-preInit
                 // write pre-init user code here
-                Karel = new Sprite(getTopview_tiles(), 16, 16);//GEN-BEGIN:|70-getter|1|70-postInit
-                Karel.setFrameSequence(KarelSeqWalkDown);//GEN-END:|70-getter|1|70-postInit
+            Karel = new Sprite(getTopview_tiles(), 16, 16);//GEN-BEGIN:|70-getter|1|70-postInit
+            Karel.setFrameSequence(KarelSeqWalkDown);//GEN-END:|70-getter|1|70-postInit
                 // write post-init user code here
-            }//GEN-BEGIN:|70-getter|2|
-            return Karel;
-        }
+        }//GEN-BEGIN:|70-getter|2|
+        return Karel;
+    }
 //GEN-END:|70-getter|2|
 
 
 
-        public Image getPlatform_tiles() throws java.io.IOException {//GEN-BEGIN:|161-getter|0|161-preInit
-            if (platform_tiles == null) {//GEN-END:|161-getter|0|161-preInit
+    public Image getPlatform_tiles() throws java.io.IOException {//GEN-BEGIN:|161-getter|0|161-preInit
+        if (platform_tiles == null) {//GEN-END:|161-getter|0|161-preInit
                 // write pre-init user code here
-                platform_tiles = Image.createImage("/platform_tiles.png");//GEN-BEGIN:|161-getter|1|161-postInit
-            }//GEN-END:|161-getter|1|161-postInit
+            platform_tiles = Image.createImage("/platform_tiles.png");//GEN-BEGIN:|161-getter|1|161-postInit
+        }//GEN-END:|161-getter|1|161-postInit
             // write post-init user code here
-            return this.platform_tiles;//GEN-BEGIN:|161-getter|2|
-        }
+        return this.platform_tiles;//GEN-BEGIN:|161-getter|2|
+    }
 //GEN-END:|161-getter|2|
 
-        public TiledLayer getTrees() throws java.io.IOException {//GEN-BEGIN:|276-getter|0|276-preInit
-            if (Trees == null) {//GEN-END:|276-getter|0|276-preInit
+    public TiledLayer getTrees() throws java.io.IOException {//GEN-BEGIN:|276-getter|0|276-preInit
+        if (Trees == null) {//GEN-END:|276-getter|0|276-preInit
                 // write pre-init user code here
-                Trees = new TiledLayer(11, 22, getTopview_tiles(), 16, 16);//GEN-BEGIN:|276-getter|1|276-midInit
-                int[][] tiles = {
-                    { 10, 10, 10, 10, 10, 10, 10, 0, 0, 0, 0 },
-                    { 0, 12, 10, 10, 10, 10, 10, 10, 0, 0, 0 },
-                    { 0, 12, 10, 12, 10, 10, 10, 10, 0, 10, 0 },
-                    { 9, 0, 12, 10, 10, 10, 10, 10, 10, 10, 0 },
-                    { 0, 0, 12, 12, 10, 10, 10, 10, 10, 10, 0 },
-                    { 0, 0, 0, 12, 10, 10, 10, 10, 0, 0, 0 },
-                    { 0, 0, 0, 12, 12, 10, 10, 10, 0, 0, 0 },
-                    { 0, 0, 0, 12, 10, 10, 12, 0, 0, 0, 0 },
-                    { 0, 0, 0, 0, 10, 10, 0, 0, 0, 0, 0 },
-                    { 0, 0, 0, 0, 12, 10, 0, 0, 13, 0, 0 },
-                    { 0, 0, 0, 12, 0, 0, 0, 0, 13, 0, 0 },
-                    { 0, 0, 0, 0, 0, 0, 0, 0, 13, 13, 13 },
-                    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 },
-                    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 },
-                    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                    { 0, 0, 0, 0, 0, 0, 13, 0, 0, 0, 0 },
-                    { 0, 0, 0, 0, 13, 13, 0, 0, 0, 0, 0 },
-                    { 0, 0, 0, 13, 0, 13, 13, 13, 0, 0, 0 }
-                };//GEN-END:|276-getter|1|276-midInit
+            Trees = new TiledLayer(11, 22, getTopview_tiles(), 16, 16);//GEN-BEGIN:|276-getter|1|276-midInit
+            int[][] tiles = {
+                { 10, 10, 10, 10, 10, 10, 10, 0, 0, 0, 0 },
+                { 0, 12, 10, 10, 10, 10, 10, 10, 0, 0, 0 },
+                { 0, 12, 10, 12, 10, 10, 10, 10, 0, 10, 0 },
+                { 9, 0, 12, 10, 10, 10, 10, 10, 10, 10, 0 },
+                { 0, 0, 12, 12, 10, 10, 10, 10, 10, 10, 0 },
+                { 0, 0, 0, 12, 10, 10, 10, 10, 0, 0, 0 },
+                { 0, 0, 0, 12, 12, 10, 10, 10, 0, 0, 0 },
+                { 0, 0, 0, 12, 10, 10, 12, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 10, 10, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 12, 10, 0, 0, 13, 0, 0 },
+                { 0, 0, 0, 12, 0, 0, 0, 0, 13, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 13, 13, 13 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 13, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 13, 13, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 13, 0, 13, 13, 13, 0, 0, 0 }
+            };//GEN-END:|276-getter|1|276-midInit
                 // write mid-init user code here
-                for (int row = 0; row < 22; row++) {//GEN-BEGIN:|276-getter|2|276-postInit
-                    for (int col = 0; col < 11; col++) {
-                        Trees.setCell(col, row, tiles[row][col]);
-                    }
+            for (int row = 0; row < 22; row++) {//GEN-BEGIN:|276-getter|2|276-postInit
+                for (int col = 0; col < 11; col++) {
+                    Trees.setCell(col, row, tiles[row][col]);
                 }
-            }//GEN-END:|276-getter|2|276-postInit
+            }
+        }//GEN-END:|276-getter|2|276-postInit
             // write post-init user code here
-            return Trees;//GEN-BEGIN:|276-getter|3|
-        }
+        return Trees;//GEN-BEGIN:|276-getter|3|
+    }
 //GEN-END:|276-getter|3|
 
 

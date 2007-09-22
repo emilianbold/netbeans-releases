@@ -33,7 +33,7 @@
                 <Property name="layercd.prop.imageresource" typeID="Corg.netbeans.modules.vmd.game.model.ImageResource" value="R2"/>
                 <Property name="layercd.prop.tile.width" typeID="Pint" value="V16"/>
                 <Property name="layercd.prop.tile.height" typeID="Pint" value="V16"/>
-                <Property name="tiledlayercd.prop.tiles" typeID="P#TiledLayerTiles" value="V15,15,0,0,0,0,0,0,0,68,0,0,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,67,0,0,0,0,0,0,0,0,0,0,0,0,0,67,67,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,67,67,0,0,0,0,0,0,0,0,0,70,78,0,0,0,67,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,67,0,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,69,0,0,0,0,0,0,0,0,0,0,0,0,0,0,79,0,0,0,0,0,0,0,0,0,0,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,69,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"/>
+                <Property name="tiledlayercd.prop.tiles" typeID="P#TiledLayerTiles" value="V15,15,0,0,0,0,0,0,0,68,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,67,67,0,0,0,0,0,0,0,0,0,0,0,0,0,67,67,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,67,67,0,0,0,0,0,0,0,0,0,70,0,0,0,0,67,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,69,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,69,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"/>
             </Component>
             <Component componentID="3" typeID="Corg.netbeans.modules.vmd.game.model.TiledLayer">
                 <Property name="layercd.prop.name" typeID="Pjava.lang.String" value="VWater"/>
@@ -129,19 +129,12 @@
                     <Property name="sceneitemcd.prop.position" typeID="P#Point" value="V55,43"/>
                     <Property name="sceneitemcd.prop.z.order" typeID="Pint" value="V0"/>
                 </Component>
-                <Component componentID="614" typeID="CSceneItem">
-                    <Property name="sceneitemcd.prop.layer" typeID="Corg.netbeans.modules.vmd.game.model.Layer" value="R51"/>
+                <Component componentID="617" typeID="CSceneItem">
+                    <Property name="sceneitemcd.prop.layer" typeID="Corg.netbeans.modules.vmd.game.model.Layer" value="R3"/>
                     <Property name="sceneitemcd.prop.lock" typeID="Pboolean" value="Vfalse"/>
                     <Property name="sceneitemcd.prop.visible" typeID="Pboolean" value="Vtrue"/>
-                    <Property name="sceneitemcd.prop.position" typeID="P#Point" value="V67,80"/>
-                    <Property name="sceneitemcd.prop.z.order" typeID="Pint" value="V1"/>
-                </Component>
-                <Component componentID="615" typeID="CSceneItem">
-                    <Property name="sceneitemcd.prop.layer" typeID="Corg.netbeans.modules.vmd.game.model.Layer" value="R276"/>
-                    <Property name="sceneitemcd.prop.lock" typeID="Pboolean" value="Vfalse"/>
-                    <Property name="sceneitemcd.prop.visible" typeID="Pboolean" value="Vtrue"/>
-                    <Property name="sceneitemcd.prop.position" typeID="P#Point" value="V191,3"/>
-                    <Property name="sceneitemcd.prop.z.order" typeID="Pint" value="V2"/>
+                    <Property name="sceneitemcd.prop.position" typeID="P#Point" value="V109,98"/>
+                    <Property name="sceneitemcd.prop.z.order" typeID="Pint" value="V4"/>
                 </Component>
                 <Component componentID="616" typeID="CSceneItem">
                     <Property name="sceneitemcd.prop.layer" typeID="Corg.netbeans.modules.vmd.game.model.Layer" value="R31"/>
@@ -150,19 +143,26 @@
                     <Property name="sceneitemcd.prop.position" typeID="P#Point" value="V16,111"/>
                     <Property name="sceneitemcd.prop.z.order" typeID="Pint" value="V3"/>
                 </Component>
-                <Component componentID="617" typeID="CSceneItem">
-                    <Property name="sceneitemcd.prop.layer" typeID="Corg.netbeans.modules.vmd.game.model.Layer" value="R3"/>
-                    <Property name="sceneitemcd.prop.lock" typeID="Pboolean" value="Vfalse"/>
-                    <Property name="sceneitemcd.prop.visible" typeID="Pboolean" value="Vtrue"/>
-                    <Property name="sceneitemcd.prop.position" typeID="P#Point" value="V109,98"/>
-                    <Property name="sceneitemcd.prop.z.order" typeID="Pint" value="V4"/>
-                </Component>
                 <Component componentID="618" typeID="CSceneItem">
                     <Property name="sceneitemcd.prop.layer" typeID="Corg.netbeans.modules.vmd.game.model.Layer" value="R6"/>
                     <Property name="sceneitemcd.prop.lock" typeID="Pboolean" value="Vfalse"/>
                     <Property name="sceneitemcd.prop.visible" typeID="Pboolean" value="Vtrue"/>
                     <Property name="sceneitemcd.prop.position" typeID="P#Point" value="V0,0"/>
                     <Property name="sceneitemcd.prop.z.order" typeID="Pint" value="V5"/>
+                </Component>
+                <Component componentID="615" typeID="CSceneItem">
+                    <Property name="sceneitemcd.prop.layer" typeID="Corg.netbeans.modules.vmd.game.model.Layer" value="R276"/>
+                    <Property name="sceneitemcd.prop.lock" typeID="Pboolean" value="Vfalse"/>
+                    <Property name="sceneitemcd.prop.visible" typeID="Pboolean" value="Vtrue"/>
+                    <Property name="sceneitemcd.prop.position" typeID="P#Point" value="V191,3"/>
+                    <Property name="sceneitemcd.prop.z.order" typeID="Pint" value="V2"/>
+                </Component>
+                <Component componentID="614" typeID="CSceneItem">
+                    <Property name="sceneitemcd.prop.layer" typeID="Corg.netbeans.modules.vmd.game.model.Layer" value="R51"/>
+                    <Property name="sceneitemcd.prop.lock" typeID="Pboolean" value="Vfalse"/>
+                    <Property name="sceneitemcd.prop.visible" typeID="Pboolean" value="Vtrue"/>
+                    <Property name="sceneitemcd.prop.position" typeID="P#Point" value="V67,80"/>
+                    <Property name="sceneitemcd.prop.z.order" typeID="Pint" value="V1"/>
                 </Component>
             </Component>
             <Component componentID="276" typeID="Corg.netbeans.modules.vmd.game.model.TiledLayer">
