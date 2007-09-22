@@ -188,7 +188,7 @@ public class JBIMBeanTaskResultHandler {
             }
         }
         
-        return new Object[]{msg, !failed};
+        return new Object[]{msg.toString(), !failed};
     }
     
     public static boolean isFrameworkTaskResultSuccessful(Document document) {
