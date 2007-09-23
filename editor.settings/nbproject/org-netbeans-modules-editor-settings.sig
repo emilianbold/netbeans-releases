@@ -1,132 +1,176 @@
-#Signature file v4.0
-#Version 
-
-CLSS public java.lang.Object
-cons public Object()
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
-meth protected void finalize() throws java.lang.Throwable
-meth public boolean equals(java.lang.Object)
-meth public final java.lang.Class<?> getClass()
-meth public final void notify()
-meth public final void notifyAll()
-meth public final void wait() throws java.lang.InterruptedException
-meth public final void wait(long) throws java.lang.InterruptedException
-meth public final void wait(long,int) throws java.lang.InterruptedException
-meth public int hashCode()
-meth public java.lang.String toString()
-
-CLSS public final org.netbeans.api.editor.settings.AttributesUtilities
-meth public !varargs static javax.swing.text.AttributeSet createComposite(javax.swing.text.AttributeSet[])
-meth public !varargs static javax.swing.text.AttributeSet createImmutable(java.lang.Object[])
-meth public !varargs static javax.swing.text.AttributeSet createImmutable(javax.swing.text.AttributeSet[])
-supr java.lang.Object
-hfds ATTR_DISMANTLED_STRUCTURE
-hcls Composite,Immutable,Proxy
-
+#API master signature file
+#Version 1.5.0_11
 CLSS public final org.netbeans.api.editor.settings.CodeTemplateDescription
 cons public CodeTemplateDescription(java.lang.String,java.lang.String,java.lang.String)
-cons public CodeTemplateDescription(java.lang.String,java.lang.String,java.lang.String,java.util.List<java.lang.String>,java.lang.String)
-meth public java.lang.String getAbbreviation()
-meth public java.lang.String getDescription()
-meth public java.lang.String getParametrizedText()
-meth public java.lang.String getUniqueId()
-meth public java.lang.String toString()
-meth public java.util.List<java.lang.String> getContexts()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.netbeans.api.editor.settings.CodeTemplateDescription.getAbbreviation()
+meth public java.lang.String org.netbeans.api.editor.settings.CodeTemplateDescription.getDescription()
+meth public java.lang.String org.netbeans.api.editor.settings.CodeTemplateDescription.getParametrizedText()
+meth public java.lang.String org.netbeans.api.editor.settings.CodeTemplateDescription.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-hfds abbreviation,contexts,description,parametrizedText,uniqueId
-
 CLSS public abstract org.netbeans.api.editor.settings.CodeTemplateSettings
 cons public CodeTemplateSettings()
-meth public abstract java.util.Collection<org.netbeans.api.editor.settings.CodeTemplateDescription> getCodeTemplateDescriptions()
-meth public abstract javax.swing.KeyStroke getExpandKey()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.util.List org.netbeans.api.editor.settings.CodeTemplateSettings.getCodeTemplateDescriptions()
+meth public abstract javax.swing.KeyStroke org.netbeans.api.editor.settings.CodeTemplateSettings.getExpandKey()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-
 CLSS public final org.netbeans.api.editor.settings.EditorStyleConstants
-fld public final static java.lang.Object Default
-fld public final static java.lang.Object DisplayName
-fld public final static java.lang.Object WaveUnderlineColor
-meth public java.lang.String toString()
+fld  public static final java.lang.Object org.netbeans.api.editor.settings.EditorStyleConstants.Default
+fld  public static final java.lang.Object org.netbeans.api.editor.settings.EditorStyleConstants.DisplayName
+fld  public static final java.lang.Object org.netbeans.api.editor.settings.EditorStyleConstants.WaveUnderlineColor
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.netbeans.api.editor.settings.EditorStyleConstants.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-hfds representation
-
 CLSS public final org.netbeans.api.editor.settings.FontColorNames
-fld public final static java.lang.String BLOCK_SEARCH_COLORING = "block-search"
-fld public final static java.lang.String CARET_ROW_COLORING = "highlight-caret-row"
-fld public final static java.lang.String CODE_FOLDING_BAR_COLORING = "code-folding-bar"
-fld public final static java.lang.String CODE_FOLDING_COLORING = "code-folding"
-fld public final static java.lang.String DEFAULT_COLORING = "default"
-fld public final static java.lang.String GUARDED_COLORING = "guarded"
-fld public final static java.lang.String HIGHLIGHT_SEARCH_COLORING = "highlight-search"
-fld public final static java.lang.String INC_SEARCH_COLORING = "inc-search"
-fld public final static java.lang.String LINE_NUMBER_COLORING = "line-number"
-fld public final static java.lang.String SELECTION_COLORING = "selection"
-fld public final static java.lang.String STATUS_BAR_BOLD_COLORING = "status-bar-bold"
-fld public final static java.lang.String STATUS_BAR_COLORING = "status-bar"
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.BLOCK_SEARCH_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.CODE_FOLDING_BAR_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.CODE_FOLDING_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.DEFAULT_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.GUARDED_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.HIGHLIGHT_SEARCH_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.INC_SEARCH_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.LINE_NUMBER_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.SELECTION_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.STATUS_BAR_BOLD_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.STATUS_BAR_COLORING
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-
 CLSS public abstract org.netbeans.api.editor.settings.FontColorSettings
 cons public FontColorSettings()
-fld public final static java.lang.String PROP_FONT_COLORS = "fontColors"
-meth public abstract javax.swing.text.AttributeSet getFontColors(java.lang.String)
-meth public abstract javax.swing.text.AttributeSet getTokenFontColors(java.lang.String)
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorSettings.PROP_FONT_COLORS
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract javax.swing.text.AttributeSet org.netbeans.api.editor.settings.FontColorSettings.getFontColors(java.lang.String)
+meth public abstract javax.swing.text.AttributeSet org.netbeans.api.editor.settings.FontColorSettings.getTokenFontColors(java.lang.String)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-
 CLSS public abstract org.netbeans.api.editor.settings.KeyBindingSettings
 cons public KeyBindingSettings()
-meth public abstract java.util.List<org.netbeans.api.editor.settings.MultiKeyBinding> getKeyBindings()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.util.List org.netbeans.api.editor.settings.KeyBindingSettings.getKeyBindings()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-
 CLSS public final org.netbeans.api.editor.settings.MultiKeyBinding
+cons public MultiKeyBinding([Ljavax.swing.KeyStroke;,java.lang.String)
 cons public MultiKeyBinding(javax.swing.KeyStroke,java.lang.String)
-cons public MultiKeyBinding(javax.swing.KeyStroke[],java.lang.String)
-meth public boolean equals(java.lang.Object)
-meth public int getKeyStrokeCount()
-meth public int hashCode()
-meth public java.lang.String getActionName()
-meth public java.lang.String toString()
-meth public java.util.List<javax.swing.KeyStroke> getKeyStrokeList()
-meth public javax.swing.KeyStroke getKeyStroke(int)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.netbeans.api.editor.settings.MultiKeyBinding.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.netbeans.api.editor.settings.MultiKeyBinding.getKeyStrokeCount()
+meth public int org.netbeans.api.editor.settings.MultiKeyBinding.hashCode()
+meth public java.lang.String org.netbeans.api.editor.settings.MultiKeyBinding.getActionName()
+meth public java.lang.String org.netbeans.api.editor.settings.MultiKeyBinding.toString()
+meth public java.util.List org.netbeans.api.editor.settings.MultiKeyBinding.getKeyStrokeList()
+meth public javax.swing.KeyStroke org.netbeans.api.editor.settings.MultiKeyBinding.getKeyStroke(int)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 supr java.lang.Object
-hfds actionName,keyStrokeList
-hcls UnmodifiableArrayList
-
 CLSS public final org.netbeans.api.editor.settings.SimpleValueNames
-fld public final static java.lang.String CARET_BLINK_RATE = "caret-blink-rate"
-fld public final static java.lang.String CARET_COLOR_INSERT_MODE = "caret-color-insert-mode"
-fld public final static java.lang.String CARET_COLOR_OVERWRITE_MODE = "caret-color-overwrite-mode"
-fld public final static java.lang.String CARET_ITALIC_INSERT_MODE = "caret-italic-insert-mode"
-fld public final static java.lang.String CARET_ITALIC_OVERWRITE_MODE = "caret-italic-overwrite-mode"
-fld public final static java.lang.String CARET_TYPE_INSERT_MODE = "caret-type-insert-mode"
-fld public final static java.lang.String CARET_TYPE_OVERWRITE_MODE = "caret-type-overwrite-mode"
-fld public final static java.lang.String CODE_FOLDING_ENABLE = "code-folding-enable"
-fld public final static java.lang.String COMPLETION_AUTO_POPUP = "completion-auto-popup"
-fld public final static java.lang.String COMPLETION_AUTO_POPUP_DELAY = "completion-auto-popup-delay"
-fld public final static java.lang.String COMPLETION_CASE_SENSITIVE = "completion-case-sensitive"
-fld public final static java.lang.String COMPLETION_INSTANT_SUBSTITUTION = "completion-instant-substitution"
-fld public final static java.lang.String COMPLETION_NATURAL_SORT = "completion-natural-sort"
-fld public final static java.lang.String COMPLETION_PANE_MAX_SIZE = "completion-pane-max-size"
-fld public final static java.lang.String COMPLETION_PANE_MIN_SIZE = "completion-pane-min-size"
-fld public final static java.lang.String EXPAND_TABS = "expand-tabs"
-fld public final static java.lang.String HIGHLIGHT_CARET_ROW = "highlight-caret-row"
-fld public final static java.lang.String HIGHLIGHT_MATCH_BRACE = "highlight-match-brace"
-fld public final static java.lang.String INDENT_SHIFT_WIDTH = "indent-shift-width"
-fld public final static java.lang.String JAVADOC_AUTO_POPUP = "javadoc-auto-popup"
-fld public final static java.lang.String JAVADOC_AUTO_POPUP_DELAY = "javadoc-auto-popup-delay"
-fld public final static java.lang.String JAVADOC_BG_COLOR = "javadoc-bg-color"
-fld public final static java.lang.String JAVADOC_PREFERRED_SIZE = "javadoc-preferred-size"
-fld public final static java.lang.String LINE_HEIGHT_CORRECTION = "line-height-correction"
-fld public final static java.lang.String LINE_NUMBER_VISIBLE = "line-number-visible"
-fld public final static java.lang.String MARGIN = "margin"
-fld public final static java.lang.String SCROLL_FIND_INSETS = "scroll-find-insets"
-fld public final static java.lang.String SCROLL_JUMP_INSETS = "scroll-jump-insets"
-fld public final static java.lang.String SHOW_DEPRECATED_MEMBERS = "show-deprecated-members"
-fld public final static java.lang.String SPACES_PER_TAB = "spaces-per-tab"
-fld public final static java.lang.String STATUS_BAR_CARET_DELAY = "status-bar-caret-delay"
-fld public final static java.lang.String STATUS_BAR_VISIBLE = "status-bar-visible"
-fld public final static java.lang.String TAB_SIZE = "tab-size"
-fld public final static java.lang.String TEXT_LEFT_MARGIN_WIDTH = "text-left-margin-width"
-fld public final static java.lang.String TEXT_LIMIT_LINE_COLOR = "text-limit-line-color"
-fld public final static java.lang.String TEXT_LIMIT_LINE_VISIBLE = "text-limit-line-visible"
-fld public final static java.lang.String TEXT_LIMIT_WIDTH = "text-limit-width"
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.CARET_BLINK_RATE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.CARET_COLOR_INSERT_MODE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.CARET_COLOR_OVERWRITE_MODE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.CARET_ITALIC_INSERT_MODE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.CARET_ITALIC_OVERWRITE_MODE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.CARET_TYPE_INSERT_MODE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.CARET_TYPE_OVERWRITE_MODE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.CODE_FOLDING_ENABLE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.COMPLETION_AUTO_POPUP
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.COMPLETION_AUTO_POPUP_DELAY
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.COMPLETION_CASE_SENSITIVE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.COMPLETION_NATURAL_SORT
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.COMPLETION_PANE_MAX_SIZE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.COMPLETION_PANE_MIN_SIZE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.EXPAND_TABS
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.HIGHLIGHT_CARET_ROW
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.HIGHLIGHT_MATCH_BRACE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.INDENT_SHIFT_WIDTH
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.JAVADOC_AUTO_POPUP
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.JAVADOC_AUTO_POPUP_DELAY
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.JAVADOC_BG_COLOR
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.JAVADOC_PREFERRED_SIZE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.LINE_HEIGHT_CORRECTION
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.LINE_NUMBER_VISIBLE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.MARGIN
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.SCROLL_FIND_INSETS
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.SCROLL_JUMP_INSETS
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.SHOW_DEPRECATED_MEMBERS
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.SPACES_PER_TAB
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.STATUS_BAR_CARET_DELAY
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.STATUS_BAR_VISIBLE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.TAB_SIZE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.TEXT_LIMIT_LINE_COLOR
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.SimpleValueNames.TEXT_LIMIT_WIDTH
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-

@@ -177,6 +177,8 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <available file="${src.dir}" property="sources.exist"/>
     </target>
     
+    <target name="netbeans" depends="projectized-common.netbeans,check-sigtest"/>
+    
     <target name="sources-zip" depends="build-init, check-sources-exist" if="sources.exist" description="Simple sources zip creation intended for use in maven repository.">
         <mkdir dir="${netbeans.zipped.sources.dir}"/>
         <zip zipfile="${netbeans.zipped.sources.dir}/${code.name.base.dashes}.zip"
@@ -610,14 +612,14 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                        newpath="../../../nbbuild/templates/xtest.xml"/>
     </target>
 
-    <target name="sigtest-init" depends="build-init">
+    <target name="-sigtest-init" depends="build-init">
         <property name="sigtest.basedir" location="nbproject"/>
         <mkdir dir="${sigtest.basedir}"/>
         <property name="sigtest.file" location="${sigtest.basedir}/${code.name.base.dashes}.sig"/>
         <property name="sigtest.public.packages" value="${public.packages}"/>
         <property name="sigtest.fail.on.error" value="true"/>
         <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <property name="sigtest.jar" location="${nb_all}/nbbuild/external/sigtestdev.jar"/> 
+        <property name="sigtest.jar" location="${nb_all}/nbbuild/external/apitest-17.jar"/> 
 
         <property name="cp.extra" value=""/>
         <path id="sigtest.class.path.ref">
@@ -635,13 +637,16 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <or>
                 <equals arg1="${sigtest.skip.check}" arg2="true"/>
                 <equals arg1="${sigtest.gen.fail.on.error}" arg2="false"/>
+                <not>
+                    <available file="${sigtest.file}"/>
+                </not>
             </or>
         </condition>
         
         <echo>Checking module: ${module.name}</echo>
     </target>
 
-    <target name="gen-sigtest" depends="sigtest-init">
+    <target name="gen-sigtest" depends="jar,-sigtest-init">
         <property name="sigtest.gen.fail.on.error" value="${sigtest.fail.on.error}"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
@@ -652,11 +657,12 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         />
     </target>
 
-    <target name="check-sigtest" depends="sigtest-init" unless="sigtest.skip.check.condition">
+    <target name="check-sigtest" depends="jar,-sigtest-init" unless="sigtest.skip.check.condition">
+        <property name="sigtest.check.type" value="check"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
-                 action="strictcheck"
+                 action="${sigtest.check.type}"
                  packages="${sigtest.public.packages}"
                  failonerror="${sigtest.fail.on.error}"
         />

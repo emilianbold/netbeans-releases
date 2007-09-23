@@ -1,167 +1,221 @@
-#Signature file v4.0
-#Version 
-
-CLSS public java.lang.Object
-cons public Object()
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
-meth protected void finalize() throws java.lang.Throwable
-meth public boolean equals(java.lang.Object)
-meth public final java.lang.Class<?> getClass()
-meth public final void notify()
-meth public final void notifyAll()
-meth public final void wait() throws java.lang.InterruptedException
-meth public final void wait(long) throws java.lang.InterruptedException
-meth public final void wait(long,int) throws java.lang.InterruptedException
-meth public int hashCode()
-meth public java.lang.String toString()
-
-CLSS public final org.netbeans.api.project.ui.OpenProjects
-fld public final static java.lang.String PROPERTY_MAIN_PROJECT = "MainProject"
-fld public final static java.lang.String PROPERTY_OPEN_PROJECTS = "openProjects"
-meth public org.netbeans.api.project.Project getMainProject()
-meth public org.netbeans.api.project.Project[] getOpenProjects()
-meth public static org.netbeans.api.project.ui.OpenProjects getDefault()
-meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void close(org.netbeans.api.project.Project[])
-meth public void open(org.netbeans.api.project.Project[],boolean)
-meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void setMainProject(org.netbeans.api.project.Project)
+#API master signature file
+#Version 1.5.0_11
+CLSS public static final org.netbeans.spi.project.ui.support.ProjectCustomizer$Category
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Lorg.netbeans.spi.project.ui.support.ProjectCustomizer$Category; org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getSubcategories()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.isValid()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.awt.Image org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getIcon()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getDisplayName()
+meth public java.lang.String org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getErrorMessage()
+meth public java.lang.String org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getName()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.spi.project.ui.support.ProjectCustomizer$Category org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.create(java.lang.String,java.lang.String,java.awt.Image,[Lorg.netbeans.spi.project.ui.support.ProjectCustomizer$Category;)
+meth public void org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.setErrorMessage(java.lang.String)
+meth public void org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.setValid(boolean)
 supr java.lang.Object
-hfds INSTANCE,trampoline
-
+CLSS public static abstract interface org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider
+meth public abstract javax.swing.JComponent org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider.create(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category)
+supr null
+CLSS public final org.netbeans.api.project.ui.OpenProjects
+fld  constant public static final java.lang.String org.netbeans.api.project.ui.OpenProjects.PROPERTY_OPEN_PROJECTS
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Lorg.netbeans.api.project.Project; org.netbeans.api.project.ui.OpenProjects.getOpenProjects()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.netbeans.api.project.Project org.netbeans.api.project.ui.OpenProjects.getMainProject()
+meth public static org.netbeans.api.project.ui.OpenProjects org.netbeans.api.project.ui.OpenProjects.getDefault()
+meth public void org.netbeans.api.project.ui.OpenProjects.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.netbeans.api.project.ui.OpenProjects.close([Lorg.netbeans.api.project.Project;)
+meth public void org.netbeans.api.project.ui.OpenProjects.open([Lorg.netbeans.api.project.Project;,boolean)
+meth public void org.netbeans.api.project.ui.OpenProjects.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.netbeans.api.project.ui.OpenProjects.setMainProject(org.netbeans.api.project.Project) throws java.lang.IllegalArgumentException
+supr java.lang.Object
 CLSS public abstract interface org.netbeans.spi.project.ui.CustomizerProvider
-meth public abstract void showCustomizer()
-
+meth public abstract void org.netbeans.spi.project.ui.CustomizerProvider.showCustomizer()
+supr null
 CLSS public abstract interface org.netbeans.spi.project.ui.LogicalViewProvider
-meth public abstract org.openide.nodes.Node createLogicalView()
-meth public abstract org.openide.nodes.Node findPath(org.openide.nodes.Node,java.lang.Object)
-
+meth public abstract org.openide.nodes.Node org.netbeans.spi.project.ui.LogicalViewProvider.createLogicalView()
+meth public abstract org.openide.nodes.Node org.netbeans.spi.project.ui.LogicalViewProvider.findPath(org.openide.nodes.Node,java.lang.Object)
+supr null
 CLSS public abstract interface org.netbeans.spi.project.ui.PrivilegedTemplates
-meth public abstract java.lang.String[] getPrivilegedTemplates()
-
+meth public abstract [Ljava.lang.String; org.netbeans.spi.project.ui.PrivilegedTemplates.getPrivilegedTemplates()
+supr null
 CLSS public abstract org.netbeans.spi.project.ui.ProjectOpenedHook
 cons protected ProjectOpenedHook()
-meth protected abstract void projectClosed()
-meth protected abstract void projectOpened()
+meth protected abstract void org.netbeans.spi.project.ui.ProjectOpenedHook.projectClosed()
+meth protected abstract void org.netbeans.spi.project.ui.ProjectOpenedHook.projectOpened()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-
 CLSS public abstract interface org.netbeans.spi.project.ui.RecommendedTemplates
-meth public abstract java.lang.String[] getRecommendedTypes()
-
+meth public abstract [Ljava.lang.String; org.netbeans.spi.project.ui.RecommendedTemplates.getRecommendedTypes()
+supr null
 CLSS public org.netbeans.spi.project.ui.support.CommonProjectActions
-fld public final static java.lang.String EXISTING_SOURCES_FOLDER = "existingSourcesFolder"
-meth public static javax.swing.Action closeProjectAction()
-meth public static javax.swing.Action copyProjectAction()
-meth public static javax.swing.Action customizeProjectAction()
-meth public static javax.swing.Action deleteProjectAction()
-meth public static javax.swing.Action moveProjectAction()
-meth public static javax.swing.Action newFileAction()
-meth public static javax.swing.Action newProjectAction()
-meth public static javax.swing.Action openSubprojectsAction()
-meth public static javax.swing.Action renameProjectAction()
-meth public static javax.swing.Action setAsMainProjectAction()
-meth public static javax.swing.Action setProjectConfigurationAction()
+fld  constant public static final java.lang.String org.netbeans.spi.project.ui.support.CommonProjectActions.EXISTING_SOURCES_FOLDER
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.closeProjectAction()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.copyProjectAction()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.customizeProjectAction()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.deleteProjectAction()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.moveProjectAction()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.newProjectAction()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.openSubprojectsAction()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.renameProjectAction()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.CommonProjectActions.setAsMainProjectAction()
 supr java.lang.Object
-
 CLSS public final org.netbeans.spi.project.ui.support.DefaultProjectOperations
-meth public static void performDefaultCopyOperation(org.netbeans.api.project.Project)
-meth public static void performDefaultDeleteOperation(org.netbeans.api.project.Project)
-meth public static void performDefaultMoveOperation(org.netbeans.api.project.Project)
-meth public static void performDefaultRenameOperation(org.netbeans.api.project.Project,java.lang.String)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static void org.netbeans.spi.project.ui.support.DefaultProjectOperations.performDefaultCopyOperation(org.netbeans.api.project.Project) throws java.lang.IllegalArgumentException
+meth public static void org.netbeans.spi.project.ui.support.DefaultProjectOperations.performDefaultDeleteOperation(org.netbeans.api.project.Project) throws java.lang.IllegalArgumentException
+meth public static void org.netbeans.spi.project.ui.support.DefaultProjectOperations.performDefaultMoveOperation(org.netbeans.api.project.Project) throws java.lang.IllegalArgumentException
+meth public static void org.netbeans.spi.project.ui.support.DefaultProjectOperations.performDefaultRenameOperation(org.netbeans.api.project.Project,java.lang.String) throws java.lang.IllegalStateException
 supr java.lang.Object
-
 CLSS public org.netbeans.spi.project.ui.support.FileSensitiveActions
-meth public static javax.swing.Action fileCommandAction(java.lang.String,java.lang.String,javax.swing.Icon)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.FileSensitiveActions.fileCommandAction(java.lang.String,java.lang.String,javax.swing.Icon)
 supr java.lang.Object
-
 CLSS public org.netbeans.spi.project.ui.support.MainProjectSensitiveActions
-meth public static javax.swing.Action mainProjectCommandAction(java.lang.String,java.lang.String,javax.swing.Icon)
-meth public static javax.swing.Action mainProjectSensitiveAction(org.netbeans.spi.project.ui.support.ProjectActionPerformer,java.lang.String,javax.swing.Icon)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.MainProjectSensitiveActions.mainProjectCommandAction(java.lang.String,java.lang.String,javax.swing.Icon)
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.MainProjectSensitiveActions.mainProjectSensitiveAction(org.netbeans.spi.project.ui.support.ProjectActionPerformer,java.lang.String,javax.swing.Icon)
 supr java.lang.Object
-
-CLSS public abstract interface org.netbeans.spi.project.ui.support.NodeFactory
-meth public abstract org.netbeans.spi.project.ui.support.NodeList<?> createNodes(org.netbeans.api.project.Project)
-
-CLSS public org.netbeans.spi.project.ui.support.NodeFactorySupport
-meth public !varargs static org.netbeans.spi.project.ui.support.NodeList fixedNodeList(org.openide.nodes.Node[])
-meth public static org.openide.nodes.Children createCompositeChildren(org.netbeans.api.project.Project,java.lang.String)
-supr java.lang.Object
-hcls DelegateChildren,FixedNodeList,NodeListKeyWrapper
-
-CLSS public abstract interface org.netbeans.spi.project.ui.support.NodeList<%0 extends java.lang.Object>
-meth public abstract java.util.List<{org.netbeans.spi.project.ui.support.NodeList%0}> keys()
-meth public abstract org.openide.nodes.Node node({org.netbeans.spi.project.ui.support.NodeList%0})
-meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void addNotify()
-meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void removeNotify()
-
 CLSS public abstract interface org.netbeans.spi.project.ui.support.ProjectActionPerformer
-meth public abstract boolean enable(org.netbeans.api.project.Project)
-meth public abstract void perform(org.netbeans.api.project.Project)
-
+meth public abstract boolean org.netbeans.spi.project.ui.support.ProjectActionPerformer.enable(org.netbeans.api.project.Project)
+meth public abstract void org.netbeans.spi.project.ui.support.ProjectActionPerformer.perform(org.netbeans.api.project.Project)
+supr null
 CLSS public org.netbeans.spi.project.ui.support.ProjectChooser
-meth public static java.io.File getProjectsFolder()
-meth public static javax.swing.JFileChooser projectChooser()
-meth public static void setProjectsFolder(java.io.File)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.io.File org.netbeans.spi.project.ui.support.ProjectChooser.getProjectsFolder()
+meth public static javax.swing.JFileChooser org.netbeans.spi.project.ui.support.ProjectChooser.projectChooser()
+meth public static void org.netbeans.spi.project.ui.support.ProjectChooser.setProjectsFolder(java.io.File)
 supr java.lang.Object
-
 CLSS public final org.netbeans.spi.project.ui.support.ProjectCustomizer
-innr public abstract interface static CategoryComponentProvider
-innr public abstract interface static CompositeCategoryProvider
-innr public final static Category
-meth public static java.awt.Dialog createCustomizerDialog(java.lang.String,org.openide.util.Lookup,java.lang.String,java.awt.event.ActionListener,java.awt.event.ActionListener,org.openide.util.HelpCtx)
-meth public static java.awt.Dialog createCustomizerDialog(java.lang.String,org.openide.util.Lookup,java.lang.String,java.awt.event.ActionListener,org.openide.util.HelpCtx)
-meth public static java.awt.Dialog createCustomizerDialog(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category[],org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider,java.lang.String,java.awt.event.ActionListener,java.awt.event.ActionListener,org.openide.util.HelpCtx)
-meth public static java.awt.Dialog createCustomizerDialog(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category[],org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider,java.lang.String,java.awt.event.ActionListener,org.openide.util.HelpCtx)
+innr public static abstract interface org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider
+innr public static final org.netbeans.spi.project.ui.support.ProjectCustomizer$Category
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.awt.Dialog org.netbeans.spi.project.ui.support.ProjectCustomizer.createCustomizerDialog([Lorg.netbeans.spi.project.ui.support.ProjectCustomizer$Category;,org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider,java.lang.String,java.awt.event.ActionListener,org.openide.util.HelpCtx)
 supr java.lang.Object
-hcls DelegateCategoryProvider
-
-CLSS public final static org.netbeans.spi.project.ui.support.ProjectCustomizer$Category
-meth public !varargs static org.netbeans.spi.project.ui.support.ProjectCustomizer$Category create(java.lang.String,java.lang.String,java.awt.Image,org.netbeans.spi.project.ui.support.ProjectCustomizer$Category[])
-meth public boolean isValid()
-meth public java.awt.Image getIcon()
-meth public java.awt.event.ActionListener getOkButtonListener()
-meth public java.awt.event.ActionListener getStoreListener()
-meth public java.lang.String getDisplayName()
-meth public java.lang.String getErrorMessage()
-meth public java.lang.String getName()
-meth public org.netbeans.spi.project.ui.support.ProjectCustomizer$Category[] getSubcategories()
-meth public void setErrorMessage(java.lang.String)
-meth public void setOkButtonListener(java.awt.event.ActionListener)
-meth public void setStoreListener(java.awt.event.ActionListener)
-meth public void setValid(boolean)
-supr java.lang.Object
-hfds displayName,errorMessage,icon,name,okListener,storeListener,subcategories,valid
-
-CLSS public abstract interface static org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider
-meth public abstract javax.swing.JComponent create(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category)
-
-CLSS public abstract interface static org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider
-meth public abstract javax.swing.JComponent createComponent(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category,org.openide.util.Lookup)
-meth public abstract org.netbeans.spi.project.ui.support.ProjectCustomizer$Category createCategory(org.openide.util.Lookup)
-
 CLSS public org.netbeans.spi.project.ui.support.ProjectSensitiveActions
-meth public static javax.swing.Action projectCommandAction(java.lang.String,java.lang.String,javax.swing.Icon)
-meth public static javax.swing.Action projectSensitiveAction(org.netbeans.spi.project.ui.support.ProjectActionPerformer,java.lang.String,javax.swing.Icon)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.ProjectSensitiveActions.projectCommandAction(java.lang.String,java.lang.String,javax.swing.Icon)
+meth public static javax.swing.Action org.netbeans.spi.project.ui.support.ProjectSensitiveActions.projectSensitiveAction(org.netbeans.spi.project.ui.support.ProjectActionPerformer,java.lang.String,javax.swing.Icon)
 supr java.lang.Object
-
-CLSS public final org.netbeans.spi.project.ui.support.UILookupMergerSupport
-meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ui.PrivilegedTemplates> createPrivilegedTemplatesMerger()
-meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ui.ProjectOpenedHook> createProjectOpenHookMerger(org.netbeans.spi.project.ui.ProjectOpenedHook)
-meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ui.RecommendedTemplates> createRecommendedTemplatesMerger()
-supr java.lang.Object
-hcls OpenHookImpl,OpenMerger,PrivilegedMerger,PrivilegedTemplatesImpl,RecommendedMerger,RecommendedTemplatesImpl
-
 CLSS public org.netbeans.spi.project.ui.templates.support.Templates
-meth public static java.lang.String getTargetName(org.openide.WizardDescriptor)
-meth public static org.netbeans.api.project.Project getProject(org.openide.WizardDescriptor)
-meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createSimpleTargetChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[])
-meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createSimpleTargetChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[],org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>)
-meth public static org.openide.filesystems.FileObject getExistingSourcesFolder(org.openide.WizardDescriptor)
-meth public static org.openide.filesystems.FileObject getTargetFolder(org.openide.WizardDescriptor)
-meth public static org.openide.filesystems.FileObject getTemplate(org.openide.WizardDescriptor)
-meth public static void setTargetFolder(org.openide.WizardDescriptor,org.openide.filesystems.FileObject)
-meth public static void setTargetName(org.openide.WizardDescriptor,java.lang.String)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.lang.String org.netbeans.spi.project.ui.templates.support.Templates.getTargetName(org.openide.WizardDescriptor)
+meth public static org.netbeans.api.project.Project org.netbeans.spi.project.ui.templates.support.Templates.getProject(org.openide.WizardDescriptor)
+meth public static org.openide.WizardDescriptor$Panel org.netbeans.spi.project.ui.templates.support.Templates.createSimpleTargetChooser(org.netbeans.api.project.Project,[Lorg.netbeans.api.project.SourceGroup;)
+meth public static org.openide.WizardDescriptor$Panel org.netbeans.spi.project.ui.templates.support.Templates.createSimpleTargetChooser(org.netbeans.api.project.Project,[Lorg.netbeans.api.project.SourceGroup;,org.openide.WizardDescriptor$Panel)
+meth public static org.openide.filesystems.FileObject org.netbeans.spi.project.ui.templates.support.Templates.getExistingSourcesFolder(org.openide.WizardDescriptor)
+meth public static org.openide.filesystems.FileObject org.netbeans.spi.project.ui.templates.support.Templates.getTargetFolder(org.openide.WizardDescriptor)
+meth public static org.openide.filesystems.FileObject org.netbeans.spi.project.ui.templates.support.Templates.getTemplate(org.openide.WizardDescriptor)
+meth public static void org.netbeans.spi.project.ui.templates.support.Templates.setTargetFolder(org.openide.WizardDescriptor,org.openide.filesystems.FileObject)
+meth public static void org.netbeans.spi.project.ui.templates.support.Templates.setTargetName(org.openide.WizardDescriptor,java.lang.String)
 supr java.lang.Object
-

@@ -1,83 +1,109 @@
-#Signature file v4.0
-#Version 
-
-CLSS public java.lang.Object
-cons public Object()
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
-meth protected void finalize() throws java.lang.Throwable
-meth public boolean equals(java.lang.Object)
-meth public final java.lang.Class<?> getClass()
-meth public final void notify()
-meth public final void notifyAll()
-meth public final void wait() throws java.lang.InterruptedException
-meth public final void wait(long) throws java.lang.InterruptedException
-meth public final void wait(long,int) throws java.lang.InterruptedException
-meth public int hashCode()
-meth public java.lang.String toString()
-
+#API master signature file
+#Version 1.5.0_11
 CLSS public final org.netbeans.api.progress.ProgressHandle
-meth public void finish()
-meth public void progress(int)
-meth public void progress(java.lang.String)
-meth public void progress(java.lang.String,int)
-meth public void setDisplayName(java.lang.String)
-meth public void setInitialDelay(int)
-meth public void start()
-meth public void start(int)
-meth public void start(int,long)
-meth public void suspend(java.lang.String)
-meth public void switchToDeterminate(int)
-meth public void switchToDeterminate(int,long)
-meth public void switchToIndeterminate()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.netbeans.api.progress.ProgressHandle.finish()
+meth public void org.netbeans.api.progress.ProgressHandle.progress(int)
+meth public void org.netbeans.api.progress.ProgressHandle.progress(java.lang.String)
+meth public void org.netbeans.api.progress.ProgressHandle.progress(java.lang.String,int)
+meth public void org.netbeans.api.progress.ProgressHandle.setDisplayName(java.lang.String)
+meth public void org.netbeans.api.progress.ProgressHandle.setInitialDelay(int)
+meth public void org.netbeans.api.progress.ProgressHandle.start()
+meth public void org.netbeans.api.progress.ProgressHandle.start(int)
+meth public void org.netbeans.api.progress.ProgressHandle.start(int,long)
+meth public void org.netbeans.api.progress.ProgressHandle.switchToDeterminate(int)
+meth public void org.netbeans.api.progress.ProgressHandle.switchToDeterminate(int,long)
+meth public void org.netbeans.api.progress.ProgressHandle.switchToIndeterminate()
 supr java.lang.Object
-hfds LOG,internal
-
 CLSS public final org.netbeans.api.progress.ProgressHandleFactory
-meth public static javax.swing.JComponent createProgressComponent(org.netbeans.api.progress.ProgressHandle)
-meth public static javax.swing.JLabel createDetailLabelComponent(org.netbeans.api.progress.ProgressHandle)
-meth public static javax.swing.JLabel createMainLabelComponent(org.netbeans.api.progress.ProgressHandle)
-meth public static org.netbeans.api.progress.ProgressHandle createHandle(java.lang.String)
-meth public static org.netbeans.api.progress.ProgressHandle createHandle(java.lang.String,javax.swing.Action)
-meth public static org.netbeans.api.progress.ProgressHandle createHandle(java.lang.String,org.openide.util.Cancellable)
-meth public static org.netbeans.api.progress.ProgressHandle createHandle(java.lang.String,org.openide.util.Cancellable,javax.swing.Action)
-meth public static org.netbeans.api.progress.ProgressHandle createSystemHandle(java.lang.String)
-meth public static org.netbeans.api.progress.ProgressHandle createSystemHandle(java.lang.String,org.openide.util.Cancellable)
-meth public static org.netbeans.api.progress.ProgressHandle createSystemHandle(java.lang.String,org.openide.util.Cancellable,javax.swing.Action)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static javax.swing.JComponent org.netbeans.api.progress.ProgressHandleFactory.createProgressComponent(org.netbeans.api.progress.ProgressHandle)
+meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createHandle(java.lang.String)
+meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createHandle(java.lang.String,javax.swing.Action)
+meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createHandle(java.lang.String,org.openide.util.Cancellable)
+meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createHandle(java.lang.String,org.openide.util.Cancellable,javax.swing.Action)
+meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createSystemHandle(java.lang.String)
+meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createSystemHandle(java.lang.String,org.openide.util.Cancellable)
+meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createSystemHandle(java.lang.String,org.openide.util.Cancellable,javax.swing.Action)
 supr java.lang.Object
-
 CLSS public final org.netbeans.api.progress.aggregate.AggregateProgressFactory
-meth public static javax.swing.JComponent createProgressComponent(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
-meth public static javax.swing.JLabel createDetailLabelComponent(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
-meth public static javax.swing.JLabel createMainLabelComponent(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
-meth public static org.netbeans.api.progress.aggregate.AggregateProgressHandle createHandle(java.lang.String,org.netbeans.api.progress.aggregate.ProgressContributor[],org.openide.util.Cancellable,javax.swing.Action)
-meth public static org.netbeans.api.progress.aggregate.AggregateProgressHandle createSystemHandle(java.lang.String,org.netbeans.api.progress.aggregate.ProgressContributor[],org.openide.util.Cancellable,javax.swing.Action)
-meth public static org.netbeans.api.progress.aggregate.ProgressContributor createProgressContributor(java.lang.String)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static javax.swing.JComponent org.netbeans.api.progress.aggregate.AggregateProgressFactory.createProgressComponent(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
+meth public static org.netbeans.api.progress.aggregate.AggregateProgressHandle org.netbeans.api.progress.aggregate.AggregateProgressFactory.createHandle(java.lang.String,[Lorg.netbeans.api.progress.aggregate.ProgressContributor;,org.openide.util.Cancellable,javax.swing.Action)
+meth public static org.netbeans.api.progress.aggregate.AggregateProgressHandle org.netbeans.api.progress.aggregate.AggregateProgressFactory.createSystemHandle(java.lang.String,[Lorg.netbeans.api.progress.aggregate.ProgressContributor;,org.openide.util.Cancellable,javax.swing.Action)
+meth public static org.netbeans.api.progress.aggregate.ProgressContributor org.netbeans.api.progress.aggregate.AggregateProgressFactory.createProgressContributor(java.lang.String)
 supr java.lang.Object
-
 CLSS public final org.netbeans.api.progress.aggregate.AggregateProgressHandle
-meth public void addContributor(org.netbeans.api.progress.aggregate.ProgressContributor)
-meth public void finish()
-meth public void setDisplayName(java.lang.String)
-meth public void setInitialDelay(int)
-meth public void setMonitor(org.netbeans.api.progress.aggregate.ProgressMonitor)
-meth public void start()
-meth public void start(long)
-meth public void suspend(java.lang.String)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized void org.netbeans.api.progress.aggregate.AggregateProgressHandle.addContributor(org.netbeans.api.progress.aggregate.ProgressContributor)
+meth public synchronized void org.netbeans.api.progress.aggregate.AggregateProgressHandle.finish()
+meth public synchronized void org.netbeans.api.progress.aggregate.AggregateProgressHandle.start(long)
+meth public void org.netbeans.api.progress.aggregate.AggregateProgressHandle.setDisplayName(java.lang.String)
+meth public void org.netbeans.api.progress.aggregate.AggregateProgressHandle.setInitialDelay(int)
+meth public void org.netbeans.api.progress.aggregate.AggregateProgressHandle.setMonitor(org.netbeans.api.progress.aggregate.ProgressMonitor)
+meth public void org.netbeans.api.progress.aggregate.AggregateProgressHandle.start()
 supr java.lang.Object
-hfds LOG,WORKUNITS,contributors,current,displayName,finished,handle,monitor
-
 CLSS public final org.netbeans.api.progress.aggregate.ProgressContributor
-meth public java.lang.String getTrackingId()
-meth public void finish()
-meth public void progress(int)
-meth public void progress(java.lang.String)
-meth public void progress(java.lang.String,int)
-meth public void start(int)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.netbeans.api.progress.aggregate.ProgressContributor.getTrackingId()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.netbeans.api.progress.aggregate.ProgressContributor.finish()
+meth public void org.netbeans.api.progress.aggregate.ProgressContributor.progress(int)
+meth public void org.netbeans.api.progress.aggregate.ProgressContributor.progress(java.lang.String)
+meth public void org.netbeans.api.progress.aggregate.ProgressContributor.progress(java.lang.String,int)
+meth public void org.netbeans.api.progress.aggregate.ProgressContributor.start(int)
 supr java.lang.Object
-hfds current,id,lastParentedUnit,parent,parentUnits,workunits
-
 CLSS public abstract interface org.netbeans.api.progress.aggregate.ProgressMonitor
-meth public abstract void finished(org.netbeans.api.progress.aggregate.ProgressContributor)
-meth public abstract void progressed(org.netbeans.api.progress.aggregate.ProgressContributor)
-meth public abstract void started(org.netbeans.api.progress.aggregate.ProgressContributor)
-
+meth public abstract void org.netbeans.api.progress.aggregate.ProgressMonitor.finished(org.netbeans.api.progress.aggregate.ProgressContributor)
+meth public abstract void org.netbeans.api.progress.aggregate.ProgressMonitor.progressed(org.netbeans.api.progress.aggregate.ProgressContributor)
+meth public abstract void org.netbeans.api.progress.aggregate.ProgressMonitor.started(org.netbeans.api.progress.aggregate.ProgressContributor)
+supr null

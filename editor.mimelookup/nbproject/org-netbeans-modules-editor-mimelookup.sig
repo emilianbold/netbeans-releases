@@ -1,105 +1,97 @@
-#Signature file v4.0
-#Version 
-
-CLSS public abstract interface !annotation java.lang.Deprecated
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
-intf java.lang.annotation.Annotation
-
-CLSS public java.lang.Object
-cons public Object()
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
-meth protected void finalize() throws java.lang.Throwable
-meth public boolean equals(java.lang.Object)
-meth public final java.lang.Class<?> getClass()
-meth public final void notify()
-meth public final void notifyAll()
-meth public final void wait() throws java.lang.InterruptedException
-meth public final void wait(long) throws java.lang.InterruptedException
-meth public final void wait(long,int) throws java.lang.InterruptedException
-meth public int hashCode()
-meth public java.lang.String toString()
-
-CLSS public abstract interface java.lang.annotation.Annotation
-meth public abstract boolean equals(java.lang.Object)
-meth public abstract int hashCode()
-meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
-meth public abstract java.lang.String toString()
-
-CLSS public abstract interface !annotation java.lang.annotation.Documented
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-
-CLSS public abstract interface !annotation java.lang.annotation.Retention
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract java.lang.annotation.RetentionPolicy value()
-
-CLSS public abstract interface !annotation java.lang.annotation.Target
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract java.lang.annotation.ElementType[] value()
-
+#API master signature file
+#Version 1.5.0_11
+CLSS public static abstract org.openide.util.Lookup$Item
+cons public Item()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.lang.Class org.openide.util.Lookup$Item.getType()
+meth public abstract java.lang.Object org.openide.util.Lookup$Item.getInstance()
+meth public abstract java.lang.String org.openide.util.Lookup$Item.getDisplayName()
+meth public abstract java.lang.String org.openide.util.Lookup$Item.getId()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.util.Lookup$Item.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static abstract interface org.openide.util.Lookup$Provider
+meth public abstract org.openide.util.Lookup org.openide.util.Lookup$Provider.getLookup()
+supr null
+CLSS public static abstract org.openide.util.Lookup$Result
+cons public Result()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.util.Collection org.openide.util.Lookup$Result.allInstances()
+meth public abstract void org.openide.util.Lookup$Result.addLookupListener(org.openide.util.LookupListener)
+meth public abstract void org.openide.util.Lookup$Result.removeLookupListener(org.openide.util.LookupListener)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Collection org.openide.util.Lookup$Result.allItems()
+meth public java.util.Set org.openide.util.Lookup$Result.allClasses()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static final org.openide.util.Lookup$Template
+cons public Template()
+cons public Template(java.lang.Class)
+cons public Template(java.lang.Class,java.lang.String,java.lang.Object)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.openide.util.Lookup$Template.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.openide.util.Lookup$Template.hashCode()
+meth public java.lang.Class org.openide.util.Lookup$Template.getType()
+meth public java.lang.Object org.openide.util.Lookup$Template.getInstance()
+meth public java.lang.String org.openide.util.Lookup$Template.getId()
+meth public java.lang.String org.openide.util.Lookup$Template.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+supr java.lang.Object
 CLSS public final org.netbeans.api.editor.mimelookup.MimeLookup
-meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
-meth public <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
-meth public org.netbeans.api.editor.mimelookup.MimeLookup childLookup(java.lang.String)
-meth public static org.netbeans.api.editor.mimelookup.MimeLookup getMimeLookup(java.lang.String)
-meth public static org.openide.util.Lookup getLookup(org.netbeans.api.editor.mimelookup.MimePath)
+fld  public static final org.openide.util.Lookup org.openide.util.Lookup.EMPTY
+innr public static abstract interface org.openide.util.Lookup$Provider
+innr public static abstract org.openide.util.Lookup$Item
+innr public static abstract org.openide.util.Lookup$Result
+innr public static final org.openide.util.Lookup$Template
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Object org.netbeans.api.editor.mimelookup.MimeLookup.lookup(java.lang.Class)
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.netbeans.api.editor.mimelookup.MimeLookup org.netbeans.api.editor.mimelookup.MimeLookup.childLookup(java.lang.String)
+meth public org.openide.util.Lookup$Item org.openide.util.Lookup.lookupItem(org.openide.util.Lookup$Template)
+meth public org.openide.util.Lookup$Result org.netbeans.api.editor.mimelookup.MimeLookup.lookup(org.openide.util.Lookup$Template)
+meth public static org.netbeans.api.editor.mimelookup.MimeLookup org.netbeans.api.editor.mimelookup.MimeLookup.getMimeLookup(java.lang.String)
+meth public static synchronized org.openide.util.Lookup org.openide.util.Lookup.getDefault()
 supr org.openide.util.Lookup
-hfds mimePathLookup
-
-CLSS public final org.netbeans.api.editor.mimelookup.MimePath
-fld public final static org.netbeans.api.editor.mimelookup.MimePath EMPTY
-meth public int size()
-meth public java.lang.String getMimeType(int)
-meth public java.lang.String getPath()
-meth public java.lang.String toString()
-meth public org.netbeans.api.editor.mimelookup.MimePath getPrefix(int)
-meth public static boolean validate(java.lang.CharSequence)
-meth public static boolean validate(java.lang.CharSequence,java.lang.CharSequence)
-meth public static org.netbeans.api.editor.mimelookup.MimePath get(java.lang.String)
-meth public static org.netbeans.api.editor.mimelookup.MimePath get(org.netbeans.api.editor.mimelookup.MimePath,java.lang.String)
-meth public static org.netbeans.api.editor.mimelookup.MimePath parse(java.lang.String)
-supr java.lang.Object
-hfds LOCK,LOOKUP_LOCK,LRU,MAX_LRU_SIZE,REG_NAME_PATTERN,WELL_KNOWN_TYPES,lookup,mimePaths,mimeType,mimeType2mimePathRef,path,string2mimePath
-
-CLSS public abstract interface org.netbeans.spi.editor.mimelookup.Class2LayerFolder<%0 extends java.lang.Object>
-meth public abstract java.lang.Class<{org.netbeans.spi.editor.mimelookup.Class2LayerFolder%0}> getClazz()
-meth public abstract java.lang.String getLayerFolderName()
-meth public abstract org.netbeans.spi.editor.mimelookup.InstanceProvider<{org.netbeans.spi.editor.mimelookup.Class2LayerFolder%0}> getInstanceProvider()
-
-CLSS public abstract interface org.netbeans.spi.editor.mimelookup.InstanceProvider<%0 extends java.lang.Object>
-meth public abstract {org.netbeans.spi.editor.mimelookup.InstanceProvider%0} createInstance(java.util.List<org.openide.filesystems.FileObject>)
-
-CLSS public abstract interface org.netbeans.spi.editor.mimelookup.MimeDataProvider
-meth public abstract org.openide.util.Lookup getLookup(org.netbeans.api.editor.mimelookup.MimePath)
-
+CLSS public abstract interface org.netbeans.spi.editor.mimelookup.Class2LayerFolder
+meth public abstract java.lang.Class org.netbeans.spi.editor.mimelookup.Class2LayerFolder.getClazz()
+meth public abstract java.lang.String org.netbeans.spi.editor.mimelookup.Class2LayerFolder.getLayerFolderName()
+meth public abstract org.netbeans.spi.editor.mimelookup.InstanceProvider org.netbeans.spi.editor.mimelookup.Class2LayerFolder.getInstanceProvider()
+supr null
+CLSS public abstract interface org.netbeans.spi.editor.mimelookup.InstanceProvider
+meth public abstract java.lang.Object org.netbeans.spi.editor.mimelookup.InstanceProvider.createInstance(java.util.List)
+supr null
 CLSS public abstract interface org.netbeans.spi.editor.mimelookup.MimeLookupInitializer
- anno 0 java.lang.Deprecated()
-meth public abstract org.openide.util.Lookup lookup()
-meth public abstract org.openide.util.Lookup$Result<org.netbeans.spi.editor.mimelookup.MimeLookupInitializer> child(java.lang.String)
-
-CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
-fld public final static org.openide.util.Lookup EMPTY
-innr public abstract interface static Provider
-innr public abstract static Item
-innr public abstract static Result
-innr public final static Template
-meth public <%0 extends java.lang.Object> java.util.Collection<? extends {%%0}> lookupAll(java.lang.Class<{%%0}>)
-meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
-meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookupResult(java.lang.Class<{%%0}>)
-meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
-meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
-meth public static org.openide.util.Lookup getDefault()
-supr java.lang.Object
-hfds defaultLookup
-hcls DefLookup,Empty
-
+meth public abstract org.openide.util.Lookup org.netbeans.spi.editor.mimelookup.MimeLookupInitializer.lookup()
+meth public abstract org.openide.util.Lookup$Result org.netbeans.spi.editor.mimelookup.MimeLookupInitializer.child(java.lang.String)
+supr null

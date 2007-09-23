@@ -1,263 +1,267 @@
-#Signature file v4.0
-#Version 
-
-CLSS public abstract interface java.io.Serializable
-
-CLSS public abstract java.lang.ClassLoader
-cons protected ClassLoader()
-cons protected ClassLoader(java.lang.ClassLoader)
-meth protected final java.lang.Class<?> defineClass(byte[],int,int)
- anno 0 java.lang.Deprecated()
-meth protected final java.lang.Class<?> defineClass(java.lang.String,byte[],int,int)
-meth protected final java.lang.Class<?> defineClass(java.lang.String,byte[],int,int,java.security.ProtectionDomain)
-meth protected final java.lang.Class<?> defineClass(java.lang.String,java.nio.ByteBuffer,java.security.ProtectionDomain)
-meth protected final java.lang.Class<?> findLoadedClass(java.lang.String)
-meth protected final java.lang.Class<?> findSystemClass(java.lang.String) throws java.lang.ClassNotFoundException
-meth protected final void resolveClass(java.lang.Class<?>)
-meth protected final void setSigners(java.lang.Class<?>,java.lang.Object[])
-meth protected java.lang.Class<?> findClass(java.lang.String) throws java.lang.ClassNotFoundException
-meth protected java.lang.Class<?> loadClass(java.lang.String,boolean) throws java.lang.ClassNotFoundException
-meth protected java.lang.Package definePackage(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.net.URL)
-meth protected java.lang.Package getPackage(java.lang.String)
-meth protected java.lang.Package[] getPackages()
-meth protected java.lang.String findLibrary(java.lang.String)
-meth protected java.net.URL findResource(java.lang.String)
-meth protected java.util.Enumeration<java.net.URL> findResources(java.lang.String) throws java.io.IOException
-meth public final java.lang.ClassLoader getParent()
-meth public java.io.InputStream getResourceAsStream(java.lang.String)
-meth public java.lang.Class<?> loadClass(java.lang.String) throws java.lang.ClassNotFoundException
-meth public java.net.URL getResource(java.lang.String)
-meth public java.util.Enumeration<java.net.URL> getResources(java.lang.String) throws java.io.IOException
-meth public static java.io.InputStream getSystemResourceAsStream(java.lang.String)
-meth public static java.lang.ClassLoader getSystemClassLoader()
-meth public static java.net.URL getSystemResource(java.lang.String)
-meth public static java.util.Enumeration<java.net.URL> getSystemResources(java.lang.String) throws java.io.IOException
-meth public void clearAssertionStatus()
-meth public void setClassAssertionStatus(java.lang.String,boolean)
-meth public void setDefaultAssertionStatus(boolean)
-meth public void setPackageAssertionStatus(java.lang.String,boolean)
-supr java.lang.Object
-hfds bootstrapClassPath,classAssertionStatus,classes,defaultAssertionStatus,defaultDomain,domains,initialized,loadedLibraryNames,nativeLibraries,nativeLibraryContext,nocerts,package2certs,packageAssertionStatus,packages,parent,scl,sclSet,sys_paths,systemNativeLibraries,usr_paths
-hcls NativeLibrary
-
-CLSS public abstract interface !annotation java.lang.Deprecated
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
-intf java.lang.annotation.Annotation
-
-CLSS public java.lang.Object
-cons public Object()
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
-meth protected void finalize() throws java.lang.Throwable
-meth public boolean equals(java.lang.Object)
-meth public final java.lang.Class<?> getClass()
-meth public final void notify()
-meth public final void notifyAll()
-meth public final void wait() throws java.lang.InterruptedException
-meth public final void wait(long) throws java.lang.InterruptedException
-meth public final void wait(long,int) throws java.lang.InterruptedException
-meth public int hashCode()
-meth public java.lang.String toString()
-
-CLSS public abstract interface java.lang.Runnable
-meth public abstract void run()
-
-CLSS public abstract interface java.lang.annotation.Annotation
-meth public abstract boolean equals(java.lang.Object)
-meth public abstract int hashCode()
-meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
-meth public abstract java.lang.String toString()
-
-CLSS public abstract interface !annotation java.lang.annotation.Documented
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-
-CLSS public abstract interface !annotation java.lang.annotation.Retention
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract java.lang.annotation.RetentionPolicy value()
-
-CLSS public abstract interface !annotation java.lang.annotation.Target
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract java.lang.annotation.ElementType[] value()
-
-CLSS public java.net.URLClassLoader
-cons public URLClassLoader(java.net.URL[])
-cons public URLClassLoader(java.net.URL[],java.lang.ClassLoader)
-cons public URLClassLoader(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)
-meth protected java.lang.Class<?> findClass(java.lang.String) throws java.lang.ClassNotFoundException
-meth protected java.lang.Package definePackage(java.lang.String,java.util.jar.Manifest,java.net.URL)
-meth protected java.security.PermissionCollection getPermissions(java.security.CodeSource)
-meth protected void addURL(java.net.URL)
-meth public java.net.URL findResource(java.lang.String)
-meth public java.net.URL[] getURLs()
-meth public java.util.Enumeration<java.net.URL> findResources(java.lang.String) throws java.io.IOException
-meth public static java.net.URLClassLoader newInstance(java.net.URL[])
-meth public static java.net.URLClassLoader newInstance(java.net.URL[],java.lang.ClassLoader)
-supr java.security.SecureClassLoader
-hfds acc,ucp
-
-CLSS public java.security.SecureClassLoader
-cons protected SecureClassLoader()
-cons protected SecureClassLoader(java.lang.ClassLoader)
-meth protected final java.lang.Class<?> defineClass(java.lang.String,byte[],int,int,java.security.CodeSource)
-meth protected final java.lang.Class<?> defineClass(java.lang.String,java.nio.ByteBuffer,java.security.CodeSource)
-meth protected java.security.PermissionCollection getPermissions(java.security.CodeSource)
-supr java.lang.ClassLoader
-hfds debug,initialized,pdcache
-
-CLSS public abstract org.openide.ServiceType
- anno 0 java.lang.Deprecated()
-cons public ServiceType()
-fld public final static java.lang.String PROP_NAME = "name"
-innr public abstract static Registry
-innr public final static Handle
+#API master signature file
+#Version 1.5.0_11
+CLSS public static final org.openide.ServiceType$Handle
+cons public Handle(org.openide.ServiceType)
 intf java.io.Serializable
-intf org.openide.util.HelpCtx$Provider
-meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
- anno 0 java.lang.Deprecated()
-meth protected java.lang.String displayName()
-meth public abstract org.openide.util.HelpCtx getHelpCtx()
-meth public final org.openide.ServiceType createClone()
- anno 0 java.lang.Deprecated()
-meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public java.lang.String getName()
-meth public void setName(java.lang.String)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.ServiceType$Handle.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.ServiceType org.openide.ServiceType$Handle.getServiceType()
 supr java.lang.Object
-hfds err,name,serialVersionUID,supp
-
+CLSS public static abstract org.openide.ServiceType$Registry
+cons public Registry()
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.util.Enumeration org.openide.ServiceType$Registry.services()
+meth public abstract java.util.List org.openide.ServiceType$Registry.getServiceTypes()
+meth public abstract void org.openide.ServiceType$Registry.setServiceTypes(java.util.List)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Enumeration org.openide.ServiceType$Registry.services(java.lang.Class)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.ServiceType org.openide.ServiceType$Registry.find(java.lang.Class)
+meth public org.openide.ServiceType org.openide.ServiceType$Registry.find(java.lang.String)
+supr java.lang.Object
+CLSS public static org.openide.execution.ScriptType$Context
+cons public Context()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static abstract org.openide.filesystems.FileSystem$Environment
+cons public Environment()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.filesystems.FileSystem$Environment.addClassPath(java.lang.String)
+supr java.lang.Object
+CLSS public static abstract interface org.openide.util.Enumerations$Processor
+meth public abstract java.lang.Object org.openide.util.Enumerations$Processor.process(java.lang.Object,java.util.Collection)
+supr null
+CLSS public static abstract interface org.openide.util.HelpCtx$Provider
+meth public abstract org.openide.util.HelpCtx org.openide.util.HelpCtx$Provider.getHelpCtx()
+supr null
 CLSS public abstract org.openide.execution.ExecutionEngine
 cons public ExecutionEngine()
-meth protected abstract java.security.PermissionCollection createPermissions(java.security.CodeSource,org.openide.windows.InputOutput)
-meth protected abstract org.openide.execution.NbClassPath createLibraryPath()
-meth public abstract org.openide.execution.ExecutorTask execute(java.lang.String,java.lang.Runnable,org.openide.windows.InputOutput)
-meth public static org.openide.execution.ExecutionEngine getDefault()
+meth protected abstract java.security.PermissionCollection org.openide.execution.ExecutionEngine.createPermissions(java.security.CodeSource,org.openide.windows.InputOutput)
+meth protected abstract org.openide.execution.NbClassPath org.openide.execution.ExecutionEngine.createLibraryPath()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract org.openide.execution.ExecutorTask org.openide.execution.ExecutionEngine.execute(java.lang.String,java.lang.Runnable,org.openide.windows.InputOutput)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.execution.ExecutionEngine org.openide.execution.ExecutionEngine.getDefault()
 supr java.lang.Object
-hcls Trivial
-
 CLSS public abstract org.openide.execution.ExecutorTask
 cons protected ExecutorTask(java.lang.Runnable)
-meth public abstract int result()
-meth public abstract org.openide.windows.InputOutput getInputOutput()
-meth public abstract void stop()
+fld  public static final org.openide.util.Task org.openide.util.Task.EMPTY
+intf java.lang.Runnable
+meth protected final void org.openide.util.Task.notifyFinished()
+meth protected final void org.openide.util.Task.notifyRunning()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract int org.openide.execution.ExecutorTask.result()
+meth public abstract org.openide.windows.InputOutput org.openide.execution.ExecutorTask.getInputOutput()
+meth public abstract void org.openide.execution.ExecutorTask.stop()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.Task.waitFinished(long) throws java.lang.InterruptedException
+meth public final boolean org.openide.util.Task.isFinished()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.util.Task.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized void org.openide.util.Task.addTaskListener(org.openide.util.TaskListener)
+meth public synchronized void org.openide.util.Task.removeTaskListener(org.openide.util.TaskListener)
+meth public void org.openide.util.Task.run()
+meth public void org.openide.util.Task.waitFinished()
 supr org.openide.util.Task
-
 CLSS public org.openide.execution.NbClassLoader
 cons public NbClassLoader()
-cons public NbClassLoader(org.openide.filesystems.FileObject[],java.lang.ClassLoader,org.openide.windows.InputOutput) throws org.openide.filesystems.FileStateInvalidException
-cons public NbClassLoader(org.openide.filesystems.FileSystem[])
-cons public NbClassLoader(org.openide.filesystems.FileSystem[],java.lang.ClassLoader)
+cons public NbClassLoader([Lorg.openide.filesystems.FileObject;,java.lang.ClassLoader,org.openide.windows.InputOutput) throws org.openide.filesystems.FileStateInvalidException
+cons public NbClassLoader([Lorg.openide.filesystems.FileSystem;)
+cons public NbClassLoader([Lorg.openide.filesystems.FileSystem;,java.lang.ClassLoader)
 cons public NbClassLoader(org.openide.windows.InputOutput)
-fld protected org.openide.windows.InputOutput inout
-meth protected final java.security.PermissionCollection getPermissions(java.security.CodeSource)
-meth protected java.lang.Class findClass(java.lang.String) throws java.lang.ClassNotFoundException
-meth public java.net.URL getResource(java.lang.String)
-meth public void setDefaultPermissions(java.security.PermissionCollection)
+fld  protected org.openide.windows.InputOutput org.openide.execution.NbClassLoader.inout
+meth protected [Ljava.lang.Package; java.lang.ClassLoader.getPackages()
+meth protected final java.lang.Class java.lang.ClassLoader.defineClass([B,int,int) throws java.lang.ClassFormatError
+meth protected final java.lang.Class java.lang.ClassLoader.defineClass(java.lang.String,[B,int,int) throws java.lang.ClassFormatError
+meth protected final java.lang.Class java.lang.ClassLoader.defineClass(java.lang.String,[B,int,int,java.security.ProtectionDomain) throws java.lang.ClassFormatError
+meth protected final java.lang.Class java.lang.ClassLoader.defineClass(java.lang.String,java.nio.ByteBuffer,java.security.ProtectionDomain) throws java.lang.ClassFormatError
+meth protected final java.lang.Class java.lang.ClassLoader.findLoadedClass(java.lang.String)
+meth protected final java.lang.Class java.lang.ClassLoader.findSystemClass(java.lang.String) throws java.lang.ClassNotFoundException
+meth protected final java.lang.Class java.security.SecureClassLoader.defineClass(java.lang.String,[B,int,int,java.security.CodeSource)
+meth protected final java.lang.Class java.security.SecureClassLoader.defineClass(java.lang.String,java.nio.ByteBuffer,java.security.CodeSource)
+meth protected final void java.lang.ClassLoader.resolveClass(java.lang.Class)
+meth protected final void java.lang.ClassLoader.setSigners(java.lang.Class,[Ljava.lang.Object;)
+meth protected java.lang.Class org.openide.execution.NbClassLoader.findClass(java.lang.String) throws java.lang.ClassNotFoundException
+meth protected java.lang.Package java.lang.ClassLoader.definePackage(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.net.URL) throws java.lang.IllegalArgumentException
+meth protected java.lang.Package java.lang.ClassLoader.getPackage(java.lang.String)
+meth protected java.lang.Package java.net.URLClassLoader.definePackage(java.lang.String,java.util.jar.Manifest,java.net.URL) throws java.lang.IllegalArgumentException
+meth protected java.lang.String java.lang.ClassLoader.findLibrary(java.lang.String)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected synchronized final java.security.PermissionCollection org.openide.execution.NbClassLoader.getPermissions(java.security.CodeSource)
+meth protected synchronized java.lang.Class java.lang.ClassLoader.loadClass(java.lang.String,boolean) throws java.lang.ClassNotFoundException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void java.net.URLClassLoader.addURL(java.net.URL)
+meth public [Ljava.net.URL; java.net.URLClassLoader.getURLs()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final java.lang.ClassLoader java.lang.ClassLoader.getParent()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.io.InputStream java.lang.ClassLoader.getResourceAsStream(java.lang.String)
+meth public java.lang.Class java.lang.ClassLoader.loadClass(java.lang.String) throws java.lang.ClassNotFoundException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.net.URL java.net.URLClassLoader.findResource(java.lang.String)
+meth public java.net.URL org.openide.execution.NbClassLoader.getResource(java.lang.String)
+meth public java.util.Enumeration java.lang.ClassLoader.getResources(java.lang.String) throws java.io.IOException
+meth public java.util.Enumeration java.net.URLClassLoader.findResources(java.lang.String) throws java.io.IOException
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.io.InputStream java.lang.ClassLoader.getSystemResourceAsStream(java.lang.String)
+meth public static java.lang.ClassLoader java.lang.ClassLoader.getSystemClassLoader()
+meth public static java.net.URL java.lang.ClassLoader.getSystemResource(java.lang.String)
+meth public static java.net.URLClassLoader java.net.URLClassLoader.newInstance([Ljava.net.URL;)
+meth public static java.net.URLClassLoader java.net.URLClassLoader.newInstance([Ljava.net.URL;,java.lang.ClassLoader)
+meth public static java.util.Enumeration java.lang.ClassLoader.getSystemResources(java.lang.String) throws java.io.IOException
+meth public synchronized void java.lang.ClassLoader.clearAssertionStatus()
+meth public synchronized void java.lang.ClassLoader.setClassAssertionStatus(java.lang.String,boolean)
+meth public synchronized void java.lang.ClassLoader.setDefaultAssertionStatus(boolean)
+meth public synchronized void java.lang.ClassLoader.setPackageAssertionStatus(java.lang.String,boolean)
+meth public void org.openide.execution.NbClassLoader.setDefaultPermissions(java.security.PermissionCollection)
 supr java.net.URLClassLoader
-hfds defaultPermissions,permissionCollections
-
 CLSS public final org.openide.execution.NbClassPath
-cons public NbClassPath(java.io.File[])
+cons public NbClassPath([Ljava.io.File;)
+cons public NbClassPath([Ljava.lang.String;)
 cons public NbClassPath(java.lang.String)
-cons public NbClassPath(java.lang.String[])
 intf java.io.Serializable
-meth public boolean equals(java.lang.Object)
-meth public java.lang.Exception[] getExceptions()
-meth public java.lang.String getClassPath()
-meth public static java.io.File toFile(org.openide.filesystems.FileObject)
-meth public static org.openide.execution.NbClassPath createBootClassPath()
-meth public static org.openide.execution.NbClassPath createClassPath()
-meth public static org.openide.execution.NbClassPath createLibraryPath()
-meth public static org.openide.execution.NbClassPath createRepositoryPath()
-meth public static org.openide.execution.NbClassPath createRepositoryPath(org.openide.filesystems.FileSystemCapability)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.Exception; org.openide.execution.NbClassPath.getExceptions()
+meth public boolean org.openide.execution.NbClassPath.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.execution.NbClassPath.getClassPath()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.io.File org.openide.execution.NbClassPath.toFile(org.openide.filesystems.FileObject)
+meth public static org.openide.execution.NbClassPath org.openide.execution.NbClassPath.createBootClassPath()
+meth public static org.openide.execution.NbClassPath org.openide.execution.NbClassPath.createClassPath()
+meth public static org.openide.execution.NbClassPath org.openide.execution.NbClassPath.createLibraryPath()
+meth public static org.openide.execution.NbClassPath org.openide.execution.NbClassPath.createRepositoryPath()
+meth public static org.openide.execution.NbClassPath org.openide.execution.NbClassPath.createRepositoryPath(org.openide.filesystems.FileSystemCapability)
 supr java.lang.Object
-hfds classpath,items,serialVersionUID
-
 CLSS public final org.openide.execution.NbProcessDescriptor
 cons public NbProcessDescriptor(java.lang.String,java.lang.String)
 cons public NbProcessDescriptor(java.lang.String,java.lang.String,java.lang.String)
 intf java.io.Serializable
-meth public boolean equals(java.lang.Object)
-meth public int hashCode()
-meth public java.lang.Process exec() throws java.io.IOException
-meth public java.lang.Process exec(java.text.Format) throws java.io.IOException
-meth public java.lang.Process exec(java.text.Format,java.lang.String[]) throws java.io.IOException
-meth public java.lang.Process exec(java.text.Format,java.lang.String[],boolean,java.io.File) throws java.io.IOException
-meth public java.lang.Process exec(java.text.Format,java.lang.String[],java.io.File) throws java.io.IOException
-meth public java.lang.String getArguments()
-meth public java.lang.String getInfo()
-meth public java.lang.String getProcessName()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.openide.execution.NbProcessDescriptor.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.openide.execution.NbProcessDescriptor.hashCode()
+meth public java.lang.Process org.openide.execution.NbProcessDescriptor.exec() throws java.io.IOException
+meth public java.lang.Process org.openide.execution.NbProcessDescriptor.exec(java.text.Format) throws java.io.IOException
+meth public java.lang.Process org.openide.execution.NbProcessDescriptor.exec(java.text.Format,[Ljava.lang.String;) throws java.io.IOException
+meth public java.lang.Process org.openide.execution.NbProcessDescriptor.exec(java.text.Format,[Ljava.lang.String;,boolean,java.io.File) throws java.io.IOException
+meth public java.lang.Process org.openide.execution.NbProcessDescriptor.exec(java.text.Format,[Ljava.lang.String;,java.io.File) throws java.io.IOException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.execution.NbProcessDescriptor.getArguments()
+meth public java.lang.String org.openide.execution.NbProcessDescriptor.getInfo()
+meth public java.lang.String org.openide.execution.NbProcessDescriptor.getProcessName()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 supr java.lang.Object
-hfds arguments,execLog,info,processName,serialVersionUID
-
 CLSS public abstract org.openide.execution.ScriptType
 cons public ScriptType()
-innr public static Context
-meth public abstract boolean acceptFileObject(org.openide.filesystems.FileObject)
-meth public abstract java.lang.Object eval(java.io.Reader,org.openide.execution.ScriptType$Context) throws java.lang.reflect.InvocationTargetException
-meth public abstract java.lang.Object eval(java.lang.String,org.openide.execution.ScriptType$Context) throws java.lang.reflect.InvocationTargetException
-meth public abstract void addVariable(java.lang.String,java.lang.Object)
-meth public abstract void exec(java.io.Reader,org.openide.execution.ScriptType$Context) throws java.lang.reflect.InvocationTargetException
-meth public abstract void exec(java.lang.String,org.openide.execution.ScriptType$Context) throws java.lang.reflect.InvocationTargetException
-meth public final java.lang.Object eval(java.io.Reader) throws java.lang.reflect.InvocationTargetException
-meth public final java.lang.Object eval(java.lang.String) throws java.lang.reflect.InvocationTargetException
-meth public final void exec(java.io.Reader) throws java.lang.reflect.InvocationTargetException
-meth public final void exec(java.lang.String) throws java.lang.reflect.InvocationTargetException
-meth public static java.util.Enumeration scriptTypes()
-meth public static org.openide.execution.ScriptType find(java.lang.Class)
-meth public static org.openide.execution.ScriptType find(java.lang.String)
-meth public static org.openide.execution.ScriptType getDefault()
+fld  constant public static final java.lang.String org.openide.ServiceType.PROP_NAME
+innr public static abstract org.openide.ServiceType$Registry
+innr public static final org.openide.ServiceType$Handle
+innr public static org.openide.execution.ScriptType$Context
+intf java.io.Serializable
+intf org.openide.util.HelpCtx$Provider
+meth protected final void org.openide.ServiceType.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected java.lang.Object org.openide.ServiceType.clone() throws java.lang.CloneNotSupportedException
+meth protected java.lang.String org.openide.ServiceType.displayName()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract boolean org.openide.execution.ScriptType.acceptFileObject(org.openide.filesystems.FileObject)
+meth public abstract java.lang.Object org.openide.execution.ScriptType.eval(java.io.Reader,org.openide.execution.ScriptType$Context) throws java.lang.reflect.InvocationTargetException
+meth public abstract java.lang.Object org.openide.execution.ScriptType.eval(java.lang.String,org.openide.execution.ScriptType$Context) throws java.lang.reflect.InvocationTargetException
+meth public abstract org.openide.util.HelpCtx org.openide.ServiceType.getHelpCtx()
+meth public abstract void org.openide.execution.ScriptType.addVariable(java.lang.String,java.lang.Object)
+meth public abstract void org.openide.execution.ScriptType.exec(java.io.Reader,org.openide.execution.ScriptType$Context) throws java.lang.reflect.InvocationTargetException
+meth public abstract void org.openide.execution.ScriptType.exec(java.lang.String,org.openide.execution.ScriptType$Context) throws java.lang.reflect.InvocationTargetException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final java.lang.Object org.openide.execution.ScriptType.eval(java.io.Reader) throws java.lang.reflect.InvocationTargetException
+meth public final java.lang.Object org.openide.execution.ScriptType.eval(java.lang.String) throws java.lang.reflect.InvocationTargetException
+meth public final org.openide.ServiceType org.openide.ServiceType.createClone()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.ServiceType.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.execution.ScriptType.exec(java.io.Reader) throws java.lang.reflect.InvocationTargetException
+meth public final void org.openide.execution.ScriptType.exec(java.lang.String) throws java.lang.reflect.InvocationTargetException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.ServiceType.getName()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.util.Enumeration org.openide.execution.ScriptType.scriptTypes()
+meth public static org.openide.execution.ScriptType org.openide.execution.ScriptType.find(java.lang.Class)
+meth public static org.openide.execution.ScriptType org.openide.execution.ScriptType.find(java.lang.String)
+meth public static org.openide.execution.ScriptType org.openide.execution.ScriptType.getDefault()
+meth public synchronized final void org.openide.ServiceType.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.ServiceType.setName(java.lang.String)
 supr org.openide.ServiceType
-hfds serialVersionUID
-
-CLSS public static org.openide.execution.ScriptType$Context
-cons public Context()
-supr java.lang.Object
-
-CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
- anno 0 java.lang.Deprecated()
-fld public final static org.openide.util.HelpCtx DEFAULT_HELP
-innr public abstract interface static Provider
-meth public boolean equals(java.lang.Object)
-meth public int hashCode()
-meth public java.lang.String getHelpID()
-meth public java.lang.String toString()
-meth public java.net.URL getHelp()
-meth public static org.openide.util.HelpCtx findHelp(java.awt.Component)
-meth public static org.openide.util.HelpCtx findHelp(java.lang.Object)
-meth public static void setHelpIDString(javax.swing.JComponent,java.lang.String)
-supr java.lang.Object
-hfds err,helpCtx,helpID
-
-CLSS public abstract interface static org.openide.util.HelpCtx$Provider
-meth public abstract org.openide.util.HelpCtx getHelpCtx()
-
-CLSS public org.openide.util.Task
-cons protected Task()
-cons public Task(java.lang.Runnable)
-fld public final static org.openide.util.Task EMPTY
-intf java.lang.Runnable
-meth protected final void notifyFinished()
-meth protected final void notifyRunning()
-meth public boolean waitFinished(long) throws java.lang.InterruptedException
-meth public final boolean isFinished()
-meth public java.lang.String toString()
-meth public void addTaskListener(org.openide.util.TaskListener)
-meth public void removeTaskListener(org.openide.util.TaskListener)
-meth public void run()
-meth public void waitFinished()
-supr java.lang.Object
-hfds RP,finished,list,overrides,run
-

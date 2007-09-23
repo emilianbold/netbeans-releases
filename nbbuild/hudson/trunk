@@ -90,7 +90,7 @@ sigtest_gen=`pwd`/nbbuild/build/sigtests
 sigtest_out=`pwd`/nbbuild/build/sigtestscheck
 
 if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
-    ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.output.dir=$sigtest_out check-sigtests > $sigtest_gen.log
+    ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.check.type=strictcheck -Dsigtest.output.dir=$sigtest_out check-sigtests > $sigtest_gen.log
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         for report in $sigtest_out/*; do

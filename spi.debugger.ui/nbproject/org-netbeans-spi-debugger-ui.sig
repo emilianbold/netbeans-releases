@@ -1,54 +1,59 @@
-#Signature file v4.0
-#Version 
-
-CLSS public java.lang.Object
-cons public Object()
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
-meth protected void finalize() throws java.lang.Throwable
-meth public boolean equals(java.lang.Object)
-meth public final java.lang.Class<?> getClass()
-meth public final void notify()
-meth public final void notifyAll()
-meth public final void wait() throws java.lang.InterruptedException
-meth public final void wait(long) throws java.lang.InterruptedException
-meth public final void wait(long,int) throws java.lang.InterruptedException
-meth public int hashCode()
-meth public java.lang.String toString()
-
+#API master signature file
+#Version 1.5.0_11
 CLSS public abstract org.netbeans.spi.debugger.ui.AttachType
 cons public AttachType()
-meth public abstract java.lang.String getTypeDisplayName()
-meth public abstract javax.swing.JComponent getCustomizer()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.lang.String org.netbeans.spi.debugger.ui.AttachType.getTypeDisplayName()
+meth public abstract javax.swing.JComponent org.netbeans.spi.debugger.ui.AttachType.getCustomizer()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-
 CLSS public abstract org.netbeans.spi.debugger.ui.BreakpointType
 cons public BreakpointType()
-meth public abstract boolean isDefault()
-meth public abstract java.lang.String getCategoryDisplayName()
-meth public abstract java.lang.String getTypeDisplayName()
-meth public abstract javax.swing.JComponent getCustomizer()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract boolean org.netbeans.spi.debugger.ui.BreakpointType.isDefault()
+meth public abstract java.lang.String org.netbeans.spi.debugger.ui.BreakpointType.getCategoryDisplayName()
+meth public abstract java.lang.String org.netbeans.spi.debugger.ui.BreakpointType.getTypeDisplayName()
+meth public abstract javax.swing.JComponent org.netbeans.spi.debugger.ui.BreakpointType.getCustomizer()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-
 CLSS public abstract interface org.netbeans.spi.debugger.ui.Constants
-fld public final static java.lang.String BREAKPOINT_ENABLED_COLUMN_ID = "BreakpointEnabled"
-fld public final static java.lang.String CALL_STACK_FRAME_LOCATION_COLUMN_ID = "CallStackFrameLocation"
-fld public final static java.lang.String LOCALS_TO_STRING_COLUMN_ID = "LocalsToString"
-fld public final static java.lang.String LOCALS_TYPE_COLUMN_ID = "LocalsType"
-fld public final static java.lang.String LOCALS_VALUE_COLUMN_ID = "LocalsValue"
-fld public final static java.lang.String SESSION_HOST_NAME_COLUMN_ID = "SessionHostName"
-fld public final static java.lang.String SESSION_LANGUAGE_COLUMN_ID = "SessionLanguage"
-fld public final static java.lang.String SESSION_STATE_COLUMN_ID = "SessionState"
-fld public final static java.lang.String THREAD_STATE_COLUMN_ID = "ThreadState"
-fld public final static java.lang.String THREAD_SUSPENDED_COLUMN_ID = "ThreadSuspended"
-fld public final static java.lang.String WATCH_TO_STRING_COLUMN_ID = "WatchToString"
-fld public final static java.lang.String WATCH_TYPE_COLUMN_ID = "WatchType"
-fld public final static java.lang.String WATCH_VALUE_COLUMN_ID = "WatchValue"
-
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.BREAKPOINT_ENABLED_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.LOCALS_TO_STRING_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.LOCALS_TYPE_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.LOCALS_VALUE_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.SESSION_HOST_NAME_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.SESSION_LANGUAGE_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.SESSION_STATE_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.THREAD_STATE_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.THREAD_SUSPENDED_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.WATCH_TO_STRING_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.WATCH_TYPE_COLUMN_ID
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Constants.WATCH_VALUE_COLUMN_ID
+supr null
 CLSS public abstract interface org.netbeans.spi.debugger.ui.Controller
-fld public final static java.lang.String PROP_VALID = "valid"
-meth public abstract boolean cancel()
-meth public abstract boolean isValid()
-meth public abstract boolean ok()
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
-
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.ui.Controller.PROP_VALID
+meth public abstract boolean org.netbeans.spi.debugger.ui.Controller.cancel()
+meth public abstract boolean org.netbeans.spi.debugger.ui.Controller.isValid()
+meth public abstract boolean org.netbeans.spi.debugger.ui.Controller.ok()
+meth public abstract void org.netbeans.spi.debugger.ui.Controller.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.netbeans.spi.debugger.ui.Controller.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr null

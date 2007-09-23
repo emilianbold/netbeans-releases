@@ -1,218 +1,977 @@
-#Signature file v4.0
-#Version 
-
-CLSS public abstract interface java.io.Serializable
-
-CLSS public abstract interface !annotation java.lang.Deprecated
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
-intf java.lang.annotation.Annotation
-
-CLSS public java.lang.Exception
-cons public Exception()
-cons public Exception(java.lang.String)
-cons public Exception(java.lang.String,java.lang.Throwable)
-cons public Exception(java.lang.Throwable)
-supr java.lang.Throwable
-hfds serialVersionUID
-
-CLSS public java.lang.Object
-cons public Object()
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
-meth protected void finalize() throws java.lang.Throwable
-meth public boolean equals(java.lang.Object)
-meth public final java.lang.Class<?> getClass()
-meth public final void notify()
-meth public final void notifyAll()
-meth public final void wait() throws java.lang.InterruptedException
-meth public final void wait(long) throws java.lang.InterruptedException
-meth public final void wait(long,int) throws java.lang.InterruptedException
-meth public int hashCode()
-meth public java.lang.String toString()
-
-CLSS public java.lang.Throwable
-cons public Throwable()
-cons public Throwable(java.lang.String)
-cons public Throwable(java.lang.String,java.lang.Throwable)
-cons public Throwable(java.lang.Throwable)
+#API master signature file
+#Version 1.5.0_11
+CLSS protected abstract java.awt.Component$AccessibleAWTComponent
+cons protected AccessibleAWTComponent(java.awt.Component)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
 intf java.io.Serializable
-meth public java.lang.StackTraceElement[] getStackTrace()
-meth public java.lang.String getLocalizedMessage()
-meth public java.lang.String getMessage()
-meth public java.lang.String toString()
-meth public java.lang.Throwable fillInStackTrace()
-meth public java.lang.Throwable getCause()
-meth public java.lang.Throwable initCause(java.lang.Throwable)
-meth public void printStackTrace()
-meth public void printStackTrace(java.io.PrintStream)
-meth public void printStackTrace(java.io.PrintWriter)
-meth public void setStackTrace(java.lang.StackTraceElement[])
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleChildrenCount()
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleName()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleChild(int)
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole java.awt.Component$AccessibleAWTComponent.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet java.awt.Component$AccessibleAWTComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+supr javax.accessibility.AccessibleContext
+CLSS protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+cons protected AccessibleAWTComponentHandler(java.awt.Component$AccessibleAWTComponent)
+intf java.awt.event.ComponentListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentHidden(java.awt.event.ComponentEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentMoved(java.awt.event.ComponentEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentResized(java.awt.event.ComponentEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentShown(java.awt.event.ComponentEvent)
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
-
-CLSS public abstract interface java.lang.annotation.Annotation
-meth public abstract boolean equals(java.lang.Object)
-meth public abstract int hashCode()
-meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
-meth public abstract java.lang.String toString()
-
-CLSS public abstract interface !annotation java.lang.annotation.Documented
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-
-CLSS public abstract interface !annotation java.lang.annotation.Retention
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract java.lang.annotation.RetentionPolicy value()
-
-CLSS public abstract interface !annotation java.lang.annotation.Target
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract java.lang.annotation.ElementType[] value()
-
-CLSS public org.openide.DialogDescriptor
-cons public DialogDescriptor(java.lang.Object,java.lang.String)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener,boolean)
-fld public final static int BOTTOM_ALIGN = 0
-fld public final static int DEFAULT_ALIGN = 0
-fld public final static int RIGHT_ALIGN = 1
-fld public final static java.lang.String PROP_BUTTON_LISTENER = "buttonListener"
-fld public final static java.lang.String PROP_CLOSING_OPTIONS = "closingOptions"
-fld public final static java.lang.String PROP_HELP_CTX = "helpCtx"
-fld public final static java.lang.String PROP_LEAF = "leaf"
-fld public final static java.lang.String PROP_MODAL = "modal"
-fld public final static java.lang.String PROP_OPTIONS_ALIGN = "optionsAlign"
-intf org.openide.util.HelpCtx$Provider
-meth public boolean isLeaf()
-meth public boolean isModal()
-meth public int getOptionsAlign()
-meth public java.awt.event.ActionListener getButtonListener()
-meth public java.lang.Object[] getClosingOptions()
-meth public org.openide.util.HelpCtx getHelpCtx()
-meth public void setButtonListener(java.awt.event.ActionListener)
-meth public void setClosingOptions(java.lang.Object[])
-meth public void setHelpCtx(org.openide.util.HelpCtx)
-meth public void setLeaf(boolean)
-meth public void setModal(boolean)
-meth public void setOptionsAlign(int)
-supr org.openide.NotifyDescriptor
-hfds DEFAULT_CLOSING_OPTIONS,buttonListener,closingOptions,helpCtx,leaf,modal,optionsAlign
-
-CLSS public abstract org.openide.DialogDisplayer
-cons protected DialogDisplayer()
-meth public abstract java.awt.Dialog createDialog(org.openide.DialogDescriptor)
-meth public abstract java.lang.Object notify(org.openide.NotifyDescriptor)
-meth public static org.openide.DialogDisplayer getDefault()
-meth public void notifyLater(org.openide.NotifyDescriptor)
+CLSS protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+cons protected AccessibleAWTFocusHandler(java.awt.Component$AccessibleAWTComponent)
+intf java.awt.event.FocusListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler.focusGained(java.awt.event.FocusEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler.focusLost(java.awt.event.FocusEvent)
 supr java.lang.Object
-hcls Trivial
-
-CLSS public abstract org.openide.ErrorManager
-cons public ErrorManager()
-fld public final static int ERROR = 65536
-fld public final static int EXCEPTION = 4096
-fld public final static int INFORMATIONAL = 1
-fld public final static int UNKNOWN = 0
-fld public final static int USER = 256
-fld public final static int WARNING = 16
-innr public abstract interface static Annotation
-meth public abstract java.lang.Throwable annotate(java.lang.Throwable,int,java.lang.String,java.lang.String,java.lang.Throwable,java.util.Date)
-meth public abstract java.lang.Throwable attachAnnotations(java.lang.Throwable,org.openide.ErrorManager$Annotation[])
-meth public abstract org.openide.ErrorManager getInstance(java.lang.String)
-meth public abstract org.openide.ErrorManager$Annotation[] findAnnotations(java.lang.Throwable)
-meth public abstract void log(int,java.lang.String)
-meth public abstract void notify(int,java.lang.Throwable)
-meth public boolean isLoggable(int)
-meth public boolean isNotifiable(int)
-meth public final java.lang.Throwable annotate(java.lang.Throwable,java.lang.String)
-meth public final java.lang.Throwable annotate(java.lang.Throwable,java.lang.Throwable)
-meth public final java.lang.Throwable copyAnnotation(java.lang.Throwable,java.lang.Throwable)
- anno 0 java.lang.Deprecated()
-meth public final void log(java.lang.String)
-meth public final void notify(java.lang.Throwable)
-meth public static org.openide.ErrorManager getDefault()
+CLSS protected java.awt.Component$BltBufferStrategy
+cons protected BltBufferStrategy(java.awt.Component,int,java.awt.BufferCapabilities)
+fld  protected [Ljava.awt.image.VolatileImage; java.awt.Component$BltBufferStrategy.backBuffers
+fld  protected boolean java.awt.Component$BltBufferStrategy.validatedContents
+fld  protected int java.awt.Component$BltBufferStrategy.height
+fld  protected int java.awt.Component$BltBufferStrategy.width
+fld  protected java.awt.BufferCapabilities java.awt.Component$BltBufferStrategy.caps
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component$BltBufferStrategy.createBackBuffers(int)
+meth protected void java.awt.Component$BltBufferStrategy.revalidate()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.awt.Component$BltBufferStrategy.contentsLost()
+meth public boolean java.awt.Component$BltBufferStrategy.contentsRestored()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.awt.BufferCapabilities java.awt.Component$BltBufferStrategy.getCapabilities()
+meth public java.awt.Graphics java.awt.Component$BltBufferStrategy.getDrawGraphics()
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$BltBufferStrategy.show()
+supr java.awt.image.BufferStrategy
+CLSS protected java.awt.Component$FlipBufferStrategy
+cons protected FlipBufferStrategy(java.awt.Component,int,java.awt.BufferCapabilities) throws java.awt.AWTException
+fld  protected boolean java.awt.Component$FlipBufferStrategy.validatedContents
+fld  protected int java.awt.Component$FlipBufferStrategy.numBuffers
+fld  protected java.awt.BufferCapabilities java.awt.Component$FlipBufferStrategy.caps
+fld  protected java.awt.Image java.awt.Component$FlipBufferStrategy.drawBuffer
+fld  protected java.awt.image.VolatileImage java.awt.Component$FlipBufferStrategy.drawVBuffer
+meth protected java.awt.Image java.awt.Component$FlipBufferStrategy.getBackBuffer()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component$FlipBufferStrategy.createBuffers(int,java.awt.BufferCapabilities) throws java.awt.AWTException
+meth protected void java.awt.Component$FlipBufferStrategy.destroyBuffers()
+meth protected void java.awt.Component$FlipBufferStrategy.flip(java.awt.BufferCapabilities$FlipContents)
+meth protected void java.awt.Component$FlipBufferStrategy.revalidate()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.awt.Component$FlipBufferStrategy.contentsLost()
+meth public boolean java.awt.Component$FlipBufferStrategy.contentsRestored()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.awt.BufferCapabilities java.awt.Component$FlipBufferStrategy.getCapabilities()
+meth public java.awt.Graphics java.awt.Component$FlipBufferStrategy.getDrawGraphics()
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$FlipBufferStrategy.show()
+supr java.awt.image.BufferStrategy
+CLSS protected java.awt.Container$AccessibleAWTContainer
+cons protected AccessibleAWTContainer(java.awt.Container)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener java.awt.Container$AccessibleAWTContainer.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int java.awt.Container$AccessibleAWTContainer.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleName()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole java.awt.Component$AccessibleAWTComponent.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet java.awt.Component$AccessibleAWTComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void java.awt.Container$AccessibleAWTContainer.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+supr java.awt.Component$AccessibleAWTComponent
+CLSS protected java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler
+cons protected AccessibleContainerHandler(java.awt.Container$AccessibleAWTContainer)
+intf java.awt.event.ContainerListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler.componentAdded(java.awt.event.ContainerEvent)
+meth public void java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler.componentRemoved(java.awt.event.ContainerEvent)
 supr java.lang.Object
-hfds current
-hcls AnnException,DelegatingErrorManager,OwnLevel
-
-CLSS public abstract interface static org.openide.ErrorManager$Annotation
-meth public abstract int getSeverity()
-meth public abstract java.lang.String getLocalizedMessage()
-meth public abstract java.lang.String getMessage()
-meth public abstract java.lang.Throwable getStackTrace()
-meth public abstract java.util.Date getDate()
-
-CLSS public abstract org.openide.LifecycleManager
-cons protected LifecycleManager()
-meth public abstract void exit()
-meth public abstract void saveAll()
-meth public static org.openide.LifecycleManager getDefault()
+CLSS protected java.awt.Dialog$AccessibleAWTDialog
+cons protected AccessibleAWTDialog(java.awt.Dialog)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener java.awt.Container$AccessibleAWTContainer.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int java.awt.Container$AccessibleAWTContainer.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleName()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole java.awt.Dialog$AccessibleAWTDialog.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet java.awt.Dialog$AccessibleAWTDialog.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void java.awt.Container$AccessibleAWTContainer.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+supr java.awt.Window$AccessibleAWTWindow
+CLSS protected java.awt.Window$AccessibleAWTWindow
+cons protected AccessibleAWTWindow(java.awt.Window)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener java.awt.Container$AccessibleAWTContainer.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int java.awt.Container$AccessibleAWTContainer.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleName()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole java.awt.Window$AccessibleAWTWindow.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet java.awt.Window$AccessibleAWTWindow.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void java.awt.Container$AccessibleAWTContainer.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+supr java.awt.Container$AccessibleAWTContainer
+CLSS public abstract javax.swing.JComponent$AccessibleJComponent
+cons protected AccessibleJComponent(javax.swing.JComponent)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JComponent$AccessibleJComponent.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr java.awt.Container$AccessibleAWTContainer
+CLSS protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+cons protected AccessibleContainerHandler(javax.swing.JComponent$AccessibleJComponent)
+intf java.awt.event.ContainerListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler.componentAdded(java.awt.event.ContainerEvent)
+meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler.componentRemoved(java.awt.event.ContainerEvent)
 supr java.lang.Object
-hcls Trivial
-
-CLSS public org.openide.NotifyDescriptor
-cons public NotifyDescriptor(java.lang.Object,java.lang.String,int,int,java.lang.Object[],java.lang.Object)
-fld public final static int DEFAULT_OPTION = -1
-fld public final static int ERROR_MESSAGE = 0
-fld public final static int INFORMATION_MESSAGE = 1
-fld public final static int OK_CANCEL_OPTION = 2
-fld public final static int PLAIN_MESSAGE = -1
-fld public final static int QUESTION_MESSAGE = 3
-fld public final static int WARNING_MESSAGE = 2
-fld public final static int YES_NO_CANCEL_OPTION = 1
-fld public final static int YES_NO_OPTION = 0
-fld public final static java.lang.Object CANCEL_OPTION
-fld public final static java.lang.Object CLOSED_OPTION
-fld public final static java.lang.Object NO_OPTION
-fld public final static java.lang.Object OK_OPTION
-fld public final static java.lang.Object YES_OPTION
-fld public final static java.lang.String PROP_DETAIL = "detail"
-fld public final static java.lang.String PROP_MESSAGE = "message"
-fld public final static java.lang.String PROP_MESSAGE_TYPE = "messageType"
-fld public final static java.lang.String PROP_OPTIONS = "options"
-fld public final static java.lang.String PROP_OPTION_TYPE = "optionType"
-fld public final static java.lang.String PROP_TITLE = "title"
-fld public final static java.lang.String PROP_VALID = "valid"
-fld public final static java.lang.String PROP_VALUE = "value"
-innr public final static Exception
-innr public static Confirmation
-innr public static InputLine
-innr public static Message
-meth protected static java.lang.String getTitleForType(int)
-meth protected void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth protected void initialize()
-meth public final boolean isValid()
-meth public final void setValid(boolean)
-meth public int getMessageType()
-meth public int getOptionType()
-meth public java.lang.Object getDefaultValue()
-meth public java.lang.Object getMessage()
-meth public java.lang.Object getValue()
-meth public java.lang.Object[] getAdditionalOptions()
-meth public java.lang.Object[] getOptions()
-meth public java.lang.String getTitle()
-meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void setAdditionalOptions(java.lang.Object[])
-meth public void setMessage(java.lang.Object)
-meth public void setMessageType(int)
-meth public void setOptionType(int)
-meth public void setOptions(java.lang.Object[])
-meth public void setTitle(java.lang.String)
-meth public void setValue(java.lang.Object)
+CLSS protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+cons protected AccessibleFocusHandler(javax.swing.JComponent$AccessibleJComponent)
+intf java.awt.event.FocusListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler.focusGained(java.awt.event.FocusEvent)
+meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler.focusLost(java.awt.event.FocusEvent)
 supr java.lang.Object
-hfds MAXIMUM_TEXT_WIDTH,SIZE_PREFERRED_HEIGHT,SIZE_PREFERRED_WIDTH,adOptions,changeSupport,defaultValue,message,messageType,optionType,options,title,valid,value
-
+CLSS protected javax.swing.JDialog$AccessibleJDialog
+cons protected AccessibleJDialog(javax.swing.JDialog)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener java.awt.Container$AccessibleAWTContainer.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int java.awt.Container$AccessibleAWTContainer.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JDialog$AccessibleJDialog.getAccessibleName()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole java.awt.Dialog$AccessibleAWTDialog.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JDialog$AccessibleJDialog.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void java.awt.Container$AccessibleAWTContainer.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+supr java.awt.Dialog$AccessibleAWTDialog
+CLSS protected javax.swing.JLabel$AccessibleJLabel
+cons protected AccessibleJLabel(javax.swing.JLabel)
+fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
+fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
+fld  constant public static final int javax.accessibility.AccessibleText.WORD
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+intf javax.accessibility.AccessibleText
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.JLabel$AccessibleJLabel.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public int javax.swing.JLabel$AccessibleJLabel.getCaretPosition()
+meth public int javax.swing.JLabel$AccessibleJLabel.getCharCount()
+meth public int javax.swing.JLabel$AccessibleJLabel.getIndexAtPoint(java.awt.Point)
+meth public int javax.swing.JLabel$AccessibleJLabel.getSelectionEnd()
+meth public int javax.swing.JLabel$AccessibleJLabel.getSelectionStart()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.awt.Rectangle javax.swing.JLabel$AccessibleJLabel.getCharacterBounds(int)
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getAccessibleName()
+meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getAfterIndex(int,int)
+meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getAtIndex(int,int)
+meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getBeforeIndex(int,int)
+meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getSelectedText()
+meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getTitledBorderText()
+meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getToolTipText()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.JLabel$AccessibleJLabel.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.swing.JLabel$AccessibleJLabel.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JLabel$AccessibleJLabel.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.swing.JLabel$AccessibleJLabel.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public javax.swing.text.AttributeSet javax.swing.JLabel$AccessibleJLabel.getCharacterAttribute(int)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr javax.swing.JComponent$AccessibleJComponent
+CLSS protected javax.swing.JPanel$AccessibleJPanel
+cons protected AccessibleJPanel(javax.swing.JPanel)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JPanel$AccessibleJPanel.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr javax.swing.JComponent$AccessibleJComponent
+CLSS public static abstract interface org.openide.ErrorManager$Annotation
+meth public abstract int org.openide.ErrorManager$Annotation.getSeverity()
+meth public abstract java.lang.String org.openide.ErrorManager$Annotation.getLocalizedMessage()
+meth public abstract java.lang.String org.openide.ErrorManager$Annotation.getMessage()
+meth public abstract java.lang.Throwable org.openide.ErrorManager$Annotation.getStackTrace()
+meth public abstract java.util.Date org.openide.ErrorManager$Annotation.getDate()
+supr null
 CLSS public static org.openide.NotifyDescriptor$Confirmation
 cons public Confirmation(java.lang.Object)
 cons public Confirmation(java.lang.Object,int)
@@ -220,207 +979,851 @@ cons public Confirmation(java.lang.Object,int,int)
 cons public Confirmation(java.lang.Object,java.lang.String)
 cons public Confirmation(java.lang.Object,java.lang.String,int)
 cons public Confirmation(java.lang.Object,java.lang.String,int,int)
+fld  constant public static final int org.openide.NotifyDescriptor.DEFAULT_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.ERROR_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.INFORMATION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.OK_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.PLAIN_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.QUESTION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.WARNING_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_OPTION
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_DETAIL
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTIONS
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTION_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_TITLE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALID
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALUE
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CANCEL_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CLOSED_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.NO_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.OK_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.YES_OPTION
+innr public static final org.openide.NotifyDescriptor$Exception
+innr public static org.openide.NotifyDescriptor$Confirmation
+innr public static org.openide.NotifyDescriptor$InputLine
+innr public static org.openide.NotifyDescriptor$Message
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected static java.lang.String org.openide.NotifyDescriptor.getTitleForType(int)
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.NotifyDescriptor.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.NotifyDescriptor.initialize()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getAdditionalOptions()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getOptions()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final boolean org.openide.NotifyDescriptor.isValid()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.NotifyDescriptor.setValid(boolean)
+meth public int org.openide.NotifyDescriptor.getMessageType()
+meth public int org.openide.NotifyDescriptor.getOptionType()
+meth public java.lang.Object org.openide.NotifyDescriptor.getDefaultValue()
+meth public java.lang.Object org.openide.NotifyDescriptor.getMessage()
+meth public java.lang.Object org.openide.NotifyDescriptor.getValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.NotifyDescriptor.getTitle()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.NotifyDescriptor.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.setAdditionalOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setMessage(java.lang.Object)
+meth public void org.openide.NotifyDescriptor.setMessageType(int)
+meth public void org.openide.NotifyDescriptor.setOptionType(int)
+meth public void org.openide.NotifyDescriptor.setOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setTitle(java.lang.String)
+meth public void org.openide.NotifyDescriptor.setValue(java.lang.Object)
 supr org.openide.NotifyDescriptor
-
-CLSS public final static org.openide.NotifyDescriptor$Exception
+CLSS public static final org.openide.NotifyDescriptor$Exception
 cons public Exception(java.lang.Throwable)
 cons public Exception(java.lang.Throwable,java.lang.Object)
+fld  constant public static final int org.openide.NotifyDescriptor.DEFAULT_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.ERROR_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.INFORMATION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.OK_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.PLAIN_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.QUESTION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.WARNING_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_OPTION
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_DETAIL
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTIONS
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTION_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_TITLE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALID
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALUE
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CANCEL_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CLOSED_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.NO_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.OK_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.YES_OPTION
+innr public static final org.openide.NotifyDescriptor$Exception
+innr public static org.openide.NotifyDescriptor$Confirmation
+innr public static org.openide.NotifyDescriptor$InputLine
+innr public static org.openide.NotifyDescriptor$Message
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected static java.lang.String org.openide.NotifyDescriptor.getTitleForType(int)
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.NotifyDescriptor.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.NotifyDescriptor.initialize()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getAdditionalOptions()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getOptions()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final boolean org.openide.NotifyDescriptor.isValid()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.NotifyDescriptor.setValid(boolean)
+meth public int org.openide.NotifyDescriptor.getMessageType()
+meth public int org.openide.NotifyDescriptor.getOptionType()
+meth public java.lang.Object org.openide.NotifyDescriptor.getDefaultValue()
+meth public java.lang.Object org.openide.NotifyDescriptor.getMessage()
+meth public java.lang.Object org.openide.NotifyDescriptor.getValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.NotifyDescriptor.getTitle()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.NotifyDescriptor.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.setAdditionalOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setMessage(java.lang.Object)
+meth public void org.openide.NotifyDescriptor.setMessageType(int)
+meth public void org.openide.NotifyDescriptor.setOptionType(int)
+meth public void org.openide.NotifyDescriptor.setOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setTitle(java.lang.String)
+meth public void org.openide.NotifyDescriptor.setValue(java.lang.Object)
 supr org.openide.NotifyDescriptor$Confirmation
-hfds serialVersionUID
-
 CLSS public static org.openide.NotifyDescriptor$InputLine
 cons public InputLine(java.lang.String,java.lang.String)
 cons public InputLine(java.lang.String,java.lang.String,int,int)
-fld protected javax.swing.JTextField textField
-meth protected java.awt.Component createDesign(java.lang.String)
-meth public java.lang.String getInputText()
-meth public void setInputText(java.lang.String)
+fld  constant public static final int org.openide.NotifyDescriptor.DEFAULT_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.ERROR_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.INFORMATION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.OK_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.PLAIN_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.QUESTION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.WARNING_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_OPTION
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_DETAIL
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTIONS
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTION_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_TITLE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALID
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALUE
+fld  protected javax.swing.JTextField org.openide.NotifyDescriptor$InputLine.textField
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CANCEL_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CLOSED_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.NO_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.OK_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.YES_OPTION
+innr public static final org.openide.NotifyDescriptor$Exception
+innr public static org.openide.NotifyDescriptor$Confirmation
+innr public static org.openide.NotifyDescriptor$InputLine
+innr public static org.openide.NotifyDescriptor$Message
+meth protected java.awt.Component org.openide.NotifyDescriptor$InputLine.createDesign(java.lang.String)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected static java.lang.String org.openide.NotifyDescriptor.getTitleForType(int)
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.NotifyDescriptor.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.NotifyDescriptor.initialize()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getAdditionalOptions()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getOptions()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final boolean org.openide.NotifyDescriptor.isValid()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.NotifyDescriptor.setValid(boolean)
+meth public int org.openide.NotifyDescriptor.getMessageType()
+meth public int org.openide.NotifyDescriptor.getOptionType()
+meth public java.lang.Object org.openide.NotifyDescriptor.getDefaultValue()
+meth public java.lang.Object org.openide.NotifyDescriptor.getMessage()
+meth public java.lang.Object org.openide.NotifyDescriptor.getValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.NotifyDescriptor$InputLine.getInputText()
+meth public java.lang.String org.openide.NotifyDescriptor.getTitle()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.NotifyDescriptor$InputLine.setInputText(java.lang.String)
+meth public void org.openide.NotifyDescriptor.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.setAdditionalOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setMessage(java.lang.Object)
+meth public void org.openide.NotifyDescriptor.setMessageType(int)
+meth public void org.openide.NotifyDescriptor.setOptionType(int)
+meth public void org.openide.NotifyDescriptor.setOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setTitle(java.lang.String)
+meth public void org.openide.NotifyDescriptor.setValue(java.lang.Object)
 supr org.openide.NotifyDescriptor
-
 CLSS public static org.openide.NotifyDescriptor$Message
 cons public Message(java.lang.Object)
 cons public Message(java.lang.Object,int)
+fld  constant public static final int org.openide.NotifyDescriptor.DEFAULT_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.ERROR_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.INFORMATION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.OK_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.PLAIN_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.QUESTION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.WARNING_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_OPTION
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_DETAIL
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTIONS
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTION_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_TITLE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALID
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALUE
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CANCEL_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CLOSED_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.NO_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.OK_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.YES_OPTION
+innr public static final org.openide.NotifyDescriptor$Exception
+innr public static org.openide.NotifyDescriptor$Confirmation
+innr public static org.openide.NotifyDescriptor$InputLine
+innr public static org.openide.NotifyDescriptor$Message
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected static java.lang.String org.openide.NotifyDescriptor.getTitleForType(int)
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.NotifyDescriptor.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.NotifyDescriptor.initialize()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getAdditionalOptions()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getOptions()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final boolean org.openide.NotifyDescriptor.isValid()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.NotifyDescriptor.setValid(boolean)
+meth public int org.openide.NotifyDescriptor.getMessageType()
+meth public int org.openide.NotifyDescriptor.getOptionType()
+meth public java.lang.Object org.openide.NotifyDescriptor.getDefaultValue()
+meth public java.lang.Object org.openide.NotifyDescriptor.getMessage()
+meth public java.lang.Object org.openide.NotifyDescriptor.getValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.NotifyDescriptor.getTitle()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.NotifyDescriptor.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.setAdditionalOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setMessage(java.lang.Object)
+meth public void org.openide.NotifyDescriptor.setMessageType(int)
+meth public void org.openide.NotifyDescriptor.setOptionType(int)
+meth public void org.openide.NotifyDescriptor.setOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setTitle(java.lang.String)
+meth public void org.openide.NotifyDescriptor.setValue(java.lang.Object)
 supr org.openide.NotifyDescriptor
-
-CLSS public abstract org.openide.ServiceType
- anno 0 java.lang.Deprecated()
-cons public ServiceType()
-fld public final static java.lang.String PROP_NAME = "name"
-innr public abstract static Registry
-innr public final static Handle
-intf java.io.Serializable
-intf org.openide.util.HelpCtx$Provider
-meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
- anno 0 java.lang.Deprecated()
-meth protected java.lang.String displayName()
-meth public abstract org.openide.util.HelpCtx getHelpCtx()
-meth public final org.openide.ServiceType createClone()
- anno 0 java.lang.Deprecated()
-meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public java.lang.String getName()
-meth public void setName(java.lang.String)
-supr java.lang.Object
-hfds err,name,serialVersionUID,supp
-
-CLSS public final static org.openide.ServiceType$Handle
- anno 0 java.lang.Deprecated()
+CLSS public static final org.openide.ServiceType$Handle
 cons public Handle(org.openide.ServiceType)
 intf java.io.Serializable
-meth public java.lang.String toString()
-meth public org.openide.ServiceType getServiceType()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.ServiceType$Handle.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.ServiceType org.openide.ServiceType$Handle.getServiceType()
 supr java.lang.Object
-hfds className,name,serialVersionUID,serviceType
-
-CLSS public abstract static org.openide.ServiceType$Registry
- anno 0 java.lang.Deprecated()
+CLSS public static abstract org.openide.ServiceType$Registry
 cons public Registry()
 intf java.io.Serializable
-meth public <%0 extends org.openide.ServiceType> java.util.Enumeration<{%%0}> services(java.lang.Class<{%%0}>)
-meth public abstract java.util.Enumeration<org.openide.ServiceType> services()
-meth public abstract java.util.List getServiceTypes()
-meth public abstract void setServiceTypes(java.util.List)
- anno 0 java.lang.Deprecated()
-meth public org.openide.ServiceType find(java.lang.Class)
- anno 0 java.lang.Deprecated()
-meth public org.openide.ServiceType find(java.lang.String)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.util.Enumeration org.openide.ServiceType$Registry.services()
+meth public abstract java.util.List org.openide.ServiceType$Registry.getServiceTypes()
+meth public abstract void org.openide.ServiceType$Registry.setServiceTypes(java.util.List)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Enumeration org.openide.ServiceType$Registry.services(java.lang.Class)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.ServiceType org.openide.ServiceType$Registry.find(java.lang.Class)
+meth public org.openide.ServiceType org.openide.ServiceType$Registry.find(java.lang.String)
 supr java.lang.Object
-hfds serialVersionUID
-
-CLSS public org.openide.WizardDescriptor
-cons protected WizardDescriptor()
-cons public <%0 extends java.lang.Object> WizardDescriptor(org.openide.WizardDescriptor$Iterator<{%%0}>,{%%0})
-cons public <%0 extends java.lang.Object> WizardDescriptor(org.openide.WizardDescriptor$Panel<{%%0}>[],{%%0})
-cons public WizardDescriptor(org.openide.WizardDescriptor$Iterator<org.openide.WizardDescriptor>)
-cons public WizardDescriptor(org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>[])
-fld public final static java.lang.Object FINISH_OPTION
-fld public final static java.lang.Object NEXT_OPTION
-fld public final static java.lang.Object PREVIOUS_OPTION
-innr public abstract interface static AsynchronousInstantiatingIterator
-innr public abstract interface static AsynchronousValidatingPanel
-innr public abstract interface static FinishPanel
-innr public abstract interface static FinishablePanel
-innr public abstract interface static InstantiatingIterator
-innr public abstract interface static Iterator
-innr public abstract interface static Panel
-innr public abstract interface static ProgressInstantiatingIterator
-innr public abstract interface static ValidatingPanel
-innr public static ArrayIterator
-meth protected void initialize()
-meth protected void updateState()
-meth public final <%0 extends java.lang.Object> void setPanelsAndSettings(org.openide.WizardDescriptor$Iterator<{%%0}>,{%%0})
-meth public final void setPanels(org.openide.WizardDescriptor$Iterator)
- anno 0 java.lang.Deprecated()
-meth public java.lang.Object getProperty(java.lang.String)
-meth public java.lang.Object getValue()
-meth public java.text.MessageFormat getTitleFormat()
-meth public java.util.Map<java.lang.String,java.lang.Object> getProperties()
-meth public java.util.Set getInstantiatedObjects()
-meth public void putProperty(java.lang.String,java.lang.Object)
-meth public void setAdditionalOptions(java.lang.Object[])
-meth public void setClosingOptions(java.lang.Object[])
-meth public void setHelpCtx(org.openide.util.HelpCtx)
-meth public void setOptions(java.lang.Object[])
-meth public void setTitleFormat(java.text.MessageFormat)
-meth public void setValue(java.lang.Object)
-supr org.openide.DialogDescriptor
-hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,PROP_AUTO_WIZARD_STYLE,PROP_CONTENT_BACK_COLOR,PROP_CONTENT_DATA,PROP_CONTENT_DISPLAYED,PROP_CONTENT_FOREGROUND_COLOR,PROP_CONTENT_NUMBERED,PROP_CONTENT_SELECTED_INDEX,PROP_ERROR_MESSAGE,PROP_HELP_DISPLAYED,PROP_HELP_URL,PROP_IMAGE,PROP_IMAGE_ALIGNMENT,PROP_LEFT_DIMENSION,autoWizardStyle,backgroundValidationTask,baseListener,bundle,cancelButton,changeStateInProgress,contentBackColor,contentData,contentForegroundColor,contentSelectedIndex,data,err,escapeActionListener,finishButton,finishOption,handle,helpURL,image,imageAlignment,init,newObjects,nextButton,previousButton,propListener,properties,titleFormat,validationRuns,waitingComponent,weakCancelButtonListener,weakChangeListener,weakFinishButtonListener,weakNextButtonListener,weakPreviousButtonListener,weakPropertyChangeListener,wizardPanel
-hcls BoundedHtmlBrowser,EmptyPanel,FinishAction,FixedHeightLabel,ImagedPanel,Listener,PropL,SettingsAndIterator,WizardPanel,WrappedCellRenderer
-
-CLSS public static org.openide.WizardDescriptor$ArrayIterator<%0 extends java.lang.Object>
+CLSS public static org.openide.WizardDescriptor$ArrayIterator
 cons public ArrayIterator()
-cons public ArrayIterator(java.util.List<org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ArrayIterator%0}>>)
-cons public ArrayIterator(org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ArrayIterator%0}>[])
-intf org.openide.WizardDescriptor$Iterator<{org.openide.WizardDescriptor$ArrayIterator%0}>
-meth protected org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ArrayIterator%0}>[] initializePanels()
-meth protected void reset()
-meth public boolean hasNext()
-meth public boolean hasPrevious()
-meth public java.lang.String name()
-meth public org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ArrayIterator%0}> current()
-meth public void addChangeListener(javax.swing.event.ChangeListener)
-meth public void nextPanel()
-meth public void previousPanel()
-meth public void removeChangeListener(javax.swing.event.ChangeListener)
+cons public ArrayIterator([Lorg.openide.WizardDescriptor$Panel;)
+intf org.openide.WizardDescriptor$Iterator
+meth protected [Lorg.openide.WizardDescriptor$Panel; org.openide.WizardDescriptor$ArrayIterator.initializePanels()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.WizardDescriptor$ArrayIterator.reset()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.WizardDescriptor$ArrayIterator.hasNext()
+meth public boolean org.openide.WizardDescriptor$ArrayIterator.hasPrevious()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.WizardDescriptor$ArrayIterator.name()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$ArrayIterator.current()
+meth public synchronized void org.openide.WizardDescriptor$ArrayIterator.nextPanel()
+meth public synchronized void org.openide.WizardDescriptor$ArrayIterator.previousPanel()
+meth public void org.openide.WizardDescriptor$ArrayIterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public void org.openide.WizardDescriptor$ArrayIterator.removeChangeListener(javax.swing.event.ChangeListener)
 supr java.lang.Object
-hfds index,panels
-
-CLSS public abstract interface static org.openide.WizardDescriptor$AsynchronousInstantiatingIterator<%0 extends java.lang.Object>
-intf org.openide.WizardDescriptor$InstantiatingIterator<{org.openide.WizardDescriptor$AsynchronousInstantiatingIterator%0}>
-meth public abstract java.util.Set instantiate() throws java.io.IOException
-
-CLSS public abstract interface static org.openide.WizardDescriptor$AsynchronousValidatingPanel<%0 extends java.lang.Object>
-intf org.openide.WizardDescriptor$ValidatingPanel<{org.openide.WizardDescriptor$AsynchronousValidatingPanel%0}>
-meth public abstract void prepareValidation()
-meth public abstract void validate() throws org.openide.WizardValidationException
-
-CLSS public abstract interface static org.openide.WizardDescriptor$FinishPanel<%0 extends java.lang.Object>
- anno 0 java.lang.Deprecated()
-intf org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$FinishPanel%0}>
-
-CLSS public abstract interface static org.openide.WizardDescriptor$FinishablePanel<%0 extends java.lang.Object>
-intf org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$FinishablePanel%0}>
-meth public abstract boolean isFinishPanel()
-
-CLSS public abstract interface static org.openide.WizardDescriptor$InstantiatingIterator<%0 extends java.lang.Object>
-intf org.openide.WizardDescriptor$Iterator<{org.openide.WizardDescriptor$InstantiatingIterator%0}>
-meth public abstract java.util.Set instantiate() throws java.io.IOException
-meth public abstract void initialize(org.openide.WizardDescriptor)
-meth public abstract void uninitialize(org.openide.WizardDescriptor)
-
-CLSS public abstract interface static org.openide.WizardDescriptor$Iterator<%0 extends java.lang.Object>
-meth public abstract boolean hasNext()
-meth public abstract boolean hasPrevious()
-meth public abstract java.lang.String name()
-meth public abstract org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$Iterator%0}> current()
-meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void nextPanel()
-meth public abstract void previousPanel()
-meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
-
-CLSS public abstract interface static org.openide.WizardDescriptor$Panel<%0 extends java.lang.Object>
-meth public abstract boolean isValid()
-meth public abstract java.awt.Component getComponent()
-meth public abstract org.openide.util.HelpCtx getHelp()
-meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void readSettings({org.openide.WizardDescriptor$Panel%0})
-meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void storeSettings({org.openide.WizardDescriptor$Panel%0})
-
-CLSS public abstract interface static org.openide.WizardDescriptor$ProgressInstantiatingIterator<%0 extends java.lang.Object>
-intf org.openide.WizardDescriptor$AsynchronousInstantiatingIterator<{org.openide.WizardDescriptor$ProgressInstantiatingIterator%0}>
-meth public abstract java.util.Set instantiate(org.netbeans.api.progress.ProgressHandle) throws java.io.IOException
-
-CLSS public abstract interface static org.openide.WizardDescriptor$ValidatingPanel<%0 extends java.lang.Object>
-intf org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ValidatingPanel%0}>
-meth public abstract void validate() throws org.openide.WizardValidationException
-
+CLSS public static abstract interface org.openide.WizardDescriptor$AsynchronousInstantiatingIterator
+intf org.openide.WizardDescriptor$InstantiatingIterator
+intf org.openide.WizardDescriptor$Iterator
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
+meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
+meth public abstract java.util.Set org.openide.WizardDescriptor$AsynchronousInstantiatingIterator.instantiate() throws java.io.IOException
+meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.initialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.uninitialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$AsynchronousValidatingPanel
+intf org.openide.WizardDescriptor$Panel
+intf org.openide.WizardDescriptor$ValidatingPanel
+meth public abstract boolean org.openide.WizardDescriptor$Panel.isValid()
+meth public abstract java.awt.Component org.openide.WizardDescriptor$Panel.getComponent()
+meth public abstract org.openide.util.HelpCtx org.openide.WizardDescriptor$Panel.getHelp()
+meth public abstract void org.openide.WizardDescriptor$AsynchronousValidatingPanel.prepareValidation()
+meth public abstract void org.openide.WizardDescriptor$AsynchronousValidatingPanel.validate() throws org.openide.WizardValidationException
+meth public abstract void org.openide.WizardDescriptor$Panel.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.readSettings(java.lang.Object)
+meth public abstract void org.openide.WizardDescriptor$Panel.removeChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.storeSettings(java.lang.Object)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$FinishPanel
+intf org.openide.WizardDescriptor$Panel
+meth public abstract boolean org.openide.WizardDescriptor$Panel.isValid()
+meth public abstract java.awt.Component org.openide.WizardDescriptor$Panel.getComponent()
+meth public abstract org.openide.util.HelpCtx org.openide.WizardDescriptor$Panel.getHelp()
+meth public abstract void org.openide.WizardDescriptor$Panel.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.readSettings(java.lang.Object)
+meth public abstract void org.openide.WizardDescriptor$Panel.removeChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.storeSettings(java.lang.Object)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$FinishablePanel
+intf org.openide.WizardDescriptor$Panel
+meth public abstract boolean org.openide.WizardDescriptor$FinishablePanel.isFinishPanel()
+meth public abstract boolean org.openide.WizardDescriptor$Panel.isValid()
+meth public abstract java.awt.Component org.openide.WizardDescriptor$Panel.getComponent()
+meth public abstract org.openide.util.HelpCtx org.openide.WizardDescriptor$Panel.getHelp()
+meth public abstract void org.openide.WizardDescriptor$Panel.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.readSettings(java.lang.Object)
+meth public abstract void org.openide.WizardDescriptor$Panel.removeChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.storeSettings(java.lang.Object)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$InstantiatingIterator
+intf org.openide.WizardDescriptor$Iterator
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
+meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
+meth public abstract java.util.Set org.openide.WizardDescriptor$InstantiatingIterator.instantiate() throws java.io.IOException
+meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.initialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.uninitialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$Iterator
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
+meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
+meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
+meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$Panel
+meth public abstract boolean org.openide.WizardDescriptor$Panel.isValid()
+meth public abstract java.awt.Component org.openide.WizardDescriptor$Panel.getComponent()
+meth public abstract org.openide.util.HelpCtx org.openide.WizardDescriptor$Panel.getHelp()
+meth public abstract void org.openide.WizardDescriptor$Panel.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.readSettings(java.lang.Object)
+meth public abstract void org.openide.WizardDescriptor$Panel.removeChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.storeSettings(java.lang.Object)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$ValidatingPanel
+intf org.openide.WizardDescriptor$Panel
+meth public abstract boolean org.openide.WizardDescriptor$Panel.isValid()
+meth public abstract java.awt.Component org.openide.WizardDescriptor$Panel.getComponent()
+meth public abstract org.openide.util.HelpCtx org.openide.WizardDescriptor$Panel.getHelp()
+meth public abstract void org.openide.WizardDescriptor$Panel.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.readSettings(java.lang.Object)
+meth public abstract void org.openide.WizardDescriptor$Panel.removeChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Panel.storeSettings(java.lang.Object)
+meth public abstract void org.openide.WizardDescriptor$ValidatingPanel.validate() throws org.openide.WizardValidationException
+supr null
+CLSS public static abstract interface org.openide.awt.HtmlBrowser$Factory
+meth public abstract org.openide.awt.HtmlBrowser$Impl org.openide.awt.HtmlBrowser$Factory.createHtmlBrowserImpl()
+supr null
+CLSS public static abstract org.openide.awt.HtmlBrowser$Impl
+cons public Impl()
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_BACKWARD
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_FORWARD
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_HISTORY
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_STATUS_MESSAGE
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_TITLE
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_URL
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract boolean org.openide.awt.HtmlBrowser$Impl.isBackward()
+meth public abstract boolean org.openide.awt.HtmlBrowser$Impl.isForward()
+meth public abstract boolean org.openide.awt.HtmlBrowser$Impl.isHistory()
+meth public abstract java.awt.Component org.openide.awt.HtmlBrowser$Impl.getComponent()
+meth public abstract java.lang.String org.openide.awt.HtmlBrowser$Impl.getStatusMessage()
+meth public abstract java.lang.String org.openide.awt.HtmlBrowser$Impl.getTitle()
+meth public abstract java.net.URL org.openide.awt.HtmlBrowser$Impl.getURL()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.backward()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.forward()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.reloadDocument()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.setURL(java.net.URL)
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.showHistory()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.stopLoading()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static abstract org.openide.awt.HtmlBrowser$URLDisplayer
+cons protected URLDisplayer()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract void org.openide.awt.HtmlBrowser$URLDisplayer.showURL(java.net.URL)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.awt.HtmlBrowser$URLDisplayer org.openide.awt.HtmlBrowser$URLDisplayer.getDefault()
+supr java.lang.Object
+CLSS public static abstract interface org.openide.util.Enumerations$Processor
+meth public abstract java.lang.Object org.openide.util.Enumerations$Processor.process(java.lang.Object,java.util.Collection)
+supr null
+CLSS public static abstract interface org.openide.util.HelpCtx$Provider
+meth public abstract org.openide.util.HelpCtx org.openide.util.HelpCtx$Provider.getHelpCtx()
+supr null
+CLSS public org.openide.DialogDescriptor
+cons public DialogDescriptor(java.lang.Object,java.lang.String)
+cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,[Ljava.lang.Object;,java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
+cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,[Ljava.lang.Object;,java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener,boolean)
+cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
+cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,java.awt.event.ActionListener)
+cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.awt.event.ActionListener)
+fld  constant public static final int org.openide.DialogDescriptor.BOTTOM_ALIGN
+fld  constant public static final int org.openide.DialogDescriptor.DEFAULT_ALIGN
+fld  constant public static final int org.openide.DialogDescriptor.RIGHT_ALIGN
+fld  constant public static final int org.openide.NotifyDescriptor.DEFAULT_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.ERROR_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.INFORMATION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.OK_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.PLAIN_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.QUESTION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.WARNING_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_OPTION
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_BUTTON_LISTENER
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_CLOSING_OPTIONS
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_HELP_CTX
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_LEAF
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_MODAL
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_OPTIONS_ALIGN
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_DETAIL
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTIONS
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTION_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_TITLE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALID
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALUE
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CANCEL_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CLOSED_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.NO_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.OK_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.YES_OPTION
+innr public static final org.openide.NotifyDescriptor$Exception
+innr public static org.openide.NotifyDescriptor$Confirmation
+innr public static org.openide.NotifyDescriptor$InputLine
+innr public static org.openide.NotifyDescriptor$Message
+intf org.openide.util.HelpCtx$Provider
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected static java.lang.String org.openide.NotifyDescriptor.getTitleForType(int)
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.NotifyDescriptor.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.NotifyDescriptor.initialize()
+meth public [Ljava.lang.Object; org.openide.DialogDescriptor.getClosingOptions()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getAdditionalOptions()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getOptions()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.DialogDescriptor.isLeaf()
+meth public boolean org.openide.DialogDescriptor.isModal()
+meth public final boolean org.openide.NotifyDescriptor.isValid()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.NotifyDescriptor.setValid(boolean)
+meth public int org.openide.DialogDescriptor.getOptionsAlign()
+meth public int org.openide.NotifyDescriptor.getMessageType()
+meth public int org.openide.NotifyDescriptor.getOptionType()
+meth public java.awt.event.ActionListener org.openide.DialogDescriptor.getButtonListener()
+meth public java.lang.Object org.openide.NotifyDescriptor.getDefaultValue()
+meth public java.lang.Object org.openide.NotifyDescriptor.getMessage()
+meth public java.lang.Object org.openide.NotifyDescriptor.getValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.NotifyDescriptor.getTitle()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.util.HelpCtx org.openide.DialogDescriptor.getHelpCtx()
+meth public void org.openide.DialogDescriptor.setButtonListener(java.awt.event.ActionListener)
+meth public void org.openide.DialogDescriptor.setClosingOptions([Ljava.lang.Object;)
+meth public void org.openide.DialogDescriptor.setHelpCtx(org.openide.util.HelpCtx)
+meth public void org.openide.DialogDescriptor.setLeaf(boolean)
+meth public void org.openide.DialogDescriptor.setModal(boolean)
+meth public void org.openide.DialogDescriptor.setOptionsAlign(int)
+meth public void org.openide.NotifyDescriptor.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.setAdditionalOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setMessage(java.lang.Object)
+meth public void org.openide.NotifyDescriptor.setMessageType(int)
+meth public void org.openide.NotifyDescriptor.setOptionType(int)
+meth public void org.openide.NotifyDescriptor.setOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setTitle(java.lang.String)
+meth public void org.openide.NotifyDescriptor.setValue(java.lang.Object)
+supr org.openide.NotifyDescriptor
+CLSS public abstract org.openide.DialogDisplayer
+cons protected DialogDisplayer()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.awt.Dialog org.openide.DialogDisplayer.createDialog(org.openide.DialogDescriptor)
+meth public abstract java.lang.Object org.openide.DialogDisplayer.notify(org.openide.NotifyDescriptor)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.DialogDisplayer org.openide.DialogDisplayer.getDefault()
+supr java.lang.Object
+CLSS public abstract org.openide.ErrorManager
+cons public ErrorManager()
+fld  constant public static final int org.openide.ErrorManager.ERROR
+fld  constant public static final int org.openide.ErrorManager.EXCEPTION
+fld  constant public static final int org.openide.ErrorManager.INFORMATIONAL
+fld  constant public static final int org.openide.ErrorManager.UNKNOWN
+fld  constant public static final int org.openide.ErrorManager.USER
+fld  constant public static final int org.openide.ErrorManager.WARNING
+innr public static abstract interface org.openide.ErrorManager$Annotation
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract [Lorg.openide.ErrorManager$Annotation; org.openide.ErrorManager.findAnnotations(java.lang.Throwable)
+meth public abstract java.lang.Throwable org.openide.ErrorManager.annotate(java.lang.Throwable,int,java.lang.String,java.lang.String,java.lang.Throwable,java.util.Date)
+meth public abstract java.lang.Throwable org.openide.ErrorManager.attachAnnotations(java.lang.Throwable,[Lorg.openide.ErrorManager$Annotation;)
+meth public abstract org.openide.ErrorManager org.openide.ErrorManager.getInstance(java.lang.String)
+meth public abstract void org.openide.ErrorManager.log(int,java.lang.String)
+meth public abstract void org.openide.ErrorManager.notify(int,java.lang.Throwable)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.ErrorManager.isLoggable(int)
+meth public boolean org.openide.ErrorManager.isNotifiable(int)
+meth public final java.lang.Throwable org.openide.ErrorManager.annotate(java.lang.Throwable,java.lang.String)
+meth public final java.lang.Throwable org.openide.ErrorManager.annotate(java.lang.Throwable,java.lang.Throwable)
+meth public final java.lang.Throwable org.openide.ErrorManager.copyAnnotation(java.lang.Throwable,java.lang.Throwable)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.ErrorManager.log(java.lang.String)
+meth public final void org.openide.ErrorManager.notify(java.lang.Throwable)
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.ErrorManager org.openide.ErrorManager.getDefault()
+supr java.lang.Object
+CLSS public abstract org.openide.LifecycleManager
+cons protected LifecycleManager()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract void org.openide.LifecycleManager.exit()
+meth public abstract void org.openide.LifecycleManager.saveAll()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.LifecycleManager org.openide.LifecycleManager.getDefault()
+supr java.lang.Object
+CLSS public org.openide.NotifyDescriptor
+cons public NotifyDescriptor(java.lang.Object,java.lang.String,int,int,[Ljava.lang.Object;,java.lang.Object)
+fld  constant public static final int org.openide.NotifyDescriptor.DEFAULT_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.ERROR_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.INFORMATION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.OK_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.PLAIN_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.QUESTION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.WARNING_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_OPTION
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_DETAIL
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTIONS
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTION_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_TITLE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALID
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALUE
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CANCEL_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CLOSED_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.NO_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.OK_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.YES_OPTION
+innr public static final org.openide.NotifyDescriptor$Exception
+innr public static org.openide.NotifyDescriptor$Confirmation
+innr public static org.openide.NotifyDescriptor$InputLine
+innr public static org.openide.NotifyDescriptor$Message
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected static java.lang.String org.openide.NotifyDescriptor.getTitleForType(int)
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.NotifyDescriptor.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.NotifyDescriptor.initialize()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getAdditionalOptions()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getOptions()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final boolean org.openide.NotifyDescriptor.isValid()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.NotifyDescriptor.setValid(boolean)
+meth public int org.openide.NotifyDescriptor.getMessageType()
+meth public int org.openide.NotifyDescriptor.getOptionType()
+meth public java.lang.Object org.openide.NotifyDescriptor.getDefaultValue()
+meth public java.lang.Object org.openide.NotifyDescriptor.getMessage()
+meth public java.lang.Object org.openide.NotifyDescriptor.getValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.NotifyDescriptor.getTitle()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.NotifyDescriptor.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.setAdditionalOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setMessage(java.lang.Object)
+meth public void org.openide.NotifyDescriptor.setMessageType(int)
+meth public void org.openide.NotifyDescriptor.setOptionType(int)
+meth public void org.openide.NotifyDescriptor.setOptions([Ljava.lang.Object;)
+meth public void org.openide.NotifyDescriptor.setTitle(java.lang.String)
+meth public void org.openide.NotifyDescriptor.setValue(java.lang.Object)
+supr java.lang.Object
+CLSS public abstract org.openide.ServiceType
+cons public ServiceType()
+fld  constant public static final java.lang.String org.openide.ServiceType.PROP_NAME
+innr public static abstract org.openide.ServiceType$Registry
+innr public static final org.openide.ServiceType$Handle
+intf java.io.Serializable
+intf org.openide.util.HelpCtx$Provider
+meth protected final void org.openide.ServiceType.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected java.lang.Object org.openide.ServiceType.clone() throws java.lang.CloneNotSupportedException
+meth protected java.lang.String org.openide.ServiceType.displayName()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract org.openide.util.HelpCtx org.openide.ServiceType.getHelpCtx()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final org.openide.ServiceType org.openide.ServiceType.createClone()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.ServiceType.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.ServiceType.getName()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized final void org.openide.ServiceType.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.ServiceType.setName(java.lang.String)
+supr java.lang.Object
+CLSS public org.openide.WizardDescriptor
+cons public WizardDescriptor([Lorg.openide.WizardDescriptor$Panel;)
+cons public WizardDescriptor([Lorg.openide.WizardDescriptor$Panel;,java.lang.Object)
+cons public WizardDescriptor(org.openide.WizardDescriptor$Iterator)
+cons public WizardDescriptor(org.openide.WizardDescriptor$Iterator,java.lang.Object)
+fld  constant public static final int org.openide.DialogDescriptor.BOTTOM_ALIGN
+fld  constant public static final int org.openide.DialogDescriptor.DEFAULT_ALIGN
+fld  constant public static final int org.openide.DialogDescriptor.RIGHT_ALIGN
+fld  constant public static final int org.openide.NotifyDescriptor.DEFAULT_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.ERROR_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.INFORMATION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.OK_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.PLAIN_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.QUESTION_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.WARNING_MESSAGE
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_CANCEL_OPTION
+fld  constant public static final int org.openide.NotifyDescriptor.YES_NO_OPTION
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_BUTTON_LISTENER
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_CLOSING_OPTIONS
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_HELP_CTX
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_LEAF
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_MODAL
+fld  constant public static final java.lang.String org.openide.DialogDescriptor.PROP_OPTIONS_ALIGN
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_DETAIL
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_MESSAGE_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTIONS
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_OPTION_TYPE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_TITLE
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALID
+fld  constant public static final java.lang.String org.openide.NotifyDescriptor.PROP_VALUE
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CANCEL_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.CLOSED_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.NO_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.OK_OPTION
+fld  public static final java.lang.Object org.openide.NotifyDescriptor.YES_OPTION
+fld  public static final java.lang.Object org.openide.WizardDescriptor.FINISH_OPTION
+fld  public static final java.lang.Object org.openide.WizardDescriptor.NEXT_OPTION
+fld  public static final java.lang.Object org.openide.WizardDescriptor.PREVIOUS_OPTION
+innr public static abstract interface org.openide.WizardDescriptor$AsynchronousInstantiatingIterator
+innr public static abstract interface org.openide.WizardDescriptor$AsynchronousValidatingPanel
+innr public static abstract interface org.openide.WizardDescriptor$FinishPanel
+innr public static abstract interface org.openide.WizardDescriptor$FinishablePanel
+innr public static abstract interface org.openide.WizardDescriptor$InstantiatingIterator
+innr public static abstract interface org.openide.WizardDescriptor$Iterator
+innr public static abstract interface org.openide.WizardDescriptor$Panel
+innr public static abstract interface org.openide.WizardDescriptor$ValidatingPanel
+innr public static final org.openide.NotifyDescriptor$Exception
+innr public static org.openide.NotifyDescriptor$Confirmation
+innr public static org.openide.NotifyDescriptor$InputLine
+innr public static org.openide.NotifyDescriptor$Message
+innr public static org.openide.WizardDescriptor$ArrayIterator
+intf org.openide.util.HelpCtx$Provider
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected static java.lang.String org.openide.NotifyDescriptor.getTitleForType(int)
+meth protected synchronized void org.openide.WizardDescriptor.updateState()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.NotifyDescriptor.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.WizardDescriptor.initialize()
+meth public [Ljava.lang.Object; org.openide.DialogDescriptor.getClosingOptions()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getAdditionalOptions()
+meth public [Ljava.lang.Object; org.openide.NotifyDescriptor.getOptions()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.DialogDescriptor.isLeaf()
+meth public boolean org.openide.DialogDescriptor.isModal()
+meth public final boolean org.openide.NotifyDescriptor.isValid()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.NotifyDescriptor.setValid(boolean)
+meth public int org.openide.DialogDescriptor.getOptionsAlign()
+meth public int org.openide.NotifyDescriptor.getMessageType()
+meth public int org.openide.NotifyDescriptor.getOptionType()
+meth public java.awt.event.ActionListener org.openide.DialogDescriptor.getButtonListener()
+meth public java.lang.Object org.openide.NotifyDescriptor.getDefaultValue()
+meth public java.lang.Object org.openide.NotifyDescriptor.getMessage()
+meth public java.lang.Object org.openide.WizardDescriptor.getValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.NotifyDescriptor.getTitle()
+meth public java.util.Set org.openide.WizardDescriptor.getInstantiatedObjects()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.util.HelpCtx org.openide.DialogDescriptor.getHelpCtx()
+meth public synchronized final void org.openide.WizardDescriptor.setPanels(org.openide.WizardDescriptor$Iterator)
+meth public synchronized java.lang.Object org.openide.WizardDescriptor.getProperty(java.lang.String)
+meth public synchronized java.text.MessageFormat org.openide.WizardDescriptor.getTitleFormat()
+meth public void org.openide.DialogDescriptor.setButtonListener(java.awt.event.ActionListener)
+meth public void org.openide.DialogDescriptor.setLeaf(boolean)
+meth public void org.openide.DialogDescriptor.setModal(boolean)
+meth public void org.openide.DialogDescriptor.setOptionsAlign(int)
+meth public void org.openide.NotifyDescriptor.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.NotifyDescriptor.setMessage(java.lang.Object)
+meth public void org.openide.NotifyDescriptor.setMessageType(int)
+meth public void org.openide.NotifyDescriptor.setOptionType(int)
+meth public void org.openide.NotifyDescriptor.setTitle(java.lang.String)
+meth public void org.openide.WizardDescriptor.putProperty(java.lang.String,java.lang.Object)
+meth public void org.openide.WizardDescriptor.setAdditionalOptions([Ljava.lang.Object;)
+meth public void org.openide.WizardDescriptor.setClosingOptions([Ljava.lang.Object;)
+meth public void org.openide.WizardDescriptor.setHelpCtx(org.openide.util.HelpCtx)
+meth public void org.openide.WizardDescriptor.setOptions([Ljava.lang.Object;)
+meth public void org.openide.WizardDescriptor.setTitleFormat(java.text.MessageFormat)
+meth public void org.openide.WizardDescriptor.setValue(java.lang.Object)
+supr org.openide.DialogDescriptor
 CLSS public final org.openide.WizardValidationException
 cons public WizardValidationException(javax.swing.JComponent,java.lang.String,java.lang.String)
-meth public java.lang.String getLocalizedMessage()
-meth public javax.swing.JComponent getSource()
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Throwable.getMessage()
+meth public java.lang.String java.lang.Throwable.toString()
+meth public java.lang.String org.openide.WizardValidationException.getLocalizedMessage()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public javax.swing.JComponent org.openide.WizardValidationException.getSource()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.printStackTrace()
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintStream)
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintWriter)
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
 supr java.lang.Exception
-hfds localizedMessage,source
-
-CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
- anno 0 java.lang.Deprecated()
-fld public final static org.openide.util.HelpCtx DEFAULT_HELP
-innr public abstract interface static Provider
-meth public boolean equals(java.lang.Object)
-meth public int hashCode()
-meth public java.lang.String getHelpID()
-meth public java.lang.String toString()
-meth public java.net.URL getHelp()
-meth public static org.openide.util.HelpCtx findHelp(java.awt.Component)
-meth public static org.openide.util.HelpCtx findHelp(java.lang.Object)
-meth public static void setHelpIDString(javax.swing.JComponent,java.lang.String)
-supr java.lang.Object
-hfds err,helpCtx,helpID
-
-CLSS public abstract interface static org.openide.util.HelpCtx$Provider
-meth public abstract org.openide.util.HelpCtx getHelpCtx()
-

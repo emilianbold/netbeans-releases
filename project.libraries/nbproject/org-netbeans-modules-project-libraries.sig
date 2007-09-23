@@ -1,112 +1,108 @@
-#Signature file v4.0
-#Version 
-
-CLSS public java.lang.Object
-cons public Object()
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
-meth protected void finalize() throws java.lang.Throwable
-meth public boolean equals(java.lang.Object)
-meth public final java.lang.Class<?> getClass()
-meth public final void notify()
-meth public final void notifyAll()
-meth public final void wait() throws java.lang.InterruptedException
-meth public final void wait(long) throws java.lang.InterruptedException
-meth public final void wait(long,int) throws java.lang.InterruptedException
-meth public int hashCode()
-meth public java.lang.String toString()
-
+#API master signature file
+#Version 1.5.0_11
+CLSS public static abstract interface org.openide.util.Lookup$Provider
+meth public abstract org.openide.util.Lookup org.openide.util.Lookup$Provider.getLookup()
+supr null
 CLSS public final org.netbeans.api.project.libraries.LibrariesCustomizer
-meth public static boolean showCustomizer(org.netbeans.api.project.libraries.Library)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean org.netbeans.api.project.libraries.LibrariesCustomizer.showCustomizer(org.netbeans.api.project.libraries.Library)
 supr java.lang.Object
-
 CLSS public final org.netbeans.api.project.libraries.Library
-fld public final static java.lang.String PROP_CONTENT = "content"
-fld public final static java.lang.String PROP_DESCRIPTION = "description"
-fld public final static java.lang.String PROP_NAME = "name"
-meth public boolean equals(java.lang.Object)
-meth public int hashCode()
-meth public java.lang.String getDescription()
-meth public java.lang.String getDisplayName()
-meth public java.lang.String getName()
-meth public java.lang.String getType()
-meth public java.lang.String toString()
-meth public java.util.List<java.net.URL> getContent(java.lang.String)
-meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+fld  constant public static final java.lang.String org.netbeans.api.project.libraries.Library.PROP_CONTENT
+fld  constant public static final java.lang.String org.netbeans.api.project.libraries.Library.PROP_DESCRIPTION
+fld  constant public static final java.lang.String org.netbeans.api.project.libraries.Library.PROP_NAME
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.netbeans.api.project.libraries.Library.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.netbeans.api.project.libraries.Library.hashCode()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.netbeans.api.project.libraries.Library.getDescription()
+meth public java.lang.String org.netbeans.api.project.libraries.Library.getDisplayName()
+meth public java.lang.String org.netbeans.api.project.libraries.Library.getName()
+meth public java.lang.String org.netbeans.api.project.libraries.Library.getType()
+meth public java.util.List org.netbeans.api.project.libraries.Library.getContent(java.lang.String)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public synchronized void org.netbeans.api.project.libraries.Library.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void org.netbeans.api.project.libraries.Library.removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds impl,listeners
-
 CLSS public final org.netbeans.api.project.libraries.LibraryManager
-fld public final static java.lang.String PROP_LIBRARIES = "libraries"
-meth public org.netbeans.api.project.libraries.Library getLibrary(java.lang.String)
-meth public org.netbeans.api.project.libraries.Library[] getLibraries()
-meth public static org.netbeans.api.project.libraries.LibraryManager getDefault()
-meth public void addLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
-meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void removeLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
-meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+fld  constant public static final java.lang.String org.netbeans.api.project.libraries.LibraryManager.PROP_LIBRARIES
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.netbeans.api.project.libraries.Library org.netbeans.api.project.libraries.LibraryManager.getLibrary(java.lang.String)
+meth public static synchronized org.netbeans.api.project.libraries.LibraryManager org.netbeans.api.project.libraries.LibraryManager.getDefault()
+meth public synchronized [Lorg.netbeans.api.project.libraries.Library; org.netbeans.api.project.libraries.LibraryManager.getLibraries()
+meth public synchronized void org.netbeans.api.project.libraries.LibraryManager.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.netbeans.api.project.libraries.LibraryManager.removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds cache,currentStorages,instance,listeners,plistener,result
-
-CLSS public org.netbeans.spi.project.libraries.LibraryFactory
-meth public static org.netbeans.api.project.libraries.Library createLibrary(org.netbeans.spi.project.libraries.LibraryImplementation)
-supr java.lang.Object
-
 CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryImplementation
-fld public final static java.lang.String PROP_CONTENT = "content"
-fld public final static java.lang.String PROP_DESCRIPTION = "description"
-fld public final static java.lang.String PROP_NAME = "name"
-meth public abstract java.lang.String getDescription()
-meth public abstract java.lang.String getLocalizingBundle()
-meth public abstract java.lang.String getName()
-meth public abstract java.lang.String getType()
-meth public abstract java.util.List<java.net.URL> getContent(java.lang.String)
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void setContent(java.lang.String,java.util.List<java.net.URL>)
-meth public abstract void setDescription(java.lang.String)
-meth public abstract void setLocalizingBundle(java.lang.String)
-meth public abstract void setName(java.lang.String)
-
+fld  constant public static final java.lang.String org.netbeans.spi.project.libraries.LibraryImplementation.PROP_CONTENT
+fld  constant public static final java.lang.String org.netbeans.spi.project.libraries.LibraryImplementation.PROP_DESCRIPTION
+fld  constant public static final java.lang.String org.netbeans.spi.project.libraries.LibraryImplementation.PROP_NAME
+meth public abstract java.lang.String org.netbeans.spi.project.libraries.LibraryImplementation.getDescription()
+meth public abstract java.lang.String org.netbeans.spi.project.libraries.LibraryImplementation.getLocalizingBundle()
+meth public abstract java.lang.String org.netbeans.spi.project.libraries.LibraryImplementation.getName()
+meth public abstract java.lang.String org.netbeans.spi.project.libraries.LibraryImplementation.getType()
+meth public abstract java.util.List org.netbeans.spi.project.libraries.LibraryImplementation.getContent(java.lang.String) throws java.lang.IllegalArgumentException
+meth public abstract void org.netbeans.spi.project.libraries.LibraryImplementation.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.netbeans.spi.project.libraries.LibraryImplementation.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.netbeans.spi.project.libraries.LibraryImplementation.setContent(java.lang.String,java.util.List) throws java.lang.IllegalArgumentException
+meth public abstract void org.netbeans.spi.project.libraries.LibraryImplementation.setDescription(java.lang.String)
+meth public abstract void org.netbeans.spi.project.libraries.LibraryImplementation.setLocalizingBundle(java.lang.String)
+meth public abstract void org.netbeans.spi.project.libraries.LibraryImplementation.setName(java.lang.String)
+supr null
 CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryProvider
-fld public final static java.lang.String PROP_LIBRARIES = "libraries"
-meth public abstract org.netbeans.spi.project.libraries.LibraryImplementation[] getLibraries()
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
-
+fld  constant public static final java.lang.String org.netbeans.spi.project.libraries.LibraryProvider.PROP_LIBRARIES
+meth public abstract [Lorg.netbeans.spi.project.libraries.LibraryImplementation; org.netbeans.spi.project.libraries.LibraryProvider.getLibraries()
+meth public abstract void org.netbeans.spi.project.libraries.LibraryProvider.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.netbeans.spi.project.libraries.LibraryProvider.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr null
 CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryTypeProvider
 intf org.openide.util.Lookup$Provider
-meth public abstract java.beans.Customizer getCustomizer(java.lang.String)
-meth public abstract java.lang.String getDisplayName()
-meth public abstract java.lang.String getLibraryType()
-meth public abstract java.lang.String[] getSupportedVolumeTypes()
-meth public abstract org.netbeans.spi.project.libraries.LibraryImplementation createLibrary()
-meth public abstract void libraryCreated(org.netbeans.spi.project.libraries.LibraryImplementation)
-meth public abstract void libraryDeleted(org.netbeans.spi.project.libraries.LibraryImplementation)
-
+meth public abstract [Ljava.lang.String; org.netbeans.spi.project.libraries.LibraryTypeProvider.getSupportedVolumeTypes()
+meth public abstract java.beans.Customizer org.netbeans.spi.project.libraries.LibraryTypeProvider.getCustomizer(java.lang.String)
+meth public abstract java.lang.String org.netbeans.spi.project.libraries.LibraryTypeProvider.getDisplayName()
+meth public abstract java.lang.String org.netbeans.spi.project.libraries.LibraryTypeProvider.getLibraryType()
+meth public abstract org.netbeans.spi.project.libraries.LibraryImplementation org.netbeans.spi.project.libraries.LibraryTypeProvider.createLibrary()
+meth public abstract org.openide.util.Lookup org.openide.util.Lookup$Provider.getLookup()
+meth public abstract void org.netbeans.spi.project.libraries.LibraryTypeProvider.libraryCreated(org.netbeans.spi.project.libraries.LibraryImplementation)
+meth public abstract void org.netbeans.spi.project.libraries.LibraryTypeProvider.libraryDeleted(org.netbeans.spi.project.libraries.LibraryImplementation)
+supr null
 CLSS public final org.netbeans.spi.project.libraries.support.LibrariesSupport
-meth public static org.netbeans.spi.project.libraries.LibraryImplementation createLibraryImplementation(java.lang.String,java.lang.String[])
-meth public static org.netbeans.spi.project.libraries.LibraryTypeProvider getLibraryTypeProvider(java.lang.String)
-meth public static org.netbeans.spi.project.libraries.LibraryTypeProvider[] getLibraryTypeProviders()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.spi.project.libraries.LibraryImplementation org.netbeans.spi.project.libraries.support.LibrariesSupport.createLibraryImplementation(java.lang.String,[Ljava.lang.String;)
 supr java.lang.Object
-
-CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
-fld public final static org.openide.util.Lookup EMPTY
-innr public abstract interface static Provider
-innr public abstract static Item
-innr public abstract static Result
-innr public final static Template
-meth public <%0 extends java.lang.Object> java.util.Collection<? extends {%%0}> lookupAll(java.lang.Class<{%%0}>)
-meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
-meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookupResult(java.lang.Class<{%%0}>)
-meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
-meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
-meth public static org.openide.util.Lookup getDefault()
-supr java.lang.Object
-hfds defaultLookup
-hcls DefLookup,Empty
-
-CLSS public abstract interface static org.openide.util.Lookup$Provider
-meth public abstract org.openide.util.Lookup getLookup()
-

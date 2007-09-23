@@ -1,1712 +1,10045 @@
-#Signature file v4.0
-#Version 
-
-CLSS public java.awt.Canvas
-cons public Canvas()
-cons public Canvas(java.awt.GraphicsConfiguration)
-innr protected AccessibleAWTCanvas
+#API master signature file
+#Version 1.5.0_11
+CLSS protected java.awt.Canvas$AccessibleAWTCanvas
+cons protected AccessibleAWTCanvas(java.awt.Canvas)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleChildrenCount()
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleName()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleChild(int)
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole java.awt.Canvas$AccessibleAWTCanvas.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet java.awt.Component$AccessibleAWTComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+supr java.awt.Component$AccessibleAWTComponent
+CLSS protected abstract java.awt.Component$AccessibleAWTComponent
+cons protected AccessibleAWTComponent(java.awt.Component)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleChildrenCount()
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleName()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleChild(int)
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole java.awt.Component$AccessibleAWTComponent.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet java.awt.Component$AccessibleAWTComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+supr javax.accessibility.AccessibleContext
+CLSS protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+cons protected AccessibleAWTComponentHandler(java.awt.Component$AccessibleAWTComponent)
+intf java.awt.event.ComponentListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentHidden(java.awt.event.ComponentEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentMoved(java.awt.event.ComponentEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentResized(java.awt.event.ComponentEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentShown(java.awt.event.ComponentEvent)
+supr java.lang.Object
+CLSS protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+cons protected AccessibleAWTFocusHandler(java.awt.Component$AccessibleAWTComponent)
+intf java.awt.event.FocusListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler.focusGained(java.awt.event.FocusEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler.focusLost(java.awt.event.FocusEvent)
+supr java.lang.Object
+CLSS protected java.awt.Component$BltBufferStrategy
+cons protected BltBufferStrategy(java.awt.Component,int,java.awt.BufferCapabilities)
+fld  protected [Ljava.awt.image.VolatileImage; java.awt.Component$BltBufferStrategy.backBuffers
+fld  protected boolean java.awt.Component$BltBufferStrategy.validatedContents
+fld  protected int java.awt.Component$BltBufferStrategy.height
+fld  protected int java.awt.Component$BltBufferStrategy.width
+fld  protected java.awt.BufferCapabilities java.awt.Component$BltBufferStrategy.caps
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component$BltBufferStrategy.createBackBuffers(int)
+meth protected void java.awt.Component$BltBufferStrategy.revalidate()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.awt.Component$BltBufferStrategy.contentsLost()
+meth public boolean java.awt.Component$BltBufferStrategy.contentsRestored()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.awt.BufferCapabilities java.awt.Component$BltBufferStrategy.getCapabilities()
+meth public java.awt.Graphics java.awt.Component$BltBufferStrategy.getDrawGraphics()
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$BltBufferStrategy.show()
+supr java.awt.image.BufferStrategy
+CLSS protected java.awt.Component$FlipBufferStrategy
+cons protected FlipBufferStrategy(java.awt.Component,int,java.awt.BufferCapabilities) throws java.awt.AWTException
+fld  protected boolean java.awt.Component$FlipBufferStrategy.validatedContents
+fld  protected int java.awt.Component$FlipBufferStrategy.numBuffers
+fld  protected java.awt.BufferCapabilities java.awt.Component$FlipBufferStrategy.caps
+fld  protected java.awt.Image java.awt.Component$FlipBufferStrategy.drawBuffer
+fld  protected java.awt.image.VolatileImage java.awt.Component$FlipBufferStrategy.drawVBuffer
+meth protected java.awt.Image java.awt.Component$FlipBufferStrategy.getBackBuffer()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component$FlipBufferStrategy.createBuffers(int,java.awt.BufferCapabilities) throws java.awt.AWTException
+meth protected void java.awt.Component$FlipBufferStrategy.destroyBuffers()
+meth protected void java.awt.Component$FlipBufferStrategy.flip(java.awt.BufferCapabilities$FlipContents)
+meth protected void java.awt.Component$FlipBufferStrategy.revalidate()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.awt.Component$FlipBufferStrategy.contentsLost()
+meth public boolean java.awt.Component$FlipBufferStrategy.contentsRestored()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.awt.BufferCapabilities java.awt.Component$FlipBufferStrategy.getCapabilities()
+meth public java.awt.Graphics java.awt.Component$FlipBufferStrategy.getDrawGraphics()
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$FlipBufferStrategy.show()
+supr java.awt.image.BufferStrategy
+CLSS protected java.awt.Container$AccessibleAWTContainer
+cons protected AccessibleAWTContainer(java.awt.Container)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener java.awt.Container$AccessibleAWTContainer.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int java.awt.Container$AccessibleAWTContainer.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleName()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole java.awt.Component$AccessibleAWTComponent.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet java.awt.Component$AccessibleAWTComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void java.awt.Container$AccessibleAWTContainer.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+supr java.awt.Component$AccessibleAWTComponent
+CLSS protected java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler
+cons protected AccessibleContainerHandler(java.awt.Container$AccessibleAWTContainer)
+intf java.awt.event.ContainerListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler.componentAdded(java.awt.event.ContainerEvent)
+meth public void java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler.componentRemoved(java.awt.event.ContainerEvent)
+supr java.lang.Object
+CLSS public static final java.lang.Thread$State
+fld  public static final java.lang.Thread$State java.lang.Thread$State.BLOCKED
+fld  public static final java.lang.Thread$State java.lang.Thread$State.NEW
+fld  public static final java.lang.Thread$State java.lang.Thread$State.RUNNABLE
+fld  public static final java.lang.Thread$State java.lang.Thread$State.TERMINATED
+fld  public static final java.lang.Thread$State java.lang.Thread$State.TIMED_WAITING
+fld  public static final java.lang.Thread$State java.lang.Thread$State.WAITING
+intf java.io.Serializable
+intf java.lang.Comparable
+meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public final boolean java.lang.Enum.equals(java.lang.Object)
+meth public final int java.lang.Enum.compareTo(java.lang.Enum)
+meth public final int java.lang.Enum.hashCode()
+meth public final int java.lang.Enum.ordinal()
+meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
+meth public final java.lang.String java.lang.Enum.name()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Enum.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static final [Ljava.lang.Thread$State; java.lang.Thread$State.values()
+meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
+meth public static java.lang.Thread$State java.lang.Thread$State.valueOf(java.lang.String)
+meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
+supr java.lang.Enum
+CLSS public static abstract interface java.lang.Thread$UncaughtExceptionHandler
+meth public abstract void java.lang.Thread$UncaughtExceptionHandler.uncaughtException(java.lang.Thread,java.lang.Throwable)
+supr null
+CLSS protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+cons protected AccessibleAbstractButton(javax.swing.AbstractButton)
+fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
+fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
+fld  constant public static final int javax.accessibility.AccessibleText.WORD
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleAction
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+intf javax.accessibility.AccessibleText
+intf javax.accessibility.AccessibleValue
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JComponent$AccessibleJComponent.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
+meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr javax.swing.JComponent$AccessibleJComponent
+CLSS protected javax.swing.AbstractButton$ButtonChangeListener
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.swing.event.ChangeListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void javax.swing.AbstractButton$ButtonChangeListener.stateChanged(javax.swing.event.ChangeEvent)
+supr java.lang.Object
+CLSS protected javax.swing.JButton$AccessibleJButton
+cons protected AccessibleJButton(javax.swing.JButton)
+fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
+fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
+fld  constant public static final int javax.accessibility.AccessibleText.WORD
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleAction
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+intf javax.accessibility.AccessibleText
+intf javax.accessibility.AccessibleValue
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JButton$AccessibleJButton.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
+meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr javax.swing.AbstractButton$AccessibleAbstractButton
+CLSS protected javax.swing.JCheckBoxMenuItem$AccessibleJCheckBoxMenuItem
+cons protected AccessibleJCheckBoxMenuItem(javax.swing.JCheckBoxMenuItem)
+fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
+fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
+fld  constant public static final int javax.accessibility.AccessibleText.WORD
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.accessibility.AccessibleAction
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+intf javax.accessibility.AccessibleText
+intf javax.accessibility.AccessibleValue
+intf javax.swing.event.ChangeListener
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JCheckBoxMenuItem$AccessibleJCheckBoxMenuItem.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
+meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JMenuItem$AccessibleJMenuItem.stateChanged(javax.swing.event.ChangeEvent)
+supr javax.swing.JMenuItem$AccessibleJMenuItem
+CLSS public abstract javax.swing.JComponent$AccessibleJComponent
+cons protected AccessibleJComponent(javax.swing.JComponent)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JComponent$AccessibleJComponent.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr java.awt.Container$AccessibleAWTContainer
+CLSS protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+cons protected AccessibleContainerHandler(javax.swing.JComponent$AccessibleJComponent)
+intf java.awt.event.ContainerListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler.componentAdded(java.awt.event.ContainerEvent)
+meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler.componentRemoved(java.awt.event.ContainerEvent)
+supr java.lang.Object
+CLSS protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+cons protected AccessibleFocusHandler(javax.swing.JComponent$AccessibleJComponent)
+intf java.awt.event.FocusListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler.focusGained(java.awt.event.FocusEvent)
+meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler.focusLost(java.awt.event.FocusEvent)
+supr java.lang.Object
+CLSS protected javax.swing.JList$AccessibleJList
+cons public AccessibleJList(javax.swing.JList)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+innr protected javax.swing.JList$AccessibleJList$AccessibleJListChild
+intf java.beans.PropertyChangeListener
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+intf javax.accessibility.AccessibleSelection
+intf javax.swing.event.ListDataListener
+intf javax.swing.event.ListSelectionListener
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.JList$AccessibleJList.isAccessibleChildSelected(int)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.JList$AccessibleJList.getAccessibleChildrenCount()
+meth public int javax.swing.JList$AccessibleJList.getAccessibleSelectionCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList.getAccessibleChild(int)
+meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList.getAccessibleSelection(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JList$AccessibleJList.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.swing.JList$AccessibleJList.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JList$AccessibleJList.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JList$AccessibleJList.addAccessibleSelection(int)
+meth public void javax.swing.JList$AccessibleJList.clearAccessibleSelection()
+meth public void javax.swing.JList$AccessibleJList.contentsChanged(javax.swing.event.ListDataEvent)
+meth public void javax.swing.JList$AccessibleJList.intervalAdded(javax.swing.event.ListDataEvent)
+meth public void javax.swing.JList$AccessibleJList.intervalRemoved(javax.swing.event.ListDataEvent)
+meth public void javax.swing.JList$AccessibleJList.propertyChange(java.beans.PropertyChangeEvent)
+meth public void javax.swing.JList$AccessibleJList.removeAccessibleSelection(int)
+meth public void javax.swing.JList$AccessibleJList.selectAllAccessibleSelection()
+meth public void javax.swing.JList$AccessibleJList.valueChanged(javax.swing.event.ListSelectionEvent)
+supr javax.swing.JComponent$AccessibleJComponent
+CLSS protected javax.swing.JList$AccessibleJList$AccessibleJListChild
+cons public AccessibleJListChild(javax.swing.JList$AccessibleJList,javax.swing.JList,int)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
 intf javax.accessibility.Accessible
-meth public java.awt.image.BufferStrategy getBufferStrategy()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public void addNotify()
-meth public void createBufferStrategy(int)
-meth public void createBufferStrategy(int,java.awt.BufferCapabilities) throws java.awt.AWTException
-meth public void paint(java.awt.Graphics)
-meth public void update(java.awt.Graphics)
-supr java.awt.Component
-hfds base,nameCounter,serialVersionUID
-
-CLSS public abstract java.awt.Component
-cons protected Component()
-fld public final static float BOTTOM_ALIGNMENT = 1.0
-fld public final static float CENTER_ALIGNMENT = 0.5
-fld public final static float LEFT_ALIGNMENT = 0.0
-fld public final static float RIGHT_ALIGNMENT = 1.0
-fld public final static float TOP_ALIGNMENT = 0.0
-innr protected BltBufferStrategy
-innr protected FlipBufferStrategy
-innr protected abstract AccessibleAWTComponent
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleIcon()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.contains(java.awt.Point)
+meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.isEnabled()
+meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.isFocusTraversable()
+meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.isShowing()
+meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.isVisible()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleChildrenCount()
+meth public int javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleIndexInParent()
+meth public java.awt.Color javax.swing.JList$AccessibleJList$AccessibleJListChild.getBackground()
+meth public java.awt.Color javax.swing.JList$AccessibleJList$AccessibleJListChild.getForeground()
+meth public java.awt.Cursor javax.swing.JList$AccessibleJList$AccessibleJListChild.getCursor()
+meth public java.awt.Dimension javax.swing.JList$AccessibleJList$AccessibleJListChild.getSize()
+meth public java.awt.Font javax.swing.JList$AccessibleJList$AccessibleJListChild.getFont()
+meth public java.awt.FontMetrics javax.swing.JList$AccessibleJList$AccessibleJListChild.getFontMetrics(java.awt.Font)
+meth public java.awt.Point javax.swing.JList$AccessibleJList$AccessibleJListChild.getLocation()
+meth public java.awt.Point javax.swing.JList$AccessibleJList$AccessibleJListChild.getLocationOnScreen()
+meth public java.awt.Rectangle javax.swing.JList$AccessibleJList$AccessibleJListChild.getBounds()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleDescription()
+meth public java.lang.String javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleName()
+meth public java.util.Locale javax.swing.JList$AccessibleJList$AccessibleJListChild.getLocale()
+meth public javax.accessibility.Accessible javax.accessibility.AccessibleContext.getAccessibleParent()
+meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleComponent()
+meth public javax.accessibility.AccessibleContext javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleContext()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.addFocusListener(java.awt.event.FocusListener)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.removeFocusListener(java.awt.event.FocusListener)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.requestFocus()
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setAccessibleDescription(java.lang.String)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setAccessibleName(java.lang.String)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setBackground(java.awt.Color)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setBounds(java.awt.Rectangle)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setCursor(java.awt.Cursor)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setEnabled(boolean)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setFont(java.awt.Font)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setForeground(java.awt.Color)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setLocation(java.awt.Point)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setSize(java.awt.Dimension)
+meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setVisible(boolean)
+supr javax.accessibility.AccessibleContext
+CLSS protected javax.swing.JMenu$AccessibleJMenu
+cons protected AccessibleJMenu(javax.swing.JMenu)
+fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
+fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
+fld  constant public static final int javax.accessibility.AccessibleText.WORD
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.accessibility.AccessibleAction
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+intf javax.accessibility.AccessibleSelection
+intf javax.accessibility.AccessibleText
+intf javax.accessibility.AccessibleValue
+intf javax.swing.event.ChangeListener
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
+meth public boolean javax.swing.JMenu$AccessibleJMenu.isAccessibleChildSelected(int)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
+meth public int javax.swing.JMenu$AccessibleJMenu.getAccessibleChildrenCount()
+meth public int javax.swing.JMenu$AccessibleJMenu.getAccessibleSelectionCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JMenu$AccessibleJMenu.getAccessibleChild(int)
+meth public javax.accessibility.Accessible javax.swing.JMenu$AccessibleJMenu.getAccessibleSelection(int)
+meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JMenu$AccessibleJMenu.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.swing.JMenu$AccessibleJMenu.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
+meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JMenu$AccessibleJMenu.addAccessibleSelection(int)
+meth public void javax.swing.JMenu$AccessibleJMenu.clearAccessibleSelection()
+meth public void javax.swing.JMenu$AccessibleJMenu.removeAccessibleSelection(int)
+meth public void javax.swing.JMenu$AccessibleJMenu.selectAllAccessibleSelection()
+meth public void javax.swing.JMenuItem$AccessibleJMenuItem.stateChanged(javax.swing.event.ChangeEvent)
+supr javax.swing.JMenuItem$AccessibleJMenuItem
+CLSS protected javax.swing.JMenu$WinListener
+cons public WinListener(javax.swing.JMenu,javax.swing.JPopupMenu)
+intf java.awt.event.WindowFocusListener
+intf java.awt.event.WindowListener
+intf java.awt.event.WindowStateListener
+intf java.io.Serializable
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.event.WindowAdapter.windowActivated(java.awt.event.WindowEvent)
+meth public void java.awt.event.WindowAdapter.windowClosed(java.awt.event.WindowEvent)
+meth public void java.awt.event.WindowAdapter.windowDeactivated(java.awt.event.WindowEvent)
+meth public void java.awt.event.WindowAdapter.windowDeiconified(java.awt.event.WindowEvent)
+meth public void java.awt.event.WindowAdapter.windowGainedFocus(java.awt.event.WindowEvent)
+meth public void java.awt.event.WindowAdapter.windowIconified(java.awt.event.WindowEvent)
+meth public void java.awt.event.WindowAdapter.windowLostFocus(java.awt.event.WindowEvent)
+meth public void java.awt.event.WindowAdapter.windowOpened(java.awt.event.WindowEvent)
+meth public void java.awt.event.WindowAdapter.windowStateChanged(java.awt.event.WindowEvent)
+meth public void javax.swing.JMenu$WinListener.windowClosing(java.awt.event.WindowEvent)
+supr java.awt.event.WindowAdapter
+CLSS protected javax.swing.JMenuItem$AccessibleJMenuItem
+fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
+fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
+fld  constant public static final int javax.accessibility.AccessibleText.WORD
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.accessibility.AccessibleAction
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+intf javax.accessibility.AccessibleText
+intf javax.accessibility.AccessibleValue
+intf javax.swing.event.ChangeListener
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JMenuItem$AccessibleJMenuItem.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
+meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JMenuItem$AccessibleJMenuItem.stateChanged(javax.swing.event.ChangeEvent)
+supr javax.swing.AbstractButton$AccessibleAbstractButton
+CLSS protected javax.swing.JPanel$AccessibleJPanel
+cons protected AccessibleJPanel(javax.swing.JPanel)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JPanel$AccessibleJPanel.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr javax.swing.JComponent$AccessibleJComponent
+CLSS protected javax.swing.JPopupMenu$AccessibleJPopupMenu
+cons protected AccessibleJPopupMenu(javax.swing.JPopupMenu)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.beans.PropertyChangeListener
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JPopupMenu$AccessibleJPopupMenu.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JPopupMenu$AccessibleJPopupMenu.propertyChange(java.beans.PropertyChangeEvent)
+supr javax.swing.JComponent$AccessibleJComponent
+CLSS public static javax.swing.JPopupMenu$Separator
+cons public Separator()
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.JSeparator$AccessibleJSeparator
+innr public abstract javax.swing.JComponent$AccessibleJComponent
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
 intf java.io.Serializable
-meth protected boolean requestFocus(boolean)
-meth protected boolean requestFocusInWindow(boolean)
-meth protected final void disableEvents(long)
-meth protected final void enableEvents(long)
-meth protected java.awt.AWTEvent coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
-meth protected java.lang.String paramString()
-meth protected void firePropertyChange(java.lang.String,boolean,boolean)
-meth protected void firePropertyChange(java.lang.String,int,int)
-meth protected void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth protected void processComponentEvent(java.awt.event.ComponentEvent)
-meth protected void processEvent(java.awt.AWTEvent)
-meth protected void processFocusEvent(java.awt.event.FocusEvent)
-meth protected void processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
-meth protected void processHierarchyEvent(java.awt.event.HierarchyEvent)
-meth protected void processInputMethodEvent(java.awt.event.InputMethodEvent)
-meth protected void processKeyEvent(java.awt.event.KeyEvent)
-meth protected void processMouseEvent(java.awt.event.MouseEvent)
-meth protected void processMouseMotionEvent(java.awt.event.MouseEvent)
-meth protected void processMouseWheelEvent(java.awt.event.MouseWheelEvent)
-meth public <%0 extends java.util.EventListener> {%%0}[] getListeners(java.lang.Class<{%%0}>)
-meth public boolean action(java.awt.Event,java.lang.Object)
- anno 0 java.lang.Deprecated()
-meth public boolean areFocusTraversalKeysSet(int)
-meth public boolean contains(int,int)
-meth public boolean contains(java.awt.Point)
-meth public boolean getFocusTraversalKeysEnabled()
-meth public boolean getIgnoreRepaint()
-meth public boolean gotFocus(java.awt.Event,java.lang.Object)
- anno 0 java.lang.Deprecated()
-meth public boolean handleEvent(java.awt.Event)
- anno 0 java.lang.Deprecated()
-meth public boolean hasFocus()
-meth public boolean imageUpdate(java.awt.Image,int,int,int,int,int)
-meth public boolean inside(int,int)
- anno 0 java.lang.Deprecated()
-meth public boolean isBackgroundSet()
-meth public boolean isCursorSet()
-meth public boolean isDisplayable()
-meth public boolean isDoubleBuffered()
-meth public boolean isEnabled()
-meth public boolean isFocusCycleRoot(java.awt.Container)
-meth public boolean isFocusOwner()
-meth public boolean isFocusTraversable()
- anno 0 java.lang.Deprecated()
-meth public boolean isFocusable()
-meth public boolean isFontSet()
-meth public boolean isForegroundSet()
-meth public boolean isLightweight()
-meth public boolean isMaximumSizeSet()
-meth public boolean isMinimumSizeSet()
-meth public boolean isOpaque()
-meth public boolean isPreferredSizeSet()
-meth public boolean isShowing()
-meth public boolean isValid()
-meth public boolean isVisible()
-meth public boolean keyDown(java.awt.Event,int)
- anno 0 java.lang.Deprecated()
-meth public boolean keyUp(java.awt.Event,int)
- anno 0 java.lang.Deprecated()
-meth public boolean lostFocus(java.awt.Event,java.lang.Object)
- anno 0 java.lang.Deprecated()
-meth public boolean mouseDown(java.awt.Event,int,int)
- anno 0 java.lang.Deprecated()
-meth public boolean mouseDrag(java.awt.Event,int,int)
- anno 0 java.lang.Deprecated()
-meth public boolean mouseEnter(java.awt.Event,int,int)
- anno 0 java.lang.Deprecated()
-meth public boolean mouseExit(java.awt.Event,int,int)
- anno 0 java.lang.Deprecated()
-meth public boolean mouseMove(java.awt.Event,int,int)
- anno 0 java.lang.Deprecated()
-meth public boolean mouseUp(java.awt.Event,int,int)
- anno 0 java.lang.Deprecated()
-meth public boolean postEvent(java.awt.Event)
- anno 0 java.lang.Deprecated()
-meth public boolean prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
-meth public boolean prepareImage(java.awt.Image,java.awt.image.ImageObserver)
-meth public boolean requestFocusInWindow()
-meth public final java.lang.Object getTreeLock()
-meth public final void dispatchEvent(java.awt.AWTEvent)
-meth public float getAlignmentX()
-meth public float getAlignmentY()
-meth public int checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
-meth public int checkImage(java.awt.Image,java.awt.image.ImageObserver)
-meth public int getHeight()
-meth public int getWidth()
-meth public int getX()
-meth public int getY()
-meth public java.awt.Color getBackground()
-meth public java.awt.Color getForeground()
-meth public java.awt.Component getComponentAt(int,int)
-meth public java.awt.Component getComponentAt(java.awt.Point)
-meth public java.awt.Component locate(int,int)
- anno 0 java.lang.Deprecated()
-meth public java.awt.ComponentOrientation getComponentOrientation()
-meth public java.awt.Container getFocusCycleRootAncestor()
-meth public java.awt.Container getParent()
-meth public java.awt.Cursor getCursor()
-meth public java.awt.Dimension getMaximumSize()
-meth public java.awt.Dimension getMinimumSize()
-meth public java.awt.Dimension getPreferredSize()
-meth public java.awt.Dimension getSize()
-meth public java.awt.Dimension getSize(java.awt.Dimension)
-meth public java.awt.Dimension minimumSize()
- anno 0 java.lang.Deprecated()
-meth public java.awt.Dimension preferredSize()
- anno 0 java.lang.Deprecated()
-meth public java.awt.Dimension size()
- anno 0 java.lang.Deprecated()
-meth public java.awt.Font getFont()
-meth public java.awt.FontMetrics getFontMetrics(java.awt.Font)
-meth public java.awt.Graphics getGraphics()
-meth public java.awt.GraphicsConfiguration getGraphicsConfiguration()
-meth public java.awt.Image createImage(int,int)
-meth public java.awt.Image createImage(java.awt.image.ImageProducer)
-meth public java.awt.Point getLocation()
-meth public java.awt.Point getLocation(java.awt.Point)
-meth public java.awt.Point getLocationOnScreen()
-meth public java.awt.Point getMousePosition()
-meth public java.awt.Point location()
- anno 0 java.lang.Deprecated()
-meth public java.awt.Rectangle bounds()
- anno 0 java.lang.Deprecated()
-meth public java.awt.Rectangle getBounds()
-meth public java.awt.Rectangle getBounds(java.awt.Rectangle)
-meth public java.awt.Toolkit getToolkit()
-meth public java.awt.dnd.DropTarget getDropTarget()
-meth public java.awt.event.ComponentListener[] getComponentListeners()
-meth public java.awt.event.FocusListener[] getFocusListeners()
-meth public java.awt.event.HierarchyBoundsListener[] getHierarchyBoundsListeners()
-meth public java.awt.event.HierarchyListener[] getHierarchyListeners()
-meth public java.awt.event.InputMethodListener[] getInputMethodListeners()
-meth public java.awt.event.KeyListener[] getKeyListeners()
-meth public java.awt.event.MouseListener[] getMouseListeners()
-meth public java.awt.event.MouseMotionListener[] getMouseMotionListeners()
-meth public java.awt.event.MouseWheelListener[] getMouseWheelListeners()
-meth public java.awt.im.InputContext getInputContext()
-meth public java.awt.im.InputMethodRequests getInputMethodRequests()
-meth public java.awt.image.ColorModel getColorModel()
-meth public java.awt.image.VolatileImage createVolatileImage(int,int)
-meth public java.awt.image.VolatileImage createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
-meth public java.awt.peer.ComponentPeer getPeer()
- anno 0 java.lang.Deprecated()
-meth public java.beans.PropertyChangeListener[] getPropertyChangeListeners()
-meth public java.beans.PropertyChangeListener[] getPropertyChangeListeners(java.lang.String)
-meth public java.lang.String getName()
-meth public java.lang.String toString()
-meth public java.util.Locale getLocale()
-meth public java.util.Set<java.awt.AWTKeyStroke> getFocusTraversalKeys(int)
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public void add(java.awt.PopupMenu)
-meth public void addComponentListener(java.awt.event.ComponentListener)
-meth public void addFocusListener(java.awt.event.FocusListener)
-meth public void addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
-meth public void addHierarchyListener(java.awt.event.HierarchyListener)
-meth public void addInputMethodListener(java.awt.event.InputMethodListener)
-meth public void addKeyListener(java.awt.event.KeyListener)
-meth public void addMouseListener(java.awt.event.MouseListener)
-meth public void addMouseMotionListener(java.awt.event.MouseMotionListener)
-meth public void addMouseWheelListener(java.awt.event.MouseWheelListener)
-meth public void addNotify()
-meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
-meth public void applyComponentOrientation(java.awt.ComponentOrientation)
-meth public void deliverEvent(java.awt.Event)
- anno 0 java.lang.Deprecated()
-meth public void disable()
- anno 0 java.lang.Deprecated()
-meth public void doLayout()
-meth public void enable()
- anno 0 java.lang.Deprecated()
-meth public void enable(boolean)
- anno 0 java.lang.Deprecated()
-meth public void enableInputMethods(boolean)
-meth public void firePropertyChange(java.lang.String,byte,byte)
-meth public void firePropertyChange(java.lang.String,char,char)
-meth public void firePropertyChange(java.lang.String,double,double)
-meth public void firePropertyChange(java.lang.String,float,float)
-meth public void firePropertyChange(java.lang.String,long,long)
-meth public void firePropertyChange(java.lang.String,short,short)
-meth public void hide()
- anno 0 java.lang.Deprecated()
-meth public void invalidate()
-meth public void layout()
- anno 0 java.lang.Deprecated()
-meth public void list()
-meth public void list(java.io.PrintStream)
-meth public void list(java.io.PrintStream,int)
-meth public void list(java.io.PrintWriter)
-meth public void list(java.io.PrintWriter,int)
-meth public void move(int,int)
- anno 0 java.lang.Deprecated()
-meth public void nextFocus()
- anno 0 java.lang.Deprecated()
-meth public void paint(java.awt.Graphics)
-meth public void paintAll(java.awt.Graphics)
-meth public void print(java.awt.Graphics)
-meth public void printAll(java.awt.Graphics)
-meth public void remove(java.awt.MenuComponent)
-meth public void removeComponentListener(java.awt.event.ComponentListener)
-meth public void removeFocusListener(java.awt.event.FocusListener)
-meth public void removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
-meth public void removeHierarchyListener(java.awt.event.HierarchyListener)
-meth public void removeInputMethodListener(java.awt.event.InputMethodListener)
-meth public void removeKeyListener(java.awt.event.KeyListener)
-meth public void removeMouseListener(java.awt.event.MouseListener)
-meth public void removeMouseMotionListener(java.awt.event.MouseMotionListener)
-meth public void removeMouseWheelListener(java.awt.event.MouseWheelListener)
-meth public void removeNotify()
-meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
-meth public void repaint()
-meth public void repaint(int,int,int,int)
-meth public void repaint(long)
-meth public void repaint(long,int,int,int,int)
-meth public void requestFocus()
-meth public void reshape(int,int,int,int)
- anno 0 java.lang.Deprecated()
-meth public void resize(int,int)
- anno 0 java.lang.Deprecated()
-meth public void resize(java.awt.Dimension)
- anno 0 java.lang.Deprecated()
-meth public void setBackground(java.awt.Color)
-meth public void setBounds(int,int,int,int)
-meth public void setBounds(java.awt.Rectangle)
-meth public void setComponentOrientation(java.awt.ComponentOrientation)
-meth public void setCursor(java.awt.Cursor)
-meth public void setDropTarget(java.awt.dnd.DropTarget)
-meth public void setEnabled(boolean)
-meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTKeyStroke>)
-meth public void setFocusTraversalKeysEnabled(boolean)
-meth public void setFocusable(boolean)
-meth public void setFont(java.awt.Font)
-meth public void setForeground(java.awt.Color)
-meth public void setIgnoreRepaint(boolean)
-meth public void setLocale(java.util.Locale)
-meth public void setLocation(int,int)
-meth public void setLocation(java.awt.Point)
-meth public void setMaximumSize(java.awt.Dimension)
-meth public void setMinimumSize(java.awt.Dimension)
-meth public void setName(java.lang.String)
-meth public void setPreferredSize(java.awt.Dimension)
-meth public void setSize(int,int)
-meth public void setSize(java.awt.Dimension)
-meth public void setVisible(boolean)
-meth public void show()
- anno 0 java.lang.Deprecated()
-meth public void show(boolean)
- anno 0 java.lang.Deprecated()
-meth public void transferFocus()
-meth public void transferFocusBackward()
-meth public void transferFocusUpCycle()
-meth public void update(java.awt.Graphics)
-meth public void validate()
-supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,containerListenerK,cursor,dbg,dropTarget,enabled,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,metrics,minSize,minSizeSet,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,NativeInLightFixer,SingleBufferStrategy
-
-CLSS public java.awt.Container
-cons public Container()
-innr protected AccessibleAWTContainer
-meth protected java.lang.String paramString()
-meth protected void addImpl(java.awt.Component,java.lang.Object,int)
-meth protected void processContainerEvent(java.awt.event.ContainerEvent)
-meth protected void processEvent(java.awt.AWTEvent)
-meth protected void validateTree()
-meth public <%0 extends java.util.EventListener> {%%0}[] getListeners(java.lang.Class<{%%0}>)
-meth public boolean areFocusTraversalKeysSet(int)
-meth public boolean isAncestorOf(java.awt.Component)
-meth public boolean isFocusCycleRoot()
-meth public boolean isFocusCycleRoot(java.awt.Container)
-meth public boolean isFocusTraversalPolicySet()
-meth public final boolean isFocusTraversalPolicyProvider()
-meth public final int getComponentZOrder(java.awt.Component)
-meth public final void setComponentZOrder(java.awt.Component,int)
-meth public final void setFocusTraversalPolicyProvider(boolean)
-meth public float getAlignmentX()
-meth public float getAlignmentY()
-meth public int countComponents()
- anno 0 java.lang.Deprecated()
-meth public int getComponentCount()
-meth public java.awt.Component add(java.awt.Component)
-meth public java.awt.Component add(java.awt.Component,int)
-meth public java.awt.Component add(java.lang.String,java.awt.Component)
-meth public java.awt.Component findComponentAt(int,int)
-meth public java.awt.Component findComponentAt(java.awt.Point)
-meth public java.awt.Component getComponent(int)
-meth public java.awt.Component getComponentAt(int,int)
-meth public java.awt.Component getComponentAt(java.awt.Point)
-meth public java.awt.Component locate(int,int)
- anno 0 java.lang.Deprecated()
-meth public java.awt.Component[] getComponents()
-meth public java.awt.Dimension getMaximumSize()
-meth public java.awt.Dimension getMinimumSize()
-meth public java.awt.Dimension getPreferredSize()
-meth public java.awt.Dimension minimumSize()
- anno 0 java.lang.Deprecated()
-meth public java.awt.Dimension preferredSize()
- anno 0 java.lang.Deprecated()
-meth public java.awt.FocusTraversalPolicy getFocusTraversalPolicy()
-meth public java.awt.Insets getInsets()
-meth public java.awt.Insets insets()
- anno 0 java.lang.Deprecated()
-meth public java.awt.LayoutManager getLayout()
-meth public java.awt.Point getMousePosition(boolean)
-meth public java.awt.event.ContainerListener[] getContainerListeners()
-meth public java.util.Set<java.awt.AWTKeyStroke> getFocusTraversalKeys(int)
-meth public void add(java.awt.Component,java.lang.Object)
-meth public void add(java.awt.Component,java.lang.Object,int)
-meth public void addContainerListener(java.awt.event.ContainerListener)
-meth public void addNotify()
-meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
-meth public void applyComponentOrientation(java.awt.ComponentOrientation)
-meth public void deliverEvent(java.awt.Event)
- anno 0 java.lang.Deprecated()
-meth public void doLayout()
-meth public void invalidate()
-meth public void layout()
- anno 0 java.lang.Deprecated()
-meth public void list(java.io.PrintStream,int)
-meth public void list(java.io.PrintWriter,int)
-meth public void paint(java.awt.Graphics)
-meth public void paintComponents(java.awt.Graphics)
-meth public void print(java.awt.Graphics)
-meth public void printComponents(java.awt.Graphics)
-meth public void remove(int)
-meth public void remove(java.awt.Component)
-meth public void removeAll()
-meth public void removeContainerListener(java.awt.event.ContainerListener)
-meth public void removeNotify()
-meth public void setFocusCycleRoot(boolean)
-meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTKeyStroke>)
-meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
-meth public void setFont(java.awt.Font)
-meth public void setLayout(java.awt.LayoutManager)
-meth public void transferFocusBackward()
-meth public void transferFocusDownCycle()
-meth public void update(java.awt.Graphics)
-meth public void validate()
-supr java.awt.Component
-hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,modalAppContext,modalComp,ncomponents,printing,printingThreads,serialPersistentFields,serialVersionUID
-hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
-
-CLSS public java.awt.FlowLayout
-cons public FlowLayout()
-cons public FlowLayout(int)
-cons public FlowLayout(int,int,int)
-fld public final static int CENTER = 1
-fld public final static int LEADING = 3
-fld public final static int LEFT = 0
-fld public final static int RIGHT = 2
-fld public final static int TRAILING = 4
-intf java.awt.LayoutManager
+intf javax.accessibility.Accessible
+intf javax.swing.SwingConstants
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.lang.String javax.swing.JSeparator.paramString()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public int javax.swing.JSeparator.getOrientation()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JPopupMenu$Separator.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JSeparator.getAccessibleContext()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.SeparatorUI javax.swing.JSeparator.getUI()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.setLayout(java.awt.LayoutManager)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setEnabled(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JSeparator.setOrientation(int)
+meth public void javax.swing.JSeparator.setUI(javax.swing.plaf.SeparatorUI)
+meth public void javax.swing.JSeparator.updateUI()
+supr javax.swing.JSeparator
+CLSS protected javax.swing.JSeparator$AccessibleJSeparator
+cons protected AccessibleJSeparator(javax.swing.JSeparator)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
 intf java.io.Serializable
-meth public int getAlignment()
-meth public int getHgap()
-meth public int getVgap()
-meth public java.awt.Dimension minimumLayoutSize(java.awt.Container)
-meth public java.awt.Dimension preferredLayoutSize(java.awt.Container)
-meth public java.lang.String toString()
-meth public void addLayoutComponent(java.lang.String,java.awt.Component)
-meth public void layoutContainer(java.awt.Container)
-meth public void removeLayoutComponent(java.awt.Component)
-meth public void setAlignment(int)
-meth public void setHgap(int)
-meth public void setVgap(int)
-supr java.lang.Object
-hfds align,currentSerialVersion,hgap,newAlign,serialVersionOnStream,serialVersionUID,vgap
-
-CLSS public abstract interface java.awt.ItemSelectable
-meth public abstract java.lang.Object[] getSelectedObjects()
-meth public abstract void addItemListener(java.awt.event.ItemListener)
-meth public abstract void removeItemListener(java.awt.event.ItemListener)
-
-CLSS public abstract interface java.awt.LayoutManager
-meth public abstract java.awt.Dimension minimumLayoutSize(java.awt.Container)
-meth public abstract java.awt.Dimension preferredLayoutSize(java.awt.Container)
-meth public abstract void addLayoutComponent(java.lang.String,java.awt.Component)
-meth public abstract void layoutContainer(java.awt.Container)
-meth public abstract void removeLayoutComponent(java.awt.Component)
-
-CLSS public abstract interface java.awt.MenuContainer
-meth public abstract boolean postEvent(java.awt.Event)
- anno 0 java.lang.Deprecated()
-meth public abstract java.awt.Font getFont()
-meth public abstract void remove(java.awt.MenuComponent)
-
-CLSS public abstract java.awt.event.MouseAdapter
-cons public MouseAdapter()
-intf java.awt.event.MouseListener
-meth public void mouseClicked(java.awt.event.MouseEvent)
-meth public void mouseEntered(java.awt.event.MouseEvent)
-meth public void mouseExited(java.awt.event.MouseEvent)
-meth public void mousePressed(java.awt.event.MouseEvent)
-meth public void mouseReleased(java.awt.event.MouseEvent)
-supr java.lang.Object
-
-CLSS public abstract interface java.awt.event.MouseListener
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JSeparator$AccessibleJSeparator.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr javax.swing.JComponent$AccessibleJComponent
+CLSS protected javax.swing.JToggleButton$AccessibleJToggleButton
+cons public AccessibleJToggleButton(javax.swing.JToggleButton)
+fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
+fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
+fld  constant public static final int javax.accessibility.AccessibleText.WORD
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
+fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
+innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+intf java.awt.event.ItemListener
+intf java.io.Serializable
 intf java.util.EventListener
-meth public abstract void mouseClicked(java.awt.event.MouseEvent)
-meth public abstract void mouseEntered(java.awt.event.MouseEvent)
-meth public abstract void mouseExited(java.awt.event.MouseEvent)
-meth public abstract void mousePressed(java.awt.event.MouseEvent)
-meth public abstract void mouseReleased(java.awt.event.MouseEvent)
-
-CLSS public abstract interface java.awt.image.ImageObserver
-fld public final static int ABORT = 128
-fld public final static int ALLBITS = 32
-fld public final static int ERROR = 64
-fld public final static int FRAMEBITS = 16
-fld public final static int HEIGHT = 2
-fld public final static int PROPERTIES = 4
-fld public final static int SOMEBITS = 8
-fld public final static int WIDTH = 1
-meth public abstract boolean imageUpdate(java.awt.Image,int,int,int,int,int)
-
-CLSS public abstract interface java.io.Serializable
-
-CLSS public java.lang.Object
-cons public Object()
-meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
-meth protected void finalize() throws java.lang.Throwable
-meth public boolean equals(java.lang.Object)
-meth public final java.lang.Class<?> getClass()
-meth public final void notify()
-meth public final void notifyAll()
-meth public final void wait() throws java.lang.InterruptedException
-meth public final void wait(long) throws java.lang.InterruptedException
-meth public final void wait(long,int) throws java.lang.InterruptedException
-meth public int hashCode()
-meth public java.lang.String toString()
-
-CLSS public abstract interface java.util.EventListener
-
-CLSS public java.util.EventObject
-cons public EventObject(java.lang.Object)
-fld protected java.lang.Object source
-intf java.io.Serializable
-meth public java.lang.Object getSource()
-meth public java.lang.String toString()
-supr java.lang.Object
-hfds serialVersionUID
-
-CLSS public abstract interface javax.accessibility.Accessible
-meth public abstract javax.accessibility.AccessibleContext getAccessibleContext()
-
-CLSS public abstract javax.swing.AbstractButton
-cons public AbstractButton()
-fld protected java.awt.event.ActionListener actionListener
-fld protected java.awt.event.ItemListener itemListener
-fld protected javax.swing.ButtonModel model
-fld protected javax.swing.event.ChangeEvent changeEvent
-fld protected javax.swing.event.ChangeListener changeListener
-fld public final static java.lang.String BORDER_PAINTED_CHANGED_PROPERTY = "borderPainted"
-fld public final static java.lang.String CONTENT_AREA_FILLED_CHANGED_PROPERTY = "contentAreaFilled"
-fld public final static java.lang.String DISABLED_ICON_CHANGED_PROPERTY = "disabledIcon"
-fld public final static java.lang.String DISABLED_SELECTED_ICON_CHANGED_PROPERTY = "disabledSelectedIcon"
-fld public final static java.lang.String FOCUS_PAINTED_CHANGED_PROPERTY = "focusPainted"
-fld public final static java.lang.String HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY = "horizontalAlignment"
-fld public final static java.lang.String HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY = "horizontalTextPosition"
-fld public final static java.lang.String ICON_CHANGED_PROPERTY = "icon"
-fld public final static java.lang.String MARGIN_CHANGED_PROPERTY = "margin"
-fld public final static java.lang.String MNEMONIC_CHANGED_PROPERTY = "mnemonic"
-fld public final static java.lang.String MODEL_CHANGED_PROPERTY = "model"
-fld public final static java.lang.String PRESSED_ICON_CHANGED_PROPERTY = "pressedIcon"
-fld public final static java.lang.String ROLLOVER_ENABLED_CHANGED_PROPERTY = "rolloverEnabled"
-fld public final static java.lang.String ROLLOVER_ICON_CHANGED_PROPERTY = "rolloverIcon"
-fld public final static java.lang.String ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY = "rolloverSelectedIcon"
-fld public final static java.lang.String SELECTED_ICON_CHANGED_PROPERTY = "selectedIcon"
-fld public final static java.lang.String TEXT_CHANGED_PROPERTY = "text"
-fld public final static java.lang.String VERTICAL_ALIGNMENT_CHANGED_PROPERTY = "verticalAlignment"
-fld public final static java.lang.String VERTICAL_TEXT_POSITION_CHANGED_PROPERTY = "verticalTextPosition"
-innr protected ButtonChangeListener
-innr protected abstract AccessibleAbstractButton
+intf javax.accessibility.AccessibleAction
+intf javax.accessibility.AccessibleComponent
+intf javax.accessibility.AccessibleExtendedComponent
+intf javax.accessibility.AccessibleText
+intf javax.accessibility.AccessibleValue
+meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
+meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
+meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
+meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
+meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
+meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
+meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
+meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
+meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.JToggleButton$AccessibleJToggleButton.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
+meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.swing.JToggleButton$AccessibleJToggleButton.itemStateChanged(java.awt.event.ItemEvent)
+supr javax.swing.AbstractButton$AccessibleAbstractButton
+CLSS public static javax.swing.JToggleButton$ToggleButtonModel
+cons public ToggleButtonModel()
+fld  constant public static final int javax.swing.DefaultButtonModel.ARMED
+fld  constant public static final int javax.swing.DefaultButtonModel.ENABLED
+fld  constant public static final int javax.swing.DefaultButtonModel.PRESSED
+fld  constant public static final int javax.swing.DefaultButtonModel.ROLLOVER
+fld  constant public static final int javax.swing.DefaultButtonModel.SELECTED
+fld  protected int javax.swing.DefaultButtonModel.mnemonic
+fld  protected int javax.swing.DefaultButtonModel.stateMask
+fld  protected java.lang.String javax.swing.DefaultButtonModel.actionCommand
+fld  protected javax.swing.ButtonGroup javax.swing.DefaultButtonModel.group
+fld  protected javax.swing.event.EventListenerList javax.swing.DefaultButtonModel.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.DefaultButtonModel.changeEvent
 intf java.awt.ItemSelectable
-intf javax.swing.SwingConstants
-meth protected int checkHorizontalKey(int,java.lang.String)
-meth protected int checkVerticalKey(int,java.lang.String)
-meth protected java.awt.event.ActionListener createActionListener()
-meth protected java.awt.event.ItemListener createItemListener()
-meth protected java.beans.PropertyChangeListener createActionPropertyChangeListener(javax.swing.Action)
-meth protected java.lang.String paramString()
-meth protected javax.swing.event.ChangeListener createChangeListener()
-meth protected void addImpl(java.awt.Component,java.lang.Object,int)
-meth protected void configurePropertiesFromAction(javax.swing.Action)
-meth protected void fireActionPerformed(java.awt.event.ActionEvent)
-meth protected void fireItemStateChanged(java.awt.event.ItemEvent)
-meth protected void fireStateChanged()
-meth protected void init(java.lang.String,javax.swing.Icon)
-meth protected void paintBorder(java.awt.Graphics)
-meth public boolean imageUpdate(java.awt.Image,int,int,int,int,int)
-meth public boolean isBorderPainted()
-meth public boolean isContentAreaFilled()
-meth public boolean isFocusPainted()
-meth public boolean isRolloverEnabled()
-meth public boolean isSelected()
-meth public int getDisplayedMnemonicIndex()
-meth public int getHorizontalAlignment()
-meth public int getHorizontalTextPosition()
-meth public int getIconTextGap()
-meth public int getMnemonic()
-meth public int getVerticalAlignment()
-meth public int getVerticalTextPosition()
-meth public java.awt.Insets getMargin()
-meth public java.awt.event.ActionListener[] getActionListeners()
-meth public java.awt.event.ItemListener[] getItemListeners()
-meth public java.lang.Object[] getSelectedObjects()
-meth public java.lang.String getActionCommand()
-meth public java.lang.String getLabel()
- anno 0 java.lang.Deprecated()
-meth public java.lang.String getText()
-meth public javax.swing.Action getAction()
-meth public javax.swing.ButtonModel getModel()
-meth public javax.swing.Icon getDisabledIcon()
-meth public javax.swing.Icon getDisabledSelectedIcon()
-meth public javax.swing.Icon getIcon()
-meth public javax.swing.Icon getPressedIcon()
-meth public javax.swing.Icon getRolloverIcon()
-meth public javax.swing.Icon getRolloverSelectedIcon()
-meth public javax.swing.Icon getSelectedIcon()
-meth public javax.swing.event.ChangeListener[] getChangeListeners()
-meth public javax.swing.plaf.ButtonUI getUI()
-meth public long getMultiClickThreshhold()
-meth public void addActionListener(java.awt.event.ActionListener)
-meth public void addChangeListener(javax.swing.event.ChangeListener)
-meth public void addItemListener(java.awt.event.ItemListener)
-meth public void doClick()
-meth public void doClick(int)
-meth public void removeActionListener(java.awt.event.ActionListener)
-meth public void removeChangeListener(javax.swing.event.ChangeListener)
-meth public void removeItemListener(java.awt.event.ItemListener)
-meth public void setAction(javax.swing.Action)
-meth public void setActionCommand(java.lang.String)
-meth public void setBorderPainted(boolean)
-meth public void setContentAreaFilled(boolean)
-meth public void setDisabledIcon(javax.swing.Icon)
-meth public void setDisabledSelectedIcon(javax.swing.Icon)
-meth public void setDisplayedMnemonicIndex(int)
-meth public void setEnabled(boolean)
-meth public void setFocusPainted(boolean)
-meth public void setHorizontalAlignment(int)
-meth public void setHorizontalTextPosition(int)
-meth public void setIcon(javax.swing.Icon)
-meth public void setIconTextGap(int)
-meth public void setLabel(java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public void setLayout(java.awt.LayoutManager)
-meth public void setMargin(java.awt.Insets)
-meth public void setMnemonic(char)
-meth public void setMnemonic(int)
-meth public void setModel(javax.swing.ButtonModel)
-meth public void setMultiClickThreshhold(long)
-meth public void setPressedIcon(javax.swing.Icon)
-meth public void setRolloverEnabled(boolean)
-meth public void setRolloverIcon(javax.swing.Icon)
-meth public void setRolloverSelectedIcon(javax.swing.Icon)
-meth public void setSelected(boolean)
-meth public void setSelectedIcon(javax.swing.Icon)
-meth public void setText(java.lang.String)
-meth public void setUI(javax.swing.plaf.ButtonUI)
-meth public void setVerticalAlignment(int)
-meth public void setVerticalTextPosition(int)
-meth public void updateUI()
-supr javax.swing.JComponent
-hfds action,actionPropertyChangeListener,borderPaintedSet,contentAreaFilled,contentAreaFilledSet,defaultCapable,defaultIcon,defaultMargin,disabledIcon,disabledSelectedIcon,handler,horizontalAlignment,horizontalTextPosition,iconTextGap,iconTextGapSet,margin,mnemonic,mnemonicIndex,multiClickThreshhold,paintBorder,paintFocus,pressedIcon,rolloverEnabled,rolloverEnabledSet,rolloverIcon,rolloverSelectedIcon,selectedIcon,setLayout,text,verticalAlignment,verticalTextPosition
-hcls ButtonActionPropertyChangeListener,Handler
-
-CLSS public javax.swing.JButton
-cons public JButton()
-cons public JButton(java.lang.String)
-cons public JButton(java.lang.String,javax.swing.Icon)
-cons public JButton(javax.swing.Action)
-cons public JButton(javax.swing.Icon)
-innr protected AccessibleJButton
-intf javax.accessibility.Accessible
-meth protected java.lang.String paramString()
-meth protected void configurePropertiesFromAction(javax.swing.Action)
-meth public boolean isDefaultButton()
-meth public boolean isDefaultCapable()
-meth public java.lang.String getUIClassID()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public void removeNotify()
-meth public void setDefaultCapable(boolean)
-meth public void updateUI()
-supr javax.swing.AbstractButton
-hfds uiClassID
-
-CLSS public javax.swing.JCheckBoxMenuItem
-cons public JCheckBoxMenuItem()
-cons public JCheckBoxMenuItem(java.lang.String)
-cons public JCheckBoxMenuItem(java.lang.String,boolean)
-cons public JCheckBoxMenuItem(java.lang.String,javax.swing.Icon)
-cons public JCheckBoxMenuItem(java.lang.String,javax.swing.Icon,boolean)
-cons public JCheckBoxMenuItem(javax.swing.Action)
-cons public JCheckBoxMenuItem(javax.swing.Icon)
-innr protected AccessibleJCheckBoxMenuItem
-intf javax.accessibility.Accessible
-intf javax.swing.SwingConstants
-meth protected java.lang.String paramString()
-meth public boolean getState()
-meth public java.lang.Object[] getSelectedObjects()
-meth public java.lang.String getUIClassID()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public void setState(boolean)
-supr javax.swing.JMenuItem
-hfds uiClassID
-
-CLSS public abstract javax.swing.JComponent
-cons public JComponent()
-fld protected javax.accessibility.AccessibleContext accessibleContext
-fld protected javax.swing.event.EventListenerList listenerList
-fld protected javax.swing.plaf.ComponentUI ui
-fld public final static int UNDEFINED_CONDITION = -1
-fld public final static int WHEN_ANCESTOR_OF_FOCUSED_COMPONENT = 1
-fld public final static int WHEN_FOCUSED = 0
-fld public final static int WHEN_IN_FOCUSED_WINDOW = 2
-fld public final static java.lang.String TOOL_TIP_TEXT_KEY = "ToolTipText"
-innr public abstract AccessibleJComponent
 intf java.io.Serializable
-meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
-meth protected boolean requestFocusInWindow(boolean)
-meth protected java.awt.Graphics getComponentGraphics(java.awt.Graphics)
-meth protected java.lang.String paramString()
-meth protected void fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
-meth protected void paintBorder(java.awt.Graphics)
-meth protected void paintChildren(java.awt.Graphics)
-meth protected void paintComponent(java.awt.Graphics)
-meth protected void printBorder(java.awt.Graphics)
-meth protected void printChildren(java.awt.Graphics)
-meth protected void printComponent(java.awt.Graphics)
-meth protected void processComponentKeyEvent(java.awt.event.KeyEvent)
-meth protected void processKeyEvent(java.awt.event.KeyEvent)
-meth protected void processMouseEvent(java.awt.event.MouseEvent)
-meth protected void processMouseMotionEvent(java.awt.event.MouseEvent)
-meth protected void setUI(javax.swing.plaf.ComponentUI)
-meth public <%0 extends java.util.EventListener> {%%0}[] getListeners(java.lang.Class<{%%0}>)
-meth public boolean contains(int,int)
-meth public boolean getAutoscrolls()
-meth public boolean getInheritsPopupMenu()
-meth public boolean getVerifyInputWhenFocusTarget()
-meth public boolean isDoubleBuffered()
-meth public boolean isManagingFocus()
- anno 0 java.lang.Deprecated()
-meth public boolean isOpaque()
-meth public boolean isOptimizedDrawingEnabled()
-meth public boolean isPaintingTile()
-meth public boolean isRequestFocusEnabled()
-meth public boolean isValidateRoot()
-meth public boolean requestDefaultFocus()
- anno 0 java.lang.Deprecated()
-meth public boolean requestFocus(boolean)
-meth public boolean requestFocusInWindow()
-meth public final java.lang.Object getClientProperty(java.lang.Object)
-meth public final javax.swing.ActionMap getActionMap()
-meth public final javax.swing.InputMap getInputMap()
-meth public final javax.swing.InputMap getInputMap(int)
-meth public final void putClientProperty(java.lang.Object,java.lang.Object)
-meth public final void setActionMap(javax.swing.ActionMap)
-meth public final void setInputMap(int,javax.swing.InputMap)
-meth public float getAlignmentX()
-meth public float getAlignmentY()
-meth public int getConditionForKeyStroke(javax.swing.KeyStroke)
-meth public int getDebugGraphicsOptions()
-meth public int getHeight()
-meth public int getWidth()
-meth public int getX()
-meth public int getY()
-meth public java.awt.Component getNextFocusableComponent()
- anno 0 java.lang.Deprecated()
-meth public java.awt.Container getTopLevelAncestor()
-meth public java.awt.Dimension getMaximumSize()
-meth public java.awt.Dimension getMinimumSize()
-meth public java.awt.Dimension getPreferredSize()
-meth public java.awt.Dimension getSize(java.awt.Dimension)
-meth public java.awt.FontMetrics getFontMetrics(java.awt.Font)
-meth public java.awt.Graphics getGraphics()
-meth public java.awt.Insets getInsets()
-meth public java.awt.Insets getInsets(java.awt.Insets)
-meth public java.awt.Point getLocation(java.awt.Point)
-meth public java.awt.Point getPopupLocation(java.awt.event.MouseEvent)
-meth public java.awt.Point getToolTipLocation(java.awt.event.MouseEvent)
-meth public java.awt.Rectangle getBounds(java.awt.Rectangle)
-meth public java.awt.Rectangle getVisibleRect()
-meth public java.awt.event.ActionListener getActionForKeyStroke(javax.swing.KeyStroke)
-meth public java.beans.VetoableChangeListener[] getVetoableChangeListeners()
-meth public java.lang.String getToolTipText()
-meth public java.lang.String getToolTipText(java.awt.event.MouseEvent)
-meth public java.lang.String getUIClassID()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public javax.swing.InputVerifier getInputVerifier()
-meth public javax.swing.JPopupMenu getComponentPopupMenu()
-meth public javax.swing.JRootPane getRootPane()
-meth public javax.swing.JToolTip createToolTip()
-meth public javax.swing.KeyStroke[] getRegisteredKeyStrokes()
-meth public javax.swing.TransferHandler getTransferHandler()
-meth public javax.swing.border.Border getBorder()
-meth public javax.swing.event.AncestorListener[] getAncestorListeners()
-meth public static boolean isLightweightComponent(java.awt.Component)
-meth public static java.util.Locale getDefaultLocale()
-meth public static void setDefaultLocale(java.util.Locale)
-meth public void addAncestorListener(javax.swing.event.AncestorListener)
-meth public void addNotify()
-meth public void addVetoableChangeListener(java.beans.VetoableChangeListener)
-meth public void computeVisibleRect(java.awt.Rectangle)
-meth public void disable()
- anno 0 java.lang.Deprecated()
-meth public void enable()
- anno 0 java.lang.Deprecated()
-meth public void firePropertyChange(java.lang.String,boolean,boolean)
-meth public void firePropertyChange(java.lang.String,char,char)
-meth public void firePropertyChange(java.lang.String,int,int)
-meth public void grabFocus()
-meth public void paint(java.awt.Graphics)
-meth public void paintImmediately(int,int,int,int)
-meth public void paintImmediately(java.awt.Rectangle)
-meth public void print(java.awt.Graphics)
-meth public void printAll(java.awt.Graphics)
-meth public void registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
-meth public void registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
-meth public void removeAncestorListener(javax.swing.event.AncestorListener)
-meth public void removeNotify()
-meth public void removeVetoableChangeListener(java.beans.VetoableChangeListener)
-meth public void repaint(java.awt.Rectangle)
-meth public void repaint(long,int,int,int,int)
-meth public void requestFocus()
-meth public void resetKeyboardActions()
-meth public void reshape(int,int,int,int)
- anno 0 java.lang.Deprecated()
-meth public void revalidate()
-meth public void scrollRectToVisible(java.awt.Rectangle)
-meth public void setAlignmentX(float)
-meth public void setAlignmentY(float)
-meth public void setAutoscrolls(boolean)
-meth public void setBackground(java.awt.Color)
-meth public void setBorder(javax.swing.border.Border)
-meth public void setComponentPopupMenu(javax.swing.JPopupMenu)
-meth public void setDebugGraphicsOptions(int)
-meth public void setDoubleBuffered(boolean)
-meth public void setEnabled(boolean)
-meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTKeyStroke>)
-meth public void setFont(java.awt.Font)
-meth public void setForeground(java.awt.Color)
-meth public void setInheritsPopupMenu(boolean)
-meth public void setInputVerifier(javax.swing.InputVerifier)
-meth public void setMaximumSize(java.awt.Dimension)
-meth public void setMinimumSize(java.awt.Dimension)
-meth public void setNextFocusableComponent(java.awt.Component)
- anno 0 java.lang.Deprecated()
-meth public void setOpaque(boolean)
-meth public void setPreferredSize(java.awt.Dimension)
-meth public void setRequestFocusEnabled(boolean)
-meth public void setToolTipText(java.lang.String)
-meth public void setTransferHandler(javax.swing.TransferHandler)
-meth public void setVerifyInputWhenFocusTarget(boolean)
-meth public void setVisible(boolean)
-meth public void unregisterKeyboardAction(javax.swing.KeyStroke)
-meth public void update(java.awt.Graphics)
-meth public void updateUI()
-supr java.awt.Container
-hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_NOTIFIER_KEY,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,TRANSFER_HANDLER_KEY,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaFontMap,aaText,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,checkedSuppressDropSupport,clientProperties,defaultLocale,flags,focusInputMap,inInputVerifier,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,suppressDropSupport,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
-hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
-
-CLSS public javax.swing.JList
-cons public JList()
-cons public JList(java.lang.Object[])
-cons public JList(java.util.Vector<?>)
-cons public JList(javax.swing.ListModel)
-fld public final static int HORIZONTAL_WRAP = 2
-fld public final static int VERTICAL = 0
-fld public final static int VERTICAL_WRAP = 1
-innr protected AccessibleJList
-intf javax.accessibility.Accessible
-intf javax.swing.Scrollable
-meth protected java.lang.String paramString()
-meth protected javax.swing.ListSelectionModel createSelectionModel()
-meth protected void fireSelectionValueChanged(int,int,boolean)
-meth public boolean getDragEnabled()
-meth public boolean getScrollableTracksViewportHeight()
-meth public boolean getScrollableTracksViewportWidth()
-meth public boolean getValueIsAdjusting()
-meth public boolean isSelectedIndex(int)
-meth public boolean isSelectionEmpty()
-meth public int getAnchorSelectionIndex()
-meth public int getFirstVisibleIndex()
-meth public int getFixedCellHeight()
-meth public int getFixedCellWidth()
-meth public int getLastVisibleIndex()
-meth public int getLayoutOrientation()
-meth public int getLeadSelectionIndex()
-meth public int getMaxSelectionIndex()
-meth public int getMinSelectionIndex()
-meth public int getNextMatch(java.lang.String,int,javax.swing.text.Position$Bias)
-meth public int getScrollableBlockIncrement(java.awt.Rectangle,int,int)
-meth public int getScrollableUnitIncrement(java.awt.Rectangle,int,int)
-meth public int getSelectedIndex()
-meth public int getSelectionMode()
-meth public int getVisibleRowCount()
-meth public int locationToIndex(java.awt.Point)
-meth public int[] getSelectedIndices()
-meth public java.awt.Color getSelectionBackground()
-meth public java.awt.Color getSelectionForeground()
-meth public java.awt.Dimension getPreferredScrollableViewportSize()
-meth public java.awt.Point indexToLocation(int)
-meth public java.awt.Rectangle getCellBounds(int,int)
-meth public java.lang.Object getPrototypeCellValue()
-meth public java.lang.Object getSelectedValue()
-meth public java.lang.Object[] getSelectedValues()
-meth public java.lang.String getToolTipText(java.awt.event.MouseEvent)
-meth public java.lang.String getUIClassID()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public javax.swing.ListCellRenderer getCellRenderer()
-meth public javax.swing.ListModel getModel()
-meth public javax.swing.ListSelectionModel getSelectionModel()
-meth public javax.swing.event.ListSelectionListener[] getListSelectionListeners()
-meth public javax.swing.plaf.ListUI getUI()
-meth public void addListSelectionListener(javax.swing.event.ListSelectionListener)
-meth public void addSelectionInterval(int,int)
-meth public void clearSelection()
-meth public void ensureIndexIsVisible(int)
-meth public void removeListSelectionListener(javax.swing.event.ListSelectionListener)
-meth public void removeSelectionInterval(int,int)
-meth public void setCellRenderer(javax.swing.ListCellRenderer)
-meth public void setDragEnabled(boolean)
-meth public void setFixedCellHeight(int)
-meth public void setFixedCellWidth(int)
-meth public void setLayoutOrientation(int)
-meth public void setListData(java.lang.Object[])
-meth public void setListData(java.util.Vector<?>)
-meth public void setModel(javax.swing.ListModel)
-meth public void setPrototypeCellValue(java.lang.Object)
-meth public void setSelectedIndex(int)
-meth public void setSelectedIndices(int[])
-meth public void setSelectedValue(java.lang.Object,boolean)
-meth public void setSelectionBackground(java.awt.Color)
-meth public void setSelectionForeground(java.awt.Color)
-meth public void setSelectionInterval(int,int)
-meth public void setSelectionMode(int)
-meth public void setSelectionModel(javax.swing.ListSelectionModel)
-meth public void setUI(javax.swing.plaf.ListUI)
-meth public void setValueIsAdjusting(boolean)
-meth public void setVisibleRowCount(int)
-meth public void updateUI()
-supr javax.swing.JComponent
-hfds cellRenderer,dataModel,dragEnabled,fixedCellHeight,fixedCellWidth,horizontalScrollIncrement,layoutOrientation,prototypeCellValue,selectionBackground,selectionForeground,selectionListener,selectionModel,uiClassID,visibleRowCount
-hcls ListSelectionHandler
-
-CLSS public javax.swing.JMenu
-cons public JMenu()
-cons public JMenu(java.lang.String)
-cons public JMenu(java.lang.String,boolean)
-cons public JMenu(javax.swing.Action)
-fld protected javax.swing.JMenu$WinListener popupListener
-innr protected AccessibleJMenu
-innr protected WinListener
-intf javax.accessibility.Accessible
-intf javax.swing.MenuElement
-meth protected java.awt.Point getPopupMenuOrigin()
-meth protected java.beans.PropertyChangeListener createActionChangeListener(javax.swing.JMenuItem)
-meth protected java.lang.String paramString()
-meth protected javax.swing.JMenu$WinListener createWinListener(javax.swing.JPopupMenu)
-meth protected javax.swing.JMenuItem createActionComponent(javax.swing.Action)
-meth protected void configurePropertiesFromAction(javax.swing.Action)
-meth protected void fireMenuCanceled()
-meth protected void fireMenuDeselected()
-meth protected void fireMenuSelected()
-meth protected void processKeyEvent(java.awt.event.KeyEvent)
-meth public boolean isMenuComponent(java.awt.Component)
-meth public boolean isPopupMenuVisible()
-meth public boolean isSelected()
-meth public boolean isTearOff()
-meth public boolean isTopLevelMenu()
-meth public int getDelay()
-meth public int getItemCount()
-meth public int getMenuComponentCount()
-meth public java.awt.Component add(java.awt.Component)
-meth public java.awt.Component add(java.awt.Component,int)
-meth public java.awt.Component getComponent()
-meth public java.awt.Component getMenuComponent(int)
-meth public java.awt.Component[] getMenuComponents()
-meth public java.lang.String getUIClassID()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public javax.swing.JMenuItem add(java.lang.String)
-meth public javax.swing.JMenuItem add(javax.swing.Action)
-meth public javax.swing.JMenuItem add(javax.swing.JMenuItem)
-meth public javax.swing.JMenuItem getItem(int)
-meth public javax.swing.JMenuItem insert(javax.swing.Action,int)
-meth public javax.swing.JMenuItem insert(javax.swing.JMenuItem,int)
-meth public javax.swing.JPopupMenu getPopupMenu()
-meth public javax.swing.MenuElement[] getSubElements()
-meth public javax.swing.event.MenuListener[] getMenuListeners()
-meth public void addMenuListener(javax.swing.event.MenuListener)
-meth public void addSeparator()
-meth public void applyComponentOrientation(java.awt.ComponentOrientation)
-meth public void doClick(int)
-meth public void insert(java.lang.String,int)
-meth public void insertSeparator(int)
-meth public void menuSelectionChanged(boolean)
-meth public void remove(int)
-meth public void remove(java.awt.Component)
-meth public void remove(javax.swing.JMenuItem)
-meth public void removeAll()
-meth public void removeMenuListener(javax.swing.event.MenuListener)
-meth public void setAccelerator(javax.swing.KeyStroke)
-meth public void setComponentOrientation(java.awt.ComponentOrientation)
-meth public void setDelay(int)
-meth public void setMenuLocation(int,int)
-meth public void setModel(javax.swing.ButtonModel)
-meth public void setPopupMenuVisible(boolean)
-meth public void setSelected(boolean)
-meth public void updateUI()
-supr javax.swing.JMenuItem
-hfds DEBUG,TRACE,VERBOSE,customMenuLocation,delay,listenerRegistry,menuChangeListener,menuEvent,popupMenu,uiClassID
-hcls ActionChangedListener,MenuChangeListener
-
-CLSS public javax.swing.JMenuItem
-cons public JMenuItem()
-cons public JMenuItem(java.lang.String)
-cons public JMenuItem(java.lang.String,int)
-cons public JMenuItem(java.lang.String,javax.swing.Icon)
-cons public JMenuItem(javax.swing.Action)
-cons public JMenuItem(javax.swing.Icon)
-innr protected AccessibleJMenuItem
-intf javax.accessibility.Accessible
-intf javax.swing.MenuElement
-meth protected java.beans.PropertyChangeListener createActionPropertyChangeListener(javax.swing.Action)
-meth protected java.lang.String paramString()
-meth protected void configurePropertiesFromAction(javax.swing.Action)
-meth protected void fireMenuDragMouseDragged(javax.swing.event.MenuDragMouseEvent)
-meth protected void fireMenuDragMouseEntered(javax.swing.event.MenuDragMouseEvent)
-meth protected void fireMenuDragMouseExited(javax.swing.event.MenuDragMouseEvent)
-meth protected void fireMenuDragMouseReleased(javax.swing.event.MenuDragMouseEvent)
-meth protected void fireMenuKeyPressed(javax.swing.event.MenuKeyEvent)
-meth protected void fireMenuKeyReleased(javax.swing.event.MenuKeyEvent)
-meth protected void fireMenuKeyTyped(javax.swing.event.MenuKeyEvent)
-meth protected void init(java.lang.String,javax.swing.Icon)
-meth public boolean isArmed()
-meth public java.awt.Component getComponent()
-meth public java.lang.String getUIClassID()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public javax.swing.KeyStroke getAccelerator()
-meth public javax.swing.MenuElement[] getSubElements()
-meth public javax.swing.event.MenuDragMouseListener[] getMenuDragMouseListeners()
-meth public javax.swing.event.MenuKeyListener[] getMenuKeyListeners()
-meth public void addMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
-meth public void addMenuKeyListener(javax.swing.event.MenuKeyListener)
-meth public void menuSelectionChanged(boolean)
-meth public void processKeyEvent(java.awt.event.KeyEvent,javax.swing.MenuElement[],javax.swing.MenuSelectionManager)
-meth public void processMenuDragMouseEvent(javax.swing.event.MenuDragMouseEvent)
-meth public void processMenuKeyEvent(javax.swing.event.MenuKeyEvent)
-meth public void processMouseEvent(java.awt.event.MouseEvent,javax.swing.MenuElement[],javax.swing.MenuSelectionManager)
-meth public void removeMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
-meth public void removeMenuKeyListener(javax.swing.event.MenuKeyListener)
-meth public void setAccelerator(javax.swing.KeyStroke)
-meth public void setArmed(boolean)
-meth public void setEnabled(boolean)
-meth public void setUI(javax.swing.plaf.MenuItemUI)
-meth public void updateUI()
-supr javax.swing.AbstractButton
-hfds DEBUG,TRACE,VERBOSE,accelerator,isMouseDragged,uiClassID
-hcls MenuItemFocusListener,MenuItemPropertyChangeListener
-
-CLSS public javax.swing.JPanel
-cons public JPanel()
-cons public JPanel(boolean)
-cons public JPanel(java.awt.LayoutManager)
-cons public JPanel(java.awt.LayoutManager,boolean)
-innr protected AccessibleJPanel
-intf javax.accessibility.Accessible
-meth protected java.lang.String paramString()
-meth public java.lang.String getUIClassID()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public javax.swing.plaf.PanelUI getUI()
-meth public void setUI(javax.swing.plaf.PanelUI)
-meth public void updateUI()
-supr javax.swing.JComponent
-hfds uiClassID
-
-CLSS public javax.swing.JPopupMenu
-cons public JPopupMenu()
-cons public JPopupMenu(java.lang.String)
-innr protected AccessibleJPopupMenu
-innr public static Separator
-intf javax.accessibility.Accessible
-intf javax.swing.MenuElement
-meth protected java.beans.PropertyChangeListener createActionChangeListener(javax.swing.JMenuItem)
-meth protected java.lang.String paramString()
-meth protected javax.swing.JMenuItem createActionComponent(javax.swing.Action)
-meth protected void firePopupMenuCanceled()
-meth protected void firePopupMenuWillBecomeInvisible()
-meth protected void firePopupMenuWillBecomeVisible()
-meth protected void paintBorder(java.awt.Graphics)
-meth protected void processFocusEvent(java.awt.event.FocusEvent)
-meth protected void processKeyEvent(java.awt.event.KeyEvent)
-meth public boolean isBorderPainted()
-meth public boolean isLightWeightPopupEnabled()
-meth public boolean isPopupTrigger(java.awt.event.MouseEvent)
-meth public boolean isVisible()
-meth public int getComponentIndex(java.awt.Component)
-meth public java.awt.Component getComponent()
-meth public java.awt.Component getComponentAtIndex(int)
- anno 0 java.lang.Deprecated()
-meth public java.awt.Component getInvoker()
-meth public java.awt.Insets getMargin()
-meth public java.lang.String getLabel()
-meth public java.lang.String getUIClassID()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public javax.swing.JMenuItem add(java.lang.String)
-meth public javax.swing.JMenuItem add(javax.swing.Action)
-meth public javax.swing.JMenuItem add(javax.swing.JMenuItem)
-meth public javax.swing.MenuElement[] getSubElements()
-meth public javax.swing.SingleSelectionModel getSelectionModel()
-meth public javax.swing.event.MenuKeyListener[] getMenuKeyListeners()
-meth public javax.swing.event.PopupMenuListener[] getPopupMenuListeners()
-meth public javax.swing.plaf.PopupMenuUI getUI()
-meth public static boolean getDefaultLightWeightPopupEnabled()
-meth public static void setDefaultLightWeightPopupEnabled(boolean)
-meth public void addMenuKeyListener(javax.swing.event.MenuKeyListener)
-meth public void addPopupMenuListener(javax.swing.event.PopupMenuListener)
-meth public void addSeparator()
-meth public void insert(java.awt.Component,int)
-meth public void insert(javax.swing.Action,int)
-meth public void menuSelectionChanged(boolean)
-meth public void pack()
-meth public void processKeyEvent(java.awt.event.KeyEvent,javax.swing.MenuElement[],javax.swing.MenuSelectionManager)
-meth public void processMouseEvent(java.awt.event.MouseEvent,javax.swing.MenuElement[],javax.swing.MenuSelectionManager)
-meth public void remove(int)
-meth public void removeMenuKeyListener(javax.swing.event.MenuKeyListener)
-meth public void removePopupMenuListener(javax.swing.event.PopupMenuListener)
-meth public void setBorderPainted(boolean)
-meth public void setInvoker(java.awt.Component)
-meth public void setLabel(java.lang.String)
-meth public void setLightWeightPopupEnabled(boolean)
-meth public void setLocation(int,int)
-meth public void setPopupSize(int,int)
-meth public void setPopupSize(java.awt.Dimension)
-meth public void setSelected(java.awt.Component)
-meth public void setSelectionModel(javax.swing.SingleSelectionModel)
-meth public void setUI(javax.swing.plaf.PopupMenuUI)
-meth public void setVisible(boolean)
-meth public void show(java.awt.Component,int,int)
-meth public void updateUI()
-supr javax.swing.JComponent
-hfds DEBUG,TRACE,VERBOSE,classLock,defaultLWPopupEnabledKey,desiredLocationX,desiredLocationY,frame,invoker,label,lightWeightPopup,margin,paintBorder,popup,popupPostionFixDisabled,selectionModel,uiClassID
-hcls ActionChangedListener
-
-CLSS public javax.swing.JToggleButton
-cons public JToggleButton()
-cons public JToggleButton(java.lang.String)
-cons public JToggleButton(java.lang.String,boolean)
-cons public JToggleButton(java.lang.String,javax.swing.Icon)
-cons public JToggleButton(java.lang.String,javax.swing.Icon,boolean)
-cons public JToggleButton(javax.swing.Action)
-cons public JToggleButton(javax.swing.Icon)
-cons public JToggleButton(javax.swing.Icon,boolean)
-innr protected AccessibleJToggleButton
-innr public static ToggleButtonModel
-intf javax.accessibility.Accessible
-meth protected java.lang.String paramString()
-meth public java.lang.String getUIClassID()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public void updateUI()
-supr javax.swing.AbstractButton
-hfds uiClassID
-
-CLSS public abstract interface javax.swing.ListCellRenderer
-meth public abstract java.awt.Component getListCellRendererComponent(javax.swing.JList,java.lang.Object,int,boolean,boolean)
-
-CLSS public abstract interface javax.swing.MenuElement
-meth public abstract java.awt.Component getComponent()
-meth public abstract javax.swing.MenuElement[] getSubElements()
-meth public abstract void menuSelectionChanged(boolean)
-meth public abstract void processKeyEvent(java.awt.event.KeyEvent,javax.swing.MenuElement[],javax.swing.MenuSelectionManager)
-meth public abstract void processMouseEvent(java.awt.event.MouseEvent,javax.swing.MenuElement[],javax.swing.MenuSelectionManager)
-
-CLSS public abstract interface javax.swing.Scrollable
-meth public abstract boolean getScrollableTracksViewportHeight()
-meth public abstract boolean getScrollableTracksViewportWidth()
-meth public abstract int getScrollableBlockIncrement(java.awt.Rectangle,int,int)
-meth public abstract int getScrollableUnitIncrement(java.awt.Rectangle,int,int)
-meth public abstract java.awt.Dimension getPreferredScrollableViewportSize()
-
-CLSS public abstract interface javax.swing.SwingConstants
-fld public final static int BOTTOM = 3
-fld public final static int CENTER = 0
-fld public final static int EAST = 3
-fld public final static int HORIZONTAL = 0
-fld public final static int LEADING = 10
-fld public final static int LEFT = 2
-fld public final static int NEXT = 12
-fld public final static int NORTH = 1
-fld public final static int NORTH_EAST = 2
-fld public final static int NORTH_WEST = 8
-fld public final static int PREVIOUS = 13
-fld public final static int RIGHT = 4
-fld public final static int SOUTH = 5
-fld public final static int SOUTH_EAST = 4
-fld public final static int SOUTH_WEST = 6
-fld public final static int TOP = 1
-fld public final static int TRAILING = 11
-fld public final static int VERTICAL = 1
-fld public final static int WEST = 7
-
-CLSS public abstract interface javax.swing.event.UndoableEditListener
-intf java.util.EventListener
-meth public abstract void undoableEditHappened(javax.swing.event.UndoableEditEvent)
-
-CLSS public abstract interface javax.swing.table.TableCellRenderer
-meth public abstract java.awt.Component getTableCellRendererComponent(javax.swing.JTable,java.lang.Object,boolean,boolean,int,int)
-
-CLSS public abstract interface javax.swing.tree.TreeCellRenderer
-meth public abstract java.awt.Component getTreeCellRendererComponent(javax.swing.JTree,java.lang.Object,boolean,boolean,boolean,int,boolean)
-
-CLSS public javax.swing.undo.AbstractUndoableEdit
-cons public AbstractUndoableEdit()
-fld protected final static java.lang.String RedoName = "Redo"
-fld protected final static java.lang.String UndoName = "Undo"
-intf java.io.Serializable
-intf javax.swing.undo.UndoableEdit
-meth public boolean addEdit(javax.swing.undo.UndoableEdit)
-meth public boolean canRedo()
-meth public boolean canUndo()
-meth public boolean isSignificant()
-meth public boolean replaceEdit(javax.swing.undo.UndoableEdit)
-meth public java.lang.String getPresentationName()
-meth public java.lang.String getRedoPresentationName()
-meth public java.lang.String getUndoPresentationName()
-meth public java.lang.String toString()
-meth public void die()
-meth public void redo()
-meth public void undo()
-supr java.lang.Object
-hfds alive,hasBeenDone
-
-CLSS public javax.swing.undo.CompoundEdit
-cons public CompoundEdit()
-fld protected java.util.Vector<javax.swing.undo.UndoableEdit> edits
-meth protected javax.swing.undo.UndoableEdit lastEdit()
-meth public boolean addEdit(javax.swing.undo.UndoableEdit)
-meth public boolean canRedo()
-meth public boolean canUndo()
-meth public boolean isInProgress()
-meth public boolean isSignificant()
-meth public java.lang.String getPresentationName()
-meth public java.lang.String getRedoPresentationName()
-meth public java.lang.String getUndoPresentationName()
-meth public java.lang.String toString()
-meth public void die()
-meth public void end()
-meth public void redo()
-meth public void undo()
-supr javax.swing.undo.AbstractUndoableEdit
-hfds inProgress
-
-CLSS public javax.swing.undo.UndoManager
-cons public UndoManager()
-intf javax.swing.event.UndoableEditListener
-meth protected javax.swing.undo.UndoableEdit editToBeRedone()
-meth protected javax.swing.undo.UndoableEdit editToBeUndone()
-meth protected void redoTo(javax.swing.undo.UndoableEdit)
-meth protected void trimEdits(int,int)
-meth protected void trimForLimit()
-meth protected void undoTo(javax.swing.undo.UndoableEdit)
-meth public boolean addEdit(javax.swing.undo.UndoableEdit)
-meth public boolean canRedo()
-meth public boolean canUndo()
-meth public boolean canUndoOrRedo()
-meth public int getLimit()
-meth public java.lang.String getRedoPresentationName()
-meth public java.lang.String getUndoOrRedoPresentationName()
-meth public java.lang.String getUndoPresentationName()
-meth public java.lang.String toString()
-meth public void discardAllEdits()
-meth public void end()
-meth public void redo()
-meth public void setLimit(int)
-meth public void undo()
-meth public void undoOrRedo()
-meth public void undoableEditHappened(javax.swing.event.UndoableEditEvent)
-supr javax.swing.undo.CompoundEdit
-hfds indexOfNextAdd,limit
-
-CLSS public abstract interface javax.swing.undo.UndoableEdit
-meth public abstract boolean addEdit(javax.swing.undo.UndoableEdit)
-meth public abstract boolean canRedo()
-meth public abstract boolean canUndo()
-meth public abstract boolean isSignificant()
-meth public abstract boolean replaceEdit(javax.swing.undo.UndoableEdit)
-meth public abstract java.lang.String getPresentationName()
-meth public abstract java.lang.String getRedoPresentationName()
-meth public abstract java.lang.String getUndoPresentationName()
-meth public abstract void die()
-meth public abstract void redo()
-meth public abstract void undo()
-
-CLSS public org.openide.awt.Actions
-cons public Actions()
-innr public abstract interface static ButtonActionConnector
-innr public abstract interface static SubMenuModel
-innr public static CheckboxMenuItem
-innr public static MenuItem
-innr public static SubMenu
-innr public static ToolbarButton
-innr public static ToolbarToggleButton
-meth public static java.lang.String cutAmpersand(java.lang.String)
-meth public static java.lang.String findKey(org.openide.util.actions.SystemAction)
-meth public static void connect(javax.swing.AbstractButton,javax.swing.Action)
-meth public static void connect(javax.swing.AbstractButton,org.openide.util.actions.BooleanStateAction)
-meth public static void connect(javax.swing.AbstractButton,org.openide.util.actions.SystemAction)
-meth public static void connect(javax.swing.JCheckBoxMenuItem,org.openide.util.actions.BooleanStateAction,boolean)
-meth public static void connect(javax.swing.JMenuItem,javax.swing.Action,boolean)
-meth public static void connect(javax.swing.JMenuItem,org.openide.util.actions.SystemAction,boolean)
-meth public static void setMenuText(javax.swing.AbstractButton,java.lang.String,boolean)
-supr java.lang.Object
-hfds DISABLED_BUTTON_FILTER,menuActionCache,menuActionLock
-hcls BooleanButtonBridge,Bridge,ButtonBridge,CheckMenuBridge,DisabledButtonFilter,ISubActionListener,LazyDisabledIcon,MenuBridge,SubMenuBridge
-
-CLSS public abstract interface static org.openide.awt.Actions$ButtonActionConnector
-meth public abstract boolean connect(javax.swing.AbstractButton,javax.swing.Action)
-meth public abstract boolean connect(javax.swing.JMenuItem,javax.swing.Action,boolean)
-
+intf javax.swing.ButtonModel
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.DefaultButtonModel.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.DefaultButtonModel.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.DefaultButtonModel.fireStateChanged()
+meth public [Ljava.awt.event.ActionListener; javax.swing.DefaultButtonModel.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.DefaultButtonModel.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.DefaultButtonModel.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.DefaultButtonModel.getListeners(java.lang.Class)
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.DefaultButtonModel.getChangeListeners()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.DefaultButtonModel.isArmed()
+meth public boolean javax.swing.DefaultButtonModel.isEnabled()
+meth public boolean javax.swing.DefaultButtonModel.isPressed()
+meth public boolean javax.swing.DefaultButtonModel.isRollover()
+meth public boolean javax.swing.JToggleButton$ToggleButtonModel.isSelected()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int javax.swing.DefaultButtonModel.getMnemonic()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.swing.DefaultButtonModel.getActionCommand()
+meth public javax.swing.ButtonGroup javax.swing.DefaultButtonModel.getGroup()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void javax.swing.DefaultButtonModel.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.DefaultButtonModel.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.DefaultButtonModel.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.DefaultButtonModel.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.DefaultButtonModel.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.DefaultButtonModel.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.DefaultButtonModel.setActionCommand(java.lang.String)
+meth public void javax.swing.DefaultButtonModel.setArmed(boolean)
+meth public void javax.swing.DefaultButtonModel.setEnabled(boolean)
+meth public void javax.swing.DefaultButtonModel.setGroup(javax.swing.ButtonGroup)
+meth public void javax.swing.DefaultButtonModel.setMnemonic(int)
+meth public void javax.swing.DefaultButtonModel.setRollover(boolean)
+meth public void javax.swing.JToggleButton$ToggleButtonModel.setPressed(boolean)
+meth public void javax.swing.JToggleButton$ToggleButtonModel.setSelected(boolean)
+supr javax.swing.DefaultButtonModel
 CLSS public static org.openide.awt.Actions$CheckboxMenuItem
 cons public CheckboxMenuItem(org.openide.util.actions.BooleanStateAction,boolean)
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
+fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.ButtonModel javax.swing.AbstractButton.model
+fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.changeListener
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.AbstractButton$ButtonChangeListener
+innr protected javax.swing.JCheckBoxMenuItem$AccessibleJCheckBoxMenuItem
+innr protected javax.swing.JMenuItem$AccessibleJMenuItem
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+intf java.awt.ItemSelectable
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.MenuElement
+intf javax.swing.SwingConstants
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected int javax.swing.AbstractButton.checkHorizontalKey(int,java.lang.String)
+meth protected int javax.swing.AbstractButton.checkVerticalKey(int,java.lang.String)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.awt.event.ActionListener javax.swing.AbstractButton.createActionListener()
+meth protected java.awt.event.ItemListener javax.swing.AbstractButton.createItemListener()
+meth protected java.beans.PropertyChangeListener javax.swing.JMenuItem.createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String javax.swing.JCheckBoxMenuItem.paramString()
+meth protected javax.swing.event.ChangeListener javax.swing.AbstractButton.createChangeListener()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.AbstractButton.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void javax.swing.AbstractButton.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.AbstractButton.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.AbstractButton.fireStateChanged()
+meth protected void javax.swing.AbstractButton.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth protected void javax.swing.JMenuItem.configurePropertiesFromAction(javax.swing.Action)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseDragged(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseEntered(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseExited(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseReleased(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyPressed(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyReleased(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyTyped(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.init(java.lang.String,javax.swing.Icon)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.awt.event.ActionListener; javax.swing.AbstractButton.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.AbstractButton.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.JCheckBoxMenuItem.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.MenuElement; javax.swing.JMenuItem.getSubElements()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.AbstractButton.getChangeListeners()
+meth public [Ljavax.swing.event.MenuDragMouseListener; javax.swing.JMenuItem.getMenuDragMouseListeners()
+meth public [Ljavax.swing.event.MenuKeyListener; javax.swing.JMenuItem.getMenuKeyListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean javax.swing.AbstractButton.isBorderPainted()
+meth public boolean javax.swing.AbstractButton.isContentAreaFilled()
+meth public boolean javax.swing.AbstractButton.isFocusPainted()
+meth public boolean javax.swing.AbstractButton.isRolloverEnabled()
+meth public boolean javax.swing.AbstractButton.isSelected()
+meth public boolean javax.swing.JCheckBoxMenuItem.getState()
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public boolean javax.swing.JMenuItem.isArmed()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.AbstractButton.getDisplayedMnemonicIndex()
+meth public int javax.swing.AbstractButton.getHorizontalAlignment()
+meth public int javax.swing.AbstractButton.getHorizontalTextPosition()
+meth public int javax.swing.AbstractButton.getIconTextGap()
+meth public int javax.swing.AbstractButton.getMnemonic()
+meth public int javax.swing.AbstractButton.getVerticalAlignment()
+meth public int javax.swing.AbstractButton.getVerticalTextPosition()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.Component javax.swing.JMenuItem.getComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.AbstractButton.getMargin()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.AbstractButton.getActionCommand()
+meth public java.lang.String javax.swing.AbstractButton.getLabel()
+meth public java.lang.String javax.swing.AbstractButton.getText()
+meth public java.lang.String javax.swing.JCheckBoxMenuItem.getUIClassID()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JCheckBoxMenuItem.getAccessibleContext()
+meth public javax.swing.Action javax.swing.AbstractButton.getAction()
+meth public javax.swing.ButtonModel javax.swing.AbstractButton.getModel()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getPressedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getSelectedIcon()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.KeyStroke javax.swing.JMenuItem.getAccelerator()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ButtonUI javax.swing.AbstractButton.getUI()
+meth public long javax.swing.AbstractButton.getMultiClickThreshhold()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JCheckBoxMenuItem.setState(boolean)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.AbstractButton.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.doClick()
+meth public void javax.swing.AbstractButton.doClick(int)
+meth public void javax.swing.AbstractButton.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.setAction(javax.swing.Action)
+meth public void javax.swing.AbstractButton.setActionCommand(java.lang.String)
+meth public void javax.swing.AbstractButton.setBorderPainted(boolean)
+meth public void javax.swing.AbstractButton.setContentAreaFilled(boolean)
+meth public void javax.swing.AbstractButton.setDisabledIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisabledSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisplayedMnemonicIndex(int) throws java.lang.IllegalArgumentException
+meth public void javax.swing.AbstractButton.setFocusPainted(boolean)
+meth public void javax.swing.AbstractButton.setHorizontalAlignment(int)
+meth public void javax.swing.AbstractButton.setHorizontalTextPosition(int)
+meth public void javax.swing.AbstractButton.setIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setIconTextGap(int)
+meth public void javax.swing.AbstractButton.setLabel(java.lang.String)
+meth public void javax.swing.AbstractButton.setLayout(java.awt.LayoutManager)
+meth public void javax.swing.AbstractButton.setMargin(java.awt.Insets)
+meth public void javax.swing.AbstractButton.setMnemonic(char)
+meth public void javax.swing.AbstractButton.setMnemonic(int)
+meth public void javax.swing.AbstractButton.setModel(javax.swing.ButtonModel)
+meth public void javax.swing.AbstractButton.setMultiClickThreshhold(long)
+meth public void javax.swing.AbstractButton.setPressedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverEnabled(boolean)
+meth public void javax.swing.AbstractButton.setRolloverIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setSelected(boolean)
+meth public void javax.swing.AbstractButton.setSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setText(java.lang.String)
+meth public void javax.swing.AbstractButton.setUI(javax.swing.plaf.ButtonUI)
+meth public void javax.swing.AbstractButton.setVerticalAlignment(int)
+meth public void javax.swing.AbstractButton.setVerticalTextPosition(int)
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JMenuItem.addMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.addMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.menuSelectionChanged(boolean)
+meth public void javax.swing.JMenuItem.processKeyEvent(java.awt.event.KeyEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.processMenuDragMouseEvent(javax.swing.event.MenuDragMouseEvent)
+meth public void javax.swing.JMenuItem.processMenuKeyEvent(javax.swing.event.MenuKeyEvent)
+meth public void javax.swing.JMenuItem.processMouseEvent(java.awt.event.MouseEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.removeMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.removeMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.setAccelerator(javax.swing.KeyStroke)
+meth public void javax.swing.JMenuItem.setArmed(boolean)
+meth public void javax.swing.JMenuItem.setEnabled(boolean)
+meth public void javax.swing.JMenuItem.setUI(javax.swing.plaf.MenuItemUI)
+meth public void javax.swing.JMenuItem.updateUI()
 supr javax.swing.JCheckBoxMenuItem
-hfds serialVersionUID
-
 CLSS public static org.openide.awt.Actions$MenuItem
 cons public MenuItem(javax.swing.Action,boolean)
 cons public MenuItem(org.openide.util.actions.SystemAction,boolean)
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
+fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.ButtonModel javax.swing.AbstractButton.model
+fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.changeListener
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.AbstractButton$ButtonChangeListener
+innr protected javax.swing.JMenuItem$AccessibleJMenuItem
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+intf java.awt.ItemSelectable
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.MenuElement
+intf javax.swing.SwingConstants
 intf org.openide.awt.DynamicMenuContent
-meth public javax.swing.JComponent[] getMenuPresenters()
-meth public javax.swing.JComponent[] synchMenuPresenters(javax.swing.JComponent[])
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected int javax.swing.AbstractButton.checkHorizontalKey(int,java.lang.String)
+meth protected int javax.swing.AbstractButton.checkVerticalKey(int,java.lang.String)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.awt.event.ActionListener javax.swing.AbstractButton.createActionListener()
+meth protected java.awt.event.ItemListener javax.swing.AbstractButton.createItemListener()
+meth protected java.beans.PropertyChangeListener javax.swing.JMenuItem.createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String javax.swing.JMenuItem.paramString()
+meth protected javax.swing.event.ChangeListener javax.swing.AbstractButton.createChangeListener()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.AbstractButton.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void javax.swing.AbstractButton.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.AbstractButton.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.AbstractButton.fireStateChanged()
+meth protected void javax.swing.AbstractButton.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth protected void javax.swing.JMenuItem.configurePropertiesFromAction(javax.swing.Action)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseDragged(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseEntered(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseExited(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseReleased(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyPressed(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyReleased(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyTyped(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.init(java.lang.String,javax.swing.Icon)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.awt.event.ActionListener; javax.swing.AbstractButton.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.AbstractButton.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.AbstractButton.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.JComponent; org.openide.awt.Actions$MenuItem.getMenuPresenters()
+meth public [Ljavax.swing.JComponent; org.openide.awt.Actions$MenuItem.synchMenuPresenters([Ljavax.swing.JComponent;)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.MenuElement; javax.swing.JMenuItem.getSubElements()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.AbstractButton.getChangeListeners()
+meth public [Ljavax.swing.event.MenuDragMouseListener; javax.swing.JMenuItem.getMenuDragMouseListeners()
+meth public [Ljavax.swing.event.MenuKeyListener; javax.swing.JMenuItem.getMenuKeyListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean javax.swing.AbstractButton.isBorderPainted()
+meth public boolean javax.swing.AbstractButton.isContentAreaFilled()
+meth public boolean javax.swing.AbstractButton.isFocusPainted()
+meth public boolean javax.swing.AbstractButton.isRolloverEnabled()
+meth public boolean javax.swing.AbstractButton.isSelected()
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public boolean javax.swing.JMenuItem.isArmed()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.AbstractButton.getDisplayedMnemonicIndex()
+meth public int javax.swing.AbstractButton.getHorizontalAlignment()
+meth public int javax.swing.AbstractButton.getHorizontalTextPosition()
+meth public int javax.swing.AbstractButton.getIconTextGap()
+meth public int javax.swing.AbstractButton.getMnemonic()
+meth public int javax.swing.AbstractButton.getVerticalAlignment()
+meth public int javax.swing.AbstractButton.getVerticalTextPosition()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.Component javax.swing.JMenuItem.getComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.AbstractButton.getMargin()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.AbstractButton.getActionCommand()
+meth public java.lang.String javax.swing.AbstractButton.getLabel()
+meth public java.lang.String javax.swing.AbstractButton.getText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JMenuItem.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JMenuItem.getAccessibleContext()
+meth public javax.swing.Action javax.swing.AbstractButton.getAction()
+meth public javax.swing.ButtonModel javax.swing.AbstractButton.getModel()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getPressedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getSelectedIcon()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.KeyStroke javax.swing.JMenuItem.getAccelerator()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ButtonUI javax.swing.AbstractButton.getUI()
+meth public long javax.swing.AbstractButton.getMultiClickThreshhold()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.AbstractButton.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.doClick()
+meth public void javax.swing.AbstractButton.doClick(int)
+meth public void javax.swing.AbstractButton.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.setAction(javax.swing.Action)
+meth public void javax.swing.AbstractButton.setActionCommand(java.lang.String)
+meth public void javax.swing.AbstractButton.setBorderPainted(boolean)
+meth public void javax.swing.AbstractButton.setContentAreaFilled(boolean)
+meth public void javax.swing.AbstractButton.setDisabledIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisabledSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisplayedMnemonicIndex(int) throws java.lang.IllegalArgumentException
+meth public void javax.swing.AbstractButton.setFocusPainted(boolean)
+meth public void javax.swing.AbstractButton.setHorizontalAlignment(int)
+meth public void javax.swing.AbstractButton.setHorizontalTextPosition(int)
+meth public void javax.swing.AbstractButton.setIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setIconTextGap(int)
+meth public void javax.swing.AbstractButton.setLabel(java.lang.String)
+meth public void javax.swing.AbstractButton.setLayout(java.awt.LayoutManager)
+meth public void javax.swing.AbstractButton.setMargin(java.awt.Insets)
+meth public void javax.swing.AbstractButton.setMnemonic(char)
+meth public void javax.swing.AbstractButton.setMnemonic(int)
+meth public void javax.swing.AbstractButton.setModel(javax.swing.ButtonModel)
+meth public void javax.swing.AbstractButton.setMultiClickThreshhold(long)
+meth public void javax.swing.AbstractButton.setPressedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverEnabled(boolean)
+meth public void javax.swing.AbstractButton.setRolloverIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setSelected(boolean)
+meth public void javax.swing.AbstractButton.setSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setText(java.lang.String)
+meth public void javax.swing.AbstractButton.setUI(javax.swing.plaf.ButtonUI)
+meth public void javax.swing.AbstractButton.setVerticalAlignment(int)
+meth public void javax.swing.AbstractButton.setVerticalTextPosition(int)
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JMenuItem.addMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.addMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.menuSelectionChanged(boolean)
+meth public void javax.swing.JMenuItem.processKeyEvent(java.awt.event.KeyEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.processMenuDragMouseEvent(javax.swing.event.MenuDragMouseEvent)
+meth public void javax.swing.JMenuItem.processMenuKeyEvent(javax.swing.event.MenuKeyEvent)
+meth public void javax.swing.JMenuItem.processMouseEvent(java.awt.event.MouseEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.removeMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.removeMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.setAccelerator(javax.swing.KeyStroke)
+meth public void javax.swing.JMenuItem.setArmed(boolean)
+meth public void javax.swing.JMenuItem.setEnabled(boolean)
+meth public void javax.swing.JMenuItem.setUI(javax.swing.plaf.MenuItemUI)
+meth public void javax.swing.JMenuItem.updateUI()
 supr javax.swing.JMenuItem
-hfds bridge,serialVersionUID
-
 CLSS public static org.openide.awt.Actions$SubMenu
 cons public SubMenu(javax.swing.Action,org.openide.awt.Actions$SubMenuModel,boolean)
 cons public SubMenu(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel)
 cons public SubMenu(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel,boolean)
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
+fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.ButtonModel javax.swing.AbstractButton.model
+fld  protected javax.swing.JMenu$WinListener javax.swing.JMenu.popupListener
+fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.changeListener
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.AbstractButton$ButtonChangeListener
+innr protected javax.swing.JMenu$AccessibleJMenu
+innr protected javax.swing.JMenu$WinListener
+innr protected javax.swing.JMenuItem$AccessibleJMenuItem
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+intf java.awt.ItemSelectable
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.MenuElement
+intf javax.swing.SwingConstants
 intf org.openide.awt.DynamicMenuContent
-meth public javax.swing.JComponent[] getMenuPresenters()
-meth public javax.swing.JComponent[] synchMenuPresenters(javax.swing.JComponent[])
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected int javax.swing.AbstractButton.checkHorizontalKey(int,java.lang.String)
+meth protected int javax.swing.AbstractButton.checkVerticalKey(int,java.lang.String)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.awt.Point javax.swing.JMenu.getPopupMenuOrigin()
+meth protected java.awt.event.ActionListener javax.swing.AbstractButton.createActionListener()
+meth protected java.awt.event.ItemListener javax.swing.AbstractButton.createItemListener()
+meth protected java.beans.PropertyChangeListener javax.swing.JMenu.createActionChangeListener(javax.swing.JMenuItem)
+meth protected java.beans.PropertyChangeListener javax.swing.JMenuItem.createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String javax.swing.JMenu.paramString()
+meth protected javax.swing.JMenu$WinListener javax.swing.JMenu.createWinListener(javax.swing.JPopupMenu)
+meth protected javax.swing.JMenuItem javax.swing.JMenu.createActionComponent(javax.swing.Action)
+meth protected javax.swing.event.ChangeListener javax.swing.AbstractButton.createChangeListener()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.AbstractButton.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void javax.swing.AbstractButton.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.AbstractButton.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.AbstractButton.fireStateChanged()
+meth protected void javax.swing.AbstractButton.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth protected void javax.swing.JMenu.configurePropertiesFromAction(javax.swing.Action)
+meth protected void javax.swing.JMenu.fireMenuCanceled()
+meth protected void javax.swing.JMenu.fireMenuDeselected()
+meth protected void javax.swing.JMenu.fireMenuSelected()
+meth protected void javax.swing.JMenu.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseDragged(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseEntered(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseExited(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseReleased(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyPressed(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyReleased(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyTyped(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.init(java.lang.String,javax.swing.Icon)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.awt.Component; javax.swing.JMenu.getMenuComponents()
+meth public [Ljava.awt.event.ActionListener; javax.swing.AbstractButton.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.AbstractButton.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.AbstractButton.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.JComponent; org.openide.awt.Actions$SubMenu.getMenuPresenters()
+meth public [Ljavax.swing.JComponent; org.openide.awt.Actions$SubMenu.synchMenuPresenters([Ljavax.swing.JComponent;)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.MenuElement; javax.swing.JMenu.getSubElements()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.AbstractButton.getChangeListeners()
+meth public [Ljavax.swing.event.MenuDragMouseListener; javax.swing.JMenuItem.getMenuDragMouseListeners()
+meth public [Ljavax.swing.event.MenuKeyListener; javax.swing.JMenuItem.getMenuKeyListeners()
+meth public [Ljavax.swing.event.MenuListener; javax.swing.JMenu.getMenuListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean javax.swing.AbstractButton.isBorderPainted()
+meth public boolean javax.swing.AbstractButton.isContentAreaFilled()
+meth public boolean javax.swing.AbstractButton.isFocusPainted()
+meth public boolean javax.swing.AbstractButton.isRolloverEnabled()
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public boolean javax.swing.JMenu.isMenuComponent(java.awt.Component)
+meth public boolean javax.swing.JMenu.isPopupMenuVisible()
+meth public boolean javax.swing.JMenu.isSelected()
+meth public boolean javax.swing.JMenu.isTearOff()
+meth public boolean javax.swing.JMenu.isTopLevelMenu()
+meth public boolean javax.swing.JMenuItem.isArmed()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.AbstractButton.getDisplayedMnemonicIndex()
+meth public int javax.swing.AbstractButton.getHorizontalAlignment()
+meth public int javax.swing.AbstractButton.getHorizontalTextPosition()
+meth public int javax.swing.AbstractButton.getIconTextGap()
+meth public int javax.swing.AbstractButton.getMnemonic()
+meth public int javax.swing.AbstractButton.getVerticalAlignment()
+meth public int javax.swing.AbstractButton.getVerticalTextPosition()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public int javax.swing.JMenu.getDelay()
+meth public int javax.swing.JMenu.getItemCount()
+meth public int javax.swing.JMenu.getMenuComponentCount()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.Component javax.swing.JMenu.add(java.awt.Component)
+meth public java.awt.Component javax.swing.JMenu.add(java.awt.Component,int)
+meth public java.awt.Component javax.swing.JMenu.getComponent()
+meth public java.awt.Component javax.swing.JMenu.getMenuComponent(int)
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.AbstractButton.getMargin()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.AbstractButton.getActionCommand()
+meth public java.lang.String javax.swing.AbstractButton.getLabel()
+meth public java.lang.String javax.swing.AbstractButton.getText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JMenu.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JMenu.getAccessibleContext()
+meth public javax.swing.Action javax.swing.AbstractButton.getAction()
+meth public javax.swing.ButtonModel javax.swing.AbstractButton.getModel()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getPressedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getSelectedIcon()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JMenuItem javax.swing.JMenu.add(java.lang.String)
+meth public javax.swing.JMenuItem javax.swing.JMenu.add(javax.swing.Action)
+meth public javax.swing.JMenuItem javax.swing.JMenu.add(javax.swing.JMenuItem)
+meth public javax.swing.JMenuItem javax.swing.JMenu.getItem(int)
+meth public javax.swing.JMenuItem javax.swing.JMenu.insert(javax.swing.Action,int)
+meth public javax.swing.JMenuItem javax.swing.JMenu.insert(javax.swing.JMenuItem,int)
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JPopupMenu javax.swing.JMenu.getPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.KeyStroke javax.swing.JMenuItem.getAccelerator()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ButtonUI javax.swing.AbstractButton.getUI()
+meth public long javax.swing.AbstractButton.getMultiClickThreshhold()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.AbstractButton.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.doClick()
+meth public void javax.swing.AbstractButton.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.setAction(javax.swing.Action)
+meth public void javax.swing.AbstractButton.setActionCommand(java.lang.String)
+meth public void javax.swing.AbstractButton.setBorderPainted(boolean)
+meth public void javax.swing.AbstractButton.setContentAreaFilled(boolean)
+meth public void javax.swing.AbstractButton.setDisabledIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisabledSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisplayedMnemonicIndex(int) throws java.lang.IllegalArgumentException
+meth public void javax.swing.AbstractButton.setFocusPainted(boolean)
+meth public void javax.swing.AbstractButton.setHorizontalAlignment(int)
+meth public void javax.swing.AbstractButton.setHorizontalTextPosition(int)
+meth public void javax.swing.AbstractButton.setIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setIconTextGap(int)
+meth public void javax.swing.AbstractButton.setLabel(java.lang.String)
+meth public void javax.swing.AbstractButton.setLayout(java.awt.LayoutManager)
+meth public void javax.swing.AbstractButton.setMargin(java.awt.Insets)
+meth public void javax.swing.AbstractButton.setMnemonic(char)
+meth public void javax.swing.AbstractButton.setMnemonic(int)
+meth public void javax.swing.AbstractButton.setMultiClickThreshhold(long)
+meth public void javax.swing.AbstractButton.setPressedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverEnabled(boolean)
+meth public void javax.swing.AbstractButton.setRolloverIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setText(java.lang.String)
+meth public void javax.swing.AbstractButton.setUI(javax.swing.plaf.ButtonUI)
+meth public void javax.swing.AbstractButton.setVerticalAlignment(int)
+meth public void javax.swing.AbstractButton.setVerticalTextPosition(int)
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JMenu.addMenuListener(javax.swing.event.MenuListener)
+meth public void javax.swing.JMenu.addSeparator()
+meth public void javax.swing.JMenu.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void javax.swing.JMenu.doClick(int)
+meth public void javax.swing.JMenu.insert(java.lang.String,int)
+meth public void javax.swing.JMenu.insertSeparator(int)
+meth public void javax.swing.JMenu.menuSelectionChanged(boolean)
+meth public void javax.swing.JMenu.remove(int)
+meth public void javax.swing.JMenu.remove(java.awt.Component)
+meth public void javax.swing.JMenu.remove(javax.swing.JMenuItem)
+meth public void javax.swing.JMenu.removeAll()
+meth public void javax.swing.JMenu.removeMenuListener(javax.swing.event.MenuListener)
+meth public void javax.swing.JMenu.setAccelerator(javax.swing.KeyStroke)
+meth public void javax.swing.JMenu.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void javax.swing.JMenu.setDelay(int)
+meth public void javax.swing.JMenu.setMenuLocation(int,int)
+meth public void javax.swing.JMenu.setModel(javax.swing.ButtonModel)
+meth public void javax.swing.JMenu.setPopupMenuVisible(boolean)
+meth public void javax.swing.JMenu.setSelected(boolean)
+meth public void javax.swing.JMenu.updateUI()
+meth public void javax.swing.JMenuItem.addMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.addMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.processKeyEvent(java.awt.event.KeyEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.processMenuDragMouseEvent(javax.swing.event.MenuDragMouseEvent)
+meth public void javax.swing.JMenuItem.processMenuKeyEvent(javax.swing.event.MenuKeyEvent)
+meth public void javax.swing.JMenuItem.processMouseEvent(java.awt.event.MouseEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.removeMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.removeMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.setArmed(boolean)
+meth public void javax.swing.JMenuItem.setEnabled(boolean)
+meth public void javax.swing.JMenuItem.setUI(javax.swing.plaf.MenuItemUI)
 supr org.openide.awt.JMenuPlus
-hfds bridge,serialVersionUID
-
-CLSS public abstract interface static org.openide.awt.Actions$SubMenuModel
-meth public abstract int getCount()
-meth public abstract java.lang.String getLabel(int)
-meth public abstract org.openide.util.HelpCtx getHelpCtx(int)
-meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void performActionAt(int)
-meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
-
+CLSS public static abstract interface org.openide.awt.Actions$SubMenuModel
+meth public abstract int org.openide.awt.Actions$SubMenuModel.getCount()
+meth public abstract java.lang.String org.openide.awt.Actions$SubMenuModel.getLabel(int)
+meth public abstract org.openide.util.HelpCtx org.openide.awt.Actions$SubMenuModel.getHelpCtx(int)
+meth public abstract void org.openide.awt.Actions$SubMenuModel.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.awt.Actions$SubMenuModel.performActionAt(int)
+meth public abstract void org.openide.awt.Actions$SubMenuModel.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
 CLSS public static org.openide.awt.Actions$ToolbarButton
 cons public ToolbarButton(javax.swing.Action)
 cons public ToolbarButton(org.openide.util.actions.SystemAction)
-meth public java.awt.Dimension getMaximumSize()
-meth public java.awt.Dimension getMinimumSize()
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
+fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.ButtonModel javax.swing.AbstractButton.model
+fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.changeListener
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.AbstractButton$ButtonChangeListener
+innr protected javax.swing.JButton$AccessibleJButton
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+intf java.awt.ItemSelectable
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.SwingConstants
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected int javax.swing.AbstractButton.checkHorizontalKey(int,java.lang.String)
+meth protected int javax.swing.AbstractButton.checkVerticalKey(int,java.lang.String)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.awt.event.ActionListener javax.swing.AbstractButton.createActionListener()
+meth protected java.awt.event.ItemListener javax.swing.AbstractButton.createItemListener()
+meth protected java.beans.PropertyChangeListener javax.swing.AbstractButton.createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String javax.swing.JButton.paramString()
+meth protected javax.swing.event.ChangeListener javax.swing.AbstractButton.createChangeListener()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.AbstractButton.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void javax.swing.AbstractButton.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.AbstractButton.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.AbstractButton.fireStateChanged()
+meth protected void javax.swing.AbstractButton.init(java.lang.String,javax.swing.Icon)
+meth protected void javax.swing.AbstractButton.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JButton.configurePropertiesFromAction(javax.swing.Action)
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.awt.event.ActionListener; javax.swing.AbstractButton.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.AbstractButton.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.AbstractButton.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.AbstractButton.getChangeListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean javax.swing.AbstractButton.isBorderPainted()
+meth public boolean javax.swing.AbstractButton.isContentAreaFilled()
+meth public boolean javax.swing.AbstractButton.isFocusPainted()
+meth public boolean javax.swing.AbstractButton.isRolloverEnabled()
+meth public boolean javax.swing.AbstractButton.isSelected()
+meth public boolean javax.swing.JButton.isDefaultButton()
+meth public boolean javax.swing.JButton.isDefaultCapable()
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.AbstractButton.getDisplayedMnemonicIndex()
+meth public int javax.swing.AbstractButton.getHorizontalAlignment()
+meth public int javax.swing.AbstractButton.getHorizontalTextPosition()
+meth public int javax.swing.AbstractButton.getIconTextGap()
+meth public int javax.swing.AbstractButton.getMnemonic()
+meth public int javax.swing.AbstractButton.getVerticalAlignment()
+meth public int javax.swing.AbstractButton.getVerticalTextPosition()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.Dimension org.openide.awt.Actions$ToolbarButton.getMaximumSize()
+meth public java.awt.Dimension org.openide.awt.Actions$ToolbarButton.getMinimumSize()
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.AbstractButton.getMargin()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.AbstractButton.getActionCommand()
+meth public java.lang.String javax.swing.AbstractButton.getLabel()
+meth public java.lang.String javax.swing.AbstractButton.getText()
+meth public java.lang.String javax.swing.JButton.getUIClassID()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JButton.getAccessibleContext()
+meth public javax.swing.Action javax.swing.AbstractButton.getAction()
+meth public javax.swing.ButtonModel javax.swing.AbstractButton.getModel()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getPressedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getSelectedIcon()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ButtonUI javax.swing.AbstractButton.getUI()
+meth public long javax.swing.AbstractButton.getMultiClickThreshhold()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.AbstractButton.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.doClick()
+meth public void javax.swing.AbstractButton.doClick(int)
+meth public void javax.swing.AbstractButton.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.setAction(javax.swing.Action)
+meth public void javax.swing.AbstractButton.setActionCommand(java.lang.String)
+meth public void javax.swing.AbstractButton.setBorderPainted(boolean)
+meth public void javax.swing.AbstractButton.setContentAreaFilled(boolean)
+meth public void javax.swing.AbstractButton.setDisabledIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisabledSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisplayedMnemonicIndex(int) throws java.lang.IllegalArgumentException
+meth public void javax.swing.AbstractButton.setEnabled(boolean)
+meth public void javax.swing.AbstractButton.setFocusPainted(boolean)
+meth public void javax.swing.AbstractButton.setHorizontalAlignment(int)
+meth public void javax.swing.AbstractButton.setHorizontalTextPosition(int)
+meth public void javax.swing.AbstractButton.setIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setIconTextGap(int)
+meth public void javax.swing.AbstractButton.setLabel(java.lang.String)
+meth public void javax.swing.AbstractButton.setLayout(java.awt.LayoutManager)
+meth public void javax.swing.AbstractButton.setMargin(java.awt.Insets)
+meth public void javax.swing.AbstractButton.setMnemonic(char)
+meth public void javax.swing.AbstractButton.setMnemonic(int)
+meth public void javax.swing.AbstractButton.setModel(javax.swing.ButtonModel)
+meth public void javax.swing.AbstractButton.setMultiClickThreshhold(long)
+meth public void javax.swing.AbstractButton.setPressedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverEnabled(boolean)
+meth public void javax.swing.AbstractButton.setRolloverIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setSelected(boolean)
+meth public void javax.swing.AbstractButton.setSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setText(java.lang.String)
+meth public void javax.swing.AbstractButton.setUI(javax.swing.plaf.ButtonUI)
+meth public void javax.swing.AbstractButton.setVerticalAlignment(int)
+meth public void javax.swing.AbstractButton.setVerticalTextPosition(int)
+meth public void javax.swing.JButton.removeNotify()
+meth public void javax.swing.JButton.setDefaultCapable(boolean)
+meth public void javax.swing.JButton.updateUI()
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void org.openide.awt.ToolbarButton.processMouseEvent(java.awt.event.MouseEvent)
 supr org.openide.awt.ToolbarButton
-hfds serialVersionUID
-
 CLSS public static org.openide.awt.Actions$ToolbarToggleButton
 cons public ToolbarToggleButton(org.openide.util.actions.BooleanStateAction)
-meth public java.awt.Dimension getMaximumSize()
-meth public java.awt.Dimension getMinimumSize()
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
+fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.ButtonModel javax.swing.AbstractButton.model
+fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.changeListener
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.AbstractButton$ButtonChangeListener
+innr protected javax.swing.JToggleButton$AccessibleJToggleButton
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+innr public static javax.swing.JToggleButton$ToggleButtonModel
+intf java.awt.ItemSelectable
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.SwingConstants
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected int javax.swing.AbstractButton.checkHorizontalKey(int,java.lang.String)
+meth protected int javax.swing.AbstractButton.checkVerticalKey(int,java.lang.String)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.awt.event.ActionListener javax.swing.AbstractButton.createActionListener()
+meth protected java.awt.event.ItemListener javax.swing.AbstractButton.createItemListener()
+meth protected java.beans.PropertyChangeListener javax.swing.AbstractButton.createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String javax.swing.JToggleButton.paramString()
+meth protected javax.swing.event.ChangeListener javax.swing.AbstractButton.createChangeListener()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.AbstractButton.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void javax.swing.AbstractButton.configurePropertiesFromAction(javax.swing.Action)
+meth protected void javax.swing.AbstractButton.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.AbstractButton.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.AbstractButton.fireStateChanged()
+meth protected void javax.swing.AbstractButton.init(java.lang.String,javax.swing.Icon)
+meth protected void javax.swing.AbstractButton.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.awt.event.ActionListener; javax.swing.AbstractButton.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.AbstractButton.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.AbstractButton.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.AbstractButton.getChangeListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean javax.swing.AbstractButton.isBorderPainted()
+meth public boolean javax.swing.AbstractButton.isContentAreaFilled()
+meth public boolean javax.swing.AbstractButton.isFocusPainted()
+meth public boolean javax.swing.AbstractButton.isRolloverEnabled()
+meth public boolean javax.swing.AbstractButton.isSelected()
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.AbstractButton.getDisplayedMnemonicIndex()
+meth public int javax.swing.AbstractButton.getHorizontalAlignment()
+meth public int javax.swing.AbstractButton.getHorizontalTextPosition()
+meth public int javax.swing.AbstractButton.getIconTextGap()
+meth public int javax.swing.AbstractButton.getMnemonic()
+meth public int javax.swing.AbstractButton.getVerticalAlignment()
+meth public int javax.swing.AbstractButton.getVerticalTextPosition()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.Dimension org.openide.awt.Actions$ToolbarToggleButton.getMaximumSize()
+meth public java.awt.Dimension org.openide.awt.Actions$ToolbarToggleButton.getMinimumSize()
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.AbstractButton.getMargin()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.AbstractButton.getActionCommand()
+meth public java.lang.String javax.swing.AbstractButton.getLabel()
+meth public java.lang.String javax.swing.AbstractButton.getText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JToggleButton.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JToggleButton.getAccessibleContext()
+meth public javax.swing.Action javax.swing.AbstractButton.getAction()
+meth public javax.swing.ButtonModel javax.swing.AbstractButton.getModel()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getPressedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getSelectedIcon()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ButtonUI javax.swing.AbstractButton.getUI()
+meth public long javax.swing.AbstractButton.getMultiClickThreshhold()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.AbstractButton.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.doClick()
+meth public void javax.swing.AbstractButton.doClick(int)
+meth public void javax.swing.AbstractButton.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.setAction(javax.swing.Action)
+meth public void javax.swing.AbstractButton.setActionCommand(java.lang.String)
+meth public void javax.swing.AbstractButton.setBorderPainted(boolean)
+meth public void javax.swing.AbstractButton.setContentAreaFilled(boolean)
+meth public void javax.swing.AbstractButton.setDisabledIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisabledSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisplayedMnemonicIndex(int) throws java.lang.IllegalArgumentException
+meth public void javax.swing.AbstractButton.setEnabled(boolean)
+meth public void javax.swing.AbstractButton.setFocusPainted(boolean)
+meth public void javax.swing.AbstractButton.setHorizontalAlignment(int)
+meth public void javax.swing.AbstractButton.setHorizontalTextPosition(int)
+meth public void javax.swing.AbstractButton.setIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setIconTextGap(int)
+meth public void javax.swing.AbstractButton.setLabel(java.lang.String)
+meth public void javax.swing.AbstractButton.setLayout(java.awt.LayoutManager)
+meth public void javax.swing.AbstractButton.setMargin(java.awt.Insets)
+meth public void javax.swing.AbstractButton.setMnemonic(char)
+meth public void javax.swing.AbstractButton.setMnemonic(int)
+meth public void javax.swing.AbstractButton.setModel(javax.swing.ButtonModel)
+meth public void javax.swing.AbstractButton.setMultiClickThreshhold(long)
+meth public void javax.swing.AbstractButton.setPressedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverEnabled(boolean)
+meth public void javax.swing.AbstractButton.setRolloverIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setSelected(boolean)
+meth public void javax.swing.AbstractButton.setSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setText(java.lang.String)
+meth public void javax.swing.AbstractButton.setUI(javax.swing.plaf.ButtonUI)
+meth public void javax.swing.AbstractButton.setVerticalAlignment(int)
+meth public void javax.swing.AbstractButton.setVerticalTextPosition(int)
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JToggleButton.updateUI()
 supr org.openide.awt.ToolbarToggleButton
-hfds serialVersionUID
-
-CLSS public final org.openide.awt.DropDownButtonFactory
-fld public final static java.lang.String PROP_DROP_DOWN_MENU = "dropDownMenu"
-meth public static javax.swing.JButton createDropDownButton(javax.swing.Icon,javax.swing.JPopupMenu)
-meth public static javax.swing.JToggleButton createDropDownToggleButton(javax.swing.Icon,javax.swing.JPopupMenu)
+CLSS public static abstract interface org.openide.awt.HtmlBrowser$Factory
+meth public abstract org.openide.awt.HtmlBrowser$Impl org.openide.awt.HtmlBrowser$Factory.createHtmlBrowserImpl()
+supr null
+CLSS public static abstract org.openide.awt.HtmlBrowser$Impl
+cons public Impl()
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_BACKWARD
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_FORWARD
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_HISTORY
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_STATUS_MESSAGE
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_TITLE
+fld  constant public static final java.lang.String org.openide.awt.HtmlBrowser$Impl.PROP_URL
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract boolean org.openide.awt.HtmlBrowser$Impl.isBackward()
+meth public abstract boolean org.openide.awt.HtmlBrowser$Impl.isForward()
+meth public abstract boolean org.openide.awt.HtmlBrowser$Impl.isHistory()
+meth public abstract java.awt.Component org.openide.awt.HtmlBrowser$Impl.getComponent()
+meth public abstract java.lang.String org.openide.awt.HtmlBrowser$Impl.getStatusMessage()
+meth public abstract java.lang.String org.openide.awt.HtmlBrowser$Impl.getTitle()
+meth public abstract java.net.URL org.openide.awt.HtmlBrowser$Impl.getURL()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.backward()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.forward()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.reloadDocument()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.setURL(java.net.URL)
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.showHistory()
+meth public abstract void org.openide.awt.HtmlBrowser$Impl.stopLoading()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
-
+CLSS public static abstract org.openide.awt.HtmlBrowser$URLDisplayer
+cons protected URLDisplayer()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract void org.openide.awt.HtmlBrowser$URLDisplayer.showURL(java.net.URL)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.awt.HtmlBrowser$URLDisplayer org.openide.awt.HtmlBrowser$URLDisplayer.getDefault()
+supr java.lang.Object
+CLSS public static abstract interface org.openide.awt.HtmlRenderer$Renderer
+intf javax.swing.ListCellRenderer
+intf javax.swing.table.TableCellRenderer
+intf javax.swing.tree.TreeCellRenderer
+meth public abstract java.awt.Component javax.swing.ListCellRenderer.getListCellRendererComponent(javax.swing.JList,java.lang.Object,int,boolean,boolean)
+meth public abstract java.awt.Component javax.swing.table.TableCellRenderer.getTableCellRendererComponent(javax.swing.JTable,java.lang.Object,boolean,boolean,int,int)
+meth public abstract java.awt.Component javax.swing.tree.TreeCellRenderer.getTreeCellRendererComponent(javax.swing.JTree,java.lang.Object,boolean,boolean,boolean,int,boolean)
+meth public abstract void org.openide.awt.HtmlRenderer$Renderer.reset()
+meth public abstract void org.openide.awt.HtmlRenderer$Renderer.setCentered(boolean)
+meth public abstract void org.openide.awt.HtmlRenderer$Renderer.setHtml(boolean)
+meth public abstract void org.openide.awt.HtmlRenderer$Renderer.setIcon(javax.swing.Icon)
+meth public abstract void org.openide.awt.HtmlRenderer$Renderer.setIconTextGap(int)
+meth public abstract void org.openide.awt.HtmlRenderer$Renderer.setIndent(int)
+meth public abstract void org.openide.awt.HtmlRenderer$Renderer.setParentFocused(boolean)
+meth public abstract void org.openide.awt.HtmlRenderer$Renderer.setRenderStyle(int)
+meth public abstract void org.openide.awt.HtmlRenderer$Renderer.setText(java.lang.String)
+supr null
+CLSS public static abstract org.openide.awt.MouseUtils$PopupMouseAdapter
+cons public PopupMouseAdapter()
+cons public PopupMouseAdapter(int)
+fld  constant public static final int org.openide.awt.MouseUtils$PopupMouseAdapter.DEFAULT_THRESHOLD
+intf java.awt.event.MouseListener
+intf java.util.EventListener
+meth protected abstract void org.openide.awt.MouseUtils$PopupMouseAdapter.showPopup(java.awt.event.MouseEvent)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.event.MouseAdapter.mouseClicked(java.awt.event.MouseEvent)
+meth public void java.awt.event.MouseAdapter.mouseEntered(java.awt.event.MouseEvent)
+meth public void java.awt.event.MouseAdapter.mouseExited(java.awt.event.MouseEvent)
+meth public void org.openide.awt.MouseUtils$PopupMouseAdapter.mousePressed(java.awt.event.MouseEvent)
+meth public void org.openide.awt.MouseUtils$PopupMouseAdapter.mouseReleased(java.awt.event.MouseEvent)
+supr java.awt.event.MouseAdapter
+CLSS public static org.openide.awt.SplittedPanel$EmptySplitter
+cons public EmptySplitter()
+cons public EmptySplitter(int)
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.lang.String javax.swing.JComponent.paramString()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.Dimension org.openide.awt.SplittedPanel$EmptySplitter.getPreferredSize()
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JComponent.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext org.openide.awt.SplittedPanel$EmptySplitter.getAccessibleContext()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.setLayout(java.awt.LayoutManager)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setEnabled(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JComponent.updateUI()
+supr javax.swing.JComponent
+CLSS public static org.openide.awt.SplittedPanel$SplitChangeEvent
+cons public SplitChangeEvent(org.openide.awt.SplittedPanel,int,int)
+fld  protected transient java.lang.Object java.util.EventObject.source
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.openide.awt.SplittedPanel$SplitChangeEvent.getNewValue()
+meth public int org.openide.awt.SplittedPanel$SplitChangeEvent.getOldValue()
+meth public java.lang.Object java.util.EventObject.getSource()
+meth public java.lang.String java.util.EventObject.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.util.EventObject
+CLSS public static abstract interface org.openide.awt.SplittedPanel$SplitChangeListener
+meth public abstract void org.openide.awt.SplittedPanel$SplitChangeListener.splitChanged(org.openide.awt.SplittedPanel$SplitChangeEvent)
+supr null
+CLSS public static final org.openide.awt.UndoRedo$Empty
+cons public Empty()
+fld  public static final org.openide.awt.UndoRedo org.openide.awt.UndoRedo.NONE
+innr public static final org.openide.awt.UndoRedo$Empty
+innr public static org.openide.awt.UndoRedo$Manager
+intf org.openide.awt.UndoRedo
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.awt.UndoRedo$Empty.canRedo()
+meth public boolean org.openide.awt.UndoRedo$Empty.canUndo()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.awt.UndoRedo$Empty.getRedoPresentationName()
+meth public java.lang.String org.openide.awt.UndoRedo$Empty.getUndoPresentationName()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.awt.UndoRedo$Empty.addChangeListener(javax.swing.event.ChangeListener)
+meth public void org.openide.awt.UndoRedo$Empty.redo() throws javax.swing.undo.CannotRedoException
+meth public void org.openide.awt.UndoRedo$Empty.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void org.openide.awt.UndoRedo$Empty.undo() throws javax.swing.undo.CannotUndoException
+supr java.lang.Object
+CLSS public static org.openide.awt.UndoRedo$Manager
+cons public Manager()
+fld  constant protected static final java.lang.String javax.swing.undo.AbstractUndoableEdit.RedoName
+fld  constant protected static final java.lang.String javax.swing.undo.AbstractUndoableEdit.UndoName
+fld  protected java.util.Vector javax.swing.undo.CompoundEdit.edits
+fld  public static final org.openide.awt.UndoRedo org.openide.awt.UndoRedo.NONE
+innr public static final org.openide.awt.UndoRedo$Empty
+innr public static org.openide.awt.UndoRedo$Manager
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.swing.event.UndoableEditListener
+intf javax.swing.undo.UndoableEdit
+intf org.openide.awt.UndoRedo
+meth protected javax.swing.undo.UndoableEdit javax.swing.undo.CompoundEdit.lastEdit()
+meth protected javax.swing.undo.UndoableEdit javax.swing.undo.UndoManager.editToBeRedone()
+meth protected javax.swing.undo.UndoableEdit javax.swing.undo.UndoManager.editToBeUndone()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.undo.UndoManager.redoTo(javax.swing.undo.UndoableEdit) throws javax.swing.undo.CannotRedoException
+meth protected void javax.swing.undo.UndoManager.trimEdits(int,int)
+meth protected void javax.swing.undo.UndoManager.trimForLimit()
+meth protected void javax.swing.undo.UndoManager.undoTo(javax.swing.undo.UndoableEdit) throws javax.swing.undo.CannotUndoException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.undo.AbstractUndoableEdit.replaceEdit(javax.swing.undo.UndoableEdit)
+meth public boolean javax.swing.undo.CompoundEdit.isInProgress()
+meth public boolean javax.swing.undo.CompoundEdit.isSignificant()
+meth public boolean org.openide.awt.UndoRedo$Manager.canUndo()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String javax.swing.undo.CompoundEdit.getPresentationName()
+meth public java.lang.String javax.swing.undo.UndoManager.toString()
+meth public java.lang.String org.openide.awt.UndoRedo$Manager.getRedoPresentationName()
+meth public java.lang.String org.openide.awt.UndoRedo$Manager.getUndoPresentationName()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized boolean javax.swing.undo.UndoManager.addEdit(javax.swing.undo.UndoableEdit)
+meth public synchronized boolean javax.swing.undo.UndoManager.canRedo()
+meth public synchronized boolean javax.swing.undo.UndoManager.canUndoOrRedo()
+meth public synchronized int javax.swing.undo.UndoManager.getLimit()
+meth public synchronized java.lang.String javax.swing.undo.UndoManager.getUndoOrRedoPresentationName()
+meth public synchronized void javax.swing.undo.UndoManager.end()
+meth public synchronized void javax.swing.undo.UndoManager.redo() throws javax.swing.undo.CannotRedoException
+meth public synchronized void javax.swing.undo.UndoManager.setLimit(int)
+meth public synchronized void javax.swing.undo.UndoManager.undo() throws javax.swing.undo.CannotUndoException
+meth public synchronized void javax.swing.undo.UndoManager.undoOrRedo() throws javax.swing.undo.CannotRedoException,javax.swing.undo.CannotUndoException
+meth public void javax.swing.undo.CompoundEdit.die()
+meth public void org.openide.awt.UndoRedo$Manager.addChangeListener(javax.swing.event.ChangeListener)
+meth public void org.openide.awt.UndoRedo$Manager.discardAllEdits()
+meth public void org.openide.awt.UndoRedo$Manager.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void org.openide.awt.UndoRedo$Manager.undoableEditHappened(javax.swing.event.UndoableEditEvent)
+supr javax.swing.undo.UndoManager
+CLSS public org.openide.awt.Actions
+cons public Actions()
+innr public static abstract interface org.openide.awt.Actions$SubMenuModel
+innr public static org.openide.awt.Actions$CheckboxMenuItem
+innr public static org.openide.awt.Actions$MenuItem
+innr public static org.openide.awt.Actions$SubMenu
+innr public static org.openide.awt.Actions$ToolbarButton
+innr public static org.openide.awt.Actions$ToolbarToggleButton
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.lang.String org.openide.awt.Actions.cutAmpersand(java.lang.String)
+meth public static java.lang.String org.openide.awt.Actions.findKey(org.openide.util.actions.SystemAction)
+meth public static void org.openide.awt.Actions.connect(javax.swing.AbstractButton,javax.swing.Action)
+meth public static void org.openide.awt.Actions.connect(javax.swing.AbstractButton,org.openide.util.actions.BooleanStateAction)
+meth public static void org.openide.awt.Actions.connect(javax.swing.AbstractButton,org.openide.util.actions.SystemAction)
+meth public static void org.openide.awt.Actions.connect(javax.swing.JCheckBoxMenuItem,org.openide.util.actions.BooleanStateAction,boolean)
+meth public static void org.openide.awt.Actions.connect(javax.swing.JMenuItem,javax.swing.Action,boolean)
+meth public static void org.openide.awt.Actions.connect(javax.swing.JMenuItem,org.openide.util.actions.SystemAction,boolean)
+meth public static void org.openide.awt.Actions.setMenuText(javax.swing.AbstractButton,java.lang.String,boolean)
+supr java.lang.Object
 CLSS public abstract interface org.openide.awt.DynamicMenuContent
-meth public abstract javax.swing.JComponent[] getMenuPresenters()
-meth public abstract javax.swing.JComponent[] synchMenuPresenters(javax.swing.JComponent[])
-
+meth public abstract [Ljavax.swing.JComponent; org.openide.awt.DynamicMenuContent.getMenuPresenters()
+meth public abstract [Ljavax.swing.JComponent; org.openide.awt.DynamicMenuContent.synchMenuPresenters([Ljavax.swing.JComponent;)
+supr null
 CLSS public org.openide.awt.EqualFlowLayout
 cons public EqualFlowLayout()
 cons public EqualFlowLayout(int)
 cons public EqualFlowLayout(int,int,int)
-meth public java.awt.Dimension minimumLayoutSize(java.awt.Container)
-meth public java.awt.Dimension preferredLayoutSize(java.awt.Container)
-meth public void layoutContainer(java.awt.Container)
+fld  constant public static final int java.awt.FlowLayout.CENTER
+fld  constant public static final int java.awt.FlowLayout.LEADING
+fld  constant public static final int java.awt.FlowLayout.LEFT
+fld  constant public static final int java.awt.FlowLayout.RIGHT
+fld  constant public static final int java.awt.FlowLayout.TRAILING
+intf java.awt.LayoutManager
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.FlowLayout.getAlignment()
+meth public int java.awt.FlowLayout.getHgap()
+meth public int java.awt.FlowLayout.getVgap()
+meth public java.awt.Dimension org.openide.awt.EqualFlowLayout.minimumLayoutSize(java.awt.Container)
+meth public java.awt.Dimension org.openide.awt.EqualFlowLayout.preferredLayoutSize(java.awt.Container)
+meth public java.lang.String java.awt.FlowLayout.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.FlowLayout.addLayoutComponent(java.lang.String,java.awt.Component)
+meth public void java.awt.FlowLayout.removeLayoutComponent(java.awt.Component)
+meth public void java.awt.FlowLayout.setAlignment(int)
+meth public void java.awt.FlowLayout.setHgap(int)
+meth public void java.awt.FlowLayout.setVgap(int)
+meth public void org.openide.awt.EqualFlowLayout.layoutContainer(java.awt.Container)
 supr java.awt.FlowLayout
-hfds serialVersionUID
-
 CLSS public org.openide.awt.HtmlBrowser
 cons public HtmlBrowser()
 cons public HtmlBrowser(boolean,boolean)
 cons public HtmlBrowser(org.openide.awt.HtmlBrowser$Factory,boolean,boolean)
-fld public final static int DEFAULT_HEIGHT = 600
-fld public final static int DEFAULT_WIDTH = 400
-innr public abstract interface static Factory
-innr public abstract static Impl
-innr public abstract static URLDisplayer
-meth public boolean isStatusLineVisible()
-meth public boolean isToolbarVisible()
-meth public boolean requestFocusInWindow()
-meth public final java.awt.Component getBrowserComponent()
-meth public final java.net.URL getDocumentURL()
-meth public final org.openide.awt.HtmlBrowser$Impl getBrowserImpl()
-meth public final void setEnableHome(boolean)
-meth public final void setEnableLocation(boolean)
-meth public java.awt.Dimension getPreferredSize()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public static java.lang.String getHomePage()
-meth public static void setFactory(org.openide.awt.HtmlBrowser$Factory)
-meth public static void setHomePage(java.lang.String)
-meth public void requestFocus()
-meth public void setStatusLineVisible(boolean)
-meth public void setToolbarVisible(boolean)
-meth public void setURL(java.lang.String)
-meth public void setURL(java.net.URL)
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int org.openide.awt.HtmlBrowser.DEFAULT_HEIGHT
+fld  constant public static final int org.openide.awt.HtmlBrowser.DEFAULT_WIDTH
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.JPanel$AccessibleJPanel
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+innr public static abstract interface org.openide.awt.HtmlBrowser$Factory
+innr public static abstract org.openide.awt.HtmlBrowser$Impl
+innr public static abstract org.openide.awt.HtmlBrowser$URLDisplayer
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.lang.String javax.swing.JPanel.paramString()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean org.openide.awt.HtmlBrowser.isStatusLineVisible()
+meth public boolean org.openide.awt.HtmlBrowser.isToolbarVisible()
+meth public boolean org.openide.awt.HtmlBrowser.requestFocusInWindow()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.awt.Component org.openide.awt.HtmlBrowser.getBrowserComponent()
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final java.net.URL org.openide.awt.HtmlBrowser.getDocumentURL()
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final org.openide.awt.HtmlBrowser$Impl org.openide.awt.HtmlBrowser.getBrowserImpl()
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public final void org.openide.awt.HtmlBrowser.setEnableHome(boolean)
+meth public final void org.openide.awt.HtmlBrowser.setEnableLocation(boolean)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.Dimension org.openide.awt.HtmlBrowser.getPreferredSize()
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JPanel.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext org.openide.awt.HtmlBrowser.getAccessibleContext()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.PanelUI javax.swing.JPanel.getUI()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.lang.String org.openide.awt.HtmlBrowser.getHomePage()
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public static void org.openide.awt.HtmlBrowser.setFactory(org.openide.awt.HtmlBrowser$Factory)
+meth public static void org.openide.awt.HtmlBrowser.setHomePage(java.lang.String)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.setLayout(java.awt.LayoutManager)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setEnabled(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JPanel.setUI(javax.swing.plaf.PanelUI)
+meth public void javax.swing.JPanel.updateUI()
+meth public void org.openide.awt.HtmlBrowser.requestFocus()
+meth public void org.openide.awt.HtmlBrowser.setStatusLineVisible(boolean)
+meth public void org.openide.awt.HtmlBrowser.setToolbarVisible(boolean)
+meth public void org.openide.awt.HtmlBrowser.setURL(java.lang.String)
+meth public void org.openide.awt.HtmlBrowser.setURL(java.net.URL)
 supr javax.swing.JPanel
-hfds bBack,bForward,bHistory,bHome,bReload,bStop,browserComponent,browserFactory,browserImpl,browserListener,cbLabel,cbLocation,everythinkIListenInCheckBoxIsUnimportant,head,homePage,iBack,iForward,iHistory,iHome,iReload,iStop,lStatusLine,rp,serialVersionUID,statusLineVisible,toolbarVisible
-hcls AccessibleHtmlBrowser,BrowserListener,TrivialURLDisplayer
-
-CLSS public abstract interface static org.openide.awt.HtmlBrowser$Factory
-meth public abstract org.openide.awt.HtmlBrowser$Impl createHtmlBrowserImpl()
-
-CLSS public abstract static org.openide.awt.HtmlBrowser$Impl
-cons public Impl()
-fld public final static java.lang.String PROP_BACKWARD = "backward"
-fld public final static java.lang.String PROP_FORWARD = "forward"
-fld public final static java.lang.String PROP_HISTORY = "history"
-fld public final static java.lang.String PROP_STATUS_MESSAGE = "statusMessage"
-fld public final static java.lang.String PROP_TITLE = "title"
-fld public final static java.lang.String PROP_URL = "url"
-meth public abstract boolean isBackward()
-meth public abstract boolean isForward()
-meth public abstract boolean isHistory()
-meth public abstract java.awt.Component getComponent()
-meth public abstract java.lang.String getStatusMessage()
-meth public abstract java.lang.String getTitle()
-meth public abstract java.net.URL getURL()
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void backward()
-meth public abstract void forward()
-meth public abstract void reloadDocument()
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void setURL(java.net.URL)
-meth public abstract void showHistory()
-meth public abstract void stopLoading()
-supr java.lang.Object
-hfds serialVersionUID
-
-CLSS public abstract static org.openide.awt.HtmlBrowser$URLDisplayer
-cons protected URLDisplayer()
-meth public abstract void showURL(java.net.URL)
-meth public static org.openide.awt.HtmlBrowser$URLDisplayer getDefault()
-supr java.lang.Object
-
 CLSS public final org.openide.awt.HtmlRenderer
-fld public final static int STYLE_CLIP = 0
-fld public final static int STYLE_TRUNCATE = 1
-innr public abstract interface static Renderer
-meth public final static javax.swing.JLabel createLabel()
-meth public final static org.openide.awt.HtmlRenderer$Renderer createRenderer()
-meth public static double renderHTML(java.lang.String,java.awt.Graphics,int,int,int,int,java.awt.Font,java.awt.Color,int,boolean)
-meth public static double renderPlainString(java.lang.String,java.awt.Graphics,int,int,int,int,java.awt.Font,java.awt.Color,int,boolean)
-meth public static double renderString(java.lang.String,java.awt.Graphics,int,int,int,int,java.awt.Font,java.awt.Color,int,boolean)
+fld  constant public static final int org.openide.awt.HtmlRenderer.STYLE_CLIP
+fld  constant public static final int org.openide.awt.HtmlRenderer.STYLE_TRUNCATE
+innr public static abstract interface org.openide.awt.HtmlRenderer$Renderer
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static double org.openide.awt.HtmlRenderer.renderHTML(java.lang.String,java.awt.Graphics,int,int,int,int,java.awt.Font,java.awt.Color,int,boolean)
+meth public static double org.openide.awt.HtmlRenderer.renderPlainString(java.lang.String,java.awt.Graphics,int,int,int,int,java.awt.Font,java.awt.Color,int,boolean)
+meth public static double org.openide.awt.HtmlRenderer.renderString(java.lang.String,java.awt.Graphics,int,int,int,int,java.awt.Font,java.awt.Color,int,boolean)
+meth public static final javax.swing.JLabel org.openide.awt.HtmlRenderer.createLabel()
+meth public static final org.openide.awt.HtmlRenderer$Renderer org.openide.awt.HtmlRenderer.createRenderer()
 supr java.lang.Object
-hfds LABEL,LOG,STRICT_HTML,STYLE_WORDWRAP,badStrings,colorStack,entities,entitySubstitutions
-
-CLSS public abstract interface static org.openide.awt.HtmlRenderer$Renderer
-intf javax.swing.ListCellRenderer
-intf javax.swing.table.TableCellRenderer
-intf javax.swing.tree.TreeCellRenderer
-meth public abstract void reset()
-meth public abstract void setCentered(boolean)
-meth public abstract void setHtml(boolean)
-meth public abstract void setIcon(javax.swing.Icon)
-meth public abstract void setIconTextGap(int)
-meth public abstract void setIndent(int)
-meth public abstract void setParentFocused(boolean)
-meth public abstract void setRenderStyle(int)
-meth public abstract void setText(java.lang.String)
-
 CLSS public org.openide.awt.JInlineMenu
 cons public JInlineMenu()
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
+fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.ButtonModel javax.swing.AbstractButton.model
+fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.changeListener
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.AbstractButton$ButtonChangeListener
+innr protected javax.swing.JMenuItem$AccessibleJMenuItem
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+intf java.awt.ItemSelectable
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.MenuElement
+intf javax.swing.SwingConstants
 intf org.openide.awt.DynamicMenuContent
-meth public java.awt.Insets getInsets()
-meth public javax.swing.JComponent[] getMenuPresenters()
-meth public javax.swing.JComponent[] synchMenuPresenters(javax.swing.JComponent[])
-meth public void setMenuItems(javax.swing.JMenuItem[])
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected int javax.swing.AbstractButton.checkHorizontalKey(int,java.lang.String)
+meth protected int javax.swing.AbstractButton.checkVerticalKey(int,java.lang.String)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.awt.event.ActionListener javax.swing.AbstractButton.createActionListener()
+meth protected java.awt.event.ItemListener javax.swing.AbstractButton.createItemListener()
+meth protected java.beans.PropertyChangeListener javax.swing.JMenuItem.createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String javax.swing.JMenuItem.paramString()
+meth protected javax.swing.event.ChangeListener javax.swing.AbstractButton.createChangeListener()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.AbstractButton.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void javax.swing.AbstractButton.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.AbstractButton.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.AbstractButton.fireStateChanged()
+meth protected void javax.swing.AbstractButton.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth protected void javax.swing.JMenuItem.configurePropertiesFromAction(javax.swing.Action)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseDragged(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseEntered(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseExited(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseReleased(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyPressed(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyReleased(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyTyped(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.init(java.lang.String,javax.swing.Icon)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.awt.event.ActionListener; javax.swing.AbstractButton.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.AbstractButton.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.AbstractButton.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.JComponent; org.openide.awt.JInlineMenu.getMenuPresenters()
+meth public [Ljavax.swing.JComponent; org.openide.awt.JInlineMenu.synchMenuPresenters([Ljavax.swing.JComponent;)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.MenuElement; javax.swing.JMenuItem.getSubElements()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.AbstractButton.getChangeListeners()
+meth public [Ljavax.swing.event.MenuDragMouseListener; javax.swing.JMenuItem.getMenuDragMouseListeners()
+meth public [Ljavax.swing.event.MenuKeyListener; javax.swing.JMenuItem.getMenuKeyListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean javax.swing.AbstractButton.isBorderPainted()
+meth public boolean javax.swing.AbstractButton.isContentAreaFilled()
+meth public boolean javax.swing.AbstractButton.isFocusPainted()
+meth public boolean javax.swing.AbstractButton.isRolloverEnabled()
+meth public boolean javax.swing.AbstractButton.isSelected()
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public boolean javax.swing.JMenuItem.isArmed()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.AbstractButton.getDisplayedMnemonicIndex()
+meth public int javax.swing.AbstractButton.getHorizontalAlignment()
+meth public int javax.swing.AbstractButton.getHorizontalTextPosition()
+meth public int javax.swing.AbstractButton.getIconTextGap()
+meth public int javax.swing.AbstractButton.getMnemonic()
+meth public int javax.swing.AbstractButton.getVerticalAlignment()
+meth public int javax.swing.AbstractButton.getVerticalTextPosition()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.Component javax.swing.JMenuItem.getComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.AbstractButton.getMargin()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.Insets org.openide.awt.JInlineMenu.getInsets()
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.AbstractButton.getActionCommand()
+meth public java.lang.String javax.swing.AbstractButton.getLabel()
+meth public java.lang.String javax.swing.AbstractButton.getText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JMenuItem.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JMenuItem.getAccessibleContext()
+meth public javax.swing.Action javax.swing.AbstractButton.getAction()
+meth public javax.swing.ButtonModel javax.swing.AbstractButton.getModel()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getPressedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getSelectedIcon()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.KeyStroke javax.swing.JMenuItem.getAccelerator()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ButtonUI javax.swing.AbstractButton.getUI()
+meth public long javax.swing.AbstractButton.getMultiClickThreshhold()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.AbstractButton.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.doClick()
+meth public void javax.swing.AbstractButton.doClick(int)
+meth public void javax.swing.AbstractButton.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.setAction(javax.swing.Action)
+meth public void javax.swing.AbstractButton.setActionCommand(java.lang.String)
+meth public void javax.swing.AbstractButton.setBorderPainted(boolean)
+meth public void javax.swing.AbstractButton.setContentAreaFilled(boolean)
+meth public void javax.swing.AbstractButton.setDisabledIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisabledSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisplayedMnemonicIndex(int) throws java.lang.IllegalArgumentException
+meth public void javax.swing.AbstractButton.setFocusPainted(boolean)
+meth public void javax.swing.AbstractButton.setHorizontalAlignment(int)
+meth public void javax.swing.AbstractButton.setHorizontalTextPosition(int)
+meth public void javax.swing.AbstractButton.setIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setIconTextGap(int)
+meth public void javax.swing.AbstractButton.setLabel(java.lang.String)
+meth public void javax.swing.AbstractButton.setLayout(java.awt.LayoutManager)
+meth public void javax.swing.AbstractButton.setMargin(java.awt.Insets)
+meth public void javax.swing.AbstractButton.setMnemonic(char)
+meth public void javax.swing.AbstractButton.setMnemonic(int)
+meth public void javax.swing.AbstractButton.setModel(javax.swing.ButtonModel)
+meth public void javax.swing.AbstractButton.setMultiClickThreshhold(long)
+meth public void javax.swing.AbstractButton.setPressedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverEnabled(boolean)
+meth public void javax.swing.AbstractButton.setRolloverIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setSelected(boolean)
+meth public void javax.swing.AbstractButton.setSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setText(java.lang.String)
+meth public void javax.swing.AbstractButton.setUI(javax.swing.plaf.ButtonUI)
+meth public void javax.swing.AbstractButton.setVerticalAlignment(int)
+meth public void javax.swing.AbstractButton.setVerticalTextPosition(int)
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JMenuItem.addMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.addMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.menuSelectionChanged(boolean)
+meth public void javax.swing.JMenuItem.processKeyEvent(java.awt.event.KeyEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.processMenuDragMouseEvent(javax.swing.event.MenuDragMouseEvent)
+meth public void javax.swing.JMenuItem.processMenuKeyEvent(javax.swing.event.MenuKeyEvent)
+meth public void javax.swing.JMenuItem.processMouseEvent(java.awt.event.MouseEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.removeMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.removeMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.setAccelerator(javax.swing.KeyStroke)
+meth public void javax.swing.JMenuItem.setArmed(boolean)
+meth public void javax.swing.JMenuItem.setEnabled(boolean)
+meth public void javax.swing.JMenuItem.setUI(javax.swing.plaf.MenuItemUI)
+meth public void javax.swing.JMenuItem.updateUI()
+meth public void org.openide.awt.JInlineMenu.setMenuItems([Ljavax.swing.JMenuItem;)
 supr javax.swing.JMenuItem
-hfds BLANK_ICON,addedItems,items,serialVersionUID,upToDate
-
 CLSS public org.openide.awt.JMenuPlus
 cons public JMenuPlus()
 cons public JMenuPlus(java.lang.String)
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
+fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.ButtonModel javax.swing.AbstractButton.model
+fld  protected javax.swing.JMenu$WinListener javax.swing.JMenu.popupListener
+fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.changeListener
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.AbstractButton$ButtonChangeListener
+innr protected javax.swing.JMenu$AccessibleJMenu
+innr protected javax.swing.JMenu$WinListener
+innr protected javax.swing.JMenuItem$AccessibleJMenuItem
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+intf java.awt.ItemSelectable
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.MenuElement
+intf javax.swing.SwingConstants
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected int javax.swing.AbstractButton.checkHorizontalKey(int,java.lang.String)
+meth protected int javax.swing.AbstractButton.checkVerticalKey(int,java.lang.String)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.awt.Point javax.swing.JMenu.getPopupMenuOrigin()
+meth protected java.awt.event.ActionListener javax.swing.AbstractButton.createActionListener()
+meth protected java.awt.event.ItemListener javax.swing.AbstractButton.createItemListener()
+meth protected java.beans.PropertyChangeListener javax.swing.JMenu.createActionChangeListener(javax.swing.JMenuItem)
+meth protected java.beans.PropertyChangeListener javax.swing.JMenuItem.createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String javax.swing.JMenu.paramString()
+meth protected javax.swing.JMenu$WinListener javax.swing.JMenu.createWinListener(javax.swing.JPopupMenu)
+meth protected javax.swing.JMenuItem javax.swing.JMenu.createActionComponent(javax.swing.Action)
+meth protected javax.swing.event.ChangeListener javax.swing.AbstractButton.createChangeListener()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.AbstractButton.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void javax.swing.AbstractButton.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.AbstractButton.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.AbstractButton.fireStateChanged()
+meth protected void javax.swing.AbstractButton.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth protected void javax.swing.JMenu.configurePropertiesFromAction(javax.swing.Action)
+meth protected void javax.swing.JMenu.fireMenuCanceled()
+meth protected void javax.swing.JMenu.fireMenuDeselected()
+meth protected void javax.swing.JMenu.fireMenuSelected()
+meth protected void javax.swing.JMenu.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseDragged(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseEntered(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseExited(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuDragMouseReleased(javax.swing.event.MenuDragMouseEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyPressed(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyReleased(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.fireMenuKeyTyped(javax.swing.event.MenuKeyEvent)
+meth protected void javax.swing.JMenuItem.init(java.lang.String,javax.swing.Icon)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.awt.Component; javax.swing.JMenu.getMenuComponents()
+meth public [Ljava.awt.event.ActionListener; javax.swing.AbstractButton.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.AbstractButton.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.AbstractButton.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.MenuElement; javax.swing.JMenu.getSubElements()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.AbstractButton.getChangeListeners()
+meth public [Ljavax.swing.event.MenuDragMouseListener; javax.swing.JMenuItem.getMenuDragMouseListeners()
+meth public [Ljavax.swing.event.MenuKeyListener; javax.swing.JMenuItem.getMenuKeyListeners()
+meth public [Ljavax.swing.event.MenuListener; javax.swing.JMenu.getMenuListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean javax.swing.AbstractButton.isBorderPainted()
+meth public boolean javax.swing.AbstractButton.isContentAreaFilled()
+meth public boolean javax.swing.AbstractButton.isFocusPainted()
+meth public boolean javax.swing.AbstractButton.isRolloverEnabled()
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public boolean javax.swing.JMenu.isMenuComponent(java.awt.Component)
+meth public boolean javax.swing.JMenu.isPopupMenuVisible()
+meth public boolean javax.swing.JMenu.isSelected()
+meth public boolean javax.swing.JMenu.isTearOff()
+meth public boolean javax.swing.JMenu.isTopLevelMenu()
+meth public boolean javax.swing.JMenuItem.isArmed()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.AbstractButton.getDisplayedMnemonicIndex()
+meth public int javax.swing.AbstractButton.getHorizontalAlignment()
+meth public int javax.swing.AbstractButton.getHorizontalTextPosition()
+meth public int javax.swing.AbstractButton.getIconTextGap()
+meth public int javax.swing.AbstractButton.getMnemonic()
+meth public int javax.swing.AbstractButton.getVerticalAlignment()
+meth public int javax.swing.AbstractButton.getVerticalTextPosition()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public int javax.swing.JMenu.getDelay()
+meth public int javax.swing.JMenu.getItemCount()
+meth public int javax.swing.JMenu.getMenuComponentCount()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.Component javax.swing.JMenu.add(java.awt.Component)
+meth public java.awt.Component javax.swing.JMenu.add(java.awt.Component,int)
+meth public java.awt.Component javax.swing.JMenu.getComponent()
+meth public java.awt.Component javax.swing.JMenu.getMenuComponent(int)
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.AbstractButton.getMargin()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.AbstractButton.getActionCommand()
+meth public java.lang.String javax.swing.AbstractButton.getLabel()
+meth public java.lang.String javax.swing.AbstractButton.getText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JMenu.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JMenu.getAccessibleContext()
+meth public javax.swing.Action javax.swing.AbstractButton.getAction()
+meth public javax.swing.ButtonModel javax.swing.AbstractButton.getModel()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getPressedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getSelectedIcon()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JMenuItem javax.swing.JMenu.add(java.lang.String)
+meth public javax.swing.JMenuItem javax.swing.JMenu.add(javax.swing.Action)
+meth public javax.swing.JMenuItem javax.swing.JMenu.add(javax.swing.JMenuItem)
+meth public javax.swing.JMenuItem javax.swing.JMenu.getItem(int)
+meth public javax.swing.JMenuItem javax.swing.JMenu.insert(javax.swing.Action,int)
+meth public javax.swing.JMenuItem javax.swing.JMenu.insert(javax.swing.JMenuItem,int)
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JPopupMenu javax.swing.JMenu.getPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.KeyStroke javax.swing.JMenuItem.getAccelerator()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ButtonUI javax.swing.AbstractButton.getUI()
+meth public long javax.swing.AbstractButton.getMultiClickThreshhold()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.AbstractButton.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.doClick()
+meth public void javax.swing.AbstractButton.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.setAction(javax.swing.Action)
+meth public void javax.swing.AbstractButton.setActionCommand(java.lang.String)
+meth public void javax.swing.AbstractButton.setBorderPainted(boolean)
+meth public void javax.swing.AbstractButton.setContentAreaFilled(boolean)
+meth public void javax.swing.AbstractButton.setDisabledIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisabledSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisplayedMnemonicIndex(int) throws java.lang.IllegalArgumentException
+meth public void javax.swing.AbstractButton.setFocusPainted(boolean)
+meth public void javax.swing.AbstractButton.setHorizontalAlignment(int)
+meth public void javax.swing.AbstractButton.setHorizontalTextPosition(int)
+meth public void javax.swing.AbstractButton.setIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setIconTextGap(int)
+meth public void javax.swing.AbstractButton.setLabel(java.lang.String)
+meth public void javax.swing.AbstractButton.setLayout(java.awt.LayoutManager)
+meth public void javax.swing.AbstractButton.setMargin(java.awt.Insets)
+meth public void javax.swing.AbstractButton.setMnemonic(char)
+meth public void javax.swing.AbstractButton.setMnemonic(int)
+meth public void javax.swing.AbstractButton.setMultiClickThreshhold(long)
+meth public void javax.swing.AbstractButton.setPressedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverEnabled(boolean)
+meth public void javax.swing.AbstractButton.setRolloverIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setText(java.lang.String)
+meth public void javax.swing.AbstractButton.setUI(javax.swing.plaf.ButtonUI)
+meth public void javax.swing.AbstractButton.setVerticalAlignment(int)
+meth public void javax.swing.AbstractButton.setVerticalTextPosition(int)
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JMenu.addMenuListener(javax.swing.event.MenuListener)
+meth public void javax.swing.JMenu.addSeparator()
+meth public void javax.swing.JMenu.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void javax.swing.JMenu.doClick(int)
+meth public void javax.swing.JMenu.insert(java.lang.String,int)
+meth public void javax.swing.JMenu.insertSeparator(int)
+meth public void javax.swing.JMenu.menuSelectionChanged(boolean)
+meth public void javax.swing.JMenu.remove(int)
+meth public void javax.swing.JMenu.remove(java.awt.Component)
+meth public void javax.swing.JMenu.remove(javax.swing.JMenuItem)
+meth public void javax.swing.JMenu.removeAll()
+meth public void javax.swing.JMenu.removeMenuListener(javax.swing.event.MenuListener)
+meth public void javax.swing.JMenu.setAccelerator(javax.swing.KeyStroke)
+meth public void javax.swing.JMenu.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void javax.swing.JMenu.setDelay(int)
+meth public void javax.swing.JMenu.setMenuLocation(int,int)
+meth public void javax.swing.JMenu.setModel(javax.swing.ButtonModel)
+meth public void javax.swing.JMenu.setPopupMenuVisible(boolean)
+meth public void javax.swing.JMenu.setSelected(boolean)
+meth public void javax.swing.JMenu.updateUI()
+meth public void javax.swing.JMenuItem.addMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.addMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.processKeyEvent(java.awt.event.KeyEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.processMenuDragMouseEvent(javax.swing.event.MenuDragMouseEvent)
+meth public void javax.swing.JMenuItem.processMenuKeyEvent(javax.swing.event.MenuKeyEvent)
+meth public void javax.swing.JMenuItem.processMouseEvent(java.awt.event.MouseEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JMenuItem.removeMenuDragMouseListener(javax.swing.event.MenuDragMouseListener)
+meth public void javax.swing.JMenuItem.removeMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JMenuItem.setArmed(boolean)
+meth public void javax.swing.JMenuItem.setEnabled(boolean)
+meth public void javax.swing.JMenuItem.setUI(javax.swing.plaf.MenuItemUI)
 supr javax.swing.JMenu
-hfds serialVersionUID
-
 CLSS public org.openide.awt.JPopupMenuPlus
 cons public JPopupMenuPlus()
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.JPopupMenu$AccessibleJPopupMenu
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+innr public static javax.swing.JPopupMenu$Separator
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.MenuElement
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.beans.PropertyChangeListener javax.swing.JPopupMenu.createActionChangeListener(javax.swing.JMenuItem)
+meth protected java.lang.String javax.swing.JPopupMenu.paramString()
+meth protected javax.swing.JMenuItem javax.swing.JPopupMenu.createActionComponent(javax.swing.Action)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth protected void javax.swing.JPopupMenu.firePopupMenuCanceled()
+meth protected void javax.swing.JPopupMenu.firePopupMenuWillBecomeInvisible()
+meth protected void javax.swing.JPopupMenu.firePopupMenuWillBecomeVisible()
+meth protected void javax.swing.JPopupMenu.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JPopupMenu.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void javax.swing.JPopupMenu.processKeyEvent(java.awt.event.KeyEvent)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.MenuElement; javax.swing.JPopupMenu.getSubElements()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.MenuKeyListener; javax.swing.JPopupMenu.getMenuKeyListeners()
+meth public [Ljavax.swing.event.PopupMenuListener; javax.swing.JPopupMenu.getPopupMenuListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public boolean javax.swing.JPopupMenu.isBorderPainted()
+meth public boolean javax.swing.JPopupMenu.isLightWeightPopupEnabled()
+meth public boolean javax.swing.JPopupMenu.isPopupTrigger(java.awt.event.MouseEvent)
+meth public boolean javax.swing.JPopupMenu.isVisible()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public int javax.swing.JPopupMenu.getComponentIndex(java.awt.Component)
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.Component javax.swing.JPopupMenu.getComponent()
+meth public java.awt.Component javax.swing.JPopupMenu.getComponentAtIndex(int)
+meth public java.awt.Component javax.swing.JPopupMenu.getInvoker()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.Insets javax.swing.JPopupMenu.getMargin()
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JPopupMenu.getLabel()
+meth public java.lang.String javax.swing.JPopupMenu.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JPopupMenu.getAccessibleContext()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JMenuItem javax.swing.JPopupMenu.add(java.lang.String)
+meth public javax.swing.JMenuItem javax.swing.JPopupMenu.add(javax.swing.Action)
+meth public javax.swing.JMenuItem javax.swing.JPopupMenu.add(javax.swing.JMenuItem)
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.SingleSelectionModel javax.swing.JPopupMenu.getSelectionModel()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.PopupMenuUI javax.swing.JPopupMenu.getUI()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static boolean javax.swing.JPopupMenu.getDefaultLightWeightPopupEnabled()
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public static void javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled(boolean)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.setLayout(java.awt.LayoutManager)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setEnabled(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JPopupMenu.addMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JPopupMenu.addPopupMenuListener(javax.swing.event.PopupMenuListener)
+meth public void javax.swing.JPopupMenu.addSeparator()
+meth public void javax.swing.JPopupMenu.insert(java.awt.Component,int)
+meth public void javax.swing.JPopupMenu.insert(javax.swing.Action,int)
+meth public void javax.swing.JPopupMenu.menuSelectionChanged(boolean)
+meth public void javax.swing.JPopupMenu.pack()
+meth public void javax.swing.JPopupMenu.processKeyEvent(java.awt.event.KeyEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JPopupMenu.processMouseEvent(java.awt.event.MouseEvent,[Ljavax.swing.MenuElement;,javax.swing.MenuSelectionManager)
+meth public void javax.swing.JPopupMenu.remove(int)
+meth public void javax.swing.JPopupMenu.removeMenuKeyListener(javax.swing.event.MenuKeyListener)
+meth public void javax.swing.JPopupMenu.removePopupMenuListener(javax.swing.event.PopupMenuListener)
+meth public void javax.swing.JPopupMenu.setBorderPainted(boolean)
+meth public void javax.swing.JPopupMenu.setInvoker(java.awt.Component)
+meth public void javax.swing.JPopupMenu.setLabel(java.lang.String)
+meth public void javax.swing.JPopupMenu.setLightWeightPopupEnabled(boolean)
+meth public void javax.swing.JPopupMenu.setLocation(int,int)
+meth public void javax.swing.JPopupMenu.setPopupSize(int,int)
+meth public void javax.swing.JPopupMenu.setPopupSize(java.awt.Dimension)
+meth public void javax.swing.JPopupMenu.setSelected(java.awt.Component)
+meth public void javax.swing.JPopupMenu.setSelectionModel(javax.swing.SingleSelectionModel)
+meth public void javax.swing.JPopupMenu.setUI(javax.swing.plaf.PopupMenuUI)
+meth public void javax.swing.JPopupMenu.setVisible(boolean)
+meth public void javax.swing.JPopupMenu.show(java.awt.Component,int,int)
+meth public void javax.swing.JPopupMenu.updateUI()
 supr javax.swing.JPopupMenu
-
 CLSS public org.openide.awt.JPopupMenuUtils
 cons public JPopupMenuUtils()
-meth public static boolean isPopupContained(javax.swing.JPopupMenu)
-meth public static java.awt.Rectangle getScreenRect()
-meth public static void dynamicChange(javax.swing.JPopupMenu,boolean)
-meth public static void dynamicChangeToSubmenu(javax.swing.JPopupMenu,boolean)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean org.openide.awt.JPopupMenuUtils.isPopupContained(javax.swing.JPopupMenu)
+meth public static java.awt.Rectangle org.openide.awt.JPopupMenuUtils.getScreenRect()
+meth public static void org.openide.awt.JPopupMenuUtils.dynamicChange(javax.swing.JPopupMenu,boolean)
+meth public static void org.openide.awt.JPopupMenuUtils.dynamicChangeToSubmenu(javax.swing.JPopupMenu,boolean)
 supr java.lang.Object
-hfds problem,problemTested,reqProc,task
-
 CLSS public org.openide.awt.ListPane
 cons public ListPane()
-cons public ListPane(java.lang.Object[])
+cons public ListPane([Ljava.lang.Object;)
 cons public ListPane(java.util.Vector)
 cons public ListPane(javax.swing.ListModel)
-meth protected void paintBackground(java.awt.Graphics)
-meth protected void paintComponent(java.awt.Graphics)
-meth public boolean getScrollableTracksViewportHeight()
-meth public boolean getScrollableTracksViewportWidth()
-meth public boolean isOpaque()
-meth public int getScrollableBlockIncrement(java.awt.Rectangle,int,int)
-meth public int getScrollableUnitIncrement(java.awt.Rectangle,int,int)
-meth public int getVisibleColumnCount()
-meth public int locationToIndex(java.awt.Point)
-meth public java.awt.Dimension getMinimumSize()
-meth public java.awt.Dimension getPreferredScrollableViewportSize()
-meth public java.awt.Dimension getPreferredSize()
-meth public java.awt.Point indexToLocation(int)
-meth public java.awt.Rectangle getCellBounds(int,int)
-meth public void addSelectionInterval(int,int)
-meth public void ensureIndexIsVisible(int)
-meth public void removeSelectionInterval(int,int)
-meth public void setSelectionInterval(int,int)
-meth public void setVisibleColumnCount(int)
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.JList.HORIZONTAL_WRAP
+fld  constant public static final int javax.swing.JList.VERTICAL
+fld  constant public static final int javax.swing.JList.VERTICAL_WRAP
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.JList$AccessibleJList
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.Scrollable
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.lang.String javax.swing.JList.paramString()
+meth protected javax.swing.ListSelectionModel javax.swing.JList.createSelectionModel()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth protected void javax.swing.JList.fireSelectionValueChanged(int,int,boolean)
+meth protected void org.openide.awt.ListPane.paintBackground(java.awt.Graphics)
+meth protected void org.openide.awt.ListPane.paintComponent(java.awt.Graphics)
+meth public [I javax.swing.JList.getSelectedIndices()
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.lang.Object; javax.swing.JList.getSelectedValues()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ListSelectionListener; javax.swing.JList.getListSelectionListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public boolean javax.swing.JList.getDragEnabled()
+meth public boolean javax.swing.JList.getValueIsAdjusting()
+meth public boolean javax.swing.JList.isSelectedIndex(int)
+meth public boolean javax.swing.JList.isSelectionEmpty()
+meth public boolean org.openide.awt.ListPane.getScrollableTracksViewportHeight()
+meth public boolean org.openide.awt.ListPane.getScrollableTracksViewportWidth()
+meth public boolean org.openide.awt.ListPane.isOpaque()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public int javax.swing.JList.getAnchorSelectionIndex()
+meth public int javax.swing.JList.getFirstVisibleIndex()
+meth public int javax.swing.JList.getFixedCellHeight()
+meth public int javax.swing.JList.getFixedCellWidth()
+meth public int javax.swing.JList.getLastVisibleIndex()
+meth public int javax.swing.JList.getLayoutOrientation()
+meth public int javax.swing.JList.getLeadSelectionIndex()
+meth public int javax.swing.JList.getMaxSelectionIndex()
+meth public int javax.swing.JList.getMinSelectionIndex()
+meth public int javax.swing.JList.getNextMatch(java.lang.String,int,javax.swing.text.Position$Bias)
+meth public int javax.swing.JList.getSelectedIndex()
+meth public int javax.swing.JList.getSelectionMode()
+meth public int javax.swing.JList.getVisibleRowCount()
+meth public int org.openide.awt.ListPane.getScrollableBlockIncrement(java.awt.Rectangle,int,int)
+meth public int org.openide.awt.ListPane.getScrollableUnitIncrement(java.awt.Rectangle,int,int)
+meth public int org.openide.awt.ListPane.getVisibleColumnCount()
+meth public int org.openide.awt.ListPane.locationToIndex(java.awt.Point)
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Color javax.swing.JList.getSelectionBackground()
+meth public java.awt.Color javax.swing.JList.getSelectionForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.Dimension org.openide.awt.ListPane.getMinimumSize()
+meth public java.awt.Dimension org.openide.awt.ListPane.getPreferredScrollableViewportSize()
+meth public java.awt.Dimension org.openide.awt.ListPane.getPreferredSize()
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point org.openide.awt.ListPane.indexToLocation(int)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Rectangle org.openide.awt.ListPane.getCellBounds(int,int)
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.Object javax.swing.JList.getPrototypeCellValue()
+meth public java.lang.Object javax.swing.JList.getSelectedValue()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JList.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JList.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JList.getAccessibleContext()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.ListCellRenderer javax.swing.JList.getCellRenderer()
+meth public javax.swing.ListModel javax.swing.JList.getModel()
+meth public javax.swing.ListSelectionModel javax.swing.JList.getSelectionModel()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ListUI javax.swing.JList.getUI()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.setLayout(java.awt.LayoutManager)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setEnabled(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JList.addListSelectionListener(javax.swing.event.ListSelectionListener)
+meth public void javax.swing.JList.clearSelection()
+meth public void javax.swing.JList.removeListSelectionListener(javax.swing.event.ListSelectionListener)
+meth public void javax.swing.JList.setCellRenderer(javax.swing.ListCellRenderer)
+meth public void javax.swing.JList.setDragEnabled(boolean)
+meth public void javax.swing.JList.setFixedCellHeight(int)
+meth public void javax.swing.JList.setFixedCellWidth(int)
+meth public void javax.swing.JList.setLayoutOrientation(int)
+meth public void javax.swing.JList.setListData([Ljava.lang.Object;)
+meth public void javax.swing.JList.setListData(java.util.Vector)
+meth public void javax.swing.JList.setModel(javax.swing.ListModel)
+meth public void javax.swing.JList.setPrototypeCellValue(java.lang.Object)
+meth public void javax.swing.JList.setSelectedIndex(int)
+meth public void javax.swing.JList.setSelectedIndices([I)
+meth public void javax.swing.JList.setSelectedValue(java.lang.Object,boolean)
+meth public void javax.swing.JList.setSelectionBackground(java.awt.Color)
+meth public void javax.swing.JList.setSelectionForeground(java.awt.Color)
+meth public void javax.swing.JList.setSelectionMode(int)
+meth public void javax.swing.JList.setSelectionModel(javax.swing.ListSelectionModel)
+meth public void javax.swing.JList.setUI(javax.swing.plaf.ListUI)
+meth public void javax.swing.JList.setValueIsAdjusting(boolean)
+meth public void javax.swing.JList.setVisibleRowCount(int)
+meth public void javax.swing.JList.updateUI()
+meth public void org.openide.awt.ListPane.addSelectionInterval(int,int)
+meth public void org.openide.awt.ListPane.ensureIndexIsVisible(int)
+meth public void org.openide.awt.ListPane.removeSelectionInterval(int,int)
+meth public void org.openide.awt.ListPane.setSelectionInterval(int,int)
+meth public void org.openide.awt.ListPane.setVisibleColumnCount(int)
 supr javax.swing.JList
-hfds dataL,fixedCellHeight,fixedCellWidth,inputL,propertyL,realColumnCount,realRowCount,selectionL,serialVersionUID,updateLayoutStateNeeded,visibleColumnCount,visibleRowCount
-hcls DataListener,InputListener,PropertyListener
-
 CLSS public final org.openide.awt.Mnemonics
-meth public static int findMnemonicAmpersand(java.lang.String)
-meth public static void setLocalizedText(javax.swing.AbstractButton,java.lang.String)
-meth public static void setLocalizedText(javax.swing.JLabel,java.lang.String)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static int org.openide.awt.Mnemonics.findMnemonicAmpersand(java.lang.String)
+meth public static void org.openide.awt.Mnemonics.setLocalizedText(javax.swing.AbstractButton,java.lang.String)
+meth public static void org.openide.awt.Mnemonics.setLocalizedText(javax.swing.JLabel,java.lang.String)
 supr java.lang.Object
-
 CLSS public org.openide.awt.MouseUtils
 cons public MouseUtils()
-innr public abstract static PopupMouseAdapter
-meth public static boolean isDoubleClick(java.awt.event.MouseEvent)
-meth public static boolean isLeftMouseButton(java.awt.event.MouseEvent)
-meth public static boolean isRightMouseButton(java.awt.event.MouseEvent)
+innr public static abstract org.openide.awt.MouseUtils$PopupMouseAdapter
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean org.openide.awt.MouseUtils.isDoubleClick(java.awt.event.MouseEvent)
+meth public static boolean org.openide.awt.MouseUtils.isLeftMouseButton(java.awt.event.MouseEvent)
+meth public static boolean org.openide.awt.MouseUtils.isRightMouseButton(java.awt.event.MouseEvent)
 supr java.lang.Object
-hfds DOUBLE_CLICK_DELTA,tempe,temph,tempm,tempx,tempy
-
-CLSS public abstract static org.openide.awt.MouseUtils$PopupMouseAdapter
-cons public PopupMouseAdapter()
-cons public PopupMouseAdapter(int)
-fld public final static int DEFAULT_THRESHOLD = 5
-meth protected abstract void showPopup(java.awt.event.MouseEvent)
-meth public void mousePressed(java.awt.event.MouseEvent)
-meth public void mouseReleased(java.awt.event.MouseEvent)
-supr java.awt.event.MouseAdapter
-
 CLSS public org.openide.awt.SpinButton
 cons public SpinButton()
-fld protected boolean arrowsOrientation
-fld protected boolean boundsIgnored
-fld protected boolean orientation
-fld protected boolean repeating
-fld protected boolean running
-fld protected boolean runningDir
-fld protected int maximum
-fld protected int minimum
-fld protected int repeatDelay
-fld protected int repeatRate
-fld protected int step
-fld protected int value
-fld protected java.lang.Thread rt
-fld public final static boolean DEFAULT_ORIENTATION = false
-fld public final static int DEFAULT_MAXIMUM = 100
-fld public final static int DEFAULT_MINIMUM = 0
-fld public final static int DEFAULT_REPEAT_DELAY = 300
-fld public final static int DEFAULT_REPEAT_RATE = 70
-fld public final static int DEFAULT_STEP = 1
-meth protected void repeatThreadNotify()
-meth protected void switchRun(boolean)
-meth public boolean getArrowsOrientation()
-meth public boolean getOrientation()
-meth public boolean isBoundsIgnored()
-meth public boolean isRepeating()
-meth public int getDelay()
-meth public int getMaximum()
-meth public int getMinimum()
-meth public int getRate()
-meth public int getStep()
-meth public int getValue()
-meth public java.awt.Dimension getMinimumSize()
-meth public java.awt.Dimension getPreferredSize()
-meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void addSpinButtonListener(org.openide.awt.SpinButtonListener)
-meth public void notifySpinButtonListenersAboutDownMove()
-meth public void notifySpinButtonListenersAboutUpMove()
-meth public void paint(java.awt.Graphics)
-meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void removeSpinButtonListener(org.openide.awt.SpinButtonListener)
-meth public void setArrowsOrientation(boolean)
-meth public void setBoundsIgnored(boolean)
-meth public void setDelay(int)
-meth public void setForeground(java.awt.Color)
-meth public void setMaximum(int)
-meth public void setMinimum(int)
-meth public void setOrientation(boolean)
-meth public void setRate(int)
-meth public void setRepeating(boolean)
-meth public void setStep(int)
-meth public void setValue(int)
-meth public void switchStop()
+fld  constant public static final boolean org.openide.awt.SpinButton.DEFAULT_ORIENTATION
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int org.openide.awt.SpinButton.DEFAULT_MAXIMUM
+fld  constant public static final int org.openide.awt.SpinButton.DEFAULT_MINIMUM
+fld  constant public static final int org.openide.awt.SpinButton.DEFAULT_REPEAT_DELAY
+fld  constant public static final int org.openide.awt.SpinButton.DEFAULT_REPEAT_RATE
+fld  constant public static final int org.openide.awt.SpinButton.DEFAULT_STEP
+fld  protected boolean org.openide.awt.SpinButton.arrowsOrientation
+fld  protected boolean org.openide.awt.SpinButton.boundsIgnored
+fld  protected boolean org.openide.awt.SpinButton.orientation
+fld  protected boolean org.openide.awt.SpinButton.repeating
+fld  protected boolean org.openide.awt.SpinButton.running
+fld  protected boolean org.openide.awt.SpinButton.runningDir
+fld  protected int org.openide.awt.SpinButton.maximum
+fld  protected int org.openide.awt.SpinButton.minimum
+fld  protected int org.openide.awt.SpinButton.repeatDelay
+fld  protected int org.openide.awt.SpinButton.repeatRate
+fld  protected int org.openide.awt.SpinButton.step
+fld  protected int org.openide.awt.SpinButton.value
+fld  protected org.openide.awt.SpinButton$RepeatThread org.openide.awt.SpinButton.rt
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected java.awt.Canvas$AccessibleAWTCanvas
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+meth protected boolean java.awt.Component.requestFocus(boolean)
+meth protected boolean java.awt.Component.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.lang.String java.awt.Component.paramString()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected synchronized void org.openide.awt.SpinButton.switchRun(boolean)
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,boolean,boolean)
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,int,int)
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void java.awt.Component.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void java.awt.Component.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.awt.SpinButton.repeatThreadNotify()
+meth public [Ljava.util.EventListener; java.awt.Component.getListeners(java.lang.Class)
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Component.contains(int,int)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isDoubleBuffered()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isOpaque()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.requestFocusInWindow()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.awt.SpinButton.getArrowsOrientation()
+meth public boolean org.openide.awt.SpinButton.getOrientation()
+meth public boolean org.openide.awt.SpinButton.isBoundsIgnored()
+meth public boolean org.openide.awt.SpinButton.isRepeating()
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public float java.awt.Component.getAlignmentX()
+meth public float java.awt.Component.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Component.getHeight()
+meth public int java.awt.Component.getWidth()
+meth public int java.awt.Component.getX()
+meth public int java.awt.Component.getY()
+meth public int org.openide.awt.SpinButton.getDelay()
+meth public int org.openide.awt.SpinButton.getMaximum()
+meth public int org.openide.awt.SpinButton.getMinimum()
+meth public int org.openide.awt.SpinButton.getRate()
+meth public int org.openide.awt.SpinButton.getStep()
+meth public int org.openide.awt.SpinButton.getValue()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Component.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Component.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Component.locate(int,int)
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getMaximumSize()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.getSize(java.awt.Dimension)
+meth public java.awt.Dimension java.awt.Component.minimumSize()
+meth public java.awt.Dimension java.awt.Component.preferredSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension org.openide.awt.SpinButton.getMinimumSize()
+meth public java.awt.Dimension org.openide.awt.SpinButton.getPreferredSize()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics java.awt.Component.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics java.awt.Component.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocation(java.awt.Point)
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds(java.awt.Rectangle)
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.BufferStrategy java.awt.Canvas.getBufferStrategy()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Component.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext java.awt.Canvas.getAccessibleContext()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void org.openide.awt.SpinButton.switchStop()
+meth public void java.awt.Canvas.addNotify()
+meth public void java.awt.Canvas.createBufferStrategy(int)
+meth public void java.awt.Canvas.createBufferStrategy(int,java.awt.BufferCapabilities) throws java.awt.AWTException
+meth public void java.awt.Canvas.update(java.awt.Graphics)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.deliverEvent(java.awt.Event)
+meth public void java.awt.Component.disable()
+meth public void java.awt.Component.doLayout()
+meth public void java.awt.Component.enable()
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,char,char)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.invalidate()
+meth public void java.awt.Component.layout()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintStream,int)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.list(java.io.PrintWriter,int)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.print(java.awt.Graphics)
+meth public void java.awt.Component.printAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.removeNotify()
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.repaint(long,int,int,int,int)
+meth public void java.awt.Component.requestFocus()
+meth public void java.awt.Component.reshape(int,int,int,int)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBackground(java.awt.Color)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setEnabled(boolean)
+meth public void java.awt.Component.setFocusTraversalKeys(int,java.util.Set)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setFont(java.awt.Font)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setMaximumSize(java.awt.Dimension)
+meth public void java.awt.Component.setMinimumSize(java.awt.Dimension)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setPreferredSize(java.awt.Dimension)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.setVisible(boolean)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusBackward()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Component.validate()
+meth public void org.openide.awt.SpinButton.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.awt.SpinButton.addSpinButtonListener(org.openide.awt.SpinButtonListener)
+meth public void org.openide.awt.SpinButton.notifySpinButtonListenersAboutDownMove()
+meth public void org.openide.awt.SpinButton.notifySpinButtonListenersAboutUpMove()
+meth public void org.openide.awt.SpinButton.paint(java.awt.Graphics)
+meth public void org.openide.awt.SpinButton.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.awt.SpinButton.removeSpinButtonListener(org.openide.awt.SpinButtonListener)
+meth public void org.openide.awt.SpinButton.setArrowsOrientation(boolean)
+meth public void org.openide.awt.SpinButton.setBoundsIgnored(boolean)
+meth public void org.openide.awt.SpinButton.setDelay(int)
+meth public void org.openide.awt.SpinButton.setForeground(java.awt.Color)
+meth public void org.openide.awt.SpinButton.setMaximum(int)
+meth public void org.openide.awt.SpinButton.setMinimum(int)
+meth public void org.openide.awt.SpinButton.setOrientation(boolean)
+meth public void org.openide.awt.SpinButton.setRate(int)
+meth public void org.openide.awt.SpinButton.setRepeating(boolean)
+meth public void org.openide.awt.SpinButton.setStep(int)
+meth public void org.openide.awt.SpinButton.setValue(int)
 supr java.awt.Canvas
-hfds SPIN_DOWN,SPIN_UP,serialVersionUID,spinButtonListeners,valueSupport
-hcls RepeatThread
-
 CLSS public org.openide.awt.SpinButtonAdapter
 cons public SpinButtonAdapter()
 intf org.openide.awt.SpinButtonListener
-meth public void changeValue()
-meth public void moveDown()
-meth public void moveUp()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.awt.SpinButtonAdapter.changeValue()
+meth public void org.openide.awt.SpinButtonAdapter.moveDown()
+meth public void org.openide.awt.SpinButtonAdapter.moveUp()
 supr java.lang.Object
-
 CLSS public abstract interface org.openide.awt.SpinButtonListener
-meth public abstract void changeValue()
-meth public abstract void moveDown()
-meth public abstract void moveUp()
-
+meth public abstract void org.openide.awt.SpinButtonListener.changeValue()
+meth public abstract void org.openide.awt.SpinButtonListener.moveDown()
+meth public abstract void org.openide.awt.SpinButtonListener.moveUp()
+supr null
 CLSS public org.openide.awt.SplittedPanel
 cons public SplittedPanel()
-fld public final static int DEFAULT_SPLITTER = 0
-fld public final static int EMPTY_SPLITTER = 1
-fld public final static int FIRST_PREFERRED = -1
-fld public final static int HORIZONTAL = 2
-fld public final static int NONE = 0
-fld public final static int RAISED_SPLITTER = 0
-fld public final static int SECOND_PREFERRED = -2
-fld public final static int VERTICAL = 1
-fld public final static java.lang.Object ADD_BOTTOM
-fld public final static java.lang.Object ADD_FIRST
-fld public final static java.lang.Object ADD_LEFT
-fld public final static java.lang.Object ADD_RIGHT
-fld public final static java.lang.Object ADD_SECOND
-fld public final static java.lang.Object ADD_SPLITTER
-fld public final static java.lang.Object ADD_TOP
-innr public abstract interface static SplitChangeListener
-innr public static EmptySplitter
-innr public static SplitChangeEvent
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int org.openide.awt.SplittedPanel.DEFAULT_SPLITTER
+fld  constant public static final int org.openide.awt.SplittedPanel.EMPTY_SPLITTER
+fld  constant public static final int org.openide.awt.SplittedPanel.FIRST_PREFERRED
+fld  constant public static final int org.openide.awt.SplittedPanel.HORIZONTAL
+fld  constant public static final int org.openide.awt.SplittedPanel.NONE
+fld  constant public static final int org.openide.awt.SplittedPanel.RAISED_SPLITTER
+fld  constant public static final int org.openide.awt.SplittedPanel.SECOND_PREFERRED
+fld  constant public static final int org.openide.awt.SplittedPanel.VERTICAL
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_BOTTOM
+fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_FIRST
+fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_LEFT
+fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_RIGHT
+fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_SECOND
+fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_SPLITTER
+fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_TOP
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+innr public static abstract interface org.openide.awt.SplittedPanel$SplitChangeListener
+innr public static org.openide.awt.SplittedPanel$EmptySplitter
+innr public static org.openide.awt.SplittedPanel$SplitChangeEvent
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
 intf javax.accessibility.Accessible
-meth protected void computeSizesAfterFlip()
-meth protected void fireSplitChange(int,int)
-meth protected void setSplitterCursor()
-meth protected void updatePopupMenu()
-meth protected void updateSplitting()
-meth public boolean getKeepFirstSame()
-meth public boolean getKeepSecondSame()
-meth public boolean getPanesSwapped()
-meth public boolean isContinuousLayout()
-meth public boolean isSplitAbsolute()
-meth public boolean isSplitDragable()
-meth public boolean isSplitTypeChangeEnabled()
-meth public boolean isSwapPanesEnabled()
-meth public int getSplitPosition()
-meth public int getSplitType()
-meth public int getSplitterType()
-meth public java.awt.Component getSplitterComponent()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public void addSplitChangeListener(org.openide.awt.SplittedPanel$SplitChangeListener)
-meth public void removeSplitChangeListener(org.openide.awt.SplittedPanel$SplitChangeListener)
-meth public void setContinuousLayout(boolean)
-meth public void setKeepFirstSame(boolean)
-meth public void setKeepSecondSame(boolean)
-meth public void setSplitAbsolute(boolean)
-meth public void setSplitDragable(boolean)
-meth public void setSplitPosition(int)
-meth public void setSplitType(int)
-meth public void setSplitTypeChangeEnabled(boolean)
-meth public void setSplitterComponent(java.awt.Component)
-meth public void setSplitterType(int)
-meth public void setSwapPanesEnabled(boolean)
-meth public void swapPanes()
-meth public void updateUI()
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.lang.String javax.swing.JComponent.paramString()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth protected void org.openide.awt.SplittedPanel.computeSizesAfterFlip()
+meth protected void org.openide.awt.SplittedPanel.fireSplitChange(int,int)
+meth protected void org.openide.awt.SplittedPanel.setSplitterCursor()
+meth protected void org.openide.awt.SplittedPanel.updatePopupMenu()
+meth protected void org.openide.awt.SplittedPanel.updateSplitting()
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public boolean org.openide.awt.SplittedPanel.getKeepFirstSame()
+meth public boolean org.openide.awt.SplittedPanel.getKeepSecondSame()
+meth public boolean org.openide.awt.SplittedPanel.getPanesSwapped()
+meth public boolean org.openide.awt.SplittedPanel.isContinuousLayout()
+meth public boolean org.openide.awt.SplittedPanel.isSplitAbsolute()
+meth public boolean org.openide.awt.SplittedPanel.isSplitDragable()
+meth public boolean org.openide.awt.SplittedPanel.isSplitTypeChangeEnabled()
+meth public boolean org.openide.awt.SplittedPanel.isSwapPanesEnabled()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public int org.openide.awt.SplittedPanel.getSplitPosition()
+meth public int org.openide.awt.SplittedPanel.getSplitType()
+meth public int org.openide.awt.SplittedPanel.getSplitterType()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.Component org.openide.awt.SplittedPanel.getSplitterComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JComponent.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext org.openide.awt.SplittedPanel.getAccessibleContext()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.setLayout(java.awt.LayoutManager)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setEnabled(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void org.openide.awt.SplittedPanel.addSplitChangeListener(org.openide.awt.SplittedPanel$SplitChangeListener)
+meth public void org.openide.awt.SplittedPanel.removeSplitChangeListener(org.openide.awt.SplittedPanel$SplitChangeListener)
+meth public void org.openide.awt.SplittedPanel.setContinuousLayout(boolean)
+meth public void org.openide.awt.SplittedPanel.setKeepFirstSame(boolean)
+meth public void org.openide.awt.SplittedPanel.setKeepSecondSame(boolean)
+meth public void org.openide.awt.SplittedPanel.setSplitAbsolute(boolean)
+meth public void org.openide.awt.SplittedPanel.setSplitDragable(boolean)
+meth public void org.openide.awt.SplittedPanel.setSplitPosition(int)
+meth public void org.openide.awt.SplittedPanel.setSplitType(int)
+meth public void org.openide.awt.SplittedPanel.setSplitTypeChangeEnabled(boolean)
+meth public void org.openide.awt.SplittedPanel.setSplitterComponent(java.awt.Component)
+meth public void org.openide.awt.SplittedPanel.setSplitterType(int)
+meth public void org.openide.awt.SplittedPanel.setSwapPanesEnabled(boolean)
+meth public void org.openide.awt.SplittedPanel.swapPanes()
+meth public void org.openide.awt.SplittedPanel.updateUI()
 supr javax.swing.JComponent
-hfds DEFAULT_SPLIT_TYPE,absolute,accessibleContext,continuousLayout,descriptionFormat,dragPos,dragable,drawBumps,firstComponent,horizontalCMI,keepFirstSame,keepSecondSame,listeners,mouseAdapter,nameFormat,panesSwapped,popupMenu,popupMenuEnabled,resetPosition,secondComponent,serialVersionUID,splitIsChanging,splitPosition,splitType,splitTypeChangeEnabled,splitter,splitterCMI,splitterType,swapCMI,swapPanesEnabled,verticalCMI
-hcls DefaultSplitter,MouseListenerAdapter,SplitLayout
-
-CLSS public static org.openide.awt.SplittedPanel$EmptySplitter
-cons public EmptySplitter()
-cons public EmptySplitter(int)
-intf javax.accessibility.Accessible
-meth public java.awt.Dimension getPreferredSize()
-meth public javax.accessibility.AccessibleContext getAccessibleContext()
-supr javax.swing.JComponent
-hfds accessibleContext,serialVersionUID,width
-
-CLSS public static org.openide.awt.SplittedPanel$SplitChangeEvent
-cons public SplitChangeEvent(org.openide.awt.SplittedPanel,int,int)
-meth public int getNewValue()
-meth public int getOldValue()
-supr java.util.EventObject
-hfds newValue,oldValue,serialVersionUID
-
-CLSS public abstract interface static org.openide.awt.SplittedPanel$SplitChangeListener
-meth public abstract void splitChanged(org.openide.awt.SplittedPanel$SplitChangeEvent)
-
 CLSS public abstract org.openide.awt.StatusDisplayer
 cons protected StatusDisplayer()
-meth public abstract java.lang.String getStatusText()
-meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void setStatusText(java.lang.String)
-meth public static org.openide.awt.StatusDisplayer getDefault()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.lang.String org.openide.awt.StatusDisplayer.getStatusText()
+meth public abstract void org.openide.awt.StatusDisplayer.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.awt.StatusDisplayer.removeChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.awt.StatusDisplayer.setStatusText(java.lang.String)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static synchronized org.openide.awt.StatusDisplayer org.openide.awt.StatusDisplayer.getDefault()
 supr java.lang.Object
-hfds INSTANCE
-hcls Trivial
-
 CLSS public abstract interface org.openide.awt.StatusLineElementProvider
-meth public abstract java.awt.Component getStatusLineElement()
-
-CLSS public org.openide.awt.TabbedPaneFactory
-fld public final static java.lang.String PROP_CLOSE = "close"
-meth public static javax.swing.JTabbedPane createCloseButtonTabbedPane()
-supr java.lang.Object
-
+meth public abstract java.awt.Component org.openide.awt.StatusLineElementProvider.getStatusLineElement()
+supr null
 CLSS public org.openide.awt.ToolbarButton
 cons public ToolbarButton()
 cons public ToolbarButton(javax.swing.Icon)
-meth public void processMouseEvent(java.awt.event.MouseEvent)
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
+fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.ButtonModel javax.swing.AbstractButton.model
+fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.changeListener
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.AbstractButton$ButtonChangeListener
+innr protected javax.swing.JButton$AccessibleJButton
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+intf java.awt.ItemSelectable
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.SwingConstants
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected int javax.swing.AbstractButton.checkHorizontalKey(int,java.lang.String)
+meth protected int javax.swing.AbstractButton.checkVerticalKey(int,java.lang.String)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.awt.event.ActionListener javax.swing.AbstractButton.createActionListener()
+meth protected java.awt.event.ItemListener javax.swing.AbstractButton.createItemListener()
+meth protected java.beans.PropertyChangeListener javax.swing.AbstractButton.createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String javax.swing.JButton.paramString()
+meth protected javax.swing.event.ChangeListener javax.swing.AbstractButton.createChangeListener()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.AbstractButton.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void javax.swing.AbstractButton.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.AbstractButton.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.AbstractButton.fireStateChanged()
+meth protected void javax.swing.AbstractButton.init(java.lang.String,javax.swing.Icon)
+meth protected void javax.swing.AbstractButton.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JButton.configurePropertiesFromAction(javax.swing.Action)
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.awt.event.ActionListener; javax.swing.AbstractButton.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.AbstractButton.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.AbstractButton.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.AbstractButton.getChangeListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean javax.swing.AbstractButton.isBorderPainted()
+meth public boolean javax.swing.AbstractButton.isContentAreaFilled()
+meth public boolean javax.swing.AbstractButton.isFocusPainted()
+meth public boolean javax.swing.AbstractButton.isRolloverEnabled()
+meth public boolean javax.swing.AbstractButton.isSelected()
+meth public boolean javax.swing.JButton.isDefaultButton()
+meth public boolean javax.swing.JButton.isDefaultCapable()
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.AbstractButton.getDisplayedMnemonicIndex()
+meth public int javax.swing.AbstractButton.getHorizontalAlignment()
+meth public int javax.swing.AbstractButton.getHorizontalTextPosition()
+meth public int javax.swing.AbstractButton.getIconTextGap()
+meth public int javax.swing.AbstractButton.getMnemonic()
+meth public int javax.swing.AbstractButton.getVerticalAlignment()
+meth public int javax.swing.AbstractButton.getVerticalTextPosition()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.AbstractButton.getMargin()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.AbstractButton.getActionCommand()
+meth public java.lang.String javax.swing.AbstractButton.getLabel()
+meth public java.lang.String javax.swing.AbstractButton.getText()
+meth public java.lang.String javax.swing.JButton.getUIClassID()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JButton.getAccessibleContext()
+meth public javax.swing.Action javax.swing.AbstractButton.getAction()
+meth public javax.swing.ButtonModel javax.swing.AbstractButton.getModel()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getPressedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getSelectedIcon()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ButtonUI javax.swing.AbstractButton.getUI()
+meth public long javax.swing.AbstractButton.getMultiClickThreshhold()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.AbstractButton.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.doClick()
+meth public void javax.swing.AbstractButton.doClick(int)
+meth public void javax.swing.AbstractButton.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.setAction(javax.swing.Action)
+meth public void javax.swing.AbstractButton.setActionCommand(java.lang.String)
+meth public void javax.swing.AbstractButton.setBorderPainted(boolean)
+meth public void javax.swing.AbstractButton.setContentAreaFilled(boolean)
+meth public void javax.swing.AbstractButton.setDisabledIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisabledSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisplayedMnemonicIndex(int) throws java.lang.IllegalArgumentException
+meth public void javax.swing.AbstractButton.setEnabled(boolean)
+meth public void javax.swing.AbstractButton.setFocusPainted(boolean)
+meth public void javax.swing.AbstractButton.setHorizontalAlignment(int)
+meth public void javax.swing.AbstractButton.setHorizontalTextPosition(int)
+meth public void javax.swing.AbstractButton.setIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setIconTextGap(int)
+meth public void javax.swing.AbstractButton.setLabel(java.lang.String)
+meth public void javax.swing.AbstractButton.setLayout(java.awt.LayoutManager)
+meth public void javax.swing.AbstractButton.setMargin(java.awt.Insets)
+meth public void javax.swing.AbstractButton.setMnemonic(char)
+meth public void javax.swing.AbstractButton.setMnemonic(int)
+meth public void javax.swing.AbstractButton.setModel(javax.swing.ButtonModel)
+meth public void javax.swing.AbstractButton.setMultiClickThreshhold(long)
+meth public void javax.swing.AbstractButton.setPressedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverEnabled(boolean)
+meth public void javax.swing.AbstractButton.setRolloverIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setSelected(boolean)
+meth public void javax.swing.AbstractButton.setSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setText(java.lang.String)
+meth public void javax.swing.AbstractButton.setUI(javax.swing.plaf.ButtonUI)
+meth public void javax.swing.AbstractButton.setVerticalAlignment(int)
+meth public void javax.swing.AbstractButton.setVerticalTextPosition(int)
+meth public void javax.swing.JButton.removeNotify()
+meth public void javax.swing.JButton.setDefaultCapable(boolean)
+meth public void javax.swing.JButton.updateUI()
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void org.openide.awt.ToolbarButton.processMouseEvent(java.awt.event.MouseEvent)
 supr javax.swing.JButton
-hfds serialVersionUID
-
 CLSS public org.openide.awt.ToolbarToggleButton
 cons public ToolbarToggleButton()
 cons public ToolbarToggleButton(javax.swing.Icon)
 cons public ToolbarToggleButton(javax.swing.Icon,boolean)
+fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
+fld  constant public static final int java.awt.image.ImageObserver.ABORT
+fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
+fld  constant public static final int java.awt.image.ImageObserver.ERROR
+fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
+fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  constant public static final int java.awt.image.ImageObserver.WIDTH
+fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  constant public static final int javax.swing.SwingConstants.BOTTOM
+fld  constant public static final int javax.swing.SwingConstants.CENTER
+fld  constant public static final int javax.swing.SwingConstants.EAST
+fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  constant public static final int javax.swing.SwingConstants.LEADING
+fld  constant public static final int javax.swing.SwingConstants.LEFT
+fld  constant public static final int javax.swing.SwingConstants.NEXT
+fld  constant public static final int javax.swing.SwingConstants.NORTH
+fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
+fld  constant public static final int javax.swing.SwingConstants.RIGHT
+fld  constant public static final int javax.swing.SwingConstants.SOUTH
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  constant public static final int javax.swing.SwingConstants.TOP
+fld  constant public static final int javax.swing.SwingConstants.TRAILING
+fld  constant public static final int javax.swing.SwingConstants.VERTICAL
+fld  constant public static final int javax.swing.SwingConstants.WEST
+fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
+fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
+fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
+fld  protected javax.swing.ButtonModel javax.swing.AbstractButton.model
+fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.changeListener
+fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
+fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
+fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+innr protected abstract java.awt.Component$AccessibleAWTComponent
+innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
+innr protected java.awt.Component$BltBufferStrategy
+innr protected java.awt.Component$FlipBufferStrategy
+innr protected java.awt.Container$AccessibleAWTContainer
+innr protected javax.swing.AbstractButton$ButtonChangeListener
+innr protected javax.swing.JToggleButton$AccessibleJToggleButton
+innr public abstract javax.swing.JComponent$AccessibleJComponent
+innr public static javax.swing.JToggleButton$ToggleButtonModel
+intf java.awt.ItemSelectable
+intf java.awt.MenuContainer
+intf java.awt.image.ImageObserver
+intf java.io.Serializable
+intf javax.accessibility.Accessible
+intf javax.swing.SwingConstants
+meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
+meth protected final void java.awt.Component.disableEvents(long)
+meth protected final void java.awt.Component.enableEvents(long)
+meth protected int javax.swing.AbstractButton.checkHorizontalKey(int,java.lang.String)
+meth protected int javax.swing.AbstractButton.checkVerticalKey(int,java.lang.String)
+meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
+meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
+meth protected java.awt.event.ActionListener javax.swing.AbstractButton.createActionListener()
+meth protected java.awt.event.ItemListener javax.swing.AbstractButton.createItemListener()
+meth protected java.beans.PropertyChangeListener javax.swing.AbstractButton.createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String javax.swing.JToggleButton.paramString()
+meth protected javax.swing.event.ChangeListener javax.swing.AbstractButton.createChangeListener()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
+meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
+meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
+meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
+meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
+meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
+meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
+meth protected void java.awt.Container.validateTree()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void javax.swing.AbstractButton.addImpl(java.awt.Component,java.lang.Object,int)
+meth protected void javax.swing.AbstractButton.configurePropertiesFromAction(javax.swing.Action)
+meth protected void javax.swing.AbstractButton.fireActionPerformed(java.awt.event.ActionEvent)
+meth protected void javax.swing.AbstractButton.fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void javax.swing.AbstractButton.fireStateChanged()
+meth protected void javax.swing.AbstractButton.init(java.lang.String,javax.swing.Icon)
+meth protected void javax.swing.AbstractButton.paintBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
+meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
+meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
+meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
+meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
+meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
+meth public [Ljava.awt.Component; java.awt.Container.getComponents()
+meth public [Ljava.awt.event.ActionListener; javax.swing.AbstractButton.getActionListeners()
+meth public [Ljava.awt.event.ItemListener; javax.swing.AbstractButton.getItemListeners()
+meth public [Ljava.lang.Object; javax.swing.AbstractButton.getSelectedObjects()
+meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
+meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
+meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
+meth public [Ljavax.swing.event.ChangeListener; javax.swing.AbstractButton.getChangeListeners()
+meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.contains(java.awt.Point)
+meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
+meth public boolean java.awt.Component.getIgnoreRepaint()
+meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.handleEvent(java.awt.Event)
+meth public boolean java.awt.Component.hasFocus()
+meth public boolean java.awt.Component.inside(int,int)
+meth public boolean java.awt.Component.isBackgroundSet()
+meth public boolean java.awt.Component.isCursorSet()
+meth public boolean java.awt.Component.isDisplayable()
+meth public boolean java.awt.Component.isEnabled()
+meth public boolean java.awt.Component.isFocusOwner()
+meth public boolean java.awt.Component.isFocusTraversable()
+meth public boolean java.awt.Component.isFocusable()
+meth public boolean java.awt.Component.isFontSet()
+meth public boolean java.awt.Component.isForegroundSet()
+meth public boolean java.awt.Component.isLightweight()
+meth public boolean java.awt.Component.isMaximumSizeSet()
+meth public boolean java.awt.Component.isMinimumSizeSet()
+meth public boolean java.awt.Component.isPreferredSizeSet()
+meth public boolean java.awt.Component.isShowing()
+meth public boolean java.awt.Component.isValid()
+meth public boolean java.awt.Component.isVisible()
+meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
+meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
+meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
+meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
+meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
+meth public boolean java.awt.Component.postEvent(java.awt.Event)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
+meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
+meth public boolean java.awt.Container.isFocusCycleRoot()
+meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
+meth public boolean java.awt.Container.isFocusTraversalPolicySet()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean javax.swing.AbstractButton.imageUpdate(java.awt.Image,int,int,int,int,int)
+meth public boolean javax.swing.AbstractButton.isBorderPainted()
+meth public boolean javax.swing.AbstractButton.isContentAreaFilled()
+meth public boolean javax.swing.AbstractButton.isFocusPainted()
+meth public boolean javax.swing.AbstractButton.isRolloverEnabled()
+meth public boolean javax.swing.AbstractButton.isSelected()
+meth public boolean javax.swing.JComponent.contains(int,int)
+meth public boolean javax.swing.JComponent.getAutoscrolls()
+meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
+meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
+meth public boolean javax.swing.JComponent.isDoubleBuffered()
+meth public boolean javax.swing.JComponent.isManagingFocus()
+meth public boolean javax.swing.JComponent.isOpaque()
+meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
+meth public boolean javax.swing.JComponent.isPaintingTile()
+meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
+meth public boolean javax.swing.JComponent.isValidateRoot()
+meth public boolean javax.swing.JComponent.requestDefaultFocus()
+meth public boolean javax.swing.JComponent.requestFocus(boolean)
+meth public boolean javax.swing.JComponent.requestFocusInWindow()
+meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
+meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
+meth public final java.lang.Object java.awt.Component.getTreeLock()
+meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
+meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
+meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
+meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
+meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
+meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
+meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
+meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
+meth public float javax.swing.JComponent.getAlignmentX()
+meth public float javax.swing.JComponent.getAlignmentY()
+meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
+meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
+meth public int java.awt.Container.countComponents()
+meth public int java.awt.Container.getComponentCount()
+meth public int javax.swing.AbstractButton.getDisplayedMnemonicIndex()
+meth public int javax.swing.AbstractButton.getHorizontalAlignment()
+meth public int javax.swing.AbstractButton.getHorizontalTextPosition()
+meth public int javax.swing.AbstractButton.getIconTextGap()
+meth public int javax.swing.AbstractButton.getMnemonic()
+meth public int javax.swing.AbstractButton.getVerticalAlignment()
+meth public int javax.swing.AbstractButton.getVerticalTextPosition()
+meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
+meth public int javax.swing.JComponent.getDebugGraphicsOptions()
+meth public int javax.swing.JComponent.getHeight()
+meth public int javax.swing.JComponent.getWidth()
+meth public int javax.swing.JComponent.getX()
+meth public int javax.swing.JComponent.getY()
+meth public java.awt.Color java.awt.Component.getBackground()
+meth public java.awt.Color java.awt.Component.getForeground()
+meth public java.awt.Component java.awt.Container.add(java.awt.Component)
+meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
+meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
+meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.getComponent(int)
+meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
+meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
+meth public java.awt.Component java.awt.Container.locate(int,int)
+meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
+meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
+meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
+meth public java.awt.Container java.awt.Component.getParent()
+meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
+meth public java.awt.Cursor java.awt.Component.getCursor()
+meth public java.awt.Dimension java.awt.Component.getSize()
+meth public java.awt.Dimension java.awt.Component.size()
+meth public java.awt.Dimension java.awt.Container.minimumSize()
+meth public java.awt.Dimension java.awt.Container.preferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
+meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
+meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
+meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
+meth public java.awt.Font java.awt.Component.getFont()
+meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
+meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
+meth public java.awt.Image java.awt.Component.createImage(int,int)
+meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
+meth public java.awt.Insets java.awt.Container.insets()
+meth public java.awt.Insets javax.swing.AbstractButton.getMargin()
+meth public java.awt.Insets javax.swing.JComponent.getInsets()
+meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
+meth public java.awt.LayoutManager java.awt.Container.getLayout()
+meth public java.awt.Point java.awt.Component.getLocation()
+meth public java.awt.Point java.awt.Component.getLocationOnScreen()
+meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
+meth public java.awt.Point java.awt.Component.location()
+meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
+meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
+meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
+meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
+meth public java.awt.Rectangle java.awt.Component.bounds()
+meth public java.awt.Rectangle java.awt.Component.getBounds()
+meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
+meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
+meth public java.awt.Toolkit java.awt.Component.getToolkit()
+meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
+meth public java.awt.im.InputContext java.awt.Component.getInputContext()
+meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
+meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
+meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
+meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
+meth public java.lang.String java.awt.Component.getName()
+meth public java.lang.String java.awt.Component.toString()
+meth public java.lang.String javax.swing.AbstractButton.getActionCommand()
+meth public java.lang.String javax.swing.AbstractButton.getLabel()
+meth public java.lang.String javax.swing.AbstractButton.getText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText()
+meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
+meth public java.lang.String javax.swing.JToggleButton.getUIClassID()
+meth public java.util.Locale java.awt.Component.getLocale()
+meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
+meth public javax.accessibility.AccessibleContext javax.swing.JToggleButton.getAccessibleContext()
+meth public javax.swing.Action javax.swing.AbstractButton.getAction()
+meth public javax.swing.ButtonModel javax.swing.AbstractButton.getModel()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getDisabledSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getPressedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getRolloverSelectedIcon()
+meth public javax.swing.Icon javax.swing.AbstractButton.getSelectedIcon()
+meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
+meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
+meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
+meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
+meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
+meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
+meth public javax.swing.plaf.ButtonUI javax.swing.AbstractButton.getUI()
+meth public long javax.swing.AbstractButton.getMultiClickThreshhold()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
+meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
+meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
+meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
+meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
+meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
+meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
+meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
+meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
+meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
+meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
+meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
+meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
+meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
+meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
+meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
+meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
+meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
+meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
+meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
+meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
+meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
+meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
+meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
+meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
+meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
+meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.enable(boolean)
+meth public void java.awt.Component.enableInputMethods(boolean)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
+meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
+meth public void java.awt.Component.hide()
+meth public void java.awt.Component.list()
+meth public void java.awt.Component.list(java.io.PrintStream)
+meth public void java.awt.Component.list(java.io.PrintWriter)
+meth public void java.awt.Component.move(int,int)
+meth public void java.awt.Component.nextFocus()
+meth public void java.awt.Component.paintAll(java.awt.Graphics)
+meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
+meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
+meth public void java.awt.Component.repaint()
+meth public void java.awt.Component.repaint(int,int,int,int)
+meth public void java.awt.Component.repaint(long)
+meth public void java.awt.Component.resize(int,int)
+meth public void java.awt.Component.resize(java.awt.Dimension)
+meth public void java.awt.Component.setBounds(int,int,int,int)
+meth public void java.awt.Component.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Component.setCursor(java.awt.Cursor)
+meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
+meth public void java.awt.Component.setFocusable(boolean)
+meth public void java.awt.Component.setIgnoreRepaint(boolean)
+meth public void java.awt.Component.setLocale(java.util.Locale)
+meth public void java.awt.Component.setLocation(int,int)
+meth public void java.awt.Component.setLocation(java.awt.Point)
+meth public void java.awt.Component.setName(java.lang.String)
+meth public void java.awt.Component.setSize(int,int)
+meth public void java.awt.Component.setSize(java.awt.Dimension)
+meth public void java.awt.Component.show()
+meth public void java.awt.Component.show(boolean)
+meth public void java.awt.Component.transferFocus()
+meth public void java.awt.Component.transferFocusUpCycle()
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
+meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
+meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
+meth public void java.awt.Container.deliverEvent(java.awt.Event)
+meth public void java.awt.Container.doLayout()
+meth public void java.awt.Container.invalidate()
+meth public void java.awt.Container.layout()
+meth public void java.awt.Container.list(java.io.PrintStream,int)
+meth public void java.awt.Container.list(java.io.PrintWriter,int)
+meth public void java.awt.Container.paintComponents(java.awt.Graphics)
+meth public void java.awt.Container.printComponents(java.awt.Graphics)
+meth public void java.awt.Container.remove(int)
+meth public void java.awt.Container.remove(java.awt.Component)
+meth public void java.awt.Container.removeAll()
+meth public void java.awt.Container.setFocusCycleRoot(boolean)
+meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
+meth public void java.awt.Container.transferFocusBackward()
+meth public void java.awt.Container.transferFocusDownCycle()
+meth public void java.awt.Container.validate()
+meth public void javax.swing.AbstractButton.addActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.addChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.addItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.doClick()
+meth public void javax.swing.AbstractButton.doClick(int)
+meth public void javax.swing.AbstractButton.removeActionListener(java.awt.event.ActionListener)
+meth public void javax.swing.AbstractButton.removeChangeListener(javax.swing.event.ChangeListener)
+meth public void javax.swing.AbstractButton.removeItemListener(java.awt.event.ItemListener)
+meth public void javax.swing.AbstractButton.setAction(javax.swing.Action)
+meth public void javax.swing.AbstractButton.setActionCommand(java.lang.String)
+meth public void javax.swing.AbstractButton.setBorderPainted(boolean)
+meth public void javax.swing.AbstractButton.setContentAreaFilled(boolean)
+meth public void javax.swing.AbstractButton.setDisabledIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisabledSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setDisplayedMnemonicIndex(int) throws java.lang.IllegalArgumentException
+meth public void javax.swing.AbstractButton.setEnabled(boolean)
+meth public void javax.swing.AbstractButton.setFocusPainted(boolean)
+meth public void javax.swing.AbstractButton.setHorizontalAlignment(int)
+meth public void javax.swing.AbstractButton.setHorizontalTextPosition(int)
+meth public void javax.swing.AbstractButton.setIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setIconTextGap(int)
+meth public void javax.swing.AbstractButton.setLabel(java.lang.String)
+meth public void javax.swing.AbstractButton.setLayout(java.awt.LayoutManager)
+meth public void javax.swing.AbstractButton.setMargin(java.awt.Insets)
+meth public void javax.swing.AbstractButton.setMnemonic(char)
+meth public void javax.swing.AbstractButton.setMnemonic(int)
+meth public void javax.swing.AbstractButton.setModel(javax.swing.ButtonModel)
+meth public void javax.swing.AbstractButton.setMultiClickThreshhold(long)
+meth public void javax.swing.AbstractButton.setPressedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverEnabled(boolean)
+meth public void javax.swing.AbstractButton.setRolloverIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setRolloverSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setSelected(boolean)
+meth public void javax.swing.AbstractButton.setSelectedIcon(javax.swing.Icon)
+meth public void javax.swing.AbstractButton.setText(java.lang.String)
+meth public void javax.swing.AbstractButton.setUI(javax.swing.plaf.ButtonUI)
+meth public void javax.swing.AbstractButton.setVerticalAlignment(int)
+meth public void javax.swing.AbstractButton.setVerticalTextPosition(int)
+meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.addNotify()
+meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
+meth public void javax.swing.JComponent.disable()
+meth public void javax.swing.JComponent.enable()
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
+meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
+meth public void javax.swing.JComponent.grabFocus()
+meth public void javax.swing.JComponent.paint(java.awt.Graphics)
+meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
+meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
+meth public void javax.swing.JComponent.print(java.awt.Graphics)
+meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
+meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
+meth public void javax.swing.JComponent.removeNotify()
+meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
+meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
+meth public void javax.swing.JComponent.requestFocus()
+meth public void javax.swing.JComponent.resetKeyboardActions()
+meth public void javax.swing.JComponent.reshape(int,int,int,int)
+meth public void javax.swing.JComponent.revalidate()
+meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
+meth public void javax.swing.JComponent.setAlignmentX(float)
+meth public void javax.swing.JComponent.setAlignmentY(float)
+meth public void javax.swing.JComponent.setAutoscrolls(boolean)
+meth public void javax.swing.JComponent.setBackground(java.awt.Color)
+meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
+meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
+meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
+meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
+meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
+meth public void javax.swing.JComponent.setFont(java.awt.Font)
+meth public void javax.swing.JComponent.setForeground(java.awt.Color)
+meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
+meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
+meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
+meth public void javax.swing.JComponent.setOpaque(boolean)
+meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
+meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
+meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
+meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
+meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
+meth public void javax.swing.JComponent.setVisible(boolean)
+meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
+meth public void javax.swing.JComponent.update(java.awt.Graphics)
+meth public void javax.swing.JToggleButton.updateUI()
 supr javax.swing.JToggleButton
-hfds serialVersionUID
-
 CLSS public abstract interface org.openide.awt.UndoRedo
-fld public final static org.openide.awt.UndoRedo NONE
-innr public final static Empty
-innr public static Manager
-meth public abstract boolean canRedo()
-meth public abstract boolean canUndo()
-meth public abstract java.lang.String getRedoPresentationName()
-meth public abstract java.lang.String getUndoPresentationName()
-meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void redo()
-meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void undo()
-
-CLSS public final static org.openide.awt.UndoRedo$Empty
-cons public Empty()
-intf org.openide.awt.UndoRedo
-meth public boolean canRedo()
-meth public boolean canUndo()
-meth public java.lang.String getRedoPresentationName()
-meth public java.lang.String getUndoPresentationName()
-meth public void addChangeListener(javax.swing.event.ChangeListener)
-meth public void redo()
-meth public void removeChangeListener(javax.swing.event.ChangeListener)
-meth public void undo()
-supr java.lang.Object
-
-CLSS public static org.openide.awt.UndoRedo$Manager
-cons public Manager()
-intf org.openide.awt.UndoRedo
-meth public boolean canUndo()
-meth public java.lang.String getRedoPresentationName()
-meth public java.lang.String getUndoPresentationName()
-meth public void addChangeListener(javax.swing.event.ChangeListener)
-meth public void discardAllEdits()
-meth public void removeChangeListener(javax.swing.event.ChangeListener)
-meth public void undoableEditHappened(javax.swing.event.UndoableEditEvent)
-supr javax.swing.undo.UndoManager
-hfds cs,runus,serialVersionUID,task
-
+fld  public static final org.openide.awt.UndoRedo org.openide.awt.UndoRedo.NONE
+innr public static final org.openide.awt.UndoRedo$Empty
+innr public static org.openide.awt.UndoRedo$Manager
+meth public abstract boolean org.openide.awt.UndoRedo.canRedo()
+meth public abstract boolean org.openide.awt.UndoRedo.canUndo()
+meth public abstract java.lang.String org.openide.awt.UndoRedo.getRedoPresentationName()
+meth public abstract java.lang.String org.openide.awt.UndoRedo.getUndoPresentationName()
+meth public abstract void org.openide.awt.UndoRedo.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.awt.UndoRedo.redo() throws javax.swing.undo.CannotRedoException
+meth public abstract void org.openide.awt.UndoRedo.removeChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.awt.UndoRedo.undo() throws javax.swing.undo.CannotUndoException
+supr null
