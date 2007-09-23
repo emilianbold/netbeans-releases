@@ -255,4 +255,30 @@ public class TestNotifierTest extends RubyTestBase {
         assertEquals("25 tests, 46 assertions, 0 failures, 0 errors", notifier.getSummary());
         assertFalse(notifier.isError());
     }
+    
+    public void testRerun116386() throws Exception {
+        TestNotifier notifier = new TestNotifier(true, false);
+        FileObject fileObject = getTestFile("testfiles/testoutput2.txt");
+        String s = readFile(fileObject);
+        String[] lines = s.split("\n");
+        notifier.start();
+        for (String line : lines) {
+            notifier.processLine(line);
+        }
+        notifier.finish();
+
+        assertEquals("25 tests, 46 assertions, 0 failures, 0 errors", notifier.getSummary());
+        assertFalse(notifier.isError());
+        
+        // Rerun!
+        notifier.start();
+        for (String line : lines) {
+            notifier.processLine(line);
+        }
+        notifier.finish();
+
+        assertEquals("25 tests, 46 assertions, 0 failures, 0 errors", notifier.getSummary());
+        assertFalse(notifier.isError());
+
+    }
 }

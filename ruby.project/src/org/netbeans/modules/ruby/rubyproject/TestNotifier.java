@@ -73,20 +73,6 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     public TestNotifier(boolean accumulate, boolean showSuccesses) {
         this.accumulate = accumulate;
         this.showSuccesses = showSuccesses;
-
-        // Possibly clear editor from previous error message (#115073)
-        if (mostRecentMessage != null) {
-            JTextComponent pane = EditorRegistry.lastFocusedComponent();
-            if (pane != null) {
-                if (pane.isShowing()) {
-                    String text = Utilities.getStatusText(pane);
-                    if (mostRecentMessage.equals(text)) {
-                        Utilities.clearStatusText(pane);
-                    }
-                }
-            }
-            mostRecentMessage = null;
-        }
     }
     
     /** Turn off notification? */
@@ -107,6 +93,25 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         Pattern.compile("Test failures\\s?"); // NOI18N
     
     private final Pattern[] PATTERNS = new Pattern[] { TEST_UNIT_PATTERN, RSPEC_PATTERN, RAKE_PATTERN };
+
+    @Override
+    public void start() {
+        // Possibly clear editor from previous error message (#115073)
+        if (mostRecentMessage != null) {
+            JTextComponent pane = EditorRegistry.lastFocusedComponent();
+            if (pane != null) {
+                if (pane.isShowing()) {
+                    String text = Utilities.getStatusText(pane);
+                    if (mostRecentMessage.equals(text)) {
+                        Utilities.clearStatusText(pane);
+                    }
+                }
+            }
+            mostRecentMessage = null;
+        }
+
+        resetResults();
+    }
     
     @Override
     public ActionText processLine(String outputLine) {
