@@ -9,17 +9,17 @@
 <code><![CDATA[require 'java'
 include_class '${0 default="package.class"}']]></code>
     </codetemplate>
-    <codetemplate abbreviation="doc" descriptionId="ct_doc" contexts="ruby">
+    <codetemplate abbreviation="do" descriptionId="ct_do" contexts="ruby" uuid="4B72C5C3-6CA7-41AC-B2F9-51DEA25D469E">
 <code><![CDATA[do |${unusedlocal defaults="i,j,k"}|
   ${selection line}${cursor}
 end]]></code>
     </codetemplate>
-    <codetemplate abbreviation="if" descriptionId="ct_if" contexts="ruby">
+    <codetemplate abbreviation="if" descriptionId="ct_if" uuid="6670835F-62C3-11D9-B8CF-000D93589AF6">
 <code><![CDATA[if ${condition}
   ${selection line}${cursor}
 end]]></code>
     </codetemplate>
-    <codetemplate abbreviation="ife" descriptionId="ct_ife" contexts="ruby">
+    <codetemplate abbreviation="ife" descriptionId="ct_ife" uuid="667082E6-62C3-11D9-B8CF-000D93589AF6">
 <code><![CDATA[if ${condition}
   ${selection line}${tabStop1 default=""}
 else
@@ -40,258 +40,33 @@ end]]></code>
   </codetemplate>
 
 
-<!-- The following templates were imported from TextMate -->
-
-  <codetemplate abbreviation=":" descriptionId="ct_colon">
+ <!-- The following templates were imported from TextMate -->
+ <!-- The following snippets are from Ruby.tmbundle -->
+  <codetemplate abbreviation="#" descriptionId="ct_hash" uuid="88BC3896-DC39-4307-A271-21D33340F15A">
+    <code>
+<![CDATA[# => ]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation=":" descriptionId="ct_colon" uuid="840B9C4C-7037-4C3B-9028-EB9DC75EDB3E">
     <code>
 <![CDATA[:${1 default="key"} => "${2 default="value"}"${4 default=", "}]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="defs" descriptionId="ct_defs">
+  <codetemplate abbreviation="Comp" descriptionId="ct_Comp" uuid="6C9D6B3D-D8E9-4606-9534-577C8D21FFF6">
     <code>
-<![CDATA[def self.${1 default="class_method_name"}
-	${cursor}
-end]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rpc" descriptionId="ct_rpc">
-    <code>
-<![CDATA[render :partial => "${1 default="item"}", :collection => ${2 default="items"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="vc" descriptionId="ct_vc">
-    <code>
-<![CDATA[validates_confirmation_of :${1 default="attribute"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="inject" descriptionId="ct_inject">
-    <code>
-<![CDATA[inject(${1 default="object"}) { |${2 default="injection"}, ${3 default="element"}| ${tabStop4 default=""} }${cursor}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="ea" descriptionId="ct_ea">
-    <code>
-<![CDATA[each { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="sorb" descriptionId="ct_sorb">
-    <code>
-<![CDATA[sort_by { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="clafn" descriptionId="ct_clafn">
-    <code>
-<![CDATA[split("::").inject(Object) { |par, const| par.const_get(const) }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="ve" descriptionId="ct_ve">
-    <code>
-<![CDATA[validates_exclusion_of :${1 default="attribute"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="col" descriptionId="ct_col">
-    <code>
-<![CDATA[collect { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rceca" descriptionId="ct_rceca">
-    <code>
-<![CDATA[render_component :controller => "${1 default="items"}", :action => "${2 default="index"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="ra" descriptionId="ct_ra">
-    <code>
-<![CDATA[render :action => "${1 default="action"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rf" descriptionId="ct_rf">
-    <code>
-<![CDATA[render :file => "${1 default="filepath"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="asko" descriptionId="ct_asko">
-    <code>
-<![CDATA[assert_kind_of(${1 default="ExpectedKind"}, ${0 default="actual_instance"})]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="eas-" descriptionId="ct_eas-">
-    <code>
-<![CDATA[each_slice(${1 default="2"}) { |${2 default="group"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rtl" descriptionId="ct_rtl">
-    <code>
-<![CDATA[render :text => "${1 default="text to render..."}", :layout => "${2 default="layoutname"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="asrt" descriptionId="ct_asrt">
-    <code>
-<![CDATA[assert_respond_to(${1 default="object"}, :${0 default="method"})]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="as" descriptionId="ct_as">
-    <code>
-<![CDATA[assert(${1 default="test"}, "${0 default="Failure message."}")]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="forin" descriptionId="ct_forin">
-    <code>
-<![CDATA[for ${1 default="element"} in ${2 default="collection"}
-	${1 default="element"}.${cursor}
-end]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rb" descriptionId="ct_rb">
-    <code>
-<![CDATA[#!/usr/bin/env ruby -wKU
-]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="ts" descriptionId="ct_ts">
-    <code>
-<![CDATA[require "test/unit"
+<![CDATA[include Comparable
 
-require "tc_${1 default="test_case_file"}"
-require "tc_${2 default="test_case_file"}"
-]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="habtm" descriptionId="ct_habtm">
-    <code>
-<![CDATA[has_and_belongs_to_many :${1 default="object"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="Yd-" descriptionId="ct_Yd-">
-    <code>
-<![CDATA[File.open("${1 default="path/to/file"}.yaml", "w") { |${3 default="file"}| YAML.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="sel" descriptionId="ct_sel">
-    <code>
-<![CDATA[select { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="eap" descriptionId="ct_eap">
-    <code>
-<![CDATA[each_pair { |${1 default="name"}, ${2 default="val"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="zip" descriptionId="ct_zip">
-    <code>
-<![CDATA[zip(${1 default="enums"}) { |${2 default="row"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="usai" descriptionId="ct_usai">
-    <code>
-<![CDATA[if ARGV.${tabStop1 default=""}
-  puts "Usage:  #{$PROGRAM_NAME} ${2 default="ARGS_GO_HERE"}"
-  exit
-end]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="mod" descriptionId="ct_mod">
-    <code>
-<![CDATA[module ${1 default="ModuleName"}
-	module ClassMethods
-		${cursor}
-	end
-	
-	extend ClassMethods
-	
-	def self.included(receiver)
-		receiver.extend(ClassMethods)
-	end
-	
-	
-end]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="vl" descriptionId="ct_vl">
-    <code>
-<![CDATA[validates_length_of :${1 default="attribute"}, :within => ${2 default="3..20"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="mccc" descriptionId="ct_mccc">
-    <code>
-<![CDATA[t.column :${1 default="title"}, :${2 default="string"}
-mccc${cursor}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="vaif" descriptionId="ct_vaif">
-    <code>
-<![CDATA[validates_associated :${1 default="attribute"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="w" descriptionId="ct_w">
-    <code>
-<![CDATA[attr_writer :${0 default="attr_names"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="mtab" descriptionId="ct_mtab">
-    <code>
-<![CDATA[create_table :${1 default="table"} do |t|
-    ${cursor}
-end]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rcea" descriptionId="ct_rcea">
-    <code>
-<![CDATA[render_component :action => "${1 default="index"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="ril" descriptionId="ct_ril">
-    <code>
-<![CDATA[render :inline => "${1 default="<%= 'hello' %>"}", :locals => { ${2 default=":name"} => "${3 default="value"}"${tabStop4 default=""} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="flash" descriptionId="ct_flash">
-    <code>
-<![CDATA[flash[:${1 default="notice"}] = "${2 default="Successfully created..."}"${cursor}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="unless" descriptionId="ct_unless">
-    <code>
-<![CDATA[unless ${1 default="condition"}
+def <=>(other)
 	${cursor}
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="rej" descriptionId="ct_rej">
+  <codetemplate abbreviation="Dir" descriptionId="ct_Dir" uuid="332AA973-AA71-48CB-AEE9-1D71E11019AC">
     <code>
-<![CDATA[reject { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[Dir.glob() { |${3 default="file"}| ${cursor} }]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="ass" descriptionId="ct_ass">
-    <code>
-<![CDATA[assert_same(${1 default="expected"}, ${0 default="actual"})]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="asid" descriptionId="ct_asid">
-    <code>
-<![CDATA[assert_in_delta(${1 default="expected_float"}, ${2 default="actual_float"}, ${0 default="2 ** -20"})]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="gre" descriptionId="ct_gre">
-    <code>
-<![CDATA[grep() { |${3 default="match"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="deli" descriptionId="ct_deli">
-    <code>
-<![CDATA[delete_if { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="ran" descriptionId="ct_ran">
-    <code>
-<![CDATA[sort_by { rand }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="asnt" descriptionId="ct_asnt">
-    <code>
-<![CDATA[assert_nothing_thrown { ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="Enum" descriptionId="ct_Enum">
+  <codetemplate abbreviation="Enum" descriptionId="ct_Enum" uuid="AAD5D511-6BE7-41DA-8F2B-1593A48FBB08">
     <code>
 <![CDATA[include Enumerable
 
@@ -300,32 +75,167 @@ def each(&block)
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="vuif" descriptionId="ct_vuif">
+  <codetemplate abbreviation="File" descriptionId="ct_File" uuid="8F594E5E-6F46-4E98-B5FB-1C8F3BA9828F">
     <code>
-<![CDATA[validates_uniqueness_of :${1 default="attribute"}]]>
+<![CDATA[File.foreach("${1 default="path/to/file"}") { |${3 default="line"}| ${cursor} }]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="rn" descriptionId="ct_rn">
+  <codetemplate abbreviation="Forw-" descriptionId="ct_Forw-" uuid="7F46C90A-595B-4B83-A4F7-058F63CE4218">
     <code>
-<![CDATA[render :nothing => ${1 default="true"}]]>
+<![CDATA[extend Forwardable]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="asio" descriptionId="ct_asio">
+  <codetemplate abbreviation="Hash" descriptionId="ct_Hash" uuid="E16EE658-1CA0-4950-954B-B962E50B754F">
+    <code>
+<![CDATA[Hash.new { |${1 default="hash"}, ${2 default="key"}| ${1 editable="false"}[${2 editable="false"}] = ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Md" descriptionId="ct_Md" uuid="0CB48BCA-3F6E-4AE0-85BC-08A1D2508216">
+    <code>
+<![CDATA[File.open("${1 default="path/to/file"}.dump", "w") { |${3 default="file"}| Marshal.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Ml" descriptionId="ct_Ml" uuid="20AAD0BC-075D-4EC0-9057-E3E5E62C4125">
+    <code>
+<![CDATA[File.open("${1 default="path/to/file"}.dump") { |${3 default="file"}| Marshal.load(${3 editable="false"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Pn-" descriptionId="ct_Pn-" uuid="5B46ECFD-23A4-4F0C-9951-F64C19C72C2B">
+    <code>
+<![CDATA[PStore.new()]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Yd-" descriptionId="ct_Yd-" uuid="3BA6762A-BB6B-489E-8006-F30F386AEF48">
+    <code>
+<![CDATA[File.open("${1 default="path/to/file"}.yaml", "w") { |${3 default="file"}| YAML.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Yl-" descriptionId="ct_Yl-" uuid="8343ACF4-EEB7-44B5-B835-94826466D4D5">
+    <code>
+<![CDATA[File.open("${1 default="path/to/file"}.yaml") { |${3 default="file"}| YAML.load(${3 editable="false"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="all" descriptionId="ct_all" uuid="07D1F987-7CDB-4EAD-B64A-27A93051700E">
+    <code>
+<![CDATA[all? { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="am" descriptionId="ct_am" uuid="988C8AEF-FC71-4455-9C4F-9338C05685A4">
+    <code>
+<![CDATA[alias_method :${1 default="new_name"}, :${0 default="old_name"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="any" descriptionId="ct_any" uuid="A3B9B76B-2BC5-425C-AB24-9FAAFC375798">
+    <code>
+<![CDATA[any? { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="app" descriptionId="ct_app" uuid="E16D24D2-CC7E-4786-BE0B-1725FC865D78">
+    <code>
+<![CDATA[if __FILE__ == $PROGRAM_NAME
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="as" descriptionId="ct_as" uuid="B32C147D-44A6-478A-9D5D-189D7831E9A7">
+    <code>
+<![CDATA[assert(${1 default="test"}, "${0 default="Failure message."}")]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ase" descriptionId="ct_ase" uuid="43A61A22-6BEE-4997-961C-1CDE739C05FE">
+    <code>
+<![CDATA[assert_equal(${1 default="expected"}, ${0 default="actual"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asid" descriptionId="ct_asid" uuid="429D0EF5-580D-4166-8F79-713DE96B77F1">
+    <code>
+<![CDATA[assert_in_delta(${1 default="expected_float"}, ${2 default="actual_float"}, ${0 default="2 ** -20"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asio" descriptionId="ct_asio" uuid="0E831E03-67E1-4357-8323-C60685C23C4F">
     <code>
 <![CDATA[assert_instance_of(${1 default="ExpectedClass"}, ${0 default="actual_instance"})]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="asns" descriptionId="ct_asns">
+  <codetemplate abbreviation="asko" descriptionId="ct_asko" uuid="671F05E2-D9CC-485E-BB1B-B13EF20FAC65">
     <code>
-<![CDATA[assert_not_same(${1 default="unexpected"}, ${0 default="actual"})]]>
+<![CDATA[assert_kind_of(${1 default="ExpectedKind"}, ${0 default="actual_instance"})]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="asnn" descriptionId="ct_asnn">
+  <codetemplate abbreviation="asm" descriptionId="ct_asm" uuid="711ED6C3-0F18-41FB-9A7D-3094BB319A85">
+    <code>
+<![CDATA[assert_match(/${1 default="expected_pattern"}/, ${0 default="actual_string"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asn" descriptionId="ct_asn" uuid="4C79256C-480A-459C-BDE8-BB0D972811DB">
+    <code>
+<![CDATA[assert_nil(${0 default="instance"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asne" descriptionId="ct_asne" uuid="A243E96F-DC21-4AA0-B340-13A7674F6AFF">
+    <code>
+<![CDATA[assert_not_equal(${1 default="unexpected"}, ${0 default="actual"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asnm" descriptionId="ct_asnm" uuid="A072BB1E-1DD1-45D3-9346-8CA3BA21B364">
+    <code>
+<![CDATA[assert_no_match(/${1 default="unexpected_pattern"}/, ${0 default="actual_string"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asnn" descriptionId="ct_asnn" uuid="79FEC3CC-2A40-4611-9A85-ECDB22FE0701">
     <code>
 <![CDATA[assert_not_nil(${0 default="instance"})]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="case" descriptionId="ct_case">
+  <codetemplate abbreviation="asnr" descriptionId="ct_asnr" uuid="82F8EEE0-2452-411E-8102-7BFDDBCA2E72">
+    <code>
+<![CDATA[assert_nothing_raised(${1 default="Exception"}) { ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asns" descriptionId="ct_asns" uuid="F91C25EC-EC76-498B-BFB5-FDA8F57C5875">
+    <code>
+<![CDATA[assert_not_same(${1 default="unexpected"}, ${0 default="actual"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asnt" descriptionId="ct_asnt" uuid="33639D7A-BD8C-4396-9C44-307B8AC87C9E">
+    <code>
+<![CDATA[assert_nothing_thrown { ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="aso" descriptionId="ct_aso" uuid="1B925A4D-8EE4-442B-9254-293599F5717F">
+    <code>
+<![CDATA[assert_operator(${1 default="left"}, :${2 default="operator"}, ${0 default="right"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asr" descriptionId="ct_asr" uuid="68B21F6F-5D89-41FA-A19C-F29C2F912B4E">
+    <code>
+<![CDATA[assert_raise(${1 default="Exception"}) { ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asrt" descriptionId="ct_asrt" uuid="09A11FDA-49FC-4466-8787-8D1D5D111A89">
+    <code>
+<![CDATA[assert_respond_to(${1 default="object"}, :${0 default="method"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ass" descriptionId="ct_ass" uuid="29340695-E426-4F77-8CF7-C59360A549F4">
+    <code>
+<![CDATA[assert_same(${1 default="expected"}, ${0 default="actual"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ast" descriptionId="ct_ast" uuid="05655BD8-23C6-445F-BFD1-420BF25C3030">
+    <code>
+<![CDATA[assert_throws(:${1 default="expected"}) { ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="bm-" descriptionId="ct_bm-" uuid="942F20E2-C40A-44B8-A3F2-99AAC68CB534">
+    <code>
+<![CDATA[TESTS = ${1 default="10_000"}
+Benchmark.bmbm do |results|
+  ${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="case" descriptionId="ct_case" uuid="667083EE-62C3-11D9-B8CF-000D93589AF6">
     <code>
 <![CDATA[case ${1 default="object"}
 when ${2 default="condition"}
@@ -333,160 +243,299 @@ when ${2 default="condition"}
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="collect" descriptionId="ct_collect">
-    <code>
-<![CDATA[collect { |${1 default="element"}| ${1 editable="false"}.${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="app" descriptionId="ct_app">
-    <code>
-<![CDATA[if __FILE__ == $PROGRAM_NAME
-	${cursor}
-end]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="recai" descriptionId="ct_recai">
-    <code>
-<![CDATA[redirect_to :controller => "${1 default="items"}", :action => "${2 default="show"}", :id => ${0 default="@item"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="asnm" descriptionId="ct_asnm">
-    <code>
-<![CDATA[assert_no_match(/${1 default="unexpected_pattern"}/, ${0 default="actual_string"})]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="Forw-" descriptionId="ct_Forw-">
-    <code>
-<![CDATA[extend Forwardable]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="fina" descriptionId="ct_fina">
-    <code>
-<![CDATA[find_all { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="defds" descriptionId="ct_defds">
-    <code>
-<![CDATA[def_delegators :${1 default="@del_obj"}, :${0 default="del_methods"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="ri" descriptionId="ct_ri">
-    <code>
-<![CDATA[render :inline => "${1 default="<%= 'hello' %>"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="sca" descriptionId="ct_sca">
-    <code>
-<![CDATA[scan(/${1 default="pattern"}/) { |${2 default="match"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="min" descriptionId="ct_min">
-    <code>
-<![CDATA[min { |a, b| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="dee" descriptionId="ct_dee">
-    <code>
-<![CDATA[Marshal.load(Marshal.dump(${0 default="obj_to_copy"}))]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="eac-" descriptionId="ct_eac-">
-    <code>
-<![CDATA[each_char { |${1 default="chr"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rdb" descriptionId="ct_rdb">
-    <code>
-<![CDATA[RAILS_DEFAULT_LOGGER.debug "${1 default="message"}"${cursor}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="r" descriptionId="ct_r">
-    <code>
-<![CDATA[attr_reader :${0 default="attr_names"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="vpif" descriptionId="ct_vpif">
-    <code>
-<![CDATA[validates_presence_of :${1 default="attribute"}, :if => proc { |obj| ${5 default="obj.condition?"} }}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="sor" descriptionId="ct_sor">
-    <code>
-<![CDATA[sort { |a, b| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rl" descriptionId="ct_rl">
-    <code>
-<![CDATA[render :layout => "${1 default="layoutname"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="File" descriptionId="ct_File">
-    <code>
-<![CDATA[File.foreach("${1 default="path/to/file"}") { |${3 default="line"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="vp" descriptionId="ct_vp">
-    <code>
-<![CDATA[validates_presence_of :${1 default="attribute"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rcec" descriptionId="ct_rcec">
-    <code>
-<![CDATA[render_component :controller => "${1 default="items"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="defd" descriptionId="ct_defd">
-    <code>
-<![CDATA[def_delegator :${1 default="@del_obj"}, :${2 default="del_meth"}, :${3 default="new_name"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="Dir" descriptionId="ct_Dir">
-    <code>
-<![CDATA[Dir.glob() { |${3 default="file"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="req" descriptionId="ct_req">
-    <code>
-<![CDATA[require "${cursor}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rfu" descriptionId="ct_rfu">
-    <code>
-<![CDATA[render :file => "${1 default="filepath"}", :use_full_path => ${2 default="false"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="verify" descriptionId="ct_verify">
-    <code>
-<![CDATA[verify :only => [:${tabStop1 default=""}], :method => :post, :render => {:status => 500, :text => "use HTTP-POST"}
-]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="art" descriptionId="ct_art">
-    <code>
-<![CDATA[assert_redirected_to :action => "${1 default="index"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="aso" descriptionId="ct_aso">
-    <code>
-<![CDATA[assert_operator(${1 default="left"}, :${2 default="operator"}, ${0 default="right"})]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="cl" descriptionId="ct_cl">
+  <codetemplate abbreviation="cl" descriptionId="ct_cl" uuid="5DA9E1E8-2C54-420A-9B84-B040A1AF2B9E">
     <code>
 <![CDATA[classify { |${1 default="e"}| ${cursor} }]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="eav" descriptionId="ct_eav">
+  <codetemplate abbreviation="cla" descriptionId="ct_cla" uuid="05DFF82C-5A29-4EBD-93FE-C165FFFB5EA8">
+    <code>
+<![CDATA[${1 default="ClassName"} = Struct.new(:${2 default="attr_names"}) do
+	def ${3 default="method_name"}
+		${cursor}
+	end
+	
+	
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="clafn" descriptionId="ct_clafn" uuid="2DBEE50B-3097-4A57-AB48-3586CF392D8B">
+    <code>
+<![CDATA[split("::").inject(Object) { |par, const| par.const_get(const) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="col" descriptionId="ct_col" uuid="669A86AD-936F-4EDA-8E4E-6863804072DA">
+    <code>
+<![CDATA[collect { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="dop" descriptionId="ct_dop">
+    <code>
+<![CDATA[do
+        ${selection line}${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="deec" descriptionId="ct_deec" uuid="0BA2B2F1-E767-4A03-9791-0AC0183251F1">
+    <code>
+<![CDATA[Marshal.load(Marshal.dump(${0 default="obj_to_copy"}))]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="def" descriptionId="ct_def" uuid="4E9A7A73-875C-11D9-897C-000393CBCE2E">
+    <code>
+<![CDATA[def ${1 default="method_name"}
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="defd" descriptionId="ct_defd" uuid="C44ED391-614F-4BA2-BB0F-87668EEA9954">
+    <code>
+<![CDATA[def_delegator :${1 default="@del_obj"}, :${2 default="del_meth"}, :${3 default="new_name"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="defds" descriptionId="ct_defds" uuid="4A6EFD6B-88E2-4822-AD48-03460EDBC796">
+    <code>
+<![CDATA[def_delegators :${1 default="@del_obj"}, :${0 default="del_methods"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="defmm" descriptionId="ct_defmm" uuid="87D5F8AD-8DA6-4AED-A0D8-B51CAC980445">
+    <code>
+<![CDATA[def method_missing(meth, *args, &blk)
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="defs" descriptionId="ct_defs" uuid="7C6E88FA-CA0E-4110-8C75-A94E54286A75">
+    <code>
+<![CDATA[def self.${1 default="class_method_name"}
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="deft" descriptionId="ct_deft" uuid="00F66D41-25AF-4597-B67D-E540965A5222">
+    <code>
+<![CDATA[def test_${1 default="case_name"}
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="deli" descriptionId="ct_deli" uuid="263C94DC-63CF-4BA3-9692-C5582CA8F1AB">
+    <code>
+<![CDATA[delete_if { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="det" descriptionId="ct_det" uuid="6C6B9849-9631-49FF-A9F9-F0E94A1512C5">
+    <code>
+<![CDATA[detect { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ea" descriptionId="ct_ea" uuid="ECBA4CA0-275F-460E-85BE-E82FEA2E2B26">
+    <code>
+<![CDATA[each { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eab" descriptionId="ct_eab" uuid="338EC03D-3FF4-4435-94E8-1CEF20CEC75D">
+    <code>
+<![CDATA[each_byte { |${1 default="byte"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eac-" descriptionId="ct_eac-" uuid="FDD73070-6D32-4301-A86A-C55B77C3D8ED">
+    <code>
+<![CDATA[each_char { |${1 default="chr"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eai" descriptionId="ct_eai" uuid="689120C9-AB40-4081-8268-9362E00FA4A0">
+    <code>
+<![CDATA[each_index { |${1 default="i"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eak" descriptionId="ct_eak" uuid="E54F7077-3C33-4B53-A4F7-21E16132D3AD">
+    <code>
+<![CDATA[each_key { |${1 default="key"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eal" descriptionId="ct_eal" uuid="02913388-EE8E-4C55-AC94-94F3D751F47E">
+    <code>
+<![CDATA[each_line${tabStop1 default=""} { |${2 default="line"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eap" descriptionId="ct_eap" uuid="7A3CECED-452B-438E-A5C6-95B6BDC43243">
+    <code>
+<![CDATA[each_pair { |${1 default="name"}, ${2 default="val"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eas-" descriptionId="ct_eas-" uuid="CD748479-D2A4-4AB5-95BD-4C89512BA210">
+    <code>
+<![CDATA[each_slice(${1 default="2"}) { |${2 default="group"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eav" descriptionId="ct_eav" uuid="844DBD70-BC23-4FBF-9C18-F4A610239DF2">
     <code>
 <![CDATA[each_value { |${1 default="val"}| ${cursor} }]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="rps" descriptionId="ct_rps">
+  <codetemplate abbreviation="eawi" descriptionId="ct_eawi" uuid="1DD13CF5-39C0-4F10-B655-56DACEBC7F94">
     <code>
-<![CDATA[render :partial => "${1 default="item"}", :status => ${2 default="500"}]]>
+<![CDATA[each_with_index { |${1 default="e"}, ${2 default="i"}| ${cursor} }]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="tc" descriptionId="ct_tc">
+  <codetemplate abbreviation="elsif" descriptionId="ct_elsif" uuid="CD1609FA-47DA-4EE4-9C5B-5C56D953F5B1">
+    <code>
+<![CDATA[elsif ${1 default="condition"}
+	${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="end" descriptionId="ct_end" uuid="451A0596-1F72-4AFB-AF2F-45900FABB0F7">
+    <code>
+<![CDATA[__END__
+]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="fin" descriptionId="ct_fin" uuid="E23FE534-8061-4828-98A5-46270B6910B0">
+    <code>
+<![CDATA[find { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="fina" descriptionId="ct_fina" uuid="197709C5-8382-4A59-B6D7-31A0CC0F23B7">
+    <code>
+<![CDATA[find_all { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="fl" descriptionId="ct_fl" uuid="DB457094-1AC9-4856-AEFC-43A9576B6775">
+    <code>
+<![CDATA[flunk("${0 default="Failure message."}")]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="flao" descriptionId="ct_flao" uuid="3DDB99C4-486D-4C11-A217-5680FDD8EC19">
+    <code>
+<![CDATA[inject(Array.new) { |${1 default="arr"}, ${2 default="a"}| ${1 editable="false"}.push(*${2 editable="false"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="gre" descriptionId="ct_gre" uuid="9D9E7BA3-8C5D-4532-83EA-326358C2F5BB">
+    <code>
+<![CDATA[grep() { |${3 default="match"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="loo" descriptionId="ct_loo" uuid="567E3D18-BF2B-4379-8927-2777EC9F495E">
+    <code>
+<![CDATA[loop { ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="map" descriptionId="ct_map" uuid="5A3754FC-43A3-462B-AB42-E3E951872E6F">
+    <code>
+<![CDATA[map { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mapwi-" descriptionId="ct_mapwi-" uuid="BD4CFD7B-1AC0-4569-9BDA-FD491F41F4E6">
+    <code>
+<![CDATA[enum_with_index.map { |${1 default="e"}, ${2 default="i"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="max" descriptionId="ct_max" uuid="98182B9E-7C61-4824-BE4C-9CD69C816037">
+    <code>
+<![CDATA[max { |a, b| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="min" descriptionId="ct_min" uuid="CB03D11A-7204-48D0-92C1-E109034403E7">
+    <code>
+<![CDATA[min { |a, b| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mod" descriptionId="ct_mod" uuid="A71A18CF-2D71-4BFF-AA0C-D9B8C59BC4EB">
+    <code>
+<![CDATA[module ${1 default="ModuleName"}
+	module ClassMethods
+		${cursor}
+	end
+	
+	module InstanceMethods
+		
+	end
+	
+	def self.included(receiver)
+		receiver.extend         ClassMethods
+		receiver.send :include, InstanceMethods
+	end
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="par" descriptionId="ct_par" uuid="52B8BF63-F09E-4789-8407-06168A8AE666">
+    <code>
+<![CDATA[partition { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="patfh" descriptionId="ct_patfh" uuid="A4E89D97-D5ED-48BB-B5FF-1BFB79211FCD">
+    <code>
+<![CDATA[File.join(File.dirname(__FILE__), *%w[${1 default="rel path here"}])]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="r" descriptionId="ct_r" uuid="A150C2D8-25B3-4339-BC92-8A0160A70486">
+    <code>
+<![CDATA[attr_reader :${0 default="attr_names"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ran" descriptionId="ct_ran" uuid="B0CE57EC-FB2E-4482-8CCE-448DC2588715">
+    <code>
+<![CDATA[sort_by { rand }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rb" descriptionId="ct_rb" uuid="A05CBDD6-845D-45EB-94FB-F8787F5456BE">
+    <code>
+<![CDATA[#!/usr/bin/env ruby -wKU
+]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rej" descriptionId="ct_rej" uuid="B79B9DAB-ABEF-44F6-BF7E-635E7BA11DFD">
+    <code>
+<![CDATA[reject { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rep" descriptionId="ct_rep" uuid="1C60D589-DD46-4109-90CA-6B34AEA2F298">
+    <code>
+<![CDATA[results.report("${1 default="name"}:") { TESTS.times { ${cursor} } }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="req" descriptionId="ct_req" uuid="97DE939B-D243-4D5C-B953-1C9090912E7C">
+    <code>
+<![CDATA[require "${cursor}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="reve" descriptionId="ct_reve" uuid="F3C5F719-EF03-4FF7-A777-4A8402FE3B6B">
+    <code>
+<![CDATA[reverse_each { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rw" descriptionId="ct_rw" uuid="D7A7D3C9-1714-4C50-8CC0-D83A03883E8F">
+    <code>
+<![CDATA[attr_accessor :${0 default="attr_names"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="sca" descriptionId="ct_sca" uuid="66802933-B49F-479B-9DF9-1D898FF1FA90">
+    <code>
+<![CDATA[scan(/${1 default="pattern"}/) { |${2 default="match"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="sel" descriptionId="ct_sel" uuid="4E409AA4-E7D4-46B7-A4E9-E32F992B33E9">
+    <code>
+<![CDATA[select { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="sin" descriptionId="ct_sin" uuid="B46D35B8-5DEB-4C10-A110-BA1965A2EB9C">
+    <code>
+<![CDATA[class << self; self end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="sor" descriptionId="ct_sor" uuid="9E0B4D4B-2956-4B3A-800A-3D8CE54E66BF">
+    <code>
+<![CDATA[sort { |a, b| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="sorb" descriptionId="ct_sorb" uuid="BA9440C9-36C3-4031-BB61-67B581D5B179">
+    <code>
+<![CDATA[sort_by { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="tc" descriptionId="ct_tc" uuid="31D1F145-33AB-4441-BA11-4D1C46928C4C">
     <code>
 <![CDATA[require "test/unit"
 
@@ -499,359 +548,343 @@ class Test < Test::Unit::TestCase
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="asn" descriptionId="ct_asn">
+  <codetemplate abbreviation="ts" descriptionId="ct_ts" uuid="5297FD0C-98B1-4514-BBD1-1516810BECA6">
     <code>
-<![CDATA[assert_nil(${0 default="instance"})]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="usau" descriptionId="ct_usau">
-    <code>
-<![CDATA[unless ARGV.${tabStop1 default=""}
-  puts "Usage:  #{$PROGRAM_NAME} ${2 default="ARGS_GO_HERE"}"
-  exit
-end]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="Comp" descriptionId="ct_Comp">
-    <code>
-<![CDATA[include Comparable
+<![CDATA[require "test/unit"
 
-def <=>(other)
-	${cursor}
-end]]>
+require "tc_${1 default="test_case_file"}"
+require "tc_${2 default="test_case_file"}"
+]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="each" descriptionId="ct_each">
-    <code>
-<![CDATA[each { |${1 default="element"}| ${1 editable="false"}.${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="vu" descriptionId="ct_vu">
-    <code>
-<![CDATA[validates_uniqueness_of :${1 default="attribute"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="uni" descriptionId="ct_uni">
+  <codetemplate abbreviation="uni" descriptionId="ct_uni" uuid="8CEF9711-88D5-4202-AFB9-29EF4EFD25C1">
     <code>
 <![CDATA[ARGF.each_line${tabStop1 default=""} do |${2 default="line"}|
 	${cursor}
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="all" descriptionId="ct_all">
+  <codetemplate abbreviation="unless" descriptionId="ct_unless" uuid="F53E098D-D08E-4CE2-990A-B0BD70E60614">
     <code>
-<![CDATA[all? { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rit" descriptionId="ct_rit">
-    <code>
-<![CDATA[render :inline => "${1 default="<%= 'hello' %>"}", :type => ${2 default=":rxml"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="doo" descriptionId="ct_doo">
-    <code>
-<![CDATA[do |${1 default="object"}|
+<![CDATA[unless ${1 default="condition"}
 	${cursor}
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="par" descriptionId="ct_par">
+  <codetemplate abbreviation="until" descriptionId="ct_until" uuid="488B387C-50C0-4B2D-9260-5A7E7EAF9B42">
     <code>
-<![CDATA[partition { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="eak" descriptionId="ct_eak">
-    <code>
-<![CDATA[each_key { |${1 default="key"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rw" descriptionId="ct_rw">
-    <code>
-<![CDATA[attr_accessor :${0 default="attr_names"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="flao" descriptionId="ct_flao">
-    <code>
-<![CDATA[inject(Array.new) { |${1 default="arr"}, ${2 default="a"}| ${1 editable="false"}.push(*${2 editable="false"}) }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="Ml" descriptionId="ct_Ml">
-    <code>
-<![CDATA[File.open("${1 default="path/to/file"}.dump") { |${3 default="file"}| Marshal.load(${3 editable="false"}) }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="eawi" descriptionId="ct_eawi">
-    <code>
-<![CDATA[each_with_index { |${1 default="e"}, ${2 default="i"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="ast" descriptionId="ct_ast">
-    <code>
-<![CDATA[assert_throws(:${1 default="expected"}) { ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="deft" descriptionId="ct_deft">
-    <code>
-<![CDATA[def test_${1 default="case_name"}
+<![CDATA[until ${1 default="condition"}
 	${cursor}
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="mm" descriptionId="ct_mm">
+  <codetemplate abbreviation="usai" descriptionId="ct_usai" uuid="21C0D711-F32A-4665-AA0D-B136F9DD3945">
     <code>
-<![CDATA[def method_missing(meth, *args, &block)
-	${cursor}
+<![CDATA[if ARGV.${tabStop1 default=""}
+	abort "Usage:  #{$PROGRAM_NAME} ${2 default="ARGS_GO_HERE"}"
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="class" descriptionId="ct_class">
+  <codetemplate abbreviation="usau" descriptionId="ct_usau" uuid="49D69DEC-6991-49F4-8D9B-BA60BFDD3D17">
     <code>
-<![CDATA[class ${1 default="ClassName"}
-	${cursor}
+<![CDATA[unless ARGV.${tabStop1 default=""}
+	abort "Usage:  #{$PROGRAM_NAME} ${2 default="ARGS_GO_HERE"}"
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="asm" descriptionId="ct_asm">
+  <codetemplate abbreviation="w" descriptionId="ct_w" uuid="3D383096-A03F-4EF8-9060-3C727045AB34">
     <code>
-<![CDATA[assert_match(/${1 default="expected_pattern"}/, ${0 default="actual_string"})]]>
+<![CDATA[attr_writer :${0 default="attr_names"}]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="eal" descriptionId="ct_eal">
-    <code>
-<![CDATA[each_line${tabStop1 default=""} { |${2 default="line"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="asnr" descriptionId="ct_asnr">
-    <code>
-<![CDATA[assert_nothing_raised(${1 default="Exception"}) { ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="select" descriptionId="ct_select">
-    <code>
-<![CDATA[select { |${1 default="element"}| ${1 editable="false"}.${tabStop2 default=""} }${cursor}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="va" descriptionId="ct_va">
-    <code>
-<![CDATA[validates_associated :${1 default="attribute"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="reject" descriptionId="ct_reject">
-    <code>
-<![CDATA[reject { |${1 default="element"}| ${1 editable="false"}.${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rt" descriptionId="ct_rt">
-    <code>
-<![CDATA[render :text => "${1 default="text to render..."}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rtlt" descriptionId="ct_rtlt">
-    <code>
-<![CDATA[render :text => "${1 default="text to render..."}", :layout => ${2 default="true"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="reca" descriptionId="ct_reca">
-    <code>
-<![CDATA[redirect_to :controller => "${1 default="items"}", :action => "${2 default="list"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="do" descriptionId="ct_do">
-    <code>
-<![CDATA[do
-	${cursor}
-end]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="veif" descriptionId="ct_veif">
-    <code>
-<![CDATA[validates_exclusion_of :${1 default="attribute"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="map" descriptionId="ct_map">
-    <code>
-<![CDATA[map { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="am" descriptionId="ct_am">
-    <code>
-<![CDATA[alias_method :${1 default="new_name"}, :${0 default="old_name"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="any" descriptionId="ct_any">
-    <code>
-<![CDATA[any? { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="reai" descriptionId="ct_reai">
-    <code>
-<![CDATA[redirect_to :action => "${1 default="show"}", :id => ${0 default="@item"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="Hash" descriptionId="ct_Hash">
-    <code>
-<![CDATA[Hash.new { |${1 default="hash"}, ${2 default="key"}| ${1 editable="false"}[${2 editable="false"}] = ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="cla" descriptionId="ct_cla">
-    <code>
-<![CDATA[class ${1 default="ClassName"} < Struct.new(:${2 default="attr_names"})
-	def initialize(*args)
-		super
-		
-		${cursor}
-	end
-	
-	
-end]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="Yl-" descriptionId="ct_Yl-">
-    <code>
-<![CDATA[File.open("${1 default="path/to/file"}.yaml") { |${3 default="file"}| YAML.load(${3 editable="false"}) }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="when" descriptionId="ct_when">
+  <codetemplate abbreviation="when" descriptionId="ct_when" uuid="48D8E498-C9A5-4B1B-9A18-71A5860276FB">
     <code>
 <![CDATA[when ${1 default="condition"}
 	${cursor}]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="ral" descriptionId="ct_ral">
+  <codetemplate abbreviation="while" descriptionId="ct_while" uuid="D121FC61-96A4-4B8F-8709-280EDA876FF3">
     <code>
-<![CDATA[render :action => "${1 default="action"}", :layout => "${2 default="layoutname"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="def" descriptionId="ct_def">
-    <code>
-<![CDATA[def ${1 default="method_name"}
+<![CDATA[while ${1 default="condition"}
 	${cursor}
 end]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="eai" descriptionId="ct_eai">
+  <codetemplate abbreviation="y" descriptionId="ct_y" uuid="ED6368FB-A11D-4622-9F42-7879481094F1">
     <code>
-<![CDATA[each_index { |${1 default="i"}| ${cursor} }]]>
+<![CDATA[ :yields: ${0 default="arguments"}]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="vcif" descriptionId="ct_vcif">
+  <codetemplate abbreviation="zip" descriptionId="ct_zip" uuid="FD010022-E0E7-44DB-827F-33F7D9310DA2">
     <code>
-<![CDATA[validates_confirmation_of :${1 default="attribute"}]]>
+<![CDATA[zip(${1 default="enums"}) { |${2 default="row"}| ${cursor} }]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="asr" descriptionId="ct_asr">
+  
+  <!-- The following snippets are from Ruby on Rails.tmbundle -->
+  
+  <codetemplate abbreviation="art" descriptionId="ct_art" uuid="CD60F800-850D-47CF-BE32-3DE665DD5C68">
     <code>
-<![CDATA[assert_raise(${1 default="Exception"}) { ${cursor} }]]>
+<![CDATA[assert_redirected_to :action => "${1 default="index"}"]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="max" descriptionId="ct_max">
-    <code>
-<![CDATA[max { |a, b| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rpl" descriptionId="ct_rpl">
-    <code>
-<![CDATA[render :partial => "${1 default="item"}", :locals => { :${2 default="name"} => "${3 default="value"}"${tabStop4 default=""} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rp" descriptionId="ct_rp">
-    <code>
-<![CDATA[render :partial => "${1 default="item"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="reve" descriptionId="ct_reve">
-    <code>
-<![CDATA[reverse_each { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="hm" descriptionId="ct_hm">
-    <code>
-<![CDATA[has_many :${1 default="objects"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="Md" descriptionId="ct_Md">
-    <code>
-<![CDATA[File.open("${1 default="path/to/file"}.dump", "w") { |${3 default="file"}| Marshal.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rns" descriptionId="ct_rns">
-    <code>
-<![CDATA[render :nothing => ${1 default="true"}, :status => ${2 default="401"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rea" descriptionId="ct_rea">
-    <code>
-<![CDATA[redirect_to :action => "${1 default="index"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="fin" descriptionId="ct_fin">
-    <code>
-<![CDATA[find { |${1 default="e"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="ho" descriptionId="ct_ho">
-    <code>
-<![CDATA[has_one :${1 default="object"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="asre" descriptionId="ct_asre">
+  <codetemplate abbreviation="asre" descriptionId="ct_asre" uuid="2BD82DCB-1F19-4C8F-BC70-C0BBB06A2138">
     <code>
 <![CDATA[assert_response :${1 default="success"}]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="mcol" descriptionId="ct_mcol">
-    <code>
-<![CDATA[add_column :${1 default="table"}, :${2 default="column"}, :${3 default="string"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="each_with_index" descriptionId="ct_each_with_index">
-    <code>
-<![CDATA[each_with_index { |${1 default="element"}, ${2 default="idx"}| ${1 editable="false"}.${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rec" descriptionId="ct_rec">
-    <code>
-<![CDATA[redirect_to :controller => "${1 default="items"}"]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="rpo" descriptionId="ct_rpo">
-    <code>
-<![CDATA[render :partial => "${1 default="item"}", :object => ${2 default="object"}]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="fl" descriptionId="ct_fl">
-    <code>
-<![CDATA[flunk("${0 default="Failure message."}")]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="mapwi-" descriptionId="ct_mapwi-">
-    <code>
-<![CDATA[enum_with_index.map { |${1 default="e"}, ${2 default="i"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="asne" descriptionId="ct_asne">
-    <code>
-<![CDATA[assert_not_equal(${1 default="unexpected"}, ${0 default="actual"})]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="eab" descriptionId="ct_eab">
-    <code>
-<![CDATA[each_byte { |${1 default="byte"}| ${cursor} }]]>
-    </code>
-  </codetemplate>
-  <codetemplate abbreviation="bt" descriptionId="ct_bt">
+  <codetemplate abbreviation="bt" descriptionId="ct_bt" uuid="B8F08BD7-6160-482C-8A3D-CBC6BD2079A4">
     <code>
 <![CDATA[belongs_to :${1 default="object"}]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="det" descriptionId="ct_det">
+  <codetemplate abbreviation="flash" descriptionId="ct_flash" uuid="D864896E-8763-11D9-897C-000393CBCE2E">
     <code>
-<![CDATA[detect { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[flash[:${1 default="notice"}] = "${2 default="Successfully created..."}"${cursor}]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="rts" descriptionId="ct_rts">
+  <codetemplate abbreviation="habtm" descriptionId="ct_habtm" uuid="2AC3AC1F-743B-4A33-863C-C37885073806">
+    <code>
+<![CDATA[has_and_belongs_to_many :${1 default="object"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="hm" descriptionId="ct_hm" uuid="F396B7BD-8255-48B1-904A-06E7D7CC2741">
+    <code>
+<![CDATA[has_many :${1 default="objects"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ho" descriptionId="ct_ho" uuid="BD2E4045-54E6-450E-B31B-5E1865CFFBC9">
+    <code>
+<![CDATA[has_one :${1 default="object"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="log" descriptionId="ct_log" uuid="D975E5C1-42C2-40F1-8960-0DA533B18113">
+    <code>
+<![CDATA[logger.debug "${1 default="message"}"${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mccc" descriptionId="ct_mccc" uuid="67FD2F8F-5F25-45F2-A451-2F39977A9EDE">
+    <code>
+<![CDATA[t.column :${1 default="title"}, :${2 default="string"}
+mccc${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mcol" descriptionId="ct_mcol" uuid="0D8DA40B-0652-42E8-AB20-5B6847DC2F11">
+    <code>
+<![CDATA[add_column :${1 default="table"}, :${2 default="column"}, :${3 default="string"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mp" descriptionId="ct_mp" uuid="EC605540-C431-4FD0-AD91-D913118DACA7">
+    <code>
+<![CDATA[map(&:${1 default="id"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mtab" descriptionId="ct_mtab" uuid="59A47C33-97C5-411D-ADBE-ABD2324BD130">
+    <code>
+<![CDATA[create_table :${1 default="table"} do |t|
+    ${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ra" descriptionId="ct_ra" uuid="7B03D38B-7580-41AC-BC2B-3766AB074A43">
+    <code>
+<![CDATA[render :action => "${1 default="action"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ral" descriptionId="ct_ral" uuid="053F1D6A-B413-43FF-B697-E3120FD0489F">
+    <code>
+<![CDATA[render :action => "${1 default="action"}", :layout => "${2 default="layoutname"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rcea" descriptionId="ct_rcea" uuid="EB781D86-84C5-11D9-A094-000D932CD5BA">
+    <code>
+<![CDATA[render_component :action => "${1 default="index"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rcec" descriptionId="ct_rcec" uuid="F8EE4249-84C5-11D9-A094-000D932CD5BA">
+    <code>
+<![CDATA[render_component :controller => "${1 default="items"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rceca" descriptionId="ct_rceca" uuid="060DC5CD-84C6-11D9-A094-000D932CD5BA">
+    <code>
+<![CDATA[render_component :controller => "${1 default="items"}", :action => "${2 default="index"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rdb" descriptionId="ct_rdb" uuid="7B15B396-1F41-4529-9253-32761E94448C">
+    <code>
+<![CDATA[RAILS_DEFAULT_LOGGER.debug "${1 default="message"}"${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rea" descriptionId="ct_rea" uuid="F2F3167C-73B9-11D9-B752-000D932CD5BA">
+    <code>
+<![CDATA[redirect_to :action => "${1 default="index"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="reai" descriptionId="ct_reai" uuid="2233B484-73BA-11D9-B752-000D932CD5BA">
+    <code>
+<![CDATA[redirect_to :action => "${1 default="show"}", :id => ${0 default="@item"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rec" descriptionId="ct_rec" uuid="053490FE-73BA-11D9-B752-000D932CD5BA">
+    <code>
+<![CDATA[redirect_to :controller => "${1 default="items"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="reca" descriptionId="ct_reca" uuid="0C137FBF-73BA-11D9-B752-000D932CD5BA">
+    <code>
+<![CDATA[redirect_to :controller => "${1 default="items"}", :action => "${2 default="list"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="recai" descriptionId="ct_recai" uuid="18D3C1C3-73BA-11D9-B752-000D932CD5BA">
+    <code>
+<![CDATA[redirect_to :controller => "${1 default="items"}", :action => "${2 default="show"}", :id => ${0 default="@item"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rf" descriptionId="ct_rf" uuid="7D43B0EA-2C3C-499B-9346-A8E48CBF29CD">
+    <code>
+<![CDATA[render :file => "${1 default="filepath"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rfu" descriptionId="ct_rfu" uuid="2A8FBE48-E196-4019-AE76-BF3ED4B54F47">
+    <code>
+<![CDATA[render :file => "${1 default="filepath"}", :use_full_path => ${2 default="false"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ri" descriptionId="ct_ri" uuid="64E93A71-6E62-48D9-9694-123080AE6723">
+    <code>
+<![CDATA[render :inline => "${1 default="<%= 'hello' %>"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ril" descriptionId="ct_ril" uuid="1E5DE984-510C-4992-8AD5-C5FA6D7F2A88">
+    <code>
+<![CDATA[render :inline => "${1 default="<%= 'hello' %>"}", :locals => { ${2 default=":name"} => "${3 default="value"}"${tabStop4 default=""} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rit" descriptionId="ct_rit" uuid="A8AF8B90-94E8-42E1-8057-DDBA57809F6A">
+    <code>
+<![CDATA[render :inline => "${1 default="<%= 'hello' %>"}", :type => ${2 default=":rxml"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rl" descriptionId="ct_rl" uuid="3F83272F-62D5-4BCB-BAA3-806083078829">
+    <code>
+<![CDATA[render :layout => "${1 default="layoutname"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rn" descriptionId="ct_rn" uuid="AC8A995F-0034-433C-905D-E5C1F29D6EFF">
+    <code>
+<![CDATA[render :nothing => ${1 default="true"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rns" descriptionId="ct_rns" uuid="724A68C1-A727-46FF-AF59-288E26B09629">
+    <code>
+<![CDATA[render :nothing => ${1 default="true"}, :status => ${2 default="401"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rp" descriptionId="ct_rp" uuid="498168A5-5AF8-4F59-8A2D-B517FAB98CDB">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rpc" descriptionId="ct_rpc" uuid="046FB1B6-9C65-4702-91EC-4AA9878CD949">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}", :collection => ${2 default="items"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rpl" descriptionId="ct_rpl" uuid="6F41AFFD-B3A7-42D0-8A84-D6086C118D92">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}", :locals => { :${2 default="name"} => "${3 default="value"}"${tabStop4 default=""} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rpo" descriptionId="ct_rpo" uuid="BFAAC8DA-A043-4684-967B-B3E5DAE08C62">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}", :object => ${2 default="object"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rps" descriptionId="ct_rps" uuid="CBB06A4E-3A82-45F3-91AA-259F02314B9D">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}", :status => ${2 default="500"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rt" descriptionId="ct_rt" uuid="67C5082F-5011-434A-8EAA-6B8D3600935F">
+    <code>
+<![CDATA[render :text => "${1 default="text to render..."}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rtl" descriptionId="ct_rtl" uuid="A3B09AFE-40B5-4623-8B85-E9F369ECE22D">
+    <code>
+<![CDATA[render :text => "${1 default="text to render..."}", :layout => "${2 default="layoutname"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rtlt" descriptionId="ct_rtlt" uuid="97C0992D-715F-4322-A3E0-DD4D2B7E2FC2">
+    <code>
+<![CDATA[render :text => "${1 default="text to render..."}", :layout => ${2 default="true"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rts" descriptionId="ct_rts" uuid="4F636977-F7A6-4BF5-B09B-7F087683C3B9">
     <code>
 <![CDATA[render :text => "${1 default="text to render..."}", :status => ${2 default="401"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="va" descriptionId="ct_va" uuid="47944705-F605-4ED4-B4C0-9E823EE25138">
+    <code>
+<![CDATA[validates_associated :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vaif" descriptionId="ct_vaif" uuid="85E9264C-5414-4FA0-AC07-F305A798ED46">
+    <code>
+<![CDATA[validates_associated :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vc" descriptionId="ct_vc" uuid="B5893618-D07C-48F1-8867-736D0AAFF0E7">
+    <code>
+<![CDATA[validates_confirmation_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vcif" descriptionId="ct_vcif" uuid="1354726C-DA64-4CA6-A099-26626A865D8D">
+    <code>
+<![CDATA[validates_confirmation_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ve" descriptionId="ct_ve" uuid="4CC98A56-B60B-4A89-80E0-400C5314A050">
+    <code>
+<![CDATA[validates_exclusion_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="veif" descriptionId="ct_veif" uuid="869AB0B7-12DD-440A-905A-BFB1E0E16E1C">
+    <code>
+<![CDATA[validates_exclusion_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="verify" descriptionId="ct_verify" uuid="9ECBF20C-003E-41D9-A881-4BAC0656F9DC">
+    <code>
+<![CDATA[verify :only => [:${tabStop1 default=""}], :method => :post, :render => {:status => 500, :text => "use HTTP-POST"}
+]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vl" descriptionId="ct_vl" uuid="5CE8838A-BF2C-497E-B87A-E90C3BC482E0">
+    <code>
+<![CDATA[validates_length_of :${1 default="attribute"}, :within => ${2 default="3..20"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vp" descriptionId="ct_vp" uuid="5DAC28A7-33C8-4DA7-9E85-56618D6BEC9F">
+    <code>
+<![CDATA[validates_presence_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vpif" descriptionId="ct_vpif" uuid="F5CBBE16-F5CC-4EDA-8BC6-30281BD7D854">
+    <code>
+<![CDATA[validates_presence_of :${1 default="attribute"}, :if => proc { |obj| ${5 default="obj.condition?"} }}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vu" descriptionId="ct_vu" uuid="F8316545-9AE4-4C7F-87ED-A2C00E6637FA">
+    <code>
+<![CDATA[validates_uniqueness_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vuif" descriptionId="ct_vuif" uuid="43680344-0818-42BF-95B4-58CD2D76545B">
+    <code>
+<![CDATA[validates_uniqueness_of :${1 default="attribute"}]]>
     </code>
   </codetemplate>
 </codetemplates>
