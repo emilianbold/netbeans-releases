@@ -21,20 +21,23 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.util.StringTokenizer;
-import org.apache.tools.ant.*;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Java;
-import org.apache.tools.ant.types.*;
+import org.apache.tools.ant.types.Commandline;
+import org.apache.tools.ant.types.EnumeratedAttribute;
+import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.Reference;
 
-/**
- * @author michal
+/** Invokes signature tests.
+ * @author Michal Zlámal
  */
 public class Sigtest extends Task {
 
     File fileName;
     Path classpath;
     String packages;
-    String additionArgs;
-    String action;
+    ActionType action;
     File sigtestJar;
     boolean failOnError = true;
     
@@ -46,11 +49,7 @@ public class Sigtest extends Task {
         packages = s;
     }
 
-    public void setAdditionalArgs(String s) {
-        additionArgs = s;
-    }
-
-    public void setAction(String s) {
+    public void setAction(ActionType s) {
         action = s;
     }
 
@@ -102,12 +101,26 @@ public class Sigtest extends Task {
             return;
         }
         
+        if (!sigtestJar.exists()) {
+            throw new BuildException("Cannot find JAR with testing infrastructure: " + sigtestJar);
+        }
+        
         Java java = (Java) getProject().createTask("java");
         Path sigtestPath = new Path(getProject());
         sigtestPath.setLocation(sigtestJar);
         
         java.setClasspath(sigtestPath);
-        java.setClassname("com.sun.tdk.signaturetest." + action);
+        String a = null;
+        if ("strictcheck".equals(action.getValue())) { // NOI18N
+            a = "SignatureTest"; // NOI18N
+        }
+        if ("generate".equals(action.getValue())) { // NOI18N
+            a = "Setup"; // NOI18N
+        }
+        if (a == null) {
+            throw new BuildException("Unsupported action " + action);
+        }
+        java.setClassname("com.sun.tdk.signaturetest." + a);
         Commandline.Argument arg;
         arg = java.createArg();
         arg.setValue("-FileName");
@@ -130,10 +143,8 @@ public class Sigtest extends Task {
         }
         
         
-        if (additionArgs != null) {
-            arg = java.createArg();
-            arg.setLine(additionArgs);
-        }
+        arg = java.createArg();
+        arg.setLine("-static");
         log("Packages: " + packages);
         StringTokenizer packagesTokenizer = new StringTokenizer(packages,",");
         while (packagesTokenizer.hasMoreTokens()) {
@@ -166,6 +177,16 @@ public class Sigtest extends Task {
             if (outputFile != null) {
                 outputFile.delete();
             }
+        }
+    }
+
+    public static final class ActionType extends EnumeratedAttribute {
+        public String[] getValues () {
+            return new String[] { 
+                "generate",
+                "check",
+                "strictcheck",
+            };
         }
     }
 

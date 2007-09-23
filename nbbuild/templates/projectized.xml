@@ -646,8 +646,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
-                 additionalArgs="-static"
-                 action="Setup"
+                 action="generate"
                  packages="${sigtest.public.packages}"
                  failonerror="${sigtest.gen.fail.on.error}"
         />
@@ -657,8 +656,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
-                 additionalArgs="-static -mode bin"
-                 action="SignatureTest"
+                 action="strictcheck"
                  packages="${sigtest.public.packages}"
                  failonerror="${sigtest.fail.on.error}"
         />
