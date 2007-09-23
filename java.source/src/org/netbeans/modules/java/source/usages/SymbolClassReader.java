@@ -58,6 +58,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 
 import javax.lang.model.element.ElementKind;
@@ -400,53 +401,95 @@ public class SymbolClassReader extends JavadocClassReader {
         enterMember(owner, innerClass);
     }
 
-    private List<TypeVar> readTypeParamsWithName(Reader r, Symbol owner) throws IOException {
-        List<TypeVar> result = List.<TypeVar>nil();
+    private List<TypeVar> readTypeParams(Symbol owner, Reader r, boolean sigEnterPhase) throws IOException {
         int read;
-        
-        while ((read =r.read()) != '>') {
+        List<TypeVar> result = List.<TypeVar>nil();
+        while ((read = r.read()) != '>') {
             clearBuffer();
-            
+
             addCharToBuffer((char) read);
-            
+
             while ((read = r.read()) != ':') {
                 addCharToBuffer((char) read);
             }
-            
+
             Name typeName = findName(buffer, bufferLength());
-            
+
             TypeVar tvar = null;
-            List<Type> last = null;
-            for (List<Type> l = missingTypeVariables; l.nonEmpty(); l = l.tail) {
-                if (typeName == l.head.tsym.name) {
-                    tvar = (TypeVar)l.head;
-                    if (last != null)
-                        last.tail = l.tail;
-                    else
-                        missingTypeVariables = l.tail;
-                    break;
+            
+            if (sigEnterPhase) {
+                List<Type> last = null;
+                for (List<Type> l = missingTypeVariables; l.nonEmpty(); l = l.tail) {
+                    if (typeName == l.head.tsym.name) {
+                        tvar = (TypeVar) l.head;
+                        if (last != null) {
+                            last.tail = l.tail;
+                        } else {
+                            missingTypeVariables = l.tail;
+                        }
+                        break;
+                    }
+                    last = l;
                 }
-                last = l;
+                if (tvar == null) {
+                    tvar = new TypeVar(typeName, owner, syms.botType);
+                }
+                typevars.enter(tvar.tsym);
+            } else {
+                tvar = (TypeVar) findTypeVar(typeName);
             }
-            if (tvar == null)
-                tvar = new TypeVar(typeName, owner, syms.botType);
-            
-            typevars.enter(tvar.tsym);
-            
+
             List<Type> bounds = List.<Type>nil();
-            
+
             while ((read = r.read()) != ';') {
                 bounds = bounds.prepend(readType(r, read));
             }
-            
+
             bounds = bounds.reverse();
-            
-            types.setBounds(tvar, bounds, null);
-            
+
+            if (!sigEnterPhase) {
+                types.setBounds(tvar, bounds, null);
+            }
+
             result = result.prepend(tvar);
         }
+
+        return result;
+    }
+
+    private List<TypeVar> readTypeParamsWithName(Reader r, Symbol owner) throws IOException {
+        LoggingReader lr = new LoggingReader(r);
+        
+        readTypeParams(owner, lr, true);
+        StringReader copy = new StringReader(lr.logged.toString());
+        List<TypeVar> result = readTypeParams(owner, copy, false);
+        
+        copy.close();
         
         return result.reverse();
+    }
+    
+    private static final class LoggingReader extends Reader {
+
+        private Reader delegateTo;
+        private StringBuilder logged = new StringBuilder();
+
+        public LoggingReader(Reader delegateTo) {
+            this.delegateTo = delegateTo;
+        }
+        
+        @Override
+        public int read(char[] cbuf, int off, int len) throws IOException {
+            int result = delegateTo.read(cbuf, off, len);
+            
+            logged.append(cbuf, off, result);
+            
+            return result;
+        }
+
+        @Override
+        public void close() throws IOException {}
+        
     }
     
     private java.util.List<? extends TypeMirror> readTypeParams(Reader r) throws IOException {

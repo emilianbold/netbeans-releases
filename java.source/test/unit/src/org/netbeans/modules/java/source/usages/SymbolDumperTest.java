@@ -1040,6 +1040,20 @@ public class SymbolDumperTest extends NbTestCase {
         performCompileAgainst("package test; public class test2 {public void x() {test s = null; if (s == null) return;}}", "package test; public interface test {\n}");
     }
     
+    public void testCompileAgainst114755() throws Exception {
+        performCompileAgainst(
+            "package test;\n" + 
+            "public interface test2<E extends test2.Element<E, T>, T extends test2.Type<E, T>> extends test<E, T> {\n" + 
+            "    public static interface Element<E extends test2.Element<E, T>, T extends test2.Type<E, T>> extends test.Element<E, T> {}\n" + 
+            "    public static interface Type<E extends test2.Element<E, T>, T extends test2.Type<E, T>> extends test.Type<E, T> {}\n" + 
+            "}\n", "1.5",
+            "package test;\n" + 
+            "public interface test<E extends test.Element<E, T>, T extends test.Type<E, T>> {\n" + 
+            "    public static interface Element<E extends test.Element<E, T>, T extends test.Type<E, T>> {}\n" + 
+            "    public static interface Type<E extends test.Element<E, T>, T extends test.Type<E, T>> {}\n" + 
+            "}\n", "1.5", false);
+    }
+    
     protected void performCompileAgainst(String what, String against) throws Exception {
         performCompileAgainst(what, "1.5", against, "1.5", true);
     }
