@@ -1,0 +1,75 @@
+
+IMPORT SUMMARY - Ruby.tmbundle
+------------------------------
+
+
+
+The following snippets were skipped because they were all
+assigned to the same tab trigger:
+[eac-] : each_cons(..) { |group| .. }, each_char { |chr| .. }
+[cla] : class << self .. end, class .. end, ClassName = Struct .. do .. end
+[mod] : module .. ClassMethods .. end, module .. module_function .. end, module .. end
+[ass] : assert_send(..), assert_same(..)
+The following  3 snippets were skipped because they were not bound to the Tab key:
+[Embedded Code — #{…}, Hash Pointer — =>, Insert ERb’s <% .. %> or <%= .. %>]
+The following  2 snippets were skipped because they are already included in the IDE:
+[begin, {]
+The following  18 snippets were skipped because they use regular expression
+transformations which is not yet supported:
+[Array, cla, cla-, do, dow, fet, fil, gsu, inj, lam, ope, opt, optp, ste, sub, tim, tra, upt]
+The following  1 snippets were skipped because they use shell commands which is not yet supported:
+[=b]
+
+
+Imported 102 snippets.
+Skipped 24 snippets.
+
+
+Details on modified snippets:
+tc: Stripped out tabStop 2 - contains nested evaluation
+Dir: Stripped out tabStop 1 - contains nested evaluation
+File: Stripped out tabStop 1 - contains nested evaluation
+gre: Stripped out tabStop 1 - contains nested evaluation
+:: Stripped out tabStop 2 - contains nested evaluation
+Md: Stripped out tabStop 1 - contains nested evaluation
+Ml: Stripped out tabStop 1 - contains nested evaluation
+ope: Stripped out tabStop 1 - contains nested evaluation
+Pn-: Stripped out tabStop 1 - contains nested evaluation
+Yd-: Stripped out tabStop 1 - contains nested evaluation
+Yl-: Stripped out tabStop 1 - contains nested evaluation
+
+IMPORT SUMMARY - Rails on Rails.tmbundle
+------------------------------
+
+
+
+The following snippets were skipped because they were all
+assigned to the same tab trigger:
+[log] : logger.info, logger.fatal, logger.debug, logger.warn, logger.error
+[mcol] : Rename Column, Add Column, Remove Column, Remove / Add Column, Create Column in Table
+[mtab] : Drop Table, Create Table, Drop / Create Table, Rename Table
+[verify] : verify — render, verify — redirect
+The following  2 snippets were skipped because they were not bound to the Tab key:
+[params[…], session[…]]
+
+
+Imported 58 snippets.
+Skipped 2 snippets.
+
+
+Details on modified snippets:
+bt: Stripped out tabStop 2 - contains nested evaluation
+habtm: Stripped out tabStop 2 - contains nested evaluation
+hm: Stripped out tabStop 2 - contains nested evaluation
+ho: Stripped out tabStop 2 - contains nested evaluation
+va: Stripped out tabStop 2 - contains nested evaluation
+vaif: Stripped out tabStop 2 - contains nested evaluation
+vc: Stripped out tabStop 2 - contains nested evaluation
+vcif: Stripped out tabStop 2 - contains nested evaluation
+ve: Stripped out tabStop 2 - contains nested evaluation
+veif: Stripped out tabStop 2 - contains nested evaluation
+vl: Stripped out tabStop 3 - contains nested evaluation
+vp: Stripped out tabStop 2 - contains nested evaluation
+vpif: Stripped out tabStop 2 - contains nested evaluation
+vu: Stripped out tabStop 2 - contains nested evaluation
+vuif: Stripped out tabStop 2 - contains nested evaluation
