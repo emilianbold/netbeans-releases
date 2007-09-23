@@ -1938,11 +1938,30 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                     break;
                     
                 case MEMBER_POINTER_OPEN:
-                case UNARY_OPERATOR:
                     if (top2ID == NO_EXP) {
                         popExp();
                         pushExp(CsmCompletionExpression.createEmptyVariable(
                                 bufferStartPos + bufferOffsetDelta + offset));                        
+                    }
+                    break;
+                case UNARY_OPERATOR:
+                    switch (top2ID) {
+                    case NO_EXP:
+                        popExp();
+                        pushExp(CsmCompletionExpression.createEmptyVariable(
+                                bufferStartPos + bufferOffsetDelta + offset)); 
+                        break;
+                    case DOT_OPEN:
+                    case ARROW_OPEN:
+                    case SCOPE_OPEN:
+                        if (top.getParameterCount() == 0 &&
+                            top.getTokenCount() == 1 && 
+                            top.getTokenID(0).getNumericID() == CCTokenContext.NEG_ID) {
+                            // this is call of destructor after ., ::, ->
+                            // consider as VARIABLE expression
+                            top.setExpID(VARIABLE);
+                            reScan = true;
+                        }
                     }
                     break;                    
                 }
