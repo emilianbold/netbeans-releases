@@ -46,6 +46,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     protected final static String SYS_OPEN = "<"; // NOI18N
     protected final static String SYS_CLOSE = ">"; // NOI18N
     protected final static String SLASH = "/"; // NOI18N
+    protected final static String PARENT_COLOR_TAG = "<font color=\"#557755\">"; // NOI18N
     
     private final static int MAX_DISPLAYED_DIR_LENGTH = 35;
     private final static int NR_DISPLAYED_FRONT_DIRS = 2;
@@ -114,9 +115,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
             Completion.get().hideDocumentation();
             Completion.get().hideCompletion();
             int caretOffset = component.getSelectionEnd();
-            int lastPos = substituteText(component, substitutionOffset, caretOffset - substitutionOffset, isFolder() ? SLASH : null);
-            if (this.isFolder() && lastPos > -1) {
-                component.setCaretPosition(lastPos - 1);
+            substituteText(component, substitutionOffset, caretOffset - substitutionOffset, isFolder() ? SLASH : null);
+            if (this.isFolder()) {
                 Completion.get().showCompletion();
             }
         }
@@ -159,7 +159,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                         Completion.get().hideDocumentation();
                         Completion.get().hideCompletion();
                         substituteText(component, substitutionOffset, len, SLASH);
-                        evt.consume();
+                        evt.consume();                        
                         Completion.get().showCompletion();
                     }
                     break;
@@ -188,8 +188,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         return CompletionUtilities.getPreferredWidth(getLeftHtmlText(true), getRightHtmlText(false), g, defaultFont);
     }
     
-    public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
-        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(true), getRightHtmlText(true), g, defaultFont, defaultColor, width, height, selected);
+    public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {        
+        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(true), PARENT_COLOR_TAG + getRightHtmlText(true), g, defaultFont, defaultColor, width, height, selected);
     }
 
     @Override
@@ -229,6 +229,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         builder.append(SLASH).append(getChildSubdir());
         int len = builder.length();
         if (shrink && len > MAX_DISPLAYED_DIR_LENGTH) {
+            
             StringBuilder reverse = new StringBuilder(builder).reverse();
             int st = 0;
             while (builder.charAt(st) == SLASH.charAt(0)) {
@@ -255,10 +256,10 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                 }
             }
         }
-        return (shrink ? "<font color=\"#557755\">" : "") + builder.toString(); // NOI18N
+        return builder.toString(); // NOI18N
     }
     
-    protected int substituteText(JTextComponent c, int offset, int len, String toAdd) {
+    protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
         BaseDocument doc = (BaseDocument)c.getDocument();
         String text = getItemText();
         if (text != null) {
@@ -305,14 +306,15 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                 Position lastPosition = doc.createPosition(offset + len);
                 doc.remove(offset, len);
                 doc.insertString(position.getOffset(), text, null);
-                return lastPosition.getOffset();
+                if (c != null && this.isFolder()) {
+                    c.setCaretPosition(lastPosition.getOffset() - 1);
+                }                
             } catch (BadLocationException e) {
                 // Can't update
             } finally {
                 doc.atomicUnlock();
             }
         }
-        return -1;
     }
 
     protected boolean isFolder() {
