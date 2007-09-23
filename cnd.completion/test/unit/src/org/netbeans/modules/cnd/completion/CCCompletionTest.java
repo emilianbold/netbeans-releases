@@ -34,6 +34,7 @@ public class CCCompletionTest extends BaseTestSuite {
         
         this.addTestSuite(CheckModelTestCase.class);
         this.addTestSuite(CCBasicCompletionTestCase.class);
+        this.addTestSuite(ClassContentTestCase.class);
         this.addTestSuite(TemplateSpecializationTestCase.class);
         this.addTestSuite(NamespacesTestCase.class);
         this.addTestSuite(InheritanceTestCase.class);
