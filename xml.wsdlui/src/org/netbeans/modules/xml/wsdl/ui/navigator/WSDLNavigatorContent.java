@@ -213,7 +213,11 @@ public class WSDLNavigatorContent extends JPanel
 
     @Override
     public boolean requestFocusInWindow() {
-        return treeView.requestFocusInWindow();
+        boolean ret = super.requestFocusInWindow();
+        if (treeView != null) {
+            return treeView.requestFocusInWindow();
+        }
+        return ret;
     }
 
     public void run() {
@@ -250,7 +254,6 @@ public class WSDLNavigatorContent extends JPanel
                 boolean isActivatedTC = (tc == TopComponent.getRegistry().getActivated());
                 if (CURRENT_NODES.equals(property) && !isActivatedTC) {
                     selectActivatedNodes();
-                    validate();
                 } else if (ExplorerManager.PROP_SELECTED_NODES.equals(property)) {
                     Node[] filteredNodes = (Node[])event.getNewValue();
                     if (filteredNodes != null && filteredNodes.length >= 1) {
@@ -293,6 +296,7 @@ public class WSDLNavigatorContent extends JPanel
                             selNodes.toArray(new Node[selNodes.size()]));
                 } catch (PropertyVetoException pve) {
                 }
+                validate();
             }
         
         });
@@ -326,13 +330,14 @@ public class WSDLNavigatorContent extends JPanel
         EventQueue.invokeLater(this);
     }
 
-    public void release() {
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
         //cleanup all the elements in the navigator.
         removeAll();
         validate();
-        Node dummyNode = new AbstractNode(Children.LEAF);
-        getExplorerManager().setRootContext(dummyNode);
-        getExplorerManager().setExploredContext(dummyNode);
+        getExplorerManager().setRootContext(Node.EMPTY);
+        getExplorerManager().setExploredContext(Node.EMPTY);
         
         rootNode = null;
         treeView = null;

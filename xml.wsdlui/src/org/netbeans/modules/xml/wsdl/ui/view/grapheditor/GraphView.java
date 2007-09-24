@@ -122,7 +122,7 @@ public class GraphView extends JPanel {
             public void sceneValidated () {
                 int width = panel.getViewport().getWidth();
                 Rectangle bounds = contentWidget.getBounds();
-                if (width < scene.getBounds().width && bounds != null && bounds.width != width) {
+                if (width <= scene.getBounds().width && bounds != null && bounds.width != width) {
                     contentWidget.setMinimumSize(new Dimension(width, 0));
                     scene.validate();
                 }

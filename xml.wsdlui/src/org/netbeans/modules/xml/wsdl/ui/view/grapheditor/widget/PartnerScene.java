@@ -89,7 +89,7 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         focusAction = ActionFactory.createCycleFocusAction(mycycleFocusProvider);
 
         getPriorActions().addAction(focusAction);
-        getActions().addAction(selectAction);
+        //getActions().addAction(selectAction);
         getActions().addAction(buttonAction);
         getActions().addAction(dndAction);
         

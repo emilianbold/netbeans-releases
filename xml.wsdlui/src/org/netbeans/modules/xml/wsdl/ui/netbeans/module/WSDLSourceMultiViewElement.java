@@ -44,6 +44,7 @@ import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLElementNode;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -412,6 +413,13 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
         WSDLModel model = support.getModel();
         if (model == null || model.getState()!= WSDLModel.State.VALID) return null;
 
+        if (rootNode != null) {
+            //the definitions may have changed.
+            WSDLElementNode node = rootNode.getCookie(WSDLElementNode.class);
+            if (node != null && !node.isSameAsMyWSDLElement(model.getDefinitions())) {
+                rootNode = null;
+            }
+        }
         if (rootNode == null) {
             rootNode = NodesFactory.getInstance().create(model.getDefinitions());
         }

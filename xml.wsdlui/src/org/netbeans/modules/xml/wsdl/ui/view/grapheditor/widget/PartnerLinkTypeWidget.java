@@ -61,7 +61,6 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         implements ExpandableWidget, DnDHandler {
 
     private static final boolean EXPANDED_DEFAULT = true;
-    private final PartnerLinkType mPartnerLinkType;
     private ImageLabelWidget mLabelWidget;
 
     private PartnerLinkTypeContentWidget mContentWidget;
@@ -76,7 +75,6 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         super(scene, partnerLinkType, lookup);
         //mSizeRect = scene.getBounds();
         assert partnerLinkType != null : "partnerLinkTypeWidget cannot be created";
-        mPartnerLinkType = partnerLinkType;
         init();
     }
 
@@ -100,10 +98,10 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
             		return;
             	}
 
-            	WSDLModel model = mPartnerLinkType.getModel();
+            	WSDLModel model = getWSDLComponent().getModel();
             	try {
             		if (model.startTransaction()) {
-            			mPartnerLinkType.setName(text);
+            			getWSDLComponent().setName(text);
             		}
             	} finally {
             		model.endTransaction();
@@ -118,7 +116,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
             }
 
             public String getText(Widget widget) {
-                return mPartnerLinkType.getName();
+                return getWSDLComponent().getName();
             }
 
         }, null);
@@ -158,7 +156,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         
         mHeaderWidget.setMinimumSize(new Dimension(0, 30));
 
-        mContentWidget = new PartnerLinkTypeContentWidget(getScene(), mPartnerLinkType);
+        mContentWidget = new PartnerLinkTypeContentWidget(getScene(), getWSDLComponent());
         addChild(mContentWidget);
         mContentWidget.setVisible(ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT));
 
@@ -166,7 +164,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     }
 
     private ImageLabelWidget createLabelWidget() {
-        ImageLabelWidget labelWidget = new ImageLabelWidget(getScene(), IMAGE, mPartnerLinkType.getName());
+        ImageLabelWidget labelWidget = new ImageLabelWidget(getScene(), IMAGE, getName());
         labelWidget.setBorder(new EmptyBorder(4, 4, 1, 1));
         labelWidget.getActions().addAction(editorAction);
         return labelWidget;

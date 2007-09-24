@@ -51,29 +51,22 @@ import org.openide.windows.TopComponent;
  */
 public class TreeEditorView extends JPanel
         implements ExplorerManager.Provider, Lookup.Provider,
-        PropertyChangeListener/*, HelpCtx.Provider*/ {
+        PropertyChangeListener {
     
     /**
      * 
      */
     private static final long serialVersionUID = -6844839168489591934L;
     
-    private BeanTreeView btv;
-    
     private ExplorerManager explorerManager;
     private transient Lookup lookup;
     
-    public static final String PROP_VALID_NODE_SELECTED = "PROP_VALID_NODE_SELECTED";//NOI18N
-    
-    public static final String PROP_DUPLICATE_NODE_SELECTED = "PROP_DUPLICATE_NODE_SELECTED";//NOI18N
-    
-    private Node mRootNode;
-    
     private WSDLModel mModel;
+    
+    private BeanTreeView btv;
 
     public TreeEditorView(WSDLModel model) {
         this.mModel = model;
-        initGUI();
     }
     
     private void initGUI() {
@@ -101,15 +94,14 @@ public class TreeEditorView extends JPanel
         // Must do this when the component is in the UI tree.
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                if (btv != null) {
-                    populateRootNode(mModel.getDefinitions());
-                    //Initially expand root node and the folder nodes below it.
-                    btv.expandNode(mRootNode);
-                    Utility.expandNodes(btv, 1, mRootNode);
-                    try {
-                        explorerManager.setSelectedNodes(new Node[] {mRootNode});
-                    } catch (PropertyVetoException pve) {
-                    }
+                populateRootNode(mModel.getDefinitions());
+                //Initially expand root node and the folder nodes below it.
+                Node rootNode = explorerManager.getRootContext();
+                btv.expandNode(rootNode);
+                Utility.expandNodes(btv, 1, rootNode);
+                try {
+                    explorerManager.setSelectedNodes(new Node[] {rootNode});
+                } catch (PropertyVetoException pve) {
                 }
             }
         });
@@ -125,11 +117,8 @@ public class TreeEditorView extends JPanel
     
     private void populateRootNode(Definitions definitions) {
         if (definitions != null) {
-            if (mRootNode == null) {
-                Node dNode = NodesFactory.getInstance().create(definitions);
-                mRootNode = dNode;
-            }
-            explorerManager.setRootContext( mRootNode );
+            Node rootNode = NodesFactory.getInstance().create(definitions);
+            explorerManager.setRootContext( rootNode );
         }
     }
     
@@ -217,12 +206,16 @@ public class TreeEditorView extends JPanel
     }
     
     @Override
+    public void addNotify() {
+        super.addNotify();
+        initGUI();
+    }
+    
+    @Override
     public void removeNotify() {
         super.removeNotify();
         explorerManager.removePropertyChangeListener(this);
         removeAll();
         btv = null;
-        mRootNode = null;
-        
     }
 }

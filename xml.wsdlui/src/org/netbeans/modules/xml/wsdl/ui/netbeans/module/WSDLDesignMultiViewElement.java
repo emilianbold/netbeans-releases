@@ -20,6 +20,8 @@ package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -55,6 +57,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
@@ -66,7 +69,7 @@ import org.openide.windows.TopComponent;
  * @author Nathan Fiedler
  */
 public class WSDLDesignMultiViewElement extends TopComponent
-        implements MultiViewElement, ExplorerManager.Provider {
+        implements MultiViewElement, ExplorerManager.Provider, PropertyChangeListener {
     private static final long serialVersionUID = -655912409997381426L;
     private static final String ACTIVATED_NODES = "activatedNodes";//NOI18N
     /** The WSDL DataObject this view represents. */
@@ -80,6 +83,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
     private transient JToolBar mToolbar;
     private ActivatedNodesMediator nodesMediator;
     private CookieProxyLookup cpl;
+    private WSDLModel wsdlModel;
     
     public WSDLDesignMultiViewElement() {
         super();
@@ -150,6 +154,15 @@ public class WSDLDesignMultiViewElement extends TopComponent
         setLayout(new BorderLayout());
     }
 
+    private WSDLModel getWSDLModel() {
+        if (wsdlModel != null) {
+            return wsdlModel;
+        }
+        wsdlModel = wsdlDataObject.getWSDLEditorSupport().getModel();
+        wsdlModel.addPropertyChangeListener(WeakListeners.propertyChange(this, wsdlModel));
+        return wsdlModel;
+    }
+    
     private void cleanup() {
         try {
             explorerManager.setSelectedNodes(new Node[0]);
@@ -165,7 +178,15 @@ public class WSDLDesignMultiViewElement extends TopComponent
         if (mToolbar != null) mToolbar.removeAll();
         mToolbar = null;
         removeAll();
-        graphComponent = null;
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (WSDLModel.STATE_PROPERTY.equals(evt.getPropertyName())) {
+            WSDLModel.State state = (WSDLModel.State) evt.getNewValue();
+            if (state != null) {
+                initUI();
+            }
+        }
     }
     
     public ExplorerManager getExplorerManager() {
@@ -221,7 +242,6 @@ public class WSDLDesignMultiViewElement extends TopComponent
     public void componentActivated() {
         super.componentActivated();
         ExplorerUtils.activateActions(explorerManager, true);
-        wsdlDataObject.getWSDLEditorSupport().syncModel();
         WSDLMultiViewFactory.updateGroupVisibility(WSDLDesignMultiViewDesc.PREFERRED_ID);
         // Ensure the graph widgets have the focus.
         // Also helps to make F1 open the correct help topic.
@@ -251,8 +271,11 @@ public class WSDLDesignMultiViewElement extends TopComponent
      * Construct the user interface.
      */
     private void initUI() {
-        WSDLEditorSupport editor = wsdlDataObject.getWSDLEditorSupport();
-        WSDLModel wsdlModel = editor.getModel();
+        WSDLModel wsdlModel = getWSDLModel();
+        if (mToolbar != null) {
+            mToolbar.removeAll();
+            mToolbar = null;
+        }
         if (wsdlModel != null &&
                 wsdlModel.getState() == WSDLModel.State.VALID) {
             // Construct the standard editor interface.
@@ -286,11 +309,13 @@ public class WSDLDesignMultiViewElement extends TopComponent
     }
 
     public javax.swing.JComponent getToolbarRepresentation() {
+        //When IDE loads existing files, the returning null toolbar throws AssertionError.
+        //Create a toolbar regardless of if model is valid or not
         if (mToolbar == null) {
-            WSDLModel model = wsdlDataObject.getWSDLEditorSupport().getModel();
+            mToolbar = new JToolBar();
+            mToolbar.setFloatable(false);
+            WSDLModel model = getWSDLModel();
             if (model != null && model.getState() == WSDLModel.State.VALID) {
-                mToolbar = new JToolBar();
-                mToolbar.setFloatable(false);
                 mToolbar.addSeparator();
                 if (graphComponent != null) graphComponent.addToolbarActions(mToolbar);
 
@@ -330,17 +355,19 @@ public class WSDLDesignMultiViewElement extends TopComponent
             initialize();
             if (graphComponent == null) initUI();
         }
-        try {
-            // By default the widgets are visible, so only need to make
-            // them not visible, if the settings dictate.
-            if (!in.readBoolean()) {
-                graphComponent.setCollaborationsVisible(false);
+        if (graphComponent != null) {
+            try {
+                // By default the widgets are visible, so only need to make
+                // them not visible, if the settings dictate.
+                if (!in.readBoolean()) {
+                    graphComponent.setCollaborationsVisible(false);
+                }
+                if (!in.readBoolean()) {
+                    graphComponent.setMessagesVisible(false);
+                }
+            } catch (IOException ioe) {
+                // Visibility settings must not have been saved.
             }
-            if (!in.readBoolean()) {
-                graphComponent.setMessagesVisible(false);
-            }
-        } catch (IOException ioe) {
-            // Visibility settings must not have been saved.
         }
     }
 
@@ -349,8 +376,15 @@ public class WSDLDesignMultiViewElement extends TopComponent
         super.writeExternal(out);
         out.writeObject(wsdlDataObject);
         // Persist the visibility of the widgets.
-        out.writeBoolean(graphComponent.isCollaborationsShowing());
-        out.writeBoolean(graphComponent.isMessagesShowing());
+        boolean collaborationsShowing = false;
+        boolean messagesShowing = true;
+        
+        if (graphComponent != null) {
+            collaborationsShowing = graphComponent.isCollaborationsShowing();
+            messagesShowing = graphComponent.isMessagesShowing();
+        }
+        out.writeBoolean(collaborationsShowing);
+        out.writeBoolean(messagesShowing);
     }
 
 }

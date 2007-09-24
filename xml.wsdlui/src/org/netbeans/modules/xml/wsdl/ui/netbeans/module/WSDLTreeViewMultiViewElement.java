@@ -22,7 +22,10 @@ package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -60,6 +63,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -72,7 +76,7 @@ import org.openide.windows.TopComponent;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class WSDLTreeViewMultiViewElement extends TopComponent
-        implements MultiViewElement, ExplorerManager.Provider {
+        implements MultiViewElement, ExplorerManager.Provider, PropertyChangeListener {
     private static final long serialVersionUID = -655912409997381426L;
     private static final String ACTIVATED_NODES = "activatedNodes";//NOI18N
     private ExplorerManager manager;
@@ -83,6 +87,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     private transient JToolBar mToolbar;
     private ActivatedNodesMediator nodesMediator;
     private CookieProxyLookup cpl;
+    private WSDLModel wsdlModel;
 
     public WSDLTreeViewMultiViewElement() {
         super();
@@ -153,6 +158,15 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     }
 
     
+    private WSDLModel getWSDLModel() {
+        if (wsdlModel != null) {
+            return wsdlModel;
+        }
+        wsdlModel = mObj.getWSDLEditorSupport().getModel();
+        wsdlModel.addPropertyChangeListener(WeakListeners.propertyChange(this, wsdlModel));
+        return wsdlModel;
+    }
+    
     private void cleanup() {
         try {
             manager.setSelectedNodes(new Node[0]);
@@ -168,6 +182,15 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         if (mToolbar != null) mToolbar.removeAll();
         mToolbar = null;
         removeAll();
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (WSDLModel.STATE_PROPERTY.equals(evt.getPropertyName())) {
+            WSDLModel.State state = (WSDLModel.State) evt.getNewValue();
+            if (state != null) {
+                initUI();
+            }
+        }
     }
     
     public ExplorerManager getExplorerManager() {
@@ -227,7 +250,6 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     public void componentActivated() {
         super.componentActivated();
         ExplorerUtils.activateActions(manager, true);
-        mObj.getWSDLEditorSupport().syncModel();
         WSDLMultiViewFactory.updateGroupVisibility(WSDLTreeViewMultiViewDesc.PREFERRED_ID);
         // Ensure the graph widgets have the focus.
         // Also helps to make F1 open the correct help topic.
@@ -278,10 +300,11 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
      * Construct the user interface.
      */
     private void initUI() {
-        WSDLEditorSupport editor = mObj.getWSDLEditorSupport();
-        WSDLModel wsdlModel = null;
-        String errorMessage = null;
-        wsdlModel = editor.getModel();
+        WSDLModel wsdlModel = getWSDLModel();
+        if (mToolbar != null) {
+            mToolbar.removeAll();
+            mToolbar = null;
+        }
         if (wsdlModel != null &&
                 wsdlModel.getState() == WSDLModel.State.VALID) {
             // Construct the standard editor interface.
@@ -308,6 +331,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
             return;
         }
 
+        String errorMessage = null;
         // If it comes here, either the model is not well-formed or invalid.
         if (wsdlModel == null ||
                 wsdlModel.getState() == WSDLModel.State.NOT_WELL_FORMED) {
@@ -330,11 +354,13 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     }
 
     public javax.swing.JComponent getToolbarRepresentation() {
+        //When IDE loads existing files, the returning null toolbar throws AssertionError.
+        //Create a toolbar regardless of if model is valid or not
         if (mToolbar == null) {
-            WSDLModel model = mObj.getWSDLEditorSupport().getModel();
+            mToolbar = new JToolBar();
+            mToolbar.setFloatable(false);
+            WSDLModel model = getWSDLModel();
             if (model != null && model.getState() == WSDLModel.State.VALID) {
-                mToolbar = new JToolBar();
-                mToolbar.setFloatable(false);
                 if (categoryPane != null) {
                     mToolbar.addSeparator();
                     categoryPane.populateToolbar(mToolbar);

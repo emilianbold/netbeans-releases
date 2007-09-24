@@ -29,6 +29,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
@@ -227,11 +228,12 @@ public class PartnerLinkTypeContentWidget extends Widget implements PropertyChan
     @Override
     protected void notifyAdded() {
         super.notifyAdded();
-        if (getWSDLComponent() != null) {
+        WSDLComponent comp = getWSDLComponent();
+        if (comp != null) {
             if (weakModelListener == null) {
-                weakModelListener = WeakListeners.propertyChange(this, getWSDLComponent().getModel());
+                weakModelListener = WeakListeners.propertyChange(this, comp.getModel());
             }
-            getWSDLComponent().getModel().addPropertyChangeListener(weakModelListener);
+            comp.getModel().addPropertyChangeListener(weakModelListener);
         }
     }
     
