@@ -154,8 +154,27 @@ public class GetParseData {
 
             // PENDING - we may need to process tag files somehow
             //	TagFileProcessor tfp = new TagFileProcessor();
-            //	tfp.loadTagFiles(comp, pageNodes);
-
+            //	tfp.loadTagFiles(comp, pageNodes);          
+            
+            // Try to obtain tagInfo if the page is a tag file
+            if (ctxt.isTagFile()) {
+                // find out the dir for fake tag library
+                String tagDir = ctxt.getJspFile();
+                int lastIndex = tagDir.lastIndexOf('/');
+                int lastDotIndex = tagDir.lastIndexOf('.');
+                String tagName;
+                if (lastDotIndex > 0) {
+                    tagName = tagDir.substring(lastIndex + 1, lastDotIndex);   
+                }
+                else {
+                    tagName = tagDir.substring(lastIndex + 1);
+                } 
+                tagDir = tagDir.substring(0, tagDir.lastIndexOf('/') + 1);
+                
+                // we need to compile the tag file to a virtual tag library to obtain its tag info
+                ImplicitTagLibraryInfo tagLibrary = new ImplicitTagLibraryInfo(ctxt, parserCtl, "virtual", tagDir, errDispatcher);  //NOI18N
+                ctxt.setTagInfo(tagLibrary.getTagFile(tagName).getTagInfo());
+            }
             //        long t3=System.currentTimeMillis();
 
             // Determine which custom tag needs to declare which scripting vars
@@ -272,6 +291,10 @@ public class GetParseData {
         nbPageInfo.setBeans(createBeanData(pageInfo.getBeanRepository()));
         // the xml view
         nbPageInfo.setXMLView(xmlView);
+      
+        System.out.println("nastavuji tag do pageinfa: " + ctxt.getTagInfo());
+        nbPageInfo.setTagFile(ctxt.isTagFile());
+        nbPageInfo.setTagInfo(ctxt.getTagInfo());
         
         return nbPageInfo;
     }

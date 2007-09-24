@@ -129,6 +129,10 @@ public class ParseTest extends NbTestCase {
         log("Coda: " + result.getPageInfo().getIncludeCoda());        
     }
     
+     public void testTagFileAttribute() throws Exception {
+        parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/WEB-INF/tags/displayProducts.tag");
+    }
+     
     // test for issue #70426
     public void testGetTagLibMap70426() throws Exception{
         Object o = ProjectSupport.openProject(Manager.getWorkDirPath()+"/emptyWebProject");

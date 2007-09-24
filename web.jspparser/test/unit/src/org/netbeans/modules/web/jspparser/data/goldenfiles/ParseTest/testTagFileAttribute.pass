@@ -1,0 +1,609 @@
+--------- JspParserAPI.parseResult(), success: true
+ ---- PAGEINFO
+----- PageInfo -----
+      imports:
+        javax.servlet.*
+        javax.servlet.http.*
+        javax.servlet.jsp.*
+      dependants:
+      taglibsMap:
+        tag library: http://java.sun.com/jsp/jstl/core
+            tlibversion : null
+            jspversion  : 2.0
+            shortname   : c
+            urn         : http://java.sun.com/jsp/jstl/core
+            info        : JSTL 1.1 core library
+            uri         : http://java.sun.com/jsp/jstl/core
+              tag name     : catch
+                  class    : org.apache.taglibs.standard.tag.common.core.CatchTag
+                  attribs  : [var]
+              tag name     : choose
+                  class    : org.apache.taglibs.standard.tag.common.core.ChooseTag
+                  attribs  : []
+              tag name     : if
+                  class    : org.apache.taglibs.standard.tag.rt.core.IfTag
+                  attribs  : [test, var, scope]
+              tag name     : import
+                  class    : org.apache.taglibs.standard.tag.rt.core.ImportTag
+                  attribs  : [url, var, scope, varReader, context, charEncoding]
+              tag name     : forEach
+                  class    : org.apache.taglibs.standard.tag.rt.core.ForEachTag
+                  attribs  : [items, begin, end, step, var, varStatus]
+              tag name     : forTokens
+                  class    : org.apache.taglibs.standard.tag.rt.core.ForTokensTag
+                  attribs  : [items, delims, begin, end, step, var, varStatus]
+              tag name     : out
+                  class    : org.apache.taglibs.standard.tag.rt.core.OutTag
+                  attribs  : [value, default, escapeXml]
+              tag name     : otherwise
+                  class    : org.apache.taglibs.standard.tag.common.core.OtherwiseTag
+                  attribs  : []
+              tag name     : param
+                  class    : org.apache.taglibs.standard.tag.rt.core.ParamTag
+                  attribs  : [name, value]
+              tag name     : redirect
+                  class    : org.apache.taglibs.standard.tag.rt.core.RedirectTag
+                  attribs  : [url, context]
+              tag name     : remove
+                  class    : org.apache.taglibs.standard.tag.common.core.RemoveTag
+                  attribs  : [var, scope]
+              tag name     : set
+                  class    : org.apache.taglibs.standard.tag.rt.core.SetTag
+                  attribs  : [var, value, target, property, scope]
+              tag name     : url
+                  class    : org.apache.taglibs.standard.tag.rt.core.UrlTag
+                  attribs  : [var, scope, value, context]
+              tag name     : when
+                  class    : org.apache.taglibs.standard.tag.rt.core.WhenTag
+                  attribs  : [test]
+      prefixMapper:
+        c -> http://java.sun.com/jsp/jstl/core
+      approxXmlPrefixMapper :
+      language            : java
+      xtends              : org.apache.jasper.runtime.HttpJspBase
+      contentType         : text/html
+      session             : true
+      buffer              : 8192
+      autoFlush           : true
+      threadSafe          : true
+      isErrorPage         : false
+      errorPage           : null
+      scriptless          : true
+      scriptingInvalid    : false
+      elIgnored           : false
+      omitXmlDecl         : null
+      isJspPrefixHijacked : false
+      doctypeName         : null
+      doctypeSystem       : null
+      doctypePublic       : null
+      hasJspRoot          : false
+      prefixes:
+      includePrelude:
+      includeCoda:
+      pluginDcls:
+      beans:
+      Tag file:   
+      tag name     : displayProducts
+          class    : org.apache.jsp.tag.web.displayProducts_tag
+          attribs  : [normalPrice, onSale]
+ ------- XML View (constructed from the original data structure) -----
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root
+  version="2.0"
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  xmlns:jsp="http://java.sun.com/JSP/Page"
+  jsp:id="0"
+>
+<jsp:directive.tag
+  jsp:id="1"
+  pageEncoding="UTF-8"
+/>
+<jsp:text
+  jsp:id="2"
+>
+<![CDATA[
+<!--
+  Copyright 2004 The Apache Software Foundation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+]]>
+</jsp:text>
+<jsp:text
+  jsp:id="3"
+>
+<![CDATA[
+
+]]>
+</jsp:text>
+<jsp:directive.attribute
+  name="normalPrice"
+  fragment="true"
+  jsp:id="4"
+/>
+<jsp:text
+  jsp:id="5"
+>
+<![CDATA[
+
+]]>
+</jsp:text>
+<jsp:directive.attribute
+  name="onSale"
+  fragment="true"
+  jsp:id="6"
+/>
+<jsp:text
+  jsp:id="7"
+>
+<![CDATA[
+
+]]>
+</jsp:text>
+<jsp:directive.variable
+  name-given="name"
+  jsp:id="8"
+/>
+<jsp:text
+  jsp:id="9"
+>
+<![CDATA[
+
+]]>
+</jsp:text>
+<jsp:directive.variable
+  name-given="price"
+  jsp:id="10"
+/>
+<jsp:text
+  jsp:id="11"
+>
+<![CDATA[
+
+]]>
+</jsp:text>
+<jsp:directive.variable
+  name-given="origPrice"
+  jsp:id="12"
+/>
+<jsp:text
+  jsp:id="13"
+>
+<![CDATA[
+
+]]>
+</jsp:text>
+<jsp:directive.variable
+  name-given="salePrice"
+  jsp:id="14"
+/>
+<jsp:text
+  jsp:id="15"
+>
+<![CDATA[
+
+
+]]>
+</jsp:text>
+<jsp:text
+  jsp:id="16"
+>
+<![CDATA[
+<table border="1">
+  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="17"
+>
+<![CDATA[
+<tr>
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="18"
+>
+<![CDATA[
+<td> 
+      ]]>
+</jsp:text>
+<c:set
+  var="name"
+  value="Hand-held Color PDA"
+  jsp:id="19"
+/>
+<jsp:text
+  jsp:id="20"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<c:set
+  var="price"
+  value="$298.86"
+  jsp:id="21"
+/>
+<jsp:text
+  jsp:id="22"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<jsp:invoke
+  fragment="normalPrice"
+  jsp:id="23"
+/>
+<jsp:text
+  jsp:id="24"
+>
+<![CDATA[
+
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="25"
+>
+<![CDATA[
+</td>
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="26"
+>
+<![CDATA[
+<td> 
+      ]]>
+</jsp:text>
+<c:set
+  var="name"
+  value="4-Pack 150 Watt Light Bulbs"
+  jsp:id="27"
+/>
+<jsp:text
+  jsp:id="28"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<c:set
+  var="origPrice"
+  value="$2.98"
+  jsp:id="29"
+/>
+<jsp:text
+  jsp:id="30"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<c:set
+  var="salePrice"
+  value="$2.32"
+  jsp:id="31"
+/>
+<jsp:text
+  jsp:id="32"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<jsp:invoke
+  fragment="onSale"
+  jsp:id="33"
+/>
+<jsp:text
+  jsp:id="34"
+>
+<![CDATA[
+
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="35"
+>
+<![CDATA[
+</td>
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="36"
+>
+<![CDATA[
+<td> 
+      ]]>
+</jsp:text>
+<c:set
+  var="name"
+  value="Digital Cellular Phone"
+  jsp:id="37"
+/>
+<jsp:text
+  jsp:id="38"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<c:set
+  var="price"
+  value="$68.74"
+  jsp:id="39"
+/>
+<jsp:text
+  jsp:id="40"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<jsp:invoke
+  fragment="normalPrice"
+  jsp:id="41"
+/>
+<jsp:text
+  jsp:id="42"
+>
+<![CDATA[
+
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="43"
+>
+<![CDATA[
+</td>
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="44"
+>
+<![CDATA[
+<td> 
+      ]]>
+</jsp:text>
+<c:set
+  var="name"
+  value="Baby Grand Piano"
+  jsp:id="45"
+/>
+<jsp:text
+  jsp:id="46"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<c:set
+  var="price"
+  value="$10,800.00"
+  jsp:id="47"
+/>
+<jsp:text
+  jsp:id="48"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<jsp:invoke
+  fragment="normalPrice"
+  jsp:id="49"
+/>
+<jsp:text
+  jsp:id="50"
+>
+<![CDATA[
+
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="51"
+>
+<![CDATA[
+</td>
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="52"
+>
+<![CDATA[
+<td> 
+      ]]>
+</jsp:text>
+<c:set
+  var="name"
+  value="Luxury Car w/ Leather Seats"
+  jsp:id="53"
+/>
+<jsp:text
+  jsp:id="54"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<c:set
+  var="origPrice"
+  value="$23,980.00"
+  jsp:id="55"
+/>
+<jsp:text
+  jsp:id="56"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<c:set
+  var="salePrice"
+  value="$21,070.00"
+  jsp:id="57"
+/>
+<jsp:text
+  jsp:id="58"
+>
+<![CDATA[
+
+      ]]>
+</jsp:text>
+<jsp:invoke
+  fragment="onSale"
+  jsp:id="59"
+/>
+<jsp:text
+  jsp:id="60"
+>
+<![CDATA[
+
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="61"
+>
+<![CDATA[
+</td>
+  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="62"
+>
+<![CDATA[
+</tr>
+]]>
+</jsp:text>
+<jsp:text
+  jsp:id="63"
+>
+<![CDATA[
+</table>
+]]>
+</jsp:text>
+</jsp:root>
+
+ ---- NODES
+
+Node [/WEB-INF/tags/displayProducts.tag(1,1), TemplateText] <!--
+  Copyright 2004 The Apache Software Foundation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+Node [/WEB-INF/tags/displayProducts.tag(16,0), TaglibDirective] <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+Node [/WEB-INF/tags/displayProducts.tag(16,64), TemplateText] 
+
+Node [/WEB-INF/tags/displayProducts.tag(17,51), TemplateText] 
+
+Node [/WEB-INF/tags/displayProducts.tag(18,46), TemplateText] 
+
+Node [/WEB-INF/tags/displayProducts.tag(19,33), TemplateText] 
+
+Node [/WEB-INF/tags/displayProducts.tag(20,34), TemplateText] 
+
+Node [/WEB-INF/tags/displayProducts.tag(21,38), TemplateText] 
+
+Node [/WEB-INF/tags/displayProducts.tag(22,38), TemplateText] 
+
+
+Node [/WEB-INF/tags/displayProducts.tag(24,0), TemplateText] <table border="1">
+  
+Node [/WEB-INF/tags/displayProducts.tag(25,2), TemplateText] <tr>
+    
+Node [/WEB-INF/tags/displayProducts.tag(26,4), TemplateText] <td> 
+      
+Node [/WEB-INF/tags/displayProducts.tag(27,6), CustomTag] <c:set var="name" value="Hand-held Color PDA"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(27,53), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(28,6), CustomTag] <c:set var="price" value="$298.86"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(28,42), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(29,6), InvokeAction] <jsp:invoke fragment="normalPrice"></jsp:invoke>
+Node [/WEB-INF/tags/displayProducts.tag(29,42), TemplateText] 
+    
+Node [/WEB-INF/tags/displayProducts.tag(30,4), TemplateText] </td>
+    
+Node [/WEB-INF/tags/displayProducts.tag(31,4), TemplateText] <td> 
+      
+Node [/WEB-INF/tags/displayProducts.tag(32,6), CustomTag] <c:set var="name" value="4-Pack 150 Watt Light Bulbs"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(32,61), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(33,6), CustomTag] <c:set var="origPrice" value="$2.98"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(33,44), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(34,6), CustomTag] <c:set var="salePrice" value="$2.32"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(34,44), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(35,6), InvokeAction] <jsp:invoke fragment="onSale"></jsp:invoke>
+Node [/WEB-INF/tags/displayProducts.tag(35,37), TemplateText] 
+    
+Node [/WEB-INF/tags/displayProducts.tag(36,4), TemplateText] </td>
+    
+Node [/WEB-INF/tags/displayProducts.tag(37,4), TemplateText] <td> 
+      
+Node [/WEB-INF/tags/displayProducts.tag(38,6), CustomTag] <c:set var="name" value="Digital Cellular Phone"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(38,56), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(39,6), CustomTag] <c:set var="price" value="$68.74"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(39,41), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(40,6), InvokeAction] <jsp:invoke fragment="normalPrice"></jsp:invoke>
+Node [/WEB-INF/tags/displayProducts.tag(40,42), TemplateText] 
+    
+Node [/WEB-INF/tags/displayProducts.tag(41,4), TemplateText] </td>
+    
+Node [/WEB-INF/tags/displayProducts.tag(42,4), TemplateText] <td> 
+      
+Node [/WEB-INF/tags/displayProducts.tag(43,6), CustomTag] <c:set var="name" value="Baby Grand Piano"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(43,50), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(44,6), CustomTag] <c:set var="price" value="$10,800.00"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(44,45), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(45,6), InvokeAction] <jsp:invoke fragment="normalPrice"></jsp:invoke>
+Node [/WEB-INF/tags/displayProducts.tag(45,42), TemplateText] 
+    
+Node [/WEB-INF/tags/displayProducts.tag(46,4), TemplateText] </td>
+    
+Node [/WEB-INF/tags/displayProducts.tag(47,4), TemplateText] <td> 
+      
+Node [/WEB-INF/tags/displayProducts.tag(48,6), CustomTag] <c:set var="name" value="Luxury Car w/ Leather Seats"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(48,61), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(49,6), CustomTag] <c:set var="origPrice" value="$23,980.00"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(49,49), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(50,6), CustomTag] <c:set var="salePrice" value="$21,070.00"></c:set>
+Node [/WEB-INF/tags/displayProducts.tag(50,49), TemplateText] 
+      
+Node [/WEB-INF/tags/displayProducts.tag(51,6), InvokeAction] <jsp:invoke fragment="onSale"></jsp:invoke>
+Node [/WEB-INF/tags/displayProducts.tag(51,37), TemplateText] 
+    
+Node [/WEB-INF/tags/displayProducts.tag(52,4), TemplateText] </td>
+  
+Node [/WEB-INF/tags/displayProducts.tag(53,2), TemplateText] </tr>
+
+Node [/WEB-INF/tags/displayProducts.tag(54,0), TemplateText] </table>
+

@@ -92,6 +92,10 @@ public abstract class PageInfo {
     private List includePrelude;
     private List includeCoda;
     private List<String> pluginDcls;		// Id's for tagplugin declarations
+    
+    // Adding for obtaining informations about the parsed tag file
+    private boolean isTagFile;
+    private TagInfo tagInfo;
 
 
     public PageInfo(/*BeanRepository beanRepository*/
@@ -117,6 +121,7 @@ public abstract class PageInfo {
 	this.includeCoda = includeCoda;
 	this.pluginDcls = pluginDcls;
 	this.prefixes = prefixes;
+        this.isTagFile = false;
     }
 
     /**
@@ -646,6 +651,21 @@ public abstract class PageInfo {
         this.beans = beans;
     }
 
+    public boolean isTagFile() {
+        return this.isTagFile;
+    }
+    
+    public void setTagFile(boolean isTagFile) {
+        this.isTagFile = isTagFile;
+    }
+    
+    public TagInfo getTagInfo() {
+        return this.tagInfo;
+    }
+    
+    public void setTagInfo(TagInfo tagInfo) {
+        this.tagInfo = tagInfo;
+    }
     
     /** Returns the FunctionMapper for a particular prefix. 
      * @param currentPrefix relevant tag library prefix. If the expression to evaluate is
@@ -693,7 +713,9 @@ public abstract class PageInfo {
         sb.append(indent).append("includeCoda:\n").append(collectionToString(includeCoda, indent + "  "));  // NOI18N
         sb.append(indent).append("pluginDcls:\n").append(collectionToString(pluginDcls, indent + "  "));  // NOI18N
         sb.append(indent).append("beans:\n").append(beansToString(beans, indent + "  "));  // NOI18N
-
+        if (isTagFile) {
+            sb.append(indent).append("Tag file:   \n").append(tagInfoToString(tagInfo, indent));
+        }
         return sb.toString();
     }
     
