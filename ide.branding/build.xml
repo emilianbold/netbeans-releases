@@ -66,6 +66,8 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
         classpath="${nbroot}/nbbuild/nbantext.jar"
     />
   </target>
+  
+  <target name="compile"/>
 
   <!-- Need todo: Decide how to handle genlist, especially since it's changing. -->
   <!-- Note: jars has to be the last use of locjar so that inferring the        -->
