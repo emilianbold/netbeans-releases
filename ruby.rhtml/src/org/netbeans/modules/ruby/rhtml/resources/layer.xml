@@ -81,6 +81,8 @@
     <folder name="Editors">
         <folder name="application">
             <folder name="x-httpd-eruby">
+                <file name="org-netbeans-modules-ruby-rhtml-RhtmlIndentTaskFactory.instance"/>
+
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
@@ -116,7 +118,7 @@
                             </file>
                         </folder>
                     </folder>
-                </folder>
+                        </folder>
 
                 <file name="Settings.settings" url="RhtmlOptions.settings"/>
                 <file name="EditorKit.instance">
