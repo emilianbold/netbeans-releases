@@ -1820,7 +1820,7 @@ public class MenuEditLayer extends JPanel {
     }
     
     
-    class WrapperIcon implements Icon {
+    static class WrapperIcon implements Icon {
         private Icon wrapee;
         public WrapperIcon() {
             this(null);

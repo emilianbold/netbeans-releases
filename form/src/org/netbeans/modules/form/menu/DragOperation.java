@@ -137,8 +137,11 @@ class DragOperation {
                     JComponent jcomp = (JComponent) comp;
                     p("it's a jcomponent");
                     if(comp instanceof JMenuItem) {
-                        jcomp.setBorder(MenuEditLayer.DRAG_MENU_BORDER);
-                        ((JMenuItem)comp).setBorderPainted(true);
+                        JMenuItem mcomp = (JMenuItem) comp;
+                        mcomp.setBorder(MenuEditLayer.DRAG_MENU_BORDER);
+                        mcomp.setIcon(new MenuEditLayer.WrapperIcon());
+                        mcomp.setMargin(new Insets(1,1,1,1));
+                        mcomp.setBorderPainted(true);
                     }
                     if(comp instanceof JSeparator) {
                         p("it's a separator");
