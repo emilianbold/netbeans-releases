@@ -67,6 +67,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     />
   </target>
   
+  <mkdir dir="src"/>
   <target name="compile">
       <mkdir dir="${build.classes.dir}"/>
   </target>
