@@ -35,7 +35,7 @@ import org.openide.nodes.Children;
  */
 public class CssDataNode extends DataNode {
     
-    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/css/resources/css.gif";
+    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/css/resources/style_sheet_16.png";
     
     /** Creates a new instance of CssDataNode */
     public CssDataNode(CssDataObject cssDataObject) {

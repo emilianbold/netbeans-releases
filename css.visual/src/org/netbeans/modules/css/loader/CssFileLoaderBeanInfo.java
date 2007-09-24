@@ -53,7 +53,7 @@ public class CssFileLoaderBeanInfo extends SimpleBeanInfo {
     */
     public Image getIcon(final int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-	    return Utilities.loadImage("org/netbeans/modules/css/resources/css.gif"); // NOI18N
+	    return Utilities.loadImage("org/netbeans/modules/css/resources/style_sheet_16.png"); // NOI18N
         } else {
 	    return null;
         }

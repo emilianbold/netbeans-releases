@@ -103,13 +103,13 @@ COLOR:key: {
 
 NAVIGATOR:media: {
     display_name: "@media $mediaName$";
-    icon: "/org/netbeans/modules/languages/resources/css.gif";
+    icon: "/org/netbeans/modules/languages/resources/style_sheet_16.png";
 }
 
 NAVIGATOR:ruleset: {
     display_name: "$selectors$";
     tooltip: org.netbeans.modules.languages.css.CSS.navigatorTooltip;
-    icon: "/org/netbeans/modules/languages/resources/css.gif";
+    icon: "/org/netbeans/modules/languages/resources/style_sheet_16.png";
 }
 
 TOOLTIP:selectors: org.netbeans.modules.languages.css.CSS.tooltip

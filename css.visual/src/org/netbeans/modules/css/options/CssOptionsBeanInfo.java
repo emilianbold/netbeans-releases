@@ -50,9 +50,9 @@ public class CssOptionsBeanInfo extends BaseOptionsBeanInfo {
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
                 (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/css/resources/css.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/modules/css/resources/style_sheet_16.png"); // NOI18N
         } else {
-            return Utilities.loadImage("org/netbeans/modules/css/resources/css.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/modules/css/resources/style_sheet_16.png"); // NOI18N
         }
     }
 }

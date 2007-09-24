@@ -31,13 +31,13 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-css">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
                 <file name="language.nbs" url="CSS.nbs">
-                    <attr name="icon" stringvalue="org/netbeans/modules/languages/css/css.gif"/>
+                    <attr name="icon" stringvalue="org/netbeans/modules/languages/css/style_sheet_16.png"/>
                 </file>
             </folder>
             <folder name="x-css-inlined">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
                 <file name="language.nbs" url="CSS_inlined.nbs">
-                    <attr name="icon" stringvalue="org/netbeans/modules/languages/css/css.gif"/>
+                    <attr name="icon" stringvalue="org/netbeans/modules/languages/css/style_sheet_16.png"/>
                 </file>
             </folder>
         </folder>
