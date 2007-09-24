@@ -34,10 +34,7 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="cc-line-comment" default="comment"/>
     <fontcolor name="cc-numeric-literals" default="number"/>
     <fontcolor name="cc-operators" default="operator"/>
-    <!-- use bold "char" settings as default for preprocessor-->
-    <fontcolor name="cc-preprocessor" default="char">
-        <font style="bold"/>
-    </fontcolor> 
+    <fontcolor name="cc-preprocessor" foreColor="009B00"/>
     <fontcolor name="cc-sys-include" default="string"/>
     <fontcolor name="cc-user-include" default="string"/>
     <fontcolor name="cc-string-literal" default="string"/>
