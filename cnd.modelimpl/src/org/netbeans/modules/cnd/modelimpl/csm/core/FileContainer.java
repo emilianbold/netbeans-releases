@@ -138,7 +138,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             return;
         }
         synchronized (getLock(file)) {
-            if (f.state == null){
+            if (f.state == null || !f.state.isValid()){
                 f.state = state;
             } else {
                 if (f.state.isCompileContext()) {
@@ -150,13 +150,14 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
                         }
                     }
                 } else {
-                    if (state.isCompileContext()){
-                        f.state = state;
-                    } else {
-                        if (TRACE_PP_STATE_OUT) {
-                            System.err.println("Do not reset incorrect state to incorrect state "+file.getAbsolutePath());
-                        }
-                    }
+                    f.state = state;
+//                    if (state.isCompileContext()){
+//                        f.state = state;
+//                    } else {
+//                        if (TRACE_PP_STATE_OUT) {
+//                            System.err.println("Do not reset incorrect state to incorrect state "+file.getAbsolutePath());
+//                        }
+//                    }
                 }
             }
         }

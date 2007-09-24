@@ -1163,7 +1163,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public boolean isNeedReparse(APTPreprocHandler.State oldState, APTPreprocHandler newState){
         boolean update = false;
-        if (oldState == null) {
+        if (oldState == null || !oldState.isValid()) {
             update = true;
         } else if (!oldState.isCompileContext() && newState.isCompileContext()) {
             update = true;
@@ -1173,8 +1173,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return update;
     }
 
-    public boolean isNeedReparse(APTPreprocHandler.State ppState, APTPreprocHandler.State preprocState){
-        if (ppState != null && ppState.isCompileContext()) {
+    public boolean isNeedReparse(APTPreprocHandler.State oldState, APTPreprocHandler.State preprocState){
+        if (oldState == null || !oldState.isValid()) {
+            return true;
+        } else if (oldState.isCompileContext()) {
             // do nothing
             if (preprocState != null && isNeedReparseGuardBlock(preprocState)) {
                 // override state with new one

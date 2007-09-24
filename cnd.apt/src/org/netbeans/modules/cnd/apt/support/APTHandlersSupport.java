@@ -33,8 +33,8 @@ public class APTHandlersSupport {
 
     ////////////////////////////////////////////////////////////////////////////
     // factory methods for handlers
-    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean stateCorrect) {
-        return APTHandlersSupportImpl.createPreprocHandler(macroMap, inclHandler, stateCorrect);
+    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext) {
+        return APTHandlersSupportImpl.createPreprocHandler(macroMap, inclHandler, compileContext);
     }
     
     public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {

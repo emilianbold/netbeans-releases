@@ -95,6 +95,10 @@ public class ParserQueue {
                 msg.append("not"); // NOI18N
             }
             msg.append(" cleaned, "); // NOI18N
+            if (!ppState.isValid()) {
+                msg.append("not"); // NOI18N
+            }
+            msg.append(" valid, "); // NOI18N
             if (!ppState.isCompileContext()) {
                 msg.append("not"); // NOI18N
             }

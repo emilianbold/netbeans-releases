@@ -827,6 +827,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         File file = nativeFile.getFile();
         Object stateLock = getFileContainer().getLock(file);
         synchronized (stateLock) {
+            getFileContainer().invalidatePreprocState(file);
             putPreprocState(file, state);
         }
         return state;

@@ -37,8 +37,8 @@ public class APTHandlersSupportImpl {
     private APTHandlersSupportImpl() {
     }
 
-    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean stateCorrect) {
-        return new APTPreprocHandlerImpl(macroMap, inclHandler, stateCorrect);
+    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext) {
+        return new APTPreprocHandlerImpl(macroMap, inclHandler, compileContext);
     }
 
     public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {

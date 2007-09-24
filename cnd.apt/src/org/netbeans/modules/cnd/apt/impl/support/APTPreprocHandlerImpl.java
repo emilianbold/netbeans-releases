@@ -38,14 +38,14 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     private APTIncludeHandler inclHandler;
     
     /**
-     * @param stateCorrect determine wether state created for real parse-valid
+     * @param compileContext determine wether state created for real parse-valid
      * context, i.e. source file has always correct state, but header itself has
      * not correct state untill it was included into any source file (may be recursively)
      */
-    public APTPreprocHandlerImpl(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean stateCorrect) {
+    public APTPreprocHandlerImpl(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext) {
         this.macroMap = macroMap;
         this.inclHandler = inclHandler;
-        this.compileContext = stateCorrect;
+        this.compileContext = compileContext;
     }
     
     public APTMacroMap getMacroMap() {
@@ -82,10 +82,33 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     }
     
     public final static class StateImpl implements State {
-        private final boolean compileContext;
         private final APTMacroMap.State macroState;
         private final APTIncludeHandler.State inclState;
-        private final boolean cleaned;
+        private final byte attributes;
+        
+        private final static byte COMPILE_CONTEXT_FLAG = 1 << 0;
+        private final static byte CLEANED_FLAG = 1 << 1;
+        private final static byte VALID_FLAG = 1 << 2;
+        
+        private static byte createAttributes(boolean compileContext, boolean cleaned, boolean valid) {
+            byte out = 0;
+            if (compileContext) {
+                out |= COMPILE_CONTEXT_FLAG;
+            } else {
+                out &= ~COMPILE_CONTEXT_FLAG;
+            }
+            if (cleaned) {
+                out |= CLEANED_FLAG;
+            } else {
+                out &= ~CLEANED_FLAG;
+            }
+            if (valid) {
+                out |= VALID_FLAG;
+            } else {
+                out &= ~VALID_FLAG;
+            }
+            return out;
+        }
         
         protected StateImpl(APTPreprocHandlerImpl handler) {
             if (handler.getMacroMap() != null) {
@@ -98,25 +121,24 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             } else {
                 this.inclState = null;
             }
-            this.compileContext = handler.isCompileContext();   
-            this.cleaned = false;
+            this.attributes = createAttributes(handler.isCompileContext(), false, true);
         }
         
-        private StateImpl(StateImpl other, boolean cleanState, boolean correctness) {
-            this.compileContext = correctness;
-            
-            if (cleanState || !other.cleaned) {
+        private StateImpl(StateImpl other, boolean cleanState, boolean compileContext, boolean valid) {
+            boolean cleaned;
+            if (cleanState && !other.isCleaned()) {
                 // first time cleaning
                 // own copy of include information and macro state
                 this.inclState = APTHandlersSupportImpl.copyIncludeState(other.inclState, true);
                 this.macroState = APTHandlersSupportImpl.createCleanMacroState(other.macroState);
-                this.cleaned = true;
+                cleaned = true;
             } else {
                 // share states
                 this.macroState = other.macroState;
-                this.cleaned = other.cleaned;
+                cleaned = other.isCleaned();
                 this.inclState = other.inclState;
             }
+            this.attributes = createAttributes(compileContext, cleaned, valid);
         }
         
         private void restoreTo(APTPreprocHandlerImpl handler) {
@@ -126,14 +148,15 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             if (handler.getIncludeHandler() != null) {
                 handler.getIncludeHandler().setState(this.inclState);
             }
-            handler.setCompileContext(this.compileContext);
+            handler.setCompileContext(this.isCompileContext());
         }
 
         @Override
         public String toString() {
             StringBuilder retValue = new StringBuilder();
-            retValue.append(this.cleaned ? "\nCleaned State\n" : "\nNot Cleaned State\n"); // NOI18N
-            retValue.append(this.compileContext ? "Correct State" : "Default/Null State"); // NOI18N
+            retValue.append(isCleaned() ? "\nCleaned State;" : "\nNot Cleaned State;"); // NOI18N
+            retValue.append(isCompileContext() ? "Compile Context;" : "Default/Null State;"); // NOI18N
+            retValue.append(isValid() ? "Valid State;" : "Invalid State;"); // NOI18N
             retValue.append("\nInclude state Info:\n"); // NOI18N
             retValue.append(inclState);
             retValue.append("\nMACROS state info:\n"); // NOI18N
@@ -149,7 +172,8 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             StateImpl other = (StateImpl)obj;
             // we do not compare macroStates because in case of 
             // parsing from the same include sequence they are equal
-            return this.compileContext == other.compileContext &&
+            return this.isCompileContext() == other.isCompileContext() &&
+                    this.isValid() == other.isValid() && 
                     ( (this.inclState == null && other.inclState == null) ||
                       (this.inclState.equals(other.inclState)));
         }
@@ -157,33 +181,38 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         @Override
         public int hashCode() {
             int hash = 5;
-            hash = 83 * hash + (this.compileContext ? 1 : 0);
+            hash = 83 * hash + (this.isCompileContext() ? 1 : 0);
+            hash = 83 * hash + (this.isValid() ? 1 : 0);
             hash = 83 * hash + (this.inclState != null ? this.inclState.hashCode() : 0);
             return hash;
         }
                 
         public boolean isCompileContext() {
-            return this.compileContext;
+            return (this.attributes & COMPILE_CONTEXT_FLAG) == COMPILE_CONTEXT_FLAG;
         }
         
         public boolean isCleaned() {
-            return cleaned;
+            return (this.attributes & CLEANED_FLAG) == CLEANED_FLAG;
         }
 
+        public boolean isValid() {
+            return (this.attributes & VALID_FLAG) == VALID_FLAG;
+        }
+        
         /*package*/ List<APTIncludeHandler.IncludeInfo> getIncludeStack() {
             return APTHandlersSupportImpl.getIncludeStack(this.inclState);
         }        
         
         /*package*/ APTPreprocHandler.State copy() {
-            return new StateImpl(this, false, this.compileContext);
+            return new StateImpl(this, this.isCleaned(), this.isCompileContext(), this.isValid());
         }
         
         /*package*/ APTPreprocHandler.State copyCleaned() {
-            return new StateImpl(this, true, this.compileContext);
+            return new StateImpl(this, true, this.isCompileContext(), this.isValid());
         }
         
         /*package*/ APTPreprocHandler.State copyInvalid() {
-            return new StateImpl(this, false, false);
+            return new StateImpl(this, this.isCleaned(), this.isCompileContext(), false);
         }
         
         /*package*/ List<String> getSysIncludePaths() {
@@ -197,15 +226,13 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         // persistence support
 
         public void write(DataOutput output) throws IOException {
-            output.writeBoolean(this.cleaned);
-            output.writeBoolean(this.compileContext);
+            output.writeByte(this.attributes);
             APTSerializeUtils.writeIncludeState(this.inclState, output);
             APTSerializeUtils.writeMacroMapState(this.macroState, output);
         }
 
         public StateImpl(DataInput input) throws IOException {
-            this.cleaned = input.readBoolean();
-            this.compileContext = input.readBoolean();
+            this.attributes = input.readByte();
             this.inclState = APTSerializeUtils.readIncludeState(input);
             this.macroState = APTSerializeUtils.readMacroMapState(input);
         }        
@@ -217,7 +244,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     @Override
     public String toString() {
         StringBuilder retValue = new StringBuilder();
-        retValue.append(this.compileContext ? "\nCorrect State" : "\nDefault/Null State"); // NOI18N
+        retValue.append(this.isCompileContext() ? "\nCompile Context" : "\nDefault/Null State"); // NOI18N
         retValue.append("\nInclude Info:\n"); // NOI18N
         retValue.append(this.inclHandler);
         retValue.append("\nMACROS info:\n"); // NOI18N

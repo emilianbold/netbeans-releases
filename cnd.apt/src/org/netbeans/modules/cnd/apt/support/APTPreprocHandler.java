@@ -42,7 +42,12 @@ public interface APTPreprocHandler {
         /**
          * check whether state has cached information or cleaned
          */
-        public boolean isCleaned();        
+        public boolean isCleaned();       
+        
+        /**
+         * check whether state is valid
+         */
+        public boolean isValid();
     };   
     
     public APTMacroMap getMacroMap();
