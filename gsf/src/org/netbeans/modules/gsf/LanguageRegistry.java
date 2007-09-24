@@ -457,11 +457,19 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         // init hyperlink provider
-        if (root.getFileObject("HyperlinkProviders/GsfHyperlinkProvider.instance") == null) {
+        FileObject hyperlinkProvider = root.getFileObject("HyperlinkProviders/GsfHyperlinkProvider.instance");
+        if (hyperlinkProvider == null) {
             try {
-                FileObject fo = FileUtil.createData(root, "HyperlinkProviders/GsfHyperlinkProvider.instance");
-                fo.setAttribute("instanceClass", "org.netbeans.modules.retouche.editor.hyperlink.GsfHyperlinkProvider");
-                fo.setAttribute("instanceOf", "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider");
+                hyperlinkProvider = FileUtil.createData(root, "HyperlinkProviders/GsfHyperlinkProvider.instance");
+                hyperlinkProvider.setAttribute("instanceClass", "org.netbeans.modules.retouche.editor.hyperlink.GsfHyperlinkProvider");
+                hyperlinkProvider.setAttribute("instanceOf", "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt");
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else if ("org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider".equals(hyperlinkProvider.getAttribute("instanceOf"))) {
+            // Userdir upgrade
+            try {
+                hyperlinkProvider.setAttribute("instanceOf", "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
