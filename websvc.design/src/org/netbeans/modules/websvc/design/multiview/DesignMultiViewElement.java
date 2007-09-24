@@ -85,11 +85,11 @@ public class DesignMultiViewElement extends TopComponent
         removeAll();
         setLayout(new BorderLayout());
         MultiViewSupport mvSupport = dataObject.getCookie(MultiViewSupport.class);
-        if (mvSupport!=null) {
+        if (mvSupport!=null && mvSupport.getService()!=null) {
             designView = new DesignView(mvSupport.getService(),mvSupport.getImplementationBean());
             add(designView);
         } else {
-            JLabel emptyLabel = new JLabel("switch to source view.");
+            JLabel emptyLabel = new JLabel("The design view can not be rendered. Please switch to source view.");
             add(emptyLabel,BorderLayout.CENTER);
         }
     }
