@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,7 +49,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.Provider, ListSelectionListener {
     
     private final ProjectCustomizer.Category category;
-    private WebProject project;
+    private final WebProject project;
     private WebProjectProperties uiProperties;
     private List newExtenders = new LinkedList();
     private List usedFrameworks = new LinkedList();
@@ -73,6 +72,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         Properties properties = controller.getProperties();
         properties.setProperty("j2eeLevel", j2eeVersion); // NOI18N
         properties.setProperty("serverInstanceID", serverInstanceID); // NOI18N
+        properties.setProperty("project", project); // NOI18N
         
         jListFrameworks.setModel(new DefaultListModel());
         List frameworks = WebFrameworks.getFrameworks();
