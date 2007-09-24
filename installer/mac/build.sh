@@ -56,7 +56,7 @@ rm -rf $progdir/build/netbeans/mobility*
 #mkdir -p $progdir build/pkg
 #rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
 # build dmg
-ant -f $progdir/build.xml -Ddmgname=$dmgname-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="NetBeans 6.0 Beta 1" build-dmg -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_Global_License.txt"
+ant -f $progdir/build.xml -Ddmgname=$dmgname-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="NetBeans 6.0 Dev" build-dmg -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_Global_License.txt"
 
 # javaee
 
@@ -66,7 +66,7 @@ unzip -d $progdir/build $zipdir/$basename-javaee.zip
 # copy over GlassFish.pkg
 #mkdir -p $progdir build/pkg
 #rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
-ant -f $progdir/build.xml -Ddmgname=$dmgname-javaee-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="NetBeans 6.0 Beta 1" build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_WebAndJavaEE.txt"
+ant -f $progdir/build.xml -Ddmgname=$dmgname-javaee-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="NetBeans 6.0 Dev" build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_WebAndJavaEE.txt"
 
 # all others
 
@@ -90,6 +90,6 @@ for pkg in javase ruby cpp ; do
     ant -f $progdir/build.xml clean
     mkdir $progdir/build
     unzip -d $progdir/build $zipdir/$basename-$pkg.zip
-    ant -f $progdir/build.xml -Ddmgname=$dmgname-$dmg_postfix-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="NetBeans 6.0 Beta 1" build-dmg -Dnetbeans_license_file="$progdir/$license_file"
+    ant -f $progdir/build.xml -Ddmgname=$dmgname-$dmg_postfix-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="NetBeans 6.0 Dev" build-dmg -Dnetbeans_license_file="$progdir/$license_file"
 done
 
