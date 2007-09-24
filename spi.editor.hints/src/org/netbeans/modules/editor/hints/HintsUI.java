@@ -602,7 +602,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
                     }
 
                 } catch (DataObjectNotFoundException donfe) {
-                    ErrorManager.getDefault().notify(donfe);
+                    Logger.getLogger(HintsUI.class.getName()).log(Level.FINE, null, donfe);
                     return;
                 }
             }
