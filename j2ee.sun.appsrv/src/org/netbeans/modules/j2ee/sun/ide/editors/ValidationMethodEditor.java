@@ -24,16 +24,31 @@ import java.beans.PropertyEditorSupport;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
 public class ValidationMethodEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
-
+    static String VALIDATION_TYPE = "validation"; //NOI18N
+    static String TRANX_SUPPORT_TYPE = "TransactionSupport"; //NOI18N
+    
+    public static String editorType = VALIDATION_TYPE;
     public static String curr_Sel;
     public String[] choices = {
                  "auto-commit", // NOI18N
                  "meta-data", // NOI18N
                  "table" // NOI18N
                  };
+    
+    public String[] choicesTranx = {
+                 "", // NOI18N
+                 "XATransaction", // NOI18N
+                 "LocalTransaction", // NOI18N
+                 "NoTransaction"
+                 };
 
    public ValidationMethodEditor() {
 	curr_Sel = null;
+   }
+   
+   public ValidationMethodEditor(String type) {
+	curr_Sel = null;
+        editorType = type;
    }
 
     public String getAsText () {
@@ -41,11 +56,16 @@ public class ValidationMethodEditor extends PropertyEditorSupport implements Enh
     }
 
     public void setAsText (String string) throws IllegalArgumentException {
-       if((string==null)||(string.equals(""))) // NOI18N
-           throw new IllegalArgumentException ();
-        else
-	    curr_Sel = string;
-       this.firePropertyChange();
+        if (! editorType.equals(TRANX_SUPPORT_TYPE)) {
+            if ((string == null) || (string.equals(""))) { // NOI18N
+                throw new IllegalArgumentException();
+            } else {
+                curr_Sel = string;
+            }
+        } else {
+            curr_Sel = string;
+        }
+        this.firePropertyChange();
     }
 
    public void setValue (Object val) {
@@ -64,7 +84,11 @@ public class ValidationMethodEditor extends PropertyEditorSupport implements Enh
     }
 
     public String[] getTags () {
-	return choices;
+        if(editorType.equals(TRANX_SUPPORT_TYPE)){
+           return choicesTranx; 
+        } else {
+           return choices;
+        }    
     }
 
    public Component getInPlaceCustomEditor () {
