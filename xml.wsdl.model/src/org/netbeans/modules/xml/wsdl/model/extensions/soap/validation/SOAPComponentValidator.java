@@ -693,6 +693,12 @@ public class SOAPComponentValidator
             throw new IllegalArgumentException("(Internal error) Unexpected WSDLComponent sub-type "
                     + parent.getClass().getName());
         }
+        
+        // Let wsdl validator catch undefined message for operation input or output
+        if (param == null || param.getMessage() == null || param.getMessage().get() == null) {
+            return;
+        }
+        
         Message msg = param.getMessage().get();
         
         List<String> partNames = elem.getParts();
