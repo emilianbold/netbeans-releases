@@ -26,6 +26,7 @@ import java.awt.Rectangle;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -215,6 +216,9 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
             return;
         }
         
+        // NB: do this before trimming!
+        boolean exact = text.endsWith(" "); // NOI18N
+        
         text = text.trim();
         
         if ( text.length() == 0) {
@@ -222,10 +226,19 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
             return;
         }
         
-        if (isAllUpper(text)) {
+        int wildcard = containsWildCard(text);
+        if ( wildcard == 0 ) {
+            // TODO: uncomment after bundle; add the following to the bundle:
+            // #MSG_StartsWithWildcard=Wildcards ("?","*") are not allowed at start of the type name.
+            // panel.setListPanelContent(NbBundle.getMessage(GoToElementAction.class, "MSG_StartsWithWildcard"), false); //NOI18N
+            panel.setModel(EMPTY_LIST_MODEL);
+            return;
+        }
+                
+        if ( ! exact && ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) ) {
             nameKind = SearchType.CAMEL_CASE;
         } 
-        else if (containsWildCard(text) != -1) {
+        else if (wildcard != -1) {
             if (Character.isJavaIdentifierStart(text.charAt(0))) {
                 nameKind = panel.isCaseSensitive() ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
             }
@@ -235,7 +248,10 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
             }
                 
         }
-        else {
+        else if (exact) {
+            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+        }
+        else {            
             nameKind = panel.isCaseSensitive() ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
         }
         
@@ -270,6 +286,13 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
         
         return true;
     }
+    
+    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
+    
+    private static boolean isCamelCase(String text) {
+         return camelCasePattern.matcher(text).matches();
+    }
+    
     
     private static int containsWildCard( String text ) {
         for( int i = 0; i < text.length(); i++ ) {

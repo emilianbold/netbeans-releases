@@ -30,7 +30,7 @@ public class NameMatcherFactory {
     private NameMatcherFactory() {
     }
     
-    public static abstract class BaseNameMatcher implements NameMatcher {
+    private static abstract class BaseNameMatcher implements NameMatcher {
 	
         protected String patternText;
 	
@@ -40,7 +40,7 @@ public class NameMatcherFactory {
     }
     
     
-    public static final class ExactNameMatcher extends BaseNameMatcher implements NameMatcher {
+    private static final class ExactNameMatcher extends BaseNameMatcher implements NameMatcher {
 	
 	public ExactNameMatcher(String patternText) {
 	    super(patternText);
@@ -51,7 +51,18 @@ public class NameMatcherFactory {
 	}
     }
 
-    public static final class PrefixNameMatcher extends BaseNameMatcher implements NameMatcher {
+    private static final class CaseInsensitiveExactNameMatcher extends BaseNameMatcher implements NameMatcher {
+	
+	public CaseInsensitiveExactNameMatcher(String patternText) {
+	    super(patternText);
+	}
+
+	public final boolean matches(String name) {
+	    return patternText.equalsIgnoreCase(name);
+	}
+    }
+
+    private static final class PrefixNameMatcher extends BaseNameMatcher implements NameMatcher {
 	
 	public PrefixNameMatcher(String patternText) {
 	    super(patternText);
@@ -62,7 +73,7 @@ public class NameMatcherFactory {
 	}
     }
 
-    public static final class CaseInsensitivePrefixNameMatcher extends BaseNameMatcher implements NameMatcher {
+    private static final class CaseInsensitivePrefixNameMatcher extends BaseNameMatcher implements NameMatcher {
 	
 	public CaseInsensitivePrefixNameMatcher(String patternText) {
 	    super(patternText.toLowerCase());
@@ -73,7 +84,7 @@ public class NameMatcherFactory {
 	}
     }
 
-    public static final class RegExpNameMatcher implements NameMatcher {
+    private static final class RegExpNameMatcher implements NameMatcher {
 
 	Pattern pattern;
 	
@@ -120,6 +131,8 @@ public class NameMatcherFactory {
 	switch( type ) {
             case EXACT_NAME:
 		return new ExactNameMatcher(text);
+            case CASE_INSENSITIVE_EXACT_NAME:
+		return new CaseInsensitiveExactNameMatcher(text);
             case PREFIX:
 		return new PrefixNameMatcher(text);
             case REGEXP:
