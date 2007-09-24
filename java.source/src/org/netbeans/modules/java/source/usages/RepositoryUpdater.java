@@ -1059,6 +1059,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     boolean continuation = false;
                     try {
                     final WorkType type = work.getType();                        
+                    LOGGER.finest("Request for: " + type);      //NOI18N
                     switch (type) {
                         case FILTER_CHANGED:
                         {
@@ -1555,6 +1556,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 String offset = FileObjects.getRelativePath(rootFile,child);
                 if (entry == null || entry.includes(offset.replace(File.separatorChar,'/'))) {
                     if (invalidIndex || clean || dirtyCrossFiles.remove(child.toURI())) {
+                        if (LOGGER.isLoggable(Level.FINEST)) {
+                            String message = "Compiling " + child.getPath() + " due to ";       //NOI18N
+                            if (invalidIndex) {
+                                message+="invalidIndex";                                        //NOI18N
+                            }
+                            else if (clean) {
+                                message+="clean";                                               //NOI18N
+                            }
+                            else {
+                                message+="dirtyCrossFiles";                                     //NOI18N
+                            }
+                            LOGGER.finest(message);
+                        }
                         toCompile.add(new Pair(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
                     } else {
                         final int index = offset.lastIndexOf('.');  //NOI18N
@@ -1563,10 +1577,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         List<File> files = resources.remove(offset);
                         if  (files==null) {
+                            if (LOGGER.isLoggable(Level.FINEST)) {
+                                LOGGER.finest("Compiling " + child.getPath()+" no cache for it" );      //NOI18N
+                            }
                             toCompile.add(new Pair(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
                         } else {
                             boolean rsf = files.get(0).getName().endsWith(FileObjects.RS);
                             if (files.get(0).lastModified() < child.lastModified()) {
+                                if (LOGGER.isLoggable(Level.FINEST)) {
+                                    LOGGER.finest("Compiling " + child.getPath()+ " timestamp (cache: "+files.get(0).lastModified()+" source: "+child.lastModified()+")" ); //NOI18N
+                                }
                                 toCompile.add(new Pair(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
                                 for (File toDelete : files) {
                                     toDelete.delete();
