@@ -333,7 +333,6 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                     ((NbEditorDocument) doc).readUnlock ();
             }
         } catch (LanguageDefinitionNotFoundException ex) {
-            ErrorManager.getDefault ().notify (ex);
         }
         return buf.toString();
     }

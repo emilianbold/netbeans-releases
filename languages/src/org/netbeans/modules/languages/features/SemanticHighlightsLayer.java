@@ -145,7 +145,6 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
                                 endOffset1 = path.get (i).getEndOffset ();
                             }
                         } catch (ParseException ex) {
-                            ex.printStackTrace();
                         }
                     }
                     if (endOffset1 > startOffset1)
