@@ -22,7 +22,6 @@
 package org.netbeans.modules.uml.ui.products.ad.drawEngineManagers;
 
 import java.awt.event.ActionEvent;
-
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
@@ -43,7 +42,6 @@ import org.netbeans.modules.uml.ui.controls.drawingarea.TopographyChangeAction;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.application.action.BaseAction;
 import org.netbeans.modules.uml.ui.products.ad.application.action.ContextMenuActionClass;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.Separator;
 import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.lifelinepieces.ConnectorPiece;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.IADSequenceDiagEngine;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.sequencediagram.IMessageEdgeDrawEngine;
@@ -51,8 +49,6 @@ import org.netbeans.modules.uml.ui.products.ad.diagramengines.sequencediagram.IS
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IEdgePresentation;
 import org.netbeans.modules.uml.ui.support.applicationmanager.ILabelPresentation;
-import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenu;
-import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenuItem;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETLabel;
@@ -65,8 +61,8 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramEngine;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import com.tomsawyer.drawing.TSLabel;
 import com.tomsawyer.editor.TSEEdge;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
+import org.openide.util.NbPreferences;
 
 public class MessageLabelManager extends ADLabelManager {
 
@@ -677,12 +673,26 @@ public class MessageLabelManager extends ADLabelManager {
 	}
 
 	// Retrieve the preference values
-	protected String getNewMessageAction() {
-
+	protected String getNewMessageAction()
+        {
+            
             //kris richards - "NewMessageAction" pref expunged. Set to PSK_DONOTHING.
-		return "PSK_DONOTHING";
-
-	}
+            //		return "PSK_DONOTHING";
+            
+            int pref = NbPreferences.forModule(MessageLabelManager.class).
+                        getInt("UML_SQD_DEFAULT_MSG", IShowMessageType.SMT_NONE);
+            switch (pref)
+            {
+                case IShowMessageType.SMT_NONE:
+                    return "PSK_DONOTHING";
+                case IShowMessageType.SMT_NAME:
+                    return "PSK_NAMEMESSAGE";
+                case IShowMessageType.SMT_OPERATION:
+                    return "PSK_CREATEOPERATION";
+                default:
+                    return "PSK_DONOTHING";
+            }
+        }
 
 	protected String getPreferenceValue(String bstrPath, String bstrName) {
 
