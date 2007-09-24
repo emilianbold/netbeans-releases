@@ -161,10 +161,6 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
     @Override protected boolean isUnformattableToken(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset) {
 	Token token = getTokenAtOffset(JoinedTokenSequence, tagTokenOffset);
         
-        if (token == null){
-            System.err.println(":-O!!!");
-        }
-        
 	if (token.id() == HTMLTokenId.BLOCK_COMMENT){
 	    return true;
 	}
