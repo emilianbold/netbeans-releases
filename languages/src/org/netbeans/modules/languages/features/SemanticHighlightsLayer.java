@@ -41,6 +41,7 @@ import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -52,15 +53,15 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
     private Document            document;
     private Highlighting        highlighting;
     private ParserManager       parserManager;
-    
+    private final Listener      listener;
     
     SemanticHighlightsLayer (Document document) {
         this.document = document;
-        Listener listener = new Listener ();
+        listener = new Listener ();
         highlighting = Highlighting.getHighlighting (document);
-        highlighting.addPropertyChangeListener (listener);
+        highlighting.addPropertyChangeListener (WeakListeners.propertyChange(listener, highlighting));
         parserManager = ParserManagerImpl.get (document);
-        parserManager.addListener (listener);
+        parserManager.addListener (WeakListeners.create(ParserManagerListener.class, listener, parserManager));
     }
 
     public HighlightsSequence getHighlights (int startOffset, int endOffset) {

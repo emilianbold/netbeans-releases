@@ -30,6 +30,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -41,17 +42,17 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
     private Highlighting            highlighting;
     private TokenHierarchy          hierarchy;
     private Document                document;
-
+    private final PropertyChangeListener listener = new PropertyChangeListener () {
+        public void propertyChange (final PropertyChangeEvent evt) {
+            fireHighlightsChange ((Integer) evt.getOldValue (), (Integer) evt.getNewValue ());
+        }
+    };
     
     TokenHighlightsLayer (final Document document) {
         highlighting = Highlighting.getHighlighting (document);
         hierarchy = TokenHierarchy.get (document);
         this.document = document;
-        highlighting.addPropertyChangeListener (new PropertyChangeListener () {
-            public void propertyChange (final PropertyChangeEvent evt) {
-                fireHighlightsChange ((Integer) evt.getOldValue (), (Integer) evt.getNewValue ());
-            }
-        });
+        highlighting.addPropertyChangeListener (WeakListeners.propertyChange(listener, highlighting));
     }
     
     public HighlightsSequence getHighlights (int startOffset, int endOffset) {
