@@ -619,6 +619,10 @@ public class FileStatusCache {
             if (parentStatus == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
+                // server ignores new files on a branch, check this special case  
+                if (exists(file) && Utils.getSticky(file) != null) {
+                    return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
+                }
                 // server marks this file as uptodate and it does not have an entry, the file is probably listed in CVSROOT/cvsignore
                 return cvs.isUnignored(file) ? new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory) : new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, isDirectory);
             }
