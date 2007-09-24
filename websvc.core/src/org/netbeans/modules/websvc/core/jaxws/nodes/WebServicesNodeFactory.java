@@ -153,7 +153,7 @@ public class WebServicesNodeFactory implements NodeFactory {
                         try {
                         if (propName.startsWith("/JaxWs/Clients")) { //NOI18N
                             FileObject artifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client"); //NOI18N
-                            if (artifactsFolder == null) {
+                            if (artifactsFolder == null || !artifactsFolder.isValid() ) {
                                 artifactsFolder = createArtifactsFolder(project.getProjectDirectory(),true);
                             }
                             if (artifactsFolder != null) {
@@ -161,7 +161,7 @@ public class WebServicesNodeFactory implements NodeFactory {
                             }
                         } else if (propName.startsWith("/JaxWs/Services")) { //NOI18N
                             FileObject artifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/services"); // NOI18N
-                            if (artifactsFolder == null) {
+                            if (artifactsFolder == null  || !artifactsFolder.isValid()) {
                                 artifactsFolder = createArtifactsFolder(project.getProjectDirectory(),false);
                             }
                             if (artifactsFolder != null) {
@@ -181,7 +181,7 @@ public class WebServicesNodeFactory implements NodeFactory {
             throws java.io.IOException {
  
             FileObject packageFolder = artifactsFolder.getFileObject(oldName.replace('.', '/'));
-            if (packageFolder == null) {
+            if (packageFolder == null  || !packageFolder.isValid()) {
                 packageFolder = artifactsFolder.createFolder(oldName.replace('.', '/'));
             }
 
