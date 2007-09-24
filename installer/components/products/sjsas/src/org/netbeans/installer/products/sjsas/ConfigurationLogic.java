@@ -625,9 +625,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String JTB_LEGAL_RESOURCE_PREFIX =
             "org/netbeans/installer/products/sjsas/jtblegal/";
     public static final String JTB_LICENSE =
-            "Java_EE_5_Tools_Update_3_Beta-License";//NOI18N
+            "Java_EE_5_Tools_Update_3_Beta-License.txt";//NOI18N
     public static final String JTB_THIRDPARTYREADME =
-            "THIRDPARTYREADME";
+            "THIRDPARTYREADME.txt";
     public static final String JTB_DISTRIBUTION =
-            "DISTRIBUTION";
+            "DISTRIBUTION.txt";
 }
