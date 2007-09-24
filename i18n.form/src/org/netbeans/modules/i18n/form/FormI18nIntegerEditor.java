@@ -22,7 +22,10 @@ package org.netbeans.modules.i18n.form;
 
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditorSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -39,7 +42,6 @@ import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
 
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -56,6 +58,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.FormProperty;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 
 /**
@@ -71,7 +75,8 @@ import org.netbeans.modules.form.FormProperty;
  * @see org.netbeans.modules.form.RADComponent
  * @see org.netbeans.modules.form.RADProperty
  */
-public class FormI18nIntegerEditor extends PropertyEditorSupport implements FormAwareEditor, NamedPropertyEditor, XMLPropertyEditor {
+public class FormI18nIntegerEditor extends PropertyEditorSupport implements FormAwareEditor,
+        NamedPropertyEditor, ExPropertyEditor, XMLPropertyEditor {
 
     /** Value of <code>ResourceBundleString</code> this editor is currently editing. */
     private FormI18nInteger formI18nInteger;
@@ -80,6 +85,8 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
      * going-to-be-internatioanlized string.
      */
     private FormDataObject sourceDataObject;
+
+    private PropertyEnv env;
 
     /** Name of resource string XML element. */
     public static final String XML_RESOURCESTRING = "ResourceString"; // NOI18N
@@ -229,6 +236,9 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
         return NbBundle.getMessage(FormI18nIntegerEditor.class, "PROP_IntegerEditor_name"); // NOI18N
     }
 
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
+    }
 
     /** 
      * Implements <code>XMLPropertyEditor</code> interface method.
@@ -434,48 +444,41 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
     }
 
     /** Custom editor for this property editor. */
-    private static class CustomEditor extends I18nPanel implements EnhancedCustomPropertyEditor {
+    private class CustomEditor extends I18nPanel implements VetoableChangeListener {
 
         private final ResourceBundle bundle;
-        
+
         /** Constructor. */
         public CustomEditor(I18nString i18nString, Project project, FileObject file) {
             super(i18nString.getSupport().getPropertyPanel(), false, project, file);
             bundle = NbBundle.getBundle(FormI18nIntegerEditor.class);
             setI18nString(i18nString);
-            
+            env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            env.addVetoableChangeListener(this);
+
             HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_FORMED);
         }
 
-        /** Implements <code>EnhancedCustomPropertyEditor</code> interface. */
-        public Object getPropertyValue() throws IllegalStateException {
-            I18nString i18nString = getI18nString();
-
-            if(i18nString == null 
-                || !(i18nString instanceof FormI18nInteger)
-                || i18nString.getSupport().getResourceHolder().getResource() == null 
-                || i18nString.getKey() == null) {
-
-                // Notify user that invalid value set.
-                IllegalStateException ise = new IllegalStateException();
-                String message = bundle.getString("MSG_InvalidValue");
-                ErrorManager.getDefault().annotate(
-                     ise, ErrorManager.WARNING, message,
-                     message, null, null);
-                throw ise;
+        public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())) {
+                I18nString i18nString = getI18nString();
+                if (i18nString == null 
+                    || !(i18nString instanceof FormI18nInteger)
+                    || i18nString.getSupport().getResourceHolder().getResource() == null 
+                    || i18nString.getKey() == null) {
+                    // Notify user that invalid value set.
+                    throw new PropertyVetoException(bundle.getString("MSG_InvalidValue"), evt); // NOI18N
+                }
+                // Try to add new key into resource bundle first.
+                i18nString.getSupport().getResourceHolder().addProperty(
+                    i18nString.getKey(),
+                    i18nString.getValue(),
+                    i18nString.getComment(),
+                    false //#19137 do not destroy existing locale values
+                );
+                FormI18nIntegerEditor.this.setValue(i18nString);
             }
-
-            // Try to add new key into resource bundle first.
-            i18nString.getSupport().getResourceHolder().addProperty(
-                i18nString.getKey(),
-                i18nString.getValue(),
-                i18nString.getComment(),
-                false //#19137 do not destroy existing locale values
-            );
-
-            return i18nString;
         }
-
     }
 
     

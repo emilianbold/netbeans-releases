@@ -20,13 +20,14 @@
 package org.netbeans.modules.i18n.form;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditorSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 import javax.swing.*;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.form.FormModel;
@@ -39,16 +40,16 @@ import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
 
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.FormProperty;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
@@ -71,12 +72,15 @@ import org.w3c.dom.NodeList;
  * @see org.netbeans.modules.form.RADComponent
  * @see org.netbeans.modules.form.RADProperty
  */
-public class FormI18nStringEditor extends PropertyEditorSupport implements FormAwareEditor, NamedPropertyEditor, XMLPropertyEditor {
+public class FormI18nStringEditor extends PropertyEditorSupport implements FormAwareEditor,
+        NamedPropertyEditor, XMLPropertyEditor, ExPropertyEditor {
 
     /** <code>DataObject</code> which have <code>SourceCookie</code>, and which document contains 
      * going-to-be-internatioanlized string.
      */
     private FormDataObject sourceDataObject;
+
+    private PropertyEnv env;
 
     /** Name of resource string XML element. */
     public static final String XML_RESOURCESTRING = "ResourceString"; // NOI18N
@@ -102,13 +106,9 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
     /** Maximal index of arguments in one argument XML element. */
     private static final int MAX_INDEX       = 1000;
     
-    private final ResourceBundle bundle;
-
     /** Constructor. Creates new <code>ResourceBundleStringFormEditor</code>. */
     public FormI18nStringEditor() {
-        bundle = NbBundle.getBundle(FormI18nStringEditor.class);
     }
-
 
     /** Overrides superclass method.
      * @return null as we don't support this feature */
@@ -262,6 +262,9 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         return NbBundle.getMessage(FormI18nStringEditor.class, "CTL_PropertyEditorName"); // NOI18N
     }
 
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
+    }
 
     /** 
      * Implements <code>XMLPropertyEditor</code> interface method.
@@ -486,65 +489,35 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
     }
 
     /** Custom editor for this property editor. */
-    private static class CustomEditor extends JPanel implements EnhancedCustomPropertyEditor {
+    private class CustomEditor extends JPanel implements VetoableChangeListener {
         private I18nPanel i18nPanel;
         
         /** Constructor. */
-        public CustomEditor(I18nString i18nString, Project project, FileObject file) { //, boolean noI18n
+        public CustomEditor(I18nString i18nString, Project project, FileObject file) {
             i18nPanel = new I18nPanel(i18nString.getSupport().getPropertyPanel(), false, project, file);
             setLayout(new java.awt.BorderLayout());
             add(i18nPanel);
 
             i18nPanel.setI18nString(i18nString);
 
+            env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            env.addVetoableChangeListener(this);
+
             HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_FORMED);
         }
 
-        /** Implements <code>EnhancedCustomPropertyEditor</code> interface. */
-        public Object getPropertyValue() throws IllegalStateException {
-            I18nString i18nString = i18nPanel.getI18nString();
-
-            if(i18nString == null 
-                || !(i18nString instanceof FormI18nString)
-                || i18nString.getSupport().getResourceHolder().getResource() == null 
-                || i18nString.getKey() == null) {
-
-                // Notify user that invalid value set.
-                IllegalStateException ise = new IllegalStateException();
-                String message = NbBundle.getMessage(FormI18nStringEditor.class, "MSG_InvalidValue"); // NOI18N
-                ErrorManager.getDefault().annotate(
-                     ise, ErrorManager.WARNING, message,
-                     message, null, null);
-                throw ise;
+        public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())) {
+                I18nString i18nString = i18nPanel.getI18nString();
+                if (i18nString == null 
+                    || !(i18nString instanceof FormI18nString)
+                    || i18nString.getSupport().getResourceHolder().getResource() == null 
+                    || i18nString.getKey() == null) {
+                    // Notify user that invalid value set.
+                    throw new PropertyVetoException(NbBundle.getMessage(FormI18nStringEditor.class, "MSG_InvalidValue"), evt); // NOI18N
+                }
+                FormI18nStringEditor.this.setValue(i18nString);
             }
-
-            return i18nString;
-        }
-    }
-
-    /**
-     * Panel containing a text area for editing plain text. Used for editing
-     * not internationalized strings - replacing the I18nPanel.
-     */
-    private static class StringPanel extends JPanel {
-        private JTextArea textArea;
-
-        private StringPanel() {
-            textArea = new JTextArea();
-            JScrollPane scroll = new JScrollPane(textArea);
-            GroupLayout layout = new GroupLayout(this);
-            layout.setAutocreateContainerGaps(true);
-            setLayout(layout);
-            layout.setHorizontalGroup(layout.createSequentialGroup().add(scroll));
-            layout.setVerticalGroup(layout.createSequentialGroup().add(scroll));
-        }
-
-        String getString() {
-            return textArea.getText();
-        }
-
-        void setString(String str) {
-            textArea.setText(str);
         }
     }
 
