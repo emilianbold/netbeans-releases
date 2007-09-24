@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -185,11 +186,11 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     }
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        return CompletionUtilities.getPreferredWidth(getLeftHtmlText(true), getRightHtmlText(false), g, defaultFont);
+        return CompletionUtilities.getPreferredWidth(getLeftHtmlText(true), getRightText(false, File.separator), g, defaultFont);
     }
     
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {        
-        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(true), PARENT_COLOR_TAG + getRightHtmlText(true), g, defaultFont, defaultColor, width, height, selected);
+        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(true), PARENT_COLOR_TAG + getRightText(true, File.separator), g, defaultFont, defaultColor, width, height, selected);
     }
 
     @Override
@@ -200,7 +201,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         out.append(this.getLeftHtmlText(false));
         out.append(this.isSysInclude() ? ">" : "\"");
         out.append(" : ");
-        out.append(this.getRightHtmlText(false));
+        out.append(this.getRightText(false, "/"));
         return out.toString();
     }
     
@@ -224,29 +225,31 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         return (html ? (isFolder() ? "<i>" : "") : "") + this.getItemText(); // NOI18N
     }
     
-    protected String getRightHtmlText(boolean shrink) {
+    protected String getRightText(boolean shrink, String separator) {
         StringBuilder builder = new StringBuilder(this.getParentFolder());
-        builder.append(SLASH).append(getChildSubdir());
+        builder.append(separator).append(getChildSubdir());
         int len = builder.length();
         if (shrink && len > MAX_DISPLAYED_DIR_LENGTH) {
             
             StringBuilder reverse = new StringBuilder(builder).reverse();
-            int st = 0;
-            while (builder.charAt(st) == SLASH.charAt(0)) {
+            int st = builder.indexOf(separator);
+            if (st < 0) {
+                st = 0;
+            } else {
                 st++;
             }
             int end = 0;
-            while (reverse.charAt(end) == SLASH.charAt(0)) {
+            while (reverse.charAt(end) == separator.charAt(0)) {
                 end++;
             }
             int firstSlash = NR_DISPLAYED_FRONT_DIRS > 0 ? Integer.MAX_VALUE : -1;
             for (int i = NR_DISPLAYED_FRONT_DIRS; i > 0 && firstSlash > 0; i--) {
-                firstSlash = builder.indexOf(SLASH, st);
+                firstSlash = builder.indexOf(separator, st);
                 st = firstSlash + 1;
             }
             int lastSlash = NR_DISPLAYED_TRAILING_DIRS > 0 ? Integer.MAX_VALUE : -1;
             for (int i = NR_DISPLAYED_TRAILING_DIRS; i > 0 && lastSlash > 0; i--) {
-                lastSlash = reverse.indexOf(SLASH, end);
+                lastSlash = reverse.indexOf(separator, end);
                 end = lastSlash + 1;
             }
             if (lastSlash > 0 && firstSlash > 0) {

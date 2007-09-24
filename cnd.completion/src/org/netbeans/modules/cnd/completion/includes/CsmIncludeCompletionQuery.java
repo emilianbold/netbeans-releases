@@ -48,10 +48,11 @@ public class CsmIncludeCompletionQuery {
         String usrFilePath;
         Collection<String> usrPaths = Collections.<String>emptyList();
         Collection<String> sysPaths = Collections.<String>emptyList();
-        if (childSubDir.startsWith(CsmIncludeCompletionItem.SLASH)) {
+        File fileChildSubDir = new File(childSubDir);
+        if (fileChildSubDir.isAbsolute()) {
             // special handling for absolute paths...
-            addFolderItems(CsmIncludeCompletionItem.SLASH, 
-                    CsmIncludeCompletionItem.SLASH, 
+            addFolderItems("", 
+                    "", 
                     childSubDir, true, (usrInclude != null ? usrInclude : false), 
                     true, substitutionOffset);
             return results;
