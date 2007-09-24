@@ -177,8 +177,11 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <available file="${src.dir}" property="sources.exist"/>
     </target>
     
+<!-- Disabled, the version 17 of apitest does not handle well changed JDKs,
+     for example it failed in openide/nodes for 1.5.0_11, 1.5.0_12 and Mac's 1.5.0_07
+
     <target name="netbeans" depends="projectized-common.netbeans,check-sigtest"/>
-    
+-->    
     <target name="sources-zip" depends="build-init, check-sources-exist" if="sources.exist" description="Simple sources zip creation intended for use in maven repository.">
         <mkdir dir="${netbeans.zipped.sources.dir}"/>
         <zip zipfile="${netbeans.zipped.sources.dir}/${code.name.base.dashes}.zip"
