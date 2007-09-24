@@ -1028,7 +1028,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
         @Override
         public Void visitParameterizedType(ParameterizedTypeTree tree, EnumSet<UseTypes> d) {
-            if (getCurrentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS) {
+            if (getCurrentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS &&
+                    getCurrentPath().getParentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS) {
                 //NewClass has already been handled as part of visitNewClass:
                 TreePath tp = new TreePath(getCurrentPath(), tree.getType());
                 resolveType(tp);
@@ -1082,18 +1083,21 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 }
             }
             
-            Tree extnds = tree.getExtendsClause();
-            
-            if (extnds != null) {
-                TreePath tp = new TreePath(getCurrentPath(), extnds);
-                resolveType(tp);
-                handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));
-            }
-            
-            for (Tree t : tree.getImplementsClause()) {
-                TreePath tp = new TreePath(getCurrentPath(), t);
-                resolveType(tp);
-                handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));
+            if(getCurrentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS) {
+                //NEW_CLASS already handeled by visitnewClass
+                Tree extnds = tree.getExtendsClause();
+
+                if (extnds != null) {
+                    TreePath tp = new TreePath(getCurrentPath(), extnds);
+                    resolveType(tp);
+                    handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));
+                }
+
+                for (Tree t : tree.getImplementsClause()) {
+                    TreePath tp = new TreePath(getCurrentPath(), t);
+                    resolveType(tp);
+                    handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));
+                }
             }
             
             handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.DECLARATION));
