@@ -24,7 +24,6 @@ import java.beans.*;
 import java.lang.ref.WeakReference;
 import java.security.*;
 
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 
@@ -36,12 +35,12 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 
 public class FormPropertyEditor implements PropertyEditor,
                                            PropertyChangeListener,
-                                           EnhancedPropertyEditor,
                                            ExPropertyEditor
 {
     private static String NO_VALUE_TEXT;
 
     private Object value = BeanSupport.NO_VALUE;
+    private boolean valueEdited;
 
     private FormProperty property;
     private WeakReference propertyEnv;
@@ -56,7 +55,7 @@ public class FormPropertyEditor implements PropertyEditor,
         this.property = property;
         PropertyEditor prEd = property.getCurrentEditor();
         if (prEd != null) {
-            prEd.addPropertyChangeListener(this);
+            prEd.addPropertyChangeListener(this); // [do we really need to listen to this editor??]
             value = prEd.getValue();
         }
     }
@@ -86,8 +85,10 @@ public class FormPropertyEditor implements PropertyEditor,
 
     public void propertyChange(PropertyChangeEvent evt) {
         PropertyEditor prEd = property.getCurrentEditor();
-        if (prEd != null)
+        if (prEd != null) {
             value = prEd.getValue();
+            valueEdited = false;
+        }
 
         // we run this as privileged to avoid security problems - because
         // the property change can be fired from untrusted property editor code
@@ -111,10 +112,19 @@ public class FormPropertyEditor implements PropertyEditor,
      */
     public void setValue(Object newValue) {
         value = newValue;
+        valueEdited = false;
 
         PropertyEditor prEd = property.getCurrentEditor();
         if (value != BeanSupport.NO_VALUE && prEd != null)
             prEd.setValue(value);
+    }
+
+    void setEditedValue(Object newValue) {
+        value = newValue;
+        // the value comes from custom editing where the selected editor can be
+        // different at this moment than the current editor of the edited property
+        valueEdited = true;
+        firePropertyChange();
     }
 
     /**
@@ -123,8 +133,13 @@ public class FormPropertyEditor implements PropertyEditor,
      * @return The value of the property.
      */
     public Object getValue() {
-        PropertyEditor prEd = property.getCurrentEditor();
-        return prEd != null ? prEd.getValue() : value;
+        if (!valueEdited) {
+            PropertyEditor prEd = property.getCurrentEditor();
+            if (prEd != null) {
+                return prEd.getValue();
+            }
+        }
+        return value;
     }
 
     // -----------------------------------------------------------------------------
@@ -375,39 +390,6 @@ public class FormPropertyEditor implements PropertyEditor,
             else allEditors = typeEditors;
         }
         return allEditors;
-    }
-
-    // -----------------------------------------------------------------------------
-    // EnhancedPropertyEditor implementation
-
-    /** Get an in-place editor.
-     * @return a custom property editor to be shown inside the property
-     *         sheet
-     */
-    public Component getInPlaceCustomEditor() {
-        PropertyEditor prEd = property.getCurrentEditor();
-        return prEd instanceof EnhancedPropertyEditor ?
-               ((EnhancedPropertyEditor)prEd).getInPlaceCustomEditor() : null;
-    }
-
-    /** Test for support of in-place custom editors.
-     * @return <code>true</code> if supported
-     */
-    public boolean hasInPlaceCustomEditor() {
-        PropertyEditor prEd = property.getCurrentEditor();
-        return prEd instanceof EnhancedPropertyEditor ?
-               ((EnhancedPropertyEditor)prEd).hasInPlaceCustomEditor() : false;
-    }
-
-    /** Test for support of editing of tagged values.
-     * Must also accept custom strings, otherwise you may may specify a standard property editor accepting only tagged values.
-     * @return <code>true</code> if supported
-     */
-    public boolean supportsEditingTaggedValues() {
-        PropertyEditor prEd = property.getCurrentEditor();
-        return prEd instanceof EnhancedPropertyEditor ?
-               ((EnhancedPropertyEditor)prEd).supportsEditingTaggedValues() :
-               Boolean.TRUE.equals(property.getValue("canEditAsText")); // NOI18N
     }
 
     // -------------------------------------------------------------

@@ -20,14 +20,17 @@
 package org.netbeans.modules.form;
 
 import org.openide.awt.Mnemonics;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
 import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditor;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import javax.swing.*;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
@@ -36,9 +39,8 @@ import org.jdesktop.layout.LayoutStyle;
  *
  * @author  Ian Formanek, Vladimir Zboril
  */
-public class FormCustomEditor extends JPanel
-                              implements EnhancedCustomPropertyEditor
-{
+public class FormCustomEditor extends JPanel implements PropertyChangeListener {
+
     private static final int DEFAULT_WIDTH  = 350;
     private static final int DEFAULT_HEIGHT = 350;
 
@@ -182,6 +184,9 @@ public class FormCustomEditor extends JPanel
             }
         }
 
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addPropertyChangeListener(this);
+
         // build layout when the combo box is filled
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -258,53 +263,71 @@ public class FormCustomEditor extends JPanel
         }
     }
 
-    // -----------------------------------------------------------------------------
-    // EnhancedCustomPropertyEditor implementation
-
-    /** Get the customized property value.
-     * @return the property value
-     * @exception InvalidStateException when the custom property editor does
-     * not contain a valid property value (and thus it should not be set)
+    /**
+     * Called by property sheet when OK button is pressed and the value is valid.
      */
-    public Object getPropertyValue() throws IllegalStateException {
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
+                && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            Object value = commitChanges0();
+            editor.setEditedValue(value); // set the value to the main editor
+        }
+    }
+
+    /**
+     * Used by PropertyAction to mimic property sheet behavior - trying to invoke
+     * PropertyEnv listener of the current property editor (we can't create our
+     * own PropertyEnv instance).
+     */
+    public Object commitChanges() throws PropertyVetoException {
         int currentIndex = editorsCombo.getSelectedIndex();
-        PropertyEditor currentEditor = currentIndex > -1 ?
-                                       allEditors[currentIndex] : null;
-        Component currentCustomEditor = currentIndex > -1 ?
-                                        allCustomEditors[currentIndex] : null;
-        Object value;
-
-        if (currentCustomEditor instanceof EnhancedCustomPropertyEditor) {
-            // current editor is EnhancedCustomPropertyEditor too
-            value = ((EnhancedCustomPropertyEditor) currentCustomEditor)
-                                                        .getPropertyValue();
-        }
-        else if (currentIndex > -1) {
-            value = validValues[currentIndex] ? currentEditor.getValue() :
-                                                BeanSupport.NO_VALUE;
-        }
-        else value = editor.getValue();
-
-        // set the current property editor to FormPropertyEditor (to be used as
-        // the custom editor provider next time; and also for code generation);
-        // it should be set for all properties (of all nodes selected)
-        if (currentIndex > -1) {
-            if(editor.getPropertyEnv() == null) {
-                value = new FormProperty.ValueWithEditor(value, currentEditor);
-            } else {
-                Object[] nodes = editor.getPropertyEnv().getBeans();
-                if (nodes == null || nodes.length <= 1) {
-                    value = new FormProperty.ValueWithEditor(value, currentEditor);
-                }
-                else { // there are more nodes selected
-                    value = new FormProperty.ValueWithEditor(value, currentIndex);
-                }
+        PropertyEditor currentEditor = currentIndex > -1 ? allEditors[currentIndex] : null;
+        if (currentEditor instanceof ExPropertyEditor) {
+            // we can only guess - according to the typical pattern the propetry
+            // editor itself or the custom editor usually implement the listener
+            // registered in PropertyEnv
+            PropertyChangeEvent evt = new PropertyChangeEvent(
+                    this, PropertyEnv.PROP_STATE, null, PropertyEnv.STATE_VALID);
+            if (currentEditor instanceof VetoableChangeListener) {
+                ((VetoableChangeListener)currentEditor).vetoableChange(evt);
+            }
+            Component currentCustEd = currentIndex > -1 ? allCustomEditors[currentIndex] : null;
+            if (currentCustEd instanceof VetoableChangeListener) {
+                ((VetoableChangeListener)currentCustEd).vetoableChange(evt);
+            }
+            if (currentEditor instanceof PropertyChangeListener) {
+                ((PropertyChangeListener)currentEditor).propertyChange(evt);
+            }
+            if (currentCustEd instanceof PropertyChangeListener) {
+                ((PropertyChangeListener)currentCustEd).propertyChange(evt);
             }
         }
+        return commitChanges0();
+    }
 
-        if (!editor.getProperty().canWrite() && (value instanceof FormProperty.ValueWithEditor)) { // Issue 83770
-            value = ((FormProperty.ValueWithEditor)value).getValue();
+    private Object commitChanges0() {
+        int currentIndex = editorsCombo.getSelectedIndex();
+        PropertyEditor currentEditor = currentIndex > -1 ? allEditors[currentIndex] : null;
+        if (currentEditor != null) {
+            // assuming the editor already has the new value set through PropertyEnv listener
+            Object value = validValues[currentIndex] ? currentEditor.getValue() : BeanSupport.NO_VALUE;
+            if (editor.getProperty().canWrite()) { // issue 83770
+                // create a special "value with editor" to switch the current
+                // editor in FormProperty
+                if (editor.getPropertyEnv() == null) {
+                    value = new FormProperty.ValueWithEditor(value, currentEditor);
+                } else {
+                    Object[] nodes = editor.getPropertyEnv().getBeans();
+                    if (nodes == null || nodes.length <= 1) {
+                        value = new FormProperty.ValueWithEditor(value, currentEditor);
+                    }
+                    else { // there are more nodes selected
+                        value = new FormProperty.ValueWithEditor(value, currentIndex);
+                    }
+                }
+            }
+            return value;
         }
-        return value;
+        return BeanSupport.NO_VALUE;
     }
 }
