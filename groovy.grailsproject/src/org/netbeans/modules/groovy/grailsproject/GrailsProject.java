@@ -26,13 +26,13 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.groovy.grails.api.Settings;
 
 /**
  *
@@ -43,13 +43,14 @@ public final class GrailsProject implements Project {
     private final FileObject projectDir;
     private final ProjectState projectState;
     private final LogicalViewProvider logicalView;
+    private final Settings grailsServerSettings = Settings.getInstance();
 
     private Lookup lookup;
 
     public GrailsProject(FileObject projectDir, ProjectState projectState) {
         this.projectDir = projectDir;
         this.projectState = projectState;
-        this.logicalView = new GrailsLogicalViewProvider(this);
+        this.logicalView = new GrailsLogicalViewProvider(this, grailsServerSettings);
     }
 
     public FileObject getProjectDirectory() {

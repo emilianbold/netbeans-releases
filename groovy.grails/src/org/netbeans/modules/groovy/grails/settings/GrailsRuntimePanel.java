@@ -1,5 +1,6 @@
 package org.netbeans.modules.groovy.grails.settings;
 
+import org.netbeans.modules.groovy.grails.api.Settings;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
@@ -13,7 +14,7 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
 
     GrailsRuntimePanel(GrailsRuntimeOptionsPanelController controller) {
         this.controller = controller;
-        settings = new Settings();
+        this.settings = Settings.getInstance();
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
     }
