@@ -59,6 +59,8 @@ public class JBDeploymentFactory implements DeploymentFactory {
     
     private static final String DISCONNECTED_URI = "jboss-deployer:http://localhost:8080&"; // NOI18N
     
+    private static final Logger LOGGER = Logger.getLogger(JBDeploymentFactory.class.getName());
+    
     private static JBDeploymentFactory instance;
     
     public static synchronized DeploymentFactory create() {
@@ -97,16 +99,22 @@ public class JBDeploymentFactory implements DeploymentFactory {
            } 
 
            return super.getResources(name);
-       }         
+       }
     }
 
     public static URLClassLoader getJBClassLoader(String serverRoot, String domainRoot) {
         try {
-            // dom4j.jar library for JBoss Application Server 4.0.4 and lower and JBoss Application Server 5.0
-            File dom404 = new File(serverRoot + "/lib/dom4j.jar"); // NOI18N
 
-            // dom4j.jar library for JBoss Application Server 4.0.5
-            File dom405 = new File(domainRoot + "/lib/dom4j.jar"); // NOI18N
+            // dom4j.jar library for JBoss Application Server 4.0.4 and lower and JBoss Application Server 5.0
+            File domFile = new File(serverRoot + "/lib/dom4j.jar"); // NOI18N
+            if (!domFile.exists()) {
+                // dom4j.jar library for JBoss Application Server 4.0.5
+                domFile = new File(domainRoot + "/lib/dom4j.jar"); // NOI18N
+            }
+            if (!domFile.exists()) {
+                domFile = null;
+                LOGGER.log(Level.INFO, "No dom4j.jar availabale on classpath"); // NOI18N
+            }
 
             // jboss-common-client.jar JBoss Application Server 4.x
             File client40 = new File(serverRoot + "/client/jboss-common-client.jar"); // NOI18N
@@ -121,28 +129,34 @@ public class JBDeploymentFactory implements DeploymentFactory {
             File logging50 = new File(serverRoot + "/client/jboss-logging-spi.jar"); // NOI18N
 
             List<URL> urlList = new ArrayList<URL>();
-            
+
             urlList.add(new File(serverRoot + "/client/jbossall-client.jar").toURI().toURL());      //NOI18N
             urlList.add(new File(serverRoot + "/client/jboss-deployment.jar").toURI().toURL());     //NOI18N
             urlList.add(new File(serverRoot + "/client/jnp-client.jar").toURI().toURL());           //NOI18N
-            urlList.add((dom404.exists()) ? (dom404.toURI().toURL()) : (dom405.toURI().toURL()));   //NOI18N
+            if (domFile != null) {
+                urlList.add(domFile.toURI().toURL());
+            }
 
-            if(client40.exists())
+            if (client40.exists()) {
                 urlList.add(client40.toURI().toURL());
+            }
 
-            if(client50.exists())
+            if (client50.exists()) {
                 urlList.add(client50.toURI().toURL());
+            }
 
-            if(core50.exists())
+            if (core50.exists()) {
                 urlList.add(core50.toURI().toURL());
+            }
 
-            if(logging50.exists())
+            if (logging50.exists()) {
                 urlList.add(logging50.toURI().toURL());
-            
+            }
+
             URLClassLoader loader = new JBClassLoader(urlList.toArray(new URL[] {}), JBDeploymentFactory.class.getClassLoader());
             return loader;
         } catch (Exception e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e);
+            LOGGER.log(Level.WARNING, null, e);
         }
         return null;
     }
@@ -176,7 +190,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 jbossFactories.put(jbossRoot, jbossFactory);
             }
         } catch (Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
         }
 
         return jbossFactory;
@@ -205,7 +219,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
             }
             catch (Exception e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
 
             return new JBDeploymentManager(df.getDeploymentManager(jbURI, uname, passwd), uri, uname, passwd);
@@ -242,7 +256,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
             }
             catch (Exception e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
 
             return new JBDeploymentManager((df != null ? df.getDisconnectedDeploymentManager(jbURI) : null), uri, null, null);
@@ -283,7 +297,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             }
         }
         catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.SEVERE, ioe.getMessage());
+            LOGGER.log(Level.SEVERE, ioe.getMessage());
         }
     }
     
@@ -316,7 +330,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
         for (FileObject instanceFO : serverInstanceDir.getChildren()) {
             String url = (String)instanceFO.getAttribute(InstanceProperties.URL_ATTR);
             if (url == null) { // can occur if some unxpected file is in the directory
-                Logger.getLogger("global").log(Level.INFO, "No server URL in " + FileUtil.getFileDisplayName(instanceFO));
+                LOGGER.log(Level.INFO, "No server URL in " + FileUtil.getFileDisplayName(instanceFO));
             } else if (url.startsWith(URI_PREFIX)) { // it's JBoss instance
                 String installedLocation = (String)instanceFO.getAttribute(JBPluginProperties.PROPERTY_SERVER_DIR);
                 String installedLocationCan = new File(installedLocation).getCanonicalPath();
