@@ -67,7 +67,9 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     />
   </target>
   
-  <target name="compile"/>
+  <target name="compile">
+      <mkdir dir="${build.classes.dir}"/>
+  </target>
 
   <!-- Need todo: Decide how to handle genlist, especially since it's changing. -->
   <!-- Note: jars has to be the last use of locjar so that inferring the        -->
