@@ -1,26 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--
- The contents of this file are subject to the terms
- of the Common Development and Distribution License
- (the "License").  You may not use this file except
- in compliance with the License.
-
- You can obtain a copy of the license at
- glassfish/bootstrap/legal/CDDLv1.0.txt or
- https://glassfish.dev.java.net/public/CDDLv1.0.html.
- See the License for the specific language governing
- permissions and limitations under the License.
-
- When distributing Covered Code, include this CDDL
- HEADER in each file and include the License file at
- glassfish/bootstrap/legal/CDDLv1.0.txt.  If applicable,
- add the following below this CDDL HEADER, with the
- fields enclosed by brackets "[]" replaced with your
- own identifying information: Portions Copyright [yyyy]
- [name of copyright owner]
--->
-
 <xsd:schema
      targetNamespace="http://java.sun.com/xml/ns/javaee"
      xmlns:javaee="http://java.sun.com/xml/ns/javaee"
@@ -30,43 +8,50 @@
      version="5">
   <xsd:annotation>
     <xsd:documentation>
-      @(#)javaee_5.xsds	1.62 05/12/02
+      @(#)javaee_5.xsds	1.65 06/02/17
     </xsd:documentation>
   </xsd:annotation>
 
   <xsd:annotation>
     <xsd:documentation>
 
-      Copyright 2003-2005 Sun Microsystems, Inc.
-      4150 Network Circle
-      Santa Clara, California 95054
-      U.S.A
-      All rights reserved.
+      DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-      Sun Microsystems, Inc. has intellectual property rights
-      relating to technology described in this document. In
-      particular, and without limitation, these intellectual
-      property rights may include one or more of the U.S. patents
-      listed at http://www.sun.com/patents and one or more
-      additional patents or pending patent applications in the
-      U.S. and other countries.
+      Copyright 2003-2007 Sun Microsystems, Inc. All rights reserved.
 
-      This document and the technology which it describes are
-      distributed under licenses restricting their use, copying,
-      distribution, and decompilation. No part of this document
-      may be reproduced in any form by any means without prior
-      written authorization of Sun and its licensors, if any.
+      The contents of this file are subject to the terms of either the
+      GNU General Public License Version 2 only ("GPL") or the Common
+      Development and Distribution License("CDDL") (collectively, the
+      "License").  You may not use this file except in compliance with
+      the License. You can obtain a copy of the License at
+      https://glassfish.dev.java.net/public/CDDL+GPL.html or
+      glassfish/bootstrap/legal/LICENSE.txt.  See the License for the
+      specific language governing permissions and limitations under the
+      License.
 
-      Third-party software, including font technology, is
-      copyrighted and licensed from Sun suppliers.
+      When distributing the software, include this License Header
+      Notice in each file and include the License file at
+      glassfish/bootstrap/legal/LICENSE.txt.  Sun designates this
+      particular file as subject to the "Classpath" exception as
+      provided by Sun in the GPL Version 2 section of the License file
+      that accompanied this code.  If applicable, add the following
+      below the License Header, with the fields enclosed by brackets []
+      replaced by your own identifying information:
+      "Portions Copyrighted [year] [name of copyright owner]"
 
-      Sun, Sun Microsystems, the Sun logo, Solaris, Java, J2EE,
-      JavaServer Pages, Enterprise JavaBeans and the Java Coffee
-      Cup logo are trademarks or registered trademarks of Sun
-      Microsystems, Inc. in the U.S. and other countries.
+      Contributor(s):
 
-      Federal Acquisitions: Commercial Software - Government Users
-      Subject to Standard License Terms and Conditions.
+      If you wish your version of this file to be governed by only the
+      CDDL or only the GPL Version 2, indicate your decision by adding
+      "[Contributor] elects to include this software in this
+      distribution under the [CDDL or GPL Version 2] license."  If you
+      don't indicate a single choice of license, a recipient has the
+      option to distribute your version of this file under either the
+      CDDL, the GPL Version 2 or to extend the choice of license to its
+      licensees as provided above.  However, if you add GPL Version 2
+      code and therefore, elected the GPL Version 2 license, then the
+      option applies only if the new code is made subject to such
+      option by the copyright holder.
 
     </xsd:documentation>
   </xsd:annotation>
@@ -251,16 +236,19 @@ Deployment File may indicate one of the following:
 
 	The ejb-local-refType is used by ejb-local-ref elements for
 	the declaration of a reference to an enterprise bean's local
-	home. The declaration consists of:
+	home or to the local business interface of a 3.0 bean.
+        The declaration consists of:
 
 	    - an optional description
 	    - the EJB reference name used in the code of the Deployment
 	      Component that's referencing the enterprise bean.
 	    - the optional expected type of the referenced enterprise bean
 	    - the optional expected local interface of the referenced
-              enterprise bean
+              enterprise bean or the local business interface of the
+              referenced enterprise bean.
 	    - the optional expected local home interface of the referenced
-              enterprise bean
+              enterprise bean. Not applicable if this ejb-local-ref refers
+              to the local business interface of a 3.0 bean.
 	    - optional ejb-link information, used to specify the
 	      referenced enterprise bean
             - optional elements to define injection of the named enterprise
@@ -352,8 +340,9 @@ Deployment File may indicate one of the following:
       <xsd:documentation>
 
 	The ejb-refType is used by ejb-ref elements for the
-	declaration of a reference to an enterprise bean's home. The
-	declaration consists of:
+	declaration of a reference to an enterprise bean's home or
+        to the remote business interface of a 3.0 bean.
+	The declaration consists of:
 
 	    - an optional description
 	    - the EJB reference name used in the code of
@@ -361,8 +350,11 @@ Deployment File may indicate one of the following:
 	      bean.
 	    - the optional expected type of the referenced enterprise bean
             - the optional remote interface of the referenced enterprise bean
+              or the remote business interface of the referenced enterprise
+              bean
 	    - the optional expected home interface of the referenced
-              enterprise bean
+              enterprise bean.  Not applicable if this ejb-ref
+              refers to the remote business interface of a 3.0 bean.
 	    - optional ejb-link information, used to specify the
 	      referenced enterprise bean
             - optional elements to define injection of the named enterprise
@@ -1259,8 +1251,9 @@ Deployment File may indicate one of the following:
 		  - an optional persistence unit name.  If not specified,
                     the default persistence unit is assumed.
 		  - an optional specification as to whether
-		    the persistence context is Transactional or
-		    Extended.  If not specificed, Transactional is assumed.
+		    the persistence context type is Transaction or
+		    Extended.  If not specified, Transaction is assumed.
+                  - an optional list of persistence properties
 		  - optional injection targets
 
 	  Examples:
@@ -1327,6 +1320,25 @@ Deployment File may indicate one of the following:
 		   type="javaee:persistence-context-typeType"
 		   minOccurs="0"/>
 
+      <xsd:element name="persistence-property"
+		   type="javaee:propertyType"
+		   minOccurs="0"
+		   maxOccurs="unbounded">
+        <xsd:annotation>
+	  <xsd:documentation>
+
+            Used to specify properties for the container or persistence
+            provider.  Vendor-specific properties may be included in
+            the set of properties.  Properties that are not recognized
+            by a vendor must be ignored.  Entries that make use of the
+            namespace javax.persistence and its subnamespaces must not
+            be used for vendor-specific properties.  The namespace
+            javax.persistence is reserved for use by the specification.
+
+	  </xsd:documentation>
+	</xsd:annotation>
+      </xsd:element>
+
       <xsd:group ref="javaee:resourceGroup"/>
 
     </xsd:sequence>
@@ -1345,14 +1357,14 @@ Deployment File may indicate one of the following:
 
 	The value of the persistence-context-type element must be
 	one of the following:
-	    Transactional
+	    Transaction
             Extended
 
       </xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
       <xsd:restriction base="javaee:string">
-	<xsd:enumeration value="Transactional"/>
+	<xsd:enumeration value="Transaction"/>
 	<xsd:enumeration value="Extended"/>
       </xsd:restriction>
     </xsd:simpleContent>
@@ -1440,6 +1452,28 @@ Deployment File may indicate one of the following:
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:ID"/>
 
+  </xsd:complexType>
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="propertyType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+	Specifies a name/value pair.
+
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:sequence>
+      <xsd:element name="name"
+		   type="javaee:xsdStringType">
+      </xsd:element>
+      <xsd:element name="value"
+		   type="javaee:xsdStringType">
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
   </xsd:complexType>
 
 <!-- **************************************************** -->
