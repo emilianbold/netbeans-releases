@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE codetemplates PUBLIC "-//NetBeans//DTD Editor Code Templates settings 1.0//EN" "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 <codetemplates>
+    <codetemplate abbreviation="l" descriptionId="ct_l" contexts="ruby">
+<code><![CDATA[=> ]]></code>
+    </codetemplate>
+  <codetemplate abbreviation=":" descriptionId="ct_colon" uuid="840B9C4C-7037-4C3B-9028-EB9DC75EDB3E">
+    <code>
+<![CDATA[:${1 default="key"} => "${2 default="value"}"${4 default=", "}]]>
+    </code>
+  </codetemplate>
     <codetemplate abbreviation="td" descriptionId="ct_td"><code><![CDATA[<td>${cursor}</td>]]></code></codetemplate>
     <codetemplate abbreviation="table"><code><![CDATA[<table border="1">
 <tr>
