@@ -690,7 +690,12 @@ class BracketCompletion {
    * Returns true if bracket completion is enabled in options.
    */
   private static boolean completionSettingEnabled() {
-    return ((Boolean)Settings.getValue(JavaKit.class, JavaSettingsNames.PAIR_CHARACTERS_COMPLETION)).booleanValue();
+      Object result = Settings.getValue(JavaKit.class, JavaSettingsNames.PAIR_CHARACTERS_COMPLETION);
+      if (result == null) {
+          return false;
+      } else {
+          return ((Boolean) result).booleanValue();
+  }
   }
 
   /**

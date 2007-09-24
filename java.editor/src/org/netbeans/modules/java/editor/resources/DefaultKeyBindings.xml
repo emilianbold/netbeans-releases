@@ -42,4 +42,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="generate-code" key="O-INSERT"/>
+    <bind actionName="complete-line" key="D-SEMICOLON"/>
+    <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>
 </bindings>

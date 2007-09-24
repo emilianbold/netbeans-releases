@@ -44,6 +44,7 @@ import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.java.editor.codegen.InsertSemicolonAction;
 import org.netbeans.modules.java.editor.codegen.GenerateCodeAction;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
@@ -228,6 +229,8 @@ public class JavaKit extends NbEditorKit {
 				   new InstantRenameAction(),
                                    new JavaFixImports(),
                                    new GenerateCodeAction(),
+                                   new InsertSemicolonAction(true),
+                                   new InsertSemicolonAction(false),
                                    new SelectCodeElementAction(selectNextElementAction, true),
                                    new SelectCodeElementAction(selectPreviousElementAction, false),
                                    
