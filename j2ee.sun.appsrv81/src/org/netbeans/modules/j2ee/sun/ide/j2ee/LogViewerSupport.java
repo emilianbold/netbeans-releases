@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.WeakHashMap;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
@@ -93,6 +95,25 @@ public final class LogViewerSupport extends Thread {
 
             logViewer.sampleInterval = sampleInterval;
             logViewer.startAtBeginning = startAtBeginning;
+            Deployment.getDefault().addInstanceListener(new InstanceListener() {
+
+                public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID) {
+                }
+
+                public void instanceAdded(String serverInstanceID) {
+                }
+
+                public void instanceRemoved(String serverInstanceID) {
+                    //throw new UnsupportedOperationException("Not supported yet.");
+                    if (serverInstanceID != null &&
+                            serverInstanceID.equals(url)) {
+                        removeLogViewerSupport(url);
+                        Deployment.getDefault().removeInstanceListener(this);
+                    }
+                    
+                }
+            
+            });
             return logViewer;
         }
     }
