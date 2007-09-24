@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -140,7 +141,7 @@ public class BadgeProvider {
                     return getFiles(entry.getKey());
                 }
             }
-            return null;
+            return Collections.<CsmUID<CsmFile>>emptySet();
         }
         
         public void clear(){
@@ -157,7 +158,7 @@ public class BadgeProvider {
             CsmProject project = file.getProject();
             if (project != null) {
                 Set<CsmUID<CsmFile>> set = getFiles(project);
-                if (set != null){
+                if (set != null && set.size()>0){
                     set.remove(file.getUID());
                 }
             }
