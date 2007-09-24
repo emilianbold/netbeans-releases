@@ -22,12 +22,14 @@ package org.netbeans.modules.form.editors2;
 
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.*;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
 
 import java.beans.*;
 import java.awt.*;
 import java.util.HashMap;
 import javax.swing.*;
 import java.util.ResourceBundle;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  *
@@ -35,8 +37,7 @@ import java.util.ResourceBundle;
  */
 
 public class CursorEditor extends PropertyEditorSupport  implements
-                                                         EnhancedPropertyEditor,
-                                                         org.openide.explorer.propertysheet.editors.XMLPropertyEditor, 
+                                                         ExPropertyEditor, XMLPropertyEditor, 
                                                          org.netbeans.modules.form.NamedPropertyEditor {
 
     private static HashMap CURSOR_TYPES = new HashMap();
@@ -73,11 +74,18 @@ public class CursorEditor extends PropertyEditorSupport  implements
         CURSOR_CONSTANTS.put(new Integer(Cursor.WAIT_CURSOR), "java.awt.Cursor.WAIT_CURSOR"); // NOI18N
     }
 
-    Cursor current;
+    private Cursor current;
+
+    private PropertyEnv env;
 
     /** Creates new CursorEditor */
     public CursorEditor() {
         current = new Cursor(Cursor.DEFAULT_CURSOR);
+    }
+
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
+        env.getFeatureDescriptor().setValue("canEditAsText", Boolean.TRUE); // NOI18N
     }
 
     public Object getValue() {
@@ -109,10 +117,6 @@ public class CursorEditor extends PropertyEditorSupport  implements
         }
     }
 
-    public boolean supportsEditingTaggedValues() {
-        return true;
-    }
-
     public String[] getTags() {
         String [] tags = new String[CURSOR_TYPES.size()];
         int i=0;
@@ -121,20 +125,12 @@ public class CursorEditor extends PropertyEditorSupport  implements
         return tags;
     }
 
-    public boolean hasInPlaceCustomEditor() {
-        return false;
-    }
-
-    public Component getInPlaceCustomEditor() {
-        return null;
-    }
-
     public boolean supportsCustomEditor() {
         return true;
     }
 
     public Component getCustomEditor() {
-        return new CursorPanel(current);
+        return new CursorPanel();
     }
 
     public String getJavaInitializationString() {
@@ -145,14 +141,19 @@ public class CursorEditor extends PropertyEditorSupport  implements
         return "new java.awt.Cursor("+current.getType()+")"; // NOI18N
     }
 
-    static class CursorPanel extends JPanel implements EnhancedCustomPropertyEditor {
-        CursorPanel(Cursor value) {
+    class CursorPanel extends JPanel implements PropertyChangeListener {
+        private JList list;
+
+        CursorPanel() {
             setLayout(new java.awt.GridBagLayout());
             java.awt.GridBagConstraints gridBagConstraints1;
             list = new JList(new java.util.Vector(CURSOR_TYPES.keySet()));
             list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-            if (value != null)
-                list.setSelectedValue(value.getName(), true);
+            if (current != null) {
+                list.setSelectedValue(current.getName(), true);
+            }
+            env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            env.addPropertyChangeListener(this);
 
             ResourceBundle bundle = org.openide.util.NbBundle.getBundle(CursorEditor.class);
             JLabel cursorListLabel = new JLabel();
@@ -183,13 +184,19 @@ public class CursorEditor extends PropertyEditorSupport  implements
             getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CursorCustomEditor"));
         }
 
-        public Object getPropertyValue() throws IllegalStateException {
-            if (list.getSelectedValue()==null) return null;
-            int type =((Integer) CURSOR_TYPES.get(list.getSelectedValue())).intValue();
-            return new Cursor(type);
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
+                    && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+                Cursor cursor;
+                if (list.getSelectedValue() == null) {
+                    cursor = null;
+                } else {
+                    int type =((Integer) CURSOR_TYPES.get(list.getSelectedValue())).intValue();
+                    cursor = new Cursor(type);
+                }
+                setValue(cursor);
+            }
         }
-
-        private JList list;
     }
 
     //--------------------------------------------------------------------------

@@ -28,13 +28,16 @@ import javax.swing.table.*;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.netbeans.modules.form.NamedPropertyEditor;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
 * A property editor for javax.swing.table.TableModel.
 * @author Ian Formanek, Tomas Pavek
 */
 
-public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, NamedPropertyEditor {
+public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
+                                         ExPropertyEditor, NamedPropertyEditor {
 
     public TableModelEditor() {
         support = new PropertyChangeSupport (this);
@@ -170,7 +173,11 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, Name
     }
 
     public Component getCustomEditor () {
-        return new CustomTableModelEditor (this);
+        return new CustomTableModelEditor(this, env);
+    }
+
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
     }
 
     public void addPropertyChangeListener (PropertyChangeListener propertyChangeListener) {
@@ -814,4 +821,6 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, Name
 
     private NbTableModel table;
     private PropertyChangeSupport support;
+    private PropertyEnv env;
+
 }

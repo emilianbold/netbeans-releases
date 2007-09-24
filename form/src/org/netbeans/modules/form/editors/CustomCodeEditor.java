@@ -20,26 +20,29 @@
 package org.netbeans.modules.form.editors;
 
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditor;
 import javax.swing.undo.UndoManager;
 import org.netbeans.editor.BaseDocument;
 import org.openide.awt.Mnemonics;
-import org.openide.nodes.Node;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 /** Customizer for "code properties" used by JavaCodeGenerator.
  *
  * @author  vzboril
  */
 
-public class CustomCodeEditor extends javax.swing.JPanel
-                              implements EnhancedCustomPropertyEditor
-{
-    /** Creates new form CustomCodeEditor */
-    public CustomCodeEditor(Node.Property property, javax.swing.JEditorPane editorPane) {
+public class CustomCodeEditor extends javax.swing.JPanel implements PropertyChangeListener {
+    private PropertyEditor propertyEditor;
+
+    public CustomCodeEditor(PropertyEditor propertyEditor, PropertyEnv env,
+                            javax.swing.JEditorPane editorPane) {
+        this.propertyEditor = propertyEditor;
         this.editorPane = editorPane;        
         initComponents();                
         try {
-            codeEditorPane.setText((String) property.getValue()); 
+            codeEditorPane.setText((String) propertyEditor.getValue()); 
         }
         catch (Exception ex) { // ignore - should not happen
             ex.printStackTrace();
@@ -48,6 +51,9 @@ public class CustomCodeEditor extends javax.swing.JPanel
         if (um instanceof UndoManager) {
             ((UndoManager)um).discardAllEdits();
         }
+
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addPropertyChangeListener(this);
 
         java.util.ResourceBundle bundle =
             org.openide.util.NbBundle.getBundle(CustomCodeEditor.class);
@@ -153,8 +159,11 @@ public class CustomCodeEditor extends javax.swing.JPanel
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
-    
-    public Object getPropertyValue() throws IllegalStateException {
-        return codeEditorPane.getText();
-    }    
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
+                && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            propertyEditor.setValue(codeEditorPane.getText());
+        }
+    }
 }

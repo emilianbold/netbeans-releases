@@ -61,6 +61,8 @@ import java.io.*;
 import java.lang.reflect.*; 
 import java.util.*;
 import org.netbeans.api.editor.guards.GuardedSection;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  * JavaCodeGenerator is the default code generator which produces a Java source
@@ -4011,20 +4013,27 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         public PropertyEditor getExpliciteEditor() {
-            return new PropertyEditorSupport() {
-                public Component getCustomEditor() {
-                    return new CustomCodeEditor(CodeProperty.this,
-                                                FormEditor.createCodeEditorPane(formModel));
-                }
-
-                public boolean supportsCustomEditor() {
-                    return true;
-                }
-            };
+            return new CodeEditor();
         }
 
         public boolean canWrite() {
             return JavaCodeGenerator.this.canGenerate && !formModel.isReadOnly();
+        }
+    }
+
+    private class CodeEditor extends PropertyEditorSupport implements ExPropertyEditor {
+        private PropertyEnv env;
+
+        public void attachEnv(PropertyEnv env) {
+            this.env = env;
+        }
+
+        public Component getCustomEditor() {
+            return new CustomCodeEditor(this, env, FormEditor.createCodeEditorPane(formModel));
+        }
+
+        public boolean supportsCustomEditor() {
+            return true;
         }
     }
 

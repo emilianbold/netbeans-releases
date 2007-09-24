@@ -21,8 +21,10 @@ package org.netbeans.modules.form.editors2;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditor;
 import java.util.ResourceBundle;
-
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -30,7 +32,7 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 
 import org.openide.awt.Mnemonics;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -39,7 +41,9 @@ import org.openide.util.Utilities;
 * @author  Jan Jancura, Ian Formanek
 * @version 1.00, 06 Oct 1998
 */
-public class CustomTableModelEditor extends JPanel implements EnhancedCustomPropertyEditor {
+public class CustomTableModelEditor extends JPanel implements PropertyChangeListener {
+
+    private PropertyEditor editor;
 
     private boolean isChangingTableModel = false;
 
@@ -84,7 +88,11 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
 
     static final long serialVersionUID =8002510111948803668L;
 
-    public CustomTableModelEditor(TableModelEditor editor) {
+    public CustomTableModelEditor(PropertyEditor editor, PropertyEnv env) {
+        this.editor = editor;
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addPropertyChangeListener(this);
+
         ResourceBundle bundle = NbBundle.getBundle(CustomTableModelEditor.class);
 
         model = new TableModelEditor.NbTableModel((TableModel)editor.getValue());
@@ -925,14 +933,12 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         isChangingTableModel = false;
     }
 
-    /**
-    * @return Returns the property value that is result of the CustomPropertyEditor.
-    * @exception InvalidStateException when the custom property editor does not represent valid property value
-    *            (and thus it should not be set)
-    */
-    public Object getPropertyValue() throws IllegalStateException {
-        updateDefaultTable();
-        return new TableModelEditor.NbTableModel(model);
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
+                && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            updateDefaultTable();
+            editor.setValue(new TableModelEditor.NbTableModel(model));
+        }
     }
 
     //
