@@ -812,16 +812,35 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
     }
     
-    protected void putPreprocState(File file, APTPreprocHandler.State state) {
+    /**
+     * This method must be called only under stateLock, 
+     * to get state lock use
+     * Object stateLock = getFileContainer().getLock(file);
+     */
+    protected final void putPreprocState(File file, APTPreprocHandler.State state) {
         getFileContainer().putPreprocState(file, state);
+    }
+    
+    protected final APTPreprocHandler.State setChangedFileState(NativeFileItem nativeFile) {
+        APTPreprocHandler.State state;
+        state = createPreprocHandler(nativeFile).getState();
+        File file = nativeFile.getFile();
+        Object stateLock = getFileContainer().getLock(file);
+        synchronized (stateLock) {
+            putPreprocState(file, state);
+        }
+        return state;
     }
     
     protected APTPreprocHandler.State getPreprocState(File file) {
         return getFileContainer().getPreprocState(file);
     }
-    
+     
     protected void invalidatePreprocState(File file) {
-        getFileContainer().invalidatePreprocState(file);
+        Object stateLock = getFileContainer().getLock(file);
+        synchronized (stateLock) {        
+            getFileContainer().invalidatePreprocState(file);
+        }
     }
     
     public void invalidateFiles() {
@@ -883,11 +902,14 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     protected APTPreprocHandler.State updateFileStateIfNeeded(FileImpl csmFile, APTPreprocHandler preprocHandler) {
         APTPreprocHandler.State state = null;
         File file = csmFile.getBuffer().getFile();
-        if (csmFile.isNeedReparse(getPreprocState(file), preprocHandler)){
-            state = preprocHandler.getState();
-            putPreprocState(file, state);
-            // invalidate file
-            csmFile.stateChanged(true);
+        Object stateLock = getFileContainer().getLock(file);
+        synchronized (stateLock) {
+            if (csmFile.isNeedReparse(getPreprocState(file), preprocHandler)){
+                state = preprocHandler.getState();
+                putPreprocState(file, state);
+                // invalidate file
+                csmFile.stateChanged(true);
+            }
         }
         return state;
     }
@@ -980,8 +1002,11 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         } else if (fileType == FileImpl.HEADER_FILE && !impl.isHeaderFile()){
             impl.setHeaderFile();
         }
-        if (initial != null && getPreprocState(file)==null){
-            putPreprocState(file, initial);
+        Object stateLock = getFileContainer().getLock(file);        
+        synchronized (stateLock) {
+            if (initial != null && getPreprocState(file)==null){
+                putPreprocState(file, initial);
+            }
         }
         return impl;
     }
@@ -1497,7 +1522,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
 
     public static ProjectBase getStartProject(final APTIncludeHandler inclHanlder) {
         // start from the first file, then use include stack
-        String startFile = inclHanlder.getStartEntry().getStartFile();
         Key key = inclHanlder.getStartEntry().getStartFileProject();
         ProjectBase prj = (ProjectBase)RepositoryUtils.get(key);
         return prj;

@@ -298,13 +298,7 @@ public final class DeepReparsingUtils {
     
     private static void addToReparse(final ProjectBase project, final NativeFileItem nativeFile, final FileImpl file) {
         file.stateChanged(true);
-        APTPreprocHandler.State state;
-        //if (file.isSourceFile()) {
-            state = project.createPreprocHandler(nativeFile).getState();
-            project.putPreprocState(file.getFile(), state);
-        //} else {
-        //    state = project.getPreprocHandler(nativeFile.getFile()).getState();
-        //}
+        APTPreprocHandler.State state = project.setChangedFileState(nativeFile);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
             System.out.println("Add file to reparse "+file.getAbsolutePath()); // NOI18N
         }
