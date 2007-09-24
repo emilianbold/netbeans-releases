@@ -61,15 +61,6 @@ public class FTPElementFactoryProvider {
         }
     }
 
-    public static class TransferFactory extends ElementFactory{
-        public Set<QName> getElementQNames() {
-            return Collections.singleton(FTPQName.TRANSFER.getQName());
-        }
-        public WSDLComponent create(WSDLComponent context, Element element) {
-            return new FTPTransferImpl(context.getModel(), element);
-        }
-    }
-
     public static class MessageFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(FTPQName.MESSAGE.getQName());
@@ -78,14 +69,4 @@ public class FTPElementFactoryProvider {
             return new FTPMessageImpl(context.getModel(), element);
         }
     }
-    /**
-    public static class MessageActivePassiveFactory extends ElementFactory{
-        public Set<QName> getElementQNames() {
-            return Collections.singleton(FTPQName.MESSAGEACTIVEPASSIVE.getQName());
-        }
-        public WSDLComponent create(WSDLComponent context, Element element) {
-            return new FTPMessageActivePassiveImpl(context.getModel(), element);
-        }
-    }
-     */
 }
