@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.bpel.nodes.children;
 
 import java.util.ArrayList;
@@ -48,10 +47,10 @@ import java.util.List;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Import;
+import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.nodes.navigator.NavigatorNodeFactory;
 import org.netbeans.modules.bpel.nodes.synchronizer.ModelSynchronizer;
 import org.netbeans.modules.bpel.nodes.synchronizer.SynchronisationListener;
-import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
@@ -76,11 +75,9 @@ public class ImportWsdlChildren extends Children.Keys implements Synchronisation
     public ImportWsdlChildren(Import importObj, Lookup lookup) {
         myLookup = lookup;
         //
-        WSDLModel wsdlModel = ResolverUtility.getImportedWsdlModel(
-                importObj.getLocation(), lookup);
-        myWsdlModel = wsdlModel;
+        myWsdlModel = ImportHelper.getWsdlModel(importObj, true);
         synchronizer = new ModelSynchronizer(this);
-        synchronizer.subscribe(wsdlModel);
+        synchronizer.subscribe(myWsdlModel);
     }
     
     protected Node[] createNodes(Object key) {

@@ -43,6 +43,7 @@ package org.netbeans.modules.bpel.nodes;
 import java.awt.Component;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.NamespaceSpec;
@@ -96,6 +97,9 @@ public class ImportNode extends BpelNode<Import> {
                 Import.LOCATION, IMPORT_LOCATION,
                 "getLocation", "setLocation", "removeLocation"); // NOI18N
         //
+        PropertyUtils.registerProperty(this, mainPropertySet,
+                DOCUMENTATION, "getDocumentation", "setDocumentation"); // NOI18N
+        //
         return sheet;
     }
     
@@ -104,22 +108,23 @@ public class ImportNode extends BpelNode<Import> {
         if (imprt == null) {
             return super.getNameImpl();
         }
-        String imprtLocation = imprt.getLocation();
-        
-        imprtLocation = ResolverUtility.decodeLocation(imprtLocation);
-        
-        FileObject fo = ResolverUtility.getImportedFile(imprtLocation, getLookup());
-        if (fo != null && fo.isValid()) {
-            String relativePath =
-                    ResolverUtility.calculateRelativePathName(fo, getLookup());
-            if (relativePath != null && relativePath.length() != 0) {
-                return relativePath;
-            }
+
+        String relativePath = getRelativePath(imprt);
+        if (relativePath != null && relativePath.length() > 0) {
+            return relativePath;
         }
-        //
-        return imprtLocation == null ? "[" + Constants.MISSING + "] " : imprtLocation; // NOI18N
+        String location = imprt.getLocation();
+        if (location != null && location.length() > 0) {
+            return ResolverUtility.decodeLocation(location);
+        }
+        String namespace = imprt.getNamespace();
+        if (namespace != null && namespace.length() > 0) {
+            return namespace;
+        }
+        //TODO:change to use NbBundle, figure out good name
+        return "Unqualified";
     }
-    
+        
 //    protected String getImplShortDescription() {
 //        Import imprt = getReference();
 //        if (imprt == null) {
@@ -215,6 +220,13 @@ public class ImportNode extends BpelNode<Import> {
         return null;
     }
     
+    private String getRelativePath(Import imprt) {
+        assert imprt != null;
+        FileObject ifo = ResolverUtility.getImportedFileObject(imprt);
+        Project modelProject = ResolverUtility.safeGetProject(imprt.getBpelModel());
+        return ResolverUtility.safeGetRelativePath(ifo, modelProject);
+    }
+    
     private DataObject getDataObject() {
         Import imprt = getReference();
         FileObject fo = null;
@@ -223,11 +235,11 @@ public class ImportNode extends BpelNode<Import> {
                 return null;
             }
 
-            fo = ResolverUtility.getImportedFile(imprt.getLocation(),getLookup());
+            fo = ResolverUtility.getImportedFileObject(imprt);
         }
         
         // to prevent IllegalArgumentException from DataObject.find(fo)
-        if (fo == null) {
+        if (fo == null || !fo.isValid()) {
             return null;
         }
         

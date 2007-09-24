@@ -198,34 +198,17 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
                 } else if (selectedNode instanceof WsdlFileNode) {
                     WSDLModel wsdlModel =
                             ((WsdlFileNode)selectedNode).getReference();
-                    FileObject wsdlFo = (FileObject)wsdlModel.getModelSource().
+                    FileObject wsdlFo = wsdlModel.getModelSource().
                             getLookup().lookup(FileObject.class);
                     text = wsdlFo.getPath();
                     fldTypeName.setText(text);
                 } else if (selectedNode instanceof ImportNode) {
                     Import importObj = ((ImportNode)selectedNode).getReference();
-                    FileObject fo = ResolverUtility.
-                            getImportedFile(importObj.getLocation(), getLookup());
-                    if (fo != null && fo.isValid()) {
-                        text = fo.getPath();
-                        fldTypeName.setText(text);
-                    } else {
-                        String importInfo = importObj.getLocation();
-                        if (importInfo == null || importInfo.length() == 0) {
-                            importInfo = importObj.getNamespace();
-                        }
-                        
-                        importInfo = ResolverUtility.decodeLocation(importInfo);
-                        
-                        String messageText = NbBundle.getMessage(FormBundle.class,
-                                "ERR_IMPORT_FILE_DOESNT_EXIST", // NOI18N
-                                importInfo, "");
-                        fldTypeName.setText(messageText);
-                    }
+                    fldTypeName.setText(ResolverUtility.getImportDescription(importObj));
                 } else if (selectedNode instanceof SchemaFileNode) {
                     SchemaModel schemaModel =
                             ((SchemaFileNode)selectedNode).getReference();
-                    FileObject wsdlFo = (FileObject)schemaModel.getModelSource().
+                    FileObject wsdlFo = schemaModel.getModelSource().
                             getLookup().lookup(FileObject.class);
                     text = wsdlFo.getPath();
                     fldTypeName.setText(text);

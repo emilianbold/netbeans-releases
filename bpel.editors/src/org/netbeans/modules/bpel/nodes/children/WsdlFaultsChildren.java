@@ -51,6 +51,7 @@ import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
+import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.xml.wsdl.model.Fault;
@@ -79,8 +80,7 @@ public class WsdlFaultsChildren extends Children.Keys {
     public WsdlFaultsChildren(Import importObj, Lookup lookup) {
         myLookup = lookup;
         //
-        WSDLModel wsdlModel = ResolverUtility.getImportedWsdlModel(
-                importObj.getLocation(), lookup);
+        WSDLModel wsdlModel = ImportHelper.getWsdlModel(importObj, true);
         if (wsdlModel != null) {
             setKeys(new Object[] {wsdlModel});
         }
@@ -92,7 +92,7 @@ public class WsdlFaultsChildren extends Children.Keys {
         }
         WSDLModel wsdlModel = (WSDLModel)key;
         ArrayList<Node> nodesList = new ArrayList<Node>();
-        NodeFactory nodeFactory = (NodeFactory)myLookup.lookup(NodeFactory.class);
+        NodeFactory nodeFactory = myLookup.lookup(NodeFactory.class);
         BpelNode.DisplayNameComparator comparator =
                 new BpelNode.DisplayNameComparator();
         //
@@ -110,7 +110,7 @@ public class WsdlFaultsChildren extends Children.Keys {
         }
         //
         String namespace = wsdlModel.getDefinitions().getTargetNamespace();
-        BpelModel bpelModel = (BpelModel)myLookup.lookup(BpelModel.class);
+        BpelModel bpelModel = myLookup.lookup(BpelModel.class);
         NamespaceContext nsContext = bpelModel.getProcess().getNamespaceContext();
         String prefix = nsContext.getPrefix(namespace);
         //

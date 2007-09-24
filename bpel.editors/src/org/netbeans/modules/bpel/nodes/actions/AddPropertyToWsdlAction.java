@@ -53,9 +53,11 @@ import org.netbeans.modules.soa.ui.form.CustomNodeEditor.EditingMode;
 import org.netbeans.modules.bpel.properties.editors.controls.SimpleCustomEditor;
 import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.bpel.editors.api.ui.valid.NodeEditorDescriptor;
+import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -82,16 +84,20 @@ public class AddPropertyToWsdlAction extends BpelNodeAction {
         if (imprt == null) {
             return;
         }
-        Lookup lookup = nodes[0].getLookup();
-        
-        FileObject fo = ResolverUtility.getImportedFile(imprt.getLocation(),lookup);
-        
-        // 
-        final WSDLModel wsdlModel = ResolverUtility.getImportedWsdlModel(
-                imprt.getLocation(), lookup);
+        final WSDLModel wsdlModel = ImportHelper.getWsdlModel(imprt, true);
         if (wsdlModel == null) {
             return;
         }
+        ModelSource modelSource = wsdlModel.getModelSource();
+        if (modelSource == null || !modelSource.isEditable()) {
+            return;
+        }
+        FileObject fo = modelSource.getLookup().lookup(FileObject.class);
+        if (fo == null || !fo.isValid() || !fo.canWrite()) {
+            return;
+        }
+        //
+        Lookup lookup = nodes[0].getLookup();
         // 
         final CorrelationProperty property = (CorrelationProperty)wsdlModel.
                 getFactory().create(
@@ -124,21 +130,27 @@ public class AddPropertyToWsdlAction extends BpelNodeAction {
     }
     
     public boolean enable(Node[] nodes) {
-        boolean result = nodes != null
-                && nodes.length == 1
-                && nodes[0] instanceof ImportWsdlNode;
-        //
-        if (result) {
-            Import imprt = ((ImportWsdlNode)nodes[0]).getReference();
-            if (imprt != null) {
-                FileObject fo = ResolverUtility.getImportedFile(imprt.getLocation(),nodes[0].getLookup());
-                if (fo != null && fo.isValid() && fo.canWrite()) {
-                    return true;
-                }
-            }
+        if (nodes == null || nodes.length != 1 || !(nodes[0] instanceof ImportWsdlNode)) {
+            return false;
+        }
+        Import imprt = ((ImportWsdlNode)nodes[0]).getReference();
+        if (imprt == null) {
+            return false;
+        }
+        final WSDLModel wsdlModel = ImportHelper.getWsdlModel(imprt, true);
+        if (wsdlModel == null) {
+            return false;
+        }
+        ModelSource modelSource = wsdlModel.getModelSource();
+        if (modelSource == null || !modelSource.isEditable()) {
+            return false;
+        }
+        FileObject fo = modelSource.getLookup().lookup(FileObject.class);
+        if (fo == null || !fo.isValid() || !fo.canWrite()) {
+            return false;
         }
         //
-        return false;
+        return true;
     }
     
     public ActionType getType() {

@@ -46,6 +46,7 @@ import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Import;
+import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.nodes.CategoryFolderNode;
 import org.netbeans.modules.bpel.nodes.children.AllImportsChildren;
 import org.netbeans.modules.bpel.nodes.children.MessagePartsChildren;
@@ -58,7 +59,6 @@ import org.netbeans.modules.bpel.nodes.children.SchemaCategoriesChildren;
 import org.netbeans.modules.bpel.nodes.children.SchemaImportsChildren;
 import org.netbeans.modules.bpel.nodes.children.WsdlImportsChildren;
 import org.netbeans.modules.bpel.properties.Constants.StereotypeFilter;
-import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -98,8 +98,7 @@ public class TypeChooserNodeFactory implements NodeFactory<NodeType> {
         Children children = null;
         Node newNode = null;
         //
-        NodeFactory nodeFactory =
-                (NodeFactory)lookup.lookup(NodeFactory.class);
+        NodeFactory nodeFactory = lookup.lookup(NodeFactory.class);
         if (!(nodeFactory instanceof TypeChooserNodeFactory)) {
             lookup = new ExtendedLookup(lookup, this);
         }
@@ -108,8 +107,7 @@ public class TypeChooserNodeFactory implements NodeFactory<NodeType> {
             case PROCESS:
                 assert ref instanceof Process;
                 //
-                StereotypeFilter stFilter = (StereotypeFilter)lookup.
-                        lookup(StereotypeFilter.class);
+                StereotypeFilter stFilter = lookup.lookup(StereotypeFilter.class);
                 if (stFilter != null && stFilter.isSingleStereotype()) {
                     VariableStereotype vs = stFilter.getAllowedStereotypes()[0];
                     switch (vs) {
@@ -155,12 +153,16 @@ public class TypeChooserNodeFactory implements NodeFactory<NodeType> {
                         break;
                     case IMPORT_SCHEMA:
                         SchemaModel schemaModel =
-                                ResolverUtility.getImportedScemaModel(
-                                importObj.getLocation(), lookup);
-                        children = new SchemaCategoriesChildren(
-                                schemaModel, lookup);
-                        newNode = myDelegate.createNode(
-                                nodeType, ref, children, lookup);
+                                ImportHelper.getSchemaModel(importObj, true);
+                        if (schemaModel != null) {
+                            children = new SchemaCategoriesChildren(
+                                    schemaModel, lookup);
+                            newNode = myDelegate.createNode(
+                                    nodeType, ref, children, lookup);
+                        } else {
+                            newNode = myDelegate.createNode(
+                                    nodeType, ref, lookup);
+                        }
                         break;
                     case IMPORT_UNKNOWN:
                         // Create a node without childern

@@ -44,7 +44,7 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.nodes.ImportNode;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
-import org.netbeans.modules.bpel.nodes.ImportWsdlNode;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.ErrorManager;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -67,6 +67,7 @@ public class OpenInEditorAction extends BpelNodeAction {
                 "CTL_OpenInEditorAction"); // NOI18N
     }
     
+    @Override
     public void performAction(Node[] nodes) {
         if (!enable(nodes)) {
             return;
@@ -77,10 +78,18 @@ public class OpenInEditorAction extends BpelNodeAction {
         }
         
         
-        FileObject fo = ResolverUtility.getImportedFile(imprt.getLocation(),nodes[0].getLookup());
+        ModelSource modelSource = ResolverUtility.getImportedModelSource(imprt);
+        if (modelSource == null) {
+            return;
+        }
+        FileObject fo = modelSource.getLookup().lookup(FileObject.class);
+        if (fo == null || !fo.isValid()) {
+            return;
+        }
+        
         try {
             DataObject d = DataObject.find(fo);
-            LineCookie lc = (LineCookie) d.getCookie(LineCookie.class);
+            LineCookie lc = d.getCookie(LineCookie.class);
             if (lc == null) {
                 return;
             }
@@ -97,22 +106,30 @@ public class OpenInEditorAction extends BpelNodeAction {
         
     }
     
+    @Override
     public boolean enable(Node[] nodes) {
-        boolean result = nodes != null
-                && nodes.length == 1
-                && nodes[0] instanceof ImportNode;
-        //
-        if (result) {
-            Import imprt = ((ImportNode)nodes[0]).getReference();
-            if (imprt != null) {
-                FileObject fo = ResolverUtility.getImportedFile(imprt.getLocation(),nodes[0].getLookup());
-                if (fo != null && fo.isValid()) {
-                    return true;
-                }
-            }
+        if (
+                nodes == null ||
+                nodes.length != 1 ||
+                !(nodes[0] instanceof ImportNode))
+        {
+            return false;
+        }
+
+        Import imprt = ((ImportNode)nodes[0]).getReference();
+        if (imprt == null) {
+            return false;
+        }
+        ModelSource modelSource = ResolverUtility.getImportedModelSource(imprt);
+        if (modelSource == null) {
+            return false;
+        }
+        FileObject fo = modelSource.getLookup().lookup(FileObject.class);
+        if (fo == null || !fo.isValid()) {
+            return false;
         }
         //
-        return false;
+        return true;
     }
     
     public ActionType getType() {

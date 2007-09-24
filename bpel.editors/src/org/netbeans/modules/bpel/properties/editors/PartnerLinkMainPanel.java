@@ -60,6 +60,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.core.helper.api.BusinessProcessHelper;
 import org.netbeans.modules.bpel.design.DnDHandler;
 import org.netbeans.modules.bpel.design.model.PartnerLinkHelper;
@@ -640,7 +641,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     }
     
     private FileObject getSource() {
-        BpelModel model = (BpelModel) myEditor.getLookup().lookup(BpelModel.class);
+        BpelModel model = myEditor.getLookup().lookup(BpelModel.class);
         
         return org.netbeans.modules.bpel.editors.api.utils.Util.
                 getFileObjectByModel(model);
@@ -1000,9 +1001,12 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                 boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(
                     list, value, index, isSelected, cellHasFocus);
-            if (value != null && value instanceof FileObject) {
-                String result = ResolverUtility.calculateRelativePathName(
-                        ((FileObject)value), myEditor.getLookup());
+            if (value instanceof FileObject) {
+                FileObject fo = (FileObject)value;
+                BpelModel bpelModel = myEditor.getLookup().lookup(BpelModel.class);
+                Project modelProject = ResolverUtility.safeGetProject(bpelModel);
+                String relativePath = ResolverUtility.safeGetRelativePath(fo, modelProject);
+                String result = relativePath != null ? relativePath : fo.getPath();
                 setText(result);
                 //
 //                    String wsdlFileName = ((FileObject)value).getName();
@@ -1362,7 +1366,11 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
 
     // vlv
     private String getRelativeName(FileObject file) {
-        String name = ResolverUtility.calculateRelativePathName(file, myEditor.getLookup());
+        BpelModel bpelModel = myEditor.getLookup().lookup(BpelModel.class);
+        Project modelProject = ResolverUtility.safeGetProject(bpelModel);
+        String relativePath = ResolverUtility.safeGetRelativePath(file, modelProject);
+        String name = relativePath != null ? relativePath : file.getPath();
+        
         int k = name.lastIndexOf(".wsdl"); // NOI18N
         
         if (k == -1) {

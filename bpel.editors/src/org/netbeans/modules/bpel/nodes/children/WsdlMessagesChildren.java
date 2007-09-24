@@ -42,12 +42,10 @@ package org.netbeans.modules.bpel.nodes.children;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.bpel.properties.Constants.StereotypeFilter;
-import org.netbeans.modules.bpel.properties.Constants.VariableStereotype;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.bpel.properties.ResolverUtility;
+import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.Children;
@@ -77,8 +75,7 @@ public class WsdlMessagesChildren extends Children.Keys {
     public WsdlMessagesChildren(Import importObj, Lookup lookup) {
         myLookup = lookup;
         //
-        WSDLModel wsdlModel = ResolverUtility.getImportedWsdlModel(
-                importObj.getLocation(), lookup);
+        WSDLModel wsdlModel = ImportHelper.getWsdlModel(importObj, true);
         if (wsdlModel != null) {
             setKeys(new Object[] {wsdlModel});
         }

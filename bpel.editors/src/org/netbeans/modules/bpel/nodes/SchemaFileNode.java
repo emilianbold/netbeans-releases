@@ -40,8 +40,9 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.properties.Constants;
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -75,17 +76,14 @@ public class SchemaFileNode extends BpelNode<SchemaModel> {
         if (ref == null) {
             return null;
         }
-        FileObject fo = (FileObject)ref.getModelSource().
-                getLookup().lookup(FileObject.class);
-        if (fo != null) {
-            String result = ResolverUtility.
-                    calculateRelativePathName(fo, getLookup());
-            if (result != null && result.length() != 0) {
-                return result;
-            }
+        FileObject fo = ref.getModelSource().getLookup().lookup(FileObject.class);
+        if (fo == null || !fo.isValid()) {
+            return null;
         }
-        //
-        return "[" + Constants.MISSING + "] " + super.getNameImpl(); // NOI18N
+        BpelModel bpelModel = getLookup().lookup(BpelModel.class);
+        Project modelProject = ResolverUtility.safeGetProject(bpelModel);
+        String relativePath = ResolverUtility.safeGetRelativePath(fo, modelProject);
+        return relativePath != null ? relativePath : fo.getPath();
     }
     
     protected String getImplHtmlDisplayName() {

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.properties;
 
-import java.util.Collection;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -48,21 +47,19 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.project.ProjectConstants;
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.netbeans.modules.xml.xam.Component;
@@ -70,7 +67,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * The utility class containing auxiliary methods to work with WSDL
@@ -170,19 +167,6 @@ public final class ResolverUtility {
     }
     
     /**
-     * This methos calculate the relative path from project source root folder to the
-     * specified target file object.
-     */
-    public static String calculateRelativePathName(FileObject targetFo, Lookup lookup) {
-        BpelModel bpelModel = (BpelModel)lookup.lookup(BpelModel.class);
-        if (bpelModel == null) {
-            return targetFo.getPath();
-        }
-        //
-        return calculateRelativePathName(targetFo, bpelModel);
-    }
-    
-    /**
      * Returns projectSource related to the given bpelModel which is in lookup
      * Could return null
      */ 
@@ -191,55 +175,26 @@ public final class ResolverUtility {
         if (bpelModel == null) {
             return null;
         }
-        Sources sources = getProjectSources(bpelModel);
         FileObject bpelFo = Util.getFileObjectByModel(bpelModel);
         if (bpelFo == null) {
             return null;
         }
-        String bpelFoPath = bpelFo.getPath();
+        Sources sources = safeGetSources(safeGetProject(bpelModel));
+        if (sources == null) {
+            return null;
+        }
         
-        if (sources != null) {
-            SourceGroup[] sourceGroupArr = sources.getSourceGroups(
-                    ProjectConstants.SOURCES_TYPE_BPELPRO);
+        String bpelFoPath = bpelFo.getPath();
+        SourceGroup[] sourceGroupArr = sources.getSourceGroups(
+                ProjectConstants.SOURCES_TYPE_BPELPRO);
+        for (SourceGroup srcGroup : sourceGroupArr) {
+            String srcFolderName = srcGroup.getRootFolder().getPath();
             //
-            for (SourceGroup srcGroup : sourceGroupArr) {
-                String srcFolderName = srcGroup.getRootFolder().getPath();
-                //
-                if (bpelFoPath.startsWith(srcFolderName)) {
-                    return srcGroup.getRootFolder();
-                }
+            if (bpelFoPath.startsWith(srcFolderName)) {
+                return srcGroup.getRootFolder();
             }
         }
         return null;
-    }
-    
-    /**
-     * This methos calculate the relative path from project source root folder to the
-     * specified target file object.
-     */
-    public static String calculateRelativePathName(FileObject targetFo,
-            BpelModel bpelModel) {
-        if (targetFo == null) {
-            return null;
-        }
-        //
-        String targetFoPath = targetFo.getPath();
-        //
-        Sources sources = getProjectSources(bpelModel);
-        if (sources != null) {
-            SourceGroup[] sourceGroupArr = sources.getSourceGroups(
-                    ProjectConstants.SOURCES_TYPE_BPELPRO);
-            //
-            for (SourceGroup srcGroup : sourceGroupArr) {
-                String srcFolderName = srcGroup.getRootFolder().getPath();
-                //
-                if (targetFoPath.startsWith(srcFolderName)) {
-                    return targetFoPath.substring(srcFolderName.length());
-                }
-            }
-        }
-        //
-        return targetFoPath;
     }
     
     public static String encodeLocation(String location){
@@ -248,76 +203,6 @@ public final class ResolverUtility {
     
     public static String decodeLocation(String location){
         return location.replace("%20", " ");
-    }
-    
-    public static FileObject getImportedFile(String imprtLocation, Lookup lookup) {
-        
-        if (imprtLocation == null) {
-            return null;
-        }
-        
-        imprtLocation = decodeLocation(imprtLocation);
-        
-        FileObject bpelFolderFo = getBpelProcessFolder(lookup);
-        //
-        if (bpelFolderFo != null) {
-            return Util.getRelativeFO(bpelFolderFo, imprtLocation);
-        }
-        //
-        return null;
-    }
-    
-    public static WSDLModel getImportedWsdlModel(String imprtLocation, Lookup lookup) {
-        
-        if (imprtLocation == null) {
-            return null;
-        }
-        imprtLocation = decodeLocation(imprtLocation);
-        
-        FileObject fo = getImportedFile(imprtLocation, lookup);
-        if (fo == null || !fo.isValid()){
-            return null;
-        }
-        ModelSource modelSource = Utilities.getModelSource(fo, true);
-        if (modelSource != null) {
-            WSDLModel wsdlModel = WSDLModelFactory.getDefault().
-                    getModel(modelSource);
-            if (wsdlModel.getState() != Model.State.NOT_WELL_FORMED) {
-                return wsdlModel;
-            }
-        }
-        //
-        return null;
-        
-    }
-    
-    public static SchemaModel getImportedScemaModel(String imprtLocation, Lookup lookup) {
-        FileObject fo = getImportedFile(imprtLocation, lookup);
-        if (fo == null || !fo.isValid()){
-            return null;
-        }
-        ModelSource modelSource = Utilities.getModelSource(fo, true);
-        if (modelSource != null) {
-            SchemaModel schemaModel = SchemaModelFactory.getDefault().
-                    getModel(modelSource);
-            if (schemaModel.getState() != Model.State.NOT_WELL_FORMED) {
-                return schemaModel;
-            }
-        }
-        //
-        return null;
-        
-    }
-    
-    /**
-     * Returns the FileObject which points to the folder where the current
-     * BPEL Process is located.
-     *
-     * This method can return null;
-     */
-    public static FileObject getBpelProcessFolder(Lookup lookup) {
-        BpelModel bpelModel = (BpelModel)lookup.lookup(BpelModel.class);
-        return getBpelProcessFolder(bpelModel);
     }
     
     /**
@@ -332,7 +217,7 @@ public final class ResolverUtility {
             if (bpelMS != null) {
                 Lookup bpelLookup = bpelMS.getLookup();
                 if (bpelLookup != null) {
-                    FileObject bpelFo = (FileObject)bpelLookup.lookup(FileObject.class);
+                    FileObject bpelFo = bpelLookup.lookup(FileObject.class);
                     if (bpelFo != null) {
                         FileObject bpelFolderFo = bpelFo.getParent();
                         return bpelFolderFo;
@@ -343,80 +228,32 @@ public final class ResolverUtility {
         return null;
     }
     
-    public static FileObject getProjectRoot(Lookup lookup) {
-        BpelModel bpelModel = (BpelModel)lookup.lookup(BpelModel.class);
-        ModelSource source = bpelModel.getModelSource();
-        Project project =  FileOwnerQuery.getOwner((FileObject)
-        source.getLookup().lookup(FileObject.class));
-        FileObject result = project.getProjectDirectory();
-        return result;
-    }
-    
     /**
      * Check if the specified model is imported to the current BPEL.
      */
     public static boolean isModelImported(Model model, Lookup lookup) {
-        BpelModel bpelModel = (BpelModel)lookup.lookup(BpelModel.class);
+        BpelModel bpelModel = lookup.lookup(BpelModel.class);
         return isModelImported(model, bpelModel);
     }
     
     /**
      * Check if the specified model is imported to the current BPEL.
      */
-    public static boolean isModelImported(Model model, BpelModel bpelModel) 
-        throws IllegalStateException 
-    {
-        if (model == null|| bpelModel == null) {
-            throw new IllegalStateException();
+    public static boolean isModelImported(Model model, BpelModel bpelModel) {
+        if (model == SchemaModelFactory.getDefault().getPrimitiveTypesModel()) {
+            // the primitive types' model considered as imported implicitly.
+            return true;
         }
         
-        FileObject targetModelFo = (FileObject)model.getModelSource().
-                getLookup().lookup(FileObject.class);
-        if (targetModelFo == null) {
-            if (model == SchemaModelFactory.getDefault().getPrimitiveTypesModel()) {
-                // the primitive types' model considered as imported implicitly.
+        for (Import imp : bpelModel.getProcess().getImports()) {
+            if (model == ImportHelper.getWsdlModel(imp, false)) {
                 return true;
             }
-        } else {
-            FileObject bpelFolderFo = getBpelProcessFolder(bpelModel);
-            if (bpelFolderFo != null) {
-
-                Import[] importArr = bpelModel.getProcess().getImports();
-                for (Import importObj : importArr) {
-                    String location = importObj.getLocation();
-                    if (location != null) {
-                        FileObject fo = Util.getRelativeFO(bpelFolderFo, location);
-                        if (targetModelFo.equals(fo)) {
-                            return true;
-                        }
-                    }
-                }
+            if (model == ImportHelper.getSchemaModel(imp, false)) {
+                return true;
             }
         }
-        //
-        return false;
-    }
-    
-    /**
-     * Check if the specified file is imported to the current BPEL.
-     */
-    public static boolean isFileImported(FileObject targetFo, Lookup lookup) {
-        BpelModel bpelModel = (BpelModel)lookup.lookup(BpelModel.class);
-        Import[] importArr = bpelModel.getProcess().getImports();
-        FileObject bpelFolderFo = getBpelProcessFolder(lookup);
-        //
-        if (bpelFolderFo != null) {
-            for (Import importObj : importArr) {
-                String location = importObj.getLocation();
-                if (location != null) {
-                    FileObject fo = Util.getRelativeFO(bpelFolderFo, location);
-                    if (targetFo.equals(fo)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        //
+        
         return false;
     }
     
@@ -451,19 +288,50 @@ public final class ResolverUtility {
         return result;
     }
     
-    /**
-     * Returns the project Sources.
-     * Use the following line to access the SourceGroup array.
-     *  SourceGroup[] sourceGroup =
-     *  sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_BPELPRO);
-     */
-    public static Sources getProjectSources(Lookup lookup) {
-        BpelModel bpelModel = (BpelModel)lookup.lookup(BpelModel.class);
-        if (bpelModel == null) {
+    public static ModelSource getImportedModelSource(Import importObj) {
+        if (Import.SCHEMA_IMPORT_TYPE.equals(importObj.getImportType())) {
+            SchemaModel schemaModel = ImportHelper.getSchemaModel(importObj, false);
+            if (schemaModel != null) {
+                return schemaModel.getModelSource();
+            }
+        } else if (Import.WSDL_IMPORT_TYPE.equals(importObj.getImportType())) {
+            WSDLModel wsdlModel = ImportHelper.getWsdlModel(importObj, false);
+            if (wsdlModel != null) {
+                return wsdlModel.getModelSource();
+            }
+        }
+        
+        return null;
+    }
+    
+    public static FileObject getImportedFileObject(Import importObj) {
+        ModelSource modelSource = getImportedModelSource(importObj);
+        
+        if (modelSource != null) {
+            return modelSource.getLookup().lookup(FileObject.class);
+        } else {
             return null;
         }
-        //
-        return getProjectSources(bpelModel);
+    }
+    
+    /* 
+     * Description is shown in e.g. TypeChooserPanel. It's either a path
+     * to the imported file or a message that a file doesn't exist.
+     */
+    public static String getImportDescription(Import importObj) {
+        FileObject fo = getImportedFileObject(importObj);
+        if (fo != null && fo.isValid()) {
+            return fo.getPath();
+        } else {
+            //No valid Model or ModelSource or FileObject found - return warning
+            String importInfo = importObj.getLocation();
+            if (importInfo == null || importInfo.length() == 0) {
+                importInfo = importObj.getNamespace();
+            }
+            return NbBundle.getMessage(FormBundle.class,
+                    "ERR_IMPORT_FILE_DOESNT_EXIST", // NOI18N
+                    ResolverUtility.decodeLocation(importInfo), "");
+        }
     }
     
     /**
@@ -472,49 +340,55 @@ public final class ResolverUtility {
      *  SourceGroup[] sourceGroup =
      *  sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_BPELPRO);
      */
-    public static Sources getProjectSources(BpelModel bpelModel) {
-        FileObject modelFo = getBpelProcessFolder(bpelModel);
-        if (modelFo != null) {
-            Project project =  FileOwnerQuery.getOwner(modelFo);
-            if (project != null) {
-                Sources sources = ProjectUtils.getSources(project);
-                return sources;
-            }
+    public static Sources safeGetSources(Project project) {
+        if (project != null) {
+            return ProjectUtils.getSources(project);
+        } else {
+            return null;
         }
-        return null;
     }
     
-    /**
-     * Determines if the file located under the source folder.
+    public static Project safeGetProject(BpelModel bpelModel) {
+        FileObject fo = Util.getFileObjectByModel(bpelModel);
+        if (fo != null && fo.isValid()) {
+            return FileOwnerQuery.getOwner(fo);
+        } else {
+            return null;
+        }
+    }
+    
+    /*
+     * Returns the relative path of a given FileObject in a given Project.
+     * Returns null if either of the parameters is null or given FileObject
+     * is not in the given Project.
      */
-    public static boolean isSourceFile(FileObject file, Lookup lookup) {
-        Sources sources = getProjectSources(lookup);
+    public static String safeGetRelativePath(FileObject fo, Project project) {
+        if (fo == null || !fo.isValid() || project == null) {
+            return null;
+        }
+        
+        if (FileOwnerQuery.getOwner(fo) != project) {
+            return null;
+        }
+        
+        String targetFoPath = fo.getPath();
+        //
+        Sources sources = safeGetSources(project);
         if (sources != null) {
             SourceGroup[] sourceGroupArr = sources.getSourceGroups(
                     ProjectConstants.SOURCES_TYPE_BPELPRO);
             //
             for (SourceGroup srcGroup : sourceGroupArr) {
-                FileObject sourceRoot = srcGroup.getRootFolder();
+                String srcFolderName = srcGroup.getRootFolder().getPath();
                 //
-                if (FileUtil.isParentOf(sourceRoot, file)) {
-                    return true;
+                if (targetFoPath.startsWith(srcFolderName)) {
+                    return targetFoPath.substring(srcFolderName.length());
                 }
             }
         }
-        //
-        return false;
-    }
-    
-    public static GlobalSimpleType findSympleTypeByQName(QName qName) {
-        Collection<GlobalSimpleType> simpleTypes =
-                SchemaModelFactory.getDefault().getPrimitiveTypesModel().
-                getSchema().getSimpleTypes();
-        for (GlobalSimpleType type : simpleTypes) {
-            if (type.getName().equals(qName.getLocalPart())) {
-                return type;
-            }
-        }
+        //TODO:it's strange that we are here since we have already checked that
+        //our FileObject belongs to our Project, but still we couldn't calculate the
+        //relative path. Should we assert?
         return null;
     }
-    
 }

@@ -42,6 +42,7 @@ package org.netbeans.modules.bpel.nodes;
 
 import java.awt.Component;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.properties.Constants;
@@ -85,14 +86,15 @@ public class PartnerLinkNode extends BpelNode<PartnerLink> {
         return NodeType.PARTNER_LINK;
     }
     
+    @Override
     public String getHelpId() {
         return getNodeType().getHelpId();
     }
     
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         if (getReference() == null) {
-            // The related object has been removed!
             return sheet;
         }
         //
@@ -110,25 +112,24 @@ public class PartnerLinkNode extends BpelNode<PartnerLink> {
         prop = PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
                 WSDL_FILE, "getWsdlFile", null); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-        // prop.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         //
         prop = PropertyUtils.registerAttributeProperty(this, mainPropertySet,
                 PartnerLink.PARTNER_LINK_TYPE, PARTNER_LINK_TYPE,
                 "getPartnerLinkType", "setPartnerLinkType", null); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-        // prop.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         //
         prop = PropertyUtils.registerAttributeProperty(this, mainPropertySet,
                 PartnerLink.MY_ROLE, MY_ROLE,
                 "getMyRole", "setMyRole", "removeMyRole"); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-        // prop.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         //
         prop = PropertyUtils.registerAttributeProperty(this, mainPropertySet,
                 PartnerLink.PARTNER_ROLE, PARTNER_ROLE,
                 "getPartnerRole", "setPartnerRole", "removePartnerRole"); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-        // prop.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
+        //
+        PropertyUtils.registerProperty(this, mainPropertySet,
+                DOCUMENTATION, "getDocumentation", "setDocumentation"); // NOI18N
         //
         return sheet;
     }
@@ -143,27 +144,31 @@ public class PartnerLinkNode extends BpelNode<PartnerLink> {
     private String calculateWsdlUri() {
         try {
             PartnerLink pLink = getReference();
-            if (pLink != null) {
-                WSDLReference<PartnerLinkType> pltRef = pLink.getPartnerLinkType();
-                if(pltRef != null){
-                    PartnerLinkType plt = pltRef.get();
-                    if (plt != null) {
-                        Lookup modellookup = 
-                                plt.getModel().getModelSource().getLookup();
-                        FileObject modelFo = 
-                                (FileObject) modellookup.lookup(FileObject.class);
-                        String result = ResolverUtility.calculateRelativePathName(
-                                modelFo, pLink.getBpelModel());
-                        return result;
-                    }
-                }
+            if (pLink == null) {
+                return "";
             }
+            WSDLReference<PartnerLinkType> pltRef = pLink.getPartnerLinkType();
+            if (pltRef == null) {
+                return "";
+            }
+            PartnerLinkType plt = pltRef.get();
+            if (plt == null) {
+                return "";
+            }
+            
+            Lookup modellookup = plt.getModel().getModelSource().getLookup();
+            FileObject modelFo = modellookup.lookup(FileObject.class);
+            Project modelProject = ResolverUtility.safeGetProject(pLink.getBpelModel());
+            String relativePath = ResolverUtility.safeGetRelativePath(modelFo, modelProject);
+            
+            return relativePath != null ? relativePath : modelFo.getPath();
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
+            return "";
         }
-        return "";
     }
     
+    @Override
     public Component getCustomizer(CustomNodeEditor.EditingMode editingMode) {
         return new SimpleCustomEditor<PartnerLink>(
                 this, PartnerLinkMainPanel.class, editingMode);
@@ -206,6 +211,7 @@ public class PartnerLinkNode extends BpelNode<PartnerLink> {
 //                ); 
 //    }
 
+    @Override
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
             ActionType.GO_TO_SOURCE,
@@ -223,6 +229,7 @@ public class PartnerLinkNode extends BpelNode<PartnerLink> {
         };
     }
 
+    @Override
     public Action createAction(ActionType actionType) {
         switch (actionType) {
             case REMOVE: 
