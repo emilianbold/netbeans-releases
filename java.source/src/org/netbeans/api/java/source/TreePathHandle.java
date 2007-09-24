@@ -21,15 +21,20 @@ package org.netbeans.api.java.source;
                                                                                                                                                                                                                                
 import com.sun.source.tree.Tree;                                                                                                                                                                                               
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;                                                                                                                                                                                        
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;                                                                                                                                                                                                    
 import javax.lang.model.element.Element;                                                                                                                                                                                       
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;                                                                                                                                                                                         
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.Index;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;                                                                                                                                                                                     
 import org.openide.filesystems.URLMapper;
@@ -174,7 +179,7 @@ public final class TreePathHandle {
         TreePath tp = null;                                                                                                                                                                                                    
         IllegalStateException ise = null;
         try {
-            if ((this.file!=null && info.getFileObject()!=null) && info.getFileObject().equals(this.file)) {
+            if ((this.file!=null && info.getFileObject()!=null) && info.getFileObject().equals(this.file) && this.position!=null) {
                 tp = this.resolve(info);
             }
         } catch (IllegalStateException i) {
@@ -282,12 +287,37 @@ public final class TreePathHandle {
      * @throws java.lang.IllegalArgumentException if arguments are not supported
      */                                                                                                                                                                                                                        
     public static TreePathHandle create(Element element, CompilationInfo info) throws IllegalArgumentException {
-        TreePath treePath = info.getTrees().getPath(element);
-        if (treePath != null)
-            return create(treePath, info);
-        //source does not exist
-        ElementHandle eh = ElementHandle.create(element);
-        return new TreePathHandle(null, null, null, eh, true);
+        try {
+            TreePath treePath = info.getTrees().getPath(element);
+            if (treePath != null) {
+                return create(treePath, info);
+            }
+            //source does not exist
+            ElementHandle eh = ElementHandle.create(element);
+
+            Symbol.ClassSymbol clsSym = (Symbol.ClassSymbol) SourceUtils.getEnclosingTypeElement(element);
+            FileObject  fo = URLMapper.findFileObject(clsSym.classfile.toUri().toURL());
+            FileObject file = fo;
+            if (fo.getNameExt().endsWith("sig")) {//NOI18N
+                //conversion sig -> class
+                String pkgName = FileObjects.convertPackage2Folder(clsSym.getEnclosingElement().getQualifiedName().toString());
+                StringTokenizer tk = new StringTokenizer(pkgName, "/"); //NOI18N
+                for (int i = 0; fo != null && i <= tk.countTokens(); i++) {
+                    fo = fo.getParent();
+                }
+                if (fo != null) {
+                    URL url = fo.getURL();
+                    URL sourceRoot = Index.getSourceRootForClassFolder(url);
+                    FileObject root = URLMapper.findFileObject(sourceRoot);
+                    String resourceName = FileUtil.getRelativePath(fo, URLMapper.findFileObject(clsSym.classfile.toUri().toURL()));
+                    file = root.getFileObject(resourceName.replace(".sig", ".class"));//NOI18N
+                }
+            } 
+            return new TreePathHandle(null, null, file, eh, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        throw new IllegalArgumentException("Cannot create TreePathHandle for " + element + ". Cannot find java nor class file."); //NOI18N
     }
     
     private static boolean isSupported(Element el) {                                                                                                                                                                           
