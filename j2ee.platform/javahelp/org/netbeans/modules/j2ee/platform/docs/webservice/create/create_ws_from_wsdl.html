@@ -40,25 +40,14 @@ Use is subject to license terms.  *-->
         Web Service from WSDL.</li>
         <p>The New Web Service from WSDL wizard opens.</li>
         <li>Type the web service name and specify a package to house the web service.</li>
-        <li>Browse to a WSDL file on your filesystem.</li>
+        <li>Browse to a WSDL file in your filesystem or type the URL to a WSDL file.</li>
         <li>Click Finish.
     
-            <p>For JAX-WS web services (Java EE 5 specification), the IDE runs the <tt>wsimport</tt> tool, which results in the following:
-            <ul>
-	
-            <li>A WSDL file file is consumed, created by the IDE. The abstract portion is copied as is from the original file, 
-            while the concrete portion is "normalized" from the original. 
-            For example, a SOAP binding element is created if it did
-            not exist in the WSDL file. Also, the abstract service element is created to be compatible with
-            the binding.</li>
-            <li>An implementation class. The operations found
-                in the WSDL file are added to this class.
-            </li></ul>
-        
-            <p>For JAX-RPC web services (J2EE 1.4 specification), the IDE runs the <tt>wscompile</tt> 
-            tool, resulting in classes that comply to the JAX-RPC specification.
-            
-           
+            <p>For JAX-WS web services (Java EE 5 specification), the IDE 
+            runs the <tt>wsimport</tt> tool, which which reads the WSDL file
+            and generates all the required artifacts for web service development, 
+            deployment, and invocation. Finally, the IDE generates the skeleton
+            implementation class, which corresponds to the WSDL port selected in the wizard. 
 
         </li>
         </ul>
