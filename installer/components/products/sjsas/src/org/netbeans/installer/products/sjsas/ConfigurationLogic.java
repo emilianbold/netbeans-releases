@@ -214,12 +214,16 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     e);
         }
         try {
+            ClassLoader cl = getClass().getClassLoader();
             FileUtils.writeFile(new File(directory, JTB_LICENSE), 
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_LICENSE));
+                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_LICENSE,
+                    cl));
             FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION), 
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION));
+                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION,
+                    cl));
             FileUtils.writeFile(new File(directory, JTB_THIRDPARTYREADME), 
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTYREADME));
+                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTYREADME,
+                    cl));
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.legal.creation"), // NOI18N
