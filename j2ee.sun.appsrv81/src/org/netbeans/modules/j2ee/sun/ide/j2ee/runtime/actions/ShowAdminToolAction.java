@@ -23,6 +23,7 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.MissingResourceException;
+import java.util.Random;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -54,7 +55,9 @@ public class ShowAdminToolAction extends CookieAction {
                 ManagerNode node = (ManagerNode)nodes[0].getCookie(ManagerNode.class);
                 try {
                     if (node.getDeploymentManager().isRunning()) {
-                        URLDisplayer.getDefault().showURL(new URL(node.getAdminURL()));
+                        String url = node.getAdminURL() + 
+                                "/?"+genRandomString()+"="+genRandomString();
+                        URLDisplayer.getDefault().showURL(new URL(url));
                     } else {
                         Util.showInformation(
                                 NbBundle.getMessage(ShowAdminToolAction.class,
@@ -77,6 +80,10 @@ public class ShowAdminToolAction extends CookieAction {
     }
     
     
+    private String genRandomString() {
+        Random r = new Random();
+        return "rs"+r.nextInt();
+    }
     
     
     public String getName() {
