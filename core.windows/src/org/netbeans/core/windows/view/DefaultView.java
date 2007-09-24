@@ -97,14 +97,16 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             SwingUtilities.convertPointToScreen(leftTop, comp);
             if (editorb.x > leftTop.x) {
                 toReturn = Constants.LEFT;
+                comp.putClientProperty("lastSlideSide", toReturn);
             }
             if ((editorb.x + editorb.width) < leftTop.x) {
                 toReturn = Constants.RIGHT;
+                comp.putClientProperty("lastSlideSide", toReturn);
             }
             if ((editorb.y + editorb.height) < leftTop.y) {
                 toReturn = Constants.BOTTOM;
+                comp.putClientProperty("lastSlideSide", toReturn);
             }
-            comp.putClientProperty("lastSlideSide", toReturn);
         }
         return toReturn;
     }
