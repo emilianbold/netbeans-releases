@@ -30,7 +30,7 @@ public class CCIncludesCompletionTest extends BaseTestSuite {
         super("C/C++ #include Completion");
         
         this.addTestSuite(CCIncludesCompletionTestCase.class);
-
+        this.addTestSuite(CCIncludesAuxTestCase.class);
     }
 
     public static Test suite() {
