@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -35,6 +36,11 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.sun.javadoc.*;
 import com.sun.javadoc.AnnotationDesc.ElementValuePair;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -54,7 +60,10 @@ import org.openide.util.NbBundle;
  * @author Dusan Balek, Petr Hrebejk
  */
 public class ElementJavadoc {
-
+    
+    private static final String API = "/api";                                   //NOI18N
+    private static final Set<String> LANGS = Collections.<String>unmodifiableSet(new HashSet<String>(Arrays.<String>asList(Locale.getISOLanguages())));
+    
     private ElementJavadoc() {
     }
 
@@ -180,23 +189,26 @@ public class ElementJavadoc {
         ElementUtilities eu = compilationInfo.getElementUtilities();
         this.cpInfo = compilationInfo.getClasspathInfo();
         Doc doc = eu.javaDocFor(element);
+        boolean localized = false;
         if (element != null) {
-            final FileObject fo = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
-            if (fo != null) {
-                final ElementHandle<? extends Element> handle = ElementHandle.create(element);
-                goToSource = new AbstractAction() {
-                    public void actionPerformed(ActionEvent evt) {
-                        ElementOpen.open(fo, handle);
-                    }
-                };
-            }
-            if (url != null) {
-                docURL = url;
-            } else {
-                docURL = SourceUtils.getJavadoc(element, cpInfo);
+            docURL = SourceUtils.getJavadoc(element, cpInfo);
+            localized = isLocalized(docURL, element);
+            if (!localized) {
+                final FileObject fo = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
+                if (fo != null) {
+                    final ElementHandle<? extends Element> handle = ElementHandle.create(element);
+                    goToSource = new AbstractAction() {
+                        public void actionPerformed(ActionEvent evt) {
+                            ElementOpen.open(fo, handle);
+                        }
+                    };
+                }
+                if (url != null) {
+                    docURL = url;
+                }
             }
         }
-        this.content = prepareContent(eu, doc);
+        this.content = prepareContent(eu, doc, localized);
     }
     
     private ElementJavadoc(URL url) {
@@ -207,7 +219,48 @@ public class ElementJavadoc {
 
     // Private section ---------------------------------------------------------
     
-    private String prepareContent(ElementUtilities eu, Doc doc) {
+    
+    private boolean isLocalized (final URL docURL, final Element element) {
+        if (docURL == null) {
+            return false;
+        }
+        Element pkg = element;
+        while (pkg.getKind() != ElementKind.PACKAGE) {
+            pkg = pkg.getEnclosingElement();
+            if (pkg == null) {
+                return false;
+            }
+        }
+        String pkgBinName = ((PackageElement)pkg).getQualifiedName().toString();
+        String surl = docURL.toString();
+        int index = surl.lastIndexOf('/');      //NOI18N
+        if (index < 0) {
+            return false;
+        }
+        index-=(pkgBinName.length()+1);
+        if (index < 0) {
+            return false;
+        }
+        index-=API.length();        
+        if (index < 0 || !surl.regionMatches(index,API,0,API.length())) {
+            return false;
+        }
+        int index2 = surl.lastIndexOf('/', index-1);  //NOI18N
+        if (index2 < 0) {
+            return false;
+        }
+        String lang = surl.substring(index2+1, index);        
+        return LANGS.contains(lang);
+    }
+           
+    /**
+     * Creates javadoc content
+     * @param eu element utilities to find out elements
+     * @param doc javac javadoc model
+     * @param useJavadoc preffer javadoc to sources
+     * @return Javadoc content
+     */
+    private String prepareContent(ElementUtilities eu, Doc doc, final boolean useJavadoc) {
         StringBuilder sb = new StringBuilder();
         if (doc != null) {
             if (doc instanceof ProgramElementDoc) {
@@ -223,7 +276,7 @@ public class ElementJavadoc {
                 sb.append(getPackageHeader(eu, (PackageDoc)doc));
             }
             sb.append("<p>"); //NOI18N
-            if (doc.commentText().length() > 0 || doc.tags().length > 0) {
+            if (!useJavadoc && (doc.commentText().length() > 0 || doc.tags().length > 0)) {
                 sb.append(getDeprecatedTag(eu, doc));
                 sb.append(inlineTags(eu, doc, doc.inlineTags()));
                 sb.append("</p><p>"); //NOI18N
