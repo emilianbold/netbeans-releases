@@ -101,7 +101,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         }
         
         RubyDebuggerFactory.Descriptor debugDesc = new RubyDebuggerFactory.Descriptor();
-        debugDesc.setVerbose(prefs.isVerboseDebugger());
         debugDesc.useDefaultPort(false);
         debugDesc.setScriptPath(descriptor.getScript());
         if (descriptor.getInitialArgs() != null) {
