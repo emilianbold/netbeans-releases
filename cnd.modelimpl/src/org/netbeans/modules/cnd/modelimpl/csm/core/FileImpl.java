@@ -200,12 +200,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return APTLanguageSupport.getInstance().getFilter(lang);
     }
     
-    public APTPreprocHandler getCreatePreprocHandler() {
+    public APTPreprocHandler getPreprocHandler() {
+        return getProjectImpl()==null ? null : getProjectImpl().getPreprocHandler(fileBuffer.getFile());
+    }
+    
+    /**
+     * Return of create preprocHandler for internal use.
+     * Should never be used outside of FileImpl.
+     */
+    private APTPreprocHandler getCreatePreprocHandler() {
         // use current
         APTPreprocHandler preprocHandler = this.myPreprocHandler;
         // else ask project
-        if (preprocHandler == null && (getProjectImpl() != null)) {
-            preprocHandler = getProjectImpl().getPreprocHandler(fileBuffer.getFile());
+        if (preprocHandler == null) {
+            preprocHandler = getPreprocHandler();
         }
         // otherwise create default
         if (preprocHandler == null && getProject() != null) {
