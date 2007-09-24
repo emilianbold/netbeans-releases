@@ -179,7 +179,7 @@ public class BuildZipDistributionTest extends TestBase {
         JarFile f = new JarFile(FileUtil.toFile(zip));
         for (JarEntry jarEntry : NbCollections.iterable(f.entries())) {
             String path = jarEntry.getName().replace('/', File.separatorChar);
-            if (path.endsWith("/")) {
+            if (path.endsWith(File.separator)) {
                 continue;
             }
             File entry = new File(expand, path);
