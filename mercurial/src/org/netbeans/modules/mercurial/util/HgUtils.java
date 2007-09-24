@@ -173,6 +173,7 @@ public class HgUtils {
         File root = hg.getTopmostManagedParent(path);
         if( root == null) return;
         File ignore = new File(root, FILENAME_HGIGNORE);
+        if (ignore.exists()) return;
            
         try     {
             fileWriter = new BufferedWriter(
@@ -186,6 +187,7 @@ public class HgUtils {
         }finally {
             try {
                 fileWriter.close();
+                hg.getFileStatusCache().refresh(ignore, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             } catch (IOException ex) {
                 Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                         new Object[] {ignore.getAbsolutePath(), ex.toString()});

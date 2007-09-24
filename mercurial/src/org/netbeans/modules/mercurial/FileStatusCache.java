@@ -234,9 +234,9 @@ public class FileStatusCache {
      */
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     FileInformation getCachedStatus(File file) {
-        file = file.getParentFile();
-        if (file == null) return FileStatusCache.FILE_INFORMATION_NOTMANAGED_DIRECTORY;
-        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(file, FILE_STATUS_MAP);
+        File parent = file.getParentFile();
+        if (parent == null) return FileStatusCache.FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
         return files != null ? files.get(file) : null;
     }
     
@@ -335,7 +335,7 @@ public class FileStatusCache {
      * Refreshes the status of the file given the FileInformation
      *
      * @param file - file whose status is to be refreshed
-     * @param fi - file information to refresh too
+     * @param fi - file information to refresh to
      */
     public void refreshFileStatus(File file, FileInformation fi) {
         if(file == null || fi == null) return;
@@ -361,7 +361,12 @@ public class FileStatusCache {
             if (FileStatusCache.equivalent(FILE_INFORMATION_EXCLUDED, current)) {
                 Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is Excluded", file.getAbsolutePath()); // NOI18N
                 return;
-            }
+            } else if (current == null) {
+                if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
+                    Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but current is null and is not NotSharable", file.getAbsolutePath()); // NOI18N
+                    fi = FILE_INFORMATION_EXCLUDED;
+                 }
+             }
         } 
         file = FileUtil.normalizeFile(file);
         dir = FileUtil.normalizeFile(dir);

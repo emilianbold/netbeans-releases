@@ -157,8 +157,6 @@ public class CreateAction extends AbstractAction {
                     HgCommand.doCreate(rootToManage);
                     hg.versionedFilesChanged();
                     hg.refreshAllAnnotations();      
-                    HgUtils.createIgnored(rootToManage);
-                    
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
@@ -199,7 +197,8 @@ public class CreateAction extends AbstractAction {
                             }
                         }
                     }
-                HgUtils.outputMercurialTab(""); // NOI18N
+                    HgUtils.createIgnored(rootToManage);
+                    HgUtils.outputMercurialTab(""); // NOI18N
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
