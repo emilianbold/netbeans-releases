@@ -194,7 +194,7 @@ public class Sigtest extends Task {
         int returnCode = java.executeJava();
         if (returnCode != 95) {
             if (failOnError && outputFile == null) {
-                throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above", getLocation());
+                throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above. To disable signature tests, run your built with -Dsigtest.skip.check=true property", getLocation());
             }
             else {
                 log("Signature tests return code is wrong (" + returnCode + "), check the messages above");
@@ -276,7 +276,7 @@ public class Sigtest extends Task {
         int returnCode = java.executeJava();
         if (returnCode != 0) {
             if (failOnError && outputFile == null) {
-                throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above", getLocation());
+                throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above. To disable signature tests, run your built with -Dsigtest.skip.check=true property", getLocation());
             }
             else {
                 log("Signature tests return code is wrong (" + returnCode + "), check the messages above");
