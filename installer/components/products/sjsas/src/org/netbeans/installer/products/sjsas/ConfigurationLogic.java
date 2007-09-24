@@ -122,7 +122,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         //try {
         //    progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
-        //    
+        //
         //    SystemUtils.removeIrrelevantFiles(directory);
         //} catch (IOException e) {
         //    throw new InstallationException(
@@ -213,7 +213,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.shortcuts.creation"), // NOI18N
                     e);
         }
-        
+        try {
+            FileUtils.writeFile(new File(directory, JTB_LICENSE), 
+                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_LICENSE));
+            FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION), 
+                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION));
+            FileUtils.writeFile(new File(directory, JTB_THIRDPARTYREADME), 
+                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTYREADME));
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.legal.creation"), // NOI18N
+                    e);
+        }
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
@@ -610,4 +621,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String PRODUCT_ID =
             "SJSAS"; // NOI18N
+    
+    public static final String JTB_LEGAL_RESOURCE_PREFIX =
+            "org/netbeans/installer/products/sjsas/jtblegal/";
+    public static final String JTB_LICENSE =
+            "Java_EE_5_Tools_Update_3_Beta-License";//NOI18N
+    public static final String JTB_THIRDPARTYREADME =
+            "THIRDPARTYREADME";
+    public static final String JTB_DISTRIBUTION =
+            "DISTRIBUTION";
 }
