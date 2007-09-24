@@ -646,7 +646,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <echo>Checking module: ${module.name}</echo>
     </target>
 
-    <target name="gen-sigtest" depends="jar,-sigtest-init">
+    <target name="gen-sigtest" depends="-sigtest-init">
         <property name="sigtest.gen.fail.on.error" value="${sigtest.fail.on.error}"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
