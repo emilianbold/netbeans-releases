@@ -41,7 +41,6 @@ import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
@@ -53,12 +52,28 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
 
     private static int MY_WAIT_MOMENT = 500;
 
-    public static String TEST_PROJECT_NAME = "SampleProject"; // NOI18N
-    public static String TEST_PACKAGE_NAME = "data"; // NOI18N
+    private String _testProjectName = "SampleProject"; // NOI18N
+    private String _testPackageName = "data"; // NOI18N
     public static String DELETE_OBJECT_CONFIRM = "Confirm Object Deletion"; // NOI18N
     /* Skip file (JFrame,Frame, JDialog, ...) delete in the end of each test */
     public Boolean DELETE_FILES = false;
+    
+    public String getTestProjectName() {
+        return _testProjectName;
+    }
 
+    public String getTestPackageName() {
+        return _testPackageName;
+    }
+
+    public void setTestProjectName(String newValue) {
+        _testProjectName = newValue; 
+    }
+
+    public void setTestPackageName(String newValue) {
+        _testPackageName = newValue;
+    }
+    
     /** Constructor required by JUnit */
     public ExtJellyTestCase(String testName) {
         super(testName);
@@ -154,7 +169,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     public void removeFile(String fileName) {
         if (DELETE_FILES) {
             ProjectsTabOperator project = new ProjectsTabOperator();
-            Node node = new Node(project.tree(), TEST_PROJECT_NAME + "|Source Packages|" + TEST_PACKAGE_NAME + "|" + fileName + ".java"); // NOI18N
+            Node node = new Node(project.tree(), _testProjectName + "|Source Packages|" + _testPackageName + "|" + fileName + ".java"); // NOI18N
             DeleteAction act = new DeleteAction();
             act.performPopup(node);
 
@@ -199,12 +214,12 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      */
     private Node getProjectFileNode(String filePath, boolean openFileInEditor, boolean containsFilePathPackage) {
         ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(TEST_PROJECT_NAME);
+        ProjectRootNode prn = pto.getProjectRootNode(getTestProjectName());
         prn.select();
 
         String path = "Source Packages|";
         if (!containsFilePathPackage) {
-            path += TEST_PACKAGE_NAME + "|"; // NOI18N
+            path += _testPackageName + "|"; // NOI18N
         }
         path += filePath;
         
@@ -234,7 +249,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     }
     
     public String createBeanFormFile(String beanClassName) {
-        return createFile(TEST_PROJECT_NAME, TEST_PACKAGE_NAME, "Swing GUI Forms", "Bean Form", "MyBeanForm", beanClassName); // NOI18N
+        return createFile(getTestProjectName(), getTestPackageName(), "Swing GUI Forms", "Bean Form", "MyBeanForm", beanClassName); // NOI18N
     }
 
     /**
@@ -242,7 +257,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return new file name
      */
     public String createJDialogFile() {
-        return createFile(TEST_PROJECT_NAME, TEST_PACKAGE_NAME, "Swing GUI Forms", "JDialog Form", "MyJDialog"); // NOI18N
+        return createFile(getTestProjectName(), getTestPackageName(), "Swing GUI Forms", "JDialog Form", "MyJDialog"); // NOI18N
     }
 
     /**
@@ -250,7 +265,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return new file name
      */
     public String createJFrameFile() {
-        return createFile(TEST_PROJECT_NAME, TEST_PACKAGE_NAME, "Swing GUI Forms", "JFrame Form", "MyJFrame"); // NOI18N
+        return createFile(getTestProjectName(), getTestPackageName(), "Swing GUI Forms", "JFrame Form", "MyJFrame"); // NOI18N
     }
 
     /**
@@ -258,7 +273,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return new file name
      */
     public String createFrameFile() {
-        return createFile(TEST_PROJECT_NAME, TEST_PACKAGE_NAME, "AWT GUI Forms", "Frame Form", "MyFrame"); // NOI18N
+        return createFile(getTestProjectName(), getTestPackageName(), "AWT GUI Forms", "Frame Form", "MyFrame"); // NOI18N
     }
 
     /**
@@ -436,8 +451,8 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      */
     public String getFilePathFromDataPackage(String fileName) {
         return getDataDir().getAbsolutePath()
-                + File.separatorChar + TEST_PROJECT_NAME
+                + File.separatorChar + getTestProjectName()
                 + File.separatorChar + "src" + File.separatorChar
-                + TEST_PACKAGE_NAME + File.separatorChar + fileName; // NOI18N
+                + getTestPackageName() + File.separatorChar + fileName; // NOI18N
     }
 }
