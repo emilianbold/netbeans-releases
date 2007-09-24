@@ -56,11 +56,11 @@ public class Utils {
     public static final long MAX_EXECUTION_TIME = 30000000;
     public static final long MAX_INSTALATION_WAIT = 60000000;
     public static final int DELAY = 50;
-
+    
     public static final String NEWLINE_REGEXP = "(?:\n\r|\r\n|\n|\r)";
-    public static final String NB_DOWNLOAD_PAGE = "http://bits.netbeans.org/netbeans/6.0/nightly/latest/";
+    
     private static final Pattern PATTERN = Pattern.compile("(20[0-9]{10})");
-
+    
     public static final String NB_DIR_NAME = "NetBeans";
     public static final String GF_DIR_NAME = "GlassFish";
     public static final String TOMACAT_DIR_NAME = "Tomcat";
@@ -69,14 +69,10 @@ public class Utils {
     public static final String INSTALL_BUTTON_LABEL = "Install";
     public static final String UNINSTALL_BUTTON_LABEL = "Uninstall";
     public static final String MAIN_FRAME_TITLE = "Netbeans IDE";
-    
     public static final String OK = "OK";
 
     public static String getInstaller(TestData data) {
-        data.setBuildNumber(determineBuildNumber(data, NB_DOWNLOAD_PAGE));
-        data.getLogger().log(Level.INFO, "Build number => " + data.getBuildNumber());
-        
-  //      File sourceBandle = new File(data.getInstallerFileName());
+        //      File sourceBandle = new File(data.getInstallerFileName());
         File destBundle = new File(data.getTestWorkDir() + File.separator + "installer" + "." + data.getPlatformExt());
 
         InputStream in = null;
@@ -191,12 +187,10 @@ public class Utils {
             return toString(ex);
         }
     }
-    
+
     public static String extractUninstallerJar(TestData data) {
-        
-        data.setUninstallerFile(new File(data.getTestWorkDir() + 
-                           File.separator + NB_DIR_NAME + 
-                           File.separator + "uninstall." + data.getPlatformExt()));
+
+        data.setUninstallerFile(new File(data.getTestWorkDir() + File.separator + NB_DIR_NAME + File.separator + "uninstall." + data.getPlatformExt()));
         int errorLevel = 0;
 
         try {
@@ -379,6 +373,7 @@ public class Utils {
         System.setProperty("nbi.utils.log.to.console", "false");
         System.setProperty("user.home", data.getWorkDirCanonicalPath());
 
+        NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
         NbTestCase.assertEquals("Get installer", Utils.OK, Utils.getInstaller(data));
         NbTestCase.assertEquals("Extract bundle", Utils.OK, Utils.extractBundle(data));
         NbTestCase.assertEquals("Load class", Utils.OK, Utils.loadClasses(data));
@@ -440,41 +435,48 @@ public class Utils {
         }
     }
 
-    public static String determineBuildNumber(TestData data, String downloadPageAddress) {
-        try {
-            URL downloadPage = new URL(downloadPageAddress);
-            InputStream in = downloadPage.openConnection(data.getProxy()).getInputStream();
-            StringBuilder pageContent = new StringBuilder();
+    public static String determineBuildNumber(TestData data) {
+        data.setBuildNumber(null);
 
-            byte[] buffer = new byte[1024];
-            while (in.available() > 0) {
-                int read = in.read(buffer);
+        for (int attempt = 0; attempt < 5; attempt++) {
+            try {
+                URL downloadPage = new URL(data.getNetbeansDownloadPage());
+                InputStream in = downloadPage.openConnection(data.getProxy()).getInputStream();
+                StringBuilder pageContent = new StringBuilder();
 
-                String readString = new String(buffer, 0, read);
-                for (String string : readString.split(NEWLINE_REGEXP)) {
-                    pageContent.append(string).append(File.separator);
+                byte[] buffer = new byte[1024];
+                while (in.available() > 0) {
+                    int read = in.read(buffer);
+
+                    String readString = new String(buffer, 0, read);
+                    for (String string : readString.split(NEWLINE_REGEXP)) {
+                        pageContent.append(string).append(File.separator);
+                    }
+                    wait(data, 100);
                 }
-                wait(data, 100);
-            }
-            in.close();
+                in.close();
 
-            final Matcher matcher = PATTERN.matcher(pageContent);
+                final Matcher matcher = PATTERN.matcher(pageContent);
 
-            if (matcher.find()) {
-                return matcher.group(1);
-            } else {
-                throw new Exception("Cannot find build number");
+                if (matcher.find()) {
+                    data.setBuildNumber(matcher.group(1));
+                    data.getLogger().log(Level.INFO, "Build number => " + data.getBuildNumber());
+                    return OK;
+                } else {
+                    data.getLogger().log(Level.INFO, "Cannot find build number. Attempt #" + attempt);
+                }
+            } catch (Exception ex) {
+                data.getLogger().log(Level.SEVERE, "Can not determine latest build. Attempt #" + attempt, ex);
             }
-        } catch (Exception ex) {
-            data.getLogger().log(Level.SEVERE, "Can not determine latest build.", ex);
-            return null;
+            waitSecond(data, 5);
         }
+        return null;
     }
 
     private static String toString(Exception ex) {
         return ex.getClass().getName() + "=>" + ex.getMessage();
     }
-    
+
     private static void watchProgressBar(TestData data, JFrameOperator frame, String label) {
         new JLabelOperator(frame, label); //dirty hack
         JProgressBarOperator progressBar = new JProgressBarOperator(frame);

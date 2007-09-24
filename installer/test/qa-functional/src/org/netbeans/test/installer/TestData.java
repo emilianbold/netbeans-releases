@@ -36,6 +36,8 @@ import java.util.logging.Logger;
  * @author Mikhail Vaysman
  */
 public class TestData implements Serializable {
+    
+    private static final String NB_DOWNLOAD_PAGE = "http://bits.netbeans.org/netbeans/6.0/nightly/latest/";
 
     private File installerFile = null;
     private File uninstallerFile = null;
@@ -62,6 +64,10 @@ public class TestData implements Serializable {
     public String getInstallerFileName() {
         return "E:/pub/Netbeans/6.0/installer.exe";
 //        return "C:/work/test/TestInstaller/netbeans-6.0-nightly-200707100000-basic-windows.exe";
+    }
+    
+    public String getNetbeansDownloadPage() {
+        return NB_DOWNLOAD_PAGE;
     }
 
     public String getInstallerURL() {
