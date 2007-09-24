@@ -25,18 +25,6 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <!--
-    <folder name="Menu">
-	<folder name="Tools">
-	    <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction.shadow" boolvalue="true"/>
-	    <file name="org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction.shadow">
-		<attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction.instance"/>
-	    </file>
-            <attr name="org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction.shadow/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true"/>
-        </folder>
-    </folder>
-    -->
-
     <folder name="Actions">
         <folder name="View">
 	    <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance">
@@ -47,8 +35,8 @@
 
     <folder name="Actions">
         <folder name="View">
-	    <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceAction.instance">
-		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceAction"/>
+	    <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance">
+		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction"/>
 	    </file>
 	</folder>
     </folder>
@@ -64,8 +52,8 @@
 
    <folder name="NativeProjects">
         <folder name="Menu">
-            <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceAction.instance"/>
+            <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance"/>
                 <attr name="position" intvalue="100"/>
             </file>
         </folder>
