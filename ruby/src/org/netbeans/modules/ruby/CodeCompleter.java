@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.ruby;
 
+import org.netbeans.modules.ruby.elements.CommentElement;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.IOException;
@@ -64,6 +65,7 @@ import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.api.gsf.Index.*;
 import org.netbeans.api.gsf.Modifier;
 import org.netbeans.api.gsf.NameKind;
+import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParameterInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -363,6 +365,7 @@ public class CodeCompleter implements Completable {
     static {
         selectionTemplates.add("begin"); // NOI18N
         selectionTemplates.add("do"); // NOI18N
+        //selectionTemplates.add("dop"); // NOI18N
         selectionTemplates.add("if"); // NOI18N
         selectionTemplates.add("ife"); // NOI18N
     }
@@ -1059,6 +1062,30 @@ public class CodeCompleter implements Completable {
             if (token != null) {
                 TokenId id = token.id();
 
+                if (id == RubyTokenId.LINE_COMMENT || id == RubyTokenId.DOCUMENTATION) {
+                    // Comment completion - rdoc tags and such
+                    
+                    if (request.queryType == QueryType.DOCUMENTATION) {
+                        BaseDocument doc = request.doc;
+                        OffsetRange commentBlock = LexUtilities.getCommentBlock(doc, lexOffset);
+                        
+                        if (commentBlock != OffsetRange.NONE) {
+                            try {
+                                String text = doc.getText(commentBlock.getStart(), commentBlock.getLength());
+                                Element element = new CommentElement(text);
+                                MethodItem item = new MethodItem(element, anchor, request);
+                                proposals.add(item);
+                                return true;
+                            } catch (BadLocationException ble) {
+                                Exceptions.printStackTrace(ble);
+                            }
+                        }
+                    }
+                    
+                    // No other possible completions in comments
+                    return true;
+                }
+                
                 // We're within a String that has embedded Ruby. Drop into the
                 // embedded language and see if we're within a literal string there.
                 if (id == RubyTokenId.EMBEDDED_RUBY) {
@@ -2285,6 +2312,28 @@ public class CodeCompleter implements Completable {
     public String document(CompilationInfo info, Element element) {
         if (element instanceof KeywordElement) {
             return getKeywordHelp(((KeywordElement)element).getName());
+        } else if (element instanceof CommentElement) {
+            // Text is packaged as the name
+            String comment = element.getName();
+            RDocFormatter formatter = new RDocFormatter();
+            String[] comments = comment.split("\n");
+            for (String text : comments) {
+                // Truncate off leading whitespace before # on comment lines
+                for (int i = 0, n = text.length(); i < n; i++) {
+                    char c = text.charAt(i);
+                    if (c == '#') {
+                        if (i > 0) {
+                            text = text.substring(i);
+                            break;
+                        }
+                    } else if (!Character.isWhitespace(c)) {
+                        break;
+                    }
+                }
+                formatter.appendLine(text);
+            }
+            String html = formatter.toHtml();
+            return html;
         }
         
         List<String> comments = getComments(info, element);
@@ -3010,6 +3059,7 @@ public class CodeCompleter implements Completable {
             return keywordIcon;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }

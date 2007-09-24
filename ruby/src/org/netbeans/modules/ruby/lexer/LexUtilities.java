@@ -947,4 +947,66 @@ public class LexUtilities {
         
         return false;
     }
+    
+    public static OffsetRange getCommentBlock(BaseDocument doc, int caretOffset) {
+        // Check if the caret is within a comment, and if so insert a new
+        // leaf "node" which contains the comment line and then comment block
+        try {
+            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, caretOffset);
+
+            if ((token != null) && (token.id() == RubyTokenId.LINE_COMMENT)) {
+                // First add a range for the current line
+                int begin = Utilities.getRowStart(doc, caretOffset);
+                int end = Utilities.getRowEnd(doc, caretOffset);
+
+                if (LexUtilities.isCommentOnlyLine(doc, caretOffset)) {
+                    int lineBegin = begin;
+                    int lineEnd = end;
+
+                    while (true) {
+                        int newBegin = Utilities.getRowStart(doc, begin - 1);
+
+                        if ((newBegin <= 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
+                            begin = Utilities.getRowFirstNonWhite(doc, begin);
+                            break;
+                        }
+
+                        begin = newBegin;
+                    }
+
+                    int length = doc.getLength();
+
+                    while (true) {
+                        int newEnd = Utilities.getRowEnd(doc, end + 1);
+
+                        if ((newEnd >= length) || !LexUtilities.isCommentOnlyLine(doc, newEnd)) {
+                            end = Utilities.getRowLastNonWhite(doc, end)+1;
+                            break;
+                        }
+
+                        end = newEnd;
+                    }
+
+                    if (begin < end) {
+                        return new OffsetRange(begin, end);
+                    }
+                } else {
+                    // It's just a line comment next to some code
+                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+                    int offset = token.offset(th);
+                    return new OffsetRange(offset, offset + token.length());
+                }
+            } else if (token != null && token.id() == GsfTokenId.DOCUMENTATION) {
+                // Select the whole token block
+                TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
+                int begin = token.offset(th);
+                int end = begin + token.length();
+                return new OffsetRange(begin, end);
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+        
+        return OffsetRange.NONE;
+    }
 }

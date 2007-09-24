@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.ruby;
 
+import org.netbeans.modules.ruby.elements.CommentElement;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -481,7 +482,7 @@ public class RubyParser implements Parser {
 
     @SuppressWarnings("unchecked")
     public <T extends Element> ElementHandle<T> createHandle(CompilationInfo info, final T object) {
-        if (object instanceof KeywordElement) {
+        if (object instanceof KeywordElement || object instanceof CommentElement) {
             // Not tied to an AST - just pass it around
             return new RubyElementHandle(null, object, info.getFileObject());
         }
@@ -523,7 +524,7 @@ public class RubyParser implements Parser {
         Node oldRoot = h.root;
         Node oldNode;
 
-        if (h.object instanceof KeywordElement || h.object instanceof IndexedElement) {
+        if (h.object instanceof KeywordElement || h.object instanceof IndexedElement || h.object instanceof CommentElement) {
             // Not tied to a tree
             return (T)h.object;
         }
