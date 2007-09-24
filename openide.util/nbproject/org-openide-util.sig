@@ -1,0 +1,2311 @@
+#API master signature file
+#Version 1.5.0_11
+CLSS protected abstract java.awt.Component$AccessibleAWTComponent
+cons protected AccessibleAWTComponent(java.awt.Component)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
+fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+intf java.io.Serializable
+intf javax.accessibility.AccessibleComponent
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
+meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
+meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleChildrenCount()
+meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
+meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
+meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
+meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
+meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
+meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
+meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
+meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
+meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleName()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleAt(java.awt.Point)
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleChild(int)
+meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole java.awt.Component$AccessibleAWTComponent.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet java.awt.Component$AccessibleAWTComponent.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
+meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
+meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
+meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
+meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
+meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
+meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
+meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
+meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
+meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+supr javax.accessibility.AccessibleContext
+CLSS protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
+cons protected AccessibleAWTComponentHandler(java.awt.Component$AccessibleAWTComponent)
+intf java.awt.event.ComponentListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentHidden(java.awt.event.ComponentEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentMoved(java.awt.event.ComponentEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentResized(java.awt.event.ComponentEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentShown(java.awt.event.ComponentEvent)
+supr java.lang.Object
+CLSS protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+cons protected AccessibleAWTFocusHandler(java.awt.Component$AccessibleAWTComponent)
+intf java.awt.event.FocusListener
+intf java.util.EventListener
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler.focusGained(java.awt.event.FocusEvent)
+meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler.focusLost(java.awt.event.FocusEvent)
+supr java.lang.Object
+CLSS protected java.awt.Component$BltBufferStrategy
+cons protected BltBufferStrategy(java.awt.Component,int,java.awt.BufferCapabilities)
+fld  protected [Ljava.awt.image.VolatileImage; java.awt.Component$BltBufferStrategy.backBuffers
+fld  protected boolean java.awt.Component$BltBufferStrategy.validatedContents
+fld  protected int java.awt.Component$BltBufferStrategy.height
+fld  protected int java.awt.Component$BltBufferStrategy.width
+fld  protected java.awt.BufferCapabilities java.awt.Component$BltBufferStrategy.caps
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component$BltBufferStrategy.createBackBuffers(int)
+meth protected void java.awt.Component$BltBufferStrategy.revalidate()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.awt.Component$BltBufferStrategy.contentsLost()
+meth public boolean java.awt.Component$BltBufferStrategy.contentsRestored()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.awt.BufferCapabilities java.awt.Component$BltBufferStrategy.getCapabilities()
+meth public java.awt.Graphics java.awt.Component$BltBufferStrategy.getDrawGraphics()
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$BltBufferStrategy.show()
+supr java.awt.image.BufferStrategy
+CLSS protected java.awt.Component$FlipBufferStrategy
+cons protected FlipBufferStrategy(java.awt.Component,int,java.awt.BufferCapabilities) throws java.awt.AWTException
+fld  protected boolean java.awt.Component$FlipBufferStrategy.validatedContents
+fld  protected int java.awt.Component$FlipBufferStrategy.numBuffers
+fld  protected java.awt.BufferCapabilities java.awt.Component$FlipBufferStrategy.caps
+fld  protected java.awt.Image java.awt.Component$FlipBufferStrategy.drawBuffer
+fld  protected java.awt.image.VolatileImage java.awt.Component$FlipBufferStrategy.drawVBuffer
+meth protected java.awt.Image java.awt.Component$FlipBufferStrategy.getBackBuffer()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.awt.Component$FlipBufferStrategy.createBuffers(int,java.awt.BufferCapabilities) throws java.awt.AWTException
+meth protected void java.awt.Component$FlipBufferStrategy.destroyBuffers()
+meth protected void java.awt.Component$FlipBufferStrategy.flip(java.awt.BufferCapabilities$FlipContents)
+meth protected void java.awt.Component$FlipBufferStrategy.revalidate()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.awt.Component$FlipBufferStrategy.contentsLost()
+meth public boolean java.awt.Component$FlipBufferStrategy.contentsRestored()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.awt.BufferCapabilities java.awt.Component$FlipBufferStrategy.getCapabilities()
+meth public java.awt.Graphics java.awt.Component$FlipBufferStrategy.getDrawGraphics()
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.awt.Component$FlipBufferStrategy.show()
+supr java.awt.image.BufferStrategy
+CLSS public static abstract java.io.ObjectInputStream$GetField
+cons public GetField()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract boolean java.io.ObjectInputStream$GetField.defaulted(java.lang.String) throws java.io.IOException
+meth public abstract boolean java.io.ObjectInputStream$GetField.get(java.lang.String,boolean) throws java.io.IOException
+meth public abstract byte java.io.ObjectInputStream$GetField.get(java.lang.String,byte) throws java.io.IOException
+meth public abstract char java.io.ObjectInputStream$GetField.get(java.lang.String,char) throws java.io.IOException
+meth public abstract double java.io.ObjectInputStream$GetField.get(java.lang.String,double) throws java.io.IOException
+meth public abstract float java.io.ObjectInputStream$GetField.get(java.lang.String,float) throws java.io.IOException
+meth public abstract int java.io.ObjectInputStream$GetField.get(java.lang.String,int) throws java.io.IOException
+meth public abstract java.io.ObjectStreamClass java.io.ObjectInputStream$GetField.getObjectStreamClass()
+meth public abstract java.lang.Object java.io.ObjectInputStream$GetField.get(java.lang.String,java.lang.Object) throws java.io.IOException
+meth public abstract long java.io.ObjectInputStream$GetField.get(java.lang.String,long) throws java.io.IOException
+meth public abstract short java.io.ObjectInputStream$GetField.get(java.lang.String,short) throws java.io.IOException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static abstract java.io.ObjectOutputStream$PutField
+cons public PutField()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract void java.io.ObjectOutputStream$PutField.put(java.lang.String,boolean)
+meth public abstract void java.io.ObjectOutputStream$PutField.put(java.lang.String,byte)
+meth public abstract void java.io.ObjectOutputStream$PutField.put(java.lang.String,char)
+meth public abstract void java.io.ObjectOutputStream$PutField.put(java.lang.String,double)
+meth public abstract void java.io.ObjectOutputStream$PutField.put(java.lang.String,float)
+meth public abstract void java.io.ObjectOutputStream$PutField.put(java.lang.String,int)
+meth public abstract void java.io.ObjectOutputStream$PutField.put(java.lang.String,java.lang.Object)
+meth public abstract void java.io.ObjectOutputStream$PutField.put(java.lang.String,long)
+meth public abstract void java.io.ObjectOutputStream$PutField.put(java.lang.String,short)
+meth public abstract void java.io.ObjectOutputStream$PutField.write(java.io.ObjectOutput) throws java.io.IOException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static final java.lang.Thread$State
+fld  public static final java.lang.Thread$State java.lang.Thread$State.BLOCKED
+fld  public static final java.lang.Thread$State java.lang.Thread$State.NEW
+fld  public static final java.lang.Thread$State java.lang.Thread$State.RUNNABLE
+fld  public static final java.lang.Thread$State java.lang.Thread$State.TERMINATED
+fld  public static final java.lang.Thread$State java.lang.Thread$State.TIMED_WAITING
+fld  public static final java.lang.Thread$State java.lang.Thread$State.WAITING
+intf java.io.Serializable
+intf java.lang.Comparable
+meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public final boolean java.lang.Enum.equals(java.lang.Object)
+meth public final int java.lang.Enum.compareTo(java.lang.Enum)
+meth public final int java.lang.Enum.hashCode()
+meth public final int java.lang.Enum.ordinal()
+meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
+meth public final java.lang.String java.lang.Enum.name()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Enum.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static final [Ljava.lang.Thread$State; java.lang.Thread$State.values()
+meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
+meth public static java.lang.Thread$State java.lang.Thread$State.valueOf(java.lang.String)
+meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
+supr java.lang.Enum
+CLSS public static abstract interface java.lang.Thread$UncaughtExceptionHandler
+meth public abstract void java.lang.Thread$UncaughtExceptionHandler.uncaughtException(java.lang.Thread,java.lang.Throwable)
+supr null
+CLSS public static java.text.AttributedCharacterIterator$Attribute
+cons protected Attribute(java.lang.String)
+fld  public static final java.text.AttributedCharacterIterator$Attribute java.text.AttributedCharacterIterator$Attribute.INPUT_METHOD_SEGMENT
+fld  public static final java.text.AttributedCharacterIterator$Attribute java.text.AttributedCharacterIterator$Attribute.LANGUAGE
+fld  public static final java.text.AttributedCharacterIterator$Attribute java.text.AttributedCharacterIterator$Attribute.READING
+intf java.io.Serializable
+meth protected java.lang.Object java.text.AttributedCharacterIterator$Attribute.readResolve() throws java.io.InvalidObjectException
+meth protected java.lang.String java.text.AttributedCharacterIterator$Attribute.getName()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public final boolean java.text.AttributedCharacterIterator$Attribute.equals(java.lang.Object)
+meth public final int java.text.AttributedCharacterIterator$Attribute.hashCode()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.text.AttributedCharacterIterator$Attribute.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+supr java.lang.Object
+CLSS public static java.text.Format$Field
+cons protected Field(java.lang.String)
+fld  public static final java.text.AttributedCharacterIterator$Attribute java.text.AttributedCharacterIterator$Attribute.INPUT_METHOD_SEGMENT
+fld  public static final java.text.AttributedCharacterIterator$Attribute java.text.AttributedCharacterIterator$Attribute.LANGUAGE
+fld  public static final java.text.AttributedCharacterIterator$Attribute java.text.AttributedCharacterIterator$Attribute.READING
+intf java.io.Serializable
+meth protected java.lang.Object java.text.AttributedCharacterIterator$Attribute.readResolve() throws java.io.InvalidObjectException
+meth protected java.lang.String java.text.AttributedCharacterIterator$Attribute.getName()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public final boolean java.text.AttributedCharacterIterator$Attribute.equals(java.lang.Object)
+meth public final int java.text.AttributedCharacterIterator$Attribute.hashCode()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.text.AttributedCharacterIterator$Attribute.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+supr java.text.AttributedCharacterIterator$Attribute
+CLSS public static abstract interface java.util.Map$Entry
+meth public abstract boolean java.util.Map$Entry.equals(java.lang.Object)
+meth public abstract int java.util.Map$Entry.hashCode()
+meth public abstract java.lang.Object java.util.Map$Entry.getKey()
+meth public abstract java.lang.Object java.util.Map$Entry.getValue()
+meth public abstract java.lang.Object java.util.Map$Entry.setValue(java.lang.Object)
+supr null
+CLSS protected javax.swing.ImageIcon$AccessibleImageIcon
+cons protected AccessibleImageIcon(javax.swing.ImageIcon)
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
+fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
+fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
+intf java.io.Serializable
+intf javax.accessibility.AccessibleIcon
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleChildrenCount()
+meth public int javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleIconHeight()
+meth public int javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleIconWidth()
+meth public int javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleIndexInParent()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String javax.accessibility.AccessibleContext.getAccessibleDescription()
+meth public java.lang.String javax.accessibility.AccessibleContext.getAccessibleName()
+meth public java.lang.String javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleIconDescription()
+meth public java.util.Locale javax.swing.ImageIcon$AccessibleImageIcon.getLocale() throws java.awt.IllegalComponentStateException
+meth public javax.accessibility.Accessible javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleChild(int)
+meth public javax.accessibility.Accessible javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleParent()
+meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
+meth public javax.accessibility.AccessibleComponent javax.accessibility.AccessibleContext.getAccessibleComponent()
+meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
+meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
+meth public javax.accessibility.AccessibleRole javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleRole()
+meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
+meth public javax.accessibility.AccessibleStateSet javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleStateSet()
+meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
+meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
+meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void javax.accessibility.AccessibleContext.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public void javax.accessibility.AccessibleContext.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
+meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
+meth public void javax.swing.ImageIcon$AccessibleImageIcon.setAccessibleIconDescription(java.lang.String)
+supr javax.accessibility.AccessibleContext
+CLSS public static abstract org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable
+cons public ActionRunnable(java.awt.event.ActionEvent,org.openide.util.actions.SystemAction,boolean)
+fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
+fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  constant public static final java.lang.String javax.swing.Action.NAME
+fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
+intf java.awt.event.ActionListener
+intf java.util.EventListener
+intf javax.swing.Action
+meth protected abstract void org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.run()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final boolean org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.isEnabled()
+meth public final boolean org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.needsToBeSynchronous()
+meth public final java.lang.Object org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.getValue(java.lang.String)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.actionPerformed(java.awt.event.ActionEvent)
+meth public final void org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.doRun()
+meth public final void org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.putValue(java.lang.String,java.lang.Object)
+meth public final void org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.setEnabled(boolean)
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static abstract interface org.openide.ErrorManager$Annotation
+meth public abstract int org.openide.ErrorManager$Annotation.getSeverity()
+meth public abstract java.lang.String org.openide.ErrorManager$Annotation.getLocalizedMessage()
+meth public abstract java.lang.String org.openide.ErrorManager$Annotation.getMessage()
+meth public abstract java.lang.Throwable org.openide.ErrorManager$Annotation.getStackTrace()
+meth public abstract java.util.Date org.openide.ErrorManager$Annotation.getDate()
+supr null
+CLSS public static final org.openide.ServiceType$Handle
+cons public Handle(org.openide.ServiceType)
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.ServiceType$Handle.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.ServiceType org.openide.ServiceType$Handle.getServiceType()
+supr java.lang.Object
+CLSS public static abstract org.openide.ServiceType$Registry
+cons public Registry()
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.util.Enumeration org.openide.ServiceType$Registry.services()
+meth public abstract java.util.List org.openide.ServiceType$Registry.getServiceTypes()
+meth public abstract void org.openide.ServiceType$Registry.setServiceTypes(java.util.List)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Enumeration org.openide.ServiceType$Registry.services(java.lang.Class)
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.ServiceType org.openide.ServiceType$Registry.find(java.lang.Class)
+meth public org.openide.ServiceType org.openide.ServiceType$Registry.find(java.lang.String)
+supr java.lang.Object
+CLSS public static abstract interface org.openide.util.Enumerations$Processor
+meth public abstract java.lang.Object org.openide.util.Enumerations$Processor.process(java.lang.Object,java.util.Collection)
+supr null
+CLSS public static abstract interface org.openide.util.HelpCtx$Provider
+meth public abstract org.openide.util.HelpCtx org.openide.util.HelpCtx$Provider.getHelpCtx()
+supr null
+CLSS public static abstract org.openide.util.Lookup$Item
+cons public Item()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.lang.Class org.openide.util.Lookup$Item.getType()
+meth public abstract java.lang.Object org.openide.util.Lookup$Item.getInstance()
+meth public abstract java.lang.String org.openide.util.Lookup$Item.getDisplayName()
+meth public abstract java.lang.String org.openide.util.Lookup$Item.getId()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.util.Lookup$Item.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static abstract interface org.openide.util.Lookup$Provider
+meth public abstract org.openide.util.Lookup org.openide.util.Lookup$Provider.getLookup()
+supr null
+CLSS public static abstract org.openide.util.Lookup$Result
+cons public Result()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.util.Collection org.openide.util.Lookup$Result.allInstances()
+meth public abstract void org.openide.util.Lookup$Result.addLookupListener(org.openide.util.LookupListener)
+meth public abstract void org.openide.util.Lookup$Result.removeLookupListener(org.openide.util.LookupListener)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Collection org.openide.util.Lookup$Result.allItems()
+meth public java.util.Set org.openide.util.Lookup$Result.allClasses()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static final org.openide.util.Lookup$Template
+cons public Template()
+cons public Template(java.lang.Class)
+cons public Template(java.lang.Class,java.lang.String,java.lang.Object)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.openide.util.Lookup$Template.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.openide.util.Lookup$Template.hashCode()
+meth public java.lang.Class org.openide.util.Lookup$Template.getType()
+meth public java.lang.Object org.openide.util.Lookup$Template.getInstance()
+meth public java.lang.String org.openide.util.Lookup$Template.getId()
+meth public java.lang.String org.openide.util.Lookup$Template.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+supr java.lang.Object
+CLSS public static abstract interface org.openide.util.Mutex$Action
+intf org.openide.util.Mutex$ExceptionAction
+meth public abstract java.lang.Object org.openide.util.Mutex$Action.run()
+supr null
+CLSS public static abstract interface org.openide.util.Mutex$ExceptionAction
+meth public abstract java.lang.Object org.openide.util.Mutex$ExceptionAction.run() throws java.lang.Exception
+supr null
+CLSS public static final org.openide.util.Mutex$Privileged
+cons public Privileged()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.util.Mutex$Privileged.enterReadAccess()
+meth public void org.openide.util.Mutex$Privileged.enterWriteAccess()
+meth public void org.openide.util.Mutex$Privileged.exitReadAccess()
+meth public void org.openide.util.Mutex$Privileged.exitWriteAccess()
+supr java.lang.Object
+CLSS public static abstract interface org.openide.util.NbBundle$ClassLoaderFinder
+meth public abstract java.lang.ClassLoader org.openide.util.NbBundle$ClassLoaderFinder.find()
+supr null
+CLSS public final org.openide.util.RequestProcessor$Task
+fld  public static final org.openide.util.Task org.openide.util.Task.EMPTY
+intf java.lang.Runnable
+intf org.openide.util.Cancellable
+meth protected final void org.openide.util.Task.notifyFinished()
+meth protected final void org.openide.util.Task.notifyRunning()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.RequestProcessor$Task.cancel()
+meth public boolean org.openide.util.RequestProcessor$Task.waitFinished(long) throws java.lang.InterruptedException
+meth public final boolean org.openide.util.Task.isFinished()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.openide.util.RequestProcessor$Task.getDelay()
+meth public int org.openide.util.RequestProcessor$Task.getPriority()
+meth public java.lang.String org.openide.util.RequestProcessor$Task.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized void org.openide.util.Task.addTaskListener(org.openide.util.TaskListener)
+meth public synchronized void org.openide.util.Task.removeTaskListener(org.openide.util.TaskListener)
+meth public void org.openide.util.RequestProcessor$Task.run()
+meth public void org.openide.util.RequestProcessor$Task.schedule(int)
+meth public void org.openide.util.RequestProcessor$Task.setPriority(int)
+meth public void org.openide.util.RequestProcessor$Task.waitFinished()
+supr org.openide.util.Task
+CLSS public static org.openide.util.Utilities$UnorderableException
+cons public UnorderableException(java.lang.String,java.util.Collection,java.util.Map)
+cons public UnorderableException(java.util.Collection,java.util.Map)
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
+meth public java.lang.String java.lang.Throwable.getMessage()
+meth public java.lang.String java.lang.Throwable.toString()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public java.util.Collection org.openide.util.Utilities$UnorderableException.getUnorderable()
+meth public java.util.Map org.openide.util.Utilities$UnorderableException.getDeps()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.printStackTrace()
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintStream)
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintWriter)
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
+supr java.lang.RuntimeException
+CLSS public static abstract interface org.openide.util.actions.Presenter$Menu
+innr public static abstract interface org.openide.util.actions.Presenter$Menu
+innr public static abstract interface org.openide.util.actions.Presenter$Popup
+innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
+intf org.openide.util.actions.Presenter
+meth public abstract javax.swing.JMenuItem org.openide.util.actions.Presenter$Menu.getMenuPresenter()
+supr null
+CLSS public static abstract interface org.openide.util.actions.Presenter$Popup
+innr public static abstract interface org.openide.util.actions.Presenter$Menu
+innr public static abstract interface org.openide.util.actions.Presenter$Popup
+innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
+intf org.openide.util.actions.Presenter
+meth public abstract javax.swing.JMenuItem org.openide.util.actions.Presenter$Popup.getPopupPresenter()
+supr null
+CLSS public static abstract interface org.openide.util.actions.Presenter$Toolbar
+innr public static abstract interface org.openide.util.actions.Presenter$Menu
+innr public static abstract interface org.openide.util.actions.Presenter$Popup
+innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
+intf org.openide.util.actions.Presenter
+meth public abstract java.awt.Component org.openide.util.actions.Presenter$Toolbar.getToolbarPresenter()
+supr null
+CLSS public static abstract interface org.openide.util.datatransfer.ExClipboard$Convertor
+meth public abstract java.awt.datatransfer.Transferable org.openide.util.datatransfer.ExClipboard$Convertor.convert(java.awt.datatransfer.Transferable)
+supr null
+CLSS public static org.openide.util.datatransfer.ExTransferable$Multi
+cons public Multi([Ljava.awt.datatransfer.Transferable;)
+intf java.awt.datatransfer.Transferable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.awt.datatransfer.DataFlavor; org.openide.util.datatransfer.ExTransferable$Multi.getTransferDataFlavors()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.datatransfer.ExTransferable$Multi.isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Object org.openide.util.datatransfer.ExTransferable$Multi.getTransferData(java.awt.datatransfer.DataFlavor) throws java.awt.datatransfer.UnsupportedFlavorException,java.io.IOException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static abstract org.openide.util.datatransfer.ExTransferable$Single
+cons public Single(java.awt.datatransfer.DataFlavor)
+intf java.awt.datatransfer.Transferable
+meth protected abstract java.lang.Object org.openide.util.datatransfer.ExTransferable$Single.getData() throws java.awt.datatransfer.UnsupportedFlavorException,java.io.IOException
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.awt.datatransfer.DataFlavor; org.openide.util.datatransfer.ExTransferable$Single.getTransferDataFlavors()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.datatransfer.ExTransferable$Single.isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Object org.openide.util.datatransfer.ExTransferable$Single.getTransferData(java.awt.datatransfer.DataFlavor) throws java.awt.datatransfer.UnsupportedFlavorException,java.io.IOException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static org.openide.util.lookup.AbstractLookup$Content
+cons public Content()
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.lookup.AbstractLookup$Content.addPair(org.openide.util.lookup.AbstractLookup$Pair)
+meth public final void org.openide.util.lookup.AbstractLookup$Content.removePair(org.openide.util.lookup.AbstractLookup$Pair)
+meth public final void org.openide.util.lookup.AbstractLookup$Content.setPairs(java.util.Collection)
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static abstract org.openide.util.lookup.AbstractLookup$Pair
+cons protected Pair()
+intf java.io.Serializable
+meth protected abstract boolean org.openide.util.lookup.AbstractLookup$Pair.creatorOf(java.lang.Object)
+meth protected abstract boolean org.openide.util.lookup.AbstractLookup$Pair.instanceOf(java.lang.Class)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.lang.Class org.openide.util.Lookup$Item.getType()
+meth public abstract java.lang.Object org.openide.util.Lookup$Item.getInstance()
+meth public abstract java.lang.String org.openide.util.Lookup$Item.getDisplayName()
+meth public abstract java.lang.String org.openide.util.Lookup$Item.getId()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.util.Lookup$Item.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr org.openide.util.Lookup$Item
+CLSS public static abstract interface org.openide.util.lookup.InstanceContent$Convertor
+meth public abstract java.lang.Class org.openide.util.lookup.InstanceContent$Convertor.type(java.lang.Object)
+meth public abstract java.lang.Object org.openide.util.lookup.InstanceContent$Convertor.convert(java.lang.Object)
+meth public abstract java.lang.String org.openide.util.lookup.InstanceContent$Convertor.displayName(java.lang.Object)
+meth public abstract java.lang.String org.openide.util.lookup.InstanceContent$Convertor.id(java.lang.Object)
+supr null
+CLSS public abstract org.openide.ErrorManager
+cons public ErrorManager()
+fld  constant public static final int org.openide.ErrorManager.ERROR
+fld  constant public static final int org.openide.ErrorManager.EXCEPTION
+fld  constant public static final int org.openide.ErrorManager.INFORMATIONAL
+fld  constant public static final int org.openide.ErrorManager.UNKNOWN
+fld  constant public static final int org.openide.ErrorManager.USER
+fld  constant public static final int org.openide.ErrorManager.WARNING
+innr public static abstract interface org.openide.ErrorManager$Annotation
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract [Lorg.openide.ErrorManager$Annotation; org.openide.ErrorManager.findAnnotations(java.lang.Throwable)
+meth public abstract java.lang.Throwable org.openide.ErrorManager.annotate(java.lang.Throwable,int,java.lang.String,java.lang.String,java.lang.Throwable,java.util.Date)
+meth public abstract java.lang.Throwable org.openide.ErrorManager.attachAnnotations(java.lang.Throwable,[Lorg.openide.ErrorManager$Annotation;)
+meth public abstract org.openide.ErrorManager org.openide.ErrorManager.getInstance(java.lang.String)
+meth public abstract void org.openide.ErrorManager.log(int,java.lang.String)
+meth public abstract void org.openide.ErrorManager.notify(int,java.lang.Throwable)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.ErrorManager.isLoggable(int)
+meth public boolean org.openide.ErrorManager.isNotifiable(int)
+meth public final java.lang.Throwable org.openide.ErrorManager.annotate(java.lang.Throwable,java.lang.String)
+meth public final java.lang.Throwable org.openide.ErrorManager.annotate(java.lang.Throwable,java.lang.Throwable)
+meth public final java.lang.Throwable org.openide.ErrorManager.copyAnnotation(java.lang.Throwable,java.lang.Throwable)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.ErrorManager.log(java.lang.String)
+meth public final void org.openide.ErrorManager.notify(java.lang.Throwable)
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.ErrorManager org.openide.ErrorManager.getDefault()
+supr java.lang.Object
+CLSS public abstract org.openide.LifecycleManager
+cons protected LifecycleManager()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract void org.openide.LifecycleManager.exit()
+meth public abstract void org.openide.LifecycleManager.saveAll()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.LifecycleManager org.openide.LifecycleManager.getDefault()
+supr java.lang.Object
+CLSS public abstract org.openide.ServiceType
+cons public ServiceType()
+fld  constant public static final java.lang.String org.openide.ServiceType.PROP_NAME
+innr public static abstract org.openide.ServiceType$Registry
+innr public static final org.openide.ServiceType$Handle
+intf java.io.Serializable
+intf org.openide.util.HelpCtx$Provider
+meth protected final void org.openide.ServiceType.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected java.lang.Object org.openide.ServiceType.clone() throws java.lang.CloneNotSupportedException
+meth protected java.lang.String org.openide.ServiceType.displayName()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract org.openide.util.HelpCtx org.openide.ServiceType.getHelpCtx()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final org.openide.ServiceType org.openide.ServiceType.createClone()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.ServiceType.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.ServiceType.getName()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized final void org.openide.ServiceType.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.openide.ServiceType.setName(java.lang.String)
+supr java.lang.Object
+CLSS public abstract interface org.openide.util.AsyncGUIJob
+meth public abstract void org.openide.util.AsyncGUIJob.construct()
+meth public abstract void org.openide.util.AsyncGUIJob.finished()
+supr null
+CLSS public abstract interface org.openide.util.Cancellable
+meth public abstract boolean org.openide.util.Cancellable.cancel()
+supr null
+CLSS public abstract interface org.openide.util.ContextAwareAction
+fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
+fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  constant public static final java.lang.String javax.swing.Action.NAME
+fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
+intf java.awt.event.ActionListener
+intf java.util.EventListener
+intf javax.swing.Action
+meth public abstract boolean javax.swing.Action.isEnabled()
+meth public abstract java.lang.Object javax.swing.Action.getValue(java.lang.String)
+meth public abstract javax.swing.Action org.openide.util.ContextAwareAction.createContextAwareInstance(org.openide.util.Lookup)
+meth public abstract void java.awt.event.ActionListener.actionPerformed(java.awt.event.ActionEvent)
+meth public abstract void javax.swing.Action.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void javax.swing.Action.putValue(java.lang.String,java.lang.Object)
+meth public abstract void javax.swing.Action.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void javax.swing.Action.setEnabled(boolean)
+supr null
+CLSS public abstract interface org.openide.util.ContextGlobalProvider
+meth public abstract org.openide.util.Lookup org.openide.util.ContextGlobalProvider.createGlobalContext()
+supr null
+CLSS public final org.openide.util.Enumerations
+innr public static abstract interface org.openide.util.Enumerations$Processor
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static final java.util.Enumeration org.openide.util.Enumerations.empty()
+meth public static java.util.Enumeration org.openide.util.Enumerations.array([Ljava.lang.Object;)
+meth public static java.util.Enumeration org.openide.util.Enumerations.concat(java.util.Enumeration)
+meth public static java.util.Enumeration org.openide.util.Enumerations.concat(java.util.Enumeration,java.util.Enumeration)
+meth public static java.util.Enumeration org.openide.util.Enumerations.convert(java.util.Enumeration,org.openide.util.Enumerations$Processor)
+meth public static java.util.Enumeration org.openide.util.Enumerations.filter(java.util.Enumeration,org.openide.util.Enumerations$Processor)
+meth public static java.util.Enumeration org.openide.util.Enumerations.queue(java.util.Enumeration,org.openide.util.Enumerations$Processor)
+meth public static java.util.Enumeration org.openide.util.Enumerations.removeDuplicates(java.util.Enumeration)
+meth public static java.util.Enumeration org.openide.util.Enumerations.removeNulls(java.util.Enumeration)
+meth public static java.util.Enumeration org.openide.util.Enumerations.singleton(java.lang.Object)
+supr java.lang.Object
+CLSS public final org.openide.util.HelpCtx
+cons public HelpCtx(java.lang.Class)
+cons public HelpCtx(java.lang.String)
+cons public HelpCtx(java.net.URL)
+fld  public static final org.openide.util.HelpCtx org.openide.util.HelpCtx.DEFAULT_HELP
+innr public static abstract interface org.openide.util.HelpCtx$Provider
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.openide.util.HelpCtx.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.openide.util.HelpCtx.hashCode()
+meth public java.lang.String org.openide.util.HelpCtx.getHelpID()
+meth public java.lang.String org.openide.util.HelpCtx.toString()
+meth public java.net.URL org.openide.util.HelpCtx.getHelp()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static org.openide.util.HelpCtx org.openide.util.HelpCtx.findHelp(java.awt.Component)
+meth public static org.openide.util.HelpCtx org.openide.util.HelpCtx.findHelp(java.lang.Object)
+meth public static void org.openide.util.HelpCtx.setHelpIDString(javax.swing.JComponent,java.lang.String)
+supr java.lang.Object
+CLSS public abstract org.openide.util.Lookup
+cons public Lookup()
+fld  public static final org.openide.util.Lookup org.openide.util.Lookup.EMPTY
+innr public static abstract interface org.openide.util.Lookup$Provider
+innr public static abstract org.openide.util.Lookup$Item
+innr public static abstract org.openide.util.Lookup$Result
+innr public static final org.openide.util.Lookup$Template
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.lang.Object org.openide.util.Lookup.lookup(java.lang.Class)
+meth public abstract org.openide.util.Lookup$Result org.openide.util.Lookup.lookup(org.openide.util.Lookup$Template)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.util.Lookup$Item org.openide.util.Lookup.lookupItem(org.openide.util.Lookup$Template)
+meth public static synchronized org.openide.util.Lookup org.openide.util.Lookup.getDefault()
+supr java.lang.Object
+CLSS public final org.openide.util.LookupEvent
+cons public LookupEvent(org.openide.util.Lookup$Result)
+fld  protected transient java.lang.Object java.util.EventObject.source
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Object java.util.EventObject.getSource()
+meth public java.lang.String java.util.EventObject.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.util.EventObject
+CLSS public abstract interface org.openide.util.LookupListener
+intf java.util.EventListener
+meth public abstract void org.openide.util.LookupListener.resultChanged(org.openide.util.LookupEvent)
+supr null
+CLSS public org.openide.util.MapFormat
+cons public MapFormat(java.util.Map)
+innr public static java.text.Format$Field
+intf java.io.Serializable
+intf java.lang.Cloneable
+meth protected java.lang.Object org.openide.util.MapFormat.processKey(java.lang.String)
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.MapFormat.isExactMatch()
+meth public boolean org.openide.util.MapFormat.willThrowExceptionIfKeyWasNotFound()
+meth public final java.lang.String java.text.Format.format(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Object java.text.Format.clone()
+meth public java.lang.Object java.text.Format.parseObject(java.lang.String) throws java.text.ParseException
+meth public java.lang.Object org.openide.util.MapFormat.parseObject(java.lang.String,java.text.ParsePosition)
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.util.MapFormat.getLeftBrace()
+meth public java.lang.String org.openide.util.MapFormat.getRightBrace()
+meth public java.lang.String org.openide.util.MapFormat.parse(java.lang.String)
+meth public java.lang.String org.openide.util.MapFormat.processPattern(java.lang.String) throws java.lang.IllegalArgumentException
+meth public java.lang.StringBuffer org.openide.util.MapFormat.format(java.lang.Object,java.lang.StringBuffer,java.text.FieldPosition)
+meth public java.text.AttributedCharacterIterator java.text.Format.formatToCharacterIterator(java.lang.Object)
+meth public java.util.Map org.openide.util.MapFormat.getMap()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.lang.String org.openide.util.MapFormat.format(java.lang.String,java.util.Map)
+meth public void org.openide.util.MapFormat.setExactMatch(boolean)
+meth public void org.openide.util.MapFormat.setLeftBrace(java.lang.String)
+meth public void org.openide.util.MapFormat.setMap(java.util.Map)
+meth public void org.openide.util.MapFormat.setRightBrace(java.lang.String)
+meth public void org.openide.util.MapFormat.setThrowExceptionIfKeyWasNotFound(boolean)
+supr java.text.Format
+CLSS public final org.openide.util.Mutex
+cons public Mutex()
+cons public Mutex(java.lang.Object)
+cons public Mutex(org.openide.util.Mutex$Privileged)
+fld  public static final org.openide.util.Mutex org.openide.util.Mutex.EVENT
+innr public static abstract interface org.openide.util.Mutex$Action
+innr public static abstract interface org.openide.util.Mutex$ExceptionAction
+innr public static final org.openide.util.Mutex$Privileged
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.Mutex.isReadAccess()
+meth public boolean org.openide.util.Mutex.isWriteAccess()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Object org.openide.util.Mutex.readAccess(org.openide.util.Mutex$Action)
+meth public java.lang.Object org.openide.util.Mutex.readAccess(org.openide.util.Mutex$ExceptionAction) throws org.openide.util.MutexException
+meth public java.lang.Object org.openide.util.Mutex.writeAccess(org.openide.util.Mutex$Action)
+meth public java.lang.Object org.openide.util.Mutex.writeAccess(org.openide.util.Mutex$ExceptionAction) throws org.openide.util.MutexException
+meth public java.lang.String org.openide.util.Mutex.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.util.Mutex.postReadRequest(java.lang.Runnable)
+meth public void org.openide.util.Mutex.postWriteRequest(java.lang.Runnable)
+meth public void org.openide.util.Mutex.readAccess(java.lang.Runnable)
+meth public void org.openide.util.Mutex.writeAccess(java.lang.Runnable)
+supr java.lang.Object
+CLSS public org.openide.util.MutexException
+cons public MutexException(java.lang.Exception)
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Exception org.openide.util.MutexException.getException()
+meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
+meth public java.lang.String java.lang.Throwable.getMessage()
+meth public java.lang.String java.lang.Throwable.toString()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.printStackTrace()
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintStream)
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintWriter)
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
+supr java.lang.Exception
+CLSS public org.openide.util.NbBundle
+cons public NbBundle()
+innr public static abstract interface org.openide.util.NbBundle$ClassLoaderFinder
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static final java.util.ResourceBundle org.openide.util.NbBundle.getBundle(java.lang.String) throws java.util.MissingResourceException
+meth public static final java.util.ResourceBundle org.openide.util.NbBundle.getBundle(java.lang.String,java.util.Locale) throws java.util.MissingResourceException
+meth public static final java.util.ResourceBundle org.openide.util.NbBundle.getBundle(java.lang.String,java.util.Locale,java.lang.ClassLoader) throws java.util.MissingResourceException
+meth public static java.lang.Object org.openide.util.NbBundle.getLocalizedValue(java.util.Map,java.lang.String)
+meth public static java.lang.Object org.openide.util.NbBundle.getLocalizedValue(java.util.Map,java.lang.String,java.util.Locale)
+meth public static java.lang.String org.openide.util.NbBundle.getBranding()
+meth public static java.lang.String org.openide.util.NbBundle.getLocalizedValue(java.util.jar.Attributes,java.util.jar.Attributes$Name)
+meth public static java.lang.String org.openide.util.NbBundle.getLocalizedValue(java.util.jar.Attributes,java.util.jar.Attributes$Name,java.util.Locale)
+meth public static java.lang.String org.openide.util.NbBundle.getMessage(java.lang.Class,java.lang.String) throws java.util.MissingResourceException
+meth public static java.lang.String org.openide.util.NbBundle.getMessage(java.lang.Class,java.lang.String,[Ljava.lang.Object;) throws java.util.MissingResourceException
+meth public static java.lang.String org.openide.util.NbBundle.getMessage(java.lang.Class,java.lang.String,java.lang.Object) throws java.util.MissingResourceException
+meth public static java.lang.String org.openide.util.NbBundle.getMessage(java.lang.Class,java.lang.String,java.lang.Object,java.lang.Object) throws java.util.MissingResourceException
+meth public static java.lang.String org.openide.util.NbBundle.getMessage(java.lang.Class,java.lang.String,java.lang.Object,java.lang.Object,java.lang.Object) throws java.util.MissingResourceException
+meth public static java.util.Iterator org.openide.util.NbBundle.getLocalizingSuffixes()
+meth public static java.util.ResourceBundle org.openide.util.NbBundle.getBundle(java.lang.Class) throws java.util.MissingResourceException
+meth public static synchronized java.net.URL org.openide.util.NbBundle.getLocalizedFile(java.lang.String,java.lang.String) throws java.util.MissingResourceException
+meth public static synchronized java.net.URL org.openide.util.NbBundle.getLocalizedFile(java.lang.String,java.lang.String,java.util.Locale) throws java.util.MissingResourceException
+meth public static synchronized java.net.URL org.openide.util.NbBundle.getLocalizedFile(java.lang.String,java.lang.String,java.util.Locale,java.lang.ClassLoader) throws java.util.MissingResourceException
+meth public static void org.openide.util.NbBundle.setBranding(java.lang.String) throws java.lang.IllegalArgumentException
+meth public static void org.openide.util.NbBundle.setClassLoaderFinder(org.openide.util.NbBundle$ClassLoaderFinder)
+supr java.lang.Object
+CLSS public org.openide.util.NotImplementedException
+cons public NotImplementedException()
+cons public NotImplementedException(java.lang.String)
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
+meth public java.lang.String java.lang.Throwable.getMessage()
+meth public java.lang.String java.lang.Throwable.toString()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.printStackTrace()
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintStream)
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintWriter)
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
+supr java.lang.RuntimeException
+CLSS public org.openide.util.Queue
+cons public Queue()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Object org.openide.util.Queue.get()
+meth public synchronized void org.openide.util.Queue.put(java.lang.Object)
+supr java.lang.Object
+CLSS public final org.openide.util.RequestProcessor
+cons public RequestProcessor()
+cons public RequestProcessor(java.lang.String)
+cons public RequestProcessor(java.lang.String,int)
+cons public RequestProcessor(java.lang.String,int,boolean)
+innr public final org.openide.util.RequestProcessor$Task
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.RequestProcessor.isRequestProcessorThread()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.util.RequestProcessor$Task org.openide.util.RequestProcessor.create(java.lang.Runnable)
+meth public org.openide.util.RequestProcessor$Task org.openide.util.RequestProcessor.create(java.lang.Runnable,boolean)
+meth public org.openide.util.RequestProcessor$Task org.openide.util.RequestProcessor.post(java.lang.Runnable)
+meth public org.openide.util.RequestProcessor$Task org.openide.util.RequestProcessor.post(java.lang.Runnable,int)
+meth public org.openide.util.RequestProcessor$Task org.openide.util.RequestProcessor.post(java.lang.Runnable,int,int)
+meth public static org.openide.util.RequestProcessor org.openide.util.RequestProcessor.getDefault()
+meth public static org.openide.util.RequestProcessor$Task org.openide.util.RequestProcessor.createRequest(java.lang.Runnable)
+meth public static org.openide.util.RequestProcessor$Task org.openide.util.RequestProcessor.postRequest(java.lang.Runnable)
+meth public static org.openide.util.RequestProcessor$Task org.openide.util.RequestProcessor.postRequest(java.lang.Runnable,int)
+meth public static org.openide.util.RequestProcessor$Task org.openide.util.RequestProcessor.postRequest(java.lang.Runnable,int,int)
+meth public void org.openide.util.RequestProcessor.stop()
+supr java.lang.Object
+CLSS public abstract org.openide.util.SharedClassObject
+cons protected SharedClassObject()
+intf java.io.Externalizable
+intf java.io.Serializable
+meth protected boolean org.openide.util.SharedClassObject.clearSharedData()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getLock()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getProperty(java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.Object,java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.String,java.lang.Object,boolean)
+meth protected final void org.openide.util.SharedClassObject.finalize() throws java.lang.Throwable
+meth protected java.lang.Object org.openide.util.SharedClassObject.writeReplace()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void org.openide.util.SharedClassObject.addNotify()
+meth protected void org.openide.util.SharedClassObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.util.SharedClassObject.initialize()
+meth protected void org.openide.util.SharedClassObject.removeNotify()
+meth protected void org.openide.util.SharedClassObject.reset()
+meth public final boolean org.openide.util.SharedClassObject.equals(java.lang.Object)
+meth public final int org.openide.util.SharedClassObject.hashCode()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.SharedClassObject.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.SharedClassObject.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class,boolean)
+meth public void org.openide.util.SharedClassObject.readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
+meth public void org.openide.util.SharedClassObject.writeExternal(java.io.ObjectOutput) throws java.io.IOException
+supr java.lang.Object
+CLSS public org.openide.util.Task
+cons protected Task()
+cons public Task(java.lang.Runnable)
+fld  public static final org.openide.util.Task org.openide.util.Task.EMPTY
+intf java.lang.Runnable
+meth protected final void org.openide.util.Task.notifyFinished()
+meth protected final void org.openide.util.Task.notifyRunning()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.Task.waitFinished(long) throws java.lang.InterruptedException
+meth public final boolean org.openide.util.Task.isFinished()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.util.Task.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized void org.openide.util.Task.addTaskListener(org.openide.util.TaskListener)
+meth public synchronized void org.openide.util.Task.removeTaskListener(org.openide.util.TaskListener)
+meth public void org.openide.util.Task.run()
+meth public void org.openide.util.Task.waitFinished()
+supr java.lang.Object
+CLSS public abstract interface org.openide.util.TaskListener
+intf java.util.EventListener
+meth public abstract void org.openide.util.TaskListener.taskFinished(org.openide.util.Task)
+supr null
+CLSS public final org.openide.util.TopologicalSortException
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final [Ljava.util.Set; org.openide.util.TopologicalSortException.topologicalSets()
+meth public final [Ljava.util.Set; org.openide.util.TopologicalSortException.unsortableSets()
+meth public final java.util.List org.openide.util.TopologicalSortException.partialSort()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.TopologicalSortException.printStackTrace(java.io.PrintStream)
+meth public final void org.openide.util.TopologicalSortException.printStackTrace(java.io.PrintWriter)
+meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
+meth public java.lang.String java.lang.Throwable.getMessage()
+meth public java.lang.String java.lang.Throwable.toString()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.printStackTrace()
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
+supr java.lang.Exception
+CLSS public org.openide.util.UserCancelException
+cons public UserCancelException()
+cons public UserCancelException(java.lang.String)
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
+meth public java.lang.String java.lang.Throwable.getMessage()
+meth public java.lang.String java.lang.Throwable.toString()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.printStackTrace()
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintStream)
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintWriter)
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
+supr java.io.IOException
+CLSS public abstract org.openide.util.UserQuestionException
+cons public UserQuestionException()
+cons public UserQuestionException(java.lang.String)
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public abstract void org.openide.util.UserQuestionException.confirmed() throws java.io.IOException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
+meth public java.lang.String java.lang.Throwable.getMessage()
+meth public java.lang.String java.lang.Throwable.toString()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.printStackTrace()
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintStream)
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintWriter)
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
+supr java.io.IOException
+CLSS public final org.openide.util.Utilities
+fld  constant public static final int org.openide.util.Utilities.OS_AIX
+fld  constant public static final int org.openide.util.Utilities.OS_DEC
+fld  constant public static final int org.openide.util.Utilities.OS_FREEBSD
+fld  constant public static final int org.openide.util.Utilities.OS_HP
+fld  constant public static final int org.openide.util.Utilities.OS_IRIX
+fld  constant public static final int org.openide.util.Utilities.OS_LINUX
+fld  constant public static final int org.openide.util.Utilities.OS_MAC
+fld  constant public static final int org.openide.util.Utilities.OS_OS2
+fld  constant public static final int org.openide.util.Utilities.OS_OTHER
+fld  constant public static final int org.openide.util.Utilities.OS_SOLARIS
+fld  constant public static final int org.openide.util.Utilities.OS_SUNOS
+fld  constant public static final int org.openide.util.Utilities.OS_TRU64
+fld  constant public static final int org.openide.util.Utilities.OS_UNIX_MASK
+fld  constant public static final int org.openide.util.Utilities.OS_VMS
+fld  constant public static final int org.openide.util.Utilities.OS_WIN2000
+fld  constant public static final int org.openide.util.Utilities.OS_WIN95
+fld  constant public static final int org.openide.util.Utilities.OS_WIN98
+fld  constant public static final int org.openide.util.Utilities.OS_WINDOWS_MASK
+fld  constant public static final int org.openide.util.Utilities.OS_WINNT
+fld  constant public static final int org.openide.util.Utilities.OS_WIN_OTHER
+fld  constant public static final int org.openide.util.Utilities.TYPICAL_WINDOWS_TASKBAR_HEIGHT
+innr public static org.openide.util.Utilities$UnorderableException
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static [Ljava.lang.Object; org.openide.util.Utilities.toObjectArray(java.lang.Object)
+meth public static [Ljava.lang.String; org.openide.util.Utilities.parseParameters(java.lang.String)
+meth public static [Ljava.lang.String; org.openide.util.Utilities.wrapStringToArray(java.lang.String,int,boolean,boolean)
+meth public static [Ljava.lang.String; org.openide.util.Utilities.wrapStringToArray(java.lang.String,int,java.text.BreakIterator,boolean)
+meth public static [Ljavax.swing.KeyStroke; org.openide.util.Utilities.stringToKeys(java.lang.String)
+meth public static boolean org.openide.util.Utilities.compareObjects(java.lang.Object,java.lang.Object)
+meth public static boolean org.openide.util.Utilities.compareObjectsImpl(java.lang.Object,java.lang.Object,int)
+meth public static final boolean org.openide.util.Utilities.isJavaIdentifier(java.lang.String)
+meth public static final boolean org.openide.util.Utilities.isLargeFrameIcons()
+meth public static final boolean org.openide.util.Utilities.isUnix()
+meth public static final boolean org.openide.util.Utilities.isWindows()
+meth public static final int org.openide.util.Utilities.getOperatingSystem()
+meth public static final int org.openide.util.Utilities.showJFileChooser(javax.swing.JFileChooser,java.awt.Component,java.lang.String)
+meth public static final java.awt.Cursor org.openide.util.Utilities.createProgressCursor(java.awt.Component)
+meth public static final java.awt.Dimension org.openide.util.Utilities.getScreenSize()
+meth public static final java.awt.Image org.openide.util.Utilities.loadImage(java.lang.String)
+meth public static final java.awt.Image org.openide.util.Utilities.loadImage(java.lang.String,boolean)
+meth public static final java.awt.Image org.openide.util.Utilities.mergeImages(java.awt.Image,java.awt.Image,int,int)
+meth public static final java.lang.String org.openide.util.Utilities.pureClassName(java.lang.String)
+meth public static final void org.openide.util.Utilities.attachInitJob(java.awt.Component,org.openide.util.AsyncGUIJob)
+meth public static int org.openide.util.Utilities.arrayHashCode([Ljava.lang.Object;)
+meth public static java.awt.Component org.openide.util.Utilities.getFocusTraversableComponent(java.awt.Component)
+meth public static java.awt.Cursor org.openide.util.Utilities.createCustomCursor(java.awt.Component,java.awt.Image,java.lang.String)
+meth public static java.awt.Rectangle org.openide.util.Utilities.findCenterBounds(java.awt.Dimension)
+meth public static java.awt.Rectangle org.openide.util.Utilities.getUsableScreenBounds()
+meth public static java.awt.Rectangle org.openide.util.Utilities.getUsableScreenBounds(java.awt.GraphicsConfiguration)
+meth public static java.beans.BeanInfo org.openide.util.Utilities.getBeanInfo(java.lang.Class) throws java.beans.IntrospectionException
+meth public static java.beans.BeanInfo org.openide.util.Utilities.getBeanInfo(java.lang.Class,java.lang.Class) throws java.beans.IntrospectionException
+meth public static java.io.File org.openide.util.Utilities.toFile(java.net.URL)
+meth public static java.lang.Class org.openide.util.Utilities.getObjectType(java.lang.Class)
+meth public static java.lang.Class org.openide.util.Utilities.getPrimitiveType(java.lang.Class)
+meth public static java.lang.Object org.openide.util.Utilities.toPrimitiveArray([Ljava.lang.Object;)
+meth public static java.lang.String org.openide.util.Utilities.escapeParameters([Ljava.lang.String;)
+meth public static java.lang.String org.openide.util.Utilities.getClassName(java.lang.Class)
+meth public static java.lang.String org.openide.util.Utilities.getShortClassName(java.lang.Class)
+meth public static java.lang.String org.openide.util.Utilities.keyToString(javax.swing.KeyStroke)
+meth public static java.lang.String org.openide.util.Utilities.replaceString(java.lang.String,java.lang.String,java.lang.String)
+meth public static java.lang.String org.openide.util.Utilities.translate(java.lang.String)
+meth public static java.lang.String org.openide.util.Utilities.wrapString(java.lang.String,int,boolean,boolean)
+meth public static java.lang.String org.openide.util.Utilities.wrapString(java.lang.String,int,java.text.BreakIterator,boolean)
+meth public static java.net.URL org.openide.util.Utilities.toURL(java.io.File) throws java.net.MalformedURLException
+meth public static java.util.List org.openide.util.Utilities.partialSort(java.util.List,java.util.Comparator,boolean) throws org.openide.util.Utilities$UnorderableException
+meth public static java.util.List org.openide.util.Utilities.topologicalSort(java.util.Collection,java.util.Map) throws org.openide.util.TopologicalSortException
+meth public static javax.swing.JPopupMenu org.openide.util.Utilities.actionsToPopup([Ljavax.swing.Action;,java.awt.Component)
+meth public static javax.swing.JPopupMenu org.openide.util.Utilities.actionsToPopup([Ljavax.swing.Action;,org.openide.util.Lookup)
+meth public static javax.swing.KeyStroke org.openide.util.Utilities.stringToKey(java.lang.String)
+meth public static org.openide.util.Lookup org.openide.util.Utilities.actionsGlobalContext()
+meth public static synchronized java.lang.ref.ReferenceQueue org.openide.util.Utilities.activeReferenceQueue()
+supr java.lang.Object
+CLSS public final org.openide.util.WeakListeners
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.beans.PropertyChangeListener org.openide.util.WeakListeners.propertyChange(java.beans.PropertyChangeListener,java.lang.Object)
+meth public static java.beans.VetoableChangeListener org.openide.util.WeakListeners.vetoableChange(java.beans.VetoableChangeListener,java.lang.Object)
+meth public static java.util.EventListener org.openide.util.WeakListeners.create(java.lang.Class,java.lang.Class,java.util.EventListener,java.lang.Object)
+meth public static java.util.EventListener org.openide.util.WeakListeners.create(java.lang.Class,java.util.EventListener,java.lang.Object)
+meth public static javax.swing.event.ChangeListener org.openide.util.WeakListeners.change(javax.swing.event.ChangeListener,java.lang.Object)
+meth public static javax.swing.event.DocumentListener org.openide.util.WeakListeners.document(javax.swing.event.DocumentListener,java.lang.Object)
+supr java.lang.Object
+CLSS public org.openide.util.WeakSet
+cons public WeakSet()
+cons public WeakSet(int)
+cons public WeakSet(int,float)
+cons public WeakSet(java.util.Collection)
+intf java.io.Serializable
+intf java.lang.Cloneable
+intf java.lang.Iterable
+intf java.util.Collection
+intf java.util.Set
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.Object; org.openide.util.WeakSet.toArray()
+meth public [Ljava.lang.Object; org.openide.util.WeakSet.toArray([Ljava.lang.Object;)
+meth public boolean java.util.AbstractCollection.addAll(java.util.Collection)
+meth public boolean java.util.AbstractCollection.containsAll(java.util.Collection)
+meth public boolean java.util.AbstractCollection.retainAll(java.util.Collection)
+meth public boolean java.util.AbstractSet.equals(java.lang.Object)
+meth public boolean java.util.AbstractSet.removeAll(java.util.Collection)
+meth public boolean org.openide.util.WeakSet.add(java.lang.Object)
+meth public boolean org.openide.util.WeakSet.contains(java.lang.Object)
+meth public boolean org.openide.util.WeakSet.isEmpty()
+meth public boolean org.openide.util.WeakSet.remove(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.util.AbstractSet.hashCode()
+meth public int org.openide.util.WeakSet.size()
+meth public java.lang.Object org.openide.util.WeakSet.clone()
+meth public java.lang.String org.openide.util.WeakSet.toString()
+meth public java.util.Iterator org.openide.util.WeakSet.iterator()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public void org.openide.util.WeakSet.clear()
+supr java.util.AbstractSet
+CLSS public abstract interface org.openide.util.actions.ActionPerformer
+meth public abstract void org.openide.util.actions.ActionPerformer.performAction(org.openide.util.actions.SystemAction)
+supr null
+CLSS public abstract org.openide.util.actions.BooleanStateAction
+cons public BooleanStateAction()
+fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
+fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  constant public static final java.lang.String javax.swing.Action.NAME
+fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
+fld  constant public static final java.lang.String org.openide.util.actions.BooleanStateAction.PROP_BOOLEAN_STATE
+fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
+fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+innr public static abstract interface org.openide.util.actions.Presenter$Menu
+innr public static abstract interface org.openide.util.actions.Presenter$Popup
+innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
+intf java.awt.event.ActionListener
+intf java.io.Externalizable
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.swing.Action
+intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.actions.Presenter
+intf org.openide.util.actions.Presenter$Menu
+intf org.openide.util.actions.Presenter$Popup
+intf org.openide.util.actions.Presenter$Toolbar
+meth protected boolean org.openide.util.actions.SystemAction.clearSharedData()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getLock()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getProperty(java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.Object,java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.String,java.lang.Object,boolean)
+meth protected final void org.openide.util.SharedClassObject.finalize() throws java.lang.Throwable
+meth protected java.lang.Object org.openide.util.SharedClassObject.writeReplace()
+meth protected java.lang.String org.openide.util.actions.SystemAction.iconResource()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void org.openide.util.SharedClassObject.addNotify()
+meth protected void org.openide.util.SharedClassObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.util.SharedClassObject.removeNotify()
+meth protected void org.openide.util.SharedClassObject.reset()
+meth protected void org.openide.util.actions.BooleanStateAction.initialize()
+meth public abstract java.lang.String org.openide.util.actions.SystemAction.getName()
+meth public abstract org.openide.util.HelpCtx org.openide.util.actions.SystemAction.getHelpCtx()
+meth public boolean org.openide.util.actions.BooleanStateAction.getBooleanState()
+meth public boolean org.openide.util.actions.SystemAction.isEnabled()
+meth public final boolean org.openide.util.SharedClassObject.equals(java.lang.Object)
+meth public final int org.openide.util.SharedClassObject.hashCode()
+meth public final java.lang.Object org.openide.util.actions.SystemAction.getValue(java.lang.String)
+meth public final javax.swing.Icon org.openide.util.actions.SystemAction.getIcon()
+meth public final javax.swing.Icon org.openide.util.actions.SystemAction.getIcon(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.SharedClassObject.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.SharedClassObject.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.actions.SystemAction.putValue(java.lang.String,java.lang.Object)
+meth public final void org.openide.util.actions.SystemAction.setIcon(javax.swing.Icon)
+meth public java.awt.Component org.openide.util.actions.BooleanStateAction.getToolbarPresenter()
+meth public java.lang.String java.lang.Object.toString()
+meth public javax.swing.JMenuItem org.openide.util.actions.BooleanStateAction.getMenuPresenter()
+meth public javax.swing.JMenuItem org.openide.util.actions.BooleanStateAction.getPopupPresenter()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static [Lorg.openide.util.actions.SystemAction; org.openide.util.actions.SystemAction.linkActions([Lorg.openide.util.actions.SystemAction;,[Lorg.openide.util.actions.SystemAction;)
+meth public static javax.swing.JPopupMenu org.openide.util.actions.SystemAction.createPopupMenu([Lorg.openide.util.actions.SystemAction;)
+meth public static javax.swing.JToolBar org.openide.util.actions.SystemAction.createToolbarPresenter([Lorg.openide.util.actions.SystemAction;)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class,boolean)
+meth public static org.openide.util.actions.SystemAction org.openide.util.actions.SystemAction.get(java.lang.Class)
+meth public void org.openide.util.SharedClassObject.readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
+meth public void org.openide.util.SharedClassObject.writeExternal(java.io.ObjectOutput) throws java.io.IOException
+meth public void org.openide.util.actions.BooleanStateAction.actionPerformed(java.awt.event.ActionEvent)
+meth public void org.openide.util.actions.BooleanStateAction.setBooleanState(boolean)
+meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
+supr org.openide.util.actions.SystemAction
+CLSS public abstract org.openide.util.actions.CallableSystemAction
+cons public CallableSystemAction()
+fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
+fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  constant public static final java.lang.String javax.swing.Action.NAME
+fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
+fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
+fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+innr public static abstract interface org.openide.util.actions.Presenter$Menu
+innr public static abstract interface org.openide.util.actions.Presenter$Popup
+innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
+intf java.awt.event.ActionListener
+intf java.io.Externalizable
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.swing.Action
+intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.actions.Presenter
+intf org.openide.util.actions.Presenter$Menu
+intf org.openide.util.actions.Presenter$Popup
+intf org.openide.util.actions.Presenter$Toolbar
+meth protected boolean org.openide.util.actions.CallableSystemAction.asynchronous()
+meth protected boolean org.openide.util.actions.SystemAction.clearSharedData()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getLock()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getProperty(java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.Object,java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.String,java.lang.Object,boolean)
+meth protected final void org.openide.util.SharedClassObject.finalize() throws java.lang.Throwable
+meth protected java.lang.Object org.openide.util.SharedClassObject.writeReplace()
+meth protected java.lang.String org.openide.util.actions.SystemAction.iconResource()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void org.openide.util.SharedClassObject.addNotify()
+meth protected void org.openide.util.SharedClassObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.util.SharedClassObject.removeNotify()
+meth protected void org.openide.util.SharedClassObject.reset()
+meth protected void org.openide.util.actions.SystemAction.initialize()
+meth public abstract java.lang.String org.openide.util.actions.SystemAction.getName()
+meth public abstract org.openide.util.HelpCtx org.openide.util.actions.SystemAction.getHelpCtx()
+meth public abstract void org.openide.util.actions.CallableSystemAction.performAction()
+meth public boolean org.openide.util.actions.SystemAction.isEnabled()
+meth public final boolean org.openide.util.SharedClassObject.equals(java.lang.Object)
+meth public final int org.openide.util.SharedClassObject.hashCode()
+meth public final java.lang.Object org.openide.util.actions.SystemAction.getValue(java.lang.String)
+meth public final javax.swing.Icon org.openide.util.actions.SystemAction.getIcon()
+meth public final javax.swing.Icon org.openide.util.actions.SystemAction.getIcon(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.SharedClassObject.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.SharedClassObject.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.actions.SystemAction.putValue(java.lang.String,java.lang.Object)
+meth public final void org.openide.util.actions.SystemAction.setIcon(javax.swing.Icon)
+meth public java.awt.Component org.openide.util.actions.CallableSystemAction.getToolbarPresenter()
+meth public java.lang.String java.lang.Object.toString()
+meth public javax.swing.JMenuItem org.openide.util.actions.CallableSystemAction.getMenuPresenter()
+meth public javax.swing.JMenuItem org.openide.util.actions.CallableSystemAction.getPopupPresenter()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static [Lorg.openide.util.actions.SystemAction; org.openide.util.actions.SystemAction.linkActions([Lorg.openide.util.actions.SystemAction;,[Lorg.openide.util.actions.SystemAction;)
+meth public static javax.swing.JPopupMenu org.openide.util.actions.SystemAction.createPopupMenu([Lorg.openide.util.actions.SystemAction;)
+meth public static javax.swing.JToolBar org.openide.util.actions.SystemAction.createToolbarPresenter([Lorg.openide.util.actions.SystemAction;)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class,boolean)
+meth public static org.openide.util.actions.SystemAction org.openide.util.actions.SystemAction.get(java.lang.Class)
+meth public void org.openide.util.SharedClassObject.readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
+meth public void org.openide.util.SharedClassObject.writeExternal(java.io.ObjectOutput) throws java.io.IOException
+meth public void org.openide.util.actions.CallableSystemAction.actionPerformed(java.awt.event.ActionEvent)
+meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
+supr org.openide.util.actions.SystemAction
+CLSS public abstract org.openide.util.actions.CallbackSystemAction
+cons public CallbackSystemAction()
+fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
+fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  constant public static final java.lang.String javax.swing.Action.NAME
+fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
+fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
+fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+innr public static abstract interface org.openide.util.actions.Presenter$Menu
+innr public static abstract interface org.openide.util.actions.Presenter$Popup
+innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
+intf java.awt.event.ActionListener
+intf java.io.Externalizable
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.swing.Action
+intf org.openide.util.ContextAwareAction
+intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.actions.Presenter
+intf org.openide.util.actions.Presenter$Menu
+intf org.openide.util.actions.Presenter$Popup
+intf org.openide.util.actions.Presenter$Toolbar
+meth protected boolean org.openide.util.actions.CallableSystemAction.asynchronous()
+meth protected boolean org.openide.util.actions.SystemAction.clearSharedData()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getLock()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getProperty(java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.Object,java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.String,java.lang.Object,boolean)
+meth protected final void org.openide.util.SharedClassObject.finalize() throws java.lang.Throwable
+meth protected java.lang.Object org.openide.util.SharedClassObject.writeReplace()
+meth protected java.lang.String org.openide.util.actions.SystemAction.iconResource()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void org.openide.util.SharedClassObject.addNotify()
+meth protected void org.openide.util.SharedClassObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.util.SharedClassObject.removeNotify()
+meth protected void org.openide.util.SharedClassObject.reset()
+meth protected void org.openide.util.actions.CallbackSystemAction.initialize()
+meth public abstract java.lang.String org.openide.util.actions.SystemAction.getName()
+meth public abstract org.openide.util.HelpCtx org.openide.util.actions.SystemAction.getHelpCtx()
+meth public boolean org.openide.util.actions.CallbackSystemAction.getSurviveFocusChange()
+meth public boolean org.openide.util.actions.SystemAction.isEnabled()
+meth public final boolean org.openide.util.SharedClassObject.equals(java.lang.Object)
+meth public final int org.openide.util.SharedClassObject.hashCode()
+meth public final java.lang.Object org.openide.util.actions.SystemAction.getValue(java.lang.String)
+meth public final javax.swing.Icon org.openide.util.actions.SystemAction.getIcon()
+meth public final javax.swing.Icon org.openide.util.actions.SystemAction.getIcon(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.SharedClassObject.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.SharedClassObject.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.actions.SystemAction.putValue(java.lang.String,java.lang.Object)
+meth public final void org.openide.util.actions.SystemAction.setIcon(javax.swing.Icon)
+meth public java.awt.Component org.openide.util.actions.CallableSystemAction.getToolbarPresenter()
+meth public java.lang.Object org.openide.util.actions.CallbackSystemAction.getActionMapKey()
+meth public java.lang.String java.lang.Object.toString()
+meth public javax.swing.Action org.openide.util.actions.CallbackSystemAction.createContextAwareInstance(org.openide.util.Lookup)
+meth public javax.swing.JMenuItem org.openide.util.actions.CallableSystemAction.getMenuPresenter()
+meth public javax.swing.JMenuItem org.openide.util.actions.CallableSystemAction.getPopupPresenter()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public org.openide.util.actions.ActionPerformer org.openide.util.actions.CallbackSystemAction.getActionPerformer()
+meth public static [Lorg.openide.util.actions.SystemAction; org.openide.util.actions.SystemAction.linkActions([Lorg.openide.util.actions.SystemAction;,[Lorg.openide.util.actions.SystemAction;)
+meth public static javax.swing.JPopupMenu org.openide.util.actions.SystemAction.createPopupMenu([Lorg.openide.util.actions.SystemAction;)
+meth public static javax.swing.JToolBar org.openide.util.actions.SystemAction.createToolbarPresenter([Lorg.openide.util.actions.SystemAction;)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class,boolean)
+meth public static org.openide.util.actions.SystemAction org.openide.util.actions.SystemAction.get(java.lang.Class)
+meth public void org.openide.util.SharedClassObject.readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
+meth public void org.openide.util.SharedClassObject.writeExternal(java.io.ObjectOutput) throws java.io.IOException
+meth public void org.openide.util.actions.CallbackSystemAction.actionPerformed(java.awt.event.ActionEvent)
+meth public void org.openide.util.actions.CallbackSystemAction.performAction()
+meth public void org.openide.util.actions.CallbackSystemAction.setActionPerformer(org.openide.util.actions.ActionPerformer)
+meth public void org.openide.util.actions.CallbackSystemAction.setSurviveFocusChange(boolean)
+meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
+supr org.openide.util.actions.CallableSystemAction
+CLSS public abstract interface org.openide.util.actions.Presenter
+innr public static abstract interface org.openide.util.actions.Presenter$Menu
+innr public static abstract interface org.openide.util.actions.Presenter$Popup
+innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
+supr null
+CLSS public abstract org.openide.util.actions.SystemAction
+cons public SystemAction()
+fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
+fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  constant public static final java.lang.String javax.swing.Action.NAME
+fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
+fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
+fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+intf java.awt.event.ActionListener
+intf java.io.Externalizable
+intf java.io.Serializable
+intf java.util.EventListener
+intf javax.swing.Action
+intf org.openide.util.HelpCtx$Provider
+meth protected boolean org.openide.util.actions.SystemAction.clearSharedData()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getLock()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getProperty(java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.Object,java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.String,java.lang.Object,boolean)
+meth protected final void org.openide.util.SharedClassObject.finalize() throws java.lang.Throwable
+meth protected java.lang.Object org.openide.util.SharedClassObject.writeReplace()
+meth protected java.lang.String org.openide.util.actions.SystemAction.iconResource()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void org.openide.util.SharedClassObject.addNotify()
+meth protected void org.openide.util.SharedClassObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.util.SharedClassObject.removeNotify()
+meth protected void org.openide.util.SharedClassObject.reset()
+meth protected void org.openide.util.actions.SystemAction.initialize()
+meth public abstract java.lang.String org.openide.util.actions.SystemAction.getName()
+meth public abstract org.openide.util.HelpCtx org.openide.util.actions.SystemAction.getHelpCtx()
+meth public abstract void org.openide.util.actions.SystemAction.actionPerformed(java.awt.event.ActionEvent)
+meth public boolean org.openide.util.actions.SystemAction.isEnabled()
+meth public final boolean org.openide.util.SharedClassObject.equals(java.lang.Object)
+meth public final int org.openide.util.SharedClassObject.hashCode()
+meth public final java.lang.Object org.openide.util.actions.SystemAction.getValue(java.lang.String)
+meth public final javax.swing.Icon org.openide.util.actions.SystemAction.getIcon()
+meth public final javax.swing.Icon org.openide.util.actions.SystemAction.getIcon(boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.SharedClassObject.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.SharedClassObject.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.actions.SystemAction.putValue(java.lang.String,java.lang.Object)
+meth public final void org.openide.util.actions.SystemAction.setIcon(javax.swing.Icon)
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static [Lorg.openide.util.actions.SystemAction; org.openide.util.actions.SystemAction.linkActions([Lorg.openide.util.actions.SystemAction;,[Lorg.openide.util.actions.SystemAction;)
+meth public static javax.swing.JPopupMenu org.openide.util.actions.SystemAction.createPopupMenu([Lorg.openide.util.actions.SystemAction;)
+meth public static javax.swing.JToolBar org.openide.util.actions.SystemAction.createToolbarPresenter([Lorg.openide.util.actions.SystemAction;)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class,boolean)
+meth public static org.openide.util.actions.SystemAction org.openide.util.actions.SystemAction.get(java.lang.Class)
+meth public void org.openide.util.SharedClassObject.readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
+meth public void org.openide.util.SharedClassObject.writeExternal(java.io.ObjectOutput) throws java.io.IOException
+meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
+supr org.openide.util.SharedClassObject
+CLSS public final org.openide.util.datatransfer.ClipboardEvent
+fld  protected transient java.lang.Object java.util.EventObject.source
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.datatransfer.ClipboardEvent.isConsumed()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Object java.util.EventObject.getSource()
+meth public java.lang.String java.util.EventObject.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.util.datatransfer.ExClipboard org.openide.util.datatransfer.ClipboardEvent.getClipboard()
+meth public void org.openide.util.datatransfer.ClipboardEvent.consume()
+supr java.util.EventObject
+CLSS public abstract interface org.openide.util.datatransfer.ClipboardListener
+intf java.util.EventListener
+meth public abstract void org.openide.util.datatransfer.ClipboardListener.clipboardChanged(org.openide.util.datatransfer.ClipboardEvent)
+supr null
+CLSS public abstract org.openide.util.datatransfer.ExClipboard
+cons public ExClipboard(java.lang.String)
+fld  protected java.awt.datatransfer.ClipboardOwner java.awt.datatransfer.Clipboard.owner
+fld  protected java.awt.datatransfer.Transferable java.awt.datatransfer.Clipboard.contents
+innr public static abstract interface org.openide.util.datatransfer.ExClipboard$Convertor
+meth protected abstract [Lorg.openide.util.datatransfer.ExClipboard$Convertor; org.openide.util.datatransfer.ExClipboard.getConvertors()
+meth protected final void org.openide.util.datatransfer.ExClipboard.fireClipboardChange()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.awt.datatransfer.DataFlavor; java.awt.datatransfer.Clipboard.getAvailableDataFlavors()
+meth public boolean java.awt.datatransfer.Clipboard.isDataFlavorAvailable(java.awt.datatransfer.DataFlavor)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.datatransfer.ExClipboard.addClipboardListener(org.openide.util.datatransfer.ClipboardListener)
+meth public final void org.openide.util.datatransfer.ExClipboard.removeClipboardListener(org.openide.util.datatransfer.ClipboardListener)
+meth public java.awt.datatransfer.Transferable org.openide.util.datatransfer.ExClipboard.convert(java.awt.datatransfer.Transferable)
+meth public java.lang.Object java.awt.datatransfer.Clipboard.getData(java.awt.datatransfer.DataFlavor) throws java.awt.datatransfer.UnsupportedFlavorException,java.io.IOException
+meth public java.lang.String java.awt.datatransfer.Clipboard.getName()
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static void org.openide.util.datatransfer.ExClipboard.transferableAccepted(java.awt.datatransfer.Transferable,int)
+meth public static void org.openide.util.datatransfer.ExClipboard.transferableOwnershipLost(java.awt.datatransfer.Transferable)
+meth public static void org.openide.util.datatransfer.ExClipboard.transferableRejected(java.awt.datatransfer.Transferable)
+meth public synchronized [Ljava.awt.datatransfer.FlavorListener; java.awt.datatransfer.Clipboard.getFlavorListeners()
+meth public synchronized java.awt.datatransfer.Transferable java.awt.datatransfer.Clipboard.getContents(java.lang.Object)
+meth public synchronized void java.awt.datatransfer.Clipboard.addFlavorListener(java.awt.datatransfer.FlavorListener)
+meth public synchronized void java.awt.datatransfer.Clipboard.removeFlavorListener(java.awt.datatransfer.FlavorListener)
+meth public synchronized void org.openide.util.datatransfer.ExClipboard.setContents(java.awt.datatransfer.Transferable,java.awt.datatransfer.ClipboardOwner)
+supr java.awt.datatransfer.Clipboard
+CLSS public org.openide.util.datatransfer.ExTransferable
+fld  public static final java.awt.datatransfer.DataFlavor org.openide.util.datatransfer.ExTransferable.multiFlavor
+fld  public static final java.awt.datatransfer.Transferable org.openide.util.datatransfer.ExTransferable.EMPTY
+innr public static abstract org.openide.util.datatransfer.ExTransferable$Single
+innr public static org.openide.util.datatransfer.ExTransferable$Multi
+intf java.awt.datatransfer.Transferable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.awt.datatransfer.DataFlavor; org.openide.util.datatransfer.ExTransferable.getTransferDataFlavors()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.datatransfer.ExTransferable.isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Object org.openide.util.datatransfer.ExTransferable.getTransferData(java.awt.datatransfer.DataFlavor) throws java.awt.datatransfer.UnsupportedFlavorException,java.io.IOException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.util.datatransfer.ExTransferable org.openide.util.datatransfer.ExTransferable.create(java.awt.datatransfer.Transferable)
+meth public synchronized final void org.openide.util.datatransfer.ExTransferable.addTransferListener(org.openide.util.datatransfer.TransferListener)
+meth public synchronized final void org.openide.util.datatransfer.ExTransferable.removeTransferListener(org.openide.util.datatransfer.TransferListener)
+meth public void org.openide.util.datatransfer.ExTransferable.put(org.openide.util.datatransfer.ExTransferable$Single)
+meth public void org.openide.util.datatransfer.ExTransferable.remove(java.awt.datatransfer.DataFlavor)
+supr java.lang.Object
+CLSS public abstract interface org.openide.util.datatransfer.MultiTransferObject
+meth public abstract [Ljava.awt.datatransfer.DataFlavor; org.openide.util.datatransfer.MultiTransferObject.getTransferDataFlavors(int)
+meth public abstract boolean org.openide.util.datatransfer.MultiTransferObject.areDataFlavorsSupported([Ljava.awt.datatransfer.DataFlavor;)
+meth public abstract boolean org.openide.util.datatransfer.MultiTransferObject.isDataFlavorSupported(int,java.awt.datatransfer.DataFlavor)
+meth public abstract int org.openide.util.datatransfer.MultiTransferObject.getCount()
+meth public abstract java.awt.datatransfer.Transferable org.openide.util.datatransfer.MultiTransferObject.getTransferableAt(int)
+meth public abstract java.lang.Object org.openide.util.datatransfer.MultiTransferObject.getTransferData(int,java.awt.datatransfer.DataFlavor) throws java.awt.datatransfer.UnsupportedFlavorException,java.io.IOException
+supr null
+CLSS public abstract org.openide.util.datatransfer.NewType
+cons public NewType()
+intf org.openide.util.HelpCtx$Provider
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract void org.openide.util.datatransfer.NewType.create() throws java.io.IOException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.util.datatransfer.NewType.getName()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.util.HelpCtx org.openide.util.datatransfer.NewType.getHelpCtx()
+supr java.lang.Object
+CLSS public abstract org.openide.util.datatransfer.PasteType
+cons public PasteType()
+intf org.openide.util.HelpCtx$Provider
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.awt.datatransfer.Transferable org.openide.util.datatransfer.PasteType.paste() throws java.io.IOException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.util.datatransfer.PasteType.getName()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.util.HelpCtx org.openide.util.datatransfer.PasteType.getHelpCtx()
+supr java.lang.Object
+CLSS public abstract interface org.openide.util.datatransfer.TransferListener
+intf java.util.EventListener
+meth public abstract void org.openide.util.datatransfer.TransferListener.accepted(int)
+meth public abstract void org.openide.util.datatransfer.TransferListener.ownershipLost()
+meth public abstract void org.openide.util.datatransfer.TransferListener.rejected()
+supr null
+CLSS public org.openide.util.io.FoldingIOException
+cons public FoldingIOException(java.lang.Throwable)
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Throwable.getMessage()
+meth public java.lang.String org.openide.util.io.FoldingIOException.getLocalizedMessage()
+meth public java.lang.String org.openide.util.io.FoldingIOException.toString()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
+meth public void org.openide.util.io.FoldingIOException.printStackTrace()
+meth public void org.openide.util.io.FoldingIOException.printStackTrace(java.io.PrintStream)
+meth public void org.openide.util.io.FoldingIOException.printStackTrace(java.io.PrintWriter)
+supr java.io.IOException
+CLSS public final org.openide.util.io.NbMarshalledObject
+cons public NbMarshalledObject(java.lang.Object) throws java.io.IOException
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.openide.util.io.NbMarshalledObject.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.openide.util.io.NbMarshalledObject.hashCode()
+meth public java.lang.Object org.openide.util.io.NbMarshalledObject.get() throws java.io.IOException,java.lang.ClassNotFoundException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+supr java.lang.Object
+CLSS public org.openide.util.io.NbObjectInputStream
+cons public NbObjectInputStream(java.io.InputStream) throws java.io.IOException
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_BLOCK_DATA
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_ENUM
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_EXTERNALIZABLE
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_SERIALIZABLE
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_WRITE_METHOD
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_ARRAY
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_BASE
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_BLOCKDATA
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_BLOCKDATALONG
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_CLASS
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_CLASSDESC
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_ENDBLOCKDATA
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_ENUM
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_EXCEPTION
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_LONGSTRING
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_MAX
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_NULL
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_OBJECT
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_PROXYCLASSDESC
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_REFERENCE
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_RESET
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_STRING
+fld  constant public static final int java.io.ObjectStreamConstants.PROTOCOL_VERSION_1
+fld  constant public static final int java.io.ObjectStreamConstants.PROTOCOL_VERSION_2
+fld  constant public static final int java.io.ObjectStreamConstants.baseWireHandle
+fld  constant public static final short java.io.ObjectStreamConstants.STREAM_MAGIC
+fld  constant public static final short java.io.ObjectStreamConstants.STREAM_VERSION
+fld  public static final java.io.SerializablePermission java.io.ObjectStreamConstants.SUBCLASS_IMPLEMENTATION_PERMISSION
+fld  public static final java.io.SerializablePermission java.io.ObjectStreamConstants.SUBSTITUTION_PERMISSION
+innr public static abstract java.io.ObjectInputStream$GetField
+intf java.io.Closeable
+intf java.io.DataInput
+intf java.io.ObjectInput
+intf java.io.ObjectStreamConstants
+meth protected boolean java.io.ObjectInputStream.enableResolveObject(boolean) throws java.lang.SecurityException
+meth protected java.io.ObjectStreamClass org.openide.util.io.NbObjectInputStream.readClassDescriptor() throws java.io.IOException,java.lang.ClassNotFoundException
+meth protected java.lang.Class java.io.ObjectInputStream.resolveProxyClass([Ljava.lang.String;) throws java.io.IOException,java.lang.ClassNotFoundException
+meth protected java.lang.Class org.openide.util.io.NbObjectInputStream.resolveClass(java.io.ObjectStreamClass) throws java.io.IOException,java.lang.ClassNotFoundException
+meth protected java.lang.Object java.io.ObjectInputStream.readObjectOverride() throws java.io.IOException,java.lang.ClassNotFoundException
+meth protected java.lang.Object java.io.ObjectInputStream.resolveObject(java.lang.Object) throws java.io.IOException
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.io.ObjectInputStream.readStreamHeader() throws java.io.IOException,java.io.StreamCorruptedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.io.InputStream.markSupported()
+meth public boolean java.io.ObjectInputStream.readBoolean() throws java.io.IOException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public byte java.io.ObjectInputStream.readByte() throws java.io.IOException
+meth public char java.io.ObjectInputStream.readChar() throws java.io.IOException
+meth public double java.io.ObjectInputStream.readDouble() throws java.io.IOException
+meth public final java.lang.Object java.io.ObjectInputStream.readObject() throws java.io.IOException,java.lang.ClassNotFoundException
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public float java.io.ObjectInputStream.readFloat() throws java.io.IOException
+meth public int java.io.InputStream.read([B) throws java.io.IOException
+meth public int java.io.ObjectInputStream.available() throws java.io.IOException
+meth public int java.io.ObjectInputStream.read() throws java.io.IOException
+meth public int java.io.ObjectInputStream.read([B,int,int) throws java.io.IOException
+meth public int java.io.ObjectInputStream.readInt() throws java.io.IOException
+meth public int java.io.ObjectInputStream.readUnsignedByte() throws java.io.IOException
+meth public int java.io.ObjectInputStream.readUnsignedShort() throws java.io.IOException
+meth public int java.io.ObjectInputStream.skipBytes(int) throws java.io.IOException
+meth public java.io.ObjectInputStream$GetField java.io.ObjectInputStream.readFields() throws java.io.IOException,java.lang.ClassNotFoundException
+meth public java.lang.Object java.io.ObjectInputStream.readUnshared() throws java.io.IOException,java.lang.ClassNotFoundException
+meth public java.lang.String java.io.ObjectInputStream.readLine() throws java.io.IOException
+meth public java.lang.String java.io.ObjectInputStream.readUTF() throws java.io.IOException
+meth public java.lang.String java.lang.Object.toString()
+meth public long java.io.InputStream.skip(long) throws java.io.IOException
+meth public long java.io.ObjectInputStream.readLong() throws java.io.IOException
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public short java.io.ObjectInputStream.readShort() throws java.io.IOException
+meth public static java.lang.Object org.openide.util.io.NbObjectInputStream.readSafely(java.io.ObjectInput) throws java.io.IOException
+meth public static void org.openide.util.io.NbObjectInputStream.skipSafely(java.io.ObjectInput) throws java.io.IOException
+meth public synchronized void java.io.InputStream.mark(int)
+meth public synchronized void java.io.InputStream.reset() throws java.io.IOException
+meth public void java.io.ObjectInputStream.close() throws java.io.IOException
+meth public void java.io.ObjectInputStream.defaultReadObject() throws java.io.IOException,java.lang.ClassNotFoundException
+meth public void java.io.ObjectInputStream.readFully([B) throws java.io.IOException
+meth public void java.io.ObjectInputStream.readFully([B,int,int) throws java.io.IOException
+meth public void java.io.ObjectInputStream.registerValidation(java.io.ObjectInputValidation,int) throws java.io.InvalidObjectException,java.io.NotActiveException
+supr java.io.ObjectInputStream
+CLSS public org.openide.util.io.NbObjectOutputStream
+cons public NbObjectOutputStream(java.io.OutputStream) throws java.io.IOException
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_BLOCK_DATA
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_ENUM
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_EXTERNALIZABLE
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_SERIALIZABLE
+fld  constant public static final byte java.io.ObjectStreamConstants.SC_WRITE_METHOD
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_ARRAY
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_BASE
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_BLOCKDATA
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_BLOCKDATALONG
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_CLASS
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_CLASSDESC
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_ENDBLOCKDATA
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_ENUM
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_EXCEPTION
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_LONGSTRING
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_MAX
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_NULL
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_OBJECT
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_PROXYCLASSDESC
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_REFERENCE
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_RESET
+fld  constant public static final byte java.io.ObjectStreamConstants.TC_STRING
+fld  constant public static final int java.io.ObjectStreamConstants.PROTOCOL_VERSION_1
+fld  constant public static final int java.io.ObjectStreamConstants.PROTOCOL_VERSION_2
+fld  constant public static final int java.io.ObjectStreamConstants.baseWireHandle
+fld  constant public static final short java.io.ObjectStreamConstants.STREAM_MAGIC
+fld  constant public static final short java.io.ObjectStreamConstants.STREAM_VERSION
+fld  public static final java.io.SerializablePermission java.io.ObjectStreamConstants.SUBCLASS_IMPLEMENTATION_PERMISSION
+fld  public static final java.io.SerializablePermission java.io.ObjectStreamConstants.SUBSTITUTION_PERMISSION
+innr public static abstract java.io.ObjectOutputStream$PutField
+intf java.io.Closeable
+intf java.io.DataOutput
+intf java.io.Flushable
+intf java.io.ObjectOutput
+intf java.io.ObjectStreamConstants
+meth protected boolean java.io.ObjectOutputStream.enableReplaceObject(boolean) throws java.lang.SecurityException
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.io.ObjectOutputStream.annotateProxyClass(java.lang.Class) throws java.io.IOException
+meth protected void java.io.ObjectOutputStream.drain() throws java.io.IOException
+meth protected void java.io.ObjectOutputStream.writeClassDescriptor(java.io.ObjectStreamClass) throws java.io.IOException
+meth protected void java.io.ObjectOutputStream.writeObjectOverride(java.lang.Object) throws java.io.IOException
+meth protected void java.io.ObjectOutputStream.writeStreamHeader() throws java.io.IOException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.util.io.NbObjectOutputStream.annotateClass(java.lang.Class) throws java.io.IOException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.io.ObjectOutputStream.writeObject(java.lang.Object) throws java.io.IOException
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.io.ObjectOutputStream$PutField java.io.ObjectOutputStream.putFields() throws java.io.IOException
+meth public java.lang.Object org.openide.util.io.NbObjectOutputStream.replaceObject(java.lang.Object) throws java.io.IOException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static void org.openide.util.io.NbObjectOutputStream.writeSafely(java.io.ObjectOutput,java.lang.Object) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.close() throws java.io.IOException
+meth public void java.io.ObjectOutputStream.defaultWriteObject() throws java.io.IOException
+meth public void java.io.ObjectOutputStream.flush() throws java.io.IOException
+meth public void java.io.ObjectOutputStream.reset() throws java.io.IOException
+meth public void java.io.ObjectOutputStream.useProtocolVersion(int) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.write([B) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.write([B,int,int) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.write(int) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeBoolean(boolean) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeByte(int) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeBytes(java.lang.String) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeChar(int) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeChars(java.lang.String) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeDouble(double) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeFields() throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeFloat(float) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeInt(int) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeLong(long) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeShort(int) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeUTF(java.lang.String) throws java.io.IOException
+meth public void java.io.ObjectOutputStream.writeUnshared(java.lang.Object) throws java.io.IOException
+supr java.io.ObjectOutputStream
+CLSS public org.openide.util.io.NullInputStream
+cons public NullInputStream()
+fld  public boolean org.openide.util.io.NullInputStream.throwException
+intf java.io.Closeable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.io.InputStream.markSupported()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.io.InputStream.available() throws java.io.IOException
+meth public int java.io.InputStream.read([B) throws java.io.IOException
+meth public int java.io.InputStream.read([B,int,int) throws java.io.IOException
+meth public int org.openide.util.io.NullInputStream.read() throws java.io.IOException
+meth public java.lang.String java.lang.Object.toString()
+meth public long java.io.InputStream.skip(long) throws java.io.IOException
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized void java.io.InputStream.mark(int)
+meth public synchronized void java.io.InputStream.reset() throws java.io.IOException
+meth public void java.io.InputStream.close() throws java.io.IOException
+supr java.io.InputStream
+CLSS public org.openide.util.io.NullOutputStream
+cons public NullOutputStream()
+fld  public boolean org.openide.util.io.NullOutputStream.throwException
+intf java.io.Closeable
+intf java.io.Flushable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void java.io.OutputStream.close() throws java.io.IOException
+meth public void java.io.OutputStream.flush() throws java.io.IOException
+meth public void java.io.OutputStream.write([B) throws java.io.IOException
+meth public void java.io.OutputStream.write([B,int,int) throws java.io.IOException
+meth public void org.openide.util.io.NullOutputStream.write(int) throws java.io.IOException
+supr java.io.OutputStream
+CLSS public org.openide.util.io.OperationException
+cons public OperationException(java.lang.Exception)
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Exception org.openide.util.io.OperationException.getException()
+meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
+meth public java.lang.String java.lang.Throwable.toString()
+meth public java.lang.String org.openide.util.io.OperationException.getMessage()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.printStackTrace()
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintStream)
+meth public void java.lang.Throwable.printStackTrace(java.io.PrintWriter)
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
+supr java.io.IOException
+CLSS public org.openide.util.io.ReaderInputStream
+cons public ReaderInputStream(java.io.Reader) throws java.io.IOException
+cons public ReaderInputStream(java.io.Reader,java.lang.String) throws java.io.IOException
+intf java.io.Closeable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.io.InputStream.markSupported()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int java.io.InputStream.read([B) throws java.io.IOException
+meth public int org.openide.util.io.ReaderInputStream.available() throws java.io.IOException
+meth public int org.openide.util.io.ReaderInputStream.read() throws java.io.IOException
+meth public int org.openide.util.io.ReaderInputStream.read([B,int,int) throws java.io.IOException
+meth public java.lang.String java.lang.Object.toString()
+meth public long java.io.InputStream.skip(long) throws java.io.IOException
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized void java.io.InputStream.mark(int)
+meth public synchronized void java.io.InputStream.reset() throws java.io.IOException
+meth public void org.openide.util.io.ReaderInputStream.close() throws java.io.IOException
+supr java.io.InputStream
+CLSS public org.openide.util.io.SafeException
+cons public SafeException(java.lang.Exception)
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Throwable.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.Exception org.openide.util.io.SafeException.getException()
+meth public java.lang.String java.lang.Throwable.getMessage()
+meth public java.lang.String org.openide.util.io.FoldingIOException.getLocalizedMessage()
+meth public java.lang.String org.openide.util.io.FoldingIOException.toString()
+meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized java.lang.Throwable java.lang.Throwable.initCause(java.lang.Throwable)
+meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInStackTrace()
+meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
+meth public void org.openide.util.io.FoldingIOException.printStackTrace()
+meth public void org.openide.util.io.FoldingIOException.printStackTrace(java.io.PrintStream)
+meth public void org.openide.util.io.FoldingIOException.printStackTrace(java.io.PrintWriter)
+supr org.openide.util.io.FoldingIOException
+CLSS public org.openide.util.lookup.AbstractLookup
+cons protected AbstractLookup()
+cons public AbstractLookup(org.openide.util.lookup.AbstractLookup$Content)
+fld  public static final org.openide.util.Lookup org.openide.util.Lookup.EMPTY
+innr public static abstract interface org.openide.util.Lookup$Provider
+innr public static abstract org.openide.util.Lookup$Item
+innr public static abstract org.openide.util.Lookup$Result
+innr public static abstract org.openide.util.lookup.AbstractLookup$Pair
+innr public static final org.openide.util.Lookup$Template
+innr public static org.openide.util.lookup.AbstractLookup$Content
+intf java.io.Serializable
+meth protected final void org.openide.util.lookup.AbstractLookup.addPair(org.openide.util.lookup.AbstractLookup$Pair)
+meth protected final void org.openide.util.lookup.AbstractLookup.removePair(org.openide.util.lookup.AbstractLookup$Pair)
+meth protected final void org.openide.util.lookup.AbstractLookup.setPairs(java.util.Collection)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.util.lookup.AbstractLookup.beforeLookup(org.openide.util.Lookup$Template)
+meth protected void org.openide.util.lookup.AbstractLookup.initialize()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final java.lang.Object org.openide.util.lookup.AbstractLookup.lookup(java.lang.Class)
+meth public final org.openide.util.Lookup$Item org.openide.util.lookup.AbstractLookup.lookupItem(org.openide.util.Lookup$Template)
+meth public final org.openide.util.Lookup$Result org.openide.util.lookup.AbstractLookup.lookup(org.openide.util.Lookup$Template)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.util.lookup.AbstractLookup.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static synchronized org.openide.util.Lookup org.openide.util.Lookup.getDefault()
+supr org.openide.util.Lookup
+CLSS public final org.openide.util.lookup.InstanceContent
+cons public InstanceContent()
+innr public static abstract interface org.openide.util.lookup.InstanceContent$Convertor
+intf java.io.Serializable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.lookup.AbstractLookup$Content.addPair(org.openide.util.lookup.AbstractLookup$Pair)
+meth public final void org.openide.util.lookup.AbstractLookup$Content.removePair(org.openide.util.lookup.AbstractLookup$Pair)
+meth public final void org.openide.util.lookup.AbstractLookup$Content.setPairs(java.util.Collection)
+meth public final void org.openide.util.lookup.InstanceContent.add(java.lang.Object)
+meth public final void org.openide.util.lookup.InstanceContent.add(java.lang.Object,org.openide.util.lookup.InstanceContent$Convertor)
+meth public final void org.openide.util.lookup.InstanceContent.remove(java.lang.Object)
+meth public final void org.openide.util.lookup.InstanceContent.remove(java.lang.Object,org.openide.util.lookup.InstanceContent$Convertor)
+meth public final void org.openide.util.lookup.InstanceContent.set(java.util.Collection,org.openide.util.lookup.InstanceContent$Convertor)
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr org.openide.util.lookup.AbstractLookup$Content
+CLSS public org.openide.util.lookup.Lookups
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.exclude(org.openide.util.Lookup,[Ljava.lang.Class;)
+meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.fixed([Ljava.lang.Object;)
+meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.fixed([Ljava.lang.Object;,org.openide.util.lookup.InstanceContent$Convertor)
+meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.metaInfServices(java.lang.ClassLoader)
+meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.proxy(org.openide.util.Lookup$Provider)
+meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.singleton(java.lang.Object)
+meth public static org.openide.util.Lookup$Item org.openide.util.lookup.Lookups.lookupItem(java.lang.Object,java.lang.String)
+supr java.lang.Object
+CLSS public org.openide.util.lookup.ProxyLookup
+cons protected ProxyLookup()
+cons public ProxyLookup([Lorg.openide.util.Lookup;)
+fld  public static final org.openide.util.Lookup org.openide.util.Lookup.EMPTY
+innr public static abstract interface org.openide.util.Lookup$Provider
+innr public static abstract org.openide.util.Lookup$Item
+innr public static abstract org.openide.util.Lookup$Result
+innr public static final org.openide.util.Lookup$Template
+meth protected final [Lorg.openide.util.Lookup; org.openide.util.lookup.ProxyLookup.getLookups()
+meth protected final void org.openide.util.lookup.ProxyLookup.setLookups([Lorg.openide.util.Lookup;)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.util.lookup.ProxyLookup.beforeLookup(org.openide.util.Lookup$Template)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final java.lang.Object org.openide.util.lookup.ProxyLookup.lookup(java.lang.Class)
+meth public final org.openide.util.Lookup$Item org.openide.util.lookup.ProxyLookup.lookupItem(org.openide.util.Lookup$Template)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.util.lookup.ProxyLookup.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static synchronized org.openide.util.Lookup org.openide.util.Lookup.getDefault()
+meth public synchronized final org.openide.util.Lookup$Result org.openide.util.lookup.ProxyLookup.lookup(org.openide.util.Lookup$Template)
+supr org.openide.util.Lookup
+CLSS public abstract org.openide.xml.EntityCatalog
+cons public EntityCatalog()
+fld  constant public static final java.lang.String org.openide.xml.EntityCatalog.PUBLIC_ID
+intf org.xml.sax.EntityResolver
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract org.xml.sax.InputSource org.xml.sax.EntityResolver.resolveEntity(java.lang.String,java.lang.String) throws java.io.IOException,org.xml.sax.SAXException
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.xml.EntityCatalog org.openide.xml.EntityCatalog.getDefault()
+supr java.lang.Object
+CLSS public final org.openide.xml.XMLUtil
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static [B org.openide.xml.XMLUtil.fromHex([C,int,int) throws java.io.IOException
+meth public static java.lang.String org.openide.xml.XMLUtil.toAttributeValue(java.lang.String) throws java.io.CharConversionException
+meth public static java.lang.String org.openide.xml.XMLUtil.toElementContent(java.lang.String) throws java.io.CharConversionException
+meth public static java.lang.String org.openide.xml.XMLUtil.toHex([B,int,int)
+meth public static org.w3c.dom.Document org.openide.xml.XMLUtil.createDocument(java.lang.String,java.lang.String,java.lang.String,java.lang.String) throws org.w3c.dom.DOMException
+meth public static org.w3c.dom.Document org.openide.xml.XMLUtil.parse(org.xml.sax.InputSource,boolean,boolean,org.xml.sax.ErrorHandler,org.xml.sax.EntityResolver) throws java.io.IOException,org.xml.sax.SAXException
+meth public static org.xml.sax.XMLReader org.openide.xml.XMLUtil.createXMLReader() throws org.xml.sax.SAXException
+meth public static org.xml.sax.XMLReader org.openide.xml.XMLUtil.createXMLReader(boolean) throws org.xml.sax.SAXException
+meth public static org.xml.sax.XMLReader org.openide.xml.XMLUtil.createXMLReader(boolean,boolean) throws org.xml.sax.SAXException
+meth public static void org.openide.xml.XMLUtil.write(org.w3c.dom.Document,java.io.OutputStream,java.lang.String) throws java.io.IOException
+supr java.lang.Object
