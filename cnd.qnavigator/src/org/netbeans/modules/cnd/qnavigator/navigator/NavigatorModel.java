@@ -21,20 +21,16 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
+import javax.swing.JMenuItem;
 import javax.swing.Timer;
 import javax.swing.text.Caret;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -44,6 +40,8 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  *
@@ -57,13 +55,10 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private CsmUID<CsmFile> uid;
     private NavigatorPanelUI ui;
     private NavigatorComponent busyListener;
-    private AbstractNode root = new AbstractNode(new Children.Array()) {
-        @Override
-        public Action[] getActions(boolean context) {
-            return new Action[0];
-        }
-    };
-    private List<IndexOffsetNode> lineNumberIndex = new ArrayList<IndexOffsetNode>(5);
+    private Action[] actions;
+    private AbstractNode root;
+    
+    private CsmFileModel fileModel;
     private Timer checkModifiedTimer;
     private long lastModified = -1;
     private Timer checkCursorTimer;
@@ -73,6 +68,14 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     public NavigatorModel(DataObject cdo, NavigatorPanelUI ui, NavigatorComponent component) {
         this.cdo = cdo;
         this.ui = ui;
+        actions = new Action[]{new ShowForwardFunctionDeclarationsAction()};
+        root = new AbstractNode(new Children.Array()) {
+            @Override
+            public Action[] getActions(boolean context) {
+                return actions;
+            }
+        };
+        fileModel = new CsmFileModel(new CsmFileFilter(), actions);
         update(getCsmFile());
         if (getParsingDelay() > 0) {
             checkModifiedTimer = new Timer(getParsingDelay(), new ActionListener() {
@@ -113,7 +116,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         }
         return csmFile;
     }
-    
+      
     
     void removeNotify() {
         stopTimers();
@@ -121,7 +124,6 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     
     void addNotify() {
         update(getCsmFile());
-        ui.newContentReady();
     }
     
     void addBusyListener(NavigatorComponent navigatorComponent) {
@@ -141,59 +143,22 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (busyListener != null) {
                 busyListener.busyStart();
             }
-            if (csmFile != null){
-                //fileID = csmFile.getAbsolutePath();
-                final Children children = root.getChildren();
-                if (!Children.MUTEX.isReadAccess()){
-                    Children.MUTEX.writeAccess(new Runnable(){
-                        public void run() {
-                            children.remove(children.getNodes());
-                            List<CppDeclarationNode> list = new ArrayList<CppDeclarationNode>();
-                            lineNumberIndex.clear();
-                            if (csmFile.isValid()){
-                                for(CsmInclude element : csmFile.getIncludes()){
-                                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject)element, lineNumberIndex, false);
-                                    if (node != null){
-                                        list.add(node);
-                                    }
-                                }
-                                for(CsmMacro element : csmFile.getMacros()){
-                                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject)element, lineNumberIndex, false);
-                                    if (node != null){
-                                        list.add(node);
-                                    }
-                                }
-                                for(CsmOffsetableDeclaration element : csmFile.getDeclarations()){
-                                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject)element, lineNumberIndex, false);
-                                    if (node != null){
-                                        list.add(node);
-                                    }
-                                }
-                            }
-                            if (csmFile.isValid()){
-                                Collections.<CppDeclarationNode>sort(list);
-                                Collections.<IndexOffsetNode>sort(lineNumberIndex);
-                                children.add(list.toArray(new Node[0]));
-                            }
-                        }
-                    });
-                }
-            } else {
-                final Children children = root.getChildren();
-                if (!Children.MUTEX.isReadAccess()){
-                    Children.MUTEX.writeAccess(new Runnable(){
-                        public void run() {
-                            children.remove(children.getNodes());
-                            lineNumberIndex.clear();
-                        }
-                    });
-                }
+            fileModel.setFile(csmFile);
+            final Children children = root.getChildren();
+            if (!Children.MUTEX.isReadAccess()){
+                 Children.MUTEX.writeAccess(new Runnable(){
+                    public void run() {
+                        children.remove(children.getNodes());
+                        children.add(fileModel.getNodes());
+                    }
+                });
             }
         } finally {
             if (busyListener != null) {
                 busyListener.busyEnd();
             }
         }
+        ui.newContentReady();
     }
     
     private void checkModified() {
@@ -235,18 +200,11 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
     
     private void setSelection(long caretLineNo) {
-        // Find nearest Node
-        int index = Collections.<IndexOffsetNode>binarySearch(lineNumberIndex, new IndexOffsetNode(null, caretLineNo));
-        if (index < 0) {
-            // exact line not found, but insersion index (-1) returned instead
-            index = -index-2;
-        }
-        if (index > -1 && index < lineNumberIndex.size()) {
-            IndexOffsetNode node  = lineNumberIndex.get(index);
-            ui.selectNode(node.getNode());
+        Node node = fileModel.setSelection(caretLineNo);
+        if (node != null) {
+            ui.selectNode(node);
         }
     }
-    
     
     private JEditorPane findCurrentJEditorPane() {
         JEditorPane currentJEditorPane = null;
@@ -323,7 +281,6 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private void fileParsedOrProjectLoaded(CsmFile file) {
 	stopTimers();
 	update(file);
-	ui.newContentReady();
 	restartTimers();
     }
     
@@ -338,7 +295,6 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         if (file == null || file.getProject() == project) {
             stopTimers();
             update(null);
-            ui.newContentReady();
             restartTimers();
         }
     }
@@ -349,9 +305,28 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (file == null || e.getRemovedFiles().contains(file)){
                 stopTimers();
                 update(null);
-                ui.newContentReady();
                 restartTimers();
             }
         }
+    }
+
+    private class ShowForwardFunctionDeclarationsAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowForwardFunctionDeclarationsAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowForwardFunctionDeclarationsText")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setShowForwardFunctionDeclarations(!fileModel.getFilter().isShowForwardFunctionDeclarations());
+            update(getCsmFile());
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isShowForwardFunctionDeclarations());
+            return menuItem;
+        }
+
     }
 }

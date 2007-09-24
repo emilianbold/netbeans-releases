@@ -23,14 +23,12 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
@@ -57,54 +55,52 @@ import org.openide.util.NbBundle;
  */
 public class CppDeclarationNode extends AbstractCsmNode implements Comparable<CppDeclarationNode> {
     private Image icon;
-    private CsmObject object;
+    private CsmOffsetable object;
     private CsmFile file;
     private boolean isFriend;
-    private CppDeclarationNode(CsmOffsetableDeclaration element, List<IndexOffsetNode> lineNumberIndex) {
-        super(new NavigatorChildren(element, lineNumberIndex));
+    private CsmFileModel model;
+    private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model) {
+        super(new NavigatorChildren(element, model));
         object = element;
         file = element.getContainingFile();
+        this.model = model;
     }
 
-    private CppDeclarationNode(CsmOffsetableDeclaration element, List<IndexOffsetNode> lineNumberIndex, CsmCompoundClassifier classifier) {
-        super(new NavigatorChildren(element, lineNumberIndex, classifier));
+    private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model, CsmCompoundClassifier classifier) {
+        super(new NavigatorChildren(element, model, classifier));
         object = element;
         file = element.getContainingFile();
+        this.model = model;
     }
     
-    private CppDeclarationNode(Children children, CsmOffsetableDeclaration element) {
+    private CppDeclarationNode(Children children, CsmOffsetable element, CsmFileModel model) {
         super(children);
         object = element;
         file = element.getContainingFile();
+        this.model = model;
     }
 
-    private CppDeclarationNode(Children children, CsmOffsetableDeclaration element, boolean isFriend) {
+    private CppDeclarationNode(Children children, CsmOffsetableDeclaration element, CsmFileModel model, boolean isFriend) {
         super(children);
         object = element;
         file = element.getContainingFile();
         this.isFriend = isFriend;
-    }
-
-    private CppDeclarationNode(Children children, CsmMacro element) {
-        super(children);
-        object = element;
-    }
-
-    private CppDeclarationNode(Children children, CsmInclude element) {
-        super(children);
-        object = element;
+        this.model = model;
     }
 
     public CsmObject getCsmObject() {
-        return object;
+        if (object instanceof CsmObject) {
+            return (CsmObject) object;
+        }
+        return null;
     }
     
     public int compareTo(CppDeclarationNode o) {
         int res = getDisplayName().compareTo(o.getDisplayName());
         if (res == 0) {
-            if (CsmKindUtilities.isFunctionDeclaration(object)){
+            if (CsmKindUtilities.isFunctionDeclaration(getCsmObject())){
                 res = 1;
-            } else if (CsmKindUtilities.isFunctionDeclaration(o.object)) {
+            } else if (CsmKindUtilities.isFunctionDeclaration(o.getCsmObject())) {
                 res = -1;
             }
         }
@@ -118,7 +114,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 
     @Override
     public String getHtmlDisplayName() {
-        if (CsmKindUtilities.isFunctionDefinition(object)) {
+        if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
             CsmFunction function = ((CsmFunctionDefinition)object).getDeclaration();
             if (function != null && !function.equals(object) &&  CsmKindUtilities.isClassMember(function)){
                 CsmClass cls = ((CsmMember)function).getContainingClass();
@@ -139,7 +135,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             return icon;
         }
         if (file != null && !file.isValid()){
-            CsmObject obj = object;
+            CsmOffsetable obj = object;
             object = null;
             Image aIcon = super.getIcon(param);
             object = obj;
@@ -170,12 +166,21 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     public Action[] getActions(boolean context) {
         Action action = getPreferredAction();
         if (action != null){
-            return new Action[] { action };
+            List<Action> list = new ArrayList<Action>();
+            list.add(action);
+            list.add(null);
+            for (Action a : model.getActions()){
+                list.add(a);
+            }
+            return list.toArray(new Action[list.size()]);
         }
-        return new Action[0];
+        return model.getActions();
     }
-    
-    public static CppDeclarationNode nodeFactory(CsmObject element, List<IndexOffsetNode> lineNumberIndex, boolean isFriend){
+
+    public static CppDeclarationNode nodeFactory(CsmObject element, CsmFileModel model, boolean isFriend){
+        if (!model.getFilter().isApplicable((CsmOffsetable)element)){
+            return null;
+        }
         CppDeclarationNode node = null;
         if (CsmKindUtilities.isTypedef(element)){
             CsmTypedef def = (CsmTypedef) element;
@@ -183,15 +188,14 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 CsmClassifier cls = def.getType().getClassifier();
                 if (cls != null && cls.getName().length()==0 &&
                    (cls instanceof CsmCompoundClassifier)) {
-                    node = new CppDeclarationNode((CsmOffsetableDeclaration)element, lineNumberIndex, (CsmCompoundClassifier) cls);
+                    node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model, (CsmCompoundClassifier) cls);
                     node.setName(((CsmDeclaration)element).getName());
-                    lineNumberIndex.add(new IndexOffsetNode(node,((CsmOffsetable)element).getStartOffset()));
                     return node;
                 }
             }
-            node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,isFriend);
+            node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,model,isFriend);
             node.setName(((CsmDeclaration)element).getName());
-            lineNumberIndex.add(new IndexOffsetNode(node,((CsmOffsetable)element).getStartOffset()));
+            model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if (CsmKindUtilities.isClassifier(element)){
             String name = ((CsmClassifier)element).getName();
@@ -201,114 +205,46 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     return null;
                 }
             }
-            node = new CppDeclarationNode((CsmOffsetableDeclaration)element, lineNumberIndex);
+            node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model);
             if (CsmKindUtilities.isClass(element)) {
                 CsmClass cls = (CsmClass)element;
                 node.setName(cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName() : cls.getName());
             } else {
                 node.setName(((CsmClassifier)element).getName());
             }
-            lineNumberIndex.add(new IndexOffsetNode(node,((CsmOffsetable)element).getStartOffset()));
+            model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(CsmKindUtilities.isNamespaceDefinition(element)){
-            node = new CppDeclarationNode((CsmNamespaceDefinition)element, lineNumberIndex);
+            node = new CppDeclarationNode((CsmNamespaceDefinition)element, model);
             node.setName(((CsmNamespaceDefinition)element).getName());
-            lineNumberIndex.add(new IndexOffsetNode(node,((CsmOffsetable)element).getStartOffset()));
+            model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(CsmKindUtilities.isDeclaration(element)){
-            node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,isFriend);
+            node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,model,isFriend);
             node.setName(((CsmDeclaration)element).getName());
             if(CsmKindUtilities.isFunction(element)){
                 node.setName(CsmUtilities.getSignature((CsmFunction)element, true));
             } else {
                 node.setName(((CsmDeclaration)element).getName());
             }
-            lineNumberIndex.add(new IndexOffsetNode(node,((CsmOffsetable)element).getStartOffset()));
+            model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(CsmKindUtilities.isEnumerator(element)){
-            node = new CppDeclarationNode(Children.LEAF,(CsmEnumerator)element);
+            node = new CppDeclarationNode(Children.LEAF,(CsmEnumerator)element,model);
             node.setName(((CsmEnumerator)element).getName());
-            lineNumberIndex.add(new IndexOffsetNode(node,((CsmOffsetable)element).getStartOffset()));
+            model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(CsmKindUtilities.isMacro(element)){
-            node = new CppDeclarationNode(Children.LEAF,(CsmMacro)element);
+            node = new CppDeclarationNode(Children.LEAF,(CsmMacro)element,model);
             node.setName(((CsmMacro)element).getName());
-            lineNumberIndex.add(new IndexOffsetNode(node,((CsmOffsetable)element).getStartOffset()));
+            model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(element instanceof CsmInclude){
-            node = new CppDeclarationNode(Children.LEAF,(CsmInclude)element);
+            node = new CppDeclarationNode(Children.LEAF,(CsmInclude)element,model);
             node.setName(((CsmInclude)element).getIncludeName());
-            lineNumberIndex.add(new IndexOffsetNode(node,((CsmOffsetable)element).getStartOffset()));
+            model.addOffset(node, (CsmOffsetable)element);
             return node;
         }
         return node;
-    }
-    
-    private static class NavigatorChildren extends Children.SortedArray {
-        private CsmOffsetableDeclaration element;
-        private CsmCompoundClassifier container;
-        private List<IndexOffsetNode> lineNumberIndex;
-        public NavigatorChildren(CsmOffsetableDeclaration element, List<IndexOffsetNode> lineNumberIndex){
-            this.element = element;
-            this.lineNumberIndex = lineNumberIndex;
-            this.getNodes();
-        }
-
-        public NavigatorChildren(CsmOffsetableDeclaration element, List<IndexOffsetNode> lineNumberIndex, CsmCompoundClassifier container){
-            this.element = element;
-            this.container = container;
-            this.lineNumberIndex = lineNumberIndex;
-            this.getNodes();
-        }
-        
-        @Override
-        protected Collection initCollection() {
-            List<CppDeclarationNode> retValue = new ArrayList<CppDeclarationNode>();
-            if (container != null){
-                if (CsmKindUtilities.isClass(container)) {
-                    initClassifier((CsmClass)container, retValue);
-                } else {
-                    initEnum((CsmEnum)container, retValue);
-                }
-            } else if (CsmKindUtilities.isClass(element)){
-                initClassifier((CsmClass)element, retValue);
-            } else if (CsmKindUtilities.isEnum(element)){
-                initEnum((CsmEnum)element, retValue);
-            } else if(CsmKindUtilities.isNamespaceDefinition(element)){
-                CsmNamespaceDefinition ns = (CsmNamespaceDefinition)element;
-                for (CsmDeclaration decl : ns.getDeclarations()){
-                    CppDeclarationNode node = nodeFactory(decl, lineNumberIndex, false);
-                    if (node != null){
-                        retValue.add(node);
-                    }
-                }
-            }
-            Collections.<CppDeclarationNode>sort(retValue);
-            return retValue;
-        }
-        
-        private void initClassifier(CsmClass cls, List<CppDeclarationNode> retValue){
-            for (CsmMember member : cls.getMembers()) {
-                CppDeclarationNode node = nodeFactory(member, lineNumberIndex, false);
-                if (node != null) {
-                    retValue.add(node);
-                }
-            }
-            for (CsmFriend friend : cls.getFriends()) {
-                CppDeclarationNode node = nodeFactory(friend, lineNumberIndex, true);
-                if (node != null) {
-                    retValue.add(node);
-                }
-            }
-        }
-
-        private void initEnum(CsmEnum cls, List<CppDeclarationNode> retValue){
-            for (CsmEnumerator en : cls.getEnumerators()){
-                CppDeclarationNode node = nodeFactory(en, lineNumberIndex, false);
-                if (node != null){
-                    retValue.add(node);
-                }
-            }
-        }
     }
 }
