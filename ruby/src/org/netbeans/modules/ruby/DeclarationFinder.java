@@ -69,6 +69,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedField;
@@ -259,7 +260,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                             Node node = AstUtilities.getForeignNode(com, null);
 
                             return new DeclarationLocation(com.getFile().getFileObject(),
-                                node.getPosition().getStartOffset());
+                                node.getPosition().getStartOffset(), com);
                         }
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
@@ -283,7 +284,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                             Node node = AstUtilities.getForeignNode(com, null);
 
                             return new DeclarationLocation(com.getFile().getFileObject(),
-                                node.getPosition().getStartOffset());
+                                node.getPosition().getStartOffset(), com);
                         }
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
@@ -869,7 +870,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 Node node = AstUtilities.getForeignNode(com, null);
 
                 return new DeclarationLocation(com.getFile().getFileObject(),
-                    node.getPosition().getStartOffset());
+                    node.getPosition().getStartOffset(), com);
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -937,7 +938,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 Node node = AstUtilities.getForeignNode(com, null);
 
                 return new DeclarationLocation(com.getFile().getFileObject(),
-                    node.getPosition().getStartOffset());
+                    node.getPosition().getStartOffset(), com);
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -1048,14 +1049,15 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
     private DeclarationLocation fix(DeclarationLocation location, CompilationInfo info) {
         if ((location != DeclarationLocation.NONE) && (location.getFileObject() == null) &&
                 (location.getUrl() == null)) {
-            return new DeclarationLocation(info.getFileObject(), location.getOffset());
+            return new DeclarationLocation(info.getFileObject(), location.getOffset(), location.getElement());
         }
 
         return location;
     }
 
     private DeclarationLocation getLocation(CompilationInfo info, Node node) {
-        return new DeclarationLocation(null, LexUtilities.getLexerOffset(info, node.getPosition().getStartOffset()));
+        AstElement element = AstElement.create(node);
+        return new DeclarationLocation(null, LexUtilities.getLexerOffset(info, node.getPosition().getStartOffset()), element);
     }
 
     private DeclarationLocation findRDocMethod(CompilationInfo info, Document doc, int astOffset, int lexOffset, 
@@ -1783,7 +1785,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
             if (node != null) {
                 return new DeclarationLocation(field.getFile().getFileObject(),
-                    node.getPosition().getStartOffset());
+                    node.getPosition().getStartOffset(), field);
             }
         }
 

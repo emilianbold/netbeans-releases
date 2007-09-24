@@ -22,12 +22,7 @@ import java.net.URL;
 
 import javax.swing.text.Document;
 
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.annotations.CheckForNull;
 import org.netbeans.api.gsf.annotations.NonNull;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
 import org.openide.filesystems.FileObject;
 
 
@@ -74,6 +69,8 @@ public interface DeclarationFinder {
         private final FileObject fileObject;
         private final int offset;
         private final URL url;
+        /** Associated element, if any */
+        private Element element;
 
         public DeclarationLocation(final FileObject fileObject, final int offset) {
             this.fileObject = fileObject;
@@ -81,12 +78,17 @@ public interface DeclarationFinder {
             this.url = null;
         }
 
+        public DeclarationLocation(final FileObject fileObject, final int offset, Element element) {
+            this(fileObject, offset);
+            this.element = element;
+        }
+
         public DeclarationLocation(final URL url) {
             this.url = url;
             this.fileObject = null;
             this.offset = -1;
         }
-
+        
         public URL getUrl() {
             return url;
         }
@@ -97,6 +99,10 @@ public interface DeclarationFinder {
 
         public int getOffset() {
             return offset;
+        }
+        
+        public Element getElement() {
+            return element;
         }
 
         public String toString() {
