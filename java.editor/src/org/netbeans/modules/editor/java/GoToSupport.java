@@ -444,7 +444,7 @@ public class GoToSupport {
         public Void visitVariable(VariableElement e, Boolean highlightName) {
             modifier(e.getModifiers());
             
-            result.append(Utilities.getTypeName(e.asType(), true));
+            result.append(getTypeName(e.asType(), true));
             
             result.append(' ');
             
@@ -460,13 +460,13 @@ public class GoToSupport {
                     result.append(e.getConstantValue().toString());
                 }
                 
-                result.append(" in ");
-                
                 Element enclosing = e.getEnclosingElement();
                 
-                if (!(enclosing.getKind() == ElementKind.PARAMETER || enclosing.getKind() == ElementKind.LOCAL_VARIABLE)) {
+                if (e.getKind() != ElementKind.PARAMETER && e.getKind() != ElementKind.LOCAL_VARIABLE && e.getKind() != ElementKind.EXCEPTION_PARAMETER) {
+                    result.append(" in ");
+
                     //short typename:
-                    result.append(Utilities.getTypeName(enclosing.asType(), true));
+                    result.append(getTypeName(enclosing.asType(), true));
                 }
             }
             
@@ -480,7 +480,7 @@ public class GoToSupport {
                     dumpTypeArguments(e.getTypeParameters());
                     result.append(' ');
                     boldStartCheck(highlightName);
-                    result.append(e.getSimpleName());
+                    result.append(e.getEnclosingElement().getSimpleName());
                     boldStopCheck(highlightName);
                     dumpArguments(e.getParameters());
                     dumpThrows(e.getThrownTypes());
@@ -488,7 +488,7 @@ public class GoToSupport {
                 case METHOD:
                     modifier(e.getModifiers());
                     dumpTypeArguments(e.getTypeParameters());
-                    result.append(Utilities.getTypeName(e.getReturnType(), true));
+                    result.append(getTypeName(e.getReturnType(), true));
                     result.append(' ');
                     boldStartCheck(highlightName);
                     result.append(e.getSimpleName());
@@ -531,19 +531,19 @@ public class GoToSupport {
             
             boolean addSpace = false;
             
-            result.append('<');
+            result.append("&lt;");
             
             for (TypeParameterElement e : list) {
                 if (addSpace) {
                     result.append(", ");
                 }
                 
-                result.append(Utilities.getTypeName(e.asType(), true));
+                result.append(getTypeName(e.asType(), true));
                 
                 addSpace = true;
             }
                 
-            result.append('>');
+            result.append("&gt;");
         }
 
         private void dumpArguments(List<? extends VariableElement> list) {
@@ -577,12 +577,27 @@ public class GoToSupport {
                     result.append(", ");
                 }
                 
-                result.append(Utilities.getTypeName(t, true));
+                result.append(getTypeName(t, true));
                 
                 addSpace = true;
             }
         }
             
+    }
+    
+    private static String getTypeName(TypeMirror t, boolean fqn) {
+        return translate(Utilities.getTypeName(t, fqn).toString());
+    }
+    
+    private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
+    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
+    
+    private static String translate(String input) {
+        for (int cntr = 0; cntr < c.length; cntr++) {
+            input = input.replaceAll(c[cntr], tags[cntr]);
+        }
+        
+        return input;
     }
     
     static UiUtilsCaller CALLER = new UiUtilsCaller() {
