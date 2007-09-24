@@ -197,6 +197,7 @@ public interface GenericConstants {
     public static final String SHUTDOWN_COMPONENT_OPERATION_NAME = "shutdownComponent"; // NOI18N
     public static final String START_COMPONENT_OPERATION_NAME = "startComponent"; // NOI18N
     public static final String STOP_COMPONENT_OPERATION_NAME = "stopComponent"; // NOI18N
+    public static final String UPGRADE_COMPONENT_OPERATION_NAME = "updateComponent"; // NOI18N
 
     public static final String START_SERVICE_ASSEMBLY_OPERATION_NAME = "startServiceAssembly"; // NOI18N
     public static final String STOP_SERVICE_ASSEMBLY_OPERATION_NAME = "stopServiceAssembly"; // NOI18N

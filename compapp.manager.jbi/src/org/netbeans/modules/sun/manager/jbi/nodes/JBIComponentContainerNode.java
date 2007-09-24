@@ -44,14 +44,10 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import java.awt.Image;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
@@ -66,7 +62,6 @@ import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.actions.InstallAction;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.FileFilters;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
@@ -75,9 +70,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * Container node for all JBI Components of the same type.
@@ -86,9 +78,7 @@ import org.w3c.dom.NodeList;
  */
 public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContainerNode
         implements Installable {
-    
-    private static String lastInstallDir = null;
-    
+        
     private boolean busy;
     
     public JBIComponentContainerNode(final AppserverJBIMgmtController controller,
@@ -158,56 +148,58 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
      */
     public void install() {
         
-        AdministrationService adminService = getAdminService();
+        AdministrationService adminService = getAdminService();        
+        if (adminService == null) {
+            return;
+        }
         
-        if (adminService != null) {
-            JFileChooser chooser = getJFileChooser();
-            int returnValue = chooser.showDialog(null,
-                    NbBundle.getMessage(JBIComponentContainerNode.class, 
-                    "LBL_Install_JBI_Component_Button")); //NOI18N
-            
-            if (returnValue == JFileChooser.APPROVE_OPTION){
-                File[] selectedFiles = chooser.getSelectedFiles();                
-                if (selectedFiles.length > 0) {
-                    lastInstallDir = selectedFiles[0].getParent();
+        JFileChooser chooser = getJFileChooser();
+        int returnValue = chooser.showDialog(null,
+                NbBundle.getMessage(JBIComponentContainerNode.class, 
+                "LBL_Install_JBI_Component_Button")); //NOI18N
+
+        if (returnValue == JFileChooser.APPROVE_OPTION){
+            File[] selectedFiles = chooser.getSelectedFiles();                
+            if (selectedFiles.length > 0) {
+                System.setProperty(JBIComponentNode.LAST_JBI_COMPONENT_INSTALLATION_DIRECTORY,
+                        selectedFiles[0].getParent());
+            }
+
+            List<File> files = filterSelectedFiles(selectedFiles);                
+            if (files.size() == 0) {
+                return;
+            }
+
+            String progressLabel = getInstallProgressMessageLabel();
+            String message = NbBundle.getMessage(JBIComponentContainerNode.class, progressLabel);
+            final ProgressUI progressUI = new ProgressUI(message, false);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setBusy(true);
+                    progressUI.start();
                 }
-                
-                List<File> files = filterSelectedFiles(selectedFiles);                
-                if (files.size() == 0) {
-                    return;
-                }
-                
-                String progressLabel = getInstallProgressMessageLabel();
-                String message = NbBundle.getMessage(JBIComponentContainerNode.class, progressLabel);
-                final ProgressUI progressUI = new ProgressUI(message, false);
-                
+            });
+
+            for (File file : files) {
+                final String jarFilePath = file.getAbsolutePath();
+                final String result = installJBIComponent(jarFilePath);
+
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        setBusy(true);
-                        progressUI.start();
-                    }
-                });
-                
-                for (File file : files) {
-                    final String jarFilePath = file.getAbsolutePath();
-                    final String result = installJBIComponent(jarFilePath);
-                    
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                                    GenericConstants.INSTALL_COMPONENT_OPERATION_NAME,
-                                    jarFilePath, result);
-                        }
-                    });
-                }
-                
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        progressUI.finish();
-                        setBusy(false);
+                        JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                GenericConstants.INSTALL_COMPONENT_OPERATION_NAME,
+                                jarFilePath, result);
                     }
                 });
             }
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    progressUI.finish();
+                    setBusy(false);
+                }
+            });
         }
     }
     
@@ -222,32 +214,9 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         }
         
         if (docBuilder != null) {
+            JBIArtifactValidator validator = getValidator();
             for (File file : files) {
-                // do some simple validation
-                boolean isRightType = false;
-                
-                JarFile jf = null;
-                try {
-                    jf = new JarFile(file); 
-                    JarEntry je = (JarEntry) jf.getEntry("META-INF/jbi.xml"); // NOI18N
-                    if (je != null) {
-                        InputStream is = jf.getInputStream(je);
-                        Document doc = docBuilder.parse(is);
-                        isRightType = isRightJBIDocType(doc); // very basic type checking
-                    }                    
-                } catch (Exception e) {
-                    e.printStackTrace(); 
-                } finally {
-                    if (jf != null) {
-                        try {
-                            jf.close();
-                        } catch (IOException e) {
-                            ; // ignore
-                        }
-                    }                    
-                }                
-                
-                if (isRightType) {
+                if (validator.validate(file)) {
                     ret.add(file);
                 } else {
                     String compType = NbBundle.getMessage(
@@ -293,6 +262,8 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         chooser.getAccessibleContext().setAccessibleDescription(
                 bundle.getString(titleLabel));
         
+        String lastInstallDir = System.getProperty(
+                JBIComponentNode.LAST_JBI_COMPONENT_INSTALLATION_DIRECTORY);
         if (lastInstallDir != null) {
             chooser.setCurrentDirectory(new File(lastInstallDir));
         }
@@ -310,7 +281,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
     
     protected abstract String getBadgeIconName();
     
-    protected abstract boolean isRightJBIDocType(Document jbiDoc);
+    protected abstract JBIArtifactValidator getValidator();
     
     protected abstract String getComponentTypeLabel();
     
@@ -327,7 +298,8 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         public ServiceEngines(final AppserverJBIMgmtController controller) {
             super(controller,
                     NodeType.SERVICE_ENGINES,
-                    NbBundle.getMessage(JBIComponentContainerNode.class, "SERVICE_ENGINES"));    // NOI18N
+                    NbBundle.getMessage(JBIComponentContainerNode.class, 
+                    "SERVICE_ENGINES"));    // NOI18N
         }
         
         protected Class getInstallActionClass() {
@@ -337,18 +309,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         protected String installJBIComponent(String jarFilePath) {
             AdministrationService adminService = getAdminService();
             return adminService.installComponent(jarFilePath);
-        }
-        
-        protected boolean isRightJBIDocType(Document jbiDoc) {
-            NodeList ns = jbiDoc.getElementsByTagName("component"); // NOI18N
-            if (ns.getLength() > 0) {
-                Element e = (Element) ns.item(0);
-                String type = e.getAttribute("type"); // NOI18N
-                if (type != null && type.equals("service-engine")) {    // NOI18N 
-                    return true;
-                }
-            }
-            return false;
+        }        
+
+        protected JBIArtifactValidator getValidator() {
+            return JBIArtifactValidator.getServiceEngineValidator(null);
         }
         
         protected String getFileChooserTitleLabel() {
@@ -385,7 +349,8 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         public BindingComponents(final AppserverJBIMgmtController controller) {
             super(controller,
                     NodeType.BINDING_COMPONENTS,
-                    NbBundle.getMessage(JBIComponentContainerNode.class, "BINDING_COMPONENTS")); // NOI18N
+                    NbBundle.getMessage(JBIComponentContainerNode.class, 
+                    "BINDING_COMPONENTS")); // NOI18N
         }
         
         protected Class getInstallActionClass() {
@@ -395,18 +360,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         protected String installJBIComponent(String jarFilePath) {
             AdministrationService adminService = getAdminService();
             return adminService.installComponent(jarFilePath);
-        }
-                
-        protected boolean isRightJBIDocType(Document jbiDoc) {            
-            NodeList ns = jbiDoc.getElementsByTagName("component"); // NOI18N
-            if (ns.getLength() > 0) {
-                Element e = (Element) ns.item(0);
-                String type = e.getAttribute("type"); // NOI18N
-                if (type != null && type.equals("binding-component")) {    // NOI18N // FIXME
-                    return true;
-                }
-            }
-            return false;
+        }     
+
+        protected JBIArtifactValidator getValidator() {
+            return JBIArtifactValidator.getBindingComponentValidator(null);
         }
         
         protected String getFileChooserTitleLabel() {
@@ -443,7 +400,8 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         public SharedLibraries(final AppserverJBIMgmtController controller) {
             super(controller,
                     NodeType.SHARED_LIBRARIES,
-                    NbBundle.getMessage(JBIComponentContainerNode.class, "SHARED_LIBRARIES"));   // NOI18N
+                    NbBundle.getMessage(JBIComponentContainerNode.class, 
+                    "SHARED_LIBRARIES"));   // NOI18N
         }
         
         protected Class getInstallActionClass() {
@@ -454,10 +412,9 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
             AdministrationService adminService = getAdminService();
             return adminService.installSharedLibrary(jarFilePath);
         }        
-        
-        protected boolean isRightJBIDocType(Document jbiDoc) {            
-            NodeList ns = jbiDoc.getElementsByTagName("shared-library"); // NOI18N
-            return ns.getLength() > 0;
+             
+        protected JBIArtifactValidator getValidator() {
+            return JBIArtifactValidator.getSharedLibraryValidator();
         }
         
         protected String getFileChooserTitleLabel() {

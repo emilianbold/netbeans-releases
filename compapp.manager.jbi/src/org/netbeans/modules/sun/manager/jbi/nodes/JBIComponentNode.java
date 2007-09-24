@@ -43,13 +43,23 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
+import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
@@ -59,6 +69,7 @@ import org.netbeans.modules.sun.manager.jbi.actions.ShutdownAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StartAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StopAction;
 import org.netbeans.modules.sun.manager.jbi.actions.UninstallAction;
+import org.netbeans.modules.sun.manager.jbi.actions.UpgradeAction;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.SchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
@@ -66,6 +77,7 @@ import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtControlle
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainConfirmation;
+import org.netbeans.modules.sun.manager.jbi.util.FileFilters;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Sheet;
 import org.openide.DialogDisplayer;
@@ -74,6 +86,7 @@ import org.openide.actions.PropertiesAction;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.w3c.dom.Document;
 
 /**
  * Abstract Node class for a JBI Component.
@@ -81,11 +94,14 @@ import org.openide.util.actions.SystemAction;
  * @author jqian
  */
 public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
-        implements Refreshable, Startable, Stoppable, Shutdownable, Uninstallable {
+        implements Refreshable, Startable, Stoppable, Shutdownable, Uninstallable, Upgradeable {
     
     private static final String IDENTIFICATION_SHEET_SET_NAME = "Identification"; // NOI18N
     private static final String LOGGERS_SHEET_SET_NAME = "Loggers"; // NOI18N
     private static final String CONFIGURATION_SHEET_SET_NAME = "Configuration"; // NOI18N
+    
+    public static final String LAST_JBI_COMPONENT_INSTALLATION_DIRECTORY = 
+            "lastJBIComponentInstallationDir"; // NOI18N
     
     private boolean busy;
     
@@ -99,6 +115,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     
     // This is not persistent across sessions.
     private static boolean confirmComponentUninstallation = true;
+    
+    // This is not persistent across sessions.
+    private static boolean confirmComponentShutdownDuringUpgrade = true;
     
         
     public JBIComponentNode(final AppserverJBIMgmtController controller,
@@ -440,38 +459,38 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public void start() {
-        final AdministrationService adminService = getAdminService();
-        
-        if (adminService != null) {
-            
-            String progressLabel = getStartProgressLabel();
-            final String componentName = getName();
-            String title =
-                    NbBundle.getMessage(JBIComponentNode.class, progressLabel,
-                    new Object[] {componentName});
-            final ProgressUI progressUI = new ProgressUI(title, false);
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setBusy(true);
-                    progressUI.start();
-                }
-            });
-            
-            final String result = adminService.startComponent(componentName);
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    clearJBIComponentStatusCache(compType);
-                    progressUI.finish();
-                    setBusy(false);
-                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            GenericConstants.START_COMPONENT_OPERATION_NAME,
-                            componentName, result);
-                    updatePropertySheet();                    
-                }
-            });
+        AdministrationService adminService = getAdminService();        
+        if (adminService == null) {
+            return;
         }
+            
+        String progressLabel = getStartProgressLabel();
+        final String componentName = getName();
+        String title =
+                NbBundle.getMessage(JBIComponentNode.class, progressLabel,
+                new Object[] {componentName});
+        final ProgressUI progressUI = new ProgressUI(title, false);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setBusy(true);
+                progressUI.start();
+            }
+        });
+
+        final String result = adminService.startComponent(componentName);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                clearJBIComponentStatusCache(compType);
+                progressUI.finish();
+                setBusy(false);
+                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                        GenericConstants.START_COMPONENT_OPERATION_NAME,
+                        componentName, result);
+                updatePropertySheet();                    
+            }
+        });
     }
     
     //========================== Stoppable =====================================
@@ -487,38 +506,38 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public void stop() {
-        AdministrationService adminService = getAdminService();
-        
-        if (adminService != null) {
-            
-            String progressLabel = getStopProgressLabel();
-            final String componentName = getName();
-            String title =
-                    NbBundle.getMessage(JBIComponentNode.class, progressLabel,
-                    new Object[] {componentName});
-            final ProgressUI progressUI = new ProgressUI(title, false);
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setBusy(true);
-                    progressUI.start();
-                }
-            });
-            
-            final String result = adminService.stopComponent(componentName);
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    clearJBIComponentStatusCache(compType);
-                    progressUI.finish();
-                    setBusy(false);
-                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            GenericConstants.STOP_COMPONENT_OPERATION_NAME,
-                            componentName, result);
-                    updatePropertySheet();
-                }
-            });
+        AdministrationService adminService = getAdminService();        
+        if (adminService == null) {
+            return;
         }
+            
+        String progressLabel = getStopProgressLabel();
+        final String componentName = getName();
+        String title =
+                NbBundle.getMessage(JBIComponentNode.class, progressLabel,
+                new Object[] {componentName});
+        final ProgressUI progressUI = new ProgressUI(title, false);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setBusy(true);
+                progressUI.start();
+            }
+        });
+
+        final String result = adminService.stopComponent(componentName);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                clearJBIComponentStatusCache(compType);
+                progressUI.finish();
+                setBusy(false);
+                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                        GenericConstants.STOP_COMPONENT_OPERATION_NAME,
+                        componentName, result);
+                updatePropertySheet();
+            }
+        });
     }
     
     //========================== Shutdownable ==================================
@@ -535,42 +554,43 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public void shutdown(boolean force) {
+        
+        AdministrationService adminService = getAdminService();        
+        if (adminService == null) {
+            return;
+        }
+            
         if (canStop()) {
             stop();
         }
         
-        AdministrationService adminService = getAdminService();
-        
-        if (adminService != null) {
-            
-            String progressLabel = getShutdownProgressLabel();
-            final String componentName = getName();
-            String title =
-                    NbBundle.getMessage(JBIComponentNode.class, progressLabel,
-                    new Object[] {componentName});
-            final ProgressUI progressUI = new ProgressUI(title, false);
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setBusy(true);
-                    progressUI.start();
-                }
-            });
-            
-            final String result = adminService.shutdownComponent(componentName, force);
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    clearJBIComponentStatusCache(compType);
-                    progressUI.finish();
-                    setBusy(false);
-                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            GenericConstants.SHUTDOWN_COMPONENT_OPERATION_NAME,
-                            componentName, result);
-                    updatePropertySheet();
-                }
-            });
-        }
+        String progressLabel = getShutdownProgressLabel();
+        final String componentName = getName();
+        String title =
+                NbBundle.getMessage(JBIComponentNode.class, progressLabel,
+                new Object[] {componentName});
+        final ProgressUI progressUI = new ProgressUI(title, false);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setBusy(true);
+                progressUI.start();
+            }
+        });
+
+        final String result = adminService.shutdownComponent(componentName, force);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                clearJBIComponentStatusCache(compType);
+                progressUI.finish();
+                setBusy(false);
+                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                        GenericConstants.SHUTDOWN_COMPONENT_OPERATION_NAME,
+                        componentName, result);
+                updatePropertySheet();
+            }
+        });
     }
     
     //========================== Uninstallable =================================
@@ -587,55 +607,209 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public void uninstall(boolean force) {
+        AdministrationService adminService = getAdminService();        
+        if (adminService == null) {
+            return;
+        }
+            
         if (canShutdown()) {
             shutdown(force);
         }
         
-        AdministrationService adminService = getAdminService();
+        final String componentName = getName();
+
+        if (confirmComponentUninstallation) {
+            DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
+                    NbBundle.getMessage(JBIComponentNode.class, "MSG_UNINSTALL_CONFIRMATION", componentName), // NOI18N
+                    NbBundle.getMessage(JBIComponentNode.class, "TTL_UNINSTALL_CONFIRMATION"), // NOI18N
+                    NotifyDescriptor.YES_NO_OPTION);
+            if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                return;
+            }
+
+            if (d.getDoNotShowAgain()) {
+                confirmComponentUninstallation = false;
+            }
+        }            
+
+        String progressLabel = getUninstallProgressLabel();
+        String title =
+                NbBundle.getMessage(JBIComponentNode.class, progressLabel,
+                new Object[] {componentName});
+        final ProgressUI progressUI = new ProgressUI(title, false);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                progressUI.start();
+            }
+        });
+
+        final String result = uninstallComponent(adminService, componentName, force);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                clearJBIComponentStatusCache(compType);
+                progressUI.finish();
+                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                        GenericConstants.UNINSTALL_COMPONENT_OPERATION_NAME,
+                        componentName, result);
+                //updatePropertySheet();
+            }
+        });
+    }
+    
+    
+    //========================== Upgradeable =================================
+    
+    /**
+     *
+     */
+    public boolean canUpgrade() {
+        return !busy;
+    }
+    
+    /**
+     *
+     */
+    public void upgrade() {
         
-        if (adminService != null) {
+        AdministrationService adminService = getAdminService();        
+        if (adminService == null) {
+            return;
+        }
             
-            final String componentName = getName();
-            
-            if (confirmComponentUninstallation) {
-                DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
-                        NbBundle.getMessage(JBIComponentNode.class, "MSG_UNINSTALL_CONFIRMATION", componentName), // NOI18N
-                        NbBundle.getMessage(JBIComponentNode.class, "TTL_UNINSTALL_CONFIRMATION"), // NOI18N
+        String componentName = getName();
+        
+        JFileChooser chooser = getJFileChooser();
+        int returnValue = chooser.showDialog(null,
+                NbBundle.getMessage(JBIComponentNode.class, 
+                "LBL_Upgrade_JBI_Component_Button")); //NOI18N
+
+        if (returnValue == JFileChooser.APPROVE_OPTION){
+            File[] selectedFiles = chooser.getSelectedFiles();                
+            if (selectedFiles.length > 0) {
+                System.setProperty(LAST_JBI_COMPONENT_INSTALLATION_DIRECTORY, 
+                        selectedFiles[0].getParent());
+            }
+
+            List<File> files = filterSelectedFiles(selectedFiles);                
+            if (files.size() == 0) {
+                return;
+            }
+                        
+            // Automatic component shutdown before calling upgrade
+            boolean shutdownNeeded = canShutdown();
+            if (shutdownNeeded) {
+                if (confirmComponentShutdownDuringUpgrade) {
+                    DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
+                        NbBundle.getMessage(JBIComponentNode.class, "MSG_AUTO_SHUTDOWN_COMPONENT_DURING_UPGRADE", componentName), // NOI18N
+                        NbBundle.getMessage(JBIComponentNode.class, "TTL_AUTO_SHUTDOWN_COMPONENT_DURING_UPGRADE"), // NOI18N
                         NotifyDescriptor.YES_NO_OPTION);
-                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
-                    return;
+                    if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                        return;
+                    }
+
+                    if (d.getDoNotShowAgain()) {
+                        confirmComponentShutdownDuringUpgrade = false;
+                    }
                 }
 
-                if (d.getDoNotShowAgain()) {
-                    confirmComponentUninstallation = false;
-                }
-            }            
-            
-            String progressLabel = getUninstallProgressLabel();
-            String title =
-                    NbBundle.getMessage(JBIComponentNode.class, progressLabel,
-                    new Object[] {componentName});
-            final ProgressUI progressUI = new ProgressUI(title, false);
-            
+                shutdown(false);
+            }
+
+            String progressLabel = getUpgradeProgressMessageLabel();
+            String message = NbBundle.getMessage(JBIComponentContainerNode.class, 
+                    progressLabel, componentName);
+            final ProgressUI progressUI = new ProgressUI(message, false);
+
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    setBusy(true);
                     progressUI.start();
                 }
             });
-            
-            final String result = uninstallComponent(adminService, componentName, force);
-            
+
+            final String jarFilePath = files.get(0).getAbsolutePath();
+            final String result = adminService.upgradeComponent(componentName, jarFilePath);
+
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    clearJBIComponentStatusCache(compType);
                     progressUI.finish();
+                    setBusy(false);
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            GenericConstants.UNINSTALL_COMPONENT_OPERATION_NAME,
-                            componentName, result);
-                    //updatePropertySheet();
+                            GenericConstants.UPGRADE_COMPONENT_OPERATION_NAME,
+                            jarFilePath, result);
                 }
             });
+            
+            // Automatic start (restore)
+            if (shutdownNeeded) {
+                start();
+            }
         }
+    }    
+    
+    private List<File> filterSelectedFiles(File[] files) {
+        List<File> ret = new ArrayList<File>();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = null;
+        try {
+            docBuilder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            ex.printStackTrace();
+        }
+        
+        if (docBuilder != null) {
+            for (File file : files) {
+                if (getValidator().validate(file)) {
+                    ret.add(file);
+                } else {
+                    String msg = NbBundle.getMessage(
+                            getClass(),
+                            "MSG_INVALID_COMPONENT_SELECTION_FOR_UPGRADE", // NOI18N
+                            file.getName(),
+                            getName());
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            msg,
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                }
+            }
+        }
+        
+        return ret;
+    }
+    
+    private JFileChooser getJFileChooser(){
+        JFileChooser chooser = new JFileChooser();
+        
+        ResourceBundle bundle = NbBundle.getBundle(JBIComponentNode.class);
+        
+        String title = NbBundle.getMessage(JBIComponentNode.class,
+                "LBL_Upgrade_Chooser_Name", getName()); // NOI18N
+        chooser.setDialogTitle(title);
+        chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
+        
+        chooser.setApproveButtonMnemonic(
+                bundle.getString("Upgrade_JBI_Component_Button_Mnemonic").charAt(0)); //NOI18N
+        chooser.setMultiSelectionEnabled(true);
+        
+        chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+        chooser.addChoosableFileFilter(FileFilters.JarFileFilter.getInstance());        
+        
+        chooser.setApproveButtonToolTipText(
+                NbBundle.getMessage(JBIComponentNode.class,
+                "LBL_Upgrade_JBI_Component_Button")); //NOI18N
+        
+        chooser.getAccessibleContext().setAccessibleName(title);
+        chooser.getAccessibleContext().setAccessibleDescription(title);
+        
+        String lastInstallDir = System.getProperty(LAST_JBI_COMPONENT_INSTALLATION_DIRECTORY);
+        if (lastInstallDir != null) {
+            chooser.setCurrentDirectory(new File(lastInstallDir));
+        }
+        
+        return chooser;
     }
     
     //===================== Abstract Methods ===================================
@@ -652,8 +826,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     
     protected abstract String getUninstallProgressLabel();
     
+    protected abstract String getUpgradeProgressMessageLabel();  
+    
     protected abstract String uninstallComponent(
             AdministrationService adminService, String componentName, boolean force);
+    
+    protected abstract JBIArtifactValidator getValidator();
     
     protected abstract Map<Attribute, MBeanAttributeInfo> getIdentificationProperties(
             AppserverJBIMgmtController controller, boolean sort) throws Exception;
@@ -681,6 +859,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 SystemAction.get(StopAction.class),
                 SystemAction.get(ShutdownAction.Normal.class),
                 SystemAction.get(UninstallAction.Normal.class),
+                //SystemAction.get(UpgradeAction.class),
                 null,
                 SystemAction.get(AdvancedAction.class),
                 null,
@@ -693,6 +872,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 AdministrationService adminService, String componentName,
                 boolean force) {
             return adminService.uninstallComponent(componentName, force);
+        }
+        
+        protected JBIArtifactValidator getValidator() {
+            return JBIArtifactValidator.getServiceEngineValidator(getName());
         }
         
         protected String getContainerType() {
@@ -717,6 +900,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         
         protected String getUninstallProgressLabel() {
             return "LBL_Uninstalling_Service_Engine";   // NOI18N
+        }
+        
+        protected String getUpgradeProgressMessageLabel() {
+            return "LBL_Upgrading_Service_Engine";     // NOI18N
         }
         
         protected Map<Attribute, MBeanAttributeInfo> getIdentificationProperties(
@@ -746,6 +933,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 SystemAction.get(StopAction.class),
                 SystemAction.get(ShutdownAction.Normal.class),
                 SystemAction.get(UninstallAction.Normal.class),
+                //SystemAction.get(UpgradeAction.class),
                 null,
                 SystemAction.get(AdvancedAction.class),
                 null,
@@ -758,6 +946,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 AdministrationService adminService, String componentName,
                 boolean force) {
             return adminService.uninstallComponent(componentName, force);
+        }
+        
+        protected JBIArtifactValidator getValidator() {
+            return JBIArtifactValidator.getBindingComponentValidator(getName());
         }
         
         protected String getContainerType() {
@@ -782,6 +974,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         
         protected String getUninstallProgressLabel() {
             return "LBL_Uninstalling_Binding_Component";    // NOI18N
+        }
+        
+        protected String getUpgradeProgressMessageLabel() {
+            return "LBL_Upgrading_Binding_Component";     // NOI18N
         }
         
         protected Map<Attribute, MBeanAttributeInfo> getIdentificationProperties(
@@ -819,6 +1015,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             return adminService.uninstallSharedLibrary(componentName);
         }
         
+        protected JBIArtifactValidator getValidator() {
+            return null;
+        }
+        
+        
         protected String getContainerType() {
             return GenericConstants.SHARED_LIBRARIES_FOLDER_NAME;
         }
@@ -841,6 +1042,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         
         protected String getUninstallProgressLabel() {
             return "LBL_Uninstalling_Shared_Library";   // NOI18N
+        }
+        
+        protected String getUpgradeProgressMessageLabel() {
+            return null;    
         }
         
         protected String getInstalledIconBadgeName() {

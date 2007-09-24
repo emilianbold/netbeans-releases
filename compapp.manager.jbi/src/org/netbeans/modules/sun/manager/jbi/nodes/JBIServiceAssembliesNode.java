@@ -253,32 +253,10 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         }
         
         if (docBuilder != null) {
-            for (File file : files) {
-                // do some simple validation
-                boolean isRightType = false;
-                
-                JarFile jf = null;
-                try {
-                    jf = new JarFile(file); 
-                    JarEntry je = (JarEntry) jf.getEntry("META-INF/jbi.xml"); // NOI18N
-                    if (je != null) {
-                        InputStream is = jf.getInputStream(je);
-                        Document doc = docBuilder.parse(is);
-                        isRightType = isRightJBIDocType(doc); // very basic type checking
-                    }                    
-                } catch (Exception e) {
-                    e.printStackTrace(); 
-                } finally {
-                    if (jf != null) {
-                        try {
-                            jf.close();
-                        } catch (IOException e) {
-                            ; // ignore
-                        }
-                    }                    
-                }                
-                
-                if (isRightType) {
+            JBIArtifactValidator validator = 
+                    JBIArtifactValidator.getServiceAssemblyValidator();
+            for (File file : files) {               
+                if (validator.validate(file)) {
                     ret.add(file);
                 } else {
                     String msg = NbBundle.getMessage(
@@ -294,12 +272,7 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         }
         
         return ret;
-    }
-    
-    protected boolean isRightJBIDocType(Document jbiDoc) {
-        NodeList ns = jbiDoc.getElementsByTagName("service-assembly"); // NOI18N
-        return ns.getLength() == 1;
-    }
+    }   
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx(JBIServiceAssembliesNode.class);
