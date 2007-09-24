@@ -120,7 +120,7 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
 
     @Override
     public boolean supportsDefaultValue() {
-        return false;
+        return true;
     }
 
     @Override
@@ -135,16 +135,6 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
         }
     }
 
-//    @Override
-//    public Object getDefaultValue() {
-//        return PropertyValue.createNull();
-//    }
-//
-//    @Override
-//    public boolean isDefaultValue() {
-//        return true;
-//    }
-    
     private String getLabelName() {
         if (typeID.equals(CallPointCD.TYPEID)) {
             return JAVA_CODE;
