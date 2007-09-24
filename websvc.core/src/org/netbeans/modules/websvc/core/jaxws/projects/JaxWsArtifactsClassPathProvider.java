@@ -35,39 +35,65 @@ import org.openide.filesystems.FileUtil;
  */
 public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
     private Project project;
-    private ClassPath cp;
+    private ClassPath sourceCP, compileCP, bootCP;
     
     JaxWsArtifactsClassPathProvider(Project project) {
         this.project = project;
     }
     
     public ClassPath findClassPath(FileObject file, String type) {
-        if (ClassPath.SOURCE.equals(type)) {
-            FileObject clientArtifactsFolder = 
-                    project.getProjectDirectory().getFileObject("build/generated/wsimport/client"); //NOI18N
-            if (clientArtifactsFolder != null && 
-                    (file == clientArtifactsFolder || FileUtil.isParentOf(clientArtifactsFolder,file))) {
-                if (cp == null) cp = getClassPath();
-                return cp;
-            } else {
-                FileObject serviceArtifactsFolder = 
-                project.getProjectDirectory().getFileObject("build/generated/wsimport/service"); //NOI18N
-                if (serviceArtifactsFolder != null && 
-                    (file == serviceArtifactsFolder || FileUtil.isParentOf(serviceArtifactsFolder,file))) {
-                    if (cp == null) cp = getClassPath();
-                    return cp;
+        FileObject clientArtifactsFolder = 
+                project.getProjectDirectory().getFileObject("build/generated/wsimport/client"); //NOI18N
+        if (clientArtifactsFolder != null && 
+                (file.equals(clientArtifactsFolder) || FileUtil.isParentOf(clientArtifactsFolder,file))) {
+            if (ClassPath.SOURCE.equals(type)) {
+                if (sourceCP == null) {
+                    sourceCP = getClassPath(ClassPath.SOURCE);
+                }
+                return sourceCP;
+            } else if (ClassPath.COMPILE.equals(type)) {
+                if (compileCP == null) {
+                    compileCP = getClassPath(ClassPath.COMPILE);
+                }
+                return compileCP;
+            } else if (ClassPath.BOOT.equals(type)) {
+                if (bootCP == null) {
+                    bootCP = getClassPath(ClassPath.BOOT);
+                }
+                return bootCP;
+            }               
+        } else {
+            FileObject serviceArtifactsFolder = 
+            project.getProjectDirectory().getFileObject("build/generated/wsimport/service"); //NOI18N
+            if (serviceArtifactsFolder != null && 
+                    (file.equals(serviceArtifactsFolder) || FileUtil.isParentOf(serviceArtifactsFolder,file))) {
+                if (ClassPath.SOURCE.equals(type)) {
+                    if (sourceCP == null) {
+                        sourceCP = getClassPath(ClassPath.SOURCE);
+                    }
+                    return sourceCP;
+                } else if (ClassPath.COMPILE.equals(type)) {
+                    if (compileCP == null) {
+                        compileCP = getClassPath(ClassPath.COMPILE);
+                    }
+                    return compileCP;
+                } else if (ClassPath.BOOT.equals(type)) {
+                    if (bootCP == null) {
+                        bootCP = getClassPath(ClassPath.BOOT);
+                    }
+                    return bootCP;
                 }
             }
-            
         }
+           
         return null;
     }
     
-    private ClassPath getClassPath() {
+    private ClassPath getClassPath(String classPathType) {
         Sources sources = project.getLookup().lookup(Sources.class);
         SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (groups.length > 0) {
-            return ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.SOURCE);
+            return ClassPath.getClassPath(groups[0].getRootFolder(), classPathType);
         }
         return null;
     }
