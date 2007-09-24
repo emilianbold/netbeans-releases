@@ -1320,8 +1320,10 @@ public class ConfiguredTest extends TestCase {
         String clearFeeder = mProperties.getProperty("clearfeederdirectory");
         String clearEater = mProperties.getProperty("cleareaterdirectory");
         String feederDir = mProperties.getProperty("feederdirectory");
+        String absoluteFeederDir = mProperties.getProperty("absolutefeederdir");
         String feederFileName = mProperties.getProperty("feederfile");
         String eaterDir = mProperties.getProperty("eaterdirectory");
+        String absoluteEaterDir = mProperties.getProperty("absoluteeaterdir");
         String eaterFileName = mProperties.getProperty("eaterfile");
         String comparisonType = mProperties.getProperty("comparisontype");
         String testPropertiesFileName = mProperties.getProperty("testpropertiesfilename");
@@ -1357,10 +1359,21 @@ public class ConfiguredTest extends TestCase {
             }
             
             String inputFile = inputDir + File.separator + feederFileName;
-            String feederDirName = inputDir + File.separator + feederDir;
-            String feederFile = new File(feederDirName, feederFileName).getAbsolutePath();
+            String feederDirName = "";
+            String feederFile = "";
+            if((absoluteFeederDir != null) && absoluteFeederDir.trim().length() > 0) {
+                feederFile = new File(absoluteFeederDir, feederFileName).getAbsolutePath();
+            } else {
+                feederDirName = inputDir + File.separator + feederDir;
+                feederFile = new File(feederDirName, feederFileName).getAbsolutePath();
+            }
             //--String eaterDirName = "output" + File.separator + inputDirName + File.separator + eaterDir;
-            String eaterDirName = inputDir + File.separator + eaterDir;
+            String eaterDirName = "";
+            if((absoluteEaterDir != null) && (absoluteEaterDir.trim().length() > 0)) {
+             eaterDirName = absoluteEaterDir;
+            } else {
+                eaterDirName = inputDir + File.separator + eaterDir;
+            }
             
             String testRunOutputFile = new File(eaterDirName, eaterFileName).getAbsolutePath();
             String expectedOutputFile = new File(inputDir, outputFileName).getAbsolutePath();
@@ -1369,6 +1382,11 @@ public class ConfiguredTest extends TestCase {
             
             // Prepare test run directories if applicable
             if (clearFeeder != null && Boolean.valueOf(clearFeeder).equals(Boolean.TRUE)) {
+                if((absoluteFeederDir != null) && absoluteFeederDir.length() > 0) {
+                    File dir = new File(absoluteFeederDir);
+                    deleteDirAndContents(dir, false);
+                    dir.mkdirs();
+                }
                 // Empty the directory. For safety reasons don't recurse
                 if (feederDir != null && feederDir.length() > 0) {
                     File dir = new File(feederDirName);
@@ -1377,6 +1395,11 @@ public class ConfiguredTest extends TestCase {
                 }
             }
             if (clearEater != null && Boolean.valueOf(clearEater).equals(Boolean.TRUE)) {
+                if (absoluteEaterDir != null && absoluteEaterDir.length() > 0) {
+                    File dir = new File(absoluteEaterDir);
+                    deleteDirAndContents(dir, false);
+                    dir.mkdirs();
+                }
                 // Delete the directory and direct contents. For safety reasons don't recurse
                 if (eaterDir != null && eaterDir.length() > 0) {
                     File dir = new File(eaterDirName);
