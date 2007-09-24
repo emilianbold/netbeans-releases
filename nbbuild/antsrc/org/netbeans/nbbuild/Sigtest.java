@@ -131,7 +131,8 @@ public class Sigtest extends Task {
     }
     
     private void tdk() {
-        Java java = (Java) getProject().createTask("java");
+        Java java = new Java();
+        java.setProject(getProject());
         Path sigtestPath = new Path(getProject());
         sigtestPath.setLocation(sigtestJar);
         
@@ -207,7 +208,8 @@ public class Sigtest extends Task {
     }
     
     private void apitest() {
-        Java java = (Java) getProject().createTask("java");
+        Java java = new Java();
+        java.setProject(getProject());
         java.setFork(true);
         Path sigtestPath = new Path(getProject());
         sigtestPath.setLocation(sigtestJar);
