@@ -50,6 +50,10 @@ public class HgRepositoryContextCache {
         }
     }
     
+    public static void resetHasHeads() {
+        headsCtx = null;
+    }
+
     public static boolean hasHeads(VCSContext ctx) {
         
         if(ctx == headsCtx && ctx != null){

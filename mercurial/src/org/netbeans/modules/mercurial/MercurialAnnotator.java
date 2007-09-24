@@ -58,6 +58,7 @@ import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -291,6 +292,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean onlyFolders = onlyFolders(files);
         boolean onlyProjects = onlyProjects(nodes);
 
+        HgRepositoryContextCache.resetHasHeads();
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (goodVersion && destination == VCSAnnotator.ActionDestination.MainMenu) {
