@@ -81,7 +81,6 @@ public abstract class MakefileWizardPanel extends JPanel {
     protected final static String WARN_INVALID_MAKEFLAGS;
     protected final static String WARN_EXTRA_LINES_IN_TARGET;
     protected final static String WARN_INVALID_LINES_IN_TARGET;
-    protected final static String WARN_NONCOMPAT_NCT_OPTION;
 
     static {
 	WARN_CWD_NOT_DIR = "WARN_CWD_NOT_DIR";				// NOI18N
@@ -112,7 +111,6 @@ public abstract class MakefileWizardPanel extends JPanel {
 	WARN_INVALID_MAKEFLAGS = "WARN_INVALID_MAKEFLAGS";		// NOI18N
 	WARN_EXTRA_LINES_IN_TARGET = "WARN_EXTRA_LINES_IN_TARGET";	// NOI18N
 	WARN_INVALID_LINES_IN_TARGET = "WARN_INVALID_LINES_IN_TARGET";	// NOI18N
-	WARN_NONCOMPAT_NCT_OPTION = "WARN_NONCOMPAT_NCT_OPTION";	// NOI18N
     }
 
 
