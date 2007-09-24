@@ -41,6 +41,15 @@ Microsystems, Inc. All Rights Reserved.
     <bind key="O-V" remove="true"/>
     <bind key="M-V" actionName="page-up"/>
     
+    <bind key="O-P" remove="true"/>
+    <bind actionName="tooltip-show" key="M-P"/>
+    
+    <bind key="O-B" remove="true"/>
+    <bind actionName="caret-previous-word" key="M-B"/>
+    
+    <bind key="O-F" remove="true"/>
+    <bind actionName="caret-next-word" key="M-F"/>
+    
     <!-- Things we add only on the mac -->
     <bind key="C-W" actionName="cut-to-clipboard"/>
     <bind key="C-D" actionName="delete-next"/>
