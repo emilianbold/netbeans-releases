@@ -455,7 +455,8 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
         }
 
         public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())) {
+            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
+                    && isVisible()) {
                 I18nString i18nString = getI18nString();
                 if (i18nString == null 
                     || !(i18nString instanceof FormI18nMnemonic)

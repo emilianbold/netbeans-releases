@@ -507,7 +507,8 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         }
 
         public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())) {
+            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
+                    && isVisible()) {
                 I18nString i18nString = i18nPanel.getI18nString();
                 if (i18nString == null 
                     || !(i18nString instanceof FormI18nString)
