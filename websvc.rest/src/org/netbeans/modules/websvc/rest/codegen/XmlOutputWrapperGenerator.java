@@ -24,7 +24,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
-import org.netbeans.modules.websvc.rest.codegen.model.WsdlResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.WsdlComponentBean;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;

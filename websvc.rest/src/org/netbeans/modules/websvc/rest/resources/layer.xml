@@ -38,7 +38,7 @@
             <file name="GenericResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GenericResource.template">
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="JaxwsWrapperResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/JaxwsWrapperResource.template">
+            <file name="WrapperResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/WrapperResource.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template">
@@ -48,18 +48,6 @@
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="RestConnection.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestConnection.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="GoogleMapRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="YahooNewsResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsResource.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="YahooNewsRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsRefConverter.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="RefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RefConverter.template">
@@ -87,9 +75,9 @@
     </folder>
     
     <folder name="RestComponents">
-        <folder name="Google">
+        <!--folder name="Google">
             <file name="google-map.xml" url="/org/netbeans/modules/websvc/rest/component/resources/google-map.xml"/>
-        </folder>
+        </folder-->
         <folder name="Yahoo">
             <file name="yahoo-ns.xml" url="/org/netbeans/modules/websvc/rest/component/resources/yahoo-ns.xml"/>
         </folder>

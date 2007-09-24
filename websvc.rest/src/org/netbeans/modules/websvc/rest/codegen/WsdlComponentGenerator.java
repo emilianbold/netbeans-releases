@@ -44,7 +44,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
-import org.netbeans.modules.websvc.rest.codegen.model.WsdlResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.WsdlComponentBean;
 import org.netbeans.modules.websvc.rest.codegen.model.JaxwsOperationInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.rest.component.palette.RestComponentData;
@@ -67,20 +67,20 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
     public static final String SET_HEADER_PARAMS = "setHeaderParameters";
     
     public WsdlComponentGenerator(FileObject targetFile, RestComponentData data) {
-        super(targetFile, new WsdlResourceBean(data, FileOwnerQuery.getOwner(targetFile)));
+        super(targetFile, new WsdlComponentBean(data, FileOwnerQuery.getOwner(targetFile)));
     }
 
     @Override
     protected void preGenerate() {
-        for (JaxwsOperationInfo info : ((WsdlResourceBean) bean).getOperationInfos()) {
+        for (JaxwsOperationInfo info : ((WsdlComponentBean) bean).getOperationInfos()) {
             info.setupWebServiceClient();
             info.setupSoapHandler(destDir);
         }
     }
 
     @Override
-    public WsdlResourceBean getBean() {
-        return (WsdlResourceBean) bean;
+    public WsdlComponentBean getBean() {
+        return (WsdlComponentBean) bean;
     }
     
     public static final String QNAME = "javax.xml.namespace.QName";
@@ -111,7 +111,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
             methodBody += "$CONVERTER$ representation = new $CONVERTER$(); ".
                 replace("$CONVERTER$", getConverterName());
         }
-        JaxwsOperationInfo[] operations = ((WsdlResourceBean) bean).getOperationInfos();
+        JaxwsOperationInfo[] operations = ((WsdlComponentBean) bean).getOperationInfos();
         for (JaxwsOperationInfo info : operations) {
             methodBody += getWSInvocationCode(info);
         }
@@ -121,7 +121,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
         } else {
             methodBody += "return representation;"; //NOI18N
         }
-        methodBody += "} catch(Exception ex) { //TODO handle \n throw new javax.ws.rs.WebApplicationException(ex); }";
+        methodBody += "} catch(Exception ex) { //TODO handle \n throw new WebApplicationException(ex); }";
         return methodBody;
     }
     

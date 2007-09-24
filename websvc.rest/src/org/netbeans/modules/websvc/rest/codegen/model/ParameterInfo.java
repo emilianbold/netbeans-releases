@@ -70,6 +70,10 @@ public class ParameterInfo {
         return typeName;
     }
 
+    public String getSimpleTypeName() {
+        return type.getSimpleName();
+    }
+    
     public void setDefaultValue(Object value) {
         this.defaultValue = value;
     }

@@ -60,7 +60,6 @@ import static com.sun.source.tree.Tree.Kind.*;
  */
 public abstract class RestComponentGenerator extends AbstractGenerator {
 
-    private static final String RESOURCE_TEMPLATE = "Templates/WebServices/JaxwsWrapperResource.java"; //NOI18N
     private static final String COMMENT_END_OF_HTTP_MEHTOD_GET = "TODO return proper representation object";
     private static final String GENERIC_REF_CONVERTER_TEMPLATE = "Templates/WebServices/RefConverter.java"; //NOI18N
     private static final String GENERIC_REF_CONVERTER = "GenericRefConverter"; //NOI18N
@@ -136,19 +135,25 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
     protected abstract String getCustomMethodBody() throws IOException;
 
     protected FileObject generateJaxbOutputWrapper() throws IOException {
-        FileObject converterFolder = getConverterFolder();
-        String packageName = SourceGroupSupport.packageForFolder(converterFolder);
-        bean.setOutputWrapperPackageName(packageName);
-        String[] returnTypeNames = bean.getOutputTypes();
-        XmlOutputWrapperGenerator gen = new XmlOutputWrapperGenerator(converterFolder, bean.getOutputWrapperName(), packageName, returnTypeNames);
+        MimeType mimeType = bean.getMimeTypes()[0];
 
-        return gen.generate();
+        if (mimeType == MimeType.JSON || mimeType == MimeType.XML) {
+            FileObject converterFolder = getConverterFolder();
+            String packageName = SourceGroupSupport.packageForFolder(converterFolder);
+            bean.setOutputWrapperPackageName(packageName);
+            String[] returnTypeNames = bean.getOutputTypes();
+            XmlOutputWrapperGenerator gen = new XmlOutputWrapperGenerator(converterFolder, bean.getOutputWrapperName(), packageName, returnTypeNames);
+
+            return gen.generate();
+        }
+        
+        return null;
     }
 
     protected void generateComponentResourceClass() throws IOException {
         if (wrapperResourceFile == null) {
             GenericResourceGenerator delegate = new GenericResourceGenerator(destDir, bean);
-            delegate.setTemplate(RESOURCE_TEMPLATE);
+            delegate.setTemplate(bean.getResourceClassTemplate());
             Set<FileObject> files = delegate.generate(getProgressHandle());
 
             if (files == null || files.size() == 0) {
@@ -270,7 +275,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         if (jaxbOutputWrapperJS != null) {
             return JavaSourceHelper.getClassType(jaxbOutputWrapperJS);
         }
-        return bean.getOutputWrapperName();
+        return null;
     }
 
     protected String getConverterName() throws IOException {
@@ -283,10 +288,9 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
     private String getParamInitStatements(WorkingCopy copy) {
         String comment = "// TODO: Assign a value to one of the following variables if you want to \n" + "// override the corresponding default value or value from the query \n" + "// parameter in the subresource class.\n"; //NOI18N
-        
-        String statements = "";     //NOI18N
+        String statements = ""; //NOI18N
         boolean addGetEntityStatement = false;
-        
+
         for (ParameterInfo param : bean.getInputParameters()) {
             String initValue = "null"; //NOI18N
             String access = match(JavaSourceHelper.getTopLevelClassElement(copy), param.getName());
@@ -296,16 +300,15 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                 addGetEntityStatement = true;
             }
 
-            statements += param.getTypeName() + " " + param.getName() + " = " + initValue + ";"; //NOI18N
+            statements += param.getSimpleTypeName() + " " + param.getName() + " = " + initValue + ";"; //NOI18N
         }
 
         String getEntityStatement = "";
-        
+
         if (addGetEntityStatement) {
-            getEntityStatement = getEntityType(JavaSourceHelper.getTopLevelClassElement(copy)) +
-                    " entity = getEntity(id)";
+            getEntityStatement = getEntityType(JavaSourceHelper.getTopLevelClassElement(copy)) + " entity = getEntity(id)";
         }
-        
+
         return comment + getEntityStatement + statements;
     }
 
@@ -360,10 +363,10 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
     private String getEntityType(TypeElement typeElement) {
         List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
- 
+
         for (ExecutableElement method : methods) {
             if (method.getSimpleName().contentEquals("getEntity")) {
-               return method.getReturnType().toString();
+                return method.getReturnType().toString();
             }
         }
         return null;
@@ -466,7 +469,10 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
     private void modifyTargetConverter() throws IOException {
         TypeElement targetResourceType = JavaSourceHelper.getTypeElement(targetResourceJS);
+        System.out.println("targetResourceJS = " + targetResourceJS);
+        System.out.println("targetResourceType = " + targetResourceType);
         TypeElement representationType = JavaSourceHelper.getXmlRepresentationClass(targetResourceType, EntityResourcesGenerator.CONVERTER_SUFFIX);
+        System.out.println("representationType = " + representationType);
         if (representationType != null) {
             JavaSource representationJS = JavaSourceHelper.forTypeElement(representationType, project);
             ModificationResult result = representationJS.runModificationTask(new AbstractTask<WorkingCopy>() {

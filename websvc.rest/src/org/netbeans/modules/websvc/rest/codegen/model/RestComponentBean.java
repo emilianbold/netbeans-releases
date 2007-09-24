@@ -30,6 +30,7 @@ import org.netbeans.modules.websvc.rest.support.Inflector;
  */
 public abstract class RestComponentBean extends GenericResourceBean {
 
+    private static final String RESOURCE_TEMPLATE = "Templates/WebServices/WrapperResource.java"; //NOI18N
     private String outputWrapperName;
     private String wrapperPackageName;
     private List<ParameterInfo> inputParams;
@@ -42,7 +43,7 @@ public abstract class RestComponentBean extends GenericResourceBean {
     public void setInputParameters(List<ParameterInfo> inputParams) {
         this.inputParams = inputParams;
     }
-    
+
     @Override
     public List<ParameterInfo> getInputParameters() {
         if (inputParams == null) {
@@ -51,7 +52,7 @@ public abstract class RestComponentBean extends GenericResourceBean {
 
         return inputParams;
     }
-    
+
     public List<ParameterInfo> getHeaderParameters() {
         return Collections.emptyList();
     }
@@ -97,12 +98,12 @@ public abstract class RestComponentBean extends GenericResourceBean {
     }
 
     protected static String deriveUriTemplate(String name) {
-        return Inflector.getInstance().camelize(name, true) + "/";     //NOI18N
+        return Inflector.getInstance().camelize(name, true) + "/"; //NOI18N
     }
 
     public String[] getRepresentationTypes() {
         if (getMimeTypes().length == 1 && getMimeTypes()[0] == MimeType.HTML) {
-            return new String[] { String.class.getName() };
+            return new String[]{String.class.getName()};
         } else {
             return new String[]{getOutputWrapperPackageName() + "." + getOutputWrapperName()}; //NOI18N
         }
@@ -111,5 +112,9 @@ public abstract class RestComponentBean extends GenericResourceBean {
     public String[] getOutputTypes() {
         String[] types = new String[]{"java.lang.String"}; //NOI18N
         return types;
+    }
+
+    public String getResourceClassTemplate() {
+        return RESOURCE_TEMPLATE;
     }
 }

@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.rest.codegen.model.ParameterInfo;
-import org.netbeans.modules.websvc.rest.codegen.model.WadlResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.WadlComponentBean;
 import org.netbeans.modules.websvc.rest.component.palette.RestComponentData;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
@@ -39,10 +39,10 @@ public class WadlComponentGenerator extends RestComponentGenerator {
     public static final String REST_CONNECTION_TEMPLATE = "Templates/WebServices/RestConnection.java"; //NOI18N
 
     public WadlComponentGenerator(FileObject targetFile, RestComponentData data) throws IOException {
-        this(targetFile, new WadlResourceBean(data));
+        this(targetFile, new WadlComponentBean(data));
     }
 
-    private WadlComponentGenerator(FileObject targetFile, WadlResourceBean bean) {
+    private WadlComponentGenerator(FileObject targetFile, WadlComponentBean bean) {
         super(targetFile, bean);
     }
 
@@ -70,7 +70,7 @@ public class WadlComponentGenerator extends RestComponentGenerator {
             paramStr = paramStr.substring(0, paramStr.length() - 1);
         }
         
-        String methodBody = "String url = \"" + ((WadlResourceBean) bean).getUrl() + "\";\n";
+        String methodBody = "String url = \"" + ((WadlComponentBean) bean).getUrl() + "\";\n";
         methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
         methodBody += "        try {\n";
         methodBody += "             RestConnection cl = new RestConnection();\n";
@@ -81,10 +81,9 @@ public class WadlComponentGenerator extends RestComponentGenerator {
         methodBody += "             converter.setString(result);\n";
         methodBody += "             return converter;\n";
         methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             java.util.logging.Logger.getLogger(" + converterName + ".class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";
-        methodBody += "        }\n";
-        methodBody += "        return converter; }";
-        
+        methodBody += "             throw new WebApplicationException(ex);\n";
+        methodBody += "        }\n }";
+       
         return methodBody;
     }
 }

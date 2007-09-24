@@ -24,6 +24,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.websvc.rest.codegen.CustomComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WsdlComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.RestComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WadlComponentGenerator;
@@ -83,6 +84,8 @@ public class RestComponentHandler implements ActiveEditorDrop {
                         codegen = new WsdlComponentGenerator(targetFO, data);
                     } else if (RestComponentData.isWADL(type)) {
                         codegen = new WadlComponentGenerator(targetFO, data);
+                    } else if (RestComponentData.isCustom(type)) {
+                        codegen = new CustomComponentGenerator(targetFO, data);
                     }
                 
                     RestComponentBean bean = codegen.getBean();
