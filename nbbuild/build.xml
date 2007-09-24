@@ -971,7 +971,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
                 builddir="tmp" buildnumber="${buildnumber}"
                 excludepattern="**/ja/,**/*_ja.*"/>
     <delete dir="tmp"/>
-    <l10n topdirs="${nbroot}" modules="installer"
+    <l10n topdirs="${nbroot}" modules="installer,nbi"
                 localizablefile="l10n.list" generatedfile="l10n.list.translated"
                 distdir="${l10n.dist.dir}/installer" changedfile="l10n.list.changed"
                 globalfile="l10n-global.list"
