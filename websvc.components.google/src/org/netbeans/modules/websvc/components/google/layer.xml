@@ -5,6 +5,14 @@
         <folder name="Google">
             <file name="AddSenseForSearc.xml" url="/org/netbeans/modules/websvc/components/google/resources/AdSenseForSearch.xml" />
             <file name="AddSenseForContent.xml" url="/org/netbeans/modules/websvc/components/google/resources/AdSenseForContent.xml" />
+            <file name="GoogleMap.xml" url="/org/netbeans/modules/websvc/components/google/resources/GoogleMap.xml" />
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="WebServices">
+            <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/components/google/resources/GoogleMapResource.template">
+                <attr name="position" intvalue="0"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
