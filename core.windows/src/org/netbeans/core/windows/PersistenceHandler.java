@@ -660,12 +660,10 @@ final public class PersistenceHandler implements PersistenceObserver {
             // #45981: save previous mode even for closed tcs
             String modeName = null;
             int prevIndex = -1;
-            if (mode.getKind() == Constants.MODE_KIND_SLIDING || mode.getState() == Constants.MODE_STATE_SEPARATED) {
-                ModeImpl prev = wm.getPreviousModeForTopComponent(tcID, mode);
-                if (prev != null) {
-                    modeName = prev.getName();
-                    prevIndex = wm.getPreviousIndexForTopComponent(tcID, mode);
-                }
+            ModeImpl prev = wm.getPreviousModeForTopComponent(tcID, mode);
+            if (prev != null) {
+                modeName = prev.getName();
+                prevIndex = wm.getPreviousIndexForTopComponent(tcID, mode);
             }
             
             if(DEBUG) {

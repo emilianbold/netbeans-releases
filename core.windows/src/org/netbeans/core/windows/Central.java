@@ -64,6 +64,8 @@ final class Central implements ControllerHandler {
     /** Helper class for managing requests to view. */
     private final ViewRequestor viewRequestor = new ViewRequestor(this);
     
+    private ModeImpl modeBeingMaximized = null;
+    
     /** Constructor. */
     public Central() {
     }
@@ -429,6 +431,8 @@ final class Central implements ControllerHandler {
                 } else {
                     model.getDefaultDockingStatus().mark();
                 }
+                
+                modeBeingMaximized = newMaximizedMode;
 
                 //get the TopComponent that will be maximized
                 TopComponent tcToMaximize = newMaximizedMode.getSelectedTopComponent();
@@ -451,6 +455,7 @@ final class Central implements ControllerHandler {
                 
                 setActiveMode( mode );
 
+                modeBeingMaximized = null;
             } else {
                 throw new IllegalArgumentException( "Cannot maximize a sliding view" );
             }
@@ -465,7 +470,7 @@ final class Central implements ControllerHandler {
         WindowManagerImpl.getInstance().doFirePropertyChange(
             WindowManagerImpl.PROP_MAXIMIZED_MODE, old, getCurrentMaximizedMode());
     }
-    
+
     /** Sets editor mode that is currenlty maximized (used when the window system loads) */
     void setEditorMaximizedMode(ModeImpl editorMaximizedMode) {
         model.setEditorMaximizedMode( editorMaximizedMode );
@@ -854,7 +859,9 @@ final class Central implements ControllerHandler {
                 if(!m.isPermanent() && m.isEmpty() && doCheckSlidingModes(m) 
                     // now the tc is not added to the sliding mode yet, but is *somehow* expected to be..
                     // maybe needs redesign..
-                        && mode.getKind() != Constants.MODE_KIND_SLIDING) {
+                        && mode.getKind() != Constants.MODE_KIND_SLIDING
+                        //do not let remove a mode whose only TC is just being maximized
+                        && m != modeBeingMaximized ) {
 //                    debugLog("removeTopComponentFromOtherModes() - really removing=" + m.getDisplayName());
                     model.removeMode(m);
                     modeRemoved = true;
