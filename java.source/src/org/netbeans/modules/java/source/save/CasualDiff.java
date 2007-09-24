@@ -2065,6 +2065,7 @@ public class CasualDiff {
                             printer.print(this.printer.toString());
                             this.printer = oldPrinter;
                             this.printer.undent(old);
+                            lastdel = null;
                             break;
                         }
                         if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
