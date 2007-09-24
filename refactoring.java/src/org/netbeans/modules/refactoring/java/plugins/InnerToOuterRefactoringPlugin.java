@@ -262,7 +262,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
                             AssignmentTree assign = tm.Assignment(tm.Identifier("this."+referenceName), tm.Identifier(referenceName));
                             BlockTree block = tm.insertBlockStatement(newConstructor.getBody(), 1, tm.ExpressionStatement(assign));
                             newConstructor = tm.Constructor(
-                                    newConstructor.getModifiers(),
+                                    tm.Modifiers(newConstructor.getModifiers().getFlags(), newConstructor.getModifiers().getAnnotations()),
                                     newConstructor.getTypeParameters(), 
                                     newConstructor.getParameters(),
                                     newConstructor.getThrows(),
