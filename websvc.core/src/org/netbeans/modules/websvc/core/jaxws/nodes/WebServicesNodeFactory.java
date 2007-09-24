@@ -24,10 +24,16 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -36,7 +42,10 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -135,6 +144,90 @@ public class WebServicesNodeFactory implements NodeFactory {
                         fireChange();
                     }
                 });
+                String propName = evt.getPropertyName();
+                
+                if (propName.endsWith("PackageName")) { // NOI18N
+                    String oldValue = (String)evt.getOldValue();
+                    String newValue = (String)evt.getNewValue();
+                    if (oldValue != null && newValue != null) {
+                        try {
+                        if (propName.startsWith("/JaxWs/Clients")) { //NOI18N
+                            FileObject artifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client"); //NOI18N
+                            if (artifactsFolder == null) {
+                                artifactsFolder = createArtifactsFolder(project.getProjectDirectory(),true);
+                            }
+                            if (artifactsFolder != null) {
+                                    refactorPackage(artifactsFolder, oldValue, newValue);
+                            }
+                        } else if (propName.startsWith("/JaxWs/Services")) { //NOI18N
+                            FileObject artifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/services"); // NOI18N
+                            if (artifactsFolder == null) {
+                                artifactsFolder = createArtifactsFolder(project.getProjectDirectory(),false);
+                            }
+                            if (artifactsFolder != null) {
+                                    refactorPackage(artifactsFolder, oldValue, newValue);
+
+                            }           
+                        }
+                        } catch (java.io.IOException ex) {
+                            Logger.getLogger(this.getClass().getName()).log(Level.FINE,"cannot create artifacts folder",ex); // NOI18N
+                        }
+                    }
+                }
+            }
+        }
+        
+        private void refactorPackage(FileObject artifactsFolder, String oldName, final String newName) 
+            throws java.io.IOException {
+ 
+            FileObject packageFolder = artifactsFolder.getFileObject(oldName.replace('.', '/'));
+            if (packageFolder == null) {
+                packageFolder = artifactsFolder.createFolder(oldName.replace('.', '/'));
+            }
+
+            if (packageFolder != null) {
+                final FileObject oldPackage = packageFolder;
+                NonRecursiveFolder nF = new NonRecursiveFolder() {
+
+                    public FileObject getFolder() {
+                        return oldPackage;
+                    }
+
+                };
+                final RefactoringSession renameSession = RefactoringSession.create("Rename JAX-WS package"); //NOI18N
+                
+                final RenameRefactoring refactoring = new RenameRefactoring(Lookups.fixed(nF));
+                
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        Problem p = refactoring.preCheck();
+
+                        if (p!=null && p.isFatal()) {
+                            //fatal problem in precheck
+                            Logger.getLogger(this.getClass().getName()).log(Level.FINE,p.getMessage());
+                            return;
+                        }
+                        refactoring.setNewName(newName);
+                        p = refactoring.prepare(renameSession);
+                        if (p!=null && p.isFatal()) {
+                            // fatal problem in prepare
+                            Logger.getLogger(this.getClass().getName()).log(Level.FINE,p.getMessage());
+                            return;
+                        }
+
+                        p = renameSession.doRefactoring(true);                        
+                    }
+                });
+
+            }
+        }
+        
+        private FileObject createArtifactsFolder (FileObject projectDir, boolean forClient) 
+            throws java.io.IOException {
+            if (forClient) {
+                return FileUtil.createFolder(projectDir, "build/generated/wsimport/client"); //NOI18N
+            } else {
+                return FileUtil.createFolder(projectDir, "build/generated/wsimport/service"); //NOI18N
             }
         }
     }
