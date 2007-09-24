@@ -91,6 +91,11 @@ public class HgProjectUtils {
         if(root == null) return null;
         final ProjectManager projectManager = ProjectManager.getDefault();
         FileObject rootFileObj = FileUtil.toFileObject(FileUtil.normalizeFile(root));
+        // This can happen if the root is "ssh://<something>"
+        if (rootFileObj == null) {
+            return null;
+        }
+ 
         String res = null;
         
         if (projectManager.isProject(rootFileObj)){

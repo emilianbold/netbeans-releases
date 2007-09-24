@@ -112,9 +112,15 @@ public class PushAction extends AbstractAction {
 
                         HgUtils.outputMercurialTab(list);
                         
-                        HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(PushAction.class,
-                                    "MSG_PUSH_TO", toPrjName, pushPath)); // NOI18N
+                        if (toPrjName == null) {
+                            HgUtils.outputMercurialTabInRed(
+                                        NbBundle.getMessage(PushAction.class,
+                                        "MSG_PUSH_TO_NONAME", pushPath)); // NOI18N
+                        } else {
+                            HgUtils.outputMercurialTabInRed(
+                                        NbBundle.getMessage(PushAction.class,
+                                        "MSG_PUSH_TO", toPrjName, pushPath)); // NOI18N
+                        }
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(PushAction.class,
                                     "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
@@ -122,9 +128,15 @@ public class PushAction extends AbstractAction {
                         // Push does not do an Update of the target Working Dir
                         if(!bMergeNeeded && !bNoChanges){
                             HgUtils.outputMercurialTab(""); // NOI18N
-                            HgUtils.outputMercurialTabInRed(
-                                        NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_NEEDED", toPrjName, pushPath)); // NOI18N
+                            if (toPrjName == null) {
+                                HgUtils.outputMercurialTabInRed(
+                                            NbBundle.getMessage(PushAction.class,
+                                            "MSG_PUSH_UPDATE_NEEDED_NONAME", toPrjName, pushPath)); // NOI18N
+                            } else {
+                                HgUtils.outputMercurialTabInRed(
+                                            NbBundle.getMessage(PushAction.class,
+                                            "MSG_PUSH_UPDATE_NEEDED", toPrjName, pushPath)); // NOI18N
+                            }
                             list = HgCommand.doUpdateAll(pushPath, false, null);                    
                             HgUtils.outputMercurialTab(list);
                         }     
