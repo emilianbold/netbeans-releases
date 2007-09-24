@@ -72,11 +72,6 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
     }
     
     void newContentReady(){
-        try {
-            explorerManager.setSelectedNodes(new Node[0]);
-        } catch (PropertyVetoException ex) {
-            ex.printStackTrace();
-        }
         explorerManager.setRootContext(content.getRoot());
         if (SwingUtilities.isEventDispatchThread()){
             navigatorPane.expandAll();
@@ -98,6 +93,7 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
             explorerManager.setSelectedNodes(new Node[] {node});
         } catch (IllegalArgumentException ex) {
             // FIXUP me
+            //ex.printStackTrace();
         } catch (PropertyVetoException ex) {
             ex.printStackTrace();
         }

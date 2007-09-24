@@ -33,8 +33,8 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class CsmFileModel {
-    private List<IndexOffsetNode> lineNumberIndex = new ArrayList<IndexOffsetNode>(5);
-    private List<CppDeclarationNode> list = new ArrayList<CppDeclarationNode>();
+    private List<IndexOffsetNode> lineNumberIndex = Collections.synchronizedList(new ArrayList<IndexOffsetNode>());
+    private List<CppDeclarationNode> list = Collections.synchronizedList(new ArrayList<CppDeclarationNode>());
     private CsmFileFilter filter;
     private Action[] actions;
 
