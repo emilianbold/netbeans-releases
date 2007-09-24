@@ -20,9 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
-import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.util.WeakList;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -57,6 +55,7 @@ public class ParserQueue {
             return ppState;
         }
         
+        @Override
         public String toString() {
             return toString(true);
         }
@@ -96,7 +95,7 @@ public class ParserQueue {
                 msg.append("not"); // NOI18N
             }
             msg.append(" cleaned, "); // NOI18N
-            if (!ppState.isStateCorrect()) {
+            if (!ppState.isCompileContext()) {
                 msg.append("not"); // NOI18N
             }
             msg.append(" correct State]"); // NOI18N

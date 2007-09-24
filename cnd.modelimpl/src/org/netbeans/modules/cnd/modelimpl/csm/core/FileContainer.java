@@ -141,8 +141,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             if (f.state == null){
                 f.state = state;
             } else {
-                if (f.state.isStateCorrect()) {
-                    if (state.isStateCorrect()) {
+                if (f.state.isCompileContext()) {
+                    if (state.isCompileContext()) {
                         f.state = state;
                     } else {
                         if (TRACE_PP_STATE_OUT) {
@@ -150,7 +150,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
                         }
                     }
                 } else {
-                    if (state.isStateCorrect()){
+                    if (state.isCompileContext()){
                         f.state = state;
                     } else {
                         if (TRACE_PP_STATE_OUT) {

@@ -679,11 +679,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public void addInclude(IncludeImpl includeImpl) {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmInclude> uid = RepositoryUtils.put(includeImpl);
-            assert uid != null;
+            CsmUID<CsmInclude> inclUID = RepositoryUtils.put(includeImpl);
+            assert inclUID != null;
             try {
                 includesLock.writeLock().lock();
-                includes.add(uid);
+                includes.add(inclUID);
             } finally {
                 includesLock.writeLock().unlock();
             }
@@ -807,11 +807,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public void addMacro(CsmMacro macro) {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmMacro> uid = RepositoryUtils.put(macro);
-            assert uid != null;
+            CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
+            assert macroUID != null;
             try {
                 macrosLock.writeLock().lock();
-                macros.add(uid);
+                macros.add(macroUID);
             } finally {
                 macrosLock.writeLock().unlock();
             }
@@ -1165,7 +1165,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         boolean update = false;
         if (oldState == null) {
             update = true;
-        } else if (!oldState.isStateCorrect() && newState.isStateCorrect()) {
+        } else if (!oldState.isCompileContext() && newState.isCompileContext()) {
             update = true;
         } else {
             update = getGuardState().isNeedReparse(newState);
@@ -1174,13 +1174,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public boolean isNeedReparse(APTPreprocHandler.State ppState, APTPreprocHandler.State preprocState){
-        if (ppState != null && ppState.isStateCorrect()) {
+        if (ppState != null && ppState.isCompileContext()) {
             // do nothing
             if (preprocState != null && isNeedReparseGuardBlock(preprocState)) {
                 // override state with new one
                 return true;
             }
-        } else if (preprocState != null && preprocState.isStateCorrect()) {
+        } else if (preprocState != null && preprocState.isCompileContext()) {
             // override state with new one
             return true;
         }

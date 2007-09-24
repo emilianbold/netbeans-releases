@@ -33,11 +33,11 @@ public interface APTPreprocHandler {
     /** immutable state object of preprocessor handler */
     public interface State {
         /**
-         * check whether state has correct flag or not;
-         * the flag is "correct" when state was created for source file or 
+         * check whether state correspond to compile phase or not;
+         * the flag is "true" when state was created for source file or 
          * for header included from source file
          */ 
-        public boolean isStateCorrect();
+        public boolean isCompileContext();
         
         /**
          * check whether state has cached information or cleaned
@@ -48,5 +48,5 @@ public interface APTPreprocHandler {
     public APTMacroMap getMacroMap();
     public APTIncludeHandler getIncludeHandler();
     
-    public boolean isStateCorrect();
+    public boolean isCompileContext();
 }
