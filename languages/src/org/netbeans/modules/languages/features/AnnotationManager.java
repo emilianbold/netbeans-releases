@@ -183,6 +183,10 @@ public class AnnotationManager extends ASTEvaluator {
     }
 
     private boolean testCreateAnnotation(TokenHierarchy hi, TokenSequence ts, ASTItem item, LanguagesAnnotation la) throws BadLocationException {
+        if (ts.language () == null)
+            throw new NullPointerException ("ts.language()==null");
+        if (ts.language ().mimeType () == null)
+            throw new NullPointerException ("TokenSequence.mimeType==null");
         if (ts.language().mimeType().equals(item.getMimeType())) {
                 Token t = ts.token();
                 Position position = doc.createPosition(t.offset(hi));
