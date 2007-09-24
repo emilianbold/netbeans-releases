@@ -21,15 +21,13 @@ package org.netbeans.modules.form.editors;
 
 import java.beans.*;
 import org.netbeans.modules.form.NamedPropertyEditor;
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.util.NbBundle;
 
 /**
  * Editor for mnemonic property
  * @author  Josef Kozak
  */
-public class MnemonicEditor extends PropertyEditorSupport
-        implements EnhancedPropertyEditor, NamedPropertyEditor {
+public class MnemonicEditor extends PropertyEditorSupport implements NamedPropertyEditor {
 
     /**
      * Converts the char to String by either leaving
@@ -165,32 +163,6 @@ public class MnemonicEditor extends PropertyEditorSupport
 	return "'" + getAsText() + "'"; // NOI18N
     }
 
-    /**
-     * We don't support in place custom editor.
-     * @return custom property editor to be shown inside the property
-     * sheet.
-     */
-    public java.awt.Component getInPlaceCustomEditor () {
-        return null;
-    }
-    
-    /**
-     * We don't support in place custom editor.
-     * @return true if this PropertyEditor provides a enhanced in-place custom
-     * property editor, false otherwise
-     */
-    public boolean hasInPlaceCustomEditor () {
-        return false;
-    }
-    
-    /**
-     * @return true if this property editor provides tagged values and
-     * a custom strings in the choice should be accepted too, false otherwise
-     */
-    public boolean supportsEditingTaggedValues () {
-        return true;
-    }
-    
     // NamedPropertyEditor implementation
     public String getDisplayName() {
         return NbBundle.getBundle(getClass()).getString("CTL_MnemonicsEditor_DisplayName"); // NOI18N
