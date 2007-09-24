@@ -168,4 +168,36 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     public void setAttribute(boolean attribute) {
         this.attribute = attribute;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final IndexedMethod other = (IndexedMethod) obj;
+        if (this.signature != other.signature && (this.signature == null || !this.signature.equals(other.signature))) {
+            return false;
+        }
+        if (this.fqn != other.fqn && (this.fqn == null || !this.fqn.equals(other.fqn))) {
+            return false;
+        }
+        if (this.attributes != other.attributes && (this.attributes == null || !this.attributes.equals(other.attributes))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + (this.signature != null ? this.signature.hashCode() : 0);
+        hash = 53 * hash + (this.fqn != null ? this.fqn.hashCode() : 0);
+        hash = 53 * hash + (this.attributes != null ? this.attributes.hashCode() : 0);
+        return hash;
+    }
+    
+    
 }
