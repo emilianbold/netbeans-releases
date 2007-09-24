@@ -49,13 +49,34 @@ public class RPCStyleWrappedParameterStyle extends AbstractWebServiceRule {
         if (annEntity != null) {
             AnnotationValue styleVal = Utilities.getAnnotationAttrValue(annEntity, 
                     ANNOTATION_ATTRIBUTE_STYLE);
-            Style style = styleVal==null?null:Style.valueOf(styleVal.getValue().toString());
+            Style style = null;
+            if(styleVal!=null) {
+                try {
+                    style = Style.valueOf(styleVal.getValue().toString());
+                } catch (Exception e) {
+                    // we dont need to worry as hints for invalid enum value kicks in.
+                }
+            }
             AnnotationValue useVal = Utilities.getAnnotationAttrValue(annEntity, 
                     ANNOTATION_ATTRIBUTE_USE);
-            Use use = useVal==null?null:Use.valueOf(useVal.getValue().toString());
+            Use use = null;
+            if(useVal!=null) {
+                try {
+                    use = Use.valueOf(useVal.getValue().toString());
+                } catch (Exception e) {
+                    // we dont need to worry as hints for invalid enum value kicks in.
+                }
+            }
             AnnotationValue paramStyleVal = Utilities.getAnnotationAttrValue
                     (annEntity, ANNOTATION_ATTRIBUTE_PARAMETERSTYLE);
-            ParameterStyle paramStyle = paramStyleVal==null?null:ParameterStyle.valueOf(paramStyleVal.getValue().toString());
+            ParameterStyle paramStyle = null;
+            if(useVal!=null) {
+                try {
+                    paramStyle = ParameterStyle.valueOf(paramStyleVal.getValue().toString());
+                } catch (Exception e) {
+                    // we dont need to worry as hints for invalid enum value kicks in.
+                }
+            }
             if (style == Style.RPC && 
                     use == Use.LITERAL && 
                     paramStyle != ParameterStyle.WRAPPED) {
