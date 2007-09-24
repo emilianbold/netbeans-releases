@@ -61,27 +61,12 @@ public final class GrailsProject implements Project {
             lookup = Lookups.fixed(
                 this,  //project spec requires a project be in its own lookup
                 projectState, //allow outside code to mark the project as needing saving
-                new ActionProviderImpl(), //Provides standard actions like Build and Clean
                 new Info(), //Project information implementation
                 new GrailsSources(projectDir),
                 logicalView //Logical view of project implementation
             );
         }
         return lookup;
-    }
-
-    private final class ActionProviderImpl implements ActionProvider {
-        public String[] getSupportedActions() {
-            return new String[0];
-        }
-
-        public void invokeAction(String string, Lookup lookup) throws IllegalArgumentException {
-            //do nothing
-        }
-
-        public boolean isActionEnabled(String string, Lookup lookup) throws IllegalArgumentException {
-            return false;
-        }
     }
 
     private final class Info implements ProjectInformation {

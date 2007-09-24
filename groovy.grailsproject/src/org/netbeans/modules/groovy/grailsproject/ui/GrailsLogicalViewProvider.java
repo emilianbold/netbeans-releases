@@ -39,6 +39,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.GrailsServerCommandAction;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -224,6 +225,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
+            actions.add(new GrailsServerCommandAction());
             actions.add(SystemAction.get(FindAction.class));
             
             return actions.toArray(new Action[actions.size()]);
