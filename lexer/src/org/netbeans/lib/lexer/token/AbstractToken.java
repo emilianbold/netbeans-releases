@@ -78,7 +78,7 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         if (tokenList != null) {
             if (tokenList.getClass() == EmbeddedTokenList.class) {
                 EmbeddedTokenList<?> etl = (EmbeddedTokenList<?>)tokenList;
-                return etl.updateStatus() ? this : null;
+                return etl.embeddingContainer().updateStatus() ? this : null;
             }
             return this;
         } else {

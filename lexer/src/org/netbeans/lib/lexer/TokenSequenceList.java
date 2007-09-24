@@ -38,16 +38,17 @@ import org.netbeans.api.lexer.TokenSequence;
  */
 
 public final class TokenSequenceList extends AbstractList<TokenSequence<? extends TokenId>> {
-
-    public static TokenSequenceList create(
-    TokenHierarchyOperation operation, LanguagePath languagePath, int startOffset, int endOffset) {
-        TokenListList tokenListList = operation.tokenListList(languagePath);
-        return new TokenSequenceList(tokenListList, startOffset, endOffset);
-    }
-
     
+    private TokenHierarchyOperation<?,?> operation;
+
     private final TokenListList tokenListList;
     
+    private final List<TokenSequence<?>> tokenSequences;
+
+    private final int endOffset;
+    
+    private final int expectedModCount;
+
     /**
      * Index of the last item retrieved from tokenListList.
      * It may be equal to Integer.MAX_VALUE when searching thgroughout the token lists
@@ -55,67 +56,91 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
      */
     private int tokenListIndex;
     
-    private final int endOffset;
-    
-    private final List<TokenSequence<?>> tokenSequences;
-
-    private final int expectedModCount;
-
-    public TokenSequenceList(TokenListList tokenListList, int startOffset, int endOffset) {
-        this.tokenListList = tokenListList;
+    public TokenSequenceList(TokenHierarchyOperation<?,?> operation, LanguagePath languagePath,
+    int startOffset, int endOffset) {
+        this.operation = operation;
         this.endOffset = endOffset;
-        this.expectedModCount = tokenListList.operation().modCount();
+        this.expectedModCount = operation.modCount();
 
-        // Possibly skip initial token lists accroding to startOffset
-        int size = tokenListList.size();
-        int high = size - 1;
-        // Find the token list which has the end offset above or equal to the requested startOffset
-        TokenList<?> firstTokenList;
-        if (startOffset > 0) {
-            while (tokenListIndex <= high) {
-                int mid = (tokenListIndex + high) / 2;
-                TokenList<?> tl = tokenListList.get(mid);
-                int tlEndOffset = tl.endOffset();
-                if (tlEndOffset < startOffset) {
-                    tokenListIndex = mid + 1;
-                } else if (tlEndOffset > startOffset) {
-                    high = mid - 1;
-                } else { // tl ends exactly at start offset
-                    tokenListIndex = mid + 1; // take the first above this
-                    break;
+        if (languagePath.size() == 1) { // Is supported too
+            this.tokenListList = null;
+            tokenListIndex = Integer.MAX_VALUE; // Mark no mods to tokenSequences
+            TokenList<?> rootTokenList = operation.validRootTokenList();
+            if (rootTokenList.languagePath() == languagePath) {
+                TokenSequence<?> rootTS = LexerApiPackageAccessor.get().createTokenSequence(
+                            checkWrapTokenList(rootTokenList, startOffset, endOffset));
+                tokenSequences = Collections.<TokenSequence<?>>singletonList(rootTS);
+            } else {
+                tokenSequences = Collections.emptyList();
+            }
+
+        } else { // languagePath.size() >= 2
+            this.tokenListList = operation.tokenListList(languagePath);
+            // Possibly skip initial token lists accroding to startOffset
+            int size = tokenListList.size();
+            int high = size - 1;
+            // Find the token list which has the end offset above or equal to the requested startOffset
+            EmbeddedTokenList<?> firstTokenList;
+            if (startOffset > 0) {
+                while (tokenListIndex <= high) {
+                    int mid = (tokenListIndex + high) / 2;
+                    EmbeddedTokenList<?> etl = tokenListList.get(mid);
+                    // Update end offset before querying
+                    etl.embeddingContainer().updateStatusImpl();
+                    int tlEndOffset = etl.endOffset(); // updateStatusImpl() just called
+                    if (tlEndOffset < startOffset) {
+                        tokenListIndex = mid + 1;
+                    } else if (tlEndOffset > startOffset) {
+                        high = mid - 1;
+                    } else { // tl ends exactly at start offset
+                        tokenListIndex = mid + 1; // take the first above this
+                        break;
+                    }
                 }
-            }
-            // If not found exactly -> take the higher one (index variable)
-            firstTokenList = tokenListList.getOrNull(tokenListIndex);
-            if (tokenListIndex == size) { // Right above the ones that existed at begining of bin search
-                while (firstTokenList != null && firstTokenList.endOffset() < startOffset)
-                    firstTokenList = tokenListList.getOrNull(++tokenListIndex);
+                // If not found exactly -> take the higher one (index variable)
+                firstTokenList = tokenListList.getOrNull(tokenListIndex);
+                if (tokenListIndex == size) { // Right above the ones that existed at begining of bin search
+                    while (firstTokenList != null) {
+                        firstTokenList.embeddingContainer().updateStatusImpl();
+                        if (firstTokenList.endOffset() >= startOffset) { // updateStatusImpl() just called
+                            break;
+                        }
+                        firstTokenList = tokenListList.getOrNull(++tokenListIndex);
+                    }
+                }
+
+            } else { // startOffset == 0
+                firstTokenList = tokenListList.getOrNull(0);
             }
 
-        } else { // startOffset == 0
-            firstTokenList = tokenListList.getOrNull(0);
-        }
-        
-        if (firstTokenList != null) {
-            boolean wrapStart = ((startOffset > 0)
-                    && (firstTokenList.startOffset() < startOffset)
-                    && (startOffset < firstTokenList.endOffset()));
-            boolean wrapEnd = ((endOffset != Integer.MAX_VALUE)
-                    && (firstTokenList.startOffset() < endOffset)
-                    && (endOffset < firstTokenList.endOffset()));
-            if (wrapStart || wrapEnd) // Must create sub sequence
-                firstTokenList = SubSequenceTokenList.create(
-                        firstTokenList, startOffset, endOffset);
-            if (wrapEnd) { // Also this will be the last one list
-                tokenListIndex = Integer.MAX_VALUE;
-            }
-            tokenSequences = new ArrayList<TokenSequence<?>>(4);
-            tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(firstTokenList));
+            if (firstTokenList != null) {
+                firstTokenList.embeddingContainer().updateStatusImpl();
+                tokenSequences = new ArrayList<TokenSequence<?>>(4);
+                tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(
+                        checkWrapTokenList(firstTokenList, startOffset, endOffset)));
 
-        } else {// firstTokenList == null
-            tokenSequences = Collections.emptyList();
-            tokenListIndex = Integer.MAX_VALUE; // No token sequences at all
+            } else {// firstTokenList == null
+                tokenSequences = Collections.emptyList();
+                tokenListIndex = Integer.MAX_VALUE; // No token sequences at all
+            }
         }
+    }
+    
+    private TokenList<?> checkWrapTokenList(TokenList<?> tokenList, int startOffset, int endOffset) {
+        // Expected that updateStatusImpl() was just called
+        boolean wrapStart = ((startOffset > 0)
+                && (tokenList.startOffset() < startOffset)
+                && (startOffset < tokenList.endOffset()));
+        boolean wrapEnd = ((endOffset != Integer.MAX_VALUE)
+                && (tokenList.startOffset() < endOffset)
+                && (endOffset < tokenList.endOffset()));
+        if (wrapStart || wrapEnd) // Must create sub sequence
+            tokenList = SubSequenceTokenList.create(
+                    tokenList, startOffset, endOffset);
+        if (wrapEnd) { // Also this will be the last one list
+            tokenListIndex = Integer.MAX_VALUE;
+        }
+        return tokenList;
     }
     
     @Override
@@ -140,17 +165,19 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
 
     private void findTokenSequenceWithIndex(int index) {
         while (index >= tokenSequences.size() && tokenListIndex != Integer.MAX_VALUE) {
-            TokenList<?> tokenList = tokenListList.getOrNull(++tokenListIndex);
-            if (tokenList != null) {
+            EmbeddedTokenList<?> etl = tokenListList.getOrNull(++tokenListIndex);
+            if (etl != null) {
+                etl.embeddingContainer().updateStatusImpl();
                 boolean wrapEnd = ((endOffset != Integer.MAX_VALUE)
-                        && (tokenList.startOffset() < endOffset)
-                        && (endOffset < tokenList.endOffset()));
+                        && (etl.startOffset() < endOffset)
+                        && (endOffset < etl.endOffset()));
                 if (wrapEnd) {
-                    tokenList = SubSequenceTokenList.create(
-                            tokenList, 0, endOffset);
+                    tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(
+                            SubSequenceTokenList.create(etl, 0, endOffset)));
                     tokenListIndex = Integer.MAX_VALUE;
+                } else {
+                    tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(etl));
                 }
-                tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(tokenList));
             } else { // Singnal no more token sequences
                 tokenListIndex = Integer.MAX_VALUE;
             }
@@ -158,10 +185,10 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
     }
     
     void checkForComodification() {
-        if (expectedModCount != tokenListList.operation().modCount())
+        if (expectedModCount != operation.modCount())
             throw new ConcurrentModificationException(
                     "Caller uses obsolete TokenSequenceList: expectedModCount=" + expectedModCount + // NOI18N
-                    " != modCount=" + tokenListList.operation().modCount()
+                    " != modCount=" + operation.modCount()
             );
     }
 

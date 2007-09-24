@@ -117,6 +117,8 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     
     public void init(Object relexState) {
         laState = (modCount() != -1 || testing) ? LAState.empty() : null;
+
+        embeddingContainer.updateStatusImpl(); // Ensure startOffset() is up-to-date
         // Lex the whole input represented by token at once
         LexerInputOperation<T> lexerInputOperation = createLexerInputOperation(
                 0, startOffset(), relexState);
@@ -220,7 +222,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      */
     public int childTokenOffsetShift(int rawOffset) {
         // Need to make sure that the startOffsetShift is up-to-date
-        updateStatus();
+        embeddingContainer.updateStatus();
         return embeddingContainer.rootTokenOffsetShift() + childTokenRelOffset(rawOffset);
     }
 
@@ -250,10 +252,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     
     public int startOffset() { // used by FlyOffsetGapList
         return embeddingContainer.tokenStartOffset() + embedding.startSkipLength();
-    }
-    
-    public boolean updateStatus() {
-        return embeddingContainer.updateStatus();
     }
     
     public int endOffset() {
@@ -359,7 +357,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         change.setRemovedEndOffset(offset);
 
         // Move and fix the gap according to the performed modification.
-        int startOffset = startOffset();
+        int startOffset = startOffset(); // updateStatus() should already be called
         if (offsetGapStart() != change.offset() - startOffset) {
             // Minimum of the index of the first removed index and original computed index
             moveOffsetGap(change.offset() - startOffset, Math.min(index, change.offsetGapIndex()));

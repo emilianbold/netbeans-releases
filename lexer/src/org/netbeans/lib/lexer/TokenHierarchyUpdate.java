@@ -68,6 +68,7 @@ public final class TokenHierarchyUpdate {
     public void update(IncTokenList<?> incTokenList) {
         incTokenList.incrementModCount();
         // Update top-level token list first
+        // It does not need any updateStatusImpl() since it's only for embedded token lists
         rootChange = updateTokenListByModification(incTokenList, null);
         eventInfo.setTokenChangeInfo(rootChange.tokenChangeInfo());
 
@@ -97,20 +98,17 @@ public final class TokenHierarchyUpdate {
         //    and the update may continue into these joined token lists.
 
         // 3. The algorithm must collect both removed and added token lists
-        //    in the UpdateInfo.
+        //    in the TLLInfo.
         // 4. For a removed token list the updating must check nested embedded token lists
         //    because some embedded tokens of the removed embedded token list might contain
         //    another embedding that might also be maintained as token list list
-        //    and need to be updated. The parent token list lists
+        //    and need to be updated.
+        // 5. The parent token list lists
         //    are always maintained too which simplifies the updating algorithm
         //    and speeds it up because the token list list marks whether it has any children
         //    or not and so the deep traversing only occurs if there are any children present.
-        //    Unlike additions marking the marking of removed tokens lists can nest immediately upon
-        //    discovery of the upper level removed token list.
-        // 5. For additions of embedded token lists the situation is different.
-        //    They must be processed (updated) strictly from top-level down because
-        //    their updating may produce tokens with embeddings that may be part
-        //    of an existing joined token list.
+        // 6. Additions may produce nested additions too so they need to be makred
+        //    similarly to removals.
         if (rootChange.isBoundsChange()) {
             processBoundsChangeEmbeddings(rootChange, null);
         } else {
@@ -149,7 +147,7 @@ public final class TokenHierarchyUpdate {
                 hasChildren = (eventInfo.tokenHierarchyOperation().maxTokenListListPathSize() > 0);
             }
             EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEC;
-            rewrapECToken(ec, change);
+            rewrapECToken(ec, change); // Includes updateStatusImpl()
             EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
             if (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING) {
                 // Check the text length beyond modification => end skip length must not be affected
@@ -185,6 +183,7 @@ public final class TokenHierarchyUpdate {
 
                     } else { // Mod in skip lengths => Remove the etl from chain
                         if (childInfo != NO_INFO) {
+                            // updateStatusImpl() already done in rewrapECToken()
                             childInfo.markRemoved(etl);
                         }
                         etl = etl.nextEmbeddedTokenList();
@@ -231,6 +230,7 @@ public final class TokenHierarchyUpdate {
             Object tokenOrEC = removedTokenList.tokenOrEmbeddingContainer(i);
             if (tokenOrEC.getClass() == EmbeddingContainer.class) {
                 EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEC;
+                ec.updateStatusImpl(); // Update status since markRemoved() will need it
                 EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                 while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING) {
                     TLLInfo info = info(etl.languagePath());
@@ -251,6 +251,8 @@ public final class TokenHierarchyUpdate {
                 TLLInfo info = info(etl.languagePath());
                 if (info != NO_INFO) {
                     // Mark that there was a new embedded token list added
+                    // There should be no updateStatusImpl() necessary since the token lists are new
+                    // and the parent embedding container was surely updated by the updating process.
                     info.markAdded(etl);
                 }
             }
@@ -358,6 +360,9 @@ public final class TokenHierarchyUpdate {
          * Mark the given token list as removed in this token list list.
          * All removed token lists should be marked by their increasing offset
          * so it should be necessary to search for the index just once.
+         * <br/>
+         * It's expected that updateStatusImpl() was already called
+         * on the corresponding embedding container.
          */
         public void markRemoved(TokenList<?> removedTokenList) {
             if (index == -1) {
@@ -377,6 +382,9 @@ public final class TokenHierarchyUpdate {
          * Mark the given token list to be added to this list of token lists.
          * At the end first the token lists marked for removal will be removed
          * and then the token lists marked for addition will be added.
+         * <br/>
+         * It's expected that updateStatusImpl() was already called
+         * on the corresponding embedding container.
          */
         public void markAdded(TokenList<?> addedTokenList) {
             if (added.size() == 0) {
@@ -389,6 +397,13 @@ public final class TokenHierarchyUpdate {
             added.add(addedTokenList);
         }
         
+        /**
+         * Mark that a parent's token list's bounds change need to be propagated
+         * into the given (child) token list.
+         * <br/>
+         * It's expected that updateStatusImpl() was already called
+         * on the corresponding embedding container.
+         */
         public void markBoundsChange(TokenList<?> tokenList) {
             assert (index == -1) : "index=" + index + " != -1"; // Should be the first one
             index = tokenListList.findIndex(tokenList.startOffset());
@@ -469,6 +484,7 @@ public final class TokenHierarchyUpdate {
                     if (tokenListList.hasChildren()) {
                         update.markAddedEmbeddings(tokenList, 0, tokenList.tokenCount());
                     }
+                    // Added token lists should not require updateStatus()
                     update.eventInfo.setMaxAffectedEndOffset(tokenList.endOffset());
                 }
 
@@ -490,6 +506,7 @@ public final class TokenHierarchyUpdate {
                 if (etl.tokenCount() > 0) {
                     // Remember state after the last token of the given section
                     matchState = etl.state(etl.tokenCount() - 1);
+                    // updateStatusImpl() just called
                     TokenListChange<?> chng = updateTokenListAtStart(etl, etl.startOffset(), relexState);
                     update.processNonBoundsChange(chng);
                     // Since the section is non-empty (checked above) there should be >0 tokens

@@ -212,7 +212,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     LanguagePath languagePath, int startOffset, int endOffset) {
         if (languagePath == null)
             throw new IllegalArgumentException("languagePath cannot be null"); // NOI18N
-        return TokenSequenceList.create(operation, languagePath, startOffset, endOffset);
+        return new TokenSequenceList(operation, languagePath, startOffset, endOffset);
     }
 
     /**

@@ -72,7 +72,7 @@ import static org.netbeans.lib.lexer.LexerUtilsConstants.INVALID_STATE;
  * @author Miloslav Metelka
  */
 
-public final class TokenListList extends GapList<TokenList<?>> {
+public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
 
     private final TokenHierarchyOperation operation;
 
@@ -97,23 +97,18 @@ public final class TokenListList extends GapList<TokenList<?>> {
         this.operation = operation;
         this.languagePath = languagePath;
 
-        if (languagePath.size() == 1) { // Either top-level path or something not present
-            if (languagePath == operation.rootTokenList().languagePath()) {
-                add(operation.rootTokenList());
+        // languagePath has size >= 2
+        assert (languagePath.size() >= 2);
+        Language<?> language = languagePath.innerLanguage();
+        if (languagePath.size() > 2) {
+            Object relexState = null;
+            TokenListList parentTokenList = operation.tokenListList(languagePath.parent());
+            for (int parentIndex = 0; parentIndex < parentTokenList.size(); parentIndex++) {
+                TokenList<?> tokenList = parentTokenList.get(parentIndex);
+                relexState = scanTokenList(tokenList, language, relexState);
             }
-
-        } else { // languagePath has size >= 2
-            Language<?> language = languagePath.innerLanguage();
-            if (languagePath.size() > 2) {
-                Object relexState = null;
-                TokenListList parentTokenList = operation.tokenListList(languagePath.parent());
-                for (int parentIndex = 0; parentIndex < parentTokenList.size(); parentIndex++) {
-                    TokenList<?> tokenList = parentTokenList.get(parentIndex);
-                    relexState = scanTokenList(tokenList, language, relexState);
-                }
-            } else { // Parent is root token list
-                scanTokenList(operation.validRootTokenList(), language, null);
-            }
+        } else { // Parent is root token list
+            scanTokenList(operation.validRootTokenList(), language, null);
         }
     }
     
@@ -170,7 +165,7 @@ public final class TokenListList extends GapList<TokenList<?>> {
         // Find the previous non-empty section or non-joining section
         Object relexState = INVALID_STATE;
         for (int i = index - 1; i >= 0 && relexState == INVALID_STATE; i--) {
-            relexState = LexerUtilsConstants.endState((EmbeddedTokenList<?>)get(i));
+            relexState = LexerUtilsConstants.endState(get(i));
         }
         if (relexState == INVALID_STATE) // Start from real begining
             relexState = null;
@@ -180,50 +175,25 @@ public final class TokenListList extends GapList<TokenList<?>> {
     /**
      * Return a valid token list or null if the index is too high.
      */
-    public TokenList<?> getOrNull(int index) {
+    public EmbeddedTokenList<?> getOrNull(int index) {
         return (index < size()) ? get(index) : null;
     }
     
-    private static final TokenList<?>[] EMPTY_TOKEN_LIST_ARRAY = new TokenList<?>[0];
+    private static final EmbeddedTokenList<?>[] EMPTY_TOKEN_LIST_ARRAY = new EmbeddedTokenList<?>[0];
 
-    public TokenList<?>[] replace(int index, int removeCount, List<TokenList<?>> addTokenLists) {
-        TokenList<?>[] removed;
+    public EmbeddedTokenList<?>[] replace(int index, int removeCount, List<? extends TokenList<?>> addTokenLists) {
+        EmbeddedTokenList<?>[] removed;
         if (removeCount > 0) {
-            removed = new TokenList<?>[removeCount];
+            removed = new EmbeddedTokenList<?>[removeCount];
             copyElements(index, index + removeCount, removed, 0);
             remove(index, removeCount);
         } else {
             removed = EMPTY_TOKEN_LIST_ARRAY;
         }
-        addAll(index, addTokenLists);
+        @SuppressWarnings("unchecked")
+        List<EmbeddedTokenList<?>> etlLists = (List<EmbeddedTokenList<?>>)addTokenLists;
+        addAll(index, etlLists);
         return removed;
-    }
-
-    /**
-     * Find the previous sections with at least one token.
-     * <br/>
-     * Force creation of token lists below the offset if they do not exist yet.
-     */
-    public int findPreviousNonEmptySectionIndex(int offset) {
-        int high = size() - 1;
-        int low = 0;
-        while (low <= high) {
-            int mid = (low + high) >> 1;
-            int cmp = get(mid).endOffset() - offset;
-            if (cmp < 0)
-                low = mid + 1;
-            else if (cmp > 0)
-                high = mid - 1;
-            else { // cmp == 0 -> take the previous one
-                high = mid;
-                break;
-            }
-        }
-        // Use 'high' which == low - 1
-        while (high >= 0 && get(high).tokenCount() == 0) {
-            high--; // Skip all empty sections
-        }
-        return high;
     }
 
     void childAdded() {
@@ -243,7 +213,10 @@ public final class TokenListList extends GapList<TokenList<?>> {
         int low = 0;
         while (low <= high) {
             int mid = (low + high) >> 1;
-            int cmp = get(mid).startOffset() - offset;
+            EmbeddedTokenList<?> etl = get(mid);
+            // Ensure that the startOffset() will be updated
+            etl.embeddingContainer().updateStatus();
+            int cmp = etl.startOffset() - offset;
             if (cmp < 0)
                 low = mid + 1;
             else if (cmp > 0)
@@ -269,8 +242,9 @@ public final class TokenListList extends GapList<TokenList<?>> {
         sb.append('\n');
         int digitCount = ArrayUtilities.digitCount(size());
         for (int i = 0; i < size(); i++) {
-            TokenList<?> tokenList = get(i);
+            EmbeddedTokenList<?> tokenList = get(i);
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
+            // Should updateStatus() be called? - better mark that the range is possibly not up-to-date
             sb.append("range:[").append(tokenList.startOffset()).append(",").
                     append(tokenList.endOffset()).append(']');
             sb.append(", IHC=").append(System.identityHashCode(tokenList));

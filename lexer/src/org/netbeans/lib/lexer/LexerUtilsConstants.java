@@ -300,6 +300,7 @@ public final class LexerUtilsConstants {
         TokenList<ET> embeddedTokenList
                 = EmbeddingContainer.embeddedTokenList(tokenList, tokenIndex, embeddedLanguage);
         if (embeddedTokenList != null) {
+            ((EmbeddedTokenList)embeddedTokenList).embeddingContainer().updateStatus();
             TokenList<T> tl = tokenList;
             if (tokenList.getClass() == SubSequenceTokenList.class) {
                 tl = ((SubSequenceTokenList<T>)tokenList).delegate();

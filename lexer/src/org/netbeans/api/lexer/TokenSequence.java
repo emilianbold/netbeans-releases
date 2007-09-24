@@ -20,6 +20,7 @@
 package org.netbeans.api.lexer;
 
 import java.util.ConcurrentModificationException;
+import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.SubSequenceTokenList;
@@ -290,8 +291,8 @@ public final class TokenSequence<T extends TokenId> {
         TokenList<ET> embeddedTokenList = LexerUtilsConstants.embeddedTokenList(
                 tokenList, tokenIndex, embeddedLanguage);
         return (embeddedTokenList != null)
-            ? new TokenSequence<ET>(embeddedTokenList)
-            : null;
+                ? new TokenSequence<ET>(embeddedTokenList)
+                : null;
     }
 
     /**
