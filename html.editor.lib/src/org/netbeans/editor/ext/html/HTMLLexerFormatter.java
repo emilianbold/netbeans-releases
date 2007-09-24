@@ -23,13 +23,12 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
+import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter.JoinedTokenSequence;
 
 /**
  * A lexer-based formatter for html files.
@@ -50,93 +49,93 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
 	return (syntax instanceof HTMLSyntax);
     }
     
-    @Override protected int getTagEndingAtPosition(TokenSequence tokenSequence, int position) throws BadLocationException{
+    @Override protected int getTagEndingAtPosition(JoinedTokenSequence JoinedTokenSequence, int position) throws BadLocationException{
 	if (position >= 0) {
-            int originalOffset = tokenSequence.offset();
-            tokenSequence.move(position);
-            tokenSequence.moveNext();
-	    Token token = tokenSequence.token();
+            int originalOffset = JoinedTokenSequence.offset();
+            JoinedTokenSequence.move(position);
+            JoinedTokenSequence.moveNext();
+	    Token token = JoinedTokenSequence.token();
                     
 	    if (token.id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
 		    !token.text().toString().endsWith("/>")){ //NOI18N
 
-                while (tokenSequence.movePrevious()){
-                    int tokenOffset = tokenSequence.offset();
+                while (JoinedTokenSequence.movePrevious()){
+                    int tokenOffset = JoinedTokenSequence.offset();
                     
-                    if (isOpeningTag(tokenSequence, tokenOffset) 
-                            || isClosingTag(tokenSequence, tokenOffset)){
-                        int r = tokenSequence.offset();
-                        tokenSequence.move(originalOffset);
-                        tokenSequence.moveNext();
+                    if (isOpeningTag(JoinedTokenSequence, tokenOffset) 
+                            || isClosingTag(JoinedTokenSequence, tokenOffset)){
+                        int r = JoinedTokenSequence.offset();
+                        JoinedTokenSequence.move(originalOffset);
+                        JoinedTokenSequence.moveNext();
                         return r;
                     }
                 }
 	    }
             
-            tokenSequence.move(originalOffset);
-            tokenSequence.moveNext();
+            JoinedTokenSequence.move(originalOffset);
+            JoinedTokenSequence.moveNext();
 	}
 	return -1;
     }
     
-    @Override protected int getTagEndOffset(TokenSequence tokenSequence, int tagStartOffset){
-        int originalOffset = tokenSequence.offset();
-        tokenSequence.move(tagStartOffset);
-        tokenSequence.moveNext();
+    @Override protected int getTagEndOffset(JoinedTokenSequence JoinedTokenSequence, int tagStartOffset){
+        int originalOffset = JoinedTokenSequence.offset();
+        JoinedTokenSequence.move(tagStartOffset);
+        JoinedTokenSequence.moveNext();
         boolean thereAreMoreTokens = true;
         
-        while (thereAreMoreTokens && tokenSequence.token().id() != HTMLTokenId.TAG_CLOSE_SYMBOL){
-            thereAreMoreTokens &= tokenSequence.moveNext();
+        while (thereAreMoreTokens && JoinedTokenSequence.token().id() != HTMLTokenId.TAG_CLOSE_SYMBOL){
+            thereAreMoreTokens &= JoinedTokenSequence.moveNext();
         }
         
-        int r = tokenSequence.offset();
-        tokenSequence.move(originalOffset);
-        tokenSequence.moveNext();
+        int r = JoinedTokenSequence.offset();
+        JoinedTokenSequence.move(originalOffset);
+        JoinedTokenSequence.moveNext();
         return thereAreMoreTokens ? r : -1;
     }
     
-    @Override protected boolean isJustBeforeClosingTag(TokenSequence tokenSequence, int tagTokenOffset) throws BadLocationException{
+    @Override protected boolean isJustBeforeClosingTag(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset) throws BadLocationException{
         // a workaround for the difference with XML syntax support
-        return super.isJustBeforeClosingTag(tokenSequence, tagTokenOffset + "</".length()); //NOI18N
+        return super.isJustBeforeClosingTag(JoinedTokenSequence, tagTokenOffset + "</".length()); //NOI18N
     }
     
-    @Override protected boolean isClosingTag(TokenSequence tokenSequence, int tagTokenOffset){
-        Token token = getTokenAtOffset(tokenSequence, tagTokenOffset);
+    @Override protected boolean isClosingTag(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset){
+        Token token = getTokenAtOffset(JoinedTokenSequence, tagTokenOffset);
 	return token != null && token.id() == HTMLTokenId.TAG_CLOSE;
     }
     
-    @Override protected boolean isOpeningTag(TokenSequence tokenSequence, int tagTokenOffset){
-        Token token = getTokenAtOffset(tokenSequence, tagTokenOffset);
+    @Override protected boolean isOpeningTag(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset){
+        Token token = getTokenAtOffset(JoinedTokenSequence, tagTokenOffset);
 	return token != null && token.id() == HTMLTokenId.TAG_OPEN;
     }
     
-    @Override protected String extractTagName(TokenSequence tokenSequence, int tagTokenOffset){
-	return getTokenAtOffset(tokenSequence, tagTokenOffset).text().toString().trim();
+    @Override protected String extractTagName(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset){
+	return getTokenAtOffset(JoinedTokenSequence, tagTokenOffset).text().toString().trim();
     }
     
     @Override protected boolean areTagNamesEqual(String tagName1, String tagName2){
 	return tagName1.equalsIgnoreCase(tagName2);
     }
     
-    @Override protected int getOpeningSymbolOffset(TokenSequence tokenSequence, int tagTokenOffset){
-	int originalOffset = tokenSequence.offset();
-        tokenSequence.move(tagTokenOffset);
+    @Override protected int getOpeningSymbolOffset(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset){
+	int originalOffset = JoinedTokenSequence.offset();
+        JoinedTokenSequence.move(tagTokenOffset);
         boolean thereAreMoreTokens = true;
 	
 	do{
-	    thereAreMoreTokens = tokenSequence.movePrevious();
+	    thereAreMoreTokens = JoinedTokenSequence.movePrevious();
 	}
-	while(thereAreMoreTokens && tokenSequence.token().id() != HTMLTokenId.TAG_OPEN_SYMBOL);
+	while(thereAreMoreTokens && JoinedTokenSequence.token().id() != HTMLTokenId.TAG_OPEN_SYMBOL);
 	
 	if (thereAreMoreTokens){
-            int r = tokenSequence.offset();
-            tokenSequence.move(originalOffset);
-            tokenSequence.moveNext();
+            int r = JoinedTokenSequence.offset();
+            JoinedTokenSequence.move(originalOffset);
+            JoinedTokenSequence.moveNext();
 	    return r;
 	}
 	
-        tokenSequence.move(originalOffset);
-        tokenSequence.moveNext();
+        JoinedTokenSequence.move(originalOffset);
+        JoinedTokenSequence.moveNext();
 	return -1;
     }
     
@@ -159,8 +158,12 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
 	return !elem.isEmpty(); // close tag unless it is known to be empty
     }
     
-    @Override protected boolean isUnformattableToken(TokenSequence tokenSequence, int tagTokenOffset) {
-	Token token = getTokenAtOffset(tokenSequence, tagTokenOffset);
+    @Override protected boolean isUnformattableToken(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset) {
+	Token token = getTokenAtOffset(JoinedTokenSequence, tagTokenOffset);
+        
+        if (token == null){
+            System.err.println(":-O!!!");
+        }
         
 	if (token.id() == HTMLTokenId.BLOCK_COMMENT){
 	    return true;

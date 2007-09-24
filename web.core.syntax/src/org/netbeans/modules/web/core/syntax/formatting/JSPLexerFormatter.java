@@ -23,10 +23,10 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
+import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter.JoinedTokenSequence;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiSyntax;
 
 /**
@@ -47,7 +47,7 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
     }
 
     @Override
-    protected int getTagEndingAtPosition(TokenSequence tokenSequence, int position) throws BadLocationException {
+    protected int getTagEndingAtPosition(JoinedTokenSequence tokenSequence, int position) throws BadLocationException {
         if (position >= 0) {
             int originalOffset = tokenSequence.offset();
             tokenSequence.move(position);
@@ -70,7 +70,7 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
     }
     
     @Override
-    protected int getTagEndOffset(TokenSequence tokenSequence, int tagStartOffset) {
+    protected int getTagEndOffset(JoinedTokenSequence tokenSequence, int tagStartOffset) {
         int originalOffset = tokenSequence.offset();
         tokenSequence.move(tagStartOffset);
         tokenSequence.moveNext();
@@ -98,25 +98,25 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
     }
 
     @Override
-    protected boolean isJustBeforeClosingTag(TokenSequence tokenSequence, int tagTokenOffset) throws BadLocationException {
+    protected boolean isJustBeforeClosingTag(JoinedTokenSequence tokenSequence, int tagTokenOffset) throws BadLocationException {
         // a workaround for the difference with XML syntax support
         return super.isJustBeforeClosingTag(tokenSequence, tagTokenOffset + "</".length()); //NOI18N
     }
 
     @Override
-    protected boolean isClosingTag(TokenSequence tokenSequence, int tagOffset) {
+    protected boolean isClosingTag(JoinedTokenSequence tokenSequence, int tagOffset) {
         Token token = getTokenAtOffset(tokenSequence, tagOffset);
         return token != null && token.id() == JspTokenId.ENDTAG;
     }
 
     @Override
-    protected boolean isOpeningTag(TokenSequence tokenSequence, int tagOffset) {
+    protected boolean isOpeningTag(JoinedTokenSequence tokenSequence, int tagOffset) {
         Token token = getTokenAtOffset(tokenSequence, tagOffset);
         return token != null && token.id() == JspTokenId.TAG;
     }
 
     @Override
-    protected String extractTagName(TokenSequence tokenSequence, int tagOffset) {
+    protected String extractTagName(JoinedTokenSequence tokenSequence, int tagOffset) {
         Token token = getTokenAtOffset(tokenSequence, tagOffset);
         String tokenTxt = token.text().toString();
         
@@ -137,7 +137,7 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
     }
 
     @Override
-    protected int getOpeningSymbolOffset(TokenSequence tokenSequence, int tagTokenOffset) {
+    protected int getOpeningSymbolOffset(JoinedTokenSequence tokenSequence, int tagTokenOffset) {
         int originalOffset = tokenSequence.offset();
         tokenSequence.move(tagTokenOffset);
         boolean thereAreMoreTokens = true;
@@ -163,8 +163,12 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
     }
 
     @Override
-    protected boolean isUnformattableToken(TokenSequence tokenSequence, int tagTokenOffset) {
+    protected boolean isUnformattableToken(JoinedTokenSequence tokenSequence, int tagTokenOffset) {
         Token token = getTokenAtOffset(tokenSequence, tagTokenOffset);
+        
+        if (token == null){
+            System.err.println("This should not happen!!");
+        }
 
         if (token.id() == JspTokenId.COMMENT) {
             return true;
