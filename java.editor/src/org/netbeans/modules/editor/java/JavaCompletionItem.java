@@ -770,10 +770,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                         final Position offPosition = doc.createPosition(offset);
                                         SwingUtilities.invokeLater(new Runnable() {
                                             public void run() {
-                                                if (item != null)
+                                                if (item != null) {
                                                     item.substituteText(c, offPosition.getOffset(), c.getSelectionEnd() - offPosition.getOffset(), text.toString());
-                                                else
-                                                    Completion.get().showCompletion();
+                                                } else {
+                                                    //Temporary ugly solution
+                                                    SwingUtilities.invokeLater(new Runnable() {
+                                                        public void run() {
+                                                            Completion.get().showCompletion();
+                                                        }
+                                                    });
+                                                }
                                             }
                                         });
                                     }

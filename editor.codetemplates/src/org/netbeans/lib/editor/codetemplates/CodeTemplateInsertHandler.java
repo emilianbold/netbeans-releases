@@ -377,9 +377,14 @@ implements DocumentListener, KeyListener {
             forceCaretPosition();
             release();
             if (completionInvoke) {
+                //Temporary ugly solution
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        Completion.get().showCompletion();
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                Completion.get().showCompletion();
+                            }
+                        });
                     }
                 });
             }

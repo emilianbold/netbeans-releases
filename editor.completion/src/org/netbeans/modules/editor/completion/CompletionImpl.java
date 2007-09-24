@@ -312,8 +312,12 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 hideCompletion(false);
             }
 
-            completionRefresh();
-            toolTipRefresh();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    completionRefresh();
+                    toolTipRefresh();
+                }
+            });
         }
     }
 
