@@ -328,14 +328,13 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
                         model.setCloseWindowAction(close);
                         final Node node = new HierarchyNode(csmClass,model, null);
                         children.add(new Node[]{node});
+                        try {
+                            getExplorerManager().setSelectedNodes(new Node[]{node});
+                        } catch (PropertyVetoException ex) {
+                        }
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                //((BeanTreeView) hierarchyPane).expandAll();
                                 ((BeanTreeView) hierarchyPane).expandNode(node);
-                                try {
-                                    getExplorerManager().setSelectedNodes(new Node[]{node});
-                                } catch (PropertyVetoException ex) {
-                                }
                             }
                         });
                     }

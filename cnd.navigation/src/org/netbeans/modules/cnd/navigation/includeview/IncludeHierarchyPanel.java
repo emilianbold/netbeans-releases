@@ -332,15 +332,15 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
                         children.remove(children.getNodes());
                         IncludedModel model = HierarchyFactory.getInstance().buildIncludeHierarchyModel(csmFile, actions, whoIncludes, plain, recursive);
                         model.setCloseWindowAction(close);
-                        final Node node = new IncludeNode(csmFile,model, null);
+                        final Node node = new IncludeNode(csmFile, model, null);
                         children.add(new Node[]{node});
+                        try {
+                            getExplorerManager().setSelectedNodes(new Node[]{node});
+                        } catch (PropertyVetoException ex) {
+                        }
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 ((BeanTreeView) hierarchyPane).expandNode(node);
-                                try {
-                                    getExplorerManager().setSelectedNodes(new Node[]{node});
-                                } catch (PropertyVetoException ex) {
-                                }
                             }
                         });
                     }
