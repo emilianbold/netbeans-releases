@@ -163,11 +163,11 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         addRemovePopUpMenu(aListener);
         
         // Show properties
-        popUpMenu.addSeparator();
+        //popUpMenu.addSeparator();
         String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
         propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
         propertiesItem.addActionListener(aListener);
-        popUpMenu.add(propertiesItem);
+        //popUpMenu.add(propertiesItem);
         
         // Auto map action
         autoMapItem = new JMenuItem("Auto Map", new ImageIcon(autoMapImgUrl));
@@ -191,7 +191,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         public void actionPerformed(ActionEvent e) {
             Object source = e.getSource();
             if (source == propertiesItem) {
-                //   Properties_ActionPerformed(e);
+                   Properties_ActionPerformed(e);
             } else if (source == showSqlItem) {
                 ShowSql_ActionPerformed(e);
             } else if (source == showDataItem) {
