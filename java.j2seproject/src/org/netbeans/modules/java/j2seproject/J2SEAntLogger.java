@@ -66,7 +66,7 @@ public final class J2SEAntLogger extends AntLogger {
             File parent = script.getParentFile();
             if (parent != null && parent.getName().equals("nbproject")) { // NOI18N
                 File parent2 = parent.getParentFile();
-                if (parent2 != null) {
+                if (parent2 != null && parent2.canRead()) {
                     return isJ2SEProject(parent2);
                 }
             }
@@ -75,7 +75,7 @@ public final class J2SEAntLogger extends AntLogger {
         // name build.xml and we are interested in those messages too
         else if (script.getName().equals("build.xml")) { // NOI18N
             File parent = script.getParentFile();
-            if (parent != null) {
+            if (parent != null && parent.canRead()) {
                 return isJ2SEProject(parent);
             }
         }
