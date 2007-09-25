@@ -74,7 +74,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -206,11 +205,12 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         RailsProjectProperties.JAVAC_TEST_CLASSPATH,
     };
     
-    private static Image brokenProjectBadge = Utilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/resources/brokenProjectBadge.gif", true);
+//    private static Image brokenProjectBadge = Utilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/resources/brokenProjectBadge.gif", true);
     
     /** Filter node containin additional features for the Ruby physical
      */
     private final class RailsLogicalViewRootNode extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
+        
         private Set files;
         private Map fileSystemListeners;
         private RequestProcessor.Task task;
@@ -491,7 +491,10 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.customizeProjectAction());
             
             return (Action[]) actions.toArray(new Action[actions.size()]);
-            
+        }
+
+        public @Override String toString() {
+            return super.toString() + "[project=" + project + "]"; // NOI18N
         }
     }
 }
