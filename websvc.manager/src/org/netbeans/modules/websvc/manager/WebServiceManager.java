@@ -475,7 +475,7 @@ public final class WebServiceManager {
                     List<WebServiceData> wsDataList = listModel.getWebServiceSet();
                     for (WebServiceData data : wsDataList) {
                         if (data.getName() == null) continue;
-                        if (data.getName().equals(svc.getName())) {
+                        if (data.getName().equals(svc.getName()) && data != webServiceData) {
                             String message = NbBundle.getMessage(WebServiceManager.class, "WS_ALREADY_EXISTS_ERROR") + " " + svc.getName();
                             NotifyDescriptor d = new NotifyDescriptor.Message(message);
                             DialogDisplayer.getDefault().notify(d);
