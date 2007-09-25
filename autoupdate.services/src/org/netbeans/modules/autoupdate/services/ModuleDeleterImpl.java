@@ -119,7 +119,7 @@ public final class ModuleDeleterImpl  {
         }
         
         if (handle != null) {
-            handle.switchToDeterminate (modules.size() + 1);
+            handle.switchToDeterminate (modules.size () * 2 + 1);
         }
 
         Collection<File> configFiles = new HashSet<File> ();
