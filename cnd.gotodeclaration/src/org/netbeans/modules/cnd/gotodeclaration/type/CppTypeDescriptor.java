@@ -45,13 +45,9 @@ class CppTypeDescriptor extends TypeDescriptor {
     private String typeName;
     private CsmDeclaration.Kind kind;
     private int modifiers;
-    private boolean isArtificial = true;
-    private String projectName = "";
+    private CsmProject project; 
     private String contextName;
 
-    private static Icon projectIcon = new ImageIcon(Utilities.loadImage(CsmImageLoader.PROJECT));
-    private static Icon emptyIcon = new EmptyIcon(16);
-    
     private static String contextNameFormat = ' ' + NbBundle.getMessage(CppTypeDescriptor.class, "CONTEXT_NAME_FORMAT");
     private static String typeNameFormat = ' ' + NbBundle.getMessage(CppTypeDescriptor.class, "TYPE_NAME_FORMAT");
     
@@ -63,9 +59,7 @@ class CppTypeDescriptor extends TypeDescriptor {
 	if( CsmKindUtilities.isOffsetable(classifier) ) {
             CsmFile file = ((CsmOffsetable) classifier).getContainingFile();
 	    if( file != null ) {
-                CsmProject project = file.getProject();
-		projectName = project.getName();
-		isArtificial = project.isArtificial();
+                project = file.getProject();
 	    }
 	}
 	simpleName = classifier.getName();
@@ -107,11 +101,11 @@ class CppTypeDescriptor extends TypeDescriptor {
     }
 
     public String getProjectName() {
-        return projectName;
+        return project.getName();
     }
 
     public Icon getProjectIcon() {
-	return isArtificial ? emptyIcon : projectIcon;
+	return CsmImageLoader.getIcon(project);
     }
 
     public FileObject getFileObject() {

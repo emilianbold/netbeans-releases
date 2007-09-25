@@ -35,9 +35,6 @@ import org.openide.util.Utilities;
  */
 public abstract class BaseElementDescriptor implements ElementDescriptor {
 
-    private static Icon projectIcon = new ImageIcon(Utilities.loadImage(CsmImageLoader.PROJECT));
-    private static Icon emptyIcon = new EmptyIcon(16);
-    
     private static final String contextNameFormat = ' ' + NbBundle.getMessage(BaseProvider.class, "CONTEXT_NAME_FORMAT");
     
     protected abstract CsmOffsetable getElement();
@@ -64,8 +61,7 @@ public abstract class BaseElementDescriptor implements ElementDescriptor {
     }
     
     public Icon getProjectIcon() {
-	CsmProject project = getProject();
-	return project.isArtificial() ? emptyIcon : projectIcon;
+        return CsmImageLoader.getIcon(getProject());
     }
 
     public String getProjectName() {
