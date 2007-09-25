@@ -30,12 +30,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 public final class PluginManagerAction extends CallableSystemAction {
+    private static PluginManagerUI pluginManagerUI = null;
     
     public void performAction () {
         JButton close = new JButton ();
         close.setDefaultCapable(false);
         Mnemonics.setLocalizedText (close,NbBundle.getMessage (PluginManagerAction.class, "PluginManager_CloseButton_Name"));
-        PluginManagerUI pluginManagerUI = new PluginManagerUI (close);
+        pluginManagerUI = new PluginManagerUI (close);
         DialogDescriptor dd = new DialogDescriptor (
                                     pluginManagerUI,
                                     NbBundle.getMessage (PluginManagerAction.class, "PluginManager_Panel_Name"),
@@ -49,12 +50,14 @@ public final class PluginManagerAction extends CallableSystemAction {
         
         Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
         d.setVisible (true);
+        pluginManagerUI = null;
     }
     
     public String getName () {
         return NbBundle.getMessage (PluginManagerAction.class, "PluginManagerAction_Name");
     }
     
+    @Override
     protected void initialize () {
         super.initialize ();
         putValue ("noIconInMenu", Boolean.TRUE); // NOI18N
@@ -64,8 +67,13 @@ public final class PluginManagerAction extends CallableSystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous () {
         return false;
+    }
+    
+    public static PluginManagerUI getPluginManagerUI () {
+        return pluginManagerUI;
     }
     
 }

@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -63,6 +64,10 @@ public class AutoupdateCheckScheduler {
         for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true)) {
             try {
                 p.refresh (null, true);
+                PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
+                if (pluginManagerUI != null) {
+                    pluginManagerUI.updateUnitsChanged();
+                }
             } catch (IOException ioe) {
                 err.log (Level.INFO, ioe.getMessage (), ioe);
             }
