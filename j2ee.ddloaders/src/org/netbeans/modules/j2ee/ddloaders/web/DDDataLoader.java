@@ -38,18 +38,21 @@ public class DDDataLoader extends UniFileLoader {
     private static final String REQUIRED_MIME_1 = "text/x-dd-servlet2.4"; // NOI18N
     private static final String REQUIRED_MIME_2 = "text/x-dd-servlet2.3"; // NOI18N
     private static final String REQUIRED_MIME_3 = "text/x-dd-servlet2.2"; // NOI18N
-    private static final String REQUIRED_MIME_4 = "text/x-dd-servlet2.5"; // NOI18N
 
     public DDDataLoader () {
         super ("org.netbeans.modules.j2ee.ddloaders.web.DDDataObject");  // NOI18N
     }
     
-    protected void initialize () {
-        super.initialize ();
-        getExtensions().addMimeType(REQUIRED_MIME_1);
-        getExtensions().addMimeType(REQUIRED_MIME_2);
-        getExtensions().addMimeType(REQUIRED_MIME_3);
-        getExtensions().addMimeType(REQUIRED_MIME_4);
+    public DDDataLoader(String name) {
+        super(name);  // NOI18N
+    }
+    
+    @Override
+    protected void initialize() {
+        super.initialize();
+        for (String supportedMime : getSupportedMimeTypes()){
+            getExtensions().addMimeType(supportedMime);
+        }
     }
     
     protected String defaultDisplayName () {
@@ -60,7 +63,14 @@ public class DDDataLoader extends UniFileLoader {
         return "Loaders/text/x-dd/Actions/"; // NOI18N
     }
 
-    protected MultiDataObject createMultiObject (FileObject primaryFile)
+    /**
+     *@return the MIME types that this loader supports.
+     */
+    protected String[] getSupportedMimeTypes(){
+        return new String[]{REQUIRED_MIME_1, REQUIRED_MIME_2, REQUIRED_MIME_3};
+    }
+
+    protected MultiDataObject createMultiObject(FileObject primaryFile)
         throws DataObjectExistsException, IOException {
             
         return new DDDataObject (primaryFile, this);
