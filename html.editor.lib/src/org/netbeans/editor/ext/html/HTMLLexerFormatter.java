@@ -36,6 +36,8 @@ import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerForm
  */
 
 public class HTMLLexerFormatter extends TagBasedLexerFormatter {
+    // Setting this flag in document property will make the HTML formatter act 
+    // as the top-level language formatter. It is useful for Ruby and PHP editors.
     public static final String HTML_FORMATTER_ACTS_ON_TOP_LEVEL = "HTML_FORMATTER_ACTS_ON_TOP_LEVEL"; //NOI18N
     private static final String[] UNFORMATTABLE_TAGS = new String[]{"pre", "script", "code", "textarea"}; //NOI18N
     private final LanguagePath languagePath;
