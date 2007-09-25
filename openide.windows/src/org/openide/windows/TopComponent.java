@@ -647,10 +647,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @deprecated Use {@link #requestActive} instead to make TopComponent active
      * in window system not only focused. This method should have been preserved
      * for focus management only but not activation of <code>TopComponent</code> inside
-     * window system.  The default implementation does nothing, and does not call
-     * super.requestFocus().
+     * window system.
      */
     @Deprecated
+    @Override
     public void requestFocus() {
         if (isFocusable()) {
             //Issue 44304 - output window is focusable when empty, need some
@@ -669,9 +669,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @deprecated Use {@link #requestActive} instead to make TopComponent active
      * in window system not only focused. This method should have been preserved
      * for focus management only but not activation of <code>TopComponent</code> inside
-     * window system. The default implementation does nothing, and does not call
-     * super.requestFocusInWindow(). */
+     * window system.
+     */
     @Deprecated
+    @Override
     public boolean requestFocusInWindow() {
         if (isFocusable()) {
             return super.requestFocusInWindow();
