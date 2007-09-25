@@ -136,12 +136,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     }
     
     private List joinLookups(DebuggerEngine e, DebuggerManager dm, Class service) {
-        return new JoinedLookupsList(e, dm, service);
-        /*List es = e.lookup (viewType, service);
+        List es = e.lookup (viewType, service);
         List ms = dm.lookup(viewType, service);
         ms.removeAll(es);
         es.addAll(ms);
-        return es;*/
+        return es;
     }
     
     private synchronized void updateModel () {
@@ -281,62 +280,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         
         public void addModelListener (ModelListener l) {}
         public void removeModelListener (ModelListener l) {}
-    }
-    
-    private class JoinedLookupsList extends ArrayList implements Customizer, PropertyChangeListener {
-        
-        private List es;
-        private List ms;
-        private List propertyChangeListeners;
-        
-        public JoinedLookupsList(DebuggerEngine e, DebuggerManager dm, Class service) {
-            es = e.lookup (viewType, service);
-            ms = dm.lookup(viewType, service);
-            setUp();
-        }
-        
-        private void setUp() {
-            addAll(es);
-            for (Iterator it = ms.iterator(); it.hasNext(); ) {
-                Object s = it.next();
-                if (!contains(s)) {
-                    add(s);
-                }
-            }
-        }
-
-        public void setObject(Object bean) {
-            ((Customizer) ms).setObject(bean);
-        }
-
-        public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-            if (propertyChangeListeners == null) {
-                propertyChangeListeners = new ArrayList();
-                ((Customizer) ms).addPropertyChangeListener(this);
-            }
-            propertyChangeListeners.add(listener);
-        }
-
-        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-            propertyChangeListeners.remove(listener);
-        }
-
-        public void propertyChange(PropertyChangeEvent e) {
-            List listeners;
-            synchronized (this) {
-                clear();
-                setUp();
-                if (propertyChangeListeners == null) {
-                    return ;
-                }
-                listeners = new ArrayList(propertyChangeListeners);
-            }
-            PropertyChangeEvent evt = new PropertyChangeEvent(this, "content", null, null);
-            for (Iterator it = listeners.iterator(); it.hasNext(); ) {
-                ((PropertyChangeListener) it.next()).propertyChange(evt);
-            }
-        }
-        
     }
     
     private class ModelsChangeRefresher implements PropertyChangeListener, Runnable {

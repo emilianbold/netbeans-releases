@@ -136,6 +136,7 @@ abstract class Lookup implements ContextProvider {
             private String folder;
             private Class service;
             private List<PropertyChangeListener> propertyChangeListeners;
+            private Customizer sublist1, sublist2;
             
             public CompoundLookupList(String folder, Class service) {
                 super(null);
@@ -146,20 +147,24 @@ abstract class Lookup implements ContextProvider {
             
             private synchronized void setUp() {
                 clear();
-                addAll (l1.lookup (folder, service));
-                addAll (l2.lookup (folder, service));
+                List list1 = l1.lookup (folder, service);
+                List list2 = l2.lookup (folder, service);
+                addAll (list1);
+                addAll (list2);
+                sublist1 = (list1 instanceof Customizer) ? (Customizer) list1 : null;
+                sublist2 = (list2 instanceof Customizer) ? (Customizer) list2 : null;
             }
 
-            public void setObject(Object bean) {
-                ((Customizer) l1).setObject(bean);
-                ((Customizer) l2).setObject(bean);
+            public synchronized void setObject(Object bean) {
+                if (sublist1 != null) sublist1.setObject(bean);
+                if (sublist2 != null) sublist2.setObject(bean);
             }
 
             public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
                 if (propertyChangeListeners == null) {
                     propertyChangeListeners = new ArrayList<PropertyChangeListener>();
-                    ((Customizer) l1).addPropertyChangeListener(this);
-                    ((Customizer) l2).addPropertyChangeListener(this);
+                    if (sublist1 != null) sublist1.addPropertyChangeListener(this);
+                    if (sublist2 != null) sublist2.addPropertyChangeListener(this);
                 }
                 propertyChangeListeners.add(listener);
             }
@@ -673,39 +678,44 @@ abstract class Lookup implements ContextProvider {
         public boolean addAll(Collection c) {
             if (c instanceof LookupList) {
                 LookupList ll = (LookupList) c;
-                Set<String> newHiddenClassNames = ll.hiddenClassNames;
-                if (newHiddenClassNames != null) {
-                    // Check the instances we have and remove the newly hidden ones:
-                    for (Iterator it = newHiddenClassNames.iterator(); it.hasNext(); ) {
-                        String className = (String) it.next();
-                        if (instanceClassNames.containsValue(className)) {
-                            for (Iterator ii = instanceClassNames.keySet().iterator(); it.hasNext(); ) {
-                                Object instance = ii.next();
-                                if (className.equals(instanceClassNames.get(instance))) {
-                                    remove(instance);
-                                    instanceClassNames.remove(instance);
-                                    break;
+                synchronized (ll) {
+                synchronized (this) {
+                    Set<String> newHiddenClassNames = ll.hiddenClassNames;
+                    if (newHiddenClassNames != null) {
+                        //System.err.println("\nLookupList.addAll("+c+"), hiddenClassNames = "+hiddenClassNames+" + "+newHiddenClassNames);
+                        // Check the instances we have and remove the newly hidden ones:
+                        for (Iterator it = newHiddenClassNames.iterator(); it.hasNext(); ) {
+                            String className = (String) it.next();
+                            if (instanceClassNames.containsValue(className)) {
+                                for (Iterator ii = instanceClassNames.keySet().iterator(); it.hasNext(); ) {
+                                    Object instance = ii.next();
+                                    if (className.equals(instanceClassNames.get(instance))) {
+                                        remove(instance);
+                                        instanceClassNames.remove(instance);
+                                        break;
+                                    }
                                 }
                             }
                         }
+                        if (hiddenClassNames != null) {
+                            hiddenClassNames.addAll(newHiddenClassNames);
+                        } else {
+                            hiddenClassNames = newHiddenClassNames;
+                        }
                     }
-                    if (hiddenClassNames != null) {
-                        hiddenClassNames.addAll(newHiddenClassNames);
-                    } else {
-                        hiddenClassNames = newHiddenClassNames;
+                    ensureCapacity(size() + ll.size());
+                    boolean addedAnything = false;
+                    for (Iterator it = ll.iterator(); it.hasNext(); ) {
+                        Object instance = it.next();
+                        String className = ll.instanceClassNames.get(instance);
+                        if (hiddenClassNames == null || !hiddenClassNames.contains(className)) {
+                            add(instance, className);
+                            addedAnything = true;
+                        }
                     }
+                    return addedAnything;
                 }
-                ensureCapacity(size() + ll.size());
-                boolean addedAnything = false;
-                for (Iterator it = ll.iterator(); it.hasNext(); ) {
-                    Object instance = it.next();
-                    String className = ll.instanceClassNames.get(instance);
-                    if (hiddenClassNames == null || !hiddenClassNames.contains(className)) {
-                        add(instance, className);
-                        addedAnything = true;
-                    }
                 }
-                return addedAnything;
             } else {
                 return super.addAll(c);
             }
