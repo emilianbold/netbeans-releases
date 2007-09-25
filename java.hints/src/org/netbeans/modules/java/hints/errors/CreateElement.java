@@ -210,9 +210,9 @@ public final class CreateElement implements ErrorRule<Void> {
             
             wasMemberSelect = true;
         } else {
-	    
-	    if(e.getEnclosingElement().getKind() == ElementKind.ANNOTATION_TYPE) //unresolved element inside annot.
-			target = (TypeElement) e.getEnclosingElement();
+	    Element enclosingElement = e.getEnclosingElement();
+	    if(enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) //unresolved element inside annot.
+			target = (TypeElement) enclosingElement;
 	    else
 	    
 		if (errorPath.getLeaf().getKind() == Kind.IDENTIFIER) {
