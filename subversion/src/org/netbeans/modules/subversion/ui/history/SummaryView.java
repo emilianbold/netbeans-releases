@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -227,19 +226,38 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         
         String previousRevision = null;
         RepositoryRevision container = null;
-        final RepositoryRevision.Event drev;
+        final RepositoryRevision.Event[] drev;
 
         Object revCon = dispResults.get(selection[0]);
         final boolean revisionSelected;
-
+        final boolean oneRevisionMultiselected;
+        final boolean noExDeletedExistingFiles;
+        
         if (revCon instanceof RepositoryRevision) {
             revisionSelected = true;
             container = (RepositoryRevision) dispResults.get(selection[0]);
-            drev = null;
+            drev = new RepositoryRevision.Event[0];
+            oneRevisionMultiselected = true;
+            noExDeletedExistingFiles = true;
         } else {
             revisionSelected = false;
-            drev = (RepositoryRevision.Event) dispResults.get(selection[0]);
-            container = drev.getLogInfoHeader();
+            drev = new RepositoryRevision.Event[selection.length];
+            boolean moreRevisions = false;
+            boolean deletedFile = false;
+            for(int i = 0; i < selection.length; i++) {
+                drev[i] = (RepositoryRevision.Event) dispResults.get(selection[i]);
+                if(!moreRevisions && i > 0 && 
+                   drev[0].getLogInfoHeader().getLog().getRevision().getNumber() != drev[i].getLogInfoHeader().getLog().getRevision().getNumber()) 
+                {
+                    moreRevisions = true;
+                }                
+                if(drev[i].getFile().exists() && drev[i].getChangedPath().getAction() == 'D') {
+                    deletedFile = true;
+                }                        
+            }                
+            container = drev[0].getLogInfoHeader();
+            oneRevisionMultiselected = !moreRevisions;
+            noExDeletedExistingFiles = !deletedFile;
         }
         long revision = container.getLog().getRevision().getNumber();
 
@@ -256,7 +274,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
             {
-                setEnabled(drev == null || !(drev.getFile().exists() && drev.getChangedPath().getAction() == 'D') );
+                setEnabled(oneRevisionMultiselected && (drev.length == 0 || noExDeletedExistingFiles) ); // drev.length == 0 => the whole revision was selected
             }
             public void actionPerformed(ActionEvent e) {
                 revertModifications(selection);
@@ -266,11 +284,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (!revisionSelected) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", revision)) { // NOI18N
                 {                    
-                    setEnabled(selection.length == 1 && !revisionSelected);
+                    setEnabled(!revisionSelected && oneRevisionMultiselected);
                 }
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
+                        public void run() {                            
                             rollback(drev);
                         }
                     });
@@ -278,7 +296,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }));
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
                 {
-                    setEnabled(selection.length == 1 && !revisionSelected && drev.getFile() != null && drev.getFile().exists() &&  !drev.getFile().isDirectory());
+                    setEnabled(selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory());
                 }
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -298,13 +316,24 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
      *
      * @param event
      */
-    static void rollback(final RepositoryRevision.Event event) {
+    static void rollback(RepositoryRevision.Event event) {
+        rollback(new RepositoryRevision.Event[ ]{event});
+    }    
+    
+    /**
+     * Overwrites local file with this revision.
+     *
+     * @param event
+     */
+    static void rollback(final RepositoryRevision.Event[] events) {
         // TODO: confirmation
-        SVNUrl repository = event.getLogInfoHeader().getRepositoryRootUrl();
+        SVNUrl repository = events[0].getLogInfoHeader().getRepositoryRootUrl();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
-                rollback(event, this);
+                for(RepositoryRevision.Event event : events) {
+                    rollback(event, this);   
+                }                
             }
         };
         support.start(rp, repository, NbBundle.getMessage(SummaryView.class, "MSG_Rollback_Progress")); // NOI18N
