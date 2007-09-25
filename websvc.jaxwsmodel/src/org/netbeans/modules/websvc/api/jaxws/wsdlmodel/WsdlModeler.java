@@ -215,7 +215,7 @@ public class WsdlModeler {
                 }
                 Logger.getLogger(this.getClass().getName()).log(Level.FINE, "WsdlModeler.generateWsdlModel", creationException); //NOI18N
             }
-        } catch (Exception ex){
+        } catch (Throwable ex){
             wsdlModel=null;
             SAXParseException parseError = null;
             if (errorHandler instanceof CatchFirstErrorHandler) {
