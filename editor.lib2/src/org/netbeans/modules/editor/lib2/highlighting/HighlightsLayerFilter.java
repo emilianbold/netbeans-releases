@@ -32,6 +32,10 @@ public interface HighlightsLayerFilter {
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             return layers;
         }
+
+        public @Override String toString() {
+            return getClass().getName() + ".IDENTITY"; //NOI18N
+        }
     };
     
     public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers);

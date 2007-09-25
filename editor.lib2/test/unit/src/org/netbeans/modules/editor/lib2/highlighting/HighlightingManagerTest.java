@@ -60,6 +60,8 @@ public class HighlightingManagerTest extends NbTestCase {
         assertNotNull("Can't get instance of HighlightingManager", hm);
         
         JEditorPane pane = new JEditorPane();
+        pane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\..*$");
+        
         HighlightsContainer hc = hm.getHighlights(pane, HighlightsLayerFilter.IDENTITY);
         assertNotNull("Can't get fixed HighlightsContainer", hc);
         assertFalse("There should be no fixed highlights", hc.getHighlights(0, Integer.MAX_VALUE).moveNext());
@@ -73,6 +75,7 @@ public class HighlightingManagerTest extends NbTestCase {
             "text/plain", new SingletonLayerFactory("layer", ZOrder.DEFAULT_RACK, true, bag));
 
         JEditorPane pane = new JEditorPane();
+        pane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\..*$");
         pane.setContentType("text/plain");
         assertEquals("The pane has got wrong mime type", "text/plain", pane.getContentType());
         
@@ -110,6 +113,7 @@ public class HighlightingManagerTest extends NbTestCase {
         );
         
         JEditorPane pane = new JEditorPane();
+        pane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\..*$");
         pane.setContentType("text/plain");
         assertEquals("The pane has got wrong mime type", "text/plain", pane.getContentType());
         
@@ -208,6 +212,7 @@ public class HighlightingManagerTest extends NbTestCase {
         );
 
         JEditorPane pane = new JEditorPane();
+        pane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\..*$");
         pane.setContentType("text/plain");
         assertEquals("The pane has got wrong mime type", "text/plain", pane.getContentType());
         
@@ -287,6 +292,7 @@ public class HighlightingManagerTest extends NbTestCase {
         MemoryMimeDataProvider.addInstances(mimeType, layerA, layerD);
 
         JEditorPane pane = new JEditorPane();
+        pane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\..*$");
         pane.setEditorKit(new SimpleKit(mimeType));
         assertEquals("The pane has got wrong mime type", mimeType, pane.getContentType());
         
@@ -478,6 +484,7 @@ public class HighlightingManagerTest extends NbTestCase {
         MemoryMimeDataProvider.reset(null);
 
         JEditorPane pane = new JEditorPane();
+        pane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\..*$");
         pane.setContentType("text/plain");
         assertEquals("The pane has got wrong mime type", "text/plain", pane.getContentType());
         
@@ -696,7 +703,7 @@ public class HighlightingManagerTest extends NbTestCase {
             return new HighlightsLayer [] { HighlightsLayer.create(id, zOrder, fixed, container) };
         }
 
-        public String toString() {
+        public @Override String toString() {
             return super.toString() + "; id = " + id;
         }
         
@@ -721,7 +728,7 @@ public class HighlightingManagerTest extends NbTestCase {
             this.mimeType = mimeType;
         }
 
-        public String getContentType() {
+        public @Override String getContentType() {
             return mimeType;
         }
     } // End of SimpleKit class

@@ -53,6 +53,7 @@ import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
+import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.openide.filesystems.Repository;
 import org.openide.util.RequestProcessor;
@@ -234,7 +235,12 @@ public class NbToolTip extends FileChangeAdapter {
                                     AnnotationDesc annoDesc = null;
                                     
                                     // Get the highlighting layers stuff
-                                    HighlightsSequence seq = HighlightingManager.getInstance().getHighlights(target, null).getHighlights(offset, offset + 1);
+                                    HighlightsContainer highlights = (HighlightsContainer) target.getClientProperty("TooltipHighlightsContainer");
+                                    if (highlights == null) {
+                                        highlights = HighlightingManager.getInstance().getHighlights(target, null);
+                                        target.putClientProperty("TooltipHighlightsContainer", highlights);
+                                    }
+                                    HighlightsSequence seq = highlights.getHighlights(offset, offset + 1);
                                     if (seq.moveNext()) {
                                         tooltipAttributeValue = seq.getAttributes().getAttribute(EditorStyleConstants.Tooltip);
                                     }

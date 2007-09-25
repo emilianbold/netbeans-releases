@@ -95,7 +95,7 @@ public final class HighlightingManager {
         private Lookup.Result<HighlightsLayerFactory> factories = null;
         private LookupListener factoriesTracker = new LookupListener() {
             public void resultChanged(LookupEvent ev) {
-                rebuildAllContainers();
+                rebuildAllLayers();
             }
         };
 
@@ -104,7 +104,7 @@ public final class HighlightingManager {
         private LookupListener settingsTracker = new LookupListener() {
             public void resultChanged(LookupEvent ev) {
 //                System.out.println("Settings tracker for '" + (lastKnownMimePaths == null ? "null" : lastKnownMimePaths[0].getPath()) + "'");
-                rebuildAllContainers();
+                rebuildAllLayers();
             }
         };
 
@@ -112,8 +112,13 @@ public final class HighlightingManager {
         private HighlightsLayerFilter paneFilter;
         private Document lastKnownDocument = null;
         private MimePath [] lastKnownMimePaths = null;
-        private boolean inRebuildAllContainers = false;
+        private boolean inRebuildAllLayers = false;
         
+        // all layers (sorted, but without filtering) and their HighlightsContainers
+        private List<? extends HighlightsLayer> allLayers = null;
+        private List<HighlightsContainer> allLayerContainers = null;
+        
+        // CompoundHighlightsContainers with containers from filtered layers
         private final WeakHashMap<HighlightsLayerFilter, WeakReference<CompoundHighlightsContainer>> containers = 
             new WeakHashMap<HighlightsLayerFilter, WeakReference<CompoundHighlightsContainer>>();
         
@@ -131,7 +136,7 @@ public final class HighlightingManager {
 
             if (container == null) {
                 container = new CompoundHighlightsContainer();
-                rebuildContainer(filter, container);
+                rebuildContainer(pane.getDocument(), filter, container);
                 
                 containers.put(filter, new WeakReference<CompoundHighlightsContainer>(container));
             }
@@ -151,7 +156,7 @@ public final class HighlightingManager {
             if (PROP_HL_INCLUDES.equals(evt.getPropertyName()) || PROP_HL_EXCLUDES.equals(evt.getPropertyName())) {
                 synchronized (this) {
                     paneFilter = new RegExpFilter(pane.getClientProperty(PROP_HL_INCLUDES), pane.getClientProperty(PROP_HL_EXCLUDES));
-                    rebuildAllContainers();
+                    rebuildAllContainers(pane.getDocument());
                 }
             }
         }
@@ -224,7 +229,7 @@ public final class HighlightingManager {
                 lastKnownDocument = pane.getDocument();
                 lastKnownMimePaths = mimePaths;
                 
-                rebuildAllContainers();
+                rebuildAllLayers();
             }
         }
         
@@ -238,84 +243,103 @@ public final class HighlightingManager {
                 }
             }
         }
-        
-        private synchronized void rebuildAllContainers() {
-            if (inRebuildAllContainers) {
+
+        private synchronized void rebuildAllLayers() {
+            if (inRebuildAllLayers) {
                 return;
             }
             
-            inRebuildAllContainers = true;
+            inRebuildAllLayers = true;
             try {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("rebuildAllContainers: lastKnownDocument = " + simpleToString(lastKnownDocument) + //NOI18N
-                            ", lastKnownMimePaths = " + mimePathsToString(lastKnownMimePaths)); //NOI18N
-                }
-                
-                for(HighlightsLayerFilter filter : containers.keySet()) {
-                    WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
-                    CompoundHighlightsContainer container = ref == null ? null : ref.get();
+                Document doc = pane.getDocument();
+                if (factories != null) {
+                    Collection<? extends HighlightsLayerFactory> all = factories.allInstances();
+                    HashMap<String, HighlightsLayer> layers = new HashMap<String, HighlightsLayer>();
 
-                    if (container != null) {
-                        rebuildContainer(filter, container);
+                    HighlightsLayerFactory.Context context = HighlightingSpiPackageAccessor.get().createFactoryContext(doc, pane);
+
+                    for(HighlightsLayerFactory factory : all) {
+                        HighlightsLayer [] factoryLayers = factory.createLayers(context);
+                        if (factoryLayers == null) {
+                            continue;
+                        }
+
+                        for(HighlightsLayer layer : factoryLayers) {
+                            HighlightsLayerAccessor layerAccessor = 
+                                HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
+
+                            String layerTypeId = layerAccessor.getLayerTypeId();
+                            if (!layers.containsKey(layerTypeId)) {
+                                layers.put(layerTypeId, layer);
+                            }
+                        }
                     }
+
+                    // Sort the layers by their z-order
+                    List<? extends HighlightsLayer> sortedLayers;
+                    try {
+                        sortedLayers = HighlightingSpiPackageAccessor.get().sort(layers.values());
+                    } catch (TopologicalSortException tse) {
+                        ErrorManager.getDefault().notify(tse);
+                        @SuppressWarnings("unchecked") //NOI18N
+                        List<? extends HighlightsLayer> sl
+                                = (List<? extends HighlightsLayer>)tse.partialSort();
+                        sortedLayers = sl;
+                    }
+
+                    // Get the containers
+                    ArrayList<HighlightsContainer> layerContainers = new ArrayList<HighlightsContainer>();
+                    for(HighlightsLayer layer : sortedLayers) {
+                        HighlightsLayerAccessor layerAccessor = 
+                            HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
+
+                        layerContainers.add(layerAccessor.getContainer());
+                    }
+
+                    allLayers = sortedLayers;
+                    allLayerContainers = layerContainers;
+                } else {
+                    allLayers = null;
+                    allLayerContainers = null;
                 }
+
+                rebuildAllContainers(doc);
             } finally {
-                inRebuildAllContainers = false;
+                inRebuildAllLayers = false;
+            }
+        }
+        
+        private synchronized void rebuildAllContainers(Document document) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("rebuildAllContainers: lastKnownDocument = " + simpleToString(lastKnownDocument) + //NOI18N
+                        ", lastKnownMimePaths = " + mimePathsToString(lastKnownMimePaths)); //NOI18N
+            }
+
+            for(HighlightsLayerFilter filter : containers.keySet()) {
+                WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
+                CompoundHighlightsContainer container = ref == null ? null : ref.get();
+
+                if (container != null) {
+                    rebuildContainer(document, filter, container);
+                }
             }
         }
 
-        private synchronized void rebuildContainer(HighlightsLayerFilter filter, CompoundHighlightsContainer container) {
-            if (factories != null) {
-                Document doc = pane.getDocument();
-                Collection<? extends HighlightsLayerFactory> all = factories.allInstances();
-                HashMap<String, HighlightsLayer> layers = new HashMap<String, HighlightsLayer>();
-
-                HighlightsLayerFactory.Context context = HighlightingSpiPackageAccessor.get().createFactoryContext(doc, pane);
-
-                for(HighlightsLayerFactory factory : all) {
-                    HighlightsLayer [] factoryLayers = factory.createLayers(context);
-                    if (factoryLayers == null) {
-                        continue;
-                    }
-                    
-                    for(HighlightsLayer layer : factoryLayers) {
-                        HighlightsLayerAccessor layerAccessor = 
-                            HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
-                        
-                        String layerTypeId = layerAccessor.getLayerTypeId();
-                        if (!layers.containsKey(layerTypeId)) {
-                            layers.put(layerTypeId, layer);
-                        }
-                    }
-                }
-
-                // Sort the layers by their z-order
-                List<? extends HighlightsLayer> sortedLayers;
-                try {
-                    sortedLayers = HighlightingSpiPackageAccessor.get().sort(layers.values());
-                } catch (TopologicalSortException tse) {
-                    ErrorManager.getDefault().notify(tse);
-                    @SuppressWarnings("unchecked") //NOI18N
-                    List<? extends HighlightsLayer> sl
-                            = (List<? extends HighlightsLayer>)tse.partialSort();
-                    sortedLayers = sl;
-                }
-                
-                // filter the layers
-                sortedLayers = paneFilter.filterLayers(Collections.unmodifiableList(sortedLayers));
-                sortedLayers = filter.filterLayers(Collections.unmodifiableList(sortedLayers));
+        private synchronized void rebuildContainer(Document doc, HighlightsLayerFilter filter, CompoundHighlightsContainer container) {
+            if (allLayers != null) {
+                List<? extends HighlightsLayer> filteredLayers = paneFilter.filterLayers(Collections.unmodifiableList(allLayers));
+                filteredLayers = filter.filterLayers(Collections.unmodifiableList(filteredLayers));
 
                 // Get the containers
                 ArrayList<HighlightsContainer> hcs = new ArrayList<HighlightsContainer>();
-                for(HighlightsLayer layer : sortedLayers) {
-                    HighlightsLayerAccessor layerAccessor = 
-                        HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
-                        
-                    hcs.add(layerAccessor.getContainer());
+                for(HighlightsLayer layer : filteredLayers) {
+                    int idx = allLayers.indexOf(layer);
+                    HighlightsContainer c = allLayerContainers.get(idx);
+                    hcs.add(c);
                 }
                 
                 if (LOG.isLoggable(Level.FINEST)) {
-                    logLayers(doc, lastKnownMimePaths, sortedLayers, Level.FINEST);
+                    logLayers(pane.getDocument(), lastKnownMimePaths, filteredLayers, Level.FINEST);
                 }
                 
                 container.setLayers(doc, hcs.toArray(new HighlightsContainer[hcs.size()]));

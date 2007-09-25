@@ -82,54 +82,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
             // Modify the document
             doc.insertString(0, "Hey", SimpleAttributeSet.EMPTY);
 
-            try {
-                hs.moveNext();
-                fail("ConcurrentModificationException has not been thrown from moveNext()");
-            } catch (ConcurrentModificationException e) {
-                // pass
-            }
-        }        
-        {
-            HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
-            assertTrue("There should be some highlights", hs.moveNext());
-
-            // Modify the document
-            doc.insertString(0, "Hey", SimpleAttributeSet.EMPTY);
-
-            try {
-                hs.getStartOffset();
-                fail("ConcurrentModificationException has not been thrown from getStartOffset()");
-            } catch (ConcurrentModificationException e) {
-                // pass
-            }
-        }        
-        {
-            HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
-            assertTrue("There should be some highlights", hs.moveNext());
-
-            // Modify the document
-            doc.insertString(0, "Hey", SimpleAttributeSet.EMPTY);
-
-            try {
-                hs.getEndOffset();
-                fail("ConcurrentModificationException has not been thrown from getEndOffset()");
-            } catch (ConcurrentModificationException e) {
-                // pass
-            }
-        }        
-        {
-            HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
-            assertTrue("There should be some highlights", hs.moveNext());
-
-            // Modify the document
-            doc.insertString(0, "Hey", SimpleAttributeSet.EMPTY);
-
-            try {
-                hs.getAttributes();
-                fail("ConcurrentModificationException has not been thrown from getAttributes()");
-            } catch (ConcurrentModificationException e) {
-                // pass
-            }
+            assertFalse("There should be no highlights after co-modification", hs.moveNext());
         }        
     }
 

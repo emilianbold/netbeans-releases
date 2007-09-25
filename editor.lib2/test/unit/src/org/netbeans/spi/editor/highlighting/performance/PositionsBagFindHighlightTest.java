@@ -47,7 +47,7 @@ public class PositionsBagFindHighlightTest extends NbTestCase {
         super(name);
     }
     
-    protected void setUp() {
+    protected @Override void setUp() {
         cnt = this.getTestNumber();
         bag = new PositionsBag(new PlainDocument(), false);
         
@@ -58,7 +58,7 @@ public class PositionsBagFindHighlightTest extends NbTestCase {
         startOffset = 10 * cnt / 5 - 1;
         endOffset = 10 * (cnt/ 5 + 1) - 1;
         
-        System.out.println("cnt = " + cnt + " : startOffset = " + startOffset + " : endOffset = " + endOffset);
+//        System.out.println("cnt = " + cnt + " : startOffset = " + startOffset + " : endOffset = " + endOffset);
     }
     
     public void testFindHighlight10() {
