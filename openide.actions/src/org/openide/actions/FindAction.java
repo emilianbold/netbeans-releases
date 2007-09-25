@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.actions;
@@ -36,10 +36,14 @@ public class FindAction extends CallbackSystemAction {
         return new HelpCtx(FindAction.class);
     }
 
+    @Override
     protected String iconResource() {
-        return "org/openide/resources/actions/find.gif"; // NOI18N
+        return null;
+        // #111508: Find action should not have an icon in the main menu
+        // return "org/openide/resources/actions/find.gif"; // NOI18N
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
