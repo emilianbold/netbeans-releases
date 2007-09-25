@@ -1390,11 +1390,13 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             
             if(Action.SMALL_ICON.equals(iconKey)){
                 if (smallIconName != null) {
-                    iconEditor.setAsText(decodeIconPath(smallIconName,action));
+                    //revert: 110933 iconEditor.setAsText(decodeIconPath(smallIconName,action));
+                    iconEditor.setAsText(smallIconName);
                 }
             } else {
                 if (largeIconName != null) {
-                    iconEditor.setAsText(decodeIconPath(largeIconName,action));
+                    //revert: 110933 iconEditor.setAsText(decodeIconPath(largeIconName,action));
+                    iconEditor.setAsText(largeIconName);
                 }
             }
             DialogDescriptor dd = new DialogDescriptor(iconEditor.getCustomEditor(), NbBundle.getMessage(ActionPropertyEditorPanel.class, "CTL_SelectIcon_Title"));
@@ -1405,9 +1407,10 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
                 iconButton.setText(icon == null ? "..." : null);
                 action.putValue(iconKey, icon);
                 String iconName = nbIcon != null ? nbIcon.getName() : null;
+                /* revert: 110933
                 if(iconName != null && !iconName.startsWith("/")) {
                     iconName = "/"+iconName;
-                }
+                }*/
                 if(Action.SMALL_ICON.equals(iconKey)) {
                     smallIconName = iconName;
                 } else {

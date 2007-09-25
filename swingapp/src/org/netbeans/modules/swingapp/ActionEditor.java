@@ -492,7 +492,10 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
                 // don't save icon, but its name (assuming we have a classpath resource name)
                 String iconCPName = (String) newVal;
                 String pkgResName = map.getResourcesDir();
+                stringVal = iconCPName.startsWith(pkgResName) ?
+                iconCPName.substring(pkgResName.length()) : iconCPName;
                 //trim off the full path if icon is in the same package as the action
+                /* disable changes for 110933
                 if(iconCPName.startsWith(pkgResName)) {
                     stringVal = iconCPName.substring(pkgResName.length());
                 } else if(iconCPName.startsWith("/"+pkgResName)) {
@@ -502,7 +505,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
                     if(!iconCPName.startsWith("/")) {
                         stringVal = "/" + iconCPName;
                     }
-                }
+                }*/
                 newVal = null;
             } else {
                 stringVal = (String)newVal;
