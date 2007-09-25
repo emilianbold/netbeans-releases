@@ -72,4 +72,55 @@ public abstract class BaseElementDescriptor implements ElementDescriptor {
     public void open() {
 	CsmUtilities.openSource(getElement());
     }    
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        return equals(this.getElement(), ((BaseElementDescriptor) obj).getElement());
+    }
+    
+    private static boolean equals(CsmOffsetable element1, CsmOffsetable element2) {
+        if( element1 == element2 ) {
+            return true;
+        }
+        else if( element1 == null ) {
+            return element2 == null;
+        } else if( element2 == null ) {
+            return element1 == null;
+        }
+        else {
+            CsmFile file1 = element1.getContainingFile();
+            CsmFile file2 = element2.getContainingFile();
+            if( file1 == null || file2 == null ) {
+                return element1 == element2;
+            }
+            else if( ! file1.getAbsolutePath().equals(file2.getAbsolutePath()) ) {
+                return false;
+            }
+            else {
+                return element1.getStartOffset() == element2.getStartOffset();
+            }
+        }
+    }
+
+    @Override
+    public int hashCode() {
+	CsmOffsetable element = getElement();
+        if( element == null ) {
+            return super.hashCode();
+        }
+        else {
+            int hash = 5;
+            String path = element.getContainingFile().getAbsolutePath();
+            hash = 19 * hash + ((path == null) ? 0 : path.hashCode());
+            hash = 19 * hash + element.getStartOffset();
+            return hash;
+        }
+    }
+    
 }

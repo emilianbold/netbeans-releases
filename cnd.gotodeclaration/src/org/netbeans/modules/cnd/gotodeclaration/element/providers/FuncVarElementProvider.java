@@ -38,12 +38,12 @@ public class FuncVarElementProvider extends BaseProvider implements ElementProvi
 	return NbBundle.getMessage(FuncVarElementProvider.class, "FUNCVAR_PROVIDER_DISPLAY_NAME"); // NOI18N
     }
 
-    protected void processProject(CsmProject project, List<ElementDescriptor> result, NameMatcher comparator) {
+    protected void processProject(CsmProject project, ResultSet result, NameMatcher comparator) {
 	if( TRACE ) System.err.printf("FuncVarElementProvider.processProject %s\n", project.getName());
         processNamespace(project.getGlobalNamespace(), result, comparator);
     }
     
-    private void processNamespace(CsmNamespace nsp, List<ElementDescriptor> result, NameMatcher comparator) {
+    private void processNamespace(CsmNamespace nsp, ResultSet result, NameMatcher comparator) {
         if( TRACE ) System.err.printf("processNamespace %s\n", nsp.getQualifiedName());
 	for( CsmDeclaration declaration : nsp.getDeclarations() ) {
             if( isCancelled() ) {
@@ -59,7 +59,7 @@ public class FuncVarElementProvider extends BaseProvider implements ElementProvi
 	}
     }
 
-    private void processDeclaration(CsmDeclaration decl, List<ElementDescriptor> result, NameMatcher comparator) {
+    private void processDeclaration(CsmDeclaration decl, ResultSet result, NameMatcher comparator) {
         switch (decl.getKind()) {
             case FUNCTION_DEFINITION:
 		if( comparator.matches(decl.getName()) ) {

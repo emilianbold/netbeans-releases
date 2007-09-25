@@ -19,8 +19,10 @@ package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -37,10 +39,47 @@ import org.netbeans.spi.jumpto.type.SearchType;
  */
 public abstract class BaseProvider implements ElementProvider {
 
+    protected interface ResultSet {
+        void add(ElementDescriptor descriptor);
+        Collection<? extends ElementDescriptor> getResult();
+    }
+    
+//    private class ResultSetImpl implements ResultSet {
+//
+//        List<ElementDescriptor> data = new ArrayList<ElementDescriptor>();
+//        
+//        public void add(ElementDescriptor descriptor) {
+//            data.add(descriptor);
+//        }
+//
+//        public Collection<? extends ElementDescriptor> getResult() {
+//            return data;
+//        }
+//        
+//    }
+    
+    private class ResultSetImpl implements ResultSet {
+
+        Map<ElementDescriptor, Boolean> data = new HashMap<ElementDescriptor, Boolean>();
+        
+        public void add(ElementDescriptor descriptor) {
+            if( ! data.containsKey(descriptor) || ! currentProject.isArtificial() ) {
+                data.put(descriptor, Boolean.TRUE);
+            }
+        }
+
+        public Collection<? extends ElementDescriptor> getResult() {
+            return new ArrayList<ElementDescriptor>(data.keySet());
+        }
+        
+    }
+    
     private boolean isCancelled = false;
     protected static final boolean PROCESS_LIBRARIES = true; // Boolean.getBoolean("cnd.type.provider.libraries");
     protected static final boolean TRACE = Boolean.getBoolean("cnd.goto.fv.trace");
-    
+    private Set<CsmProject> processedProjects = new HashSet<CsmProject>();
+    private CsmProject currentProject;
+
     public void cancel() {
 	isCancelled = true;
     }
@@ -53,49 +92,51 @@ public abstract class BaseProvider implements ElementProvider {
 	return ! CsmModelAccessor.getModel().projects().isEmpty();
     }
     
-    protected abstract void processProject(CsmProject project, List<ElementDescriptor> result, NameMatcher comparator);
+    protected abstract void processProject(CsmProject project, ResultSet result, NameMatcher comparator);
     
     public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type) {
 
 	if( TRACE ) System.err.printf("%s.getElements(%s, %s, %s)\n", getBriefClassName(), project, text, type);
-
-	@SuppressWarnings("unchecked")
-	List<ElementDescriptor> result = Collections.EMPTY_LIST;
-	
+        
 	NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
 	if( comparator == null ) {
-	    return result;
+	    return Collections.emptyList();
 	}
 	
-	Set<CsmProject> processedProjects = new HashSet<CsmProject>();
-        result = new ArrayList<ElementDescriptor>(1000);
+        ResultSet result = new ResultSetImpl();
         CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
 	if( csmProject != null ) {
 	    // we should check the processed project here:
 	    // otherwise when some of the required projects are open,we'll have duplicates
 	    if( ! processedProjects.contains(csmProject) ) {
                 processedProjects.add(csmProject);
+                currentProject = csmProject;
                 processProject(csmProject, result, comparator);
+                currentProject = null;
                 if( PROCESS_LIBRARIES ) {
                     for( CsmProject lib : csmProject.getLibraries() ) {
                         if( isCancelled() ) {
                             break;
                         }
-                        if( ! processedProjects.contains(lib) ) {
-                            processedProjects.add(lib);
-                            if( lib.isArtificial() ) {
+                        if( lib.isArtificial() ) {
+                            if( ! processedProjects.contains(lib) ) {
+                                processedProjects.add(lib);
+                                currentProject = lib;
                                 processProject(lib, result, comparator);
+                                currentProject = null;
                             }
                         }
                     }
                 }
 	    }
 	}
-	return result;
+	return result.getResult();
     }
     
     
     public void cleanup() {
+        processedProjects = new HashSet<CsmProject>();
+        currentProject = null;
     }
 
     private String getBriefClassName() {

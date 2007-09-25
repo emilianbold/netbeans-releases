@@ -38,12 +38,12 @@ public class MacroProvider extends BaseProvider implements ElementProvider {
 	return NbBundle.getMessage(MacroProvider.class, "MACRO_PROVIDER_DISPLAY_NAME"); // NOI18N
     }
 
-    protected void processProject(CsmProject project, List<ElementDescriptor> result, NameMatcher comparator) {
+    protected void processProject(CsmProject project, ResultSet result, NameMatcher comparator) {
 	if( TRACE ) System.err.printf("MacroProvider.processProject %s\n", project.getName());
         processFiles(project.getAllFiles(), result, comparator);
     }
     
-    private void processFiles(Collection<CsmFile> files, List<ElementDescriptor> result, NameMatcher comparator) {
+    private void processFiles(Collection<CsmFile> files, ResultSet result, NameMatcher comparator) {
 	for( CsmFile file : files ) {
             if( isCancelled() ) {
                 return;
