@@ -31,14 +31,14 @@ edit the Expanded Text field.</li>
 
 <h3>Special Code Template Syntax</h3>
 
-<p>When you use the Options window to create code templates, there are several 
+<p>When you use the Options window to create Ruby code templates, there are several 
 constructs that you can use to customize the way the code template behaves. The 
-table below lists these constructs.</p>
+table below lists some of these constructs.</p>
 
 <table border="1" cellpadding="5" cellspacing="0">
-    <tr> 
-        <th align="left" scope="col" valign="top"><b>Code Template Syntax Construct</b></th>
-        <th align="left" scope="col" valign="top"><b>Explanation</b></th>
+    <tr valign="top"> 
+        <th align="left" scope="col"><b>Code Template Syntax Construct</b></th>
+        <th align="left" scope="col"><b>Explanation</b></th>
     </tr>
     <tr valign="top">
         <td><tt>${cursor}</tt>
@@ -66,18 +66,51 @@ has been added to your code.
         </td>
 
     </tr>
-    <tr valign="top">
-        <td><tt>instanceof="<i>FullyQualifiedType</i>"</tt>
-        </td>
-        <td>An attribute that you can use within a <tt>${<i>Identifier</i>}</tt> segment 
-            to designate the type that the identifier must represent an instance of. For example, 
-            you could use <tt>${collection&nbsp;instanceof="java.util.Collection"}</tt> where <tt>collection</tt> 
-            is the default identifier in the template and <tt>java.util.Collection</tt> is the class of 
-            which the identifier must represent an instance.
-        </td>
-
+    <tr valign="top" class="wikitable" >
+      <td><tt> ${selection} </tt> </td>
+      <td> Defines a position for pasting a content of the editor selection. Used by so called 'selection templates' that appear as hints whenever user selects some text in the editor. (See the "Surround With" section below.)</td>
     </tr>
-</table>
+    <tr valign="top" class="wikitable">
+      <td><tt> ${<i>param_name</i> default="value"} </tt> </td>
+      <td> Defines the parameter's default value. Set to <code>empty</code> to create a tab stop.</td>
+    </tr>
+    <tr valign="top" class="wikitable" >
+      <td><tt> ${<i>param_name</i> editable=false} </tt> </td>
+      <td> Can be used to disable user's editing of the parameter. Useful for creating caret locations (tab stops).</td>
+    </tr>
+    <tr valign="top" class="wikitable">
+      <td><tt> ${class} </tt> </td>
+      <td> Expands to the name of the class surrounding the template expansion location, such as <tt>Foo</tt></td>
+    </tr>
+    <tr valign="top" class="wikitable" >
+      <td><tt> ${classfqn} </tt> </td>
+      <td> Same as <tt> ${class} </tt>, but instead of just the class name expands to the fully qualified class name, such as <tt>Bar::Baz::Foo</tt></td>
+    </tr>
+    <tr valign="top" class="wikitable">
+      <td><tt> ${superclass} </tt> </td>
+      <td> Expands to the name of the superclass of the class surrounding the template expansion location, such as <tt>SuperFoo</tt></td>
+    </tr>
+    <tr valign="top" class="wikitable" >
+      <td><tt> ${method} </tt> </td>
+      <td> Expands to the name of the method surrounding the template expansion location, such as <tt>foo</tt></td>
+    </tr>
+    <tr valign="top" class="wikitable">
+      <td><tt> ${methodfqn} </tt> </td>
+      <td> Same as <tt> ${method} </tt>, but instead of just the class method expands to the fully qualified name, such as <tt>Bar::Baz::Foo#foo</tt></td>
+    </tr>
+    <tr valign="top" class="wikitable" >
+      <td><tt> ${file} </tt> </td>
+      <td> Expands to the name of the current file, such as <tt>foo_bar.rb</tt></td>
+    </tr>
+    <tr valign="top" class="wikitable">
+      <td><tt> ${path} </tt> </td>
+      <td> Expands to the name of the current full file path, such as <tt>/foo/bar/baz.rb</tt></td>
+    </tr>
+    <tr valign="top" class="wikitable" >
+      <td><tt> ${unusedlocal defaults="i,j,k"} </tt> </td>
+      <td> Picks the name of an unused local variable in the current scope. It will first try each of the candidates listed in the <tt>defaults</tt> attribute, and if none of those succeed, create another unique name.</td>
+    </tr>
+ </table>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
            
