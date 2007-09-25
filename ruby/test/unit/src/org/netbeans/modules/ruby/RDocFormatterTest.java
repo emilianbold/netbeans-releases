@@ -158,7 +158,7 @@ public class RDocFormatterTest extends RubyTestBase {
     public void testNoLabelSpace() {
         RDocFormatter instance = new RDocFormatter();
         instance.appendLine("# [<tt>:id</tt>]");
-        assertEquals("<table>\n<tr><td valign=\"top\"><tt>:id</tt> </td><td> </td></tr>\n</table>", instance.toHtml());
+        assertEquals("<table>\n<tr><td valign=\"top\"><tt>:id</tt> </td><td> </td></tr>\n</table>\n", instance.toHtml());
     }
 
     public void testNoNumberSpace() {
@@ -176,7 +176,7 @@ public class RDocFormatterTest extends RubyTestBase {
     public void testNoTableSpace() {
         RDocFormatter instance = new RDocFormatter();
         instance.appendLine("# Next::");
-        assertEquals("<table>\n<tr><td valign=\"top\">Next </td><td> </td></tr>\n</table>", instance.toHtml());
+        assertEquals("<table>\n<tr><td valign=\"top\">Next </td><td> </td></tr>\n</table>\n", instance.toHtml());
     }
     
     public void testCodeFormatting() {
@@ -229,6 +229,25 @@ public class RDocFormatterTest extends RubyTestBase {
         
         instance.appendLine("# <b>whatever</b>");
         assertEquals("<b>whatever</b> ", instance.toHtml());
+    }
+    
+    public void testLineBreaks() {
+        RDocFormatter instance = new RDocFormatter();
+        
+        instance.appendLine("# Calling content_for stores the block of markup for later use.");
+        instance.appendLine("# Subsequently, you can make calls to it by name with <tt>yield</tt> in");
+        instance.appendLine("# another template or in the layout.");
+        instance.appendLine("# ");
+        instance.appendLine("# Example:");
+        instance.appendLine("# ");
+        instance.appendLine("#   <% content_for(\"header\") do %>");
+        instance.appendLine("#     alert('hello world')");
+
+        String html = instance.toHtml();
+        assertEquals("Calling content_for stores the block of markup for later use. Subsequently," +
+                " you can make calls to it by name with <tt>yield</tt> in another template or in " +
+                "the layout. <br><br>Example: <br><pre>\n  &lt;% content_for(\"header\") do " +
+                "%><br>    alert('hello world')<br></pre>\n", html);
     }
 
     // TODO test bullets, labels, preformat

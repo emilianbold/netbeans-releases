@@ -2,7 +2,7 @@
 <hr>
 <br/>
 <h1> resolv library</h1>
-resolv.rb is a resolver library written in Ruby. Since it is written in Ruby, it is thread-aware. I.e. it can resolv many hostnames concurrently. It is possible to lookup various resources of DNS using DNS module directly. <h2> example</h2>
+resolv.rb is a resolver library written in Ruby. Since it is written in Ruby, it is thread-aware. I.e. it can resolv many hostnames concurrently. <br><br>It is possible to lookup various resources of DNS using DNS module directly. <br><h2> example</h2>
 <pre>
   p Resolv.getaddress("www.ruby-lang.org")
   p Resolv.getname("210.251.121.214")
@@ -33,8 +33,8 @@ resolv.rb is a resolver library written in Ruby. Since it is written in Ruby, it
     each_names iterates over lookupped names.
 </pre>
 <h2> Resolv::Hosts class</h2>
-hostname resolver using /etc/hosts format. <h3> class methods</h3>
---- Resolv::Hosts.new(hosts='/etc/hosts') <h3> methods</h3>
+hostname resolver using /etc/hosts format. <br><h3> class methods</h3>
+--- Resolv::Hosts.new(hosts='/etc/hosts') <br><h3> methods</h3>
 --- Resolv::Hosts#getaddress(name) --- Resolv::Hosts#getaddresses(name) --- Resolv::Hosts#each_address(name) {|address| ...} <pre>
     address lookup methods.
 </pre>
@@ -42,14 +42,14 @@ hostname resolver using /etc/hosts format. <h3> class methods</h3>
     hostnames lookup methods.
 </pre>
 <h2> Resolv::DNS class</h2>
-DNS stub resolver. <h3> class methods</h3>
---- Resolv::DNS.new(config_info=nil) <pre>
+DNS stub resolver. <br><h3> class methods</h3>
+--- Resolv::DNS.new(config_info=nil) <br><pre>
     ((|config_info|)) should be nil, a string or a hash.<br>    If nil is given, /etc/resolv.conf and platform specific information is used.<br>    If a string is given, it should be a filename which format is same as /etc/resolv.conf.<br>    If a hash is given, it may contains information for nameserver, search and ndots as follows.<br></pre>
 <pre>
       Resolv::DNS.new({:nameserver=>["210.251.121.21"], :search=>["ruby-lang.org"], :ndots=>1})
 </pre>
---- Resolv::DNS.open(config_info=nil) --- Resolv::DNS.open(config_info=nil) {|dns| ...} <h3> methods</h3>
---- Resolv::<a href="DNS#close">DNS#close</a> --- Resolv::DNS#getaddress(name) --- Resolv::DNS#getaddresses(name) --- Resolv::DNS#each_address(name) {|address| ...} <pre>
+--- Resolv::DNS.open(config_info=nil) --- Resolv::DNS.open(config_info=nil) {|dns| ...} <br><h3> methods</h3>
+--- Resolv::<a href="DNS#close">DNS#close</a> <br><br>--- Resolv::DNS#getaddress(name) --- Resolv::DNS#getaddresses(name) --- Resolv::DNS#each_address(name) {|address| ...} <pre>
     address lookup methods.
 </pre>
 <pre>
@@ -99,21 +99,21 @@ DNS stub resolver. <h3> class methods</h3>
 --- address <h2> Resolv::DNS::Resource::IN::WKS class</h2>
 --- address --- protocol --- bitmap <h2> Resolv::DNS::Resource::IN::PTR class</h2>
 --- name <h2> Resolv::DNS::Resource::IN::AAAA class</h2>
---- address <h2> Resolv::DNS::Name class</h2>
+--- address <br><h2> Resolv::DNS::Name class</h2>
 <h3> class methods</h3>
---- Resolv::DNS::Name.create(name) <h3> methods</h3>
---- Resolv::DNS::<a href="Name#to_s">Name#to_s</a> <h2> Resolv::DNS::Resource class</h2>
+--- Resolv::DNS::Name.create(name) <br><h3> methods</h3>
+--- Resolv::DNS::<a href="Name#to_s">Name#to_s</a> <br><h2> Resolv::DNS::Resource class</h2>
 <h2> Resolv::IPv4 class</h2>
 <h3> class methods</h3>
---- Resolv::IPv4.create(address) <h3> methods</h3>
---- Resolv::<a href="IPv4#to_s">IPv4#to_s</a> --- Resolv::<a href="IPv4#to_name">IPv4#to_name</a> <h3> constants</h3>
+--- Resolv::IPv4.create(address) <br><h3> methods</h3>
+--- Resolv::<a href="IPv4#to_s">IPv4#to_s</a> --- Resolv::<a href="IPv4#to_name">IPv4#to_name</a> <br><h3> constants</h3>
 --- Resolv::IPv4::Regex <pre>
     regular expression for IPv4 address.
 </pre>
 <h2> Resolv::IPv6 class</h2>
 <h3> class methods</h3>
---- Resolv::IPv6.create(address) <h3> methods</h3>
---- Resolv::<a href="IPv6#to_s">IPv6#to_s</a> --- Resolv::<a href="IPv6#to_name">IPv6#to_name</a> <h3> constants</h3>
+--- Resolv::IPv6.create(address) <br><h3> methods</h3>
+--- Resolv::<a href="IPv6#to_s">IPv6#to_s</a> --- Resolv::<a href="IPv6#to_name">IPv6#to_name</a> <br><h3> constants</h3>
 --- Resolv::IPv6::Regex <pre>
     regular expression for IPv6 address.
 </pre>
@@ -130,7 +130,7 @@ STD0013 (RFC 1035, etc.) <a href="ftp://ftp.isi.edu/in-notes/iana/assignments/dn
 <pre>              end</pre><br/>
 <a href="#STDERR">STDERR</a>.print("non-handled DNS message: #{msg.inspect}") <hr>
 <pre>      def subdomain_of?(other)</pre><br/>
-tests subdomain-of relation. <pre>
+tests subdomain-of relation. <br><pre>
   domain = Resolv::DNS::Name.create("y.z")
   p Resolv::DNS::Name.create("w.x.y.z").subdomain_of?(domain) #=> true
   p Resolv::DNS::Name.create("x.y.z").subdomain_of?(domain) #=> true
@@ -141,7 +141,7 @@ tests subdomain-of relation. <pre>
 </pre>
 <hr>
 <pre>      def to_s</pre><br/>
-returns the domain name as a string. The domain name doesn't have a trailing dot even if the name object is absolute. <pre>
+returns the domain name as a string. <br><br>The domain name doesn't have a trailing dot even if the name object is absolute. <br><pre>
   p Resolv::DNS::Name.create("x.y.z.").to_s #=> "x.y.z"
   p Resolv::DNS::Name.create("x.y.z").to_s #=> "x.y.z"
 </pre>
@@ -151,7 +151,7 @@ Standard (class generic) RRs <hr>
 <pre>      module IN</pre><br/>
 ARPA Internet specific RRs <hr>
 <pre>        class SRV < Resource</pre><br/>
-SRV resource record defined in RFC 2782 These records identify the hostname and port that a service is available at. The format is: <pre>
+SRV resource record defined in RFC 2782 <br><br>These records identify the hostname and port that a service is available at. <br><br>The format is: <pre>
   _Service._Proto.Name TTL Class SRV Priority Weight Port Target
 </pre>
 The fields specific to SRV are defined in RFC 2782 as meaning: <ul>

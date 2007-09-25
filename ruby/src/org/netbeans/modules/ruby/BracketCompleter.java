@@ -1660,10 +1660,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     int lineBegin = begin;
                     int lineEnd = end;
 
-                    while (true) {
+                    while (begin > 0) {
                         int newBegin = Utilities.getRowStart(doc, begin - 1);
 
-                        if ((newBegin <= 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
+                        if ((newBegin < 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
                             begin = Utilities.getRowFirstNonWhite(doc, begin);
                             break;
                         }

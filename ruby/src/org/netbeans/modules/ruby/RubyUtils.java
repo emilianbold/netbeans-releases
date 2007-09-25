@@ -20,7 +20,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -576,4 +575,22 @@ public class RubyUtils {
             throw ble;
         }
     }
+    
+    public static boolean endsWith(StringBuilder sb, String s) {
+        int len = s.length();
+        
+        if (sb.length() < len) {
+            return false;
+        }
+        
+        for (int i = sb.length()-len, j = 0; j < len; i++, j++) { 
+            if (sb.charAt(i) != s.charAt(j)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    
 }

@@ -70,8 +70,7 @@ import org.openide.xml.XMLUtil;
  *    #                                 "cone" => "cone" }
  *    </pre>
  *   Here I should tokenize the LHS and the RHS separately
- *  
- *
+ * 
  * @author Tor Norbye
  */
 class RDocFormatter {
@@ -134,13 +133,28 @@ class RDocFormatter {
 
         process(text);
     }
-
+    
     private void process(String text) {
         // Use the lexer! The following is naive since it will
         // do something about URLs, multiplication (*), etc.
         if (text.length() == 0) {
             finishSection();
 
+            int n = sb.length();
+            if (sb.length() > 1 && sb.charAt(sb.length()-1) == '\n') {
+                if (RubyUtils.endsWith(sb, "</pre>\n") || RubyUtils.endsWith(sb, "</h1>\n") ||
+                    RubyUtils.endsWith(sb, "</h2>\n") || RubyUtils.endsWith(sb, "</h3>\n") ||
+                    RubyUtils.endsWith(sb, "</h4>\n") || RubyUtils.endsWith(sb, "</h5>\n") ||
+                    RubyUtils.endsWith(sb, "</ul>\n") || RubyUtils.endsWith(sb, "</ol>\n") ||
+                    RubyUtils.endsWith(sb, "</table>\n") || RubyUtils.endsWith(sb, "</hr>\n")) {
+                    // No need for a separator
+                    return;
+                }
+            }
+            if (!(n > 4 && RubyUtils.endsWith(sb, "<br>"))) {
+                sb.append("<br>");
+            }
+            sb.append("<br>");
             return;
         }
         
@@ -210,6 +224,10 @@ class RDocFormatter {
                 text.length() > 0 && Character.isWhitespace(text.charAt(0))) { // Indented text in list is in same paragraph
 
             if (!inVerbatim) {
+                // Chomp off preceeding <br> to make output leaner
+                if (RubyUtils.endsWith(sb, "<br>")) {
+                    sb.setLength(sb.length()-4);
+                }
                 sb.append("<pre>\n"); // NOI18N
                 inVerbatim = true;
                 code = new ArrayList<String>();
@@ -231,6 +249,10 @@ class RDocFormatter {
             }
 
             if (i <= 6) {
+                // Chomp off preceeding <br> to make output leaner
+                if (RubyUtils.endsWith(sb, "<br>")) {
+                    sb.setLength(sb.length()-4);
+                }
                 sb.append("<h"); // NOI18N
                 sb.append(Integer.toString(i));
                 sb.append(">"); // NOI18N
@@ -450,7 +472,7 @@ class RDocFormatter {
         }
 
         if (inLabelledList) {
-            sb.append("</td></tr>\n</table>"); // NOI18N
+            sb.append("</td></tr>\n</table>\n"); // NOI18N
             inLabelledList = false;
         }
     }

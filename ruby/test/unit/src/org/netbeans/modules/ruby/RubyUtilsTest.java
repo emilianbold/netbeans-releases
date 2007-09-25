@@ -210,4 +210,16 @@ public class RubyUtilsTest extends TestCase {
         assertFalse(RubyUtils.isRowWhite("a\na  \r\n", 3));
         assertFalse(RubyUtils.isRowWhite("a\n  a\r\n", 2));
     }
+    
+    public void testEndsWith() throws Exception {
+        assertTrue(RubyUtils.endsWith(new StringBuilder("hello"), "lo"));
+        assertTrue(RubyUtils.endsWith(new StringBuilder("hello"), "hello"));
+        assertTrue(RubyUtils.endsWith(new StringBuilder("hello"), ""));
+        assertTrue(RubyUtils.endsWith(new StringBuilder("hello"), "o"));
+        assertTrue(RubyUtils.endsWith(new StringBuilder("<br><br>"), "<br>"));
+
+        assertFalse(RubyUtils.endsWith(new StringBuilder("hello"), "hallo"));
+        assertFalse(RubyUtils.endsWith(new StringBuilder("hello"), "foohallo"));
+        assertFalse(RubyUtils.endsWith(new StringBuilder(""), "o"));
+    }
 }

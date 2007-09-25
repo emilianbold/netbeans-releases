@@ -529,6 +529,7 @@ public class LexUtilities {
             return 0;
         }
 
+        // XXX Why 0? Why not offset?
         ts.moveIndex(0);
 
         if (!ts.moveNext()) {
@@ -960,13 +961,11 @@ public class LexUtilities {
                 int end = Utilities.getRowEnd(doc, caretOffset);
 
                 if (LexUtilities.isCommentOnlyLine(doc, caretOffset)) {
-                    int lineBegin = begin;
-                    int lineEnd = end;
 
-                    while (true) {
+                    while (begin > 0) {
                         int newBegin = Utilities.getRowStart(doc, begin - 1);
 
-                        if ((newBegin <= 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
+                        if ((newBegin < 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
                             begin = Utilities.getRowFirstNonWhite(doc, begin);
                             break;
                         }
