@@ -184,8 +184,10 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
             }
         }
 
-        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-        env.addPropertyChangeListener(this);
+        if (env != null) {
+            env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            env.addPropertyChangeListener(this);
+        }
 
         // build layout when the combo box is filled
         GroupLayout layout = new GroupLayout(this);
