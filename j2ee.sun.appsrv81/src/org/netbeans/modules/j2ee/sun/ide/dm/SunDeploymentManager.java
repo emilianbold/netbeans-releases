@@ -669,6 +669,19 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             }
         }
         
+        // help prevent running into GF issue 3693
+        //
+        // By returning a single target, we prevent the j2eeserver layer from 
+        // deciding that the IDE needs to use archive deployment.  If the IDE 
+        // uses JSR 88 API's to deploy to GF, the call to dm.start() will 
+        // cause problems.
+        // 
+        // If the plugin needs to support multiple targets, this will need
+        // to be revisited.
+        //
+        if (null != retVal && retVal.length > 1) {
+            return new Target[] { retVal[0] };
+        }
         return retVal;
     }
     
