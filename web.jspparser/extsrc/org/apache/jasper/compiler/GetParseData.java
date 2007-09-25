@@ -292,7 +292,6 @@ public class GetParseData {
         // the xml view
         nbPageInfo.setXMLView(xmlView);
       
-        System.out.println("nastavuji tag do pageinfa: " + ctxt.getTagInfo());
         nbPageInfo.setTagFile(ctxt.isTagFile());
         nbPageInfo.setTagInfo(ctxt.getTagInfo());
         
