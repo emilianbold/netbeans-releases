@@ -292,7 +292,7 @@ public class FileStatusCache {
         if (file == null)
             return FILE_INFORMATION_UNKNOWN;
         if (hg.isAdministrative(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE)
-            return FILE_INFORMATION_EXCLUDED_DIRECTORY; // Excluded dir
+            return file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED; // Excluded
 
         File rootManagedFolder = hg.getTopmostManagedParent(file);        
         if (rootManagedFolder == null)
