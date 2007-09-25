@@ -470,6 +470,12 @@ public class MakeConfiguration extends Configuration {
                 }
             }
         }
+        for (LibraryItem.ProjectItem libProject : getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray()) {
+            Project project = libProject.getProject(getBaseDir());
+            if (project != null) {
+                subProjects.add(project);
+            }
+        }
         return subProjects;
     }
     
