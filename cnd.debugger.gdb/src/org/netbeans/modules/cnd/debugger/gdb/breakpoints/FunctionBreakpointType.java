@@ -55,7 +55,7 @@ public class FunctionBreakpointType extends BreakpointType {
         // First, check for an open file. Is it one of ours?
 	String mime = EditorContextBridge.getContext().getMostRecentMIMEType();
         if (mime.length() > 0 &&
-                mime.equals("text/x-c++") || mime.equals("text/x-c") ||
+                mime.equals("text/x-c++") || mime.equals("text/x-c") || // NOI18N
                 mime.equals("text/x-fortran")) { // NOI18N
             return true;
         }

@@ -123,6 +123,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Map<Integer, StringBuilder> typeCompletionTable = new HashMap<Integer, StringBuilder>();
     private Set<String> typePendingTable = new HashSet<String>();
     private Map<Integer, GdbVariable> valueCompletionTable = new HashMap<Integer, GdbVariable>();
+    private Map<Integer, AbstractVariable> derefValueMap = new HashMap<Integer, AbstractVariable>();
     private Map<Integer, GdbWatchVariable> watchTypeMap = new HashMap<Integer, GdbWatchVariable>();
     private Map<Integer, GdbWatchVariable> watchValueMap = new HashMap<Integer, GdbWatchVariable>();
     private Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
@@ -452,15 +453,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 } else {
                     var.setValue(msg.substring(13, msg.length() - 1));
                 }
+            } else if ((avar = derefValueMap.remove(itok)) != null) {
+                avar.setDerefValue(msg.substring(13, msg.length() - 1));
             } else if ((watch = watchValueMap.remove(itok)) != null) {
                 watch.setValue(msg.substring(13, msg.length() - 1));
                 firePropertyChange(Watch.PROP_VALUE, watch, null);
-                if (watchValueMap.isEmpty()) {
-                    setStopped(); // done evaluating watches
-                }
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.setModifiedValue(msg.substring(13, msg.length() - 1));
-//                firePropertyChange(PROP_LOCALS_VIEW_UPDATE, true, false);
             }
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             setRunning();
@@ -515,13 +514,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (token == ttToken) { // invalid tooltip request
                 ttAnnotation.postToolTip('>' + msg.substring(1, msg.length() - 1) + '<');
                 ttToken = 0;
+            } else if (derefValueMap.get(itok) != null) {
+                avar = derefValueMap.remove(itok);
+                avar.setDerefValue(msg.substring(1, msg.length() - 1));
             } else if (watchValueMap.get(itok) != null) {
                 watch = watchValueMap.remove(itok);
                 watch.setValueToError(msg.substring(1, msg.length() - 1));
                 firePropertyChange(Watch.PROP_VALUE, watch, null);
-                if (watchValueMap.isEmpty()) {
-                    setStopped(); // done evaluating watches
-                }
             } else if (watchTypeMap.get(itok) != null) {
                 watch = watchTypeMap.remove(itok);
                 watch.setTypeToError(msg.substring(1, msg.length() - 1));
@@ -1533,6 +1532,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         }
         return count;
+    }
+    
+    public void requestDerefValue(AbstractVariable var, String name) {
+        if (state.equals(STATE_STOPPED)) {
+            int token = gdb.data_evaluate_expression(name);
+            derefValueMap.put(new Integer(token), var);
+        } else {
+            var.setDerefValue("");
+        }
     }
     
     public void requestWatchValue(GdbWatchVariable var) {
