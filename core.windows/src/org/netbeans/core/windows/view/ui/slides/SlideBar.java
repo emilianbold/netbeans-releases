@@ -295,6 +295,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             if (tc != null) {
                 tc.requestActive();
             }
+            button.setSelected( true );
         } else {
             selModel.setSelectedIndex(-1);
         }
