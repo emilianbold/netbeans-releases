@@ -621,9 +621,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             if (localCompletionResult == null)
                 return;
             if (!isAllResultsFinished(localCompletionResult.resultSets)) {
-                try {
-                    wait();                    
-                } catch (InterruptedException ie) {}
+                Toolkit.getDefaultToolkit().beep();
+                return;
             }
         }
         if (localCompletionResult != null) {
@@ -1245,7 +1244,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     localResult = completionResult;
                     if (finishedResult.getResultId() == localResult) {
                         finished = isAllResultsFinished(localResult.getResultSets());
-                        notifyAll();
                     }
                 }
                 if (finished)
@@ -1257,7 +1255,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     localResult = docResult;
                     if (finishedResult.getResultId() == localResult) {
                         finished = isAllResultsFinished(localResult.getResultSets());
-                        notifyAll();
                     }
                 }
                 if (finished)
@@ -1269,7 +1266,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     localResult = toolTipResult;
                     if (finishedResult.getResultId() == localResult) {
                         finished = isAllResultsFinished(localResult.getResultSets());
-                        notifyAll();
                     }
                 }
                 if (finished)
