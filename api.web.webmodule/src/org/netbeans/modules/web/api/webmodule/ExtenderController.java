@@ -120,7 +120,7 @@ public class ExtenderController {
          * @return a map containinig all properties; never null.
          */
         public Map<String, Object> getProperties() {
-            return Collections.unmodifiableMap(properties);
+            return Collections.unmodifiableMap(new HashMap<String, Object>(properties));
         }
     }
 }
