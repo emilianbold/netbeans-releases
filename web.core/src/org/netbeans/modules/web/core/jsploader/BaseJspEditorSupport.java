@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.util.UserCancelException;
 
 class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
@@ -262,7 +263,11 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         if (obj.getCookie(SaveCookie.class) == null) {
             obj.addSaveCookie(new SaveCookie() {
                 public void save() throws java.io.IOException {
-                    saveDocument();
+                    try {
+                        saveDocument();
+                    } catch(UserCancelException e) {
+                        //just ignore
+                    }
                 }
             });
         }
@@ -329,7 +334,9 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                 NotifyDescriptor.WARNING_MESSAGE);
                 nd.setValue(NotifyDescriptor.NO_OPTION);       
                 DialogDisplayer.getDefault().notify(nd);
-                if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+                if(nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                    throw new UserCancelException();
+                }
             }
             else {
                 try {
@@ -343,7 +350,9 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                             NotifyDescriptor.WARNING_MESSAGE);
                             nd.setValue(NotifyDescriptor.NO_OPTION);
                             DialogDisplayer.getDefault().notify(nd);
-                            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;                
+                            if(nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                                throw new UserCancelException();
+                            }
                     }
                 }
                 catch (javax.swing.text.BadLocationException e){
