@@ -315,6 +315,16 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
         if(portNumber == null || portNumber.equals("")) {
             portNumber = "8080";
         }
+        
+        // getting hostName
+        String serverUrl = instanceProperties.getProperty(InstanceProperties.URL_ATTR);
+        String hostName="localhost"; //NOI18N
+        if (serverUrl!=null && serverUrl.indexOf("::")>0) { //NOI18N
+            int index1 = serverUrl.indexOf("::"); //NOI18N
+            int index2 = serverUrl.lastIndexOf(":"); //NOI18N
+            if (index2>index1+2) hostName = serverUrl.substring(index1+2,index2);
+        }
+        
         String contextRoot = "webservice";//NO18N
         Object moduleType = provider.getJ2eeModule().getModuleType();
         String wsURI = wsName;
@@ -343,7 +353,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
             contextRoot = "webservice";//NO18N for now, we need to find the real value (see bug...57034 and 52265)
         }
         
-        return "http://localhost:" + portNumber +"/" + (contextRoot != null && !contextRoot.equals("") ? contextRoot + "/" : "") + wsURI + "?WSDL";
+        return "http://"+hostName+":" + portNumber +"/" + (contextRoot != null && !contextRoot.equals("") ? contextRoot + "/" : "") + wsURI + "?WSDL";
     }
     
     private String findUriForWS(FileObject webXmlFo, String wsName) {
