@@ -27,7 +27,6 @@ import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
@@ -37,7 +36,7 @@ import org.openide.DialogDescriptor;
  *
  * @author  Ian Formanek
  */
-public class ParametersPicker extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
+public class ParametersPicker extends javax.swing.JPanel {
 
     static final long serialVersionUID =1116033799965380000L;
     /** Initializes the Form */
@@ -215,9 +214,6 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         updateParameterTypes();
     }
 
-    // ----------------------------------------------------------------------------------------
-    // EnhancedCustomPropertyEditor implementation
-
     /** Get the customized property value.
      * @return the property value
      * @exception InvalidStateException when the custom property editor does not contain a valid property value
@@ -245,9 +241,6 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             return new RADConnectionPropertyEditor.RADConnectionDesignValue(selectedComponent, selectedMethod);
         } else return null;
     }
-
-    // ----------------------------------------------------------------------------------------
-    // end of EnhancedCustomPropertyEditor implementation
 
     public String getPreviewText() {
         if (!isFilled())

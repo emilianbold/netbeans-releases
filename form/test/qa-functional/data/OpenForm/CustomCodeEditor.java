@@ -23,16 +23,13 @@ import javax.swing.text.Document;
 
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /** Customizer for "code properties" used by JavaCodeGenerator.
  *
  * @author  vzboril
  */
 
-public class CustomCodeEditor extends javax.swing.JPanel
-                              implements EnhancedCustomPropertyEditor
-{
+public class CustomCodeEditor extends javax.swing.JPanel {
     /** Creates new form CustomCodeEditor */
     public CustomCodeEditor(Node.Property property, DataObject dataObject) {
         initComponents();

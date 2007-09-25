@@ -21,7 +21,6 @@ package org.netbeans.modules.form;
 
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.util.HelpCtx;
@@ -35,9 +34,7 @@ import javax.swing.*;
  *
  * @author  Ian Formanek, Vladimir Zboril
  */
-public class FormCustomEditor extends JPanel
-                              implements EnhancedCustomPropertyEditor
-{
+public class FormCustomEditor extends JPanel {
     private static final int DEFAULT_WIDTH  = 350;
     private static final int DEFAULT_HEIGHT = 350;
 
@@ -324,71 +321,4 @@ public class FormCustomEditor extends JPanel
         }
     }
     
-    // -----------------------------------------------------------------------------
-    // EnhancedCustomPropertyEditor implementation
-
-    /** Get the customized property value.
-     * @return the property value
-     * @exception InvalidStateException when the custom property editor does
-     * not contain a valid property value (and thus it should not be set)
-     */
-    public Object getPropertyValue() throws IllegalStateException {
-        int currentIndex = editorsCombo.getSelectedIndex();
-        PropertyEditor currentEditor = currentIndex > -1 ?
-                                       allEditors[currentIndex] : null;
-        Component currentCustomEditor = currentIndex > -1 ?
-                                        allCustomEditors[currentIndex] : null;
-        Object value;
-
-        if (currentCustomEditor instanceof EnhancedCustomPropertyEditor) {
-            // current editor is EnhancedCustomPropertyEditor too
-            value = ((EnhancedCustomPropertyEditor) currentCustomEditor)
-                                                        .getPropertyValue();
-        }
-        else if (currentIndex > -1) {
-            value = validValues[currentIndex] ? currentEditor.getValue() :
-                                                BeanSupport.NO_VALUE;
-        }
-        else value = editor.getValue();
-
-        // set the current property editor to FormPropertyEditor (to be used as
-        // the custom editor provider next time; and also for code generation);
-        // it should be set for all properties (of all nodes selected)
-        if (currentIndex > -1) {
-            Object[] nodes = editor.getPropertyEnv().getBeans();
-            if (nodes == null || nodes.length <= 1) {
-                FormProperty prop = editor.getProperty();
-
-                prop.setPreCode(preCode);
-                prop.setPostCode(postCode);
-
-                value = new FormProperty.ValueWithEditor(value, currentEditor);
-            }
-            else { // there are more nodes selected
-                String propName = editor.getProperty().getName();
-
-                for (int i=0; i < nodes.length; i++) {
-                    if (!(nodes[i] instanceof Node))
-                        break; // these are not nodes...
-
-                    Node node = (Node) nodes[i];
-                    FormPropertyCookie propCookie = (FormPropertyCookie)
-                        node.getCookie(FormPropertyCookie.class);
-                    if (propCookie == null)
-                        break; // not form nodes...
-
-                    FormProperty prop = propCookie.getProperty(propName);
-                    if (prop == null)
-                        continue; // property not known
-
-                    prop.setPreCode(preCode);
-                    prop.setPostCode(postCode);
-                }
-
-                value = new FormProperty.ValueWithEditor(value, currentIndex);
-            }
-        }
-
-        return value;
-    }
 }
