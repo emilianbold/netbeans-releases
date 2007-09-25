@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+
 import java.util.ResourceBundle;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -33,46 +34,42 @@ import org.openide.util.NbBundle;
 public class Delete implements ActiveEditorDrop {
 
     public static String STMT_DEFAULT = "DELETE FROM table_name\nWHERE column_name = some_value";
-
     SQLStmt stmt = null;
-
     private String variable = "";
     private int scopeIndex = SQLStmt.SCOPE_DEFAULT;
     private String dataSource = "";
     private String update = STMT_DEFAULT;
-    
     private String displayName;
     private String stmtLabel = "";
     private String stmtACSN = "";
     private String stmtACSD = "";
-    
+
     public Delete() {
-        
+
         try {
             displayName = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.resources.Bundle").getString("NAME_jsp-Delete"); // NOI18N
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
-        
+
         ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle"); // NOI18N
         try {
             stmtLabel = bundle.getString("LBL_Delete_Stmt"); // NOI18N
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
         try {
             stmtACSN = bundle.getString("ACSN_Delete_Stmt"); // NOI18N
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
         try {
             stmtACSD = bundle.getString("ACSD_Delete_Stmt"); // NOI18N
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
-        
+
         stmt = new SQLStmt(variable, scopeIndex, dataSource, update, "DeleteStmtCustomizer"); // NOI18N
-        
     }
 
     public boolean handleTransfer(JTextComponent targetComponent) {
-        
+
         boolean accept = stmt.customize(targetComponent, displayName, stmtLabel, stmtACSN, stmtACSD);
         if (accept) {
             String body = createBody();
@@ -82,38 +79,38 @@ public class Delete implements ActiveEditorDrop {
                 accept = false;
             }
         }
-        
+
         return accept;
     }
 
     private String createBody() {
-        
+
         variable = stmt.getVariable();
+        dataSource = stmt.getDataSource();
+        if (variable.equals("")) {// NOI18N
+            variable = JSPPaletteUtilities.CARET;
+        } else if (dataSource.equals("")) {// NOI18N
+            dataSource = JSPPaletteUtilities.CARET;
+        }
         String strVariable = " var=\"\"";
-        if (variable.length() > 0)
+        if (variable.length() > 0) {
             strVariable = " var=\"" + variable + "\""; // NOI18N
-            
+        }
         scopeIndex = stmt.getScopeIndex();
         String strScope = "";
-        if (scopeIndex != SQLStmt.SCOPE_DEFAULT)
+        if (scopeIndex != SQLStmt.SCOPE_DEFAULT) {
             strScope = " scope=\"" + SQLStmt.scopes[scopeIndex] + "\""; // NOI18N
-
-        dataSource = stmt.getDataSource();
+        }
         String strDS = " dataSource=\"\""; // NOI18N
-        if (strDS.length() > 0)
+        if (strDS.length() > 0) {
             strDS = " dataSource=\"" + dataSource + "\""; // NOI18N
-            
+        }
         update = stmt.getStmt();
         String strUpdate = update;
-        if (update.length() > 0)
+        if (update.length() > 0) {
             strUpdate += "\n";
-        
-        String queryBody =  "<sql:update" + strVariable + strScope + strDS + ">\n" + // NOI18N
-                            strUpdate +
-                            "</sql:update>";// NOI18N
-        
+        }
+        String queryBody = "<sql:update" + strVariable + strScope + strDS + ">\n" + strUpdate + "</sql:update>"; // NOI18N
         return queryBody;
     }
-
-   
 }

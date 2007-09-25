@@ -67,7 +67,8 @@ public class Choose implements ActiveEditorDrop {
     private String generateChooseBody() {
         
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < whens; i++)
+        sb.append("<c:when test=\""+JSPPaletteUtilities.CARET+"\">\n</c:when>\n");
+        for (int i = 1; i < whens; i++)
             sb.append("<c:when test=\"\">\n</c:when>\n"); // NOI18N
         
         if (otherwise)

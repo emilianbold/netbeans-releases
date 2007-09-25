@@ -18,6 +18,8 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+
+import javax.swing.JSplitPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
@@ -37,8 +39,6 @@ public class ForEach implements ActiveEditorDrop {
     private String end = "";
     private String step = "";
 
-
-
     public ForEach() {
     }
 
@@ -54,42 +54,40 @@ public class ForEach implements ActiveEditorDrop {
                 accept = false;
             }
         }
-        
+
         return accept;
     }
 
     private String createBody() {
-        
-        String strVariable = " var=\"" + variable + "\""; // NOI18N
-        
-        String strCollection = " items=\"" + collection + "\""; // NOI18N
-        
-        String strBegin = "", strEnd = "", strStep = "";
-        if (fixed) {
-            if (begin.length() > 0)
-                strBegin = " begin=\"" + begin + "\""; // NOI18N
-            if (end.length() > 0)
-                strEnd = " end=\"" + end + "\""; // NOI18N
-            if (step.length() > 0)
-                strStep = " step=\"" + step + "\""; // NOI18N
-        }
-        
-        String fe =  "<c:forEach" + strVariable + strCollection + strBegin + strEnd + strStep + ">\n" + // NOI18N
-                     "</c:forEach>";// NOI18N
-        
-        return fe;
-    }
 
-    public String getVariable() {
-        return variable;
+        if (variable.equals("")) {// NOI18N
+            variable = JSPPaletteUtilities.CARET;
+        } else if (collection.equals("")) {// NOI18N
+            collection = JSPPaletteUtilities.CARET;
+        }
+        String strVariable = " var=\"" + variable + "\""; // NOI18N
+        String strCollection = " items=\"" + collection + "\""; // NOI18N
+        String strBegin = "";
+        String strEnd = "";
+        String strStep = "";
+        if (fixed) {
+            if (begin.length() > 0) {
+                strBegin = " begin=\"" + begin + "\""; // NOI18N
+            }
+            if (end.length() > 0) {
+                strEnd = " end=\"" + end + "\""; // NOI18N
+            }
+            if (step.length() > 0) {
+                strStep = " step=\"" + step + "\""; // NOI18N
+            }
+        }
+
+        String fe = "<c:forEach" + strVariable + strCollection + strBegin + strEnd + strStep + ">\n" + "</c:forEach>"; // NOI18N
+        return fe;
     }
 
     public void setVariable(String variable) {
         this.variable = variable;
-    }
-
-    public String getCollection() {
-        return collection;
     }
 
     public void setCollection(String collection) {
@@ -104,29 +102,15 @@ public class ForEach implements ActiveEditorDrop {
         this.fixed = fixed;
     }
 
-    public String getBegin() {
-        return begin;
-    }
-
     public void setBegin(String begin) {
         this.begin = begin;
-    }
-
-    public String getEnd() {
-        return end;
     }
 
     public void setEnd(String end) {
         this.end = end;
     }
 
-    public String getStep() {
-        return step;
-    }
-
     public void setStep(String step) {
         this.step = step;
     }
-
-   
 }

@@ -50,6 +50,8 @@ import org.openide.util.Exceptions;
  */
 public final class JSPPaletteUtilities {
 
+    public static String CARET = "&CARET&";// NOI18N
+
     public static void insert(String s, JTextComponent target) throws BadLocationException {
         insert(s, target, true);
     }
@@ -75,7 +77,14 @@ public final class JSPPaletteUtilities {
         try {
             doc.atomicLock();
             try {
+                int cursor_offset = s.indexOf(CARET);
+                if (cursor_offset != -1) {
+                    s = s.replace(CARET, "");
+                }
                 int start = insert(s, target, _doc);
+                if (cursor_offset != -1) {
+                    target.setCaretPosition(start + cursor_offset);
+                }
                 if (reformat && start >= 0 && _doc instanceof BaseDocument) {
                     // format the inserted text
                     int end = start + s.length();
@@ -108,6 +117,7 @@ public final class JSPPaletteUtilities {
 
             //replace selected text by the inserted one
             start = caret.getDot();
+
             doc.insertString(start, s, null);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
@@ -172,6 +182,7 @@ public final class JSPPaletteUtilities {
         final List<String> result = new ArrayList<String>();
         if (prefix != null) {
             runUserActionTask(target, new Task<CompilationController>() {
+
                 public void run(CompilationController parameter) throws Exception {
                     TypeElement te = parameter.getElements().getTypeElement(fqcn);
                     if (te != null) {

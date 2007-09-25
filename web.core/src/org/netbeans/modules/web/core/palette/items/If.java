@@ -57,7 +57,10 @@ public class If implements ActiveEditorDrop {
     }
 
     private String createBody() {
-        
+        if(condition.equals(""))// NOI18N
+        {
+            condition = JSPPaletteUtilities.CARET;
+        }
         String strCondition = " test=\"" + condition + "\""; // NOI18N
         
         String strVariable = "";
