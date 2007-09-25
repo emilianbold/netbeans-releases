@@ -284,7 +284,7 @@ public class RestComponentData {
 
                 for (int i = 0; i < size; i++) {
                     Node paramNode = children.item(i);
-                    System.out.println("paramNode = " + paramNode);
+
                     if (paramNode.getNodeName().equals("param")) {
                         NamedNodeMap attributes = paramNode.getAttributes();
                         String name = attributes.getNamedItem("name").getNodeValue();
