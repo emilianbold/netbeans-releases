@@ -157,13 +157,13 @@ public class TemplatesAction extends CallableSystemAction {
                 int i = 0;
                 while (res && i < nodes.length) {
                     Node n = nodes [i];
-                    EditCookie ec = (EditCookie) n.getLookup ().lookup (EditCookie.class);
-                    OpenCookie oc = (OpenCookie) n.getLookup ().lookup (OpenCookie.class);
+                    EditCookie ec = n.getLookup().lookup(EditCookie.class);
+                    OpenCookie oc = n.getLookup().lookup(OpenCookie.class);
                     res = ec != null || oc != null;
                     
                     // 65037: Template Manager should not offer to Open in Editor an empty pseudotemplate
                     if (res) {
-                        DataObject dobj = (DataObject) n.getLookup ().lookup (DataObject.class);
+                        DataObject dobj = n.getLookup().lookup(DataObject.class);
                         assert dobj != null : "DataObject for node " + n;
                         res = dobj.getPrimaryFile ().getSize () > 0;
                     }
