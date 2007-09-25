@@ -16,16 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.collab.channel.filesharing.filehandler;
 
 import com.sun.collablet.CollabException;
-
-import org.openide.cookies.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-
-import java.io.*;
-
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import org.netbeans.modules.collab.channel.filesharing.FilesharingContext;
 import org.netbeans.modules.collab.channel.filesharing.mdc.util.Base64;
 import org.netbeans.modules.collab.channel.filesharing.mdc.util.StreamCopier;
@@ -34,9 +32,10 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.FileData;
 import org.netbeans.modules.collab.channel.filesharing.msgbean.SendFile;
 import org.netbeans.modules.collab.channel.filesharing.msgbean.SendFileData;
 import org.netbeans.modules.collab.core.Debug;
-
-import org.netbeans.modules.form.*;
-
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * FileHandler for Form files (non-editable files)
