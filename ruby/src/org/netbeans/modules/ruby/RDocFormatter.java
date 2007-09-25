@@ -151,10 +151,12 @@ class RDocFormatter {
                     return;
                 }
             }
-            if (!(n > 4 && RubyUtils.endsWith(sb, "<br>"))) {
+            if (sb.length() > 0) {
+                if (!(n > 4 && RubyUtils.endsWith(sb, "<br>"))) {
+                    sb.append("<br>");
+                }
                 sb.append("<br>");
             }
-            sb.append("<br>");
             return;
         }
         

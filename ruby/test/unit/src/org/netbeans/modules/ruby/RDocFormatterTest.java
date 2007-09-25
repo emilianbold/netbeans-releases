@@ -234,6 +234,7 @@ public class RDocFormatterTest extends RubyTestBase {
     public void testLineBreaks() {
         RDocFormatter instance = new RDocFormatter();
         
+        instance.appendLine("#");
         instance.appendLine("# Calling content_for stores the block of markup for later use.");
         instance.appendLine("# Subsequently, you can make calls to it by name with <tt>yield</tt> in");
         instance.appendLine("# another template or in the layout.");
