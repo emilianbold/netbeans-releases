@@ -20,25 +20,50 @@
 package org.openide.text;
 
 
-import java.beans.*;
-import java.io.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.ref.Reference;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.UIException;
-import org.openide.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileLock;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.OpenSupport;
 import org.openide.loaders.SaveAsCapable;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.lookup.*;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeListener;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
 
 /**
@@ -136,13 +161,18 @@ public class DataEditorSupport extends CloneableEditorSupport {
     * @return name of the editor
     */
     protected String messageName () {
-        if (! obj.isValid()) return ""; // NOI18N
+        if (! obj.isValid()) {
+            return ""; // NOI18N
+        }
 
         return addFlagsToName(obj.getNodeDelegate().getDisplayName());
     }
     
+    @Override
     protected String messageHtmlName() {
-        if (! obj.isValid()) return null;
+        if (! obj.isValid()) {
+            return null;
+        }
 
         String name = obj.getNodeDelegate().getHtmlDisplayName();
         if (name != null) {
@@ -173,8 +203,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
 		new Integer (version), name );
     }
     
+    @Override
     protected String documentID() {
-        if (! obj.isValid()) return ""; // NOI18N
+        if (! obj.isValid()) {
+            return ""; // NOI18N
+        }
         return obj.getPrimaryFile().getName();
     }
 
@@ -182,6 +215,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     *
     * @return text to show to the user
     */
+    @Override
     protected String messageToolTip () {
         // update tooltip
         return FileUtil.getFileDisplayName(obj.getPrimaryFile());
@@ -195,6 +229,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
      *
      * @since 4.3
      */
+    @Override
     protected String messageLine (Line line) {
         return NbBundle.getMessage(DataObject.class, "FMT_LineDisplayName2",
             obj.getPrimaryFile().getNameExt(),
@@ -212,6 +247,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
      *
      * @param editor the editor that has been created and should be annotated
      */
+    @Override
     protected void initializeCloneableEditor (CloneableEditor editor) {
         // Prevention to bug similar to #17134. Don't call getNodeDelegate
         // on invalid data object. Top component should be discarded later.
@@ -227,6 +263,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
     /** Called when closed all components. Overrides superclass method,
      * also unregisters listening on node delegate. */
+    @Override
     protected void notifyClosed() {
         // #27645 All components were closed, unregister weak listener on node.
         nodeL = null;
@@ -240,6 +277,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     * @param kit kit to user to create the document
     * @return the document annotated by the properties
     */
+    @Override
     protected StyledDocument createStyledDocument (EditorKit kit) {
         StyledDocument doc = super.createStyledDocument (kit);
             
@@ -261,6 +299,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** Checks whether is possible to close support components.
      * Overrides superclass method, adds checking
      * for read-only property of saving file and warns user in that case. */
+    @Override
     protected boolean canClose() {
         if(desEnv().isModified() && isEnvReadOnly()) {
             Object result = DialogDisplayer.getDefault().notify(
@@ -297,6 +336,13 @@ public class DataEditorSupport extends CloneableEditorSupport {
      */
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+        if (doc == null) {
+            throw new NullPointerException("Document is null"); // NOI18N
+        }
+        if (kit == null) {
+            throw new NullPointerException("Kit is null"); // NOI18N
+        }
+        
         final Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         final Writer w = new OutputStreamWriter (stream, c);
         try {
@@ -308,6 +354,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
     /** Saves document. Overrides superclass method, adds checking
      * for read-only property of saving file and warns user in that case. */
+    @Override
     public void saveDocument() throws IOException {
         if(desEnv().isModified() && isEnvReadOnly()) {
             IOException e = new IOException("File is read-only: " + ((Env)env).getFileImpl()); // NOI18N
@@ -322,9 +369,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
     }
 
     /** Indicates whether the <code>Env</code> is read only. */
+    @Override
     boolean isEnvReadOnly() {
-        CloneableEditorSupport.Env env = desEnv();
-        return env instanceof Env && !((Env) env).getFileImpl().canWrite();
+        CloneableEditorSupport.Env myEnv = desEnv();
+        return myEnv instanceof Env && !((Env) myEnv).getFileImpl().canWrite();
     }
     
     /** Needed for EditorSupport */
@@ -348,8 +396,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * @since 4.3
      */
     public static DataObject findDataObject (Line l) {
-        if (l == null) throw new NullPointerException();
-        return (DataObject)l.getLookup ().lookup (DataObject.class);
+        if (l == null) {
+            throw new NullPointerException();
+        }
+        return l.getLookup().lookup(DataObject.class);
     }
     
     /**
@@ -435,8 +485,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
                         os.close(); // performs firing
                         os = null;
 
-                    } catch( BadLocationException ex ) {
-                        ERR.log( Level.INFO, null, ex );
+                    } catch( BadLocationException blex ) {
+                        ERR.log( Level.INFO, null, blex );
                     } finally {
                         if (os != null) { // try to close if not yet done
                             os.close();
@@ -579,6 +629,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
             final FileObject fo = getFileImpl ();
             if (!warned && fo.getSize () > 1024 * 1024) {
                 class ME extends org.openide.util.UserQuestionException {
+                    static final long serialVersionUID = 1L;
+                    
                     private long size;
                     
                     public ME (long size) {
@@ -586,6 +638,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
                         this.size = size;
                     }
                     
+                    @Override
                     public String getLocalizedMessage () {
                         Object[] arr = {
                             fo.getPath (),
@@ -657,6 +710,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         *   is the support should discard all previous changes
          * @see  org.openide.filesystems.FileObject#isReadOnly
         */
+        @Override
         public void markModified() throws java.io.IOException {
             // XXX This shouldn't be here. But it is due to the 'contract',
             // see javadoc to this method.
@@ -679,6 +733,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         /** Reverse method that can be called to make the environment 
         * unmodified.
         */
+        @Override
         public void unmarkModified() {
             ERR.fine("unmarkModified: " + fileLock + " for " + fileObject); // NOI18N
             if (fileLock != null && fileLock.isValid()) {
@@ -725,6 +780,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
              */
         }
         
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             CloneableOpenSupport cos = super.findCloneableOpenSupport ();
             if (cos instanceof DataEditorSupport) {
@@ -766,10 +822,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
 
         /** Handles <code>FileObject</code> deletion event. */
+        @Override
         public void fileDeleted(FileEvent fe) {
-            Env env = this.env.get();
+            Env myEnv = this.env.get();
             FileObject fo = fe.getFile();
-            if(env == null || env.getFileImpl() != fo) {
+            if(myEnv == null || myEnv.getFileImpl() != fo) {
                 // the Env change its file and we are not used
                 // listener anymore => remove itself from the list of listeners
                 fo.removeFileChangeListener(this);
@@ -778,16 +835,17 @@ public class DataEditorSupport extends CloneableEditorSupport {
             
             fo.removeFileChangeListener(this);
             
-            env.fileRemoved(true);
+            myEnv.fileRemoved(true);
             fo.addFileChangeListener(this);
         }
         
         /** Fired when a file is changed.
         * @param fe the event describing context where action has taken place
         */
+        @Override
         public void fileChanged(FileEvent fe) {
-            Env env = this.env.get ();
-            if (env == null || env.getFileImpl () != fe.getFile ()) {
+            Env myEnv = this.env.get ();
+            if (myEnv == null || myEnv.getFileImpl () != fe.getFile ()) {
                 // the Env change its file and we are not used
                 // listener anymore => remove itself from the list of listeners
                 fe.getFile ().removeFileChangeListener (this);
@@ -800,10 +858,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 fe.getFile().removeFileChangeListener(this);
                 // File doesn't exist on disk -> simulate env is invalid,
                 // even the fileObject could be valid, see VCS FS.
-                env.fileRemoved(true);
+                myEnv.fileRemoved(true);
                 fe.getFile().addFileChangeListener(this);
             } else {
-                env.fileChanged (fe.isExpected (), fe.getTime ());
+                myEnv.fileChanged (fe.isExpected (), fe.getTime ());
             }
         }
                 
@@ -820,6 +878,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             this.editor = editor;
         }
         
+        @Override
         public void propertyChange(final PropertyChangeEvent ev) {
             Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
@@ -842,6 +901,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
      */
     private static class DOEnvLookup extends AbstractLookup 
     implements PropertyChangeListener {
+        static final long serialVersionUID = 333L;
+        
         private DataObject dobj;
         private InstanceContent ic;
         
@@ -864,7 +925,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         
         public void propertyChange(PropertyChangeEvent ev) {
             String propName = ev.getPropertyName();
-            if (propName == null || propName == DataObject.PROP_PRIMARY_FILE) {
+            if (propName == null || propName.equals(DataObject.PROP_PRIMARY_FILE)) {
                 updateLookup();
             }
         }
