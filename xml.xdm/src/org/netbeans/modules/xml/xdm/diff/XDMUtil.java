@@ -189,6 +189,8 @@ public class XDMUtil {
                             continue;
                     }
                     filteredDiffs.add(d);
+                } else {
+                    filteredDiffs.add(d);
                 }
             }
             return filteredDiffs;

@@ -440,7 +440,16 @@ public class XDMUtilTest extends TestCase {
         String xml2 = readXMLString("diff/xdu/textchange1_2.xml");
         List<Difference> diffs = compareXML(xml1, xml2, criteria);
         assertEquals("compare identical XML", 2, diffs.size());
-    }     
+    }    
+    
+    public void testCompareIssue114941() throws Exception {
+        XDMUtil util = new XDMUtil();
+        XDMUtil.ComparisonCriteria criteria = XDMUtil.ComparisonCriteria.EQUAL;
+        String xml1 = readXMLString("diff/xdu/test114941_1.xml");
+        String xml2 = readXMLString("diff/xdu/test114941_2.xml");
+        List<Difference> diffs = compareXML(xml1, xml2, criteria);
+        assertEquals("compare identical XML", 3, diffs.size());
+    }    
 
     private String readXMLString(String path) throws Exception {
         Document doc = Util.getResourceAsDocument(path);
