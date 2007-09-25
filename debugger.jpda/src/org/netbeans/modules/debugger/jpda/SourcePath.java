@@ -439,6 +439,37 @@ public class SourcePath {
             System.arraycopy (fs2, 0, fs, fs1.length, fs2.length);
             return fs;
         }
+        
+        public String[] getProjectSourceRoots() {
+            String[] projectSourceRoots1;
+            String[] projectSourceRoots2;
+            //System.err.println("\nCompoundContextProvider["+toString()+"].getProjectSourceRoots()...\n");
+            try {
+                java.lang.reflect.Method getProjectSourceRootsMethod = cp1.getClass().getMethod("getProjectSourceRoots", new Class[] {}); // NOI18N
+                projectSourceRoots1 = (String[]) getProjectSourceRootsMethod.invoke(cp1, new Object[] {});
+            } catch (Exception ex) {
+                projectSourceRoots1 = new String[0];
+            }
+            try {
+                java.lang.reflect.Method getProjectSourceRootsMethod = cp2.getClass().getMethod("getProjectSourceRoots", new Class[] {}); // NOI18N
+                projectSourceRoots2 = (String[]) getProjectSourceRootsMethod.invoke(cp2, new Object[] {});
+            } catch (Exception ex) {
+                projectSourceRoots2 = new String[0];
+            }
+            if (projectSourceRoots1.length == 0) {
+                //System.err.println("\nCompoundContextProvider.getProjectSourceRoots() = "+java.util.Arrays.toString(projectSourceRoots2)+"\n");
+                return projectSourceRoots2;
+            }
+            if (projectSourceRoots2.length == 0) {
+                //System.err.println("\nCompoundContextProvider.getProjectSourceRoots() = "+java.util.Arrays.toString(projectSourceRoots1)+"\n");
+                return projectSourceRoots1;
+            }
+            String[] projectSourceRoots = new String[projectSourceRoots1.length + projectSourceRoots2.length];
+            System.arraycopy (projectSourceRoots1, 0, projectSourceRoots, 0, projectSourceRoots1.length);
+            System.arraycopy (projectSourceRoots2, 0, projectSourceRoots, projectSourceRoots1.length, projectSourceRoots2.length);
+            //System.err.println("\nCompoundContextProvider.getProjectSourceRoots() = "+java.util.Arrays.toString(projectSourceRoots)+"\n");
+            return projectSourceRoots;
+        }
 
         public void setSourceRoots (String[] sourceRoots) {
             cp1.setSourceRoots (sourceRoots);
@@ -454,6 +485,13 @@ public class SourcePath {
             cp1.removePropertyChangeListener (l);
             cp2.removePropertyChangeListener (l);
         }
+
+        @Override
+        public String toString() {
+            return "CompoundContextProvider["+cp1.toString()+", "+cp2.toString()+"]";
+        }
+        
+        
     }
 
     private static class CompoundAnnotation {
