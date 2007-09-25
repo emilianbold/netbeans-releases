@@ -295,24 +295,33 @@ public final class TreePathHandle {
             //source does not exist
             ElementHandle eh = ElementHandle.create(element);
 
-            Symbol.ClassSymbol clsSym = (Symbol.ClassSymbol) SourceUtils.getEnclosingTypeElement(element);
-            FileObject  fo = URLMapper.findFileObject(clsSym.classfile.toUri().toURL());
-            FileObject file = fo;
-            if (fo.getNameExt().endsWith("sig")) {//NOI18N
-                //conversion sig -> class
-                String pkgName = FileObjects.convertPackage2Folder(clsSym.getEnclosingElement().getQualifiedName().toString());
-                StringTokenizer tk = new StringTokenizer(pkgName, "/"); //NOI18N
-                for (int i = 0; fo != null && i <= tk.countTokens(); i++) {
-                    fo = fo.getParent();
+            Symbol.ClassSymbol clsSym;
+            if (element instanceof Symbol.ClassSymbol) {
+              clsSym = (Symbol.ClassSymbol) element;
+            } else {
+              clsSym = (Symbol.ClassSymbol) SourceUtils.getEnclosingTypeElement(element);
+            }
+            FileObject file = null;
+            if (clsSym!=null) {
+                FileObject fo = URLMapper.findFileObject(clsSym.classfile.toUri().toURL());
+                file = fo;
+                if (fo.getNameExt().endsWith("sig")) {
+                    //NOI18N
+                    //conversion sig -> class
+                    String pkgName = FileObjects.convertPackage2Folder(clsSym.getEnclosingElement().getQualifiedName().toString());
+                    StringTokenizer tk = new StringTokenizer(pkgName, "/"); //NOI18N
+                    for (int i = 0; fo != null && i <= tk.countTokens(); i++) {
+                        fo = fo.getParent();
+                    }
+                    if (fo != null) {
+                        URL url = fo.getURL();
+                        URL sourceRoot = Index.getSourceRootForClassFolder(url);
+                        FileObject root = URLMapper.findFileObject(sourceRoot);
+                        String resourceName = FileUtil.getRelativePath(fo, URLMapper.findFileObject(clsSym.classfile.toUri().toURL()));
+                        file = root.getFileObject(resourceName.replace(".sig", ".class")); //NOI18N
+                    }
                 }
-                if (fo != null) {
-                    URL url = fo.getURL();
-                    URL sourceRoot = Index.getSourceRootForClassFolder(url);
-                    FileObject root = URLMapper.findFileObject(sourceRoot);
-                    String resourceName = FileUtil.getRelativePath(fo, URLMapper.findFileObject(clsSym.classfile.toUri().toURL()));
-                    file = root.getFileObject(resourceName.replace(".sig", ".class"));//NOI18N
-                }
-            } 
+            }
             return new TreePathHandle(null, null, file, eh, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
