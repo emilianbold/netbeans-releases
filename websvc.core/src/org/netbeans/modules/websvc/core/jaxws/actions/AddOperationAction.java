@@ -68,14 +68,6 @@ public class AddOperationAction extends NodeAction  {
             AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(implClassFo);
             if (addOperationCookie!=null) addOperationCookie.addOperation(implClassFo);
         }
-// Retouche        
-//        JavaMetamodel.getManager().waitScanFinished();
-//
-//        JaxWsClassesCookie cookie = JaxWsCookieFactory.getJaxWsClassesCookie((Service)activatedNodes[0].getLookup().lookup(Service.class),JMIUtils.getJavaClassFromNode(activatedNodes[0]));
-//        if (cookie == null) return;
-//        JavaClass javaClass = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
-//        Method m = WSUtils.addWsOperation(javaClass, NbBundle.getMessage(AddOperationAction.class, "TXT_DefaultOperationName"));
-//        if (m!=null) JMIUtils.openInEditor(m);
     }
 }
 
