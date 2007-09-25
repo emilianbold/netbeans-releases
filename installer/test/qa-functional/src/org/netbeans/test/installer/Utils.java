@@ -47,6 +47,7 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTestCase;
+import sun.management.FileSystem;
 
 /**
  *
@@ -391,6 +392,8 @@ public class Utils {
         Utils.waitSecond(data, 5);
 
         NbTestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
+        
+        NbTestCase.assertEquals("NetBeans dir created", OK, Utils.DirExist(NB_DIR_NAME, data));
 
         NbTestCase.assertEquals("Extract uninstaller jar", OK, Utils.extractUninstallerJar(data));
         NbTestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
@@ -403,6 +406,8 @@ public class Utils {
         Utils.waitSecond(data, 5);
 
         NbTestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
+        
+        NbTestCase.assertFalse("NetBeans dir deleted", !Utils.DirExist(NB_DIR_NAME, data).equals(OK));
     }
 
     public static void phaseTwo(TestData data) {
@@ -466,7 +471,7 @@ public class Utils {
                 } else {
                     data.getLogger().log(Level.INFO, "Cannot find build number. Attempt #" + attempt);
                     
-                    FileWriter page = new FileWriter(new File(data.getTestWorkDir() + "downloadpage" + attempt + ".html"));
+                    FileWriter page = new FileWriter(new File(data.getTestWorkDir() + File.separator + "downloadpage" + attempt + ".html"));
                     page.write(pageContent.toString());
                     page.close();
                 }
@@ -476,6 +481,15 @@ public class Utils {
             waitSecond(data, 5);
         }
         return null;
+    }
+    
+    
+    public static String DirExist(String dirName, TestData data) {
+        File dir = new File(data.getTestWorkDir() + File.separator + dirName);
+        if(dir.exists() && dir.isDirectory())
+            return OK;
+        else
+            return "Directory " + dirName + "does not exist";
     }
 
     private static String toString(Exception ex) {
