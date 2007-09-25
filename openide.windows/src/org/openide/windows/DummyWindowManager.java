@@ -361,14 +361,6 @@ final class DummyWindowManager extends WindowManager {
         }
     }
     
-    protected void topComponentOpenAtTabPosition(TopComponent tc, int index) {
-        topComponentOpen(tc);
-    }
-    
-    protected int topComponentGetTabPosition(TopComponent tc) {
-        return topComponentIsOpened(tc) ? 0 : -1;
-    }
-
     protected void topComponentClose(TopComponent tc) {
         componentHidden(tc);
         componentCloseNotify(tc);

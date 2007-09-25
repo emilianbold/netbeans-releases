@@ -371,7 +371,9 @@ public abstract class WindowManager extends Object implements Serializable {
      * @param position Index of the requested position.
      * @since 6.15
      */
-    protected abstract void topComponentOpenAtTabPosition(TopComponent tc, int position);
+    protected void topComponentOpenAtTabPosition(TopComponent tc, int position) {
+        topComponentOpen(tc);
+    }
     
     /** Gives position index of given TopComponent in the mode. Result is
      * undefined for closed TopComponents.
@@ -380,7 +382,21 @@ public abstract class WindowManager extends Object implements Serializable {
      * @return Index of position.
      * @since 6.15
      */
-    protected abstract int topComponentGetTabPosition(TopComponent tc);
+    protected int topComponentGetTabPosition(TopComponent tc) {
+        Mode mode = findMode(tc);
+        if (mode == null || !topComponentIsOpened(tc)) {
+            return -1;
+        }
+        
+        TopComponent[] tcs = mode.getTopComponents();
+        for (int i = 0; i < tcs.length; i++) {
+            if (tcs[i] == tc) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 
     /** Provides closing of specified <code>TopComponent</code>.
      * @param tc <code>TopComponent</code> to close
