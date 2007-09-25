@@ -20,6 +20,9 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -40,11 +43,13 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        FileObject primaryFile = getPrimaryFile();
-        if(primaryFile == null)
-            return 0;
-
-        return COMPLETION_QUERY_TYPE;
+        int type = ((XMLSyntaxSupport)Utilities.getDocument(component).
+                getSyntaxSupport()).checkCompletion(component, typedText, false);
+        
+        if(type == ExtSyntaxSupport.COMPLETION_POPUP)
+            return COMPLETION_QUERY_TYPE;
+        
+        return 0;
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {

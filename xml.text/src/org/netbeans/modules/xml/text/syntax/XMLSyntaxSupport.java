@@ -625,6 +625,18 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     }
                     break;
             }
+            //no completion inside CDATA or comment section
+            try {
+                int dotPos = target.getCaret().getDot();
+                BaseDocument doc = (BaseDocument)target.getDocument();
+                SyntaxElement sel = getElementChain(dotPos);
+                if(sel instanceof CDATASectionImpl || sel instanceof CommentImpl) {
+                    return COMPLETION_HIDE;
+                }
+            } catch (BadLocationException e) {
+                //ignore
+            }
+            
             if (retVal == COMPLETION_POPUP) requestedAutoCompletion = true;
             return retVal;
         } else { // the pane is already visible

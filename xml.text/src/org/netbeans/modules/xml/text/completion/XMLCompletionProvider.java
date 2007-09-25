@@ -58,7 +58,8 @@ public class XMLCompletionProvider implements CompletionProvider {
         
         if(type == ExtSyntaxSupport.COMPLETION_POPUP)
             return COMPLETION_QUERY_TYPE;
-        else return 0;
+        
+        return 0;
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
