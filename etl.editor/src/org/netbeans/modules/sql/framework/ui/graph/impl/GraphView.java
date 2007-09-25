@@ -935,7 +935,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
             WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new RuntimeOutputNode((RuntimeOutput)runOutArea)});
         }else{
             mObj = DataObjectProvider.getProvider().getActiveDataObject();
-            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new CollaborationGraphNode((ETLDataObject) mObj)});
+            WindowManager.getDefault().getRegistry().getActivated().setActivatedNodes(new Node[]{new CollaborationGraphNode((ETLDataObject) mObj)});            
         }
         resetSelectionColors();
         

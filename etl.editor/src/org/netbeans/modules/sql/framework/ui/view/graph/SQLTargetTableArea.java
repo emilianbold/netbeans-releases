@@ -36,6 +36,7 @@ import org.netbeans.modules.sql.framework.ui.graph.impl.GradientBrush;
 import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoBrush;
+import org.openide.windows.WindowManager;
 
 
 
@@ -135,11 +136,11 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
         addRemovePopUpMenu(aListener);
         
         // Properties
-        //popUpMenu.addSeparator();
+        popUpMenu.addSeparator();
         String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
         propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
         propertiesItem.addActionListener(aListener);
-        //popUpMenu.add(propertiesItem); 
+        popUpMenu.add(propertiesItem); 
     }
     
     Icon createIcon() {
@@ -173,8 +174,8 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     }
     
     private void Properties_ActionPerformed(ActionEvent e) {
-        Object[] args = new Object[] { SQLTargetTableArea.this, Boolean.TRUE};
-        this.getGraphView().execute(ICommand.SHOW_PROPERTY_CMD, args);
+         if(!WindowManager.getDefault ().findTopComponent ("properties").isShowing())
+           WindowManager.getDefault ().findTopComponent ("properties").open ();
     }
     
     private void ShowSql_ActionPerformed(ActionEvent e) {

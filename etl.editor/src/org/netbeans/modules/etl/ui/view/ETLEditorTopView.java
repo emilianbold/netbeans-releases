@@ -177,8 +177,8 @@ public class ETLEditorTopView extends BasicTopView {
 //        actions.add(GraphAction.getAction(PrintAction.class));
         
         //null is used for seperator
-        //actions.add(null);        
-        //actions.add(GraphAction.getAction(CollabPropertiesAction.class));
+        actions.add(null);        
+        actions.add(GraphAction.getAction(CollabPropertiesAction.class));
         
         return actions;
     }
