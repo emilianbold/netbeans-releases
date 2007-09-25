@@ -36,6 +36,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
@@ -208,7 +209,12 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
                     SchemaColumnViewMultiViewElement.class,
                     "MSG_NotWellformedSchema");
         }
-        setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
+        //fix for IZ:116057
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
+            }
+        });
         emptyUI(errorMessage);
     }
 

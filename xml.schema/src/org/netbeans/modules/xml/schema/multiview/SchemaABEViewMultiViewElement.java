@@ -30,6 +30,7 @@ import javax.swing.ActionMap;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -92,17 +93,11 @@ public class SchemaABEViewMultiViewElement extends TopComponent
     
     
     public void propertyChange(PropertyChangeEvent evt) {
-        String property = evt.getPropertyName();
-        
-        if(AXIModel.STATE_PROPERTY.equals(property)) {
-            onModelStateChanged(evt);
+        String property = evt.getPropertyName();        
+        if(!AXIModel.STATE_PROPERTY.equals(property)) {
             return;
-        }
-    }
-    
-    private void onModelStateChanged(PropertyChangeEvent evt) {
+        }        
         State newState = (State)evt.getNewValue();
-        Object source = evt.getSource();
         if(newState == AXIModel.State.VALID) {
             errorMessage = null;
             recreateUI();
@@ -113,7 +108,12 @@ public class SchemaABEViewMultiViewElement extends TopComponent
             errorMessage = NbBundle.getMessage(
                     SchemaColumnViewMultiViewElement.class,
                     "MSG_InvalidSchema");
-        setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
+        //fix for IZ:116057
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
+            }
+        });
         emptyUI(errorMessage);
     }
     
