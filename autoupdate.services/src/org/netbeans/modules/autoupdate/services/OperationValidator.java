@@ -198,16 +198,19 @@ abstract class OperationValidator {
         }
         
         private static Set<Module> requiredForUninstall (Set<Module> resultToUninstall, final Set<Module> requestedToUninstall, ModuleManager mm) {
-            resultToUninstall.addAll (getRequiredModules (requestedToUninstall, mm));
-
-            // do traversal up
-            Set<Module> dependenciesToUninstall = new HashSet<Module> ();
-            for (Module m : resultToUninstall) {
-                dependenciesToUninstall.addAll (Utilities.findDependingModules (m, mm));
+            boolean increasing = true;
+            Set<Module> possibleRequestedToUninstall = new HashSet<Module> (requestedToUninstall);
+            while (increasing) {
+                // do traversal up
+                Set<Module> dependenciesToUninstall = new HashSet<Module> ();
+                for (Module m : getRequiredModules (possibleRequestedToUninstall, mm)) {
+                    dependenciesToUninstall.addAll (Utilities.findDependingModules (m, mm));
+                }
+                increasing = possibleRequestedToUninstall.addAll (dependenciesToUninstall);
+                resultToUninstall.addAll(dependenciesToUninstall);
             }
-                
+
             resultToUninstall.addAll (requestedToUninstall);
-            resultToUninstall.addAll (dependenciesToUninstall);
             
             return resultToUninstall;
         }        
@@ -390,6 +393,19 @@ abstract class OperationValidator {
 
         Set<Module> result = new HashSet<Module> (requested);
         result.addAll (candidates);
+        
+        // create collection of all installed eagers
+        Set<Module> installedEagers = new HashSet<Module> ();
+        for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getInstalledEagers ()) {
+            // take a module
+            UpdateElementImpl impl = Trampoline.API.impl (eagerEl);
+            assert impl instanceof ModuleUpdateElementImpl : eagerEl + " is instanceof ModuleUpdateElementImpl";
+            ModuleInfo mi = ((ModuleUpdateElementImpl) impl).getModuleInfo ();
+            installedEagers.add (Utilities.toModule (mi));
+        }
+        // add installedEagers into affected modules to don't break uninstall of candidates
+        result.addAll (installedEagers);
+        
         candidates.removeAll (requested);
         
         Set<Module> canSkip = new HashSet<Module> ();
@@ -413,6 +429,10 @@ abstract class OperationValidator {
             }
         }
         result.removeAll (canSkip);
+        
+        // removed eagers
+        result.removeAll (installedEagers);
+        
         return result;
     }
     

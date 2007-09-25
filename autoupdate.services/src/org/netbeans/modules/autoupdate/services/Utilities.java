@@ -820,7 +820,9 @@ public class Utilities {
         for (Object depO : mm.getModuleInterdependencies (m, true, true)) {
             assert depO instanceof Module : depO + " is instanceof Module";
             Module depM = (Module) depO;
-            res.add (depM);
+            if (! depM.isEager ()) {
+                res.add(depM);
+            }
         }
         return res;
     }
