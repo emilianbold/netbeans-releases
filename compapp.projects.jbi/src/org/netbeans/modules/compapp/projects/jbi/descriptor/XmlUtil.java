@@ -54,10 +54,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import java.io.File;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.namespace.QName;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -83,13 +87,54 @@ public class XmlUtil {
             FileNotFoundException, UnsupportedEncodingException {
 
         File outputFile = new File(fileLocation);
+        PrintWriter pw = new PrintWriter(outputFile, "UTF-8"); // NOI18N
+        StreamResult result = new StreamResult(pw);
+        
+        try {
+            writeTo(result, document);
+        } finally {
+            if (pw != null) {
+                pw.close();
+            }
+        }        
+    }
+    
+    public static void writeToOutputStream(OutputStream os, Document document)
+        throws TransformerConfigurationException, TransformerException, 
+            FileNotFoundException, UnsupportedEncodingException, IOException {
+        
+        StreamResult result = new StreamResult(os);
+        
+        try {
+            writeTo(result, document);
+        } finally {
+            if (os != null) {
+                os.close();
+            }
+        }        
+    }
+    
+    public static void writeToFileObject(FileObject fo, Document document)
+        throws TransformerConfigurationException, TransformerException, 
+            FileNotFoundException, UnsupportedEncodingException, IOException {
+        
+        FileLock lock = fo.lock();
+        OutputStream os = fo.getOutputStream(lock);
+        try {
+            writeToOutputStream(os, document);
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    private static void writeTo(Result result, Document document)
+        throws TransformerConfigurationException, TransformerException, 
+            FileNotFoundException, UnsupportedEncodingException {
         
         // Use a Transformer for output
         TransformerFactory tFactory = TransformerFactory.newInstance();
         Transformer transformer = tFactory.newTransformer();
         DOMSource source = new DOMSource(document);
-        PrintWriter pw = new PrintWriter(outputFile, "UTF-8"); //USE PRINTWRITER
-        StreamResult result = new StreamResult(pw);
         
         transformer.setOutputProperty(OutputKeys.METHOD, "xml");   // NOI18N
         transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");  // NOI18N
@@ -100,13 +145,13 @@ public class XmlUtil {
         try {
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");  // NOI18N
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");  // NOI18N
-        } catch (Exception e) {
-            ; // the JAXP implementation doesn't support indentation, no big deal
+        } catch (IllegalArgumentException e) {
+            // the JAXP implementation doesn't support indentation, no big deal
         }
+        
         transformer.transform(source, result);
-        pw.flush();
-        pw.close();
     }
+    
 
     /**
      * DOCUMENT ME!
@@ -119,6 +164,8 @@ public class XmlUtil {
      */
     public static byte[] writeToBytes(Document document)
         throws TransformerConfigurationException, TransformerException, Exception {
+        byte[] ret = null;
+        
         TransformerFactory tFactory = TransformerFactory.newInstance();
         Transformer transformer = tFactory.newTransformer();
         DOMSource source = new DOMSource(document);
@@ -130,11 +177,24 @@ public class XmlUtil {
         transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");  // NOI18N
 
         // indent the output to make it more legible...
-        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");  // NOI18N
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");   // NOI18N
-        transformer.transform(source, result);
-
-        return bos.toByteArray();
+        try {
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");  // NOI18N
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");   // NOI18N
+        } catch (IllegalArgumentException e) {
+            // the JAXP implementation doesn't support indentation, no big deal
+        }
+        
+        try {
+            transformer.transform(source, result); 
+            ret = bos.toByteArray();
+        } finally {
+            if (bos != null) {
+                bos.flush();
+                bos.close();
+            }
+        }       
+        
+        return ret;
     }
 
 

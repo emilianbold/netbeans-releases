@@ -909,7 +909,7 @@ public class JbiProjectProperties {
     
     private void updateAssemblyInfoAndCasa() throws Exception {        
         saveAssemblyInfo();
-        CasaHelper.updateCasaWithJBIModules(project, this);
+//        CasaHelper.updateCasaWithJBIModules(project, this);
     }
     
     
@@ -941,6 +941,7 @@ public class JbiProjectProperties {
             PropertyInfo pi = properties.get(allPaths[i]);
             
             // Get original artifacts
+            @SuppressWarnings("unchecked")
             List<VisualClassPathItem> oldList = (List) pi.getOldValue();
             if (oldList != null) {
                 for (VisualClassPathItem vcpi : oldList) {
@@ -951,6 +952,7 @@ public class JbiProjectProperties {
             }
             
             // Get artifacts after the edit
+            @SuppressWarnings("unchecked")
             List<VisualClassPathItem> newList = (List) pi.getValue();
             if (newList != null) {
                 for (VisualClassPathItem vcpi : newList) {
@@ -1161,8 +1163,10 @@ public class JbiProjectProperties {
             saElement.appendChild(identificationElement);
             
             // for each SE jar..
+            @SuppressWarnings("unchecked")
             List<VisualClassPathItem> items =
                     (List) this.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
+            @SuppressWarnings("unchecked")
             List<String> targetIDs =
                     (List) this.get(JbiProjectProperties.JBI_CONTENT_COMPONENT);
             
@@ -1771,6 +1775,8 @@ public class JbiProjectProperties {
                 ) {
             return encode(value, antProjectHelper, refHelper, value);
         }
+        
+        @SuppressWarnings("unchecked")
         public String encode(
                 Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper, Object oldValue
                 ) {
@@ -1890,7 +1896,8 @@ public class JbiProjectProperties {
         }
         
         public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-            List<String> list = (List<String>) value;
+            @SuppressWarnings("unchecked")
+            List<String> list = (List) value;
             String result = "";
             for (Iterator<String> iter = list.iterator(); iter.hasNext(); ) {
                 String str = iter.next();

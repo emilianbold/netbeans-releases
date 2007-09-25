@@ -143,6 +143,7 @@ public class DeleteModuleAction extends SystemAction {
         
         JbiProjectProperties projProperties = 
                 ((ProjectPropertyProvider) jbiProject).getProjectProperties();
+        @SuppressWarnings("unchecked")
         List<VisualClassPathItem> oldCompProjList = 
                 (List) projProperties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
         List<VisualClassPathItem> newCompProjList = 
@@ -167,6 +168,7 @@ public class DeleteModuleAction extends SystemAction {
         
         if (itemRemovedIndex != -1) {
             // Need to keep target component list in sync.
+            @SuppressWarnings("unchecked")
             List<String> targetComps = new ArrayList<String>(
                     (List) projProperties.get(JbiProjectProperties.JBI_CONTENT_COMPONENT));
             assert targetComps.size() == oldCompProjList.size() : 

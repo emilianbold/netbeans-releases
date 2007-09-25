@@ -44,6 +44,7 @@ package org.netbeans.modules.compapp.projects.jbi;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
@@ -54,7 +55,7 @@ import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathItem;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -222,6 +223,8 @@ public class CasaHelper {
 //    }
         
     public static void saveCasa(JbiProject project) {
+        //System.out.println("CasaHelper.saveCasa()  (" + Thread.currentThread().getName()  + ")");
+        
         FileObject casaFO = getCasaFileObject(project, false);
         if (casaFO != null) {
             try {
@@ -246,12 +249,10 @@ public class CasaHelper {
      * defined in the project properties.
      *
      * @param project   a JBI project
-     *
-     * @return      the updated CASA file object
      */
-    public static FileObject updateCasaWithJBIModules(JbiProject project) { 
+    public static void updateCasaWithJBIModules(JbiProject project) { 
         JbiProjectProperties properties = project.getProjectProperties();
-        return updateCasaWithJBIModules(project, properties);
+        updateCasaWithJBIModules(project, properties);
     }
 
     /**
@@ -260,20 +261,20 @@ public class CasaHelper {
      *
      * @param project       a JBI project
      * @param properties    project properties (may not been persisted yet)
-     *
-     * @return      the updated CASA file object
      */   
-    public static FileObject updateCasaWithJBIModules(JbiProject project, 
+    public static void updateCasaWithJBIModules(JbiProject project, 
             JbiProjectProperties properties) { 
          
         FileObject casaFO = CasaHelper.getCasaFileObject(project, true);
         if (casaFO == null) {
-            return null;
+            return;
         }
            
         File casaFile = FileUtil.toFile(casaFO);
         
         try {
+            boolean modified = false; // whether casa is modified
+            
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             factory.setValidating(false);
@@ -285,38 +286,42 @@ public class CasaHelper {
             NodeList seSUs = sus.getElementsByTagName(
                     CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
             
+            @SuppressWarnings("unchecked")
             List<VisualClassPathItem> newContentList = 
-                    (List<VisualClassPathItem>) properties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
+                    (List) properties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
+            @SuppressWarnings("unchecked")
             List<String> newTargetIDs = 
-                    (List<String>) properties.get(JbiProjectProperties.JBI_CONTENT_COMPONENT);
+                    (List) properties.get(JbiProjectProperties.JBI_CONTENT_COMPONENT);
 
-            List<String> newArtifactsList = new ArrayList<String>();
+            List<String> newProjectNameList = new ArrayList<String>();
             for (VisualClassPathItem newContent : newContentList) {
-                newArtifactsList.add(newContent.toString());
+                newProjectNameList.add(newContent.getProjectName());
+            }
+            
+            List<String> sesuUnitNameList = new ArrayList<String>();
+            for (int i = 0; i < seSUs.getLength(); i++) {
+                Element seSU = (Element) seSUs.item(i);
+                String unitName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
+                sesuUnitNameList.add(unitName);
             }
 
             // Remove deleted service units from casa
             for (int i = 0; i < seSUs.getLength(); i++) {
                 Element seSU = (Element) seSUs.item(i);
-                String zipName = seSU.getAttribute(CasaConstants.CASA_ARTIFACTS_ZIP_ATTR_NAME);
-                if (!newArtifactsList.contains(zipName)) {
+                String projName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
+                if (!newProjectNameList.contains(projName)) {
                     sus.removeChild(seSU);
+                    modified = true;
+                    //System.out.println("removing old su: " + projName);
                 }
             }
 
             // Add new service units to casa
-            for (String artifactName: newArtifactsList) {
-                boolean found = false;
-                for (int i = 0; i < seSUs.getLength(); i++) {
-                    Element seSU = (Element) seSUs.item(i);
-                    if (seSU.getAttribute(CasaConstants.CASA_ARTIFACTS_ZIP_ATTR_NAME).
-                            equals(artifactName)) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) {
+            for (VisualClassPathItem artifact: newContentList) {
+                String projName = artifact.getProjectName();
+                String artifactName = artifact.toString();
+                
+                if (!sesuUnitNameList.contains(projName)) {
                     String targetCompID = "unknown"; // NOI18N
                     for (int j = 0; j < newContentList.size(); j++) {
                         if (newContentList.get(j).toString().equals(artifactName)) {
@@ -326,30 +331,31 @@ public class CasaHelper {
                     }
                     Element seSU = casaDocument.createElement(
                             CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
-                    String compProjName = artifactName.substring(0, artifactName.length() - 4);
                     seSU.setAttribute(CasaConstants.CASA_X_ATTR_NAME, "-1"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_Y_ATTR_NAME, "-1"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME, "true"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_DEFINED_ATTR_NAME, "false"); // NOI18N 
                     seSU.setAttribute(CasaConstants.CASA_UNKNOWN_ATTR_NAME, "false"); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_NAME_ATTR_NAME, compProjName); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME, compProjName); // NOI18N
+                    seSU.setAttribute(CasaConstants.CASA_NAME_ATTR_NAME, projName); // NOI18N  // FIXME
+                    seSU.setAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME, projName); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_COMPONENT_NAME_ATTR_NAME, targetCompID); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_DESCRIPTION_ATTR_NAME, "some description"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_ARTIFACTS_ZIP_ATTR_NAME, artifactName);
 
                     sus.appendChild(seSU);
+                    modified = true;
+                    //System.out.println("Adding new su: " + projName);
                 }
             }
                         
-            XmlUtil.writeToFile(casaFile.getPath(), casaDocument);
+            if (modified) {
+                //System.out.println("CasaHelper: starting writing to CASA (Thread:" + Thread.currentThread().getName() + ")");
+                XmlUtil.writeToFileObject(casaFO, casaDocument);
+                //System.out.println("CasaHelper: finished writing to CASA (Thread:" + Thread.currentThread().getName() + ")");
+            }
             
-            casaFO = FileUtil.toFileObject(casaFile);
-            casaFO.refresh();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        return casaFO;
     }
 }
