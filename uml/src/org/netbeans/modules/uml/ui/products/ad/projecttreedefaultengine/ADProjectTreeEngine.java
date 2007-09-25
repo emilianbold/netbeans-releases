@@ -1191,7 +1191,7 @@ public class ADProjectTreeEngine
                if(createdItem != null)
                {
                   addToTree(createdItem, thisItem);
-				  m_IDLookup.put(elementAdded.getXMIID(), new WeakReference(createdItem)); 
+		  m_IDLookup.put(elementAdded.getXMIID(), new WeakReference(createdItem)); 
                   IProjectTreeModel model = getTreeModel();
 //                  int[] childIndices = { model.getIndexOfChild(thisItem, createdItem) };
 //                  model.notifyOfAddedChildren(thisItem, childIndices);
@@ -1211,7 +1211,7 @@ public class ADProjectTreeEngine
                   treeElement.setElement(elementAdded);
                   treeElement.setName(name);
                   addToTree(treeElement, thisItem);
-				  m_IDLookup.put(elementAdded.getXMIID(), new WeakReference(treeElement)); 
+                  m_IDLookup.put(elementAdded.getXMIID(), new WeakReference(treeElement)); 
                   IProjectTreeModel model = getTreeModel();
                   int[] childIndices = { model.getIndexOfChild(thisItem, treeElement) };
                   //model.notifyOfAddedChildren(thisItem, childIndices);
@@ -3001,7 +3001,7 @@ public class ADProjectTreeEngine
          {
             item.setDisplayedName(formatted);
          }
-			retVal = true;
+	 retVal = true;
       }
 
       return retVal;
@@ -3021,7 +3021,7 @@ public class ADProjectTreeEngine
             String formatted = getFormattedString(element);
 
             String itemName = item.getDisplayedName();
-            if (formatted != null && !formatted.equals(item.getDisplayedName()))
+            if (formatted != null && !formatted.equals(itemName))
             {               
                item.setDisplayedName(formatted);
                // If the name is set then the model element is update.

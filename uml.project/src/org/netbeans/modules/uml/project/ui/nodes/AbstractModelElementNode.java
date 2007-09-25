@@ -321,10 +321,10 @@ public abstract class AbstractModelElementNode extends AbstractNode
                         !elemType.equals(ELEMENT_TYPE_PERMISSION) &&
                         !elemType.equals(ELEMENT_TYPE_REALIZATION) &&
                         !elemType.equals(ELEMENT_TYPE_USAGE))*/
-        Action newAction=getNewAction();
-        if(newAction!=null)
+        Action action=getNewAction();
+        if(action!=null)
         {
-            actions.add(newAction);
+            actions.add(action);
         }
         
         actions.add(null);
@@ -349,7 +349,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
  */
         actions.add(null);
         
-        actions.add(SystemAction.get(PropertiesAction.class));;
+        actions.add(SystemAction.get(PropertiesAction.class));
         
         Action[] retVal = new Action[actions.size()];
         actions.toArray(retVal);
@@ -436,6 +436,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
         return retVal;
     }
     
+    @Override
     public Transferable clipboardCopy()
             throws IOException
     {
@@ -480,8 +481,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
         final ETList<IElement> modelElements = new ETArrayList<IElement>();
         final List<String> diagrams = new LinkedList<String>();
         
-        IProjectTreeItem treeItem = (IProjectTreeItem)
-                this.getLookup().lookup(IProjectTreeItem.class);
+        IProjectTreeItem treeItem = this.getLookup().lookup(IProjectTreeItem.class);
         
         if (treeItem == null)
             return;
@@ -523,7 +523,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
                 // Now actually do the delete of the model elements
                 for (final IElement curModelElement: modelElements)
                 {
-                    curModelElement.delete();
+                        curModelElement.delete();
                 }
                 
                 // Now whack the diagrams
@@ -684,7 +684,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
                 DataObject actionObjects[] = df.getChildren();
                 for (int i = 0; i < actionObjects.length; i++)
                 {
-                    InstanceCookie ic = (InstanceCookie) actionObjects[i].getCookie(InstanceCookie.class);
+                    InstanceCookie ic = actionObjects[i].getCookie(InstanceCookie.class);
                     if (ic == null) continue;
                     Object instance;
                     try

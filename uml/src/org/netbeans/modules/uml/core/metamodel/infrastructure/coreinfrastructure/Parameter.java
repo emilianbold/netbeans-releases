@@ -419,11 +419,18 @@ public class Parameter extends NamedElement implements
     public void performDependentElementCleanup(IVersionableElement elem) 
     {
         super.performDependentElementCleanup(elem);
-        IElement opElem = getOwner();
-        if (opElem != null) 
-        {
+        //fixed 78803.
+        IBehavioralFeature opFeature = this.getBehavioralFeature();
+        if (opFeature != null) 
+        { 
+            // fire this event to update the operation node (owner of the affected elem)
             IElementChangeDispatchHelper helper = new ElementChangeDispatchHelper();
-            helper.dispatchElementModified(opElem);
+            helper.dispatchElementModified(opFeature);
+            if (opFeature instanceof IBehavioralFeature)
+            {
+                // fire this event to update the affected operation compartment on the diagram
+                opFeature.removeParameter((IParameter)elem);
+            }
         }
     }
 
