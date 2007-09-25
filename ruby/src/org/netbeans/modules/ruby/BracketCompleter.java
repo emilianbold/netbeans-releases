@@ -1595,6 +1595,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
             char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
 
+            if (chr == '%' && RubyUtils.isRhtmlDocument(doc)) {
+                return true;
+            }
+
             return ((chr == ')') || (chr == ',') || (chr == '+') || (chr == '}') || (chr == ';') ||
                (chr == ']') || (chr == '/'));
         }
