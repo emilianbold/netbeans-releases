@@ -27,6 +27,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Proxy;
@@ -464,6 +465,10 @@ public class Utils {
                     return OK;
                 } else {
                     data.getLogger().log(Level.INFO, "Cannot find build number. Attempt #" + attempt);
+                    
+                    FileWriter page = new FileWriter(new File(data.getTestWorkDir() + "downloadpage" + attempt + ".html"));
+                    page.write(pageContent.toString());
+                    page.close();
                 }
             } catch (Exception ex) {
                 data.getLogger().log(Level.SEVERE, "Can not determine latest build. Attempt #" + attempt, ex);
