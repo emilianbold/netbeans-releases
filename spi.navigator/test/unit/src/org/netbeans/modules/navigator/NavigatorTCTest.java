@@ -20,6 +20,7 @@
 package org.netbeans.modules.navigator;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -331,17 +332,24 @@ public class NavigatorTCTest extends NbTestCase {
         waitForChange();
 
         // get the lookup that leaked, take weak ref on it
-        Lookup lkp = navTC.getController().getLookup();
-        WeakReference<Lookup> wLkp = new WeakReference<Lookup>(lkp);
+        NavigatorController.ClientsLookup cliLkp = navTC.getController().getClientsLookup();
+        Lookup[] lkpArray = cliLkp.obtainLookups();
+        assertTrue("Lookups array mustn't be empty", lkpArray.length > 0);
+
+        ArrayList<WeakReference<Lookup>> wLkps = new ArrayList<WeakReference<Lookup>>(lkpArray.length);
+        for (int i = 0; i < lkpArray.length; i++) {
+            WeakReference<Lookup> wLkp = new WeakReference<Lookup>(lkpArray[i]);
+            wLkps.add(wLkp);
+        }
         
-        assertNotNull("Lookup mustn't be null", lkp);
-        
-        // erase, close and check, lookup delegate should be freed
-        lkp = null;
+        // erase, close and check, lookup should be freed
+        lkpArray = null;
         navTC.componentClosed();
         
-        assertGC("Lookup instance NavigatorController.getLookup() still not GCed", wLkp);
-        
+        for (WeakReference<Lookup> wLkp : wLkps) {
+            assertGC("Lookup instance NavigatorController.getLookup() still not GCed", wLkp);
+        }
+
         // cleanup
         ic.remove(actNodesHint);
         ic.remove(actNode);

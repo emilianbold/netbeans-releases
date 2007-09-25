@@ -21,6 +21,7 @@ package org.netbeans.modules.navigator;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -35,6 +36,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -106,12 +108,16 @@ public class NavigatorControllerTest extends TestCase {
         // not really valid, uses impl fact that during obtainProviders,
         // NavigatorTC parameter will not be needed.
         NavigatorController nc = new NavigatorController(null);
-        List result = nc.obtainProviders(shadow1.getNodeDelegate());
+        ArrayList<Node> shadow1Node = new ArrayList<Node>(1);
+        shadow1Node.add(shadow1.getNodeDelegate());
+        List result = nc.obtainProviders(shadow1Node);
         assertNotNull("provider not found", result);
         assertEquals(1, result.size());
         assertTrue(result.get(0) instanceof TestJavaNavigatorPanel);
         
-        result = nc.obtainProviders(shadow2.getNodeDelegate());
+        ArrayList<Node> shadow2Node = new ArrayList<Node>(1);
+        shadow2Node.add(shadow2.getNodeDelegate());
+        result = nc.obtainProviders(shadow2Node);
         assertNotNull("provider not found", result);
         assertEquals(1, result.size());
         assertTrue(result.get(0) instanceof TestJavaNavigatorPanel);
@@ -122,7 +128,7 @@ public class NavigatorControllerTest extends TestCase {
         ic.add(lookupContentType);
 
         System.out.println("Testing LookupContentType functionality...");
-        result = nc.obtainProviders(shadow1.getNodeDelegate());
+        result = nc.obtainProviders(shadow1Node);
         assertNotNull("provider not found", result);
         assertEquals("Expected 1 item, got " + result.size(), 1, result.size());
         assertTrue("Expected provider class TestContentTypeNavigatorPanel, but got " 
