@@ -69,7 +69,10 @@ final class Copy extends Object {
             FileObject child = srcChildren[i];
             if (child.isFolder()) {
                 copyFolder (child);
-                if (thoseToCopy.contains (child.getPath()) && child.getAttributes ().hasMoreElements ()) {                    
+                // make sure 'include xyz/.*' copies xyz folder's attributes
+                if ((thoseToCopy.contains (child.getPath()) || thoseToCopy.contains (child.getPath() + "/")) && //NOI18N
+                    child.getAttributes().hasMoreElements()
+                ) {
                     copyFolderAttributes(child);
                 }
             } else {                
@@ -77,7 +80,7 @@ final class Copy extends Object {
                     copyFile(child);                    
                 }                
             }
-        }                
+        }
     }
     
     private void copyFolderAttributes(FileObject sourceFolder) throws IOException {

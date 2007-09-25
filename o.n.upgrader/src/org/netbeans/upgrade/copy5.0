@@ -95,3 +95,6 @@ include Services/Hidden/org-netbeans-modules-versioning-system-cvss-settings.*
 include Services/org-netbeans-modules-profiler-ProfilerIDESettings\.settings
 
 include Services/Collaboration/.*
+
+include Keymaps/.*
+include Shortcuts/.*
