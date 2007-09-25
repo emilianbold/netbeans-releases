@@ -51,7 +51,7 @@ public class CppFoldRecord {
 	this.startOffset = startOffset;
 	this.endLnum = endLnum;
 	this.endOffset = endOffset;
-	log.log(toString() + " [" + Thread.currentThread().getName() + "]");
+	log.log(toString() + " [" + Thread.currentThread().getName() + "]"); // NOI18N
     }
 
     public CppFoldRecord(int type, int startOffset, int endOffset)

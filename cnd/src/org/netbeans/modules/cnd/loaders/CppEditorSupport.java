@@ -67,7 +67,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
 
     private final ParsingListener listener = new ParsingListener() {
 	public void objectParsed(final ParsingEvent evt) {
-	    log.log("CES$ParserListener.objectParsed: " + evt);
+	    log.log("CES$ParserListener.objectParsed: " + evt); // NOI18N
 	}
     };
 
@@ -231,7 +231,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
          *  performer to the ToggleBreakpointAction.
          */
         protected void componentActivated() {
-	    log.log("CES.componentActivated: Activating " + getShortName() +
+	    log.log("CES.componentActivated: Activating " + getShortName() + // NOI18N
 		    " [" + Thread.currentThread().getName() + "]"); // NOI18N
 	    if (activationPerformers != null) {
 		int n = activationPerformers.size();

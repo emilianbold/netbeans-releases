@@ -39,17 +39,17 @@ public class CppCodeFoldingSideBar extends CodeFoldingSideBar {
 		"CppFoldTracer"); // NOI18N
     
     public CppCodeFoldingSideBar(){
-	log.log("CppCodeFoldingSidebar<Init_1>: Creating sidebar component");
+	log.log("CppCodeFoldingSidebar<Init_1>: Creating sidebar component"); // NOI18N
     }
     
     /** Creates a new instance of NbCodeFoldingSideBar */
     public CppCodeFoldingSideBar(JTextComponent target) {
         super(target);
-	log.log("CppCodeFoldingSidebar<Init_2>: Creating sidebar component");
+	log.log("CppCodeFoldingSidebar<Init_2>: Creating sidebar component"); // NOI18N
     }
     
     public JComponent createSideBar(JTextComponent target) {
-	log.log("CppCodeFoldingSidebar.createSideBar: Sidebar factory");
+	log.log("CppCodeFoldingSidebar.createSideBar: Sidebar factory"); // NOI18N
         return new CppCodeFoldingSideBar(target);
     }
 

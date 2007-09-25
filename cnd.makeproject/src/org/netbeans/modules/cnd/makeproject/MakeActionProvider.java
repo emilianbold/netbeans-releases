@@ -367,7 +367,7 @@ public class MakeActionProvider implements ActionProvider {
                             while (iter.hasNext()) {
                                 String location = FilePathAdaptor.naturalize((String)iter.next());
                                 if (path.length() > 0)
-                                    path.append(":");
+                                    path.append(":"); // NOI18N
                                 path.append(location);
                             }
                             if (extPath != null)

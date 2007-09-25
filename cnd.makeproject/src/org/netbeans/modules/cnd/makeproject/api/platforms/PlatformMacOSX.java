@@ -24,7 +24,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformMacOSX extends Platform {
     public static final String NAME = "MacOSX"; // NOI18N
-    public static final String LIBRARY_SUFFIX = "dylib";
+    public static final String LIBRARY_SUFFIX = "dylib"; // NOI18N
 
     public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
 //        new LibraryItem.StdLibItem("Motif", "Motif", new String[] {"Xm", "Xt", "Xext", "X11"}), // NOI18N
