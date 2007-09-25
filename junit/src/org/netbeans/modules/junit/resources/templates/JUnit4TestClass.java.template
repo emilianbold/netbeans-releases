@@ -8,16 +8,16 @@
 package ${package};
 
 </#if>
-<#if methodTearDown?? && methodTearDown>
+<#if methodTearDown!false>
 import org.junit.After;
 </#if>
-<#if classTearDown?? && classTearDown>
+<#if classTearDown!false>
 import org.junit.AfterClass;
 </#if>
-<#if methodSetUp?? && methodSetUp>
+<#if methodSetUp!false>
 import org.junit.Before;
 </#if>
-<#if classSetUp?? && classSetUp>
+<#if classSetUp!false>
 import org.junit.BeforeClass;
 </#if>
 import org.junit.Test;
