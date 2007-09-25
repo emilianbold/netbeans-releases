@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="jdk.xml"/>
 
+
     <target name="-taskdefs" unless="harness.taskdefs.done">
         <dirname property="harness.dir" file="${suite.file}"/>
         <echo level="verbose">Using build harness in ${harness.dir}</echo>
@@ -38,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="disabled.modules" value=""/>
         <property name="enabled.clusters" value=""/>
         <property name="disabled.clusters" value=""/>
+        <property name="app.version" value="0.1"/>
         <property name="branding.dir" location="branding"/>
         <condition property="run.branding"> <!-- #84689 -->
             <and>
@@ -47,7 +49,36 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
     </target>
 
-    <target name="build" depends="-init,branding" description="Build all modules in the suite.">
+    <target name="-release.dir">
+        <property name="release.dir" location="release"/>
+        <condition property="has.release.dir">
+            <available file="${release.dir}"/>
+        </condition>
+    </target>
+    <target name="-release.files" depends="-release.dir" if="has.release.dir">
+        <pathconvert pathsep="," property="release.files">
+            <path>
+                <fileset dir="${release.dir}"/>
+            </path>
+            <map from="${release.dir}${file.separator}" to=""/>
+        </pathconvert>
+    </target>
+
+    <target name="files-init" depends="-release.files">
+        <property name="release.files" value=""/>
+    </target>    
+    
+    <target name="release" depends="files-init" if="has.release.dir">
+        <mkdir dir="${cluster}"/>
+        <copy todir="${cluster}">
+            <fileset dir="${release.dir}">
+                <patternset includes="${release.files}"/>
+            </fileset>
+        </copy>
+    </target>
+    
+
+    <target name="build" depends="-init,branding,release" description="Build all modules in the suite.">
         <subant target="netbeans" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
         <mkdir dir="${cluster}/config/Modules"/>
         <createmodulexml xmldir="${cluster}/config/Modules">
@@ -208,6 +239,11 @@ Microsystems, Inc. All Rights Reserved.
             
             <fileset dir="${cluster}"/>
         </copy>
+        
+        <copy verbose="true" failonerror="false" 
+              file="dist/${app.name}.app/Contents/Resources/${app.name}/${app.name}/etc/${app.name}.icns" 
+              tofile="dist/${app.name}.app/Contents/Resources/${app.name}.icns"/>
+        
         <delete file="${basedir}/dist/${app.name}.app/Contents/MacOS/${app.name}"/>
         <symlink link="${basedir}/dist/${app.name}.app/Contents/MacOS/${app.name}" resource="../Resources/${app.name}/bin/${app.name}"/>
         <chmod file="dist/${app.name}.app/Contents/Resources/${app.name}/bin/${app.name}" perm="755"/>
@@ -216,11 +252,18 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${harness.dir}/etc/Info.plist" tofile="dist/${app.name}.app/Contents/Info.plist">
             <filterchain>
                 <replacestring from="$${app.name}" to="${app.name}"/>
+                <replacestring from="$${app.version}" to="${app.version}"/>
                 <replacestring from="$${app.title}" to="${app.title}"/>
                 <replacestring from="$${app.icon}" to="master.png"/>
                 <replacestring from="$${branding.token}" to="${branding.token}"/>
             </filterchain>
         </copy>
+        <!-- zipping in ant doesn't preserve symlinks that seem to be required.
+        zip destfile="dist/${app.name}-MacOS.zip" basedir="dist" includes="${app.name}.app/**" duplicate="preserve"/-->
+        <echo>
+You MacOS Application bundle was created at dist/${app.name}.app. For final packaging, use hdiutil or other tools to create a .dmg image.
+Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distribution.
+        </echo>    
     </target>    
 
     <target name="-testuserdir-delete-init" depends="-init">

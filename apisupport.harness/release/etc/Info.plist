@@ -7,7 +7,7 @@
     <string>${app.name}</string>
     
     <key>CFBundleVersion</key>
-    <string>0.1</string>
+    <string>${app.version}</string>
     
     <key>CFBundleExecutable</key>
     <string>${app.name}</string>
