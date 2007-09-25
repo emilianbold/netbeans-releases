@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide.ui;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -27,12 +28,14 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
+import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
+import org.openide.filesystems.JarFileSystem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -46,6 +49,10 @@ public class JBPluginUtils {
 
     public static final String SERVER_XML = File.separator + "deploy" + File.separator +
                 "jbossweb-tomcat55.sar" + File.separator + "server.xml";
+
+    private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
+
+    private static final Version DOM4J_SERVER = new Version("4.0.4");
 
     //--------------- checking for possible domain directory -------------
     private static List<String> domainRequirements4x;
@@ -138,6 +145,7 @@ public class JBPluginUtils {
                     "client", // NOI18N
                     "lib", // NOI18N
                     "server", // NOI18N
+                    "lib/dom4j.jar", // NOI18N
                     "lib/jboss-common-core.jar", // NOI18N
                     "lib/endorsed/resolver.jar"); // NOI18N
         }
@@ -154,9 +162,10 @@ public class JBPluginUtils {
         Hashtable result = new Hashtable();
         //  String domainListFile = File.separator+"common"+File.separator+"nodemanager"+File.separator+"nodemanager.domains";  // NOI18N
 
-        if (isGoodJBServerLocation4x(new File(serverLocation)) ||
-            isGoodJBServerLocation5x(new File(serverLocation)))
-        {
+        File serverDirectory = new File(serverLocation);
+        Version version = getServerVersion(serverDirectory);
+
+        if (isGoodJBServerLocation(serverDirectory)) {
            File file = new File(serverLocation + File.separator + "server");  // NOI18N
 
             String[] files = file.list(new FilenameFilter(){
@@ -166,12 +175,10 @@ public class JBPluginUtils {
                 }
             });
 
-            for(int i =0; i<files.length; i++){
+            for(int i = 0; i<files.length; i++) {
                 String path = file.getAbsolutePath() + File.separator + files[i];
 
-                if (isGoodJBInstanceLocation4x(new File(path)) ||
-                    isGoodJBInstanceLocation5x(new File(path)))
-                {
+                if (isGoodJBInstanceLocation(serverDirectory, new File(path))) {
                     result.put(files[i], path);
                 }
             }
@@ -190,12 +197,37 @@ public class JBPluginUtils {
         return true;
     }
 
-    public static boolean isGoodJBInstanceLocation4x(File candidate){
-        return isGoodJBInstanceLocation(candidate, getDomainRequirements4x());
+    private static boolean isGoodJBInstanceLocation4x(File serverDir, File candidate) {
+        if (!isGoodJBInstanceLocation(candidate, getDomainRequirements4x())) {
+            return false;
+        }
+        Version version = getServerVersion(serverDir);
+        if (version == null) {
+            // optimistic expectation
+            return true;
+        }
+
+        if (version.compareToIgnoreUpdate(DOM4J_SERVER) > 0) {
+            // in server lib
+            File dom4j = new File(candidate, "lib/dom4j.jar"); // NOI18N
+            return dom4j.exists() && dom4j.canRead();
+        }
+        return true;
     }
 
-    public static boolean isGoodJBInstanceLocation5x(File candidate){
+    private static boolean isGoodJBInstanceLocation5x(File serverDir, File candidate){
         return isGoodJBInstanceLocation(candidate, getDomainRequirements5x());
+    }
+
+    public static boolean isGoodJBInstanceLocation(File serverDir, File candidate){
+        Version version = getServerVersion(serverDir);
+        if (version == null || (!"4".equals(version.getMajorNumber()) && !"5".equals(version.getMajorNumber()))) { // NOI18N
+            return JBPluginUtils.isGoodJBInstanceLocation4x(serverDir, candidate)
+                    || JBPluginUtils.isGoodJBInstanceLocation5x(serverDir, candidate);
+        }
+
+        return ("4".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation4x(serverDir, candidate)) // NOI18N
+                || ("5".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation5x(serverDir, candidate)); // NOI18N
     }
 
     private static boolean isGoodJBServerLocation(File candidate, List<String> requirements){
@@ -209,18 +241,55 @@ public class JBPluginUtils {
         return true;
     }
 
-    public static boolean isGoodJBServerLocation4x(File candidate){
-        return isGoodJBServerLocation(candidate, getServerRequirements4x()) ||
-                isGoodJBServerLocation(candidate, getServerAlterRequirements4x());
+    private static boolean isGoodJBServerLocation4x(File candidate) {
+        if (!isGoodJBServerLocation(candidate, getServerRequirements4x())
+                && !isGoodJBServerLocation(candidate, getServerAlterRequirements4x())) {
+            return false;
+        }
+        Version version = getServerVersion(candidate);
+        if (version == null) {
+            // optimistic expectation
+            return true;
+        }
+
+        if (version.compareToIgnoreUpdate(DOM4J_SERVER) <= 0) {
+            // in server lib
+            File dom4j = new File(candidate, "lib/dom4j.jar"); // NOI18N
+            return dom4j.exists() && dom4j.canRead();
+        }
+        return true;
     }
 
-    public static boolean isGoodJBServerLocation4x(JBDeploymentManager dm){
-        String installDir = dm.getInstanceProperties().getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-        return isGoodJBServerLocation4x(new File(installDir));
-    }
-
-    public static boolean isGoodJBServerLocation5x(File candidate){
+    private static boolean isGoodJBServerLocation5x(File candidate){
         return isGoodJBServerLocation(candidate, getServerRequirements5x());
+    }
+
+    public static boolean isGoodJBServerLocation(File candidate) {
+        Version version = getServerVersion(candidate);
+        if (version == null || (!"4".equals(version.getMajorNumber()) && !"5".equals(version.getMajorNumber()))) { // NOI18N
+            return JBPluginUtils.isGoodJBServerLocation4x(candidate)
+                    || JBPluginUtils.isGoodJBServerLocation5x(candidate);
+        }
+
+        return ("4".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation4x(candidate)) // NOI18n
+                || ("5".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation5x(candidate)); // NOI18N
+    }
+
+    public static boolean isJB4(JBDeploymentManager dm) {
+        String installDir = dm.getInstanceProperties().getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+        Version version = getServerVersion(new File(installDir));
+        if (version == null) {
+            return isGoodJBServerLocation4x(new File(installDir));
+        }
+
+        return "4".equals(version.getMajorNumber()); // NOI18N
+    }
+
+    public static boolean isGoodJBLocation(File server, File domain) {
+        return (JBPluginUtils.isGoodJBServerLocation4x(server)
+                && JBPluginUtils.isGoodJBInstanceLocation4x(server, domain))
+                    || (JBPluginUtils.isGoodJBServerLocation5x(server)
+                        && JBPluginUtils.isGoodJBInstanceLocation5x(server, domain));
     }
 
     /**
@@ -435,5 +504,195 @@ public class JBPluginUtils {
         return true;
     }
 
+    /**
+     * Return the version of the server located at the given path.
+     * If the server version can't be determined returns <code>null</code>.
+     *
+     * @param serverPath path to the server directory
+     * @return specification version of the server
+     */
+    public static Version getServerVersion(File serverPath) {
+        assert serverPath != null : "Can't determine version with null server path"; // NOI18N
+
+        File systemJarFile = new File(serverPath, "lib/jboss-system.jar"); // NOI18N
+        if (!systemJarFile.exists()) {
+            return null;
+        }
+
+        try {
+            JarFileSystem systemJar = new JarFileSystem();
+            systemJar.setJarFile(systemJarFile);
+            Attributes attributes = systemJar.getManifest().getMainAttributes();
+            String version = attributes.getValue("Specification-Version"); // NOI18N
+            if (version != null) {
+                return new Version(version);
+            }
+            return null;
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return null;
+        } catch (PropertyVetoException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return null;
+        }
+    }
+
+    /**
+     * Class representing the JBoss version.
+     * <p>
+     * <i>Immutable</i>
+     *
+     * @author Petr Hejl
+     */
+    public static final class Version implements Comparable<Version> {
+
+        private String majorNumber = "0";
+
+        private String minorNumber = "0";
+
+        private String microNumber = "0";
+
+        private String update = "";
+
+        /**
+         * Constructs the version from the spec version string.
+         * Expected format is <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>.
+         *
+         * @param version spec version string with the following format:
+         *             <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>
+         */
+        public Version(String version) {
+            assert version != null : "Version can't be null"; // NOI18N
+
+            String[] tokens = version.split("\\.");
+
+            if (tokens.length >= 4) {
+                update = tokens[3];
+            }
+            if (tokens.length >= 3) {
+                microNumber = tokens[2];
+            }
+            if (tokens.length >= 2) {
+                minorNumber = tokens[1];
+            }
+            majorNumber = tokens[0];
+        }
+
+        /**
+         * Returns the major number.
+         *
+         * @return the major number. Never returns <code>null</code>.
+         */
+        public String getMajorNumber() {
+            return majorNumber;
+        }
+
+        /**
+         * Returns the minor number.
+         *
+         * @return the minor number. Never returns <code>null</code>.
+         */
+        public String getMinorNumber() {
+            return minorNumber;
+        }
+
+        /**
+         * Returns the micro number.
+         *
+         * @return the micro number. Never returns <code>null</code>.
+         */
+        public String getMicroNumber() {
+            return microNumber;
+        }
+
+        /**
+         * Returns the update.
+         *
+         * @return the update. Never returns <code>null</code>.
+         */
+        public String getUpdate() {
+            return update;
+        }
+
+        /**
+         * {@inheritDoc}<p>
+         * Two versions are equal if and only if they have same major, minor,
+         * micro number and update.
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Version other = (Version) obj;
+            if (this.majorNumber != other.majorNumber
+                    && (this.majorNumber == null || !this.majorNumber.equals(other.majorNumber))) {
+                return false;
+            }
+            if (this.minorNumber != other.minorNumber
+                    && (this.minorNumber == null || !this.minorNumber.equals(other.minorNumber))) {
+                return false;
+            }
+            if (this.microNumber != other.microNumber
+                    && (this.microNumber == null || !this.microNumber.equals(other.microNumber))) {
+                return false;
+            }
+            if (this.update != other.update
+                    && (this.update == null || !this.update.equals(other.update))) {
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * {@inheritDoc}<p>
+         * The implementation consistent with {@link #equals(Object)}.
+         */
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + (this.majorNumber != null ? this.majorNumber.hashCode() : 0);
+            hash = 17 * hash + (this.minorNumber != null ? this.minorNumber.hashCode() : 0);
+            hash = 17 * hash + (this.microNumber != null ? this.microNumber.hashCode() : 0);
+            hash = 17 * hash + (this.update != null ? this.update.hashCode() : 0);
+            return hash;
+        }
+
+        /**
+         * {@inheritDoc}<p>
+         * Compares the versions based on its major, minor, micro and update.
+         * Major number is the most significant. Implementation is consistent
+         * with {@link #equals(Object)}.
+         */
+        public int compareTo(Version o) {
+            int comparison = compareToIgnoreUpdate(o);
+            if (comparison != 0) {
+                return comparison;
+            }
+            return update.compareTo(o.update);
+        }
+
+        /**
+         * Compares the versions based on its major, minor, micro. Update field
+         * is ignored. Major number is the most significant.
+         *
+         * @param o version to compare with
+         */
+        public int compareToIgnoreUpdate(Version o) {
+            int comparison = majorNumber.compareTo(o.majorNumber);
+            if (comparison != 0) {
+                return comparison;
+            }
+            comparison = minorNumber.compareTo(o.minorNumber);
+            if (comparison != 0) {
+                return comparison;
+            }
+            return microNumber.compareTo(o.microNumber);
+        }
+
+    }
 
 }

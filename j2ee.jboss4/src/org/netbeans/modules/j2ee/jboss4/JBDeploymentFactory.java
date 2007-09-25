@@ -284,10 +284,8 @@ public class JBDeploymentFactory implements DeploymentFactory {
             String serverLocation = getDefaultInstallLocation();
             String domainLocation = serverLocation + File.separator + "server" + File.separator + "default"; // NOI18N
             setRemovability(serverInstanceDir, domainLocation);
-            if (JBPluginUtils.isGoodJBServerLocation4x(new File(serverLocation))    &&
-                JBPluginUtils.isGoodJBInstanceLocation4x(new File(domainLocation))  ||
-                JBPluginUtils.isGoodJBServerLocation5x(new File(serverLocation))    &&
-                JBPluginUtils.isGoodJBInstanceLocation5x(new File(domainLocation)))
+            File serverDirectory = new File(serverLocation);
+            if (JBPluginUtils.isGoodJBLocation(serverDirectory, new File(domainLocation)))
             {
                 if (!isAlreadyRegistered(serverInstanceDir, domainLocation)) {
                     String host = "localhost"; // NOI18N

@@ -41,15 +41,13 @@ import org.openide.util.actions.SystemAction;
  */
 public class JBWebModuleNode extends AbstractNode {
 
-    final boolean isRemoteManagementSupported;
-    final boolean isJB4x;
+    private final JBAbilitiesSupport abilitiesSupport;
 
     public JBWebModuleNode(String fileName, Lookup lookup, String url) {
         super(new JBServletsChildren(fileName, lookup));
         setDisplayName(fileName.substring(0, fileName.indexOf('.')));
-        isRemoteManagementSupported = Util.isRemoteManagementSupported(lookup);
-        isJB4x = JBPluginUtils.isGoodJBServerLocation4x((JBDeploymentManager)lookup.lookup(JBDeploymentManager.class));
-        if (isRemoteManagementSupported && isJB4x) {
+        this.abilitiesSupport = new JBAbilitiesSupport(lookup);
+        if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
             // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action
             getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.WAR, lookup));
         }
@@ -65,7 +63,7 @@ public class JBWebModuleNode extends AbstractNode {
             };
         }
         else {
-            if (isRemoteManagementSupported && isJB4x) {
+            if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
                 return new SystemAction[] {
                     SystemAction.get(OpenURLAction.class),
                     SystemAction.get(UndeployModuleAction.class)

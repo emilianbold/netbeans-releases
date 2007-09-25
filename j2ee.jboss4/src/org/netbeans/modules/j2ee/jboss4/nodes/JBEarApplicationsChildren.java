@@ -43,7 +43,7 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
 
     private final JBAbilitiesSupport abilitiesSupport;
 
-    private Lookup lookup;
+    private final Lookup lookup;
 
     JBEarApplicationsChildren(Lookup lookup) {
         this.lookup = lookup;

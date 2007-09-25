@@ -72,7 +72,7 @@ class JBAbilitiesSupport {
     public boolean isJB4x() {
         if (isJB4x == null) {
             JBDeploymentManager dm = lookup.lookup(JBDeploymentManager.class);
-            isJB4x = JBPluginUtils.isGoodJBServerLocation4x(dm);
+            isJB4x = JBPluginUtils.isJB4(dm);
         }
         return isJB4x;
     }

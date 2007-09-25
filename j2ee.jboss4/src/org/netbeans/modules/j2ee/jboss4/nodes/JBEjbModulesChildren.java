@@ -45,7 +45,7 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
     
     private final JBAbilitiesSupport abilitiesSupport;
     
-    private Lookup lookup;
+    private final Lookup lookup;
     
     public JBEjbModulesChildren(Lookup lookup) {
         this.lookup = lookup;

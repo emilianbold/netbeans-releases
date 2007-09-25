@@ -219,7 +219,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <test-dependencies>
+            <test-dependencies>               
                 <test-type>
                     <name>qa-functional</name>
                     <test-dependency>

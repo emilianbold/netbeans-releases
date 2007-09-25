@@ -55,7 +55,7 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
 
     private final JBAbilitiesSupport abilitiesSupport;
 
-    private Lookup lookup;
+    private final Lookup lookup;
 
     public JBWebApplicationsChildren(Lookup lookup) {
         this.lookup = lookup;

@@ -144,8 +144,7 @@ public class JBPluginProperties {
 
     public boolean isCurrentServerLocationValid() {
         if (getInstallLocation() != null) {
-            return JBPluginUtils.isGoodJBServerLocation4x(new File(getInstallLocation()))
-                    || JBPluginUtils.isGoodJBServerLocation5x(new File(getInstallLocation()));
+            return JBPluginUtils.isGoodJBServerLocation(new File(getInstallLocation()));
         }
 
         return false;
