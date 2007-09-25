@@ -102,12 +102,12 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         parent.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
         parent.getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
 
-        getActionMap().put("prevInnerView", new AbstractAction("") { // NOI18N
+        parentTopComponent.getActionMap().put("NextViewAction", new AbstractAction("") { // NOI18N
             public void actionPerformed(ActionEvent e) {
                 onNextInnerView();
             }
         });
-        getActionMap().put("nextInnerView", new AbstractAction("") { // NOI18N
+        parentTopComponent.getActionMap().put("PreviousViewAction", new AbstractAction("") { // NOI18N
             public void actionPerformed(ActionEvent e) {
                 onPrevInnerView();
             }
