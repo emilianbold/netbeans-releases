@@ -21,6 +21,9 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.VersionsCache;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
@@ -55,7 +58,12 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
     }
 
     public boolean isEnabled() {
-        return ctx.getRootFiles().size() > 0;
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        for (File file : ctx.getRootFiles()) {
+            if (file.isDirectory()) continue;
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_IN_REPOSITORY) != 0) return true;
+        }
+        return false;
     }
 
     public void actionPerformed(ActionEvent e) {
