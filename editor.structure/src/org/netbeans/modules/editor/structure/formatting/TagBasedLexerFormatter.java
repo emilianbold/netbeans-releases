@@ -123,10 +123,13 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
     }
 
     protected int getIndentForTagParameter(BaseDocument doc, JoinedTokenSequence tokenSequence, int tagOffset) throws BadLocationException {
+        int originalOffset = tokenSequence.offset();
         int tagStartLine = Utilities.getLineOffset(doc, tagOffset);
         tokenSequence.move(tagOffset);
         Token<? extends TokenId> token;
         int tokenOffset;
+        boolean thereWasWS = false;
+        int shift = doc.getShiftWidth(); // default;
 
         /*
          * Find the offset of the first attribute if it is specified on the same line as the opening of the tag
@@ -136,16 +139,24 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         while (tokenSequence.moveNext()) {
             token = tokenSequence.token();
             tokenOffset = tokenSequence.offset();
-            if (!isWSToken(token) || tagStartLine != Utilities.getLineOffset(doc, tokenOffset)) {
-                if (!isWSToken(token) && tagStartLine == Utilities.getLineOffset(doc, tokenOffset)) {
-                    return tokenOffset - Utilities.getRowIndent(doc, tokenOffset) - Utilities.getRowStart(doc, tokenOffset);
+            boolean isWSToken = isWSToken(token);
+            
+            if (thereWasWS && (!isWSToken || tagStartLine != Utilities.getLineOffset(doc, tokenOffset))) {
+                if (!isWSToken && tagStartLine == Utilities.getLineOffset(doc, tokenOffset)) {
+                    
+                    shift = tokenOffset - Utilities.getRowIndent(doc, tokenOffset)
+                            - Utilities.getRowStart(doc, tokenOffset);
                 }
                 break;
+            } else if (isWSToken){
+                thereWasWS = true;
             }
         }
 
+        tokenSequence.move(originalOffset);
+        tokenSequence.moveNext();
 
-        return doc.getShiftWidth(); // default;
+        return shift;
     }
 
     private boolean calcIndents_processOpeningTag(final BaseDocument doc, final JoinedTokenSequence tokenSequence, final String tagName, final Collection<TagIndentationData> unprocessedOpeningTags, final int[] indentsWithinTags) throws BadLocationException {
