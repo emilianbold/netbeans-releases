@@ -36,6 +36,7 @@ import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 
 /**
  * 
@@ -96,7 +97,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
             // accept
-            new MidpAcceptTrensferableKindPresenter().addType(CancellableTaskCD.TYPEID, PROP_TASK),
+            new MidpAcceptTrensferableKindPresenter().addType(CancellableTaskCD.TYPEID, PROP_TASK).addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK),
             //properties
             createPropertiesPresenter(),
             // code

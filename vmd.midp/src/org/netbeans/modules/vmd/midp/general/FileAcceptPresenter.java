@@ -68,6 +68,7 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
         return this;
     }
     
+    @Override
     public boolean isAcceptable (Transferable transferable, AcceptSuggestion suggestion) {
         assert (!extensionsMap.isEmpty());
         FileObject fileObject = getNodeFileObject(transferable);
@@ -83,6 +84,7 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
         return false;
     }
     
+    @Override
     public ComponentProducer.Result accept (Transferable transferable, AcceptSuggestion suggestion) {
         FileObject fileObject = getNodeFileObject(transferable);
         TypeID typeID = getTypeForExtension(fileObject.getExt());
@@ -146,6 +148,7 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
         }
         return null;
     }
+    
     private String getPropertyNameForExtension(String fe) {
         for (String key : propertyNamesMap.keySet()) {
             if (key.equalsIgnoreCase(fe))

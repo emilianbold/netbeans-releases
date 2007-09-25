@@ -47,6 +47,7 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 
 /**
  *
@@ -131,7 +132,7 @@ public class TableItemCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // accept
-            new MidpAcceptTrensferableKindPresenter().addType(TableModelCD.TYPEID, PROP_MODEL),
+            new MidpAcceptTrensferableKindPresenter().addType(TableModelCD.TYPEID, PROP_MODEL).addType(SimpleTableModelCD.TYPEID, PROP_MODEL),
             // properties
             createPropertiesPresenter(),
             // code

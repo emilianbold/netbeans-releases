@@ -126,8 +126,8 @@ public final class ChoiceElementCD extends ComponentDescriptor {
                 // screen
                 new ChoiceElementDisplayPresenter(),new ScreenMoveArrayAcceptPresenter(ChoiceGroupCD.PROP_ELEMENTS, ChoiceElementCD.TYPEID),
                 new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"), //NOI18N
-                MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),
-                MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter()
+                new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
+                new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_FONT)
         );
     }
     

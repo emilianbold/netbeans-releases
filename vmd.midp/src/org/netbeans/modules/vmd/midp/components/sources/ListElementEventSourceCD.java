@@ -55,7 +55,6 @@ import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 /**
  * @author David Kaspar
  */
-
 public final class ListElementEventSourceCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#ListElementEventSource"); // NOI18N
@@ -113,29 +112,39 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),new ScreenMoveArrayAcceptPresenter(ListCD.PROP_ELEMENTS, ListElementEventSourceCD.TYPEID),
             // accept
             new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"), // NOI18N
-            MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter(),
-            MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),
+            new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_FONT),
+            new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
             // flow
             new FlowEventSourcePinPresenter () {
                 protected DesignComponent getComponentForAttachingPin () {
                     return getComponent ().getParentComponent ();
                 }
-                protected String getDisplayName () {
+                
+                protected String getDisplayName() {
                     return MidpValueSupport.getHumanReadableString (getComponent ().readProperty (PROP_STRING));
                 }
-                protected String getOrder () {
+                
+                protected String getOrder() {
                     return FlowListElementPinOrderPresenter.CATEGORY_ID;
                 }
+                
+                @Override
                 protected boolean canRename () {
                     return getComponent () != null;
                 }
-                protected String getRenameName () {
+                
+                @Override
+                protected String getRenameName() {
                     return (String) getComponent ().readProperty (PROP_STRING).getPrimitiveValue ();
                 }
-                protected void setRenameName (String name) {
+                
+                @Override
+                protected void setRenameName(String name) {
                     getComponent ().writeProperty (PROP_STRING, MidpTypes.createStringValue (name));
                 }
-                protected DesignEventFilter getEventFilter () {
+                
+                @Override
+                protected DesignEventFilter getEventFilter() {
                     return super.getEventFilter ().addParentFilter (getComponent (), 1, false);
                 }
             },
@@ -158,7 +167,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
                     return MultiGuardedSection.matches (section, getComponent().getParentComponent().getComponentID() + "-action", getComponent().getComponentID() + "-postAction"); // NOI18N
                 }
             }
-        
+            
         );
     }
 

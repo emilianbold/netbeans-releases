@@ -45,13 +45,13 @@ import java.util.List;
  *
  * @author Anton Chechel
  */
-
 public class SVGFileAcceptPresenter extends FileAcceptPresenter {
 
     public SVGFileAcceptPresenter() {
-        super(SVGPlayerCD.PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg");
+        super(SVGPlayerCD.PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg"); // NOI18N
     }
 
+    @Override
     public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
         Result result = super.accept(transferable, suggestion);
         DesignComponent svgImage = result.getComponents().iterator().next();

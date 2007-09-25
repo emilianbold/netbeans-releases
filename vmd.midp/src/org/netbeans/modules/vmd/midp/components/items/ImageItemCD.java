@@ -114,7 +114,7 @@ public class ImageItemCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_IMAGE),
                 //accept
-                new ImageFileAcceptPresenter(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg","gif","png"), //NOI18N
+                new ImageFileAcceptPresenter(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "gif", "png"), //NOI18N
                 new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
                 // screen
                 new ImageItemDisplayPresenter(),
