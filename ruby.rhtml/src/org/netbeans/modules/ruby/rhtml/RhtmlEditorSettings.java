@@ -47,6 +47,7 @@ public class RhtmlEditorSettings extends Settings.AbstractInitializer {
           }
       };
 
+    @SuppressWarnings("unchecked") // The old API isn't generified yet
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
         if (kitClass == null) {
             return;
