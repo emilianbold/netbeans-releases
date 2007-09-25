@@ -457,7 +457,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
             FileObject ddFO = getDeploymentDescriptor();
             if (ddFO != null) {
                 WebApp webApp = DDProvider.getDefault().getDDRoot(ddFO);
-                version = webApp.getVersion().toString();
+                version = webApp.getVersion();
             }
         } catch (IOException e) {
             Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
