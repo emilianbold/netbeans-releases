@@ -58,10 +58,12 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
     /**
      * XP look and feel makes selected tab wider by 2 pixels on each side
      */
+    @Override
     public int getPixelsToAddToSelection() {
         return 4;
     }
 
+    @Override
     public Dimension getPadding() {
         Dimension d = super.getPadding();
         d.width = isShowCloseButton() && !Boolean.getBoolean("nb.tabs.suppressCloseButton") ? 32 : 16;
@@ -174,6 +176,7 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
 
+    @Override
     public Color getSelectedActivatedForeground() {
         Color result = UIManager.getColor("textText"); //NOI18N
         if (result == null) {
@@ -190,6 +193,7 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
 
+    @Override
     public Color getSelectedActivatedBackground() {
         Color top = UIManager.getColor("tab_focus_fill_bright"); //NOI18N
         Color bot = UIManager.getColor("tab_focus_fill_dark"); //NOI18N
@@ -327,6 +331,7 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
         }
     }
     
+    @Override
     protected int getCaptionYAdjustment() {
         return 1;
     }
@@ -407,7 +412,7 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
                 } else if (i == 3 && topColor) {
                     g.setColor(prev);
                 }
-                g.drawLine(xpoints[i], ypoints[i], xpoints[i + 1],
+                g.drawLine(xpoints[i], ypoints[i] + (i==3 ? 1 : 0), xpoints[i + 1],
                            ypoints[i + 1]);
             }
 
@@ -420,10 +425,10 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
                                                                  "control"))); //NOI18N
             
             //Antialias the corners of the polygon
-            g.drawLine(xpoints[0] - 1, ypoints[0], xpoints[1] - 1,
+            g.drawLine(xpoints[0], ypoints[0] - 1, xpoints[1] - 1,
                        ypoints[1]);
-            g.drawLine(xpoints[2] + 1, ypoints[2], xpoints[3] + 1,
-                       ypoints[3]);
+            g.drawLine(xpoints[2] + 1, ypoints[2], xpoints[3],
+                       ypoints[3] - 1);
 
             if (ren.isSelected()) {
                 g.setColor(getRightEdgeSelectedShadow());
