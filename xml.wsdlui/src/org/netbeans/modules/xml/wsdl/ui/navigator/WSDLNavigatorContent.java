@@ -21,7 +21,7 @@ package org.netbeans.modules.xml.wsdl.ui.navigator;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.EventQueue;
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -35,6 +35,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
@@ -50,6 +51,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -70,7 +72,6 @@ public class WSDLNavigatorContent extends JPanel
     private TreeView treeView;
     /** Root node of the tree. */
     private Node rootNode;
-    private DataObject dataobject;
     
     private final JLabel notAvailableLabel = new JLabel(
             NbBundle.getMessage(WSDLNavigatorContent.class, "MSG_NotAvailable"));
@@ -80,13 +81,13 @@ public class WSDLNavigatorContent extends JPanel
 //        lookup = Lookups.singleton(new ReadOnlyCookie(true));
 //    }
     
-    private static WSDLNavigatorContent content;
+    private WSDLNavigatorContent content;
     
 
     /**
      * Creates a new instance of WSDLNavigatorContent.
      */
-    private WSDLNavigatorContent() {
+    public WSDLNavigatorContent() {
         setLayout(new BorderLayout());
         explorerManager = new ExplorerManager();
         explorerManager.addPropertyChangeListener(this);
@@ -96,15 +97,12 @@ public class WSDLNavigatorContent extends JPanel
         notAvailableLabel.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
         // to ensure our background color will have effect
         notAvailableLabel.setOpaque(true);
+        treeView = new BeanTreeView();
     }
     
-    public static WSDLNavigatorContent getDefault() {
+    public WSDLNavigatorContent getDefault() {
         if (content == null) {
-            synchronized (WSDLNavigatorContent.class) {
-                if (content == null) {
-                    content = new WSDLNavigatorContent();
-                }
-            }
+            content = new WSDLNavigatorContent();
         }
         return content;
     }
@@ -171,9 +169,16 @@ public class WSDLNavigatorContent extends JPanel
      * @param  dobj  data object to show.
      */
     public void navigate(DataObject dobj) {
-        if (dobj == dataobject) return;
-        cleanModel(dataobject);
-        dataobject = dobj;
+        WSDLModel model = getModel(dobj);
+        if (model == null || model.getState() != WSDLModel.State.VALID) {
+            showError();
+        } else {
+            show(model);
+        }
+        repaint();
+    }
+
+    private WSDLModel getModel(DataObject dataobject) {
         WSDLModel model = null;
         try {
             WSDLModelCookie modelCookie = dataobject.getCookie(WSDLModelCookie.class);
@@ -187,28 +192,7 @@ public class WSDLNavigatorContent extends JPanel
         } catch (IOException ioe) {
             // Show a blank page if there is an error.
         }
-        if (model == null || model.getState() != WSDLModel.State.VALID) {
-            showError();
-        } else {
-            show(model);
-        }
-        repaint();
-    }
-
-    private void cleanModel(DataObject dataobject) {
-        if (dataobject == null) return;
-        WSDLModel model = null;
-        try {
-            WSDLModelCookie modelCookie = dataobject.getCookie(WSDLModelCookie.class);
-            if (modelCookie != null) {
-                model = modelCookie.getModel();
-                if (model != null) {
-                    model.removePropertyChangeListener(this);
-                }
-            }
-        } catch (IOException ioe) {
-            // Show a blank page if there is an error.
-        }
+        return model;
     }
 
     @Override
@@ -223,6 +207,7 @@ public class WSDLNavigatorContent extends JPanel
     public void run() {
         // Initially expand root node and the folder nodes below it.
         if (treeView != null && rootNode != null) {
+            explorerManager.setRootContext(rootNode);
             treeView.expandNode(rootNode);
             Utility.expandNodes(treeView, 1, rootNode);
             selectActivatedNodes();
@@ -322,25 +307,60 @@ public class WSDLNavigatorContent extends JPanel
      */
     private void show(WSDLModel model) {
         remove(notAvailableLabel);
-        treeView = new BeanTreeView();
         add(treeView, BorderLayout.CENTER);
+        validate();
         NodesFactory factory = NodesFactory.getInstance();
         rootNode = factory.create(model.getDefinitions());
         getExplorerManager().setRootContext(rootNode);
-        EventQueue.invokeLater(this);
+        SwingUtilities.invokeLater(this);
     }
 
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
+    public void release() {
         //cleanup all the elements in the navigator.
         removeAll();
         validate();
         getExplorerManager().setRootContext(Node.EMPTY);
         getExplorerManager().setExploredContext(Node.EMPTY);
-        
+        if (rootNode != null) {
+            Definitions component = rootNode.getLookup().lookup(Definitions.class);
+            if (component != null && component.isInDocumentModel()) {
+                component.getModel().removePropertyChangeListener(this);
+            }
+        }
         rootNode = null;
-        treeView = null;
-        dataobject = null;
+    }
+    
+    public void showWaitNode() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+               treeView.setRootVisible(true);
+               explorerManager.setRootContext(new WaitNode());
+            } 
+        });
+    }
+    
+    private static class WaitNode extends AbstractNode {
+
+        private Image waitIcon = Utilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/wait.gif"); // NOI18N
+
+        WaitNode( ) {
+            super( Children.LEAF );
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return waitIcon;
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
+
+        @java.lang.Override
+        public java.lang.String getDisplayName() {
+            return "Please Wait...";
+        }
+
     }
 }
