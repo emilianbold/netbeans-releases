@@ -825,7 +825,11 @@ public class DDDataObject extends  DDMultiViewDataObject
     /** 
      * Do not allow to remove web.xml except for version 2.5.
      */
+    @Override
     public boolean isDeleteAllowed() {
+        if (getWebApp() == null || getWebApp().getVersion() == null){
+            return true;
+        }
         return WebApp.VERSION_2_5.equals(getWebApp().getVersion());
     }
     /** Enable to access Active element 
