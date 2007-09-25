@@ -18,20 +18,11 @@
  */
 package org.netbeans.modules.websvc.core.webservices.action;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
