@@ -10,7 +10,9 @@
 		<directory title="C:/!MySunProjects/Rave/cvstree/ruby/help/javahelp/org/netbeans/modules/ruby/help/docs">
 			<file title="about_ruby.html"/>
 			<file title="chooserubyinterpdialog.html"/>
+			<file title="create_customize_codetemplates.html"/>
 			<file title="credits.html"/>
+			<file title="editor_shortcuts_codetemplates.html"/>
 			<file title="geminstallationdialog.html"/>
 			<file title="geminstallsettingsdialog.html"/>
 			<file title="gemmanager.html"/>

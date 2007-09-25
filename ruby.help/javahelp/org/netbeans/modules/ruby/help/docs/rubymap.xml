@@ -20,4 +20,6 @@
 	<mapID target="nbruby_usedatabase" url="usedatabase.html"/>
 	<mapID target="nbruby_ruby_quickref" url="ruby_quickref.html"/>
 	<mapID target="nbruby_rubyoptions" url="rubyoptions.html"/>
+	<mapID target="nbruby_create_customize_codetemplates" url="create_customize_codetemplates.html"/>
+	<mapID target="nbruby_editor_shortcuts_codetemplates" url="editor_shortcuts_codetemplates.html"/>
 </map>

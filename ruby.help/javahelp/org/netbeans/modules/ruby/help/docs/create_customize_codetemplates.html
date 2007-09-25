@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright c 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+	<title>Creating and Customizing Ruby Code Templates</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Creating and Customizing Ruby Code Templates</h2>
+<p> <small><a href="#seealso">See Also</a></small> 
+
+<p>You can customize the code templates used in the Ruby code editor. Code templates are abbreviations that expand into snippets of code when you press Tab after typing the snippet name in the editor. </p>
+<p><b>To customize the list of code templates:</b>
+</p>
+<ol>
+<li>Choose Tools  &gt; Options.</li>
+
+<li>Click Editor and select the Code Templates tab.</li>
+<li>Select a one of the Ruby options from the Language drop-down list to display its 
+the code template list.</li>
+<li>Edit, create, and remove templates as needed.
+  <ul>
+<li>If you want to change a code template, select a code template from list and 
+edit the Expanded Text field.</li>
+<li>If you want to add a new code template, click New.</li>
+</ul>
+</ol>
+
+<h3>Special Code Template Syntax</h3>
+
+<p>When you use the Options window to create code templates, there are several 
+constructs that you can use to customize the way the code template behaves. The 
+table below lists these constructs.</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <tr> 
+        <th align="left" scope="col" valign="top"><b>Code Template Syntax Construct</b></th>
+        <th align="left" scope="col" valign="top"><b>Explanation</b></th>
+    </tr>
+    <tr valign="top">
+        <td><tt>${cursor}</tt>
+        </td>
+
+        <td>Indicates where the insertion point should go after the code snippet 
+has been added to your code. 
+        </td>
+    </tr>
+    <tr valign="top">
+        <td><tt>${<i>Identifier</i>}</tt>
+        </td>
+        <td>Indicates an identifer that needs to be filled in when you use the code 
+            template. When you use this construct in a template definition, replace <i>Identifier</i> with the 
+            identifer name that you want to appear in the template.
+        </td>
+
+    </tr>
+    <tr valign="top">
+        <td><tt>index</tt>
+        </td>
+        <td>An attribute that you can use within a <tt>${<i>Identifier</i>}</tt> segment 
+            to designate that an unused variable name should be generated in the code snippet. 
+            For example, you could use <tt>${ind&nbsp;index}</tt>.
+        </td>
+
+    </tr>
+    <tr valign="top">
+        <td><tt>instanceof="<i>FullyQualifiedType</i>"</tt>
+        </td>
+        <td>An attribute that you can use within a <tt>${<i>Identifier</i>}</tt> segment 
+            to designate the type that the identifier must represent an instance of. For example, 
+            you could use <tt>${collection&nbsp;instanceof="java.util.Collection"}</tt> where <tt>collection</tt> 
+            is the default identifier in the template and <tt>java.util.Collection</tt> is the class of 
+            which the identifier must represent an instance.
+        </td>
+
+    </tr>
+</table>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+           
+<dd><a href="about_ruby.html">About Ruby Development in NetBeans</a></dd>
+</dl>
+
+<hr>
+<p><font size=-2><a href="../../../credits.html">Legal Notices</a></font>
+</p>
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+
+</body>
+</html>
