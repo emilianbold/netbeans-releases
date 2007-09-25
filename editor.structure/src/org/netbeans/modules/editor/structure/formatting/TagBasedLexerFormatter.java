@@ -253,13 +253,16 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
             for (int i = 0; i < tokenSequenceBounds.length; i++) {
                 tokenSequenceBounds[i] = findTokenSequenceBounds(doc, tokenSequences[i]);
-                
-                if (tokenSequenceBounds[i].getStartLine() > -1) { // skip white-space blocks
-                    markCurrentLanguageLinesAsFormattable(doc, tokenSequenceBounds[i], lineFormatting);
-                    int blockShiftOffset = findLanguageBlockShiftOffset(doc, tokenSequenceBounds[i]);
 
-                    for (int j = tokenSequenceBounds[i].getStartLine(); j <= tokenSequenceBounds[i].getEndLine(); j++) {
-                        blockShiftOffsets[j] = blockShiftOffset;
+                if (processLanguageBlockOffsets(doc)) {
+                    if (tokenSequenceBounds[i].getStartLine() > -1) {
+                        // skip white-space blocks
+                        markCurrentLanguageLinesAsFormattable(doc, tokenSequenceBounds[i], lineFormatting);
+                        int blockShiftOffset = findLanguageBlockShiftOffset(doc, tokenSequenceBounds[i]);
+
+                        for (int j = tokenSequenceBounds[i].getStartLine(); j <= tokenSequenceBounds[i].getEndLine(); j++) {
+                            blockShiftOffsets[j] = blockShiftOffset;
+                        }
                     }
                 }
             }
@@ -538,6 +541,10 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         for (int i = firstLineOfTheLanguageBlock; i <= languageBounds.getEndLine(); i++) {
             lineFormatting[i] = LineFormattingType.NORMAL;
         }
+    }
+    
+    protected boolean processLanguageBlockOffsets(BaseDocument doc) {
+        return true;
     }
     
     //    protected void enterPressed(JTextComponent txtComponent, int dotPos) throws BadLocationException {

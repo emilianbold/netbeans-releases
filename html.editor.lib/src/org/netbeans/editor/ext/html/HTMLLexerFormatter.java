@@ -36,6 +36,7 @@ import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerForm
  */
 
 public class HTMLLexerFormatter extends TagBasedLexerFormatter {
+    public static final String HTML_FORMATTER_ACTS_ON_TOP_LEVEL = "HTML_FORMATTER_ACTS_ON_TOP_LEVEL"; //NOI18N
     private static final String[] UNFORMATTABLE_TAGS = new String[]{"pre", "script", "code", "textarea"}; //NOI18N
     private final LanguagePath languagePath;
     
@@ -176,6 +177,10 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
 	}
 	
 	return false;
+    }
+    
+    @Override protected boolean processLanguageBlockOffsets(BaseDocument doc) {
+        return doc.getProperty(HTML_FORMATTER_ACTS_ON_TOP_LEVEL) == null;
     }
 
     protected LanguagePath supportedLanguagePath() {
