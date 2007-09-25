@@ -86,7 +86,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeExpansionEvent;
@@ -1986,13 +1985,9 @@ public abstract class TreeView extends JScrollPane {
                         Node selectedNode = Visualizer.findNode(selectedTNode);
 
                         if (
-                            (selectedNode.getPreferredAction() != null) &&
-                                selectedNode.getPreferredAction().isEnabled()
+                            (selectedNode.getPreferredAction() == null) ||
+                                !selectedNode.getPreferredAction().isEnabled()
                         ) {
-                            selectedNode.getPreferredAction().actionPerformed(
-                                new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "")
-                            );
-                        } else {
                             expandPath(getSelectionPath());
                         }
                     }
