@@ -54,7 +54,9 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Enumerations;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -62,8 +64,7 @@ import org.openide.util.Enumerations;
  */
 public class PropertiesProviderTest extends NbTestCase {
     static {
-        // confuse the system a bit, if your system runs with UTF-8 default locale...
-        //System.setProperty("file.encoding", "cp1252");
+        System.setProperty("netbeans.full.hack", "true");
     }
     
     public PropertiesProviderTest(String testName) {
@@ -89,12 +90,24 @@ public class PropertiesProviderTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        
+        Lookup.getDefault().lookup(ModuleInfo.class);
+        
         MockServices.setServices(DD.class, Pool.class, FEQI.class);
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    public void testWeDefineTemplatesPropertiesUserProperties() throws Exception {
+        FileObject props = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(
+            "Templates/Properties/User.properties"
+        );
+        if (props.getSize() < 100) {
+            fail("There should be some content: " + props.getSize());
+        }
     }
     
     public void testBasePropertiesAlwaysPresent() throws Exception {

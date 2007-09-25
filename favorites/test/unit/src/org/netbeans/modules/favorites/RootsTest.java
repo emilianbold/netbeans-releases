@@ -43,6 +43,7 @@ public class RootsTest extends NbTestCase {
     }    
     
     
+    @Override
     protected void setUp () throws Exception {
         super.setUp ();
         
@@ -101,9 +102,9 @@ public class RootsTest extends NbTestCase {
         
         File home = new File (System.getProperty("user.home")).getCanonicalFile();
 
-        HashSet folders = new HashSet ();
+        HashSet<DataFolder> folders = new HashSet<DataFolder>();
         for (int i = 0; i < arr.length; i++) {
-            DataFolder f = (DataFolder)arr[i].getCookie(DataFolder.class);
+            DataFolder f = arr[i].getCookie(DataFolder.class);
             if (f == null) continue;
             
             folders.add (f);
@@ -125,7 +126,7 @@ public class RootsTest extends NbTestCase {
 
     
     public void testNodesUnderRootRepresentTheirFiles () throws Exception {
-        HashSet roots = new HashSet (Arrays.asList (File.listRoots()));
+        HashSet<File> roots = new HashSet<File>(Arrays.asList (File.listRoots()));
         
         Node[] arr = Favorites.getNode ().getChildren ().getNodes (true);
         
