@@ -463,7 +463,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             
             // TODO - remove initialbalance etc.
             computeIndents(doc, initialIndent, initialOffset, endOffset, result, 
-                    offsets, indents, indentEmptyLines, includeEnd);
+                    offsets, indents, indentEmptyLines, includeEnd, indentOnly);
             
             try {
                 doc.atomicLock();
@@ -524,7 +524,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult result,
             List<Integer> offsets,
             List<Integer> indents,
-            boolean indentEmptyLines, boolean includeEnd
+            boolean indentEmptyLines, boolean includeEnd, boolean indentOnly
         ) {
         // PENDING:
         // The reformatting APIs in NetBeans should be lexer based. They are still
@@ -581,7 +581,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
                 int hangingIndent = continued ? (hangingIndentSize) : 0;
 
-                if (isRhtmlDocument) {
+                if (isRhtmlDocument && !indentOnly) {
                     // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
                     initialIndent = LexUtilities.getLineIndent(doc, offset);
                 }
