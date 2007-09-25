@@ -238,7 +238,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         if (newFrameViewer) {
             // #22445: only do this stuff once when frame is made.
             // After that we need to remember the size and position.
-            Dimension screenSize = Utilities.getUsableScreenBounds().getSize();
+            Rectangle bounds = Utilities.getUsableScreenBounds();
             Dimension frameSize = frameViewer.getSize();
             // #108255: Increase size of Help window by 30%
             frameSize.width = (int) (1.3 * frameSize.width);
@@ -247,16 +247,17 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             frameViewer.setSize(frameSize);
             
             // #11018: have mercy on little screens
-            if (frameSize.width > screenSize.width) {
-                frameSize.width = screenSize.width;
-                frameViewer.setSize(frameSize);
+            if (frameSize.width > bounds.width) {
+                frameSize.width = bounds.width;
             }
-            if (frameSize.height > screenSize.height) {
-                frameSize.height = screenSize.height;
+            if (frameSize.height > bounds.height) {
+                frameSize.height = bounds.height;
+            }
+            if ((frameSize.width > bounds.width) || (frameSize.height > bounds.height)) {
                 frameViewer.setSize(frameSize);
             }
             //Put frame to top right
-            frameViewer.setLocation(new Point(screenSize.width - frameViewer.getSize().width, 0));
+            frameViewer.setLocation(new Point(bounds.x + bounds.width - frameViewer.getSize().width, bounds.y));
         }
         
         frameViewer.setState(Frame.NORMAL);
