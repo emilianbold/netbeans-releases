@@ -86,20 +86,6 @@ public final class CppSwitchAction extends BaseAction {
         }
     }
 
-    private CsmFile getTarget(Node[] activatedNodes) {
-        CsmFile f = CsmUtilities.getCsmFile(activatedNodes[0], false);
-        CsmFile target = null;
-        if (f != null) {
-            NodeKind nk = getTargetNodeKind(activatedNodes);
-            if (nk == NodeKind.SOURCE) {
-                target = findSource(f);
-            } else if (nk == NodeKind.HEADER) {
-                target = findHeader(f);
-            }
-        }
-        return target;
-    }
-
     public @Override String getPopupMenuText(JTextComponent target) {
         String trimmedNameKey = "goto-cpp-switch-file"; //NOI18N
         switch (getTargetNodeKind(TopComponent.getRegistry().getActivatedNodes())) {
@@ -117,6 +103,8 @@ public final class CppSwitchAction extends BaseAction {
         return getMessage("cpp-switch-header-source"); //NOI18N
     }
 
+    // File search functionality
+    
     private enum NodeKind {
 
         HEADER, SOURCE, UNKNOWN
@@ -133,7 +121,21 @@ public final class CppSwitchAction extends BaseAction {
         return NodeKind.UNKNOWN;
     }
 
-    private CsmFile findHeader(CsmFile source) {
+    private static CsmFile getTarget(Node[] activatedNodes) {
+        CsmFile f = CsmUtilities.getCsmFile(activatedNodes[0], false);
+        CsmFile target = null;
+        if (f != null) {
+            NodeKind nk = getTargetNodeKind(activatedNodes);
+            if (nk == NodeKind.SOURCE) {
+                target = findSource(f);
+            } else if (nk == NodeKind.HEADER) {
+                target = findHeader(f);
+            }
+        }
+        return target;
+    }
+
+    /*package*/ static CsmFile findHeader(CsmFile source) {
         String name = getName(source.getAbsolutePath());
         // first look at the list of includes
         for (CsmInclude h : source.getIncludes()) {
@@ -162,7 +164,7 @@ public final class CppSwitchAction extends BaseAction {
         return namesake;
     }
 
-    private CsmFile findSource(CsmFile header) {
+    /*package*/ static CsmFile findSource(CsmFile header) {
         String name = getName(header.getAbsolutePath());
 
         Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(header);
@@ -185,7 +187,7 @@ public final class CppSwitchAction extends BaseAction {
         return null;
     }
 
-    private void doToggle(final DataObject toggled) {
+    private static void doToggle(final DataObject toggled) {
         // check if the data object has possibility to be opened in editor
         final OpenCookie oc = toggled.getCookie(OpenCookie.class);
         if (oc != null) {
@@ -203,7 +205,7 @@ public final class CppSwitchAction extends BaseAction {
         }
     }
 
-    private void doToggle(FileObject fo) {
+    private static void doToggle(FileObject fo) {
         assert (fo != null);
         try {
             // find a data object for the input file object
@@ -216,7 +218,7 @@ public final class CppSwitchAction extends BaseAction {
         }
     }
 
-    private FileObject findToggleFile(final Node[] activatedNodes) {
+    private static FileObject findToggleFile(final Node[] activatedNodes) {
         FileObject res = null;
         // check whether current file is C++ Source file
         DataObject dob = activatedNodes[0].getLookup().lookup(CCDataObject.class);
@@ -242,7 +244,7 @@ public final class CppSwitchAction extends BaseAction {
         return res;
     }
 
-    private FileObject findBrother(DataObject dob, String[] ext) {
+    private static FileObject findBrother(DataObject dob, String[] ext) {
         assert (dob != null);
         assert (dob.getPrimaryFile() != null);
         // get a file object associated with the data object
