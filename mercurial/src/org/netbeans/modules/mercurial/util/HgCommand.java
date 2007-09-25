@@ -147,7 +147,7 @@ public class HgCommand {
     
     private static final String HG_NO_REPOSITORY_ERR = "abort: There is no Mercurial repository here"; // NOI18N
     private static final String HG_UPDATE_SPAN_BRANCHES_ERR = "abort: update spans branches"; // NOI18N
-    private static final String HG_UPDATE_OUTSTANDING_UNCOMMITTED_MERGES_ERR = "abort: outstanding uncommitted merges"; // NOI18N
+    private static final String HG_OUTSTANDING_UNCOMMITTED_MERGES_ERR = "abort: outstanding uncommitted merges"; // NOI18N
     private static final String HG_ALREADY_TRACKED_ERR = " already tracked!"; // NOI18N
     private static final String HG_NOT_TRACKED_ERR = " no tracked!"; // NOI18N
     private static final String HG_NOT_FOUND_ERR = "not found!"; // NOI18N
@@ -197,7 +197,13 @@ public class HgCommand {
              command.add(revStr);
         env.add(HG_MERGE_ENV);
         
-        return execEnv(command, env);
+        List<String> list = exec(command);
+        if (!list.isEmpty()) {
+            if (isErrorOutStandingUncommittedMerges(list.get(0))) {
+                throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_MERGE_COMMIT_TEXT"));
+             }
+        } 
+        return list;
     }
 
     /**
@@ -229,7 +235,7 @@ public class HgCommand {
             if  (isErrorUpdateSpansBranches(list.get(0))) {
                 throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_MERGE_TEXT"));
             }
-            else if (isErrorUpdateOutStandingUncommittedMerges(list.get(0))) {
+            else if (isErrorOutStandingUncommittedMerges(list.get(0))) {
                 throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_COMMIT_TEXT"));
              }
         } 
@@ -1619,8 +1625,8 @@ public class HgCommand {
         return msg.indexOf(HG_UPDATE_SPAN_BRANCHES_ERR) > -1; // NOI18N
     }
 
-    private static boolean isErrorUpdateOutStandingUncommittedMerges(String msg) {
-        return msg.indexOf(HG_UPDATE_OUTSTANDING_UNCOMMITTED_MERGES_ERR) > -1; // NOI18N
+    private static boolean isErrorOutStandingUncommittedMerges(String msg) {
+        return msg.indexOf(HG_OUTSTANDING_UNCOMMITTED_MERGES_ERR) > -1; // NOI18N
     }
     
     private static boolean isErrorAlreadyTracked(String msg) {
