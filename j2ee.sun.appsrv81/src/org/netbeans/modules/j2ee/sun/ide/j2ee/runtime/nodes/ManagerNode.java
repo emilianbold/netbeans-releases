@@ -63,7 +63,7 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
         setDisplayName(sdm.getHost()+":"+sdm.getPort());
         
         setIconBaseWithExtension("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png");//NOI18N
-        setShortDescription(NbBundle.getMessage(ManagerNode.class, "HINT_node")+" "+sdm.getHost()+":"+sdm.getPort() + " "+sdm.getPlatformRoot().getAbsolutePath());//NOI18N
+        setShortDescription(NbBundle.getMessage(ManagerNode.class, "HINT_node", sdm.getHost()+":"+sdm.getPort()));   //NOI18N
         getCookieSet().add(this);
         getCookieSet().add(sdm);
     }
