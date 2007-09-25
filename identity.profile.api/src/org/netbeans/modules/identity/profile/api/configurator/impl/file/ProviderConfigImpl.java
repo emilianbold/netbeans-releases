@@ -368,4 +368,8 @@ public class ProviderConfigImpl implements ProviderConfig {
     public void setTrustAuthorityConfigList(List<TrustAuthorityConfig> trustAuthConfigs) {
         //noop
     }
+    
+    public void close() {
+        AMConfigManager.getDefault().removeAMConfig(path);
+    }
 }

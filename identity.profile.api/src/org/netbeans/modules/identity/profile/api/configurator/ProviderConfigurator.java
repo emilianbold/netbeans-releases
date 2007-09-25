@@ -413,6 +413,12 @@ public class ProviderConfigurator extends Configurator {
         }
     }
     
+    public void close() {
+        if (providerConfig != null) {
+            providerConfig.close();
+        }
+    }
+    
     public String validate() {
         clearError();
         

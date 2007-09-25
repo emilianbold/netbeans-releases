@@ -111,6 +111,6 @@ public interface ProviderConfig {
 
     public void setTrustAuthorityConfigList(List<TrustAuthorityConfig> trustAuthConfigs);
     
-    
+    public void close();
 }
 

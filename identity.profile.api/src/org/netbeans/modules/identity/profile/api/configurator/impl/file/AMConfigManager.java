@@ -77,6 +77,11 @@ class AMConfigManager {
         return (JAXBElement<AMConfigType>) reference.get();
     }
     
+    public void removeAMConfig(String path) {
+        String normalizedPath = path.replace('\\', '/');    
+        amConfigMap.remove(normalizedPath);
+    }
+    
     public void saveAMConfig(JAXBElement<AMConfigType> amConfig, String path) {
         try {
             createMarshaller().marshal(amConfig, new FileOutputStream(

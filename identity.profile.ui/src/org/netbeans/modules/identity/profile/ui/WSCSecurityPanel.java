@@ -5,7 +5,6 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -49,51 +48,44 @@ import org.openide.util.NbBundle;
  * @author Srividhya Narayanan
  */
 public class WSCSecurityPanel extends SectionNodeInnerPanel {
+
     private static final String JKS_EXTENSION = ".jks"; //NOI18N
     private static final String URN = "urn:"; //NOI18N
-    
     private Collection<ProviderConfigurator> configurators;
     private J2eeProjectHelper helper;
     private boolean disabled = false;
-    
+
     /** Creates new form WSPSecurityPanel */
     public WSCSecurityPanel(SectionNodeView view, J2eeProjectHelper helper) {
         super(view);
         initComponents();
-        
-        errorLabel.setText("");     //NOI18N
-        
+
+        errorLabel.setText(""); //NOI18N
         configurators = new ArrayList<ProviderConfigurator>();
-        
+
         try {
             List<String> services = helper.getAllServiceNames();
-            
+
             for (String service : services) {
-                configurators.add(ProviderConfigurator.getConfigurator(service,
-                        Type.WSC, AccessMethod.FILE, helper.getConfigPath(), 
-                        helper.getServerID()));
+                configurators.add(ProviderConfigurator.getConfigurator(service, Type.WSC, AccessMethod.FILE, helper.getConfigPath(), helper.getServerID()));
             }
-            
         } catch (ConfiguratorException ex) {
             errorLabel.setText(ex.getMessage());
             disabled = true;
         }
-        
+
         this.helper = helper;
-        
-        if (!disabled ) {
+
+        if (!disabled) {
             if (helper.isSecurityEnabled()) {
                 enableSecurityCB.setSelected(true);
             } else {
                 enableSecurityCB.setSelected(false);
             }
-            
-            for (ProviderConfigurator configurator : configurators) {                
-                configurator.addModifier(Configurable.SECURITY_MECH, requestSecMechCB,
-                        (helper.getProjectType() == ProjectType.WEB) ?
-                            configurator.getSecMechHelper().getAllWSCSecurityMechanisms() :
-                            configurator.getSecMechHelper().getAllMessageLevelSecurityMechanisms());
-                
+
+            for (ProviderConfigurator configurator : configurators) {
+                configurator.addModifier(Configurable.SECURITY_MECH, requestSecMechCB, (helper.getProjectType() == ProjectType.WEB) ? configurator.getSecMechHelper().getAllWSCSecurityMechanisms() : configurator.getSecMechHelper().getAllMessageLevelSecurityMechanisms());
+
                 configurator.addModifier(Configurable.SIGN_RESPONSE, signResponseCB);
                 configurator.addModifier(Configurable.USE_DEFAULT_KEYSTORE, useDefaultKeyStoreCB);
                 configurator.addModifier(Configurable.KEYSTORE_LOCATION, keystoreLocationTF);
@@ -102,44 +94,40 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                 configurator.addModifier(Configurable.KEY_PASSWORD, this.keyPasswordTF);
                 configurator.addModifier(Configurable.USERNAME, userNameTF);
                 configurator.addModifier(Configurable.PASSWORD, passwordTF);
-                
+
                 configurator.addErrorComponent(errorLabel);
             }
         }
-        
+
         updateVisualState();
     }
-    
+
     public JComponent getErrorComponent(String errorId) {
         return null;
     }
-    
+
     public void setValue(JComponent source, Object value) {
-        
     }
-    
+
     public void linkButtonPressed(Object ddBean, String ddProperty) {
-        
     }
-    
+
     private void updateVisualState() {
         if (disabled) {
             disableAll();
             enableSecurityCB.setEnabled(false);
             return;
         }
-        
+
         if (helper.isWsitSecurityEnabled()) {
             enableSecurityCB.setEnabled(false);
-            errorLabel.setText(NbBundle.getMessage(WSCSecurityPanel.class,
-                    "MSG_WsitEnabled"));
+            errorLabel.setText(NbBundle.getMessage(WSCSecurityPanel.class, "MSG_WsitEnabled"));
         } else {
             enableSecurityCB.setEnabled(true);
-            errorLabel.setText("");         //NOI18N
+            errorLabel.setText(""); //NOI18N
         }
-        
-        if (enableSecurityCB.isSelected() &&
-                enableSecurityCB.isEnabled()) {
+
+        if (enableSecurityCB.isSelected() && enableSecurityCB.isEnabled()) {
             secMechLabel.setEnabled(true);
             requestLabel.setEnabled(true);
             requestSecMechCB.setEnabled(true);
@@ -151,7 +139,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             signResponseCB.setEnabled(true);
             certSettingsLabel.setEnabled(true);
             useDefaultKeyStoreCB.setEnabled(true);
-            
+
             if (!useDefaultKeyStoreCB.isSelected()) {
                 keystoreLocationLabel.setEnabled(true);
                 keystoreLocationTF.setEnabled(true);
@@ -176,11 +164,10 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         } else {
             disableAll();
         }
-        
+
         SecurityMechanism secMech = (SecurityMechanism) requestSecMechCB.getSelectedItem();
-        
-        if (secMech.isPasswordCredentialRequired() &&
-                requestSecMechCB.isEnabled()) {
+
+        if (secMech.isPasswordCredentialRequired() && requestSecMechCB.isEnabled()) {
             userNameLabel.setVisible(true);
             userNameTF.setVisible(true);
             passwordLabel.setVisible(true);
@@ -192,7 +179,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             passwordTF.setVisible(false);
         }
     }
-    
+
     private void disableAll() {
         secMechLabel.setEnabled(false);
         requestLabel.setEnabled(false);
@@ -219,22 +206,21 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         passwordLabel.setVisible(false);
         passwordTF.setVisible(false);
     }
-    
+
     public void save() {
         if (!disabled) {
             if (enableSecurityCB.isSelected()) {
                 for (ProviderConfigurator configurator : configurators) {
                     configurator.save();
                 }
-          /*
-            if (isLiberty()) {
+                /*
+                if (isLiberty()) {
                 helper.addAMSecurityConstraint();
-            } else {
+                } else {
                 helper.removeAMSecurityConstraint();
-            }
-           */
+                }
+                 */
                 helper.enableWSCSecurity(isLiberty());
-                
             } else {
                 //helper.removeAMSecurityConstraint();
                 helper.disableWSCSecurity();
@@ -244,20 +230,26 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                 }
             }
         }
-        
+
+        for (ProviderConfigurator configurator : configurators) {
+            configurator.close();
+        }
         helper.clearTransientState();
     }
-    
+
     public void cancel() {
+        for (ProviderConfigurator configurator : configurators) {
+            configurator.close();
+        }
         helper.clearTransientState();
     }
-    
+
     private boolean isLiberty() {
         SecurityMechanism secMech = (SecurityMechanism) requestSecMechCB.getSelectedItem();
-        
+
         return secMech.isLiberty();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -484,27 +476,28 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
         // TODO add your handling code here:
         updateVisualState();
     }//GEN-LAST:event_formFocusGained
-    
+
     private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
         // TODO add your handling code here:
         requestFocusInWindow();
     }//GEN-LAST:event_formAncestorAdded
-    
+
     private void useDefaultKeyStoreCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useDefaultKeyStoreCBActionPerformed
         // TODO add your handling code here:
         updateVisualState();
     }//GEN-LAST:event_useDefaultKeyStoreCBActionPerformed
-    
+
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         // TODO add your handling code here:
         JFileChooser chooser = new JFileChooser();
-        
+
         chooser.setFileFilter(new FileFilter() {
+
             public boolean accept(File file) {
                 if (file.isFile()) {
                     if (file.getName().endsWith(JKS_EXTENSION)) {
@@ -513,30 +506,30 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                         return false;
                     }
                 }
-                
+
                 return true;
             }
-            
+
             public String getDescription() {
                 return NbBundle.getMessage(WSCSecurityPanel.class, "TXT_JavaKeyStore");
             }
         });
-        
+
         int returnVal = chooser.showOpenDialog(this);
-        
-        if(returnVal == JFileChooser.APPROVE_OPTION) {
+
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
             keystoreLocationTF.setText(chooser.getSelectedFile().getPath());
         }
     }//GEN-LAST:event_browseButtonActionPerformed
-    
+
     private void requestSecMechCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_requestSecMechCBActionPerformed
         // TODO add your handling code here:
         updateVisualState();
-        
+
         if (isLiberty()) {
             List<String> endpointURIs = helper.getEndpointURI();
             int i = 0;
-            
+
             for (ProviderConfigurator configurator : configurators) {
                 configurator.setValue(Configurable.SERVICE_TYPE, URN + endpointURIs.get(i));
                 i++;
@@ -547,7 +540,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             }
         }
     }//GEN-LAST:event_requestSecMechCBActionPerformed
-    
+
     private void enableSecurityCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableSecurityCBActionPerformed
         // TODO add your handling code here:
         if (enableSecurityCB.isSelected()) {
@@ -555,11 +548,9 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         } else {
             helper.setTransientState(false);
         }
-        
+
         updateVisualState();
     }//GEN-LAST:event_enableSecurityCBActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel certSettingsLabel;
@@ -586,5 +577,4 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     private javax.swing.JLabel userNameLabel;
     private javax.swing.JTextField userNameTF;
     // End of variables declaration//GEN-END:variables
-    
 }

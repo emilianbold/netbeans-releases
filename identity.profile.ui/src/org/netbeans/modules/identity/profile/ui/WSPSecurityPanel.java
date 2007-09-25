@@ -174,10 +174,12 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
             }
         }
         
+        configurator.close();
         helper.clearTransientState();
     }
     
     public void cancel() {
+        configurator.close();
         helper.clearTransientState();
     }
     

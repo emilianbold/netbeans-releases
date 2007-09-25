@@ -563,4 +563,8 @@ public class ProviderConfigImpl implements ProviderConfig {
             throw ConfiguratorException.create(ex);
         }
     }
+    
+    public void close() {
+        
+    }
 }
