@@ -27,9 +27,6 @@ import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import java.util.*;
 import org.netbeans.qa.form.BindDialogOperator;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.Property;        
-import org.netbeans.jemmy.operators.JButtonOperator;
 
 /**
  * Beans Binding basic test
@@ -101,29 +98,7 @@ public class SimpleBeansBinding extends ExtJellyTestCase {
         findInCode("bindingGroup.bind();", designer);  // NOI18N
 
         // get values of text properties of jLabels and test them
-        assertEquals(getTextValueOfLabel(inspector, jLabel1NodePath),
-                getTextValueOfLabel(inspector, jLabel2NodePath));
+        assertEquals(ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel1NodePath),
+                ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel2NodePath));
     }
-    
-    /** Gets text value of jlabel component
-     * @return String text 
-     */
-    private String getTextValueOfLabel(ComponentInspectorOperator inspector, String nodePath) {
-        // invoke properties of component ...
-        Node actNode = new Node(inspector.treeComponents(), nodePath);
-        ActionNoBlock act = new ActionNoBlock(null, "Properties");  // NOI18N
-        act.perform(actNode);
-
-        // get value of property
-        NbDialogOperator dialogOp = new NbDialogOperator("[JLabel]");  // NOI18N
-        Property prop = new Property(new PropertySheetOperator(dialogOp), "text");  // NOI18N
-        String result = prop.getValue();
-        
-        // close property dialog
-        new JButtonOperator(dialogOp,"Close").push();  // NOI18N
-        waitAMoment();
-
-        return result;
-    }
-
 }

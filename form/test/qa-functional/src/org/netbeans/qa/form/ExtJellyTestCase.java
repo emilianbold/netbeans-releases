@@ -37,9 +37,12 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CompileAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jellytools.properties.Property;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 
@@ -455,4 +458,26 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
                 + File.separatorChar + "src" + File.separatorChar
                 + getTestPackageName() + File.separatorChar + fileName; // NOI18N
     }
+    
+    /** Gets text value of jlabel component
+     * @return String text 
+     */
+    public static String getTextValueOfLabel(ComponentInspectorOperator inspector, String nodePath) {
+        // invoke properties of component ...
+        Node actNode = new Node(inspector.treeComponents(), nodePath);
+        ActionNoBlock act = new ActionNoBlock(null, "Properties");  // NOI18N
+        act.perform(actNode);
+
+        // get value of property
+        NbDialogOperator dialogOp = new NbDialogOperator("[JLabel]");  // NOI18N
+        Property prop = new Property(new PropertySheetOperator(dialogOp), "text");  // NOI18N
+        String result = prop.getValue();
+        
+        // close property dialog
+        new JButtonOperator(dialogOp,"Close").push();  // NOI18N
+        waitAMoment();
+
+        return result;
+    }
+    
 }
