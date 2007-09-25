@@ -218,6 +218,7 @@ public final class ModuleDeactivator extends Object {
         String post = content.substring (pos + shift);
         String res = pre + DISABLE_TAG + post;
         File configDir = new File (new File (UpdateTracking.getUserDir (), CONFIG), MODULES);
+        configDir.mkdirs ();
         File dest = new File (configDir, f.getName());
         writeStringToFile (res, dest);
     }
