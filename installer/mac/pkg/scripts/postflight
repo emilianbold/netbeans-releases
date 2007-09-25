@@ -47,3 +47,15 @@ else
   echo No netbeans.conf in: `pwd`
 fi
 
+#fix for 114656
+cd "$2/$NETBEANS_INSTALL_DIR"
+cd Contents/Resources/NetBeans*/bin
+if [ -f netbeans ]
+then
+  echo netbeans found: `pwd`/netbeans
+  cp netbeans netbeans.orig
+  cat netbeans.orig  | sed -e 's|.*-J-Dnetbeans.accept_license_class.*|\\|' > netbeans
+else
+  echo No netbeans in: `pwd`
+fi
+
