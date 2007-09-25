@@ -87,16 +87,16 @@ fi
 sigtest_jar=`pwd`/../sigtestdev.jar
 sigtest_prev=`pwd`/../lastSuccessful/archive/nbbuild/build/sigtests
 sigtest_gen=`pwd`/nbbuild/build/sigtests
-sigtest_out=`pwd`/nbbuild/build/sigtestscheck
+sigtest_out=nbbuild/build/sigtestscheck
 
 if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
-    ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.check.type=strictcheck -Dsigtest.output.dir=$sigtest_out check-sigtests > $sigtest_gen.log
+    ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.check.type=strictcheck -Dsigtest.output.dir=`pwd`/$sigtest_out check-sigtests > $sigtest_gen.log
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
-        for report in $sigtest_out/*; do
+        for report in `pwd`/$sigtest_out/*; do
             (
                 echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
-                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$report"; 
+                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/`basename $report`"; 
                 echo; cat $report
             ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
         done
@@ -107,13 +107,13 @@ if [ -f $sigtest_jar ]; then
     ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests || exit
 fi
 
-sigtest_incompat_gen=`pwd`/nbbuild/build/sigtestsincompat
-if ! ant -f nbbuild/build.xml -Dsigtest.check.type=check -Dsigtest.output.dir=$sigtest_incompat_gen check-sigtests > $sigtest_incompat_gen.log; then
+sigtest_incompat_gen=nbbuild/build/sigtestsincompat
+if ! ant -f nbbuild/build.xml -Dsigtest.check.type=check -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen check-sigtests > `pwd`/$sigtest_incompat_gen.log; then
     (
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
         echo; 
-        cat $sigtest_incompat_gen.log
+        cat `pwd`/$sigtest_incompat_gen.log
     ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
 fi
 
