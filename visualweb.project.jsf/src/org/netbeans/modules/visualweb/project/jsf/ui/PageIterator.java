@@ -238,7 +238,7 @@ public class PageIterator implements TemplateWizard.Iterator {
                 // Default name.
                 obj = dTemplate.createFromTemplate(df);
             } else {
-                if ("Page.jsp".equals(template.getNameExt())) { // NOI18N
+                if ("jsp".equals(template.getExt())) { // NOI18N
                     HashMap<String, String> templateParameters = new HashMap<String, String>();
                     FileObject webDocbase = JsfProjectUtils.getDocumentRoot(project);
                     String folder;

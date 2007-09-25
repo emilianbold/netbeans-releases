@@ -23,6 +23,9 @@ package org.netbeans.modules.visualweb.project.jsfloader;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Method;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -274,19 +277,28 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
         }
         
         private String update(String attrValue) {
-            if (attrValue.startsWith("#{" + oldName + ".") && attrValue.endsWith("}")) {  //NOI18N
+            if (attrValue.startsWith("#{") && attrValue.endsWith("}")) {
+                return "${pound}" + updateName(attrValue.substring(1));
+            }else {
+                return null;
+            }
+        }
+        
+        
+        private String updateName(String attrValue) {
+            if (attrValue.startsWith("{" + oldName + ".") && attrValue.endsWith("}")) {  //NOI18N
             	int dotAt = attrValue.indexOf(".");
             	if (dotAt != -1) {
                     String tail = attrValue.substring(dotAt, attrValue.length() - 1);  // everything to the right
                     StringBuffer buf = new StringBuffer();
-                    buf.append("#{");  //NOI18N
+                    buf.append("{");
                     buf.append(newName);
                     buf.append(tail);
                     buf.append("}");  //NOI18N
                     return buf.toString();                    
             	}                
             }
-            return null;
+            return attrValue;
         }
     }
     
@@ -305,27 +317,44 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
             
             // fix the name of the PageBean to __NAME__ if the destination is a Template folder.
             if (folder.getPrimaryFile().getFileSystem().isDefault()) {
-    			FileObject primaryFileObject = dataObject.getPrimaryFile();      				  
-	            try {
-					DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-					Document document = documentBuilder.parse(primaryFileObject.getInputStream());
-					String beanName = Utils.getBeanNameForJsp(getPrimaryFile());
-					if (beanName == null) {
-						throw new JsfDataObjectException("Got null bean name for " + getPrimaryFile());
-					}
-					MarkupVisitor markupVisitor = new MarkupVisitor(beanName, "__NAME__"); // NOI18N
-					markupVisitor.apply(document);
-					FileLock lock = primaryFileObject.lock();
-					try {
-						XMLUtil.write(document, primaryFileObject.getOutputStream(lock), "UTF-8");
-					} finally {
-						lock.releaseLock();
-					}					
-				} catch (ParserConfigurationException e) {
-					throw new JsfDataObjectException("Parser Configuration Exception : " + e.getMessage() + " while processing " + primaryFileObject);
-				} catch (SAXException e) {
-					throw new JsfDataObjectException("Parsing Exception : " + e.getMessage() + " while processing " + primaryFileObject);
-				}
+                FileObject primaryFileObject = dataObject.getPrimaryFile();
+                try {
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    factory.setNamespaceAware(true);
+                    DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+                    Document document = documentBuilder.parse(primaryFileObject.getInputStream());
+                    String beanName = Utils.getBeanNameForJsp(getPrimaryFile());
+                    if (beanName == null) {
+                        throw new JsfDataObjectException("Got null bean name for " + getPrimaryFile());
+                    }
+                    MarkupVisitor markupVisitor = new MarkupVisitor(beanName, "${folder}${name}"); // NOI18N
+                    markupVisitor.apply(document);
+                    FileLock lock = primaryFileObject.lock();
+                    try {
+                        OutputStream os = primaryFileObject.getOutputStream(lock);
+                        PrintStream ps = new PrintStream(os);
+                        ps.println("<#assign pound = '#'>"); // NOI18N
+                        XMLUtil.write(document, os, "UTF-8");  // NOI18N
+                    } finally {
+                        lock.releaseLock();
+                    }
+                    
+                    // set required attributes
+                    primaryFileObject.setAttribute("template", Boolean.TRUE); // NOI18N
+                    primaryFileObject.setAttribute("javax.script.ScriptEngine", "freemarker"); // NOI18N
+                    try {
+                        Class iteratorClass = Thread.currentThread().getContextClassLoader().loadClass("org.netbeans.modules.visualweb.project.jsf.ui.PageIterator"); //NOI18N
+                        Method m = iteratorClass.getMethod("createWebFormIterator"); // NOI18N
+                        Object templateIterator = m.invoke(null);
+                        primaryFileObject.setAttribute("templateWizardIterator", templateIterator); // NOI18N
+                    }catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                } catch (ParserConfigurationException e) {
+                    throw new JsfDataObjectException("Parser Configuration Exception : " + e.getMessage() + " while processing " + primaryFileObject);
+                } catch (SAXException e) {
+                    throw new JsfDataObjectException("Parsing Exception : " + e.getMessage() + " while processing " + primaryFileObject);
+                }
             } else {
             	// do the normal event notification
             	doNormalEventNotify = true;
@@ -356,6 +385,27 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
                 InSyncService.getProvider().copied((JsfJspDataObjectMarker) this, (JsfJspDataObjectMarker) dataObject);
             }
             return dataObject;
+        }
+    }
+
+    @Override
+    protected void handleDelete() throws IOException {
+        boolean isTemplate = this.isTemplate();
+        FileObject fo = getPrimaryFile();
+        super.handleDelete();
+        
+        // delete corresponding template .java
+        if (isTemplate) {
+            FileObject javaFO = Utils.findJavaForJsp(fo);
+            DataObject javaTemplate = DataObject.find(javaFO);
+            if (javaTemplate != null) {
+                try {
+                    javaTemplate.delete();
+                }catch (IOException ex) {
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, 
+                            "Could not delete java template: " + javaFO.getNameExt()); // NOI18N
+                }
+            }
         }
     }
     
