@@ -368,10 +368,12 @@ Microsystems, Inc. All Rights Reserved.
                     <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
-            <public-packages>
-                <!-- XXX temporary: for use from i18n-form until it uses impl deps -->
+            <friend-packages>
+                <friend>org.netbeans.modules.i18n.form</friend>
+                <friend>org.netbeans.modules.swingapp</friend>
+                <friend>org.netbeans.modules.form.j2ee</friend>
                 <package>org.netbeans.modules.form</package>
-            </public-packages>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/AbsoluteLayout.jar</runtime-relative-path>
             </class-path-extension>
