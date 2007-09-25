@@ -47,6 +47,7 @@ class CppTypeDescriptor extends TypeDescriptor {
     private int modifiers;
     private CsmProject project; 
     private String contextName;
+    private String filePath; // we need this to eliminate duplication
 
     private static String contextNameFormat = ' ' + NbBundle.getMessage(CppTypeDescriptor.class, "CONTEXT_NAME_FORMAT");
     private static String typeNameFormat = ' ' + NbBundle.getMessage(CppTypeDescriptor.class, "TYPE_NAME_FORMAT");
@@ -60,6 +61,7 @@ class CppTypeDescriptor extends TypeDescriptor {
             CsmFile file = ((CsmOffsetable) classifier).getContainingFile();
 	    if( file != null ) {
                 project = file.getProject();
+                filePath = file.getAbsolutePath();
 	    }
 	}
 	simpleName = classifier.getName();
@@ -124,5 +126,38 @@ class CppTypeDescriptor extends TypeDescriptor {
     public void open() {
         CsmUtilities.openSource(uid.getObject());
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CppTypeDescriptor other = (CppTypeDescriptor) obj;
+        if (this.simpleName != other.simpleName && (this.simpleName == null || !this.simpleName.equals(other.simpleName))) {
+            return false;
+        }
+        if (this.kind != other.kind) {
+            return false;
+        }
+        if (this.contextName != other.contextName && (this.contextName == null || !this.contextName.equals(other.contextName))) {
+            return false;
+        }
+        if (this.filePath != other.filePath && (this.filePath == null || !this.filePath.equals(other.filePath))) {
+            return false;
+        }
+        return true;
+    }
 
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 19 * hash + (this.simpleName != null ? this.simpleName.hashCode() : 0);
+        hash = 19 * hash + (this.kind != null ? this.kind.hashCode() : 0);
+        hash = 19 * hash + (this.contextName != null ? this.contextName.hashCode() : 0);
+        hash = 19 * hash + (this.filePath != null ? this.filePath.hashCode() : 0);
+        return hash;
+    }  
 }

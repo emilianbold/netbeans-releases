@@ -83,5 +83,28 @@ class TracingTypeDescriptor extends TypeDescriptor {
     public void open() {
 	System.err.printf("TypeDescriptor.open(%s)\n", name);
 	delegate.open();
-    }    
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TracingTypeDescriptor other = (TracingTypeDescriptor) obj;
+        if (this.delegate != other.delegate && (this.delegate == null || !this.delegate.equals(other.delegate))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 73 * hash + (this.delegate != null ? this.delegate.hashCode() : 0);
+        return hash;
+    }
+    
 }

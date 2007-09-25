@@ -54,31 +54,44 @@ public class CppTypeProvider implements TypeProvider {
 	
 	if( TRACE ) System.err.printf("CppTypeProvider.getTypeNames(%s, %s, %s)\n", project, text, type);
 	
-	@SuppressWarnings("unchecked")
-	List<TypeDescriptor> result = Collections.EMPTY_LIST;
+	
 	
 	NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
 	if( comparator == null ) {
-	    return result;
+	    return Collections.emptyList();
 	}
 	
 	if( project == null ) {
             Collection<CsmProject> csmProjects = CsmModelAccessor.getModel().projects();
 	    if( ! csmProjects.isEmpty() ) {
-		result = new ArrayList<TypeDescriptor>(1000);
+                Set<TypeDescriptor> result = new HashSet<TypeDescriptor>();
 		for( CsmProject csmProject : csmProjects ) {
 		    processProject(csmProject, result, comparator);
 		}
+                if( PROCESS_LIBRARIES ) {
+                    for( CsmProject csmProject : csmProjects ) {
+                        if( isCancelled ) {
+                            break;
+                        }
+                        Set<CsmProject> processedLibs = new HashSet<CsmProject>();
+                        processProjectLibs(csmProject, result, comparator, processedLibs);
+                    }
+                }
+                return new ArrayList<TypeDescriptor>(result);
 	    }
 	}
 	else {
-	    result = new ArrayList<TypeDescriptor>(1000);
+	    Set<TypeDescriptor> result = new HashSet<TypeDescriptor>();
             CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
 	    processProject(csmProject, result, comparator);
+            if( PROCESS_LIBRARIES ) {
+                processProjectLibs(csmProject, result, comparator, new HashSet<CsmProject>());
+            }
+            return new ArrayList<TypeDescriptor>(result);
 	}
 	
 	
-	return result;
+	return Collections.emptyList();
     }
 
     public void cancel() {
@@ -94,23 +107,28 @@ public class CppTypeProvider implements TypeProvider {
 	CppTypeDescriptor descriptor = new CppTypeDescriptor(classifier);
 	return TRACE ? new TracingTypeDescriptor(descriptor) : descriptor;
     }
-
-    private void processProject(CsmProject project, List<TypeDescriptor> result, NameMatcher comparator) {
-	if( TRACE ) System.err.printf("processProject %s\n", project.getName());
-        processNamespace(project.getGlobalNamespace(), result, comparator);
-	if( PROCESS_LIBRARIES ) {
-            for( CsmProject lib : project.getLibraries() ) {
-                if( isCancelled ) {
-                    return;
-                }
-                if( lib.isArtificial() ) {
+    
+    private void processProjectLibs(CsmProject project, Set<TypeDescriptor> result, 
+            NameMatcher comparator, Set<CsmProject> processedLibs) {
+        for( CsmProject lib : project.getLibraries() ) {
+            if( isCancelled ) {
+                return;
+            }
+            if( lib.isArtificial() ) {
+                if( ! processedLibs.contains(lib) ) {
+                    processedLibs.add(lib);
                     processProject(lib, result, comparator);
                 }
             }
-	}
+        }
+    }
+
+    private void processProject(CsmProject project, Set<TypeDescriptor> result, NameMatcher comparator) {
+	if( TRACE ) System.err.printf("processProject %s\n", project.getName());
+        processNamespace(project.getGlobalNamespace(), result, comparator);
     }
     
-    private void processNamespace(CsmNamespace nsp, List<TypeDescriptor> result, NameMatcher comparator) {
+    private void processNamespace(CsmNamespace nsp, Set<TypeDescriptor> result, NameMatcher comparator) {
         if( TRACE ) System.err.printf("processNamespace %s\n", nsp.getQualifiedName());
 	for( CsmDeclaration declaration : nsp.getDeclarations() ) {
             if( isCancelled ) {
@@ -126,7 +144,7 @@ public class CppTypeProvider implements TypeProvider {
 	}
     }
 
-    private void processDeclaration(CsmDeclaration decl, List<TypeDescriptor> result, NameMatcher comparator) {
+    private void processDeclaration(CsmDeclaration decl, Set<TypeDescriptor> result, NameMatcher comparator) {
         switch (decl.getKind()) {
             case CLASS:
             case UNION:
@@ -167,6 +185,5 @@ public class CppTypeProvider implements TypeProvider {
             case CLASS_FRIEND_DECLARATION:
                 break;
         }
-    }
-    
+    }    
 }
