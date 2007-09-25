@@ -72,23 +72,23 @@ public class MasterDetailFormTest extends ExtJellyTestCase {
     /** Uses Master/Detail Sample wizard */
     public void testMasterDetailWizard() {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
-        nfwo.selectProject(ExtJellyTestCase.TEST_PROJECT_NAME);
-        nfwo.selectCategory("Swing GUI Forms");
-        nfwo.selectFileType("Master/Detail Sample Form");
+        nfwo.selectProject(getTestProjectName());
+        nfwo.selectCategory("Swing GUI Forms"); // NOI18N
+        nfwo.selectFileType("Master/Detail Sample Form"); // NOI18N
         nfwo.next();
         
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(_newFormName);
-        nfnlso.setPackage(ExtJellyTestCase.TEST_PACKAGE_NAME);
+        nfnlso.setPackage(getTestPackageName());
         nfnlso.next();
         
-        NbDialogOperator masterOp = new NbDialogOperator("New Master/Detail Form");
+        NbDialogOperator masterOp = new NbDialogOperator("New Master/Detail Form"); // NOI18N
         new JComboBoxOperator(masterOp,1).selectItem(SetUpDerbyDatabaseTest.JDBC_URL);
-        new JButtonOperator(masterOp,"Next").clickMouse();
+        new JButtonOperator(masterOp,"Next").clickMouse(); // NOI18N
         
-        masterOp = new NbDialogOperator("New Master/Detail Form");
-        new JButtonOperator(masterOp,"Finish").clickMouse();
+        masterOp = new NbDialogOperator("New Master/Detail Form"); // NOI18N
+        new JButtonOperator(masterOp,"Finish").clickMouse(); // NOI18N
         waitNoEvent(8000);
     }
     
@@ -96,7 +96,7 @@ public class MasterDetailFormTest extends ExtJellyTestCase {
     public void testGeneratedJpaStuff() {
         // persistance config file exists
         ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(TEST_PROJECT_NAME);
+        ProjectRootNode prn = pto.getProjectRootNode(getTestProjectName());
         prn.select();
         new Node(prn, "Source Packages|META-INF|persistence.xml"); // NOI18N
         

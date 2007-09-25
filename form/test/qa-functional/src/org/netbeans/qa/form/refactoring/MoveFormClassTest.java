@@ -26,9 +26,15 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import java.io.File;
+import javax.swing.JTextField;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 
@@ -41,7 +47,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
     private String CLASS_NAME = "FrameWithBundleToMove"; // NOI18N
 //    private String CLASS_NAME = "ClassToMove"; // NOI18N    
     private String NEW_PACKAGE_NAME = "subdata";
-    private String PACKAGE_NAME = TEST_PACKAGE_NAME + "." + NEW_PACKAGE_NAME; // NOI18N
+    private String PACKAGE_NAME = "." + NEW_PACKAGE_NAME; // NOI18N
     
     /**
      * Constructor required by JUnit
@@ -65,10 +71,28 @@ public class MoveFormClassTest extends ExtJellyTestCase {
      */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new MoveFormClassTest("testCreatePackage")); // NOI18N
         suite.addTest(new MoveFormClassTest("testRefactoring")); // NOI18N
         suite.addTest(new MoveFormClassTest("testChangesInJavaFile")); // NOI18N
         suite.addTest(new MoveFormClassTest("testChangesInPropertiesFile")); // NOI18N
         return suite;
+    }
+
+    /** Creates subdata package  */
+    public void testCreatePackage() {
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(getTestProjectName());
+        prn.select();
+
+        Node formnode = new Node(prn, "Source Packages"); // NOI18N
+        formnode.setComparator(new Operator.DefaultStringComparator(true, false));
+        formnode.select();
+        
+        runNoBlockPopupOverNode("New|Java Package...", formnode); // NOI18N
+        
+        NbDialogOperator dialog = new NbDialogOperator("New Java Package");
+        new JTextFieldOperator(dialog,0).typeText( getTestPackageName() + PACKAGE_NAME);
+        new JButtonOperator(dialog, "Finish").push();
     }
 
     /** Runs refactoring  */
@@ -79,7 +103,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
 
         JDialogOperator dialog = new JDialogOperator("Move"); // NOI18N
         JComboBoxOperator combo = new JComboBoxOperator(dialog, 2);
-        combo.selectItem(PACKAGE_NAME);
+        combo.selectItem( getTestPackageName() + PACKAGE_NAME);
 
         new JButtonOperator(dialog,"Refactor").clickMouse();
     }
@@ -87,12 +111,12 @@ public class MoveFormClassTest extends ExtJellyTestCase {
     /** Tests content of java file */
     public void testChangesInJavaFile() {
         ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(TEST_PROJECT_NAME);
+        ProjectRootNode prn = pto.getProjectRootNode(getTestProjectName());
         prn.select();
 
-        waitNoEvent(45000);
+        waitNoEvent(35000);
 
-        String path = "Source Packages|" + PACKAGE_NAME + "|" + CLASS_NAME + ".java"; // NOI18N
+        String path = "Source Packages|" + getTestPackageName() + PACKAGE_NAME + "|" + CLASS_NAME + ".java"; // NOI18N
         //p(path);
         Node formnode = new Node(prn, path ); // NOI18N
         formnode.setComparator(new Operator.DefaultStringComparator(true, false));
@@ -101,10 +125,10 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
 
-        //FormDesignerOperator designer = new FormDesignerOperator(CLASS_NAME);
+        FormDesignerOperator designer = new FormDesignerOperator(CLASS_NAME);
 
         // new class package
-        //findInCode("package data.subdata;", designer);
+        findInCode("package data.subdata;", designer);
     }
     
     /** Test changes in property bundle file */
