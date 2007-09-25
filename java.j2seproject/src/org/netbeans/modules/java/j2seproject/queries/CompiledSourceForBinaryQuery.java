@@ -153,6 +153,19 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                     if (root != null) {
                         result.add(root);
                     }
+
+                    // generated/addons/jaxb
+                    f =  new File (helper.resolveFile (buildDir),"generated/addons/jaxb"); //NOI18N
+                    url = f.toURI().toURL();
+                    if (!f.exists()) {  
+                        assert !url.toExternalForm().endsWith("/");  //NOI18N
+                        url = new URL (url.toExternalForm()+'/');   //NOI18N
+                    }
+                    root = URLMapper.findFileObject(url);
+                    if (root != null) {
+                        result.add(root);
+                    }
+                    
                 }
             } catch (MalformedURLException ex) {
                 ErrorManager.getDefault ().notify (ex);
