@@ -19,7 +19,6 @@
 
 package org.netbeans.beaninfo.editors;
 
-import java.beans.*;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -27,8 +26,14 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyEditorSupport;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -127,6 +132,7 @@ implements ExPropertyEditor {
         return template;
     }
     
+    @Override
     public String getAsText() {
         Object value = getValue ();
         if (value == null) {
@@ -153,6 +159,7 @@ implements ExPropertyEditor {
     /** Searches between items whether there is one with the same display name.
      * @param str item name
      */
+    @Override
     public void setAsText(java.lang.String str) throws java.lang.IllegalArgumentException {
         if (nullValue != null && nullValue.equals (str)) {
             setValue (null);
@@ -184,6 +191,7 @@ implements ExPropertyEditor {
     /** List of all display names for items.
      * @return array of strings
      */
+    @Override
     public java.lang.String[] getTags() {
         Collection<? extends Lookup.Item<Object>> allItems = lookup ().lookup (template ()).allItems ();
         if (allItems.size() <= 1) {
@@ -206,11 +214,13 @@ implements ExPropertyEditor {
 
     /** Yes we have custom editor.
      */
+    @Override
     public boolean supportsCustomEditor() {
         //Don't allow custom editor if there will be nothing to show
         return getTags()!= null && getTags().length > 1;
     }
     
+    @Override
     public synchronized Component getCustomEditor () {
         if (!supportsCustomEditor()) {
             return null;
@@ -224,6 +234,8 @@ implements ExPropertyEditor {
     }
 
     private class ObjectPanel extends JPanel implements ActionListener {
+        static final long serialVersionUID = 1L;
+        
         public ObjectPanel(Lookup.Result<Object> res) {
             getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(ObjectEditor.class, 
@@ -250,12 +262,13 @@ implements ExPropertyEditor {
             
             Collection<? extends Lookup.Item<Object>> c = res.allItems();
             Lookup.Item[] items = new Lookup.Item[c.size()];
-            items = (Lookup.Item[]) c.toArray(items);
+            items = c.toArray(items);
 
             int BASE_LEFT_INSET=7;
             for (int i=0; i < items.length; i++) {
                 JRadioButton rb = new ItemRadioButton(items[i], bold);
-                if (items[i].getInstance().equals(getValue())) {
+                Object inst = items[i].getInstance();
+                if (inst != null && inst.equals(getValue())) {
                     rb.setSelected(true);
                 }
                 rb.addActionListener(this);
@@ -266,7 +279,7 @@ implements ExPropertyEditor {
                 gbc.gridy=row;
                 gbc.insets = new Insets(i==0 ? 7 : 0, BASE_LEFT_INSET, 
                     description != null ? 1 : i==items.length-1 ? 7: 4, BASE_LEFT_INSET);
-                gbc.fill=gbc.HORIZONTAL;
+                gbc.fill=GridBagConstraints.HORIZONTAL;
                 add(rb, gbc);
                 row++;
                 if (description != null) {
@@ -310,6 +323,8 @@ implements ExPropertyEditor {
     }
     
     private static class ItemRadioButton extends JRadioButton {
+        static final long serialVersionUID = 3L;
+        
         Lookup.Item item;
         public ItemRadioButton(Lookup.Item item, Font font) {
             this.item = item;
