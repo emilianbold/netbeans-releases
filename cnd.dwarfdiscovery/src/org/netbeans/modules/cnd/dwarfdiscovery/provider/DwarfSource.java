@@ -77,8 +77,22 @@ public class DwarfSource implements SourceFileProperties{
     
     private void initCompilerSettings(CompilerSettings compilerSettings, boolean isCPP){
         List<String> list = compilerSettings.getSystemIncludePaths(isCPP);
-        if (list != null){
-            systemIncludes = new ArrayList<String>(list);
+       if (list != null){
+           systemIncludes = new ArrayList<String>(list);
+           if (Utilities.isWindows()) {
+               if ("Cygwin".equals(compilerSettings.getCompileFlavor())) { // NOI18N
+                   //cygwinPath = compilerSettings.getCompileDirectory();
+                   for(String path:list){
+                       int i = path.indexOf(CYGWIN_PATH);
+                       if (i > 0) {
+                           if (cygwinPath == null) {
+                               cygwinPath = "" + Character.toUpperCase(path.charAt(0)) + CYGWIN_PATH; // NOI18N
+                               break;
+                           }
+                       }
+                   }
+               }
+            }
         } else {
             systemIncludes = new ArrayList<String>();
         }

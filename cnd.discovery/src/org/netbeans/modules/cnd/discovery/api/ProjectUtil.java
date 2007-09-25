@@ -39,6 +39,23 @@ public class ProjectUtil {
         }
         return null;
     }
+    
+    public static String getCompilerFlavor(ProjectProxy project){
+        Object p = project.getProject();
+        if (p instanceof Project){
+            return new ProjectBridge((Project)p).getCompilerFlavor();
+        }
+        return null;
+    }
+
+    public static String getCompilerDirectory(ProjectProxy project){
+        Object p = project.getProject();
+        if (p instanceof Project){
+            return new ProjectBridge((Project)p).getCompilerDirectory();
+        }
+        return null;
+    }
+
     public static Map<String,String> getSystemMacroDefinitions(ProjectProxy project, boolean isCPP) {
         Object p = project.getProject();
         if (p instanceof Project){

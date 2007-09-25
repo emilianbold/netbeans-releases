@@ -256,12 +256,16 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         private Map<String,String> systemMacroDefinitionsC;
         private Map<String,String> systemMacroDefinitionsCpp;
         private Map<String,String> normalizedPaths = new HashMap<String,String>();
+        private String compileFlavor;
+        private String compileDirectory;
         
         public CompilerSettings(ProjectProxy project){
             systemIncludePathsCpp = ProjectUtil.getSystemIncludePaths(project, true);
             systemIncludePathsC = ProjectUtil.getSystemIncludePaths(project,false);
             systemMacroDefinitionsCpp = ProjectUtil.getSystemMacroDefinitions(project, true);
             systemMacroDefinitionsC = ProjectUtil.getSystemMacroDefinitions(project,false);
+            compileFlavor = ProjectUtil.getCompilerFlavor(project);
+            compileDirectory = ProjectUtil.getCompilerDirectory(project);
         }
         
         public List<String> getSystemIncludePaths(boolean isCPP) {
@@ -295,6 +299,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 path = path.replace('\\', '/');
             }
             return path;
+        }
+
+        public String getCompileFlavor() {
+            return compileFlavor;
+        }
+
+        public String getCompileDirectory() {
+            return compileDirectory;
         }
     }
 }

@@ -353,6 +353,19 @@ public class ProjectBridge {
         }
     }
     
+    private CompilerSet getCompilerSet(){
+        MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
+        return CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+    }
+    
+    public String getCompilerFlavor(){
+        return getCompilerSet().getCompilerFlavor().toString();
+    }
+
+    public String getCompilerDirectory(){
+        return getCompilerSet().getDirectory();
+    }
+    
     private List<String> systemIncludePathsC;
     private List<String> systemIncludePathsCpp;
     public List<String> getSystemIncludePaths(boolean isCPP) {
@@ -364,8 +377,7 @@ public class ProjectBridge {
         }
         if (systemIncludePaths == null) {
             systemIncludePaths = new ArrayList<String>();
-            MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
-            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+            CompilerSet compilerSet = getCompilerSet();
             BasicCompiler compiler;
             if (isCPP) {
                 compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
@@ -411,8 +423,7 @@ public class ProjectBridge {
         }
         if (systemMacroDefinitions == null) {
             systemMacroDefinitions = new HashMap<String,String>();
-            MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
-            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+            CompilerSet compilerSet = getCompilerSet();
             BasicCompiler compiler;
             if (isCPP) {
                 compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
