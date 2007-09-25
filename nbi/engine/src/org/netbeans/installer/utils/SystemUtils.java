@@ -375,6 +375,7 @@ public final class SystemUtils {
         Process process = builder.start();
         
         long runningTime;
+        boolean stopped = false;
         for (runningTime = 0; runningTime < MAX_EXECUTION_TIME; runningTime += DELAY) {
             String string;
             
@@ -399,8 +400,14 @@ public final class SystemUtils {
             }
             
             try {
-                errorLevel = process.exitValue();
-                break;
+                //one more attempt to read the rest of stderr/stdout and only then exit
+                if(stopped) {
+                    break;
+                } else {                    
+                    errorLevel = process.exitValue();
+                    stopped = true;
+                    continue;
+                }                
             } catch (IllegalThreadStateException e) {
                 ; // do nothing - the process is still running
             }
