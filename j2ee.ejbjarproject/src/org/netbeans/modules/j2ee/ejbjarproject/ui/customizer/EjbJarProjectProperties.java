@@ -544,7 +544,7 @@ public class EjbJarProjectProperties {
     }
     
     public static void setServerInstance(final Project project, final AntProjectHelper helper, final String serverInstanceID) {
-        ProjectManager.mutex().writeAccess(new Runnable() {
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
