@@ -204,7 +204,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return;
         }
         
-        if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
+        if (exact) {
+            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+        }
+        else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
             nameKind = SearchType.CAMEL_CASE;
         }
         else if (wildcard != -1) {
@@ -216,9 +219,6 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 return;
             }
                 
-        }
-        else if (exact) {
-            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
         }
         else {            
             nameKind = panel.isCaseSensitive() ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
