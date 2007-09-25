@@ -32,4 +32,9 @@ public class ${name} extends TestCase {
     }
 
 </#if>
+<#if testMethodsPlaceholder!false>
+    // TODO add test methods here. The name must begin with 'test'. For example:
+    // public void testHello() {}
+
+</#if>
 }

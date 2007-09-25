@@ -123,6 +123,10 @@ public final class DefaultPlugin extends JUnitPlugin {
     private static final String templatePropBefore = "setUp";           //NOI18N
     /** name of FreeMarker template property - generate {@code &#64;After} method? */
     private static final String templatePropAfter = "tearDown";         //NOI18N
+    /** name of FreeMarker template property - generate in-method source code hints? */
+    private static final String templatePropCodeHints = "sourceCodeHint";   //NOI18N
+    /** name of FreeMarker template property - generate hints - method placeholders? */
+    private static final String templatePropMethodPH = "testMethodsPlaceholder"; //NOI18N
     /** name of FreeMarker template property - list of class names */
     private static final String templatePropClassNames = "classNames";  //NOI18N
     /**
@@ -756,12 +760,20 @@ public final class DefaultPlugin extends JUnitPlugin {
             if ((filesToTest == null) || (filesToTest.length == 0)) {
                 //XXX: Not documented that filesToTest may be <null>
                 
+                Map<String, Boolean> templateParams
+                        = createTemplateParams(params);
+                addTemplateParamEntry(params, CreateTestParam.INC_CODE_HINT,
+                                      templateParams, templatePropCodeHints);
+                addTemplateParamEntry(params, CreateTestParam.INC_CODE_HINT,
+                                      templateParams, templatePropMethodPH);
+
                 String testClassName = (String) params.get(CreateTestParam.CLASS_NAME);
                 assert testClassName != null;
                 results = new CreationResults(1);
                 DataObject testDataObj = createEmptyTest(targetRoot,
                                                          testClassName,
                                                          testCreator,
+                                                         templateParams,
                                                          doTestTempl);
                 if (testDataObj != null) {
                     results.addCreated(testDataObj);
@@ -770,7 +782,9 @@ public final class DefaultPlugin extends JUnitPlugin {
             } else {
                 ClassPath testClassPath = ClassPathSupport.createClassPath(
                                                 new FileObject[] {targetRoot});
-                Map<String, ? extends Object> templateParams = createTemplateParams(params);
+                Map<String, Boolean> templateParams = createTemplateParams(params);
+                addTemplateParamEntry(params, CreateTestParam.INC_CODE_HINT,
+                                      templateParams, templatePropCodeHints);
                 
                 if (!forTestSuite) {
                     String testClassName = (String) params.get(CreateTestParam.CLASS_NAME);
@@ -879,33 +893,30 @@ public final class DefaultPlugin extends JUnitPlugin {
      * Create a map of FreeMaker template parameters from a map
      * of {@code CreateTestParam}s.
      */
-    public static final Map<String, ? extends Object> createTemplateParams(
+    public static final Map<String, Boolean> createTemplateParams(
                                           Map<CreateTestParam, Object> params) {
         Map<String,Boolean> result = new HashMap<String,Boolean>(7);
 
-        Object value;
-
-        value = params.get(CreateTestParam.INC_CLASS_SETUP);
-        if (value instanceof Boolean) {
-            result.put(templatePropBeforeClass, Boolean.class.cast(value));
-        }
-
-        value = params.get(CreateTestParam.INC_CLASS_TEAR_DOWN);
-        if (value instanceof Boolean) {
-            result.put(templatePropAfterClass, Boolean.class.cast(value));
-        }
-
-        value = params.get(CreateTestParam.INC_SETUP);
-        if (value instanceof Boolean) {
-            result.put(templatePropBefore, Boolean.class.cast(value));
-        }
-
-        value = params.get(CreateTestParam.INC_TEAR_DOWN);
-        if (value instanceof Boolean) {
-            result.put(templatePropAfter, Boolean.class.cast(value));
-        }
+        addTemplateParamEntry(params, CreateTestParam.INC_CLASS_SETUP,
+                              result, templatePropBeforeClass);
+        addTemplateParamEntry(params, CreateTestParam.INC_CLASS_TEAR_DOWN,
+                              result, templatePropAfterClass);
+        addTemplateParamEntry(params, CreateTestParam.INC_SETUP,
+                              result, templatePropBefore);
+        addTemplateParamEntry(params, CreateTestParam.INC_TEAR_DOWN,
+                              result, templatePropAfter);
 
         return result;
+    }
+
+    private static void addTemplateParamEntry(Map<CreateTestParam, Object> srcParams,
+                                              CreateTestParam srcParamKey,
+                                              Map<String, Boolean> templParams,
+                                              String templParamKey) {
+        Object value = srcParams.get(srcParamKey);
+        if (value instanceof Boolean) {
+            templParams.put(templParamKey, Boolean.class.cast(value));
+        }
     }
 
     /**
@@ -1563,6 +1574,7 @@ public final class DefaultPlugin extends JUnitPlugin {
     private DataObject createEmptyTest(FileObject targetRoot,
                                        String testClassName,
                                        TestCreator testCreator,
+                                       final Map<String, ? extends Object> templateParams,
                                        DataObject templateDataObj) {
         if (testClassName == null) {
             throw new IllegalArgumentException("testClassName = null"); //NOI18N
@@ -1574,7 +1586,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             testDataObj = templateDataObj.createFromTemplate(
                                         targetFolderDataObj,
                                         testClassName,
-                                        Collections.<String,Object>emptyMap());
+                                        templateParams);
 
             /* fill in setup etc. according to dialog settings */
             FileObject testFileObj = testDataObj.getPrimaryFile();

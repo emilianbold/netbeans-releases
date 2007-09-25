@@ -22,6 +22,7 @@ package org.netbeans.modules.junit;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
@@ -965,7 +966,17 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                     maker.Identifier("fail"),                           //NOI18N
                     Collections.<ExpressionTree>singletonList(
                             maker.Literal(failMsg)));
-            statements.add(maker.ExpressionStatement(failMethodCall));
+
+            ExpressionStatementTree exprStatement = maker.ExpressionStatement(failMethodCall);
+            if (setup.isGenerateMethodBodyComment()) {
+                Comment comment = Comment.create(Comment.Style.LINE,
+                                                 -2, -2, -2,
+                                                 NbBundle.getMessage(
+                          AbstractTestGenerator.class,
+                          "TestCreator.variantMethods.defaultComment"));//NOI18N
+                maker.addComment(exprStatement, comment, true);
+            }
+            statements.add(exprStatement);
         }
 
         return maker.Block(statements, false);
