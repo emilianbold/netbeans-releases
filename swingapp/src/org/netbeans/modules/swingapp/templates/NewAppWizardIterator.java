@@ -67,6 +67,9 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
             appShellIterator.initialize(wizard);
             appShellIterator.addChangeListener(this);
         }
+        if (panelIndex >= panels.length) {
+            panelIndex = panels.length - 1; // issue 102728
+        }
         initSteps();
         updateSteps();
         fireStateChanged();
