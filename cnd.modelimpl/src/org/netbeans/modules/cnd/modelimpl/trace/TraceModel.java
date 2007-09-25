@@ -54,9 +54,19 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
+import org.netbeans.modules.cnd.loaders.CCDataLoader;
+import org.netbeans.modules.cnd.loaders.CCDataObject;
+import org.netbeans.modules.cnd.loaders.CDataLoader;
+import org.netbeans.modules.cnd.loaders.CDataObject;
+import org.netbeans.modules.cnd.loaders.HDataLoader;
+import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -1280,7 +1290,8 @@ public class TraceModel {
 		FileImpl fileImpl = null;
 		APTPreprocHandler preprocHandler = getPreprocHandler(file);
                 APTPreprocHandler.State state = preprocHandler.getState();
-		fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), preprocHandler);
+                int fileType = getFileTypeByPath(file.getAbsolutePath(), file);
+		fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), fileType, preprocHandler);
 		try {
 			fileImpl.scheduleParsing(true, state);
 		} catch( InterruptedException e ) {
@@ -1499,7 +1510,9 @@ public class TraceModel {
 		
 		APTPreprocHandler preprocHandler = getPreprocHandler(file);
                 APTPreprocHandler.State state = preprocHandler.getState();
-		fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), preprocHandler);
+            
+                int fileType = getFileTypeByPath(file.getAbsolutePath(), file);
+                fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), fileType, preprocHandler);
 		try {
 			fileImpl.scheduleParsing(true, state);
 			if( preprocHandler != null ) { // i.e. if TraceFlags.USE_APT
@@ -1789,5 +1802,36 @@ public class TraceModel {
 
     boolean isShowTime() {
         return showTime;
+    }
+    
+    private static int getFileTypeByPath(String path, File file) {
+        DataObject dobj = null;
+        try {
+            FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
+            if (fo!=null) {
+                dobj = DataObject.find(fo);
+            }
+        }
+        catch (IOException ioe) {}
+        
+        if (dobj == null) {
+            if (CCDataLoader.getInstance().getExtensions().isRegistered(path)) {
+                return FileImpl.SOURCE_CPP_FILE;
+            } else if (CDataLoader.getInstance().getExtensions().isRegistered(path)) {
+                return FileImpl.SOURCE_C_FILE;
+            } else if (HDataLoader.getInstance().getExtensions().isRegistered(path)) {
+                return FileImpl.HEADER_FILE;
+            } else {
+                return FileImpl.UNDEFINED_FILE;
+            }
+        } else if (dobj instanceof CDataObject) {
+            return FileImpl.SOURCE_CPP_FILE;
+        } else if (dobj instanceof HDataObject) {
+            return FileImpl.HEADER_FILE;
+        } else if (dobj instanceof CCDataObject) {
+            return FileImpl.SOURCE_C_FILE;
+        } else {
+            return FileImpl.UNDEFINED_FILE;
+        }
     }
 }

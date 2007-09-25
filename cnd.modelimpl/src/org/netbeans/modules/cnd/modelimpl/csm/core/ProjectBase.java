@@ -761,7 +761,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         //return nativeFile.getSystemIncludePaths().size()>0;
     }
     
-    protected int getFileType(NativeFileItem nativeFile) {
+    protected static int getFileType(NativeFileItem nativeFile) {
         Language lang = nativeFile.getLanguage();
         if (lang == NativeFileItem.Language.C){
             return FileImpl.SOURCE_C_FILE;
@@ -800,15 +800,15 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     /**
      * This method for testing purpose only. Used from TraceModel
      */
-    public CsmFile testAPTParseFile(String path, APTPreprocHandler preprocHandler) {
+    public CsmFile testAPTParseFile(String path, int fileType, APTPreprocHandler preprocHandler) {
         File file = new File(path);
         APTPreprocHandler.State state = getPreprocState(file);
         if( state == null ) {
             // remember the first state
-            return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState());
+            return findFile(file, fileType, preprocHandler, true, preprocHandler.getState());
         } else {
             preprocHandler = restorePreprocHandler(file, preprocHandler, state);
-            return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null);
+            return findFile(file, fileType, preprocHandler, true, null);
         }
     }
     
@@ -1019,7 +1019,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
 //    }
     
     protected FileImpl createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile) {
-        return createOrFindFileImpl(buf, nativeFile, FileImpl.UNDEFINED_FILE).fileImpl;
+        return createOrFindFileImpl(buf, nativeFile, getFileType(nativeFile)).fileImpl;
     }
     
     private static class FileAndHandler {

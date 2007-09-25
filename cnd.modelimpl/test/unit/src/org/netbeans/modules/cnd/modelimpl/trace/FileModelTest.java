@@ -51,7 +51,7 @@ public class FileModelTest extends TraceModelTestBase {
     }
     
     public void testFriendsDeclaration() throws Exception {
-        performTest("friend.cc"); // NOI18N
+        performTest("friend.h"); // NOI18N
     }
     
     public void testDummy() throws Exception {
@@ -169,6 +169,11 @@ public class FileModelTest extends TraceModelTestBase {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
 	
+        public void testFriendsDeclaration() throws Exception {
+            // See IZ116715
+            performTest("friend.cc"); // NOI18N
+        }
+
 	protected void postSetUp() {
 	    // init flags needed for file model tests
 	    getTraceModel().setDumpModel(true);
