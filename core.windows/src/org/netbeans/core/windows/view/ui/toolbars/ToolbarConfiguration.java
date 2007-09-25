@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -505,7 +505,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     }
 
     void refresh() {
+        // #102450 - don't allow row rearrangement during icon size toggle 
+        togglingIconSize = true;
         rebuildPanel();
+        togglingIconSize = false;
         rebuildMenu();
     }
     
@@ -743,8 +746,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         String name = ToolbarPool.getDefault().getConfiguration();
         ToolbarConfiguration tbConf = findConfiguration(name);
         if (tbConf != null) {
-            tbConf.rebuildPanel();
-            tbConf.rebuildMenu();
+            tbConf.refresh();
         }
     }
     
@@ -819,12 +821,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                       String name = ToolbarPool.getDefault().getConfiguration();
                       ToolbarConfiguration tbConf = findConfiguration(name);
                       if (tbConf != null) {
-                          // #102450 - don't allow row rearrangement during icon size toggle 
-                          togglingIconSize = true;
-                          tbConf.rebuildPanel();
-                          togglingIconSize = false;
+                          tbConf.refresh();
                       }
-                      rebuildMenu();
                   }
               }
         });
