@@ -54,8 +54,11 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Exceptions;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.UserCancelException;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -86,7 +89,11 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws IOException {
-           saveDocument();
+            try {
+                saveDocument();
+            }catch(UserCancelException uce) {
+                //just ignore
+            }
         }
     };
     
@@ -113,7 +120,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                     nd.setValue(NotifyDescriptor.NO_OPTION);
                     DialogDisplayer.getDefault().notify(nd);
                     if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                        return;
+                        throw new UserCancelException();
                     }
                 } else {
                     finalEncoding = encoding;
@@ -125,7 +132,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                     nd.setValue(NotifyDescriptor.NO_OPTION);
                     DialogDisplayer.getDefault().notify(nd);
                     if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                        return;
+                        throw new UserCancelException();
                     } else {
                         finalEncoding = UTF_8_ENCODING;
                     }
