@@ -42,6 +42,7 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
@@ -1201,7 +1202,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             File f;
 
             if (Utilities.isWindows()) {
-                f = new File("C:/Cygwin/bin/kill.exe"); // FIXME
+                f = new File(CppUtils.getCygwinBase() + "/bin/kill.exe"); // NOI18N
                 if (f.exists()) {
                     killcmd.add(f.getAbsolutePath());
                 }

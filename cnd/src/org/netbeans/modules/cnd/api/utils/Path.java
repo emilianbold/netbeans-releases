@@ -31,7 +31,7 @@ import org.openide.util.Utilities;
  */
 public final class Path {
     
-    private static ArrayList<String> list = new ArrayList();
+    private static ArrayList<String> list = new ArrayList<String>();
     private static String pathName = null;
     
     static {
@@ -68,7 +68,7 @@ public final class Path {
      * 
      * @param newPath A list of directories to use as a replacement path
      */
-    public static void setPath(ArrayList newPath) {
+    public static void setPath(ArrayList<String> newPath) {
         list = newPath;
     }
     
@@ -77,7 +77,7 @@ public final class Path {
      * 
      * @return A list of all path directories
      */
-    public static ArrayList getPath() {
+    public static ArrayList<String> getPath() {
         return list;
     }
     

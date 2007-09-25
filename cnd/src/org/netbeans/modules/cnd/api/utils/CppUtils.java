@@ -19,10 +19,16 @@
 
 package org.netbeans.modules.cnd.api.utils;
 
-import java.util.StringTokenizer;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Miscellaneous utility classes useful for the C/C++/Fortran module */
 public class CppUtils {
+    
+    private static String cygwinBase;
     
     public static String reformatWhitespaces(String string)  {
         return reformatWhitespaces(string, ""); // NOI18N
@@ -81,6 +87,54 @@ public class CppUtils {
             formattedString.append(token);
         
         return formattedString.toString();
+    }
+    
+    public static String getCygwinBase() {
+        if (cygwinBase == null) {
+            File file = new File("C:/Windows/System32/reg.exe"); // NOI18N
+
+            if (file.exists()) {
+                List<String> list = new ArrayList<String>();
+                list.add(file.getAbsolutePath());
+                list.add("query"); // NOI18N
+                list.add("hklm\\software\\cygnus solutions\\cygwin\\mounts v2\\/"); // NOI18N
+                ProcessBuilder pb = new ProcessBuilder(list);
+                pb.redirectErrorStream(true);
+                try {
+                    Process process = pb.start();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        line = line.trim();
+                        if (line.startsWith("native")) { // NOI18N
+                            int pos = line.lastIndexOf('\t');
+                            if (pos != -1 && pos < line.length()) {
+                                cygwinBase = line.substring(pos + 1);
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                }
+            }
+            if (cygwinBase == null) {
+                for (String dir : Path.getPath()) {
+                    if (dir.toLowerCase().contains("cygwin")) { // NOI18N
+                        if (dir.toLowerCase().endsWith("\\usr\\bin")) { // NOI18N
+                            cygwinBase = dir.substring(0, dir.length() - 8);
+                            break;
+                        } else if (dir.toLowerCase().endsWith("\\bin")) { // NOI18N
+                            cygwinBase = dir.substring(0, dir.length() - 4);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (cygwinBase == null) {
+                // Fallback value. Its probably wrong but its non-null and shouldn't throw an exception
+                cygwinBase = "C:\\cygwin"; // NOI18N
+            }
+        }
+        return cygwinBase;
     }
 }
 
