@@ -50,19 +50,16 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
     
     /** Creates suite from particular test cases. */
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        
-        // fails [Issue 103273]  Can not add JMenuBar to JFrame using context menu        
-        suite.addTest(new MenuAndPopupMenuTest("testMenuCreation"));
 
-        // fails [Issue 99825] Unable to modify inserted PopupMenu        
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new MenuAndPopupMenuTest("testMenuCreation"));
         suite.addTest(new MenuAndPopupMenuTest("testPopupMenuCreation"));
         
         return suite;
     }
     
     public void testMenuCreation() {
-	String menuPalettePath = "Insert|";
+	String menuPalettePath = "Add From Palette|";
         String frameName = createJFrameFile();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
@@ -118,7 +115,7 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, false);
         node = new Node(inspector.treeComponents(), "Other Components|jPopupMenu1 [JPopupMenu]"); // NOI18N
 
-        // fails [Issue 99825] Unable to modify inserted PopupMenu        
+        // fails [Issue 116496] Unable to modify inserted PopupMenu        
 //        runPopupOverNode(items, node, comparator);
         
         // TODO: tady to zkontrolovat, az ten test pojede
