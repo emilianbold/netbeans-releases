@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -132,6 +133,8 @@ public class VisualClassPathItem {
         this.asaType = ""; // NOI18N
         
         if (cpElement instanceof AntArtifact) {
+            shortName = new File(shortName).getName();
+            
             AntArtifact aa = (AntArtifact) cpElement; 
             
             ProjectInformation info = 
@@ -139,7 +142,13 @@ public class VisualClassPathItem {
             
             if (info != null) {
                 projectName = info.getName();   // e.x., SynchronousSample
-                shortName = projectName + ".jar"; // NOI18N
+                // TMP FIX
+                // eval doesn't always give us the desired name
+                // JavaEE project: WebApplication.war (good)
+                // SU project: SEDeployment.jar (bad)
+                if (shortName.equals("SEDeployment.jar")) { // NOI18N
+                    shortName = projectName + ".jar"; // NOI18N
+                }
                 projIcon = info.getIcon();
             }
             
@@ -175,7 +184,6 @@ public class VisualClassPathItem {
                         try {
                             is.close();
                         } catch (Exception e) {
-                            ;
                         }
                     }
                 }               
@@ -414,7 +422,7 @@ public class VisualClassPathItem {
                     return false;
                 }
                 
-                if (aa1.getType() != aa2.getType()) {
+                if (! (aa1.getType().equals(aa2.getType())) ) {
                     return false;
                 }
                 
