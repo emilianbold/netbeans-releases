@@ -16,6 +16,7 @@
  */
 package org.netbeans.modules.ruby.hints.infrastructure;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.Exceptions;
 
 /**
  * Class which acts on the rules and suggestions by iterating the 
@@ -61,6 +63,15 @@ public class RubyHintsProvider implements HintsProvider {
     }
 
     public List<Error> computeErrors(CompilationInfo info, List<ErrorDescription> result) {
+        try {
+            if (info.getDocument() == null) {
+                // Document probably closed
+                return Collections.emptyList();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         List<Error> errors = info.getDiagnostics();
         if (errors == null || errors.size() == 0) {
             return Collections.emptyList();
@@ -98,6 +109,15 @@ public class RubyHintsProvider implements HintsProvider {
     }
     
     public void computeHints(CompilationInfo info, List<ErrorDescription> result) {
+        try {
+            if (info.getDocument() == null) {
+                // Document probably closed
+                return;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         cancelled = false;
         
         Node root = AstUtilities.getRoot(info);
@@ -166,6 +186,15 @@ public class RubyHintsProvider implements HintsProvider {
     }
 
     public void computeSuggestions(CompilationInfo info, List<ErrorDescription> result, int caretOffset) {
+        try {
+            if (info.getDocument() == null) {
+                // Document probably closed
+                return;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         cancelled = false;
         
         Node root = AstUtilities.getRoot(info);
