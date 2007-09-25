@@ -64,15 +64,19 @@ public class FuncVarElementProvider extends BaseProvider implements ElementProvi
             case FUNCTION_DEFINITION:
 		if( comparator.matches(decl.getName()) ) {
 		    CsmFunctionDefinition fdef = (CsmFunctionDefinition) decl;
-		    CsmFunction fdecl = fdef.getDeclaration();
-		    if( fdecl == null || fdecl == fdef) {
+//		    CsmFunction fdecl = fdef.getDeclaration();
+//		    if( fdecl == null || fdecl == fdef) {
                         result.add(new FunctionElementDescriptor(fdef));
-		    }
+//		    }
 		}
 		break;
             case FUNCTION:
 		if( comparator.matches(decl.getName()) ) {
-                    result.add(new FunctionElementDescriptor((CsmFunction) decl));
+                    CsmFunction fdecl = (CsmFunction) decl;
+                    CsmFunctionDefinition fdef = fdecl.getDefinition();
+                    if( fdef == null || fdef.equals(fdecl) ) {
+                        result.add(new FunctionElementDescriptor((CsmFunction) decl));
+                    }
 		}
 		break;
             case VARIABLE:

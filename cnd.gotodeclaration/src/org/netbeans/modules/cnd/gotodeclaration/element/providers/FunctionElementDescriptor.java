@@ -18,6 +18,7 @@ package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import javax.swing.Icon;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 import org.netbeans.modules.cnd.gotodeclaration.util.ContextUtil;
 
@@ -35,12 +36,14 @@ class FunctionElementDescriptor extends BaseElementDescriptor implements Element
     private final CsmUID<CsmFunction> uid;
     private String displayName = null;
     private String contextName = null;
+    private boolean isForward;
     
     @SuppressWarnings("unchecked")
     FunctionElementDescriptor(CsmFunction func) {
 	uid = func.getUID();
 	displayName = func.getSignature();
 	contextName = ContextUtil.getContextName(func);
+        isForward = ! func.equals(func.getDefinition());
     }
     
     protected final CsmFunction getFunction() {
@@ -60,7 +63,9 @@ class FunctionElementDescriptor extends BaseElementDescriptor implements Element
     }
 
     public Icon getIcon() {
-	return CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION_DEFINITION, 0);
+	return CsmImageLoader.getIcon(isForward ? 
+            CsmDeclaration.Kind.FUNCTION : 
+            CsmDeclaration.Kind.FUNCTION_DEFINITION, 0);
     }
 
 }
