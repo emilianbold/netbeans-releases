@@ -166,7 +166,7 @@ public class HTTPServerConnector extends ServerConnector implements
      * @throws Exception
      *             DOCUMENT ME!
      */
-    public void initialize() throws Exception {
+    private void initialize() throws Exception {
         boolean result = true;
         try {
             int portValue = new Integer(this.getPort()).intValue();
