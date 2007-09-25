@@ -29,10 +29,14 @@ import org.openide.util.Parameters;
 
 /**
  * Encapsulates a web framework.
+ * 
  * <p>This class allows providing support for web frameworks. It can be used
  * to extend a web module with a web framework, to find out whether a web
  * module is already extender by a web framework, or to retrieve a web framework's
  * specific configuration files.</p>
+ * 
+ * <p>Instances of this class are registered in the <code>j2ee/webtier/framework</code>
+ * in the module layer.</p>
  *
  * @author Petr Pisl, Andrei Badea
  */

@@ -84,7 +84,13 @@ public interface WebModuleImplementation {
      * </div>
      *
      * @return this web module's Java source roots; never null.
+     * 
+     * @deprecated This method is deprecated, because its return values does
+     * not contain enough information about the source roots. Source roots
+     * are usually implemented by a <code>org.netbeans.api.project.SourceGroup</code>,
+     * which is more than just a container for a {@link org.openide.filesystems.FileObject}.
      */
+    @Deprecated
     FileObject[] getJavaSources();
 
     /**

@@ -97,8 +97,8 @@ is the proper place.
                     This allows for better encapsulation of the web module extending process.
                 </p>
             </description>
-            <class package="org.netbeans.modules.web.api.webmodule" name="WebFrameworkProvider"/>
-            <class package="org.netbeans.modules.web.spi.webmodule" name="WebConfigurationPanel"/>
+            <class package="org.netbeans.modules.web.spi.webmodule" name="FrameworkConfigurationPanel"/>
+            <class package="org.netbeans.modules.web.spi.webmodule" name="WebFrameworkProvider"/>
             <class package="org.netbeans.modules.web.spi.webmodule" name="WebModuleExtender"/>
         </change>
         <change id="Deprecating_getJavaSources">

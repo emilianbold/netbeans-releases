@@ -21,8 +21,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 /**
  * List of templates which should be in the initial "privileged" list
  * when creating a new file. An instance should be placed in the
- * <code>j2ee/webtier/templates</code> folder in a module layer file
- * to affect the privileged list for that project.
+ * <code>j2ee/webtier/templates</code> folder in a module layer.
  *
  * @author Petr Pisl
  */
