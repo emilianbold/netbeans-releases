@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Parameters;
 
@@ -110,16 +111,20 @@ public final class _RetoucheUtil {
             return null;
         }
         final List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>();
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                if (sourceUtils != null) {
-                    TypeElement typeElement = sourceUtils.getTypeElement();
-                    result.add(ElementHandle.create(typeElement));
+        try {
+            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                    if (sourceUtils != null) {
+                        TypeElement typeElement = sourceUtils.getTypeElement();
+                        result.add(ElementHandle.create(typeElement));
+                    }
                 }
-            }
-        }, true);
+            }, true);
+        } catch (DataObjectNotFoundException donfe) {
+            // do nothing, node's file was deleted, just return null
+        }
         if (result.size() > 0) {
             return result.get(0);
         }
