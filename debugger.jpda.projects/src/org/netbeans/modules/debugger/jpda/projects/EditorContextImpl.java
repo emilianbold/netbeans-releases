@@ -193,14 +193,16 @@ public class EditorContextImpl extends EditorContext {
         DataObject dataObject = getDataObject (url);
         if (dataObject != null) {
             EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
-            try {
-                StyledDocument doc = ec.openDocument();
-                JEditorPane[] eps = ec.getOpenedPanes();
-                if (eps != null && eps.length > 0) {
-                    JumpList.addEntry(eps[0], NbDocument.findLineOffset(doc, l.getLineNumber()) + column);
+            if (ec != null) {
+                try {
+                    StyledDocument doc = ec.openDocument();
+                    JEditorPane[] eps = ec.getOpenedPanes();
+                    if (eps != null && eps.length > 0) {
+                        JumpList.addEntry(eps[0], NbDocument.findLineOffset(doc, l.getLineNumber()) + column);
+                    }
+                } catch (java.io.IOException ioex) {
+                    ErrorManager.getDefault().notify(ioex);
                 }
-            } catch (java.io.IOException ioex) {
-                ErrorManager.getDefault().notify(ioex);
             }
         }
     }
