@@ -32,12 +32,14 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -84,8 +86,8 @@ public class SCFTHandlerTest extends NbTestCase {
     
 
     public static Test suite() {
-        return new SCFTHandlerTest("testCreateWithNameAndExtForForm");
-        // return new NbTestSuite(SCFTHandlerTest.class);
+        //return new SCFTHandlerTest("testCreateWithNameAndExtForForm");
+        return new NbTestSuite(SCFTHandlerTest.class);
     }
     
     @Override
@@ -352,13 +354,20 @@ public class SCFTHandlerTest extends NbTestCase {
         
         assertEquals("Created in right place", folder, n.getFolder());
         assertEquals("Created with right name", "complex", n.getName());
+        Iterator<FileObject> it = n.files().iterator();
+        it.next();
+        FileObject snd = it.next();
         
-        InputStream is = n.getPrimaryFile().getInputStream();
+        long length = snd.getSize();
+        if (length <= 0) {
+            fail("Too small file: " + length + " for " + snd);
+        }
+        InputStream is = snd.getInputStream();
         InputStreamReader r = new InputStreamReader(is, "UTF-8");
         char[] cbuf = new char[1024];
         int len = r.read(cbuf);
         if (len == -1) {
-            fail("no input stream for " + n.getPrimaryFile());
+            fail("no input stream for " + snd);
         }
         String read = new String(cbuf, 0, len);
         
