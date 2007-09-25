@@ -89,7 +89,6 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
             project = ProjectUtils.getProject(document);
-            updateModel(document);
         }
 
         if (wrapper == null) {
@@ -181,7 +180,13 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         chooserButton.setEnabled(isEnabled);
     }
 
-    private void updateModel(DesignDocument document) {
+    private void updateModel() {
+        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        if (document == null) {
+            return;
+        }
+        
+        pathTextComboBox.setEnabled(false);
         doNotFireEvent = true;
         comboBoxModel.removeAllElements();
         doNotFireEvent = false;
@@ -192,6 +197,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         for (FileObject fo : fileMap.keySet()) {
             checkFile(fo);
         }
+        pathTextComboBox.setEnabled(true);
     }
 
     private void searchImagesInDirectory(FileObject dir) {
@@ -281,6 +287,16 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         return relativePath;
     }
 
+    @Override
+    public void addNotify() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateModel();
+            }
+        });
+        super.addNotify();
+    }
+    
     @Override
     public void removeNotify() {
         paths.clear();

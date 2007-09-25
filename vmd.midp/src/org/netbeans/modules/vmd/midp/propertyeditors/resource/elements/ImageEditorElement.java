@@ -35,6 +35,7 @@ import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -93,7 +94,6 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
             project = ProjectUtils.getProject(document);
-            updateModel(document);
         }
 
         if (wrapper == null) {
@@ -187,7 +187,13 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         chooserButton.setEnabled(isEnabled);
     }
 
-    private void updateModel(DesignDocument document) {
+    private void updateModel() {
+        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        if (document == null) {
+            return;
+        }
+        
+        pathTextComboBox.setEnabled(false);
         doNotFireEvent = true;
         comboBoxModel.removeAllElements();
         doNotFireEvent = false;
@@ -198,6 +204,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         for (FileObject fo : fileMap.keySet()) {
             checkFile(fo);
         }
+        pathTextComboBox.setEnabled(true);
     }
 
     private void searchImagesInDirectory(FileObject dir) {
@@ -296,6 +303,16 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         paths.put(relativePath, fo);
 
         return relativePath;
+    }
+
+    @Override
+    public void addNotify() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateModel();
+            }
+        });
+        super.addNotify();
     }
 
     @Override
