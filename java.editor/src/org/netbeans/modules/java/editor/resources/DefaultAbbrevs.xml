@@ -134,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
     </codetemplate>
     <codetemplate abbreviation="soutv">
         <code>
-        <![CDATA[System.out.println("${EXP instanceof="<any>" default="exp"} = " ${EXP});]]>
+        <![CDATA[System.out.println("${EXP instanceof="<any>" default="exp"} = " + ${EXP});]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="whilen" contexts="BLOCK,CASE">
