@@ -70,6 +70,7 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Exceptions;
+import org.openide.util.UserCancelException;
 
 
 /** Support for associating an editor and a Swing {@link Document}.
@@ -1117,6 +1118,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if (safe.ret == 1) {
                 try {
                     saveDocument();
+                } catch (UserCancelException uce) {
+                    return false;
                 } catch (IOException e) {
                     Exceptions.printStackTrace(e);
 

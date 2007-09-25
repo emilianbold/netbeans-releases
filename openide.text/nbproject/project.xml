@@ -81,6 +81,11 @@ Microsystems, Inc. All Rights Reserved.
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.dialogs</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>

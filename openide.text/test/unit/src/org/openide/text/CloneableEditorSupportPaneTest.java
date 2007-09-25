@@ -20,12 +20,16 @@
 package org.openide.text;
 
 
+import java.awt.Dialog;
 import java.io.IOException;
 import javax.swing.JEditorPane;
 import junit.framework.*;
 import org.netbeans.junit.*;
+import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.UserCancelException;
 import org.openide.util.lookup.*;
 import org.openide.windows.CloneableTopComponent;
 
@@ -101,6 +105,35 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
                 
     }
 
+         
+    public void testDocumentSaveCancelledByUser() throws Exception {
+        //register DialogDisplayer which "pushes" Yes option in the document save dialog
+        MockServices.setServices(DD.class);
+        
+        content = "Ahoj\nMyDoc";
+        CloneableEditorSupport sup = new CES3 (this, new AbstractLookup(new InstanceContent ()));
+        javax.swing.text.Document doc = sup.openDocument ();
+        
+        //modify the document
+        doc.insertString(0, "Kuk", null);
+        
+        //open the document
+        sup.open();
+        Line line = sup.getLineSet().getCurrent(0);
+        line.show(Line.SHOW_SHOW);
+        
+        //check document opened
+        assertTrue(sup.isDocumentLoaded());
+        
+        //close the document, this should invoke the save dialog, YES option will be choosen.
+        sup.close();
+        
+        //the CES3 implementation of saveDocument() throws UserCancelException so the file is not saved
+        
+        //document still opened
+        assertTrue(sup.isDocumentLoaded());
+        
+    }
     
     public void testCreateCloneableTopComponent() throws Exception {
         CloneableTopComponent comp = support.createCloneableTopComponent();
@@ -264,6 +297,29 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
             instance2 = new MyPaneNonNonTC();
             return instance2;
         }
+    }
+    
+    private static class CES3 extends CES {
+        public CES3 (Env env, Lookup l) {
+            super (env, l);
+        }
+
+        @Override
+        public void saveDocument() throws IOException {
+            throw new UserCancelException();
+        }
+    }
+    
+    public static class DD extends org.openide.DialogDisplayer {
+
+        public java.awt.Dialog createDialog(org.openide.DialogDescriptor descriptor) {
+            throw new IllegalStateException ("Not implemented");
+        }
+        
+        public Object notify(org.openide.NotifyDescriptor descriptor) {
+            return descriptor.getOptions()[0];
+        }
+        
     }
     
     private static MyPaneNonNonTC instance2;
