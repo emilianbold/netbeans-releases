@@ -106,7 +106,7 @@ public class MergeUiTest extends JellyTestCase {
             //0. one repository operator
             mo.cboMergeFrom().selectItem(0);
             MergeOneRepoOperator moro = new MergeOneRepoOperator();
-            moro.verify();
+            //moro.verify();
             RepositoryBrowserOperator rbo = moro.browseRepository();
             //moro.selectRepositoryFolder("ok");
             rbo.selectFolder("trunk");
@@ -116,9 +116,9 @@ public class MergeUiTest extends JellyTestCase {
             assertEquals("Wrong folder selection!!!", "tags", moro.getRepositoryFolder());
             moro.setRepositoryFolder("");
             //1. two repository operator
-            moro.cboMergeFrom().selectItem(1);
+            moro.cboMergeFrom().selectItem(2);
             MergeTwoRepoOperator mtro = new MergeTwoRepoOperator();
-            mtro.verify();
+            //mtro.verify();
             rbo = mtro.browseRepositoryFolder1();
             rbo.selectFolder("trunk");
             rbo.selectFolder("branches");
@@ -135,9 +135,9 @@ public class MergeUiTest extends JellyTestCase {
             mtro.setRepositoryFolder2("");
 
             //2. two repository operator
-            moro.cboMergeFrom().selectItem(2);
+            moro.cboMergeFrom().selectItem(1);
             MergeOriginOperator moo = new MergeOriginOperator();
-            moo.verify();
+            //moo.verify();
             rbo = moo.browseRepositoryFolder();
             rbo.selectFolder("trunk");
             rbo.selectFolder("branches");
