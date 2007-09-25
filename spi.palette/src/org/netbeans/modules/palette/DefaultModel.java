@@ -24,6 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.nodes.*;
@@ -152,9 +153,14 @@ public class DefaultModel implements Model, NodeListener {
     * @param ev event describing the action
     */
     public void childrenRemoved(NodeMemberEvent ev) {
-        Category[] removedCategories = findCategories( ev.getDelta() );
         categoriesNeedRefresh = true;
-        fireCategoriesChanged( removedCategories, false );
+        final Node[] nodes = ev.getDelta();
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                Category[] removedCategories = findCategories( nodes );
+                fireCategoriesChanged( removedCategories, false );
+            }
+        });
     }
 
     /** Fired when the order of children is changed.
