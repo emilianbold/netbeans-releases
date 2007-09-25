@@ -324,9 +324,9 @@ public class ConvertAnonymousToInner extends AbstractHint {
         //remove def. constructor:
         oldMembers.remove(0);
         
-        ModifiersTree privateMods = make.Modifiers(EnumSet.of(Modifier.PRIVATE));
+        ModifiersTree constructorModifiers = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
         
-        MethodTree constr = make.Method(privateMods, "<init>", null, Collections.<TypeParameterTree>emptyList(), constrArguments, Collections.<ExpressionTree>emptyList(), make.Block(constrBodyStatements, false), null); // NOI18N
+        MethodTree constr = make.Method(constructorModifiers, "<init>", null, Collections.<TypeParameterTree>emptyList(), constrArguments, Collections.<ExpressionTree>emptyList(), make.Block(constrBodyStatements, false), null); // NOI18N
         
         members.add(constr);
         members.addAll(oldMembers);
