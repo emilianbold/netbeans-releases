@@ -36,11 +36,11 @@ public class CCIncludesAuxTestCase extends BaseTestCase {
         CsmIncludeCompletionItem item = new CsmIncludeCompletionItem(0, 0, text, "on/Unix/system", "", false, true, false);
         String shrinked = item.getRightText(true, "/");
         System.err.println("shrinked is " + shrinked);
-        assertEquals("/very/long/.../Unix/system", shrinked);
+        assertEquals("/very/long.../Unix/system", shrinked);
         text = "C:\\very\\long\\path\\to\\include\\dir";
         item = new CsmIncludeCompletionItem(0, 0, text, "on\\Windows\\system", "", false, true, false);
         shrinked = item.getRightText(true, "\\");
         System.err.println("shrinked is " + shrinked);
-        assertEquals("C:\\very\\long\\...\\Windows\\system", shrinked);
+        assertEquals("C:\\very\\long...\\Windows\\system", shrinked);
     }
 }

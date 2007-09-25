@@ -254,8 +254,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
             }
             if (lastSlash > 0 && firstSlash > 0) {
                 lastSlash = len - lastSlash;
-                if (firstSlash + 1 < lastSlash - 1) {
-                    builder.replace(firstSlash + 1, lastSlash - 1, "..."); // NOI18N
+                if (firstSlash < lastSlash - 1) {
+                    builder.replace(firstSlash, lastSlash - 1, "..."); // NOI18N
                 }
             }
         }
