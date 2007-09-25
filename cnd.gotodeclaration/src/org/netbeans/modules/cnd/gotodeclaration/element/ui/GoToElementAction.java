@@ -357,9 +357,11 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
                 if (isCanceled) {
                     return null;
                 }
+                boolean first = true;
 		for (int i = 0; i < projects.length; i++) {
 		    Project project = projects[i];
-                    Collection<? extends ElementDescriptor> list = provider.getElements(project, text, nameKind);
+                    Collection<? extends ElementDescriptor> list = provider.getElements(project, text, nameKind, first);
+                    first = false;
                     if (list != null) {
 			if( items == null ) {
 			    items = new ArrayList<ElementDescriptor>(list.size());

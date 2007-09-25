@@ -77,9 +77,12 @@ public interface ElementProvider {
      * 
      * @param type A type of search to be performed, such as prefix, regexp or camel case.
      * 
+     * @param first true if this is 1-st call for the given search text
+     * (usually provider is called in cycle for projects)
+     * 
      * @return A collection of ElementDescriptors that match the given search criteria
      */
-    Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type);
+    Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type, boolean first);
 
     /**
      * Cancel the current operation, if possible. 

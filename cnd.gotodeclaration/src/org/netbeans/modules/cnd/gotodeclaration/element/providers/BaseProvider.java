@@ -94,7 +94,7 @@ public abstract class BaseProvider implements ElementProvider {
     
     protected abstract void processProject(CsmProject project, ResultSet result, NameMatcher comparator);
     
-    public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type) {
+    public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type, boolean first) {
 
 	if( TRACE ) System.err.printf("%s.getElements(%s, %s, %s)\n", getBriefClassName(), project, text, type);
         
@@ -102,7 +102,10 @@ public abstract class BaseProvider implements ElementProvider {
 	if( comparator == null ) {
 	    return Collections.emptyList();
 	}
-	
+
+        if( first ) {
+            processedProjects.clear();
+        }
         ResultSet result = new ResultSetImpl();
         CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
 	if( csmProject != null ) {
@@ -135,7 +138,7 @@ public abstract class BaseProvider implements ElementProvider {
     
     
     public void cleanup() {
-        processedProjects = new HashSet<CsmProject>();
+        processedProjects.clear();
         currentProject = null;
     }
 

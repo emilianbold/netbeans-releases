@@ -17,6 +17,7 @@
 package org.netbeans.modules.cnd.gotodeclaration.util;
 
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
@@ -128,23 +129,28 @@ public class NameMatcherFactory {
      * Get a name
      */
     public static NameMatcher createNameMatcher(String text, SearchType type) {
-	switch( type ) {
-            case EXACT_NAME:
-		return new ExactNameMatcher(text);
-            case CASE_INSENSITIVE_EXACT_NAME:
-		return new CaseInsensitiveExactNameMatcher(text);
-            case PREFIX:
-		return new PrefixNameMatcher(text);
-            case REGEXP:
-		return new RegExpNameMatcher(text, true);
-            case CASE_INSENSITIVE_REGEXP:
-		return new RegExpNameMatcher(text, false);
-            case CASE_INSENSITIVE_PREFIX:
-                 return new CaseInsensitivePrefixNameMatcher(text);
-            case CAMEL_CASE:
-		return new CamelCaseNameMatcher(text);
-            default:
-                return null;
-	}
+        try {
+            switch( type ) {
+                case EXACT_NAME:
+                    return new ExactNameMatcher(text);
+                case CASE_INSENSITIVE_EXACT_NAME:
+                    return new CaseInsensitiveExactNameMatcher(text);
+                case PREFIX:
+                    return new PrefixNameMatcher(text);
+                case REGEXP:
+                    return new RegExpNameMatcher(text, true);
+                case CASE_INSENSITIVE_REGEXP:
+                    return new RegExpNameMatcher(text, false);
+                case CASE_INSENSITIVE_PREFIX:
+                     return new CaseInsensitivePrefixNameMatcher(text);
+                case CAMEL_CASE:
+                    return new CamelCaseNameMatcher(text);
+                default:
+                    return null;
+            }
+        }
+        catch( PatternSyntaxException ex ) {
+            return null;
+        }
     }    
 }
