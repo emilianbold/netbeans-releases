@@ -21,10 +21,8 @@
 package org.netbeans.modules.i18n;
 
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
-import java.awt.SystemColor;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
@@ -32,7 +30,6 @@ import javax.swing.JTextField;
 import javax.swing.text.BadLocationException;
 import org.netbeans.beaninfo.editors.StringEditor;
 import org.openide.awt.Mnemonics;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
 
@@ -42,7 +39,7 @@ import org.openide.ErrorManager;
  *
  * @author  Peter Zavadsky
  */
-public class HelpStringCustomEditor extends JPanel implements EnhancedCustomPropertyEditor {
+public class HelpStringCustomEditor extends JPanel {
 
     /** Creates new form CodeCustomEditor.
      * @param value value to be customized 
@@ -72,7 +69,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     * @return property value that is result of <code>CodeCustomEditor</code>.
     * @exception <code>InvalidStateException</code> when the custom property editor does not represent valid property value
     */
-    public Object getPropertyValue() throws IllegalStateException {
+    public Object getPropertyValue() {
         return (String)combo.getSelectedItem();
     }
     
