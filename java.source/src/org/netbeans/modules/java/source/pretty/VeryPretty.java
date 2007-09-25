@@ -2009,7 +2009,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 if (mit.meth.getKind() == Kind.IDENTIFIER) {
                     JCIdent it = (JCIdent) mit.getMethodSelect();                    
                     if (it.name == names._super) {
-                        return TreeInfo.getEndPos(tree, origUnit.endPositions) < 0;
+                        return TreeInfo.getEndPos(tree, origUnit.endPositions) < 0 && tree.pos!=NOPOS;
                     }
                 }
             }
