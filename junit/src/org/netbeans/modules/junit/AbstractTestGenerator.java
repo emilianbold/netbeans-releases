@@ -495,13 +495,15 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 workingCopy);
 
         if (setup.isGenerateMethodJavadoc()) {
-            Comment javadoc = Comment.create(
-                NbBundle.getMessage(
+            String commentText = NbBundle.getMessage(
                     TestCreator.class,
                     "TestCreator.variantMethods.JavaDoc.comment",       //NOI18N
                     srcMethod.getSimpleName().toString(),
-                    srcClass.getSimpleName().toString()));
-            maker.addComment(method, javadoc, false);
+                    srcClass.getSimpleName().toString());
+            Comment javadoc = Comment.create(Comment.Style.JAVADOC,
+                                             -2, -2, -2,
+                                             commentText);
+            maker.addComment(method, javadoc, true);
         }
 
         return method;
