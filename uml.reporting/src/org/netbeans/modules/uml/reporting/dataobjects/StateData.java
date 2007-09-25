@@ -21,16 +21,14 @@
 package org.netbeans.modules.uml.reporting.dataobjects;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -184,13 +182,11 @@ public class StateData extends ElementDataObject
             out.close();
             result = true;
         }
-        catch (FileNotFoundException e)
+        catch (Exception e)
         {
-            ErrorManager.getDefault().notify(e);
-        }
-        catch (IOException e)
-        {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger(ElementDataObject.class.getName()).log(
+                    Level.SEVERE, getElement().getElementType() + " - " +  getElement().getNameWithAlias(), e);
+            result = false;
         }
         return result;
     }

@@ -29,21 +29,18 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.project.ui.nodes.AbstractModelElementNode;
 import org.netbeans.modules.uml.reporting.ReportTask;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
-import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 
@@ -257,13 +254,11 @@ public class PackageData extends ElementDataObject
             out.close();
             result = result && true;
         }
-        catch (FileNotFoundException e)
+        catch (Exception e)
         {
-            ErrorManager.getDefault().notify(e);
-        }
-        catch (IOException e)
-        {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger(ElementDataObject.class.getName()).log(
+                    Level.SEVERE, getElement().getElementType() + " - " +  getElement().getNameWithAlias(), e);
+            result = false;
         }
         return result;
     }
@@ -404,7 +399,9 @@ public class PackageData extends ElementDataObject
         
         catch (Exception e)
         {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger(ElementDataObject.class.getName()).log(
+                    Level.SEVERE, getElement().getElementType() + " - " +  getElement().getNameWithAlias(), e);
+            result = false;
         }
         return result;
     }

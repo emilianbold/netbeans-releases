@@ -25,7 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
-import org.netbeans.modules.uml.common.Util;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IEdgeMapLocation;
@@ -42,7 +43,6 @@ import org.netbeans.modules.uml.reporting.ReportTask;
 import org.netbeans.modules.uml.ui.controls.drawingarea.UIDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.netbeans.modules.uml.ui.swing.drawingarea.SaveAsGraphicKind;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -370,7 +370,8 @@ public class DiagramData extends ElementDataObject
         }
         catch (IOException e)
         {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger(ElementDataObject.class.getName()).log(
+                    Level.SEVERE, getDiagram().getDiagramKind2() + " - " + getDiagram().getName(), e);
         }
         return result;
     }

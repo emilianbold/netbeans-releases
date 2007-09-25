@@ -25,14 +25,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.reporting.ReportTask;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -217,13 +217,11 @@ public class ActivityPartitionData extends ActivityGroupData
             result = true;
             
         }
-        catch (FileNotFoundException e)
+        catch (Exception e)
         {
-            ErrorManager.getDefault().notify(e);
-        }
-        catch (IOException e)
-        {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger(ElementDataObject.class.getName()).log(
+                    Level.SEVERE, getElement().getElementType() + " - " +  getElement().getNameWithAlias(), e);
+            result = false;
         }
         return result;
     }

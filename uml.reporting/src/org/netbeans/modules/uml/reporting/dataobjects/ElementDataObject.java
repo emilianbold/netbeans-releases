@@ -21,16 +21,15 @@
 package org.netbeans.modules.uml.reporting.dataobjects;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Stack;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -42,6 +41,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.profiles.IStereotype;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.modules.uml.reporting.ReportTask;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.controls.projecttree.DefaultNodeFactory;
@@ -50,8 +50,7 @@ import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager
 import org.netbeans.modules.uml.ui.support.diagramsupport.IPresentationTarget;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeBuilderImpl;
-
-import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -625,6 +624,11 @@ public class ElementDataObject implements Report
                 
                 if (!diagrams.contains(proxy.getFilename()))
                 {
+                    // 86682, filter out diagrams that don't belong to this project
+                    if (FileOwnerQuery.getOwner(FileUtil.toFileObject(new File(proxy.getFilename()))) != 
+                            ProjectUtil.findElementOwner(getElement()))
+                        continue;
+                    
                     diagrams.add(proxy.getFilename());
                     
                     if (proxy.getDiagram() == null)
@@ -849,14 +853,13 @@ public class ElementDataObject implements Report
             result = true;
             
         }
-        catch (FileNotFoundException e)
+        catch (Exception e)
         {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger(ElementDataObject.class.getName()).log(
+                    Level.SEVERE, getElement().getElementType() + " - " +  getElement(), e);
+            result = false;
         }
-        catch (IOException e)
-        {
-            ErrorManager.getDefault().notify(e);
-        }
+        
         return result;
         
     }

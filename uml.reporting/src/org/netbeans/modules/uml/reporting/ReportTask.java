@@ -34,6 +34,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -158,7 +160,8 @@ public class ReportTask extends Thread implements Cancellable
         }
         catch(Exception e)
         {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger(ElementDataObject.class.getName()).log(
+                    Level.SEVERE, name, e);
         }
         finally
         {
@@ -372,7 +375,7 @@ public class ReportTask extends Thread implements Cancellable
         {
             success = false;
             log(NbBundle.getMessage(ReportTask.class, "Log_error_creating_file",
-                    pItem.getData().getModelElement().getElementType()));
+                    pItem.getData().getModelElement()));
         }
     }
     
