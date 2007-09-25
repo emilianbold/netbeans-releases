@@ -567,8 +567,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                     unexpectedEnd = true;
                     boolean isBug114976 = false;
                     if (Utilities.isWindows() && fo.canRead()  && (openex instanceof FileNotFoundException)) {
-                        File f = FileUtil.toFile(fo);
-                        if (f != null && f.exists() && f.isHidden()) {
+                        if (fo.isValid() && fo.getName().toLowerCase().indexOf("ntuser") != -1) {//NOI18N
                             isBug114976 = true;
                         }
                     }
