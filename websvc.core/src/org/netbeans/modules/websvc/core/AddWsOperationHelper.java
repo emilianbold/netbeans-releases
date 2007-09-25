@@ -89,7 +89,7 @@ public class AddWsOperationHelper {
     
     protected MethodModel getPrototypeMethod() {
         return MethodModel.create(
-                "operation", //NOI18N
+                NbBundle.getMessage(AddWsOperationHelper.class,"TXT_DefaultOperationName"), //NOI18N
                 "java.lang.String", //NOI18N
                 "",
                 Collections.<MethodModel.Variable>emptyList(),
