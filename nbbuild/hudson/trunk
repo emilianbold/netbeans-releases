@@ -107,13 +107,13 @@ if [ -f $sigtest_jar ]; then
     ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests || exit
 fi
 
-sigtest_incompat_gen=`pwd`/nbbuild/build/sigtestsincompat.log
-if ! ant -f nbbuild/build.xml -Dsigtest.check.type=check check-sigtests > $sigtest_incompat_gen; then
+sigtest_incompat_gen=`pwd`/nbbuild/build/sigtestsincompat
+if ! ant -f nbbuild/build.xml -Dsigtest.check.type=check -Dsigtest.output.dir=$sigtest_incompat_gen check-sigtests > $sigtest_incompat_gen.log; then
     (
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
         echo; 
-        cat $sigtest_incompat_gen
+        cat $sigtest_incompat_gen.log
     ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
 fi
 
