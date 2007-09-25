@@ -107,6 +107,16 @@ if [ -f $sigtest_jar ]; then
     ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests || exit
 fi
 
+sigtest_incompat_gen=`pwd`/nbbuild/build/sigtestsincompat
+if ! ant -f nbbuild/build.xml -Dsigtest.check.type=check check-sigtests > $sigtest_incompat_gen.log; then
+    (
+        echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
+        echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
+        echo; 
+        cat $sigtest_incompat_gen
+    ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
+fi
+
 ###############  Commit validation tests  ##########################
 TESTS_STARTED=`date`
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
