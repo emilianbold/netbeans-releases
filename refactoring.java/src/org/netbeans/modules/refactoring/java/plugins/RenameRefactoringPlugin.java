@@ -365,25 +365,33 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                          enclosingType = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
                     }
                     set.add(SourceUtils.getFile(el, info.getClasspathInfo()));
-                    if (kind.isField()) {
-                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                    } else if (el instanceof TypeElement) {
-                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                    } else if (kind == ElementKind.METHOD) {
-                        //add all references of overriding methods
-                        allMethods = new HashSet<ElementHandle<ExecutableElement>>();
-                        allMethods.add(ElementHandle.create((ExecutableElement)el));
-                        for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
-                            addMethods(e, set, info, idx);
+                    if (el.getModifiers().contains(Modifier.PRIVATE)) {
+                        if (kind == ElementKind.METHOD) {
+                            //add all references of overriding methods
+                            allMethods = new HashSet<ElementHandle<ExecutableElement>>();
+                            allMethods.add(ElementHandle.create((ExecutableElement)el));
                         }
-                        //add all references of overriden methods
-                        for (ExecutableElement ov: RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
-                            addMethods(ov, set, info, idx);
-                            for (ExecutableElement e:RetoucheUtils.getOverridingMethods( ov,info)) {
+                    } else {
+                        if (kind.isField()) {
+                            set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        } else if (el instanceof TypeElement) {
+                            set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        } else if (kind == ElementKind.METHOD) {
+                            //add all references of overriding methods
+                            allMethods = new HashSet<ElementHandle<ExecutableElement>>();
+                            allMethods.add(ElementHandle.create((ExecutableElement)el));
+                            for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
                                 addMethods(e, set, info, idx);
                             }
+                            //add all references of overriden methods
+                            for (ExecutableElement ov: RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
+                                addMethods(ov, set, info, idx);
+                                for (ExecutableElement e:RetoucheUtils.getOverridingMethods( ov,info)) {
+                                    addMethods(e, set, info, idx);
+                                }
+                            }
+                            set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
                         }
-                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
                     }
                 }
             }, true);

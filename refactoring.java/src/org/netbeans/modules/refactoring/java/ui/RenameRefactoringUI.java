@@ -20,7 +20,9 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -118,8 +120,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     public RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
         this.handle = handle;
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
-        oldName = handle.resolveElement(info).getSimpleName().toString();
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
+        Element element = handle.resolveElement(info);
+        oldName = element.getSimpleName().toString();
+        if (element.getModifiers().contains(Modifier.PRIVATE)) {
+            refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(false, handle.getFileObject()));
+        } else {
+            refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
+        }
         dispOldName = oldName;
 
         //this(jmiObject, (FileObject) null, true);
