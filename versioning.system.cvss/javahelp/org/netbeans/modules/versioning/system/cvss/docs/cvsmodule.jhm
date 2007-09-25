@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -135,13 +135,28 @@
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction" url="cvsmodule/csh/cvs-lite_tag_dialog.html" />
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.ChangeCVSRootAction" url="cvsmodule/csh/cvs-lite_change_root.html" />
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.history.ViewRevisionAction" url="cvsmodule/csh/cvs-lite_view_revision_dialog.html" />
-
  
     <!-- <mapID target="netbeans.optionsDialog.advanced.ant" url="cvsmodule/cvs/cvs-lite_add_var_dialog.html" /> -->
 
-    <!-- these are obselete. they can be deleted once the index page is deleted -->
-    <mapID target="cvs-lite_non-cvs" url="cvsmodule/cvs-lite_non-cvs.html" />
-    <mapID target="cvs-lite_projects" url="cvsmodule/cvs-lite_project-system.html" />
+<!-- The following IDs are related to various Versioning menu items (invoked in the rare case that someone presses F1 while selecting a menu item -->
+
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.status.OpenVersioningAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ExportDiffAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.SwitchBranchAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.MergeBranchAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.log.AnnotationsAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.ignore.IgnoreAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+    <mapID target="org.netbeans.modules.versioning.util.OpenVersioningOutputAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" /> 
 
 </map>
 
