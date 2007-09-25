@@ -1531,7 +1531,12 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 if (chr == bracket) {
                     if (!isAfter) {
                         doc.insertString(dotPos, "" + bracket, null); //NOI18N
+                    } else {
+                        if (!(dotPos < doc.getLength()-1 && doc.getText(dotPos+1,1).charAt(0) == bracket)) {
+                            return true;
+                        }
                     }
+ 
                     doc.remove(dotPos, 1);
 
                     return true;

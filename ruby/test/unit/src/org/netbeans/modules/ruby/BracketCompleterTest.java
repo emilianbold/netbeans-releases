@@ -520,6 +520,37 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("x = /\\^/", '/', "x = /\\/^/");
     }
 
+    public void testRegexp5() throws Exception {
+        insertChar("    regexp = /fofo^\n      # Subsequently, you can make calls to it by name with <tt>yield</tt> in", '/',
+                "    regexp = /fofo/^\n      # Subsequently, you can make calls to it by name with <tt>yield</tt> in");
+    }
+
+    public void testRegexp6() throws Exception {
+        insertChar("    regexp = /fofo^\n", '/',
+                "    regexp = /fofo/^\n");
+    }
+
+    public void testRegexp7() throws Exception {
+        insertChar("x = ^\n", '/', "x = /^/\n");
+    }
+
+    public void testRegexp8() throws Exception {
+        insertChar("x = /^/\n", '/', "x = //^\n");
+    }
+
+    public void testRegexp9() throws Exception {
+        insertChar("x = /^/\n", 'a', "x = /a^/\n");
+    }
+    
+    public void testRegexp10() throws Exception {
+        insertChar("x = /\\^/\n", '/', "x = /\\/^/\n");
+    }
+    
+    public void testRegexp11() throws Exception {
+        insertChar("/foo^", '/',
+                "/foo/^");
+    }
+
     public void testNotRegexp1() throws Exception {
         insertChar("x = 10 ^", '/', "x = 10 /^");
     }
