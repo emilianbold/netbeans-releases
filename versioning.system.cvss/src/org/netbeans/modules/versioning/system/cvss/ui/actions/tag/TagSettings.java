@@ -48,7 +48,6 @@ public class TagSettings extends javax.swing.JPanel implements DocumentListener 
     void refreshComponents() {
         cbMoveTag.setEnabled(!cbDeleteTag.isSelected());
         cbDeleteTag.setEnabled(!cbMoveTag.isSelected());
-        cbCheckModified.setEnabled(!cbDeleteTag.isSelected());
         JButton okButton = (JButton) getClientProperty("OKButton"); // NOI18N
         if (okButton != null) {
             okButton.setEnabled(Utils.isTagValid(tfName.getText()));
