@@ -231,7 +231,12 @@ public abstract class StringUtils {
             final String string) {
         return string.replace(BACK_SLASH, BACK_SLASH + BACK_SLASH);
     }
-    
+    public static String [] splitByLines(CharSequence cs) {
+        return splitByLines(cs.toString());
+    }
+    public static String [] splitByLines(String s) {
+        return s.split(NEW_LINE_PATTERN, -1);
+    }
     public static String readStream(
             final InputStream stream) throws IOException {
         StringBuilder builder = new StringBuilder();
@@ -241,7 +246,7 @@ public abstract class StringUtils {
             int read = stream.read(buffer);
             
             String readString = new String(buffer, 0, read);
-            String[] strings = readString.split(NEW_LINE_PATTERN);
+            String[] strings = splitByLines(readString);
             for(int i=0;i<strings.length;i++) {
                 builder.append(strings[i]);
                 if ( i != strings.length - 1 ) {

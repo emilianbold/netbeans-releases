@@ -563,7 +563,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
                     "LC_TIME", "C", EnvironmentScope.PROCESS, false);
             
             final String stdout = SystemUtils.executeCommand("df", "-h").getStdOut();
-            final String[] lines = stdout.split(StringUtils.NEW_LINE_PATTERN);
+            final String[] lines = StringUtils.splitByLines(stdout);
             
             // a quick and dirty solution - we assume that % is present only once in
             // each line - in the part where the percentage is reported, hence we
@@ -611,7 +611,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
             InputStream is = ResourceUtils.getResource(CLEANER_RESOURCE);
             CharSequence cs = StreamUtils.readStream(is);
             is.close();
-            String [] lines = cs.toString().split(StringUtils.NEW_LINE_PATTERN);
+            String [] lines = StringUtils.splitByLines(cs);
             FileUtils.writeFile(cleanerFile, StringUtils.asString(lines, SystemUtils.getLineSeparator()));
         }
         

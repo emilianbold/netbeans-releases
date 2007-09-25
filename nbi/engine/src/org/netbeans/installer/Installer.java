@@ -895,9 +895,9 @@ public class Installer implements FinishHandler {
     
     private static void cacheInstallerEngineJar(File dest, Progress progress) throws IOException {
         LogManager.log("... starting copying engine content to the new jar file");
-        String [] entries = StreamUtils.readStream(
-                ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST)).
-                toString().split(StringUtils.NEW_LINE_PATTERN);
+        String [] entries = StringUtils.splitByLines(
+                StreamUtils.readStream(
+                ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST)));
         
         JarOutputStream jos = null;
         

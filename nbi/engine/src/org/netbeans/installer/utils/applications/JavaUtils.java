@@ -304,7 +304,7 @@ public class JavaUtils {
         /////////////////////////////////////////////////////////////////////////////
         // Static
         public static JavaInfo getInfo(final String string) {
-            final String[] lines = string.split(StringUtils.NEW_LINE_PATTERN);
+            final String[] lines = StringUtils.splitByLines(string);
             
             Version version = null;
             String vendor = null;
@@ -313,7 +313,7 @@ public class JavaUtils {
             
             boolean nonFinal = false;
             
-            if (lines.length == TEST_JDK_OUTPUT_PARAMETERS) {
+            if (lines.length == (TEST_JDK_OUTPUT_PARAMETERS + 1)) {
                 final String javaVersion = lines[0]; // java.version
                 final String javaVmVersion = lines[1]; // java.vm.version
                 

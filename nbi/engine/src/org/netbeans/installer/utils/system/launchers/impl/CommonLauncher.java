@@ -136,8 +136,8 @@ public abstract class CommonLauncher extends Launcher {
             // load from engine`s entries list
             LogManager.log("... i18n properties were not set. using default from resources");
             InputStream is = ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST);
-            String [] resources = StreamUtils.readStream(is).
-                    toString().split(StringUtils.NEW_LINE_PATTERN);
+            String [] resources = StringUtils.splitByLines(
+                    StreamUtils.readStream(is));
             List <String> list = new ArrayList <String> ();
             LogManager.log("... total engine resources: " + resources.length); //NOI18N
             for(String res : resources) {

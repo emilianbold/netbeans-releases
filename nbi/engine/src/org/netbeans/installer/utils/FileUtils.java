@@ -195,7 +195,7 @@ public final class FileUtils {
     public static List<String> readStringList(
             final File file) throws IOException {
         final List<String> list = new LinkedList<String>();
-        for (String line: readFile(file).split(StringUtils.NEW_LINE_PATTERN)) {
+        for (String line: StringUtils.splitByLines((readFile(file)))) {
             list.add(line);
         }
         return list;

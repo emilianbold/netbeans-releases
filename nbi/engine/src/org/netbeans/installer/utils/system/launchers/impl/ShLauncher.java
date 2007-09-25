@@ -334,7 +334,7 @@ public class ShLauncher extends CommonLauncher {
         CharSequence cs = StreamUtils.readStream(stubStream);
         stubStream.close();
         
-        String [] strings = cs.toString().split(StringUtils.NEW_LINE_PATTERN);
+        String [] strings = StringUtils.splitByLines(cs);
         String stubString = StringUtils.asString(strings, SH_LINE_SEPARATOR);
         return stubString;
     }
