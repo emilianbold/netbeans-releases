@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.common.method;
 
 import java.util.Collection;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.common.method.impl.MethodCustomizerPanel;
 import org.netbeans.modules.j2ee.common.method.impl.ValidatingPropertyChangeListener;
 import org.openide.DialogDescriptor;
@@ -38,10 +39,10 @@ public final class MethodCustomizer {
     private final Collection<MethodModel> existingMethods;
     
     // factory should be used to create instances
-    protected MethodCustomizer(String title, MethodModel methodModel, boolean hasLocal, boolean hasRemote, boolean selectLocal, boolean selectRemote,
-            boolean hasReturnType, String  ejbql, boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces,
-            String prefix, Collection<MethodModel> existingMethods) {
-        this.panel = MethodCustomizerPanel.create(methodModel, hasLocal, hasRemote, selectLocal, selectRemote,
+    protected MethodCustomizer(String title, MethodModel methodModel, ClasspathInfo cpInfo, boolean hasLocal, boolean hasRemote, 
+            boolean selectLocal, boolean selectRemote, boolean hasReturnType, String  ejbql, boolean hasFinderCardinality, 
+            boolean hasExceptions, boolean hasInterfaces, String prefix, Collection<MethodModel> existingMethods) {
+        this.panel = MethodCustomizerPanel.create(methodModel, cpInfo, hasLocal, hasRemote, selectLocal, selectRemote,
                 hasReturnType, ejbql, hasFinderCardinality, hasExceptions, hasInterfaces);
         
         // A11Y 

@@ -30,6 +30,7 @@ import javax.lang.model.element.Modifier;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 
 /**
@@ -47,7 +48,9 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     private final ExceptionsPanel exceptionsPanel;
     private final boolean hasInterfaces;
 
-    private MethodCustomizerPanel(MethodModel methodModel, boolean hasLocal, boolean hasRemote, boolean selectLocal, boolean selectRemote, boolean hasReturnType, String ejbql, boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces) {
+    private MethodCustomizerPanel(MethodModel methodModel, ClasspathInfo cpInfo, boolean hasLocal, boolean hasRemote, 
+            boolean selectLocal, boolean selectRemote, boolean hasReturnType, String ejbql, 
+            boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces) {
         initComponents();
 
         this.methodModel = methodModel;
@@ -74,7 +77,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         exceptionsContainerPanel.setVisible(hasExceptions);
         interfacesPanel.setVisible(hasInterfaces);
 
-        parametersPanel = new ParametersPanel(methodModel.getParameters());
+        parametersPanel = new ParametersPanel(cpInfo, methodModel.getParameters());
         parametersContainerPanel.add(parametersPanel);
 
         exceptionsPanel = hasExceptions ? new ExceptionsPanel(methodModel.getExceptions()) : null;
@@ -91,9 +94,10 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         bothRadio.addActionListener(interfacesListener);
     }
 
-    public static MethodCustomizerPanel create(MethodModel methodModel, boolean hasLocal, boolean hasRemote, boolean selectLocal, boolean selectRemote,
-            boolean hasReturnType, String  ejbql, boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces) {
-        return new MethodCustomizerPanel(methodModel, hasLocal, hasRemote, selectLocal, selectRemote,
+    public static MethodCustomizerPanel create(MethodModel methodModel, ClasspathInfo cpInfo, boolean hasLocal, boolean hasRemote,
+            boolean selectLocal, boolean selectRemote, boolean hasReturnType, String  ejbql, 
+            boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces) {
+        return new MethodCustomizerPanel(methodModel, cpInfo, hasLocal, hasRemote, selectLocal, selectRemote,
                 hasReturnType, ejbql, hasFinderCardinality, hasExceptions, hasInterfaces);
     }
 

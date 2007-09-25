@@ -19,6 +19,7 @@
 package org.netbeans.modules.j2ee.common.method;
 
 import java.util.Collection;
+import org.netbeans.api.java.source.ClasspathInfo;
 
 /**
  * Provide a factory for obtaining MethodCustomizer instances
@@ -30,10 +31,11 @@ public final class MethodCustomizerFactory {
 
     private MethodCustomizerFactory() {}
     
-    public static MethodCustomizer businessMethod(String title, MethodModel method, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, Collection<MethodModel> existingMethods) {
+    public static MethodCustomizer businessMethod(String title, MethodModel method, ClasspathInfo cpInfo, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, Collection<MethodModel> existingMethods) {
         return new MethodCustomizer(
                 title,
                 method,
+                cpInfo,
                 local,
                 remote,
                 selectLocal,
@@ -48,10 +50,11 @@ public final class MethodCustomizerFactory {
                 );
     }
     
-    public static MethodCustomizer homeMethod(String title, MethodModel method, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, Collection<MethodModel> existingMethods) {
+    public static MethodCustomizer homeMethod(String title, MethodModel method, ClasspathInfo cpInfo, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, Collection<MethodModel> existingMethods) {
         return new MethodCustomizer(
                 title,
                 method,
+                cpInfo,
                 local,
                 remote,
                 selectLocal,
@@ -66,10 +69,11 @@ public final class MethodCustomizerFactory {
                 );
     }
     
-    public static MethodCustomizer createMethod(String title, MethodModel method, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, Collection<MethodModel> existingMethods) {
+    public static MethodCustomizer createMethod(String title, MethodModel method, ClasspathInfo cpInfo, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, Collection<MethodModel> existingMethods) {
         return new MethodCustomizer(
                 title,
                 method,
+                cpInfo,
                 local,
                 remote,
                 selectLocal,
@@ -84,10 +88,11 @@ public final class MethodCustomizerFactory {
                 );
     }
     
-    public static MethodCustomizer finderMethod(String title, MethodModel method, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, String ejbql, Collection<MethodModel> existingMethods) {
+    public static MethodCustomizer finderMethod(String title, MethodModel method, ClasspathInfo cpInfo, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, String ejbql, Collection<MethodModel> existingMethods) {
         return new MethodCustomizer(
                 title,
                 method,
+                cpInfo,
                 local,
                 remote,
                 selectLocal,
@@ -106,6 +111,7 @@ public final class MethodCustomizerFactory {
         return new MethodCustomizer(
                 title,
                 method,
+                null, // TODO pass ClasspathInfo here
                 true, // doesn't matter? interfaces selections is disabled
                 true, // doesn't matter? interfaces selections is disabled
                 true, // doesn't matter? interfaces selections is disabled
@@ -120,10 +126,11 @@ public final class MethodCustomizerFactory {
                 );
     }
     
-    public static MethodCustomizer selectMethod(String title, MethodModel method, String ejbql, Collection<MethodModel> existingMethods) {
+    public static MethodCustomizer selectMethod(String title, MethodModel method, ClasspathInfo cpInfo, String ejbql, Collection<MethodModel> existingMethods) {
         return new MethodCustomizer(
                 title,
                 method,
+                cpInfo,
                 false,       // doesn't matter? interfaces selections is disabled
                 false,       // doesn't matter? interfaces selections is disabled
                 false,       // doesn't matter? interfaces selections is disabled

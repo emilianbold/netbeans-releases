@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.common.method.impl;
 
-import org.netbeans.modules.j2ee.common.*;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -32,6 +31,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultListCellRenderer;
@@ -42,6 +43,11 @@ import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,8 +60,11 @@ import org.openide.util.NbBundle;
  */
 public final class ReturnTypeUIHelper {
 
-    private static final List<String> TEMP_TYPES = Arrays.asList(new String[] { "int", "String", "Object" });
-    
+    private static final List<String> LVALUE_TYPES = Arrays.asList(new String[] {
+        "boolean", "int", "char", "byte", "short", "long", "float", "double", // NOI18N
+        "Object", "String" // NOI18N
+    });
+
     private static final class Separator extends JSeparator {
         Separator() {
             setPreferredSize(new Dimension(getWidth(), 1));
@@ -251,11 +260,11 @@ public final class ReturnTypeUIHelper {
      * @param provider Java EE module provider.
      * @param combo combobox to manage.
      */
-    public static void connect(JComboBox combo) {
-        connect(combo, null);
+    public static void connect(JComboBox combo, ClasspathInfo cpInfo) {
+        connect(combo, null, cpInfo);
     }
     
-    private static final void connect(final JComboBox combo, final String selectedType) {
+    private static final void connect(final JComboBox combo, final String selectedType, final ClasspathInfo cpInfo) {
     
         combo.setEditable(true);
         
@@ -263,7 +272,7 @@ public final class ReturnTypeUIHelper {
         
         combo.setRenderer(new ReturnTypeListCellRenderer());
         
-        populate(TEMP_TYPES, true, combo, selectedType, false);
+        populate(LVALUE_TYPES, true, combo, selectedType, false);
         Component toListenOn = (combo.isEditable() ? combo.getEditor().getEditorComponent() : combo);
             
         toListenOn.addKeyListener(new KeyAdapter() {
@@ -272,7 +281,7 @@ public final class ReturnTypeUIHelper {
                 if (KeyEvent.VK_ENTER == keyCode) {
                     Object selectedItem = combo.getSelectedItem();
                     if (selectedItem == NEW_ITEM) {
-                        performBrowseType(combo);
+                        performBrowseType(combo, cpInfo);
                         e.consume();
                     }
                 }
@@ -301,7 +310,7 @@ public final class ReturnTypeUIHelper {
                     // handling mouse click, see KeyEvent.getKeyModifiersText(e.getModifiers())
                 } else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
                     if (selectedItem == NEW_ITEM) {
-                        performBrowseType(combo);
+                        performBrowseType(combo, cpInfo);
                     }
                 }
             }
@@ -309,12 +318,32 @@ public final class ReturnTypeUIHelper {
 
     }
     
-    private static void performBrowseType(final JComboBox combo) {
+    private static void performBrowseType(final JComboBox combo, final ClasspathInfo cpInfo) {
         final ReturnTypeComboBoxModel model = (ReturnTypeComboBoxModel) combo.getModel();
         combo.setPopupVisible(false);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setSelectedItem(combo, model.getPreviousItem());
+                final ElementHandle<TypeElement> handle = TypeElementFinder.find(cpInfo, new TypeElementFinder.Customizer() {
+                    public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {//GEN-LAST:event_browseButtonActionPerformed
+                        return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
+                    }
+
+                    public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                        return true;
+                    }
+                });
+
+                combo.setPopupVisible(false);
+                
+                if (handle == null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            setSelectedItem(combo, model.getPreviousItem());
+                        }
+                    });
+                } else {
+                    setSelectedItem(combo, handle.getQualifiedName());
+                }
             }
         });
     }
@@ -348,7 +377,8 @@ public final class ReturnTypeUIHelper {
             if (selectItemLater) {
                 SwingUtilities.invokeLater(new Runnable() { // postpone item selection to enable event firing from JCombobox.setSelectedItem()
                     public void run() {
-                        populate(TEMP_TYPES, true, combo, "Object", false);
+                        setSelectedItem(combo, selectedType); 
+//                        populate(LVALUE_TYPES, true, combo, "Object", false);
                     }
                 });
             }

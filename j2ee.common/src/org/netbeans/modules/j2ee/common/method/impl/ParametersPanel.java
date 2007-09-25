@@ -20,6 +20,8 @@
 package org.netbeans.modules.j2ee.common.method.impl;
 
 import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -34,6 +36,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -56,7 +59,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
     
     private final ParamsTableModel tableModel;
 
-    public ParametersPanel(List<MethodModel.Variable> parameters) {
+    public ParametersPanel(ClasspathInfo cpInfo, List<MethodModel.Variable> parameters) {
         initComponents();
         
         tableModel = new ParamsTableModel(parameters);
@@ -64,9 +67,15 @@ public final class ParametersPanel extends javax.swing.JPanel {
         
         JComboBox typeCombo = new JComboBox();
         
-        ReturnTypeUIHelper.connect(typeCombo);
+        ReturnTypeUIHelper.connect(typeCombo, cpInfo);
         TableColumn typeTableColumn = table.getColumnModel().getColumn(COL_TYPE_INDEX);
         typeTableColumn.setCellEditor(new DefaultCellEditor(typeCombo));
+
+        typeCombo.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                tableModel.setValueAt(e.getItem(), table.getSelectedRow(), COL_TYPE_INDEX);
+            }
+        });
         
         table.setRowHeight(typeCombo.getPreferredSize().height);
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N

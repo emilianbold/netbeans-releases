@@ -23,6 +23,7 @@ import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
@@ -112,6 +113,7 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
         return MethodCustomizerFactory.finderMethod(
                 getTitle(),
                 methodModel, 
+                ClasspathInfo.create(fileObject),
                 ejbMethodController.hasRemote(), 
                 ejbMethodController.hasLocal(), 
                 methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
@@ -75,6 +76,7 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
         return MethodCustomizerFactory.selectMethod(
                 getTitle(),
                 methodModel,
+                ClasspathInfo.create(fileObject),
                 ejbMethodController.createDefaultQL(methodModel),
                 Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
                 );

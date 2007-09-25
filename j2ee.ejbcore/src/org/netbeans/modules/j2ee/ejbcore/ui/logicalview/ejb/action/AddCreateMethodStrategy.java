@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
@@ -73,6 +74,7 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
         return MethodCustomizerFactory.createMethod(
                 getTitle(),
                 methodModel, 
+                ClasspathInfo.create(fileObject),
                 ejbMethodController.hasRemote(), 
                 ejbMethodController.hasLocal(),
                 methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
