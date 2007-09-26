@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
 
-    <testbag testattribs="commit" executor="ide" name="Mobility Pack Validation">
+    <testbag testattribs="commit" executor="ide" name="Mobility Pack Validation" timeout="600000">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/mobility/NewProjectFileTest.class/testCreateNewMobileApplication"/>
