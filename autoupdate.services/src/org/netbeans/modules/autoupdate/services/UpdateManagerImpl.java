@@ -67,14 +67,14 @@ public class UpdateManagerImpl extends Object {
     
     public List<UpdateUnit> getUpdateUnits (UpdateManager.TYPE... types) {                
         final Cache c = getCache();        
-        return new ArrayList(filterUnitsByAskedTypes (c.getUnits(), type2checkedList (types))) {
+        return new ArrayList<UpdateUnit> (filterUnitsByAskedTypes (c.getUnits(), type2checkedList (types))) {
             Cache keepIt = c;
         };        
     }
         
     public Set<UpdateElement> getAvailableEagers () {
         final Cache c = getCache();        
-        return new HashSet(c.getAvailableEagers()) {
+        return new HashSet<UpdateElement> (c.getAvailableEagers()) {
             Cache keepIt = c;
         };        
     }
@@ -82,7 +82,7 @@ public class UpdateManagerImpl extends Object {
 
     public Set<UpdateElement> getInstalledEagers () {
         final Cache c = getCache();        
-        return new HashSet(c.getInstalledEagers()) {
+        return new HashSet<UpdateElement> (c.getInstalledEagers()) {
             Cache keepIt = c;
         };        
     }
@@ -95,16 +95,9 @@ public class UpdateManagerImpl extends Object {
         return getCache().getUpdateUnit(moduleCodeName);
     }
             
-    private Logger getLogger () {
-        if (logger == null) {
-            logger = Logger.getLogger (UpdateManagerImpl.class.getName ());
-        }
-        return logger;
-    }
-    
     public List<UpdateUnit> getUpdateUnits() {
         final Cache c = getCache();
-        return new ArrayList(c.getUnits()) {
+        return new ArrayList<UpdateUnit> (c.getUnits()) {
             Cache keepIt = c; 
         };
     }
@@ -150,7 +143,7 @@ public class UpdateManagerImpl extends Object {
         return retval;
     }        
 
-    public Reference<UpdateManagerImpl.Cache> getCacheReference() {        
+    Reference<UpdateManagerImpl.Cache> getCacheReference() {        
         synchronized(UpdateManagerImpl.Cache.class) {        
             return cacheReference;
         }
@@ -204,5 +197,6 @@ public class UpdateManagerImpl extends Object {
         public UpdateUnit getUpdateUnit (String moduleCodeName) {
             return units.get(moduleCodeName);
         }        
-    }    
+    }
 }
+    
