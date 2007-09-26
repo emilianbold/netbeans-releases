@@ -248,6 +248,7 @@
 			<tocitem text="Compiling a JSP File" target="jsp_compile" />
 			<tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
 			<tocitem text="Debugging a Web Application" target="debug_webapp" />
+                        <tocitem text="Profiling a Web Application" target="about_profilewebapp" />
 		</tocitem>
 	</tocitem>
 </toc>

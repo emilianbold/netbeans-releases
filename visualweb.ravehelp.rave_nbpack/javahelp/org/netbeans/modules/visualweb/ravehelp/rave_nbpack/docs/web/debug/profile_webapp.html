@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Profiling a Web Application</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Profiling a Web Application</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+<!--<p>There are two ways to profile an EJB module:</p>
+<ul>
+  <li>As a stand-alone EJB module</li>
+  <li>As part of an enterprise application</li>
+</ul>
+<p>If your web application is part of an enterprise application, you should always 
+    profile it by running the profile command on the enterprise application project. 
+    Since the IDE does not know which enterprise applications an EJB module project 
+    belongs to, running the Profile command on an EJB module project deploys it 
+    as a stand-alone module.</p>
+    
+    <p>If you are deploying your EJB module or enterprise application to a local installation
+    of the Sun Java System Application Server/GlassFish, you can profile your project by 
+    choosing Profile Main Project from the main menu or choosing Profile from the pop-up menu in the
+    Projects window.</p>
+    
+    <p>If you are deploying your EJB module or enterprise application to a remote server,
+    you need to attach the IDE to the remote server and profile the application in Attach mode.
+    The Attach Wizard can help you configure the remote server to accept attachment.</p>
+
+<p><b>To profile a stand-alone EJB module:</b></p>
+<ol>
+  <li>In the Projects window, right-click the EJB module project and choose Profile. </li>
+  <li>Select a profiling task and click Run.</li>
+</ol>
+<p>When you profile a stand-alone EJB module, the IDE does the following:</p>
+<ul>
+  <li>Compiles the EJB module if necessary.</li>
+  <li>Stops the application server and starts it in profile mode.</li>
+  <li>Deploys the EJB module to the application server.</li>
+  <li>Starts a profiling session, attaches the profiler to the server, and opens the Profiler window in the IDE. 
+    After the application is deployed to the server, you should invoke its code the same way as you would for debugging or 
+    just evaluating application functionality. 
+    You can use an application client or a web application to access the EJB and invoke its code. 
+    You can view the profiling data once the code of the application is invoked.</li>
+</ul>
+<p><b>To profile an enterprise application:</b></p>
+<ol>
+  <li>In the Projects window, right-click the enterprise application project and choose Profile.</li>
+  <li>Select a profiling task and click Run.</li>
+</ol>
+
+<ul class="note">
+    <li>If you are analyzing application performance, choose the Profile Projects &amp;
+    Subprojects Classes filter to ensure that the classes in your EJB module and
+    web module projects will be profiled. If you do not choose this filter, the classes in 
+    the EJB module and web module are not profiled.
+    <p>You can limit the classes in the enterprise application that are profiled by doing the following:</p>
+    <ol>
+        <li>In the Analyze Performance pane, choose the Profile Projects &amp;
+        Subprojects Classes filter and then click Show Filter Value.</li> 
+    <li>Click to Quickfilter in the dialog box.</li>
+    <li>In the Set Quick Filter dialog, select a filter type and edit the filter values
+        to limit the classes that are profiled and click OK.</li>
+    <li>Make sure that Quick Filter is selected in the Filter drop-down list when you run the profiling session.</li>
+    </ol></li>
+</ul>
+
+<p>When you profile an enterprise application, the IDE does the following:</p>
+<ul>
+  <li>Compiles the EAR file if necessary.</li>
+  <li>Stops the application server and starts it in profile mode.</li>
+  <li>Deploys the enterprise application to the application server.</li>
+  <li>Starts a profiling session, attaches the profiler to the server, and opens 
+    the Profiler window in the IDE. If the application has 
+    a designated web application and URL to run, the IDE opens the URL in the 
+    external browser.</li>
+</ul>-->
+
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/profile_quickref.html">Profiling Tasks: Quick Reference</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/custom_filtersets.html">Setting Profiling Filters</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/profile_remote.html">Profiling a Remote Application</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/profile_windows.html">Profiling Windows</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.profiler/org/netbeans/modules/profiler/docs/helppages/profile_tasks_overview.html">Selecting a Profiling Task</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>
