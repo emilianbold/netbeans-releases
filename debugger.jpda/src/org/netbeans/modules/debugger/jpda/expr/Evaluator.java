@@ -1050,8 +1050,8 @@ public class Evaluator implements JavaParserVisitor {
         }
         Assert.assertNonEmpty(possibleMethods, currentNode, "noSuchMethod", ctx);
         MethodCall call = mostSpecific(possibleMethods, args);
-        call = findConcrete(call);
         Assert.assertNotNull(call, currentNode, "ambigousMethod", ctx);
+        call = findConcrete(call);
         return call;
     }
     
