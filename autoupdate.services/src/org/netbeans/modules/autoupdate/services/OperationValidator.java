@@ -33,7 +33,6 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -171,7 +170,7 @@ abstract class OperationValidator {
                 if (m == null) {
                     continue;
                 }
-                if (! m.isFixed ()) {
+                if (! Utilities.isEssentialModule (m)) {
                     modules.add (m);
                 }
                 if (mm == null) {
@@ -180,7 +179,7 @@ abstract class OperationValidator {
             }
             Set<UpdateElement> retval = new HashSet<UpdateElement>();
             if (mm != null) {
-                Set<Module> toUninstall = requiredForUninstall (new HashSet<Module> (), new LinkedHashSet<Module> (modules), mm);
+                Set<Module> toUninstall = findRequiredModulesForDeactivate (modules, mm);
                 toUninstall.removeAll (modules);
                 for (Module module : toUninstall) {
                     if (Utilities.isEssentialModule (module)) {
@@ -197,23 +196,6 @@ abstract class OperationValidator {
             return new ArrayList<UpdateElement> (retval);
         }
         
-        private static Set<Module> requiredForUninstall (Set<Module> resultToUninstall, final Set<Module> requestedToUninstall, ModuleManager mm) {
-            boolean increasing = true;
-            Set<Module> possibleRequestedToUninstall = new HashSet<Module> (requestedToUninstall);
-            while (increasing) {
-                // do traversal up
-                Set<Module> dependenciesToUninstall = new HashSet<Module> ();
-                for (Module m : getRequiredModules (possibleRequestedToUninstall, mm)) {
-                    dependenciesToUninstall.addAll (Utilities.findDependingModules (m, mm));
-                }
-                increasing = possibleRequestedToUninstall.addAll (dependenciesToUninstall);
-                resultToUninstall.addAll(dependenciesToUninstall);
-            }
-
-            resultToUninstall.addAll (requestedToUninstall);
-            
-            return resultToUninstall;
-        }        
     }
     
     private static class UpdateValidator extends OperationValidator {
@@ -331,15 +313,15 @@ abstract class OperationValidator {
                 return Collections.emptyList ();
             } 
             
-            Set<Module> requestedToDisable = getRequiredModules (modules, mm);
+            Set<Module> requestedToDisable = findRequiredModulesForDeactivate (modules, mm);
 
             List<Module> toDisable = mm.simulateDisable (modules);
             boolean wasAdded = requestedToDisable.addAll (toDisable);
             
             // XXX why sometimes happens that no all module for deactivated found?
-            // assert ! wasAdded : "The requestedToDisable cannot be enlarged by " + toDisable;
+            assert ! wasAdded : "The requestedToDisable cannot be enlarged by " + toDisable;
             if (LOGGER.isLoggable (Level.FINE) && wasAdded) {
-                toDisable.removeAll (getRequiredModules (modules, mm));
+                toDisable.removeAll (filterCandidatesToDeactivate (modules, requestedToDisable, mm));
                 LOGGER.log (Level.FINE, "requestedToDisable was enlarged by " + toDisable);
             }
             
@@ -379,20 +361,30 @@ abstract class OperationValidator {
         }
     }
     
-    private static Set<Module> getRequiredModules (final Collection<Module> requested, ModuleManager mm) {
-        // loop over all dependencies and add as many as possible for KIT_MODULE
-        // do traversal down
-        Set<Module> candidates = new HashSet<Module> (requested);
-        for (Module m : requested) {
-            if (Utilities.isKitModule (m)) {
-                candidates.addAll (Utilities.findRequiredModules (m, mm, new HashSet<Module> ()));
-                LOGGER.log (Level.FINEST, "Inspect modules this module depends upon for KIT_MODULE " +
-                        m.getCodeNameBase () + ". The modules has added " + candidates.size ());
+    private static Set<Module> findRequiredModulesForDeactivate (final Set<Module> requestedToDeactivate, ModuleManager mm) {
+        // go up and find kits which depending on requestedToDeactivate modules
+        Set<Module> extendReqToDeactivate = new HashSet<Module> (requestedToDeactivate);
+        boolean inscreasing = true;
+        while (inscreasing) {
+            Set<Module> tmp = new HashSet<Module> (extendReqToDeactivate);
+            for (Module req : tmp) {
+                Set<Module> deps = Utilities.findDependingModules (req, mm);
+                inscreasing = extendReqToDeactivate.addAll (deps);
             }
         }
 
-        Set<Module> result = new HashSet<Module> (requested);
-        result.addAll (candidates);
+        // go down and find all modules (except for other kits) which can be deactivated
+        Set<Module> moreToDeactivate = new HashSet<Module> (extendReqToDeactivate);
+        for (Module req : extendReqToDeactivate) {
+            moreToDeactivate.addAll (Utilities.findRequiredModules (req, mm));
+        }
+
+        return filterCandidatesToDeactivate (extendReqToDeactivate, moreToDeactivate, mm);
+    }
+    
+    private static Set<Module> filterCandidatesToDeactivate (final Collection<Module> requested, final Collection<Module> candidates, ModuleManager mm) {
+        // go down and find all modules (except other kits) which can be deactivated
+        Set<Module> result = new HashSet<Module> (candidates);
         
         // create collection of all installed eagers
         Set<Module> installedEagers = new HashSet<Module> ();
@@ -406,25 +398,35 @@ abstract class OperationValidator {
         // add installedEagers into affected modules to don't break uninstall of candidates
         result.addAll (installedEagers);
         
-        candidates.removeAll (requested);
-        
         Set<Module> canSkip = new HashSet<Module> ();
+        Set<Module> affectedEagers = new HashSet<Module> ();
         for (Module depM : candidates) {
-            if (canSkip.contains (depM)) {
+            if ((Utilities.isKitModule (depM) || Utilities.isEssentialModule (depM)) && ! requested.contains (depM)) {
+                if (LOGGER.isLoggable (Level.FINE)) {
+                    LOGGER.log(Level.FINE, "The module " + depM.getCodeNameBase() +
+                        " is KIT_MODULE and won't be deactivated now not even " + Utilities.findRequiredModules(depM, mm));
+                }
+                canSkip.add (depM);
+                canSkip.addAll (Utilities.findRequiredModules(depM, mm));
+            } else if (canSkip.contains (depM)) {
                 LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " was investigated already and won't be deactivated now.");
             } else {
                 Set<Module> depends = Utilities.findDependingModules (depM, mm);
                 if (! result.containsAll (depends)) {
-                    canSkip.addAll (Utilities.findRequiredModules (depM, mm, new HashSet<Module> ()));
+                    canSkip.addAll (Utilities.findRequiredModules (depM, mm));
                     LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " is shared and cannot be deactivated now.");
                     if (LOGGER.isLoggable (Level.FINER)) {
                         Set<Module> outsideModules = new HashSet<Module> (depends);
                         outsideModules.removeAll (result);
-                        LOGGER.log (Level.FINER, "On " + depM.getCodeNameBase () + " depending modules outside of set now deactivateing modules: " + outsideModules);
+                        LOGGER.log (Level.FINER, "On " + depM.getCodeNameBase () + " depending modules outside of set now deactivating modules: " + outsideModules);
                     }
                     result.remove (depM);
                 } else {
                     LOGGER.log (Level.FINEST, "The module " + depM.getCodeNameBase () + " is not needed anymore and can be deactivated.");
+                    depends.retainAll (installedEagers);
+                    if (! depends.isEmpty ()) {
+                        affectedEagers.addAll (depends);
+                    }
                 }
             }
         }
@@ -432,6 +434,10 @@ abstract class OperationValidator {
         
         // removed eagers
         result.removeAll (installedEagers);
+        
+        // add only affected eagers again
+        LOGGER.log (Level.FINE, "Affected eagers are " + affectedEagers);
+        result.addAll (affectedEagers);
         
         return result;
     }

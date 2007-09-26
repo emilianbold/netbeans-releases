@@ -40,7 +40,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -785,7 +784,7 @@ public class Utilities {
      * @param m a module to start from; may be enabled or not, but must be owned by this manager
      * @return a set (possibly empty) of modules managed by this manager, never including m
      */
-    public static Set<Module> findRequiredModules (Module m, ModuleManager mm, Collection<Module> seen) {
+    public static Set<Module> findRequiredModules (Module m, ModuleManager mm) {
         synchronized (Utilities.class) {
             if (mapModule2requiredModules.get () == null) {
                 mapModule2requiredModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
@@ -793,23 +792,19 @@ public class Utilities {
             }
         }
         if (! mapModule2requiredModules.get ().containsKey (m)) {
-            mapModule2requiredModules.get ().put (m, doFindRequiredModules (m, mm, seen));
+            mapModule2requiredModules.get ().put (m, doFindRequiredModules (m, mm));
         }
         return mapModule2requiredModules.get ().get (m);
     }
 
-    private static Set<Module> doFindRequiredModules (Module m, ModuleManager mm, Collection<Module> seen) {
-        Set<Module> res = Collections.emptySet ();
-        if (! isEssentialModule (m) && ! seen.contains (m)) {
-            res = new HashSet<Module> ();
-            seen.add (m);
-            for (Object depO : mm.getModuleInterdependencies (m, false, false)) {
-                assert depO instanceof Module : depO + " is instanceof Module";
-                Module depM = (Module) depO;
-                if (! isEssentialModule (depM) && ! res.contains (depM)) {
-                    res.add (depM);
-                    res.addAll (findRequiredModules (depM, mm, seen));
-                }
+    private static Set<Module> doFindRequiredModules (Module m, ModuleManager mm) {
+        Set<Module> res = new HashSet<Module> ();
+        for (Object depO : mm.getModuleInterdependencies (m, false, false)) {
+            assert depO instanceof Module : depO + " is instanceof Module";
+            Module depM = (Module) depO;
+            res.add (depM);
+            if (! isEssentialModule (depM) && ! isKitModule (depM) && ! res.contains (depM)) {
+                res.addAll (findRequiredModules (depM, mm));
             }
         }
         return res;
@@ -817,12 +812,10 @@ public class Utilities {
     
     private static Set<Module> doFindDependingModules (Module m, ModuleManager mm) {
         Set<Module> res = new HashSet<Module> ();
-        for (Object depO : mm.getModuleInterdependencies (m, true, true)) {
+        for (Object depO : mm.getModuleInterdependencies (m, true, false)) {
             assert depO instanceof Module : depO + " is instanceof Module";
             Module depM = (Module) depO;
-            if (! depM.isEager ()) {
-                res.add(depM);
-            }
+            res.add(depM);
         }
         return res;
     }
