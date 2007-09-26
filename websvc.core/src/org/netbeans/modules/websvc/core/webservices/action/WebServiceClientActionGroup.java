@@ -30,6 +30,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -81,12 +82,14 @@ public class WebServiceClientActionGroup extends NodeAction implements Presenter
 		Node[] activatedNodes = getActivatedNodes();
 		DataObject dobj = (DataObject)activatedNodes[0].getLookup().lookup(DataObject.class);
 		if(dobj != null) {
-			WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(dobj.getPrimaryFile());
-			if(clientSupport != null) {
-				// !PW FIXME add code to confirm that the project actually has
-				// clients added to it.
-				return true;
-			}
+                    JAXWSClientSupport jaxWsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(dobj.getPrimaryFile());
+                    if (jaxWsClientSupport != null) return true;
+                    WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(dobj.getPrimaryFile());
+                    if(clientSupport != null) {
+                            // !PW FIXME add code to confirm that the project actually has
+                            // clients added to it.
+                            return true;
+                    }
 		}
 		return false;
 	}
