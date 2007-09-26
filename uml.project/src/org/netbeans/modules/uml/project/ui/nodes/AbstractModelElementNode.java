@@ -520,25 +520,42 @@ public abstract class AbstractModelElementNode extends AbstractNode
         {
             public void run()
             {
-                // Now actually do the delete of the model elements
-                for (final IElement curModelElement: modelElements)
-                {
-                        curModelElement.delete();
+                synchronized(deleteLock) { 
+                    if (inDelete) {
+                        EventQueue.invokeLater(this);
+                        return;
+                    } else {
+                        inDelete = true;
+                    }
                 }
-                
-                // Now whack the diagrams
-                final IProxyDiagramManager proxyDiagramManager =
+
+                try {
+                    // Now actually do the delete of the model elements
+                    for (final IElement curModelElement: modelElements)
+                    {
+                        curModelElement.delete();
+                    }
+                    
+                    // Now whack the diagrams
+                    final IProxyDiagramManager proxyDiagramManager =
                         ProxyDiagramManager.instance();
-                
-                for (final String curDiagramName: diagrams)
-                {
-                    proxyDiagramManager.removeDiagram(curDiagramName);
+                    
+                    for (final String curDiagramName: diagrams)
+                    {
+                        proxyDiagramManager.removeDiagram(curDiagramName);
+                    }
+                } finally {
+                    inDelete = false;
                 }
             }
         };
         
         EventQueue.invokeLater(runnable);
     }
+    
+    private static boolean inDelete = false;
+    private static Object deleteLock = new Object();
+
     
     public boolean canCut()
     {
