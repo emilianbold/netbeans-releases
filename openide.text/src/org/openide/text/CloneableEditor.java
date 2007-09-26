@@ -291,6 +291,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 //                    }
 
                     removeAll();
+                    customComponent = null;
+                    customToolbar = null;
+                    pane = null;
                     initialized = false;
                 }
             }
