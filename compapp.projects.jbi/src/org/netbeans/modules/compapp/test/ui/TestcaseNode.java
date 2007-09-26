@@ -165,7 +165,7 @@ public class TestcaseNode extends FilterNode {
             public void fileFolderCreated(FileEvent fe) {
                 FileObject fo = fe.getFile();
                 if (fo.getName().equals("results")) {   // FIXME  // NOI18N
-                    mTestResultsDir = fo;
+                    mTestResultsDir = fo;                    
                     mTestResultsDir.addFileChangeListener(mTestResultsDirChangeListener);
                 }
                 
@@ -274,20 +274,34 @@ public class TestcaseNode extends FilterNode {
         if (getName().equals(name)) {
             // if successful, we also need to update test case results 
             // directory name   
-            FileLock fileLock = null;
-            try {
-                fileLock = mTestCaseResultsDir.lock();
-                mTestCaseResultsDir.rename(fileLock, name, null);                
-            } catch (IOException ex) {
-                // revert back
-                super.setName(oldName);
-                
-                NotifyDescriptor d1 = new NotifyDescriptor.Message(ex.getMessage(),
-                        NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notify(d1);
-            } finally {
-                if (fileLock != null) {
-                    fileLock.releaseLock();
+            if (mTestResultsDir == null) {
+                return;
+            }
+            
+            if (mTestCaseResultsDir == null) {
+                mTestCaseResultsDir = mTestResultsDir.getFileObject(oldName);
+                if (mTestCaseResultsDir != null) {
+                    mTestCaseResultsDir.removeFileChangeListener(mTestCaseResultsDirChangeListener);
+                    mTestCaseResultsDir.addFileChangeListener(mTestCaseResultsDirChangeListener);
+                }
+            }
+            
+            if (mTestCaseResultsDir != null) {
+                FileLock fileLock = null;
+                try {
+                    fileLock = mTestCaseResultsDir.lock();
+                    mTestCaseResultsDir.rename(fileLock, name, null);                
+                } catch (IOException ex) {
+                    // revert back
+                    super.setName(oldName);
+
+                    NotifyDescriptor d1 = new NotifyDescriptor.Message(ex.getMessage(),
+                            NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d1);
+                } finally {
+                    if (fileLock != null) {
+                        fileLock.releaseLock();
+                    }
                 }
             }
         }
