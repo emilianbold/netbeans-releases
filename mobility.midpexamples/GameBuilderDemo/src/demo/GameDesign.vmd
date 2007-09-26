@@ -40,7 +40,7 @@
                 <Property name="layercd.prop.imageresource" typeID="Corg.netbeans.modules.vmd.game.model.ImageResource" value="R2"/>
                 <Property name="layercd.prop.tile.width" typeID="Pint" value="V16"/>
                 <Property name="layercd.prop.tile.height" typeID="Pint" value="V16"/>
-                <Property name="tiledlayercd.prop.tiles" typeID="P#TiledLayerTiles" value="V6,8,0,0,44,31,31,31,31,32,0,0,47,59,-1,59,-1,48,0,0,47,-1,59,61,64,45,0,0,38,-1,-1,40,0,0,44,31,62,-1,-1,48,0,0,46,64,64,64,64,45,0,0"/>
+                <Property name="tiledlayercd.prop.tiles" typeID="P#TiledLayerTiles" value="V6,8,0,0,44,31,31,31,31,32,0,0,47,59,-1,59,-1,48,0,0,47,59,59,61,64,45,0,0,47,59,59,48,0,0,44,31,62,59,59,48,0,0,46,64,64,64,64,45,0,0"/>
             </Component>
             <Component componentID="161" typeID="Corg.netbeans.modules.vmd.game.model.ImageResource">
                 <Property name="imageresourcecd.prop.name" typeID="Pjava.lang.String" value="Vplatform_tiles"/>
@@ -93,20 +93,20 @@
                     <Property name="sequncecd.prop.frame.height" typeID="Pint" value="V16"/>
                     <Property name="sequncecd.prop.zero.based.index" typeID="Pboolean" value="Vtrue"/>
                 </Component>
-                <Component componentID="69" typeID="Corg.netbeans.modules.vmd.game.model.Sequence">
-                    <Property name="sequncecd.prop.imageresource" typeID="Corg.netbeans.modules.vmd.game.model.ImageResource" value="R2"/>
-                    <Property name="sequncecd.prop.name" typeID="Pjava.lang.String" value="VKarelSeqWalkDown"/>
-                    <Property name="sequncecd.prop.framems" typeID="Pint" value="V150"/>
-                    <Property name="sequncecd.prop.frames" typeID="P#SequenceFrames" value="V4,88,89,90,91,"/>
-                    <Property name="sequncecd.prop.frame.width" typeID="Pint" value="V16"/>
-                    <Property name="sequncecd.prop.frame.height" typeID="Pint" value="V16"/>
-                    <Property name="sequncecd.prop.zero.based.index" typeID="Pboolean" value="Vtrue"/>
-                </Component>
                 <Component componentID="88" typeID="Corg.netbeans.modules.vmd.game.model.Sequence">
                     <Property name="sequncecd.prop.imageresource" typeID="Corg.netbeans.modules.vmd.game.model.ImageResource" value="R2"/>
                     <Property name="sequncecd.prop.name" typeID="Pjava.lang.String" value="VKarelSeqWalkSide"/>
                     <Property name="sequncecd.prop.framems" typeID="Pint" value="V150"/>
                     <Property name="sequncecd.prop.frames" typeID="P#SequenceFrames" value="V4,100,101,102,103,"/>
+                    <Property name="sequncecd.prop.frame.width" typeID="Pint" value="V16"/>
+                    <Property name="sequncecd.prop.frame.height" typeID="Pint" value="V16"/>
+                    <Property name="sequncecd.prop.zero.based.index" typeID="Pboolean" value="Vtrue"/>
+                </Component>
+                <Component componentID="69" typeID="Corg.netbeans.modules.vmd.game.model.Sequence">
+                    <Property name="sequncecd.prop.imageresource" typeID="Corg.netbeans.modules.vmd.game.model.ImageResource" value="R2"/>
+                    <Property name="sequncecd.prop.name" typeID="Pjava.lang.String" value="VKarelSeqWalkDown"/>
+                    <Property name="sequncecd.prop.framems" typeID="Pint" value="V150"/>
+                    <Property name="sequncecd.prop.frames" typeID="P#SequenceFrames" value="V4,88,89,90,91,"/>
                     <Property name="sequncecd.prop.frame.width" typeID="Pint" value="V16"/>
                     <Property name="sequncecd.prop.frame.height" typeID="Pint" value="V16"/>
                     <Property name="sequncecd.prop.zero.based.index" typeID="Pboolean" value="Vtrue"/>

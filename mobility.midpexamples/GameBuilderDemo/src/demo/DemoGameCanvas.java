@@ -118,9 +118,9 @@ public class DemoGameCanvas extends GameCanvas implements Runnable {
     public boolean spriteCollides(Sprite sprite) {
         return sprite.collidesWith(
             sprite == this.spriteKarel ? this.spriteThomas : this.spriteKarel, true) 
-            || sprite.collidesWith(this.tlThings, false) 
-            || sprite.collidesWith(this.tlTrees, false) 
-            || sprite.collidesWith(this.tlWater, false) 
+            || sprite.collidesWith(this.tlThings, true) 
+            || sprite.collidesWith(this.tlTrees, true) 
+            || sprite.collidesWith(this.tlWater, true) 
             || sprite.getX() < 0 || sprite.getY() < 0 
             || sprite.getX() > (this.tlBase.getWidth() - sprite.getWidth()) 
             || sprite.getY() > (this.tlBase.getHeight() - sprite.getHeight()
