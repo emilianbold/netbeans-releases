@@ -169,6 +169,8 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
         getModuleListModel().removeModules(Arrays.asList(moduleList.getSelectedValues()));
         if (moduleList.getModel().getSize() > 0) {
             moduleList.setSelectedIndex(0);
+        } else {
+            removeModuleButton.setEnabled(false);
         }
         moduleList.requestFocus();
     }//GEN-LAST:event_removeModule
