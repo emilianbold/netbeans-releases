@@ -113,7 +113,7 @@ if ! ant -f nbbuild/build.xml -Dsigtest.check.type=check -Dsigtest.output.dir=`p
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
         echo; 
-        cat `pwd`/$sigtest_incompat_gen.log
+        cat `pwd`/$sigtest_incompat_gen/*
     ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
 fi
 
