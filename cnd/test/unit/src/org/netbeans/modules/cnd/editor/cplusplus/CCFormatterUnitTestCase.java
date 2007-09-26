@@ -27,6 +27,7 @@ import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
  * @author Alexander Simon
  */
 public class CCFormatterUnitTestCase extends BaseDocumentUnitTestCase {
+    private boolean isCPP = true;
     
     public CCFormatterUnitTestCase(String testMethodName) {
         super(testMethodName);
@@ -34,9 +35,17 @@ public class CCFormatterUnitTestCase extends BaseDocumentUnitTestCase {
     
     @Override
     protected EditorKit createEditorKit() {
-        return new CCKit();
+        if (isCPP) {
+            return new CCKit();
+        } else {
+            return new CKit();
+        }
     }
 
+    protected void setCppEditorKit(boolean isCPP){
+        this.isCPP = isCPP;
+    }
+    
     /**
      * Perform new-line insertion followed by indenting of the new line
      * by the formatter.
