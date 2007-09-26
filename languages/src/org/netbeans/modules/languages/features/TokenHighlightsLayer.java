@@ -95,6 +95,8 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
                     if (!ts.moveNext ())
                         return endOffset1 > startOffset1;
                     Token t = ts.token ();
+                    if (ts.language () == null)
+                        throw new NullPointerException ("ts.language()==null: TS " + ts + " : " + document.getProperty("mimeType"));
                     ASTToken stoken = ASTToken.create (
                         ts.language ().mimeType (),
                         t.id ().name (),
