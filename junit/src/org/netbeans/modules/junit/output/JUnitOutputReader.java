@@ -78,8 +78,6 @@ final class JUnitOutputReader {
     private static final int PROGRESS_WORKUNITS = (1 << 15) / 100 * 100;    //sqrt(Integer.MAX), rounded down to hundreds
     /** */
     private static final int INITIAL_PROGRESS = PROGRESS_WORKUNITS / 100;
-    /** */
-    private static final int UPDATE_DELAY = 300;    //milliseconds
     
     /** */
     private static final String XML_FORMATTER_CLASS_NAME
