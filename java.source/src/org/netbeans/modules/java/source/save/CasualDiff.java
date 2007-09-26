@@ -787,8 +787,14 @@ public class CasualDiff {
         
         if (oldT.finalizer != null) {
             int[] finalBounds = getBounds(oldT.finalizer);
-            copyTo(localPointer, finalBounds[0]);
-            localPointer = diffTree(oldT.finalizer, newT.finalizer, finalBounds);
+            if (newT.finalizer != null) {
+                copyTo(localPointer, finalBounds[0]);
+                localPointer = diffTree(oldT.finalizer, newT.finalizer, finalBounds);
+            } else {
+                int endetHier = oldT.catchers.isEmpty() ? endPos(oldT.body) : endPos(oldT.catchers);
+                copyTo(localPointer, endetHier);
+                localPointer = finalBounds[1];
+            }
         }
         copyTo(localPointer, bounds[1]);
 
