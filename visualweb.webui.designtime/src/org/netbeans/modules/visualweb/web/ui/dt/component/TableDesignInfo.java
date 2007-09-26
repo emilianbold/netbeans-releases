@@ -283,7 +283,6 @@ public class TableDesignInfo extends AbstractDesignInfo implements MarkupTableDe
                 oldColumnWidth = Integer.parseInt((String)designProperty.getValue());
             }catch(Exception exc){
             }
-            TableDesignHelper.adjustTableWidth(tableBean, oldColumnWidth, columnWidth);
             designProperty.setValue(String.valueOf(columnWidth));
         }
         return Result.SUCCESS;

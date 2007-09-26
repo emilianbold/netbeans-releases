@@ -68,7 +68,7 @@ public class TableColumnDesignInfo extends AbstractDesignInfo {
 
     public Result beanCreatedSetup(DesignBean tableColumnBean) {
         int colNo = tableColumnBean.getBeanParent().getChildBeanCount();
-        String columnHeaderText = DesignMessageUtil.getMessage(TableColumnDesignInfo.class,"tableColumn.headerText", new Object[] {String.valueOf(colNo)});
+        String columnHeaderText = DesignMessageUtil.getMessage(TableColumnDesignInfo.class, "tableColumn.headerText", new Object[]{String.valueOf(colNo)});
         DesignProperty headerTextProperty = tableColumnBean.getProperty("headerText"); //NOI18N
         headerTextProperty.setValue(columnHeaderText);
         DesignProperty widthProperty = tableColumnBean.getProperty("width"); //NOI18N
@@ -87,12 +87,13 @@ public class TableColumnDesignInfo extends AbstractDesignInfo {
         // Adjust table width if table column width is et in pixels
         int oldColumnWidth = -1;
         Object oldValue = bean.getProperty(WIDTH_PROPERTY).getValue();
-        if(oldValue != null){
-            String oldColumnWidthStr = (String)oldValue;
-            if (oldColumnWidthStr.indexOf("%") == -1) { //NOI18N
-                try{
+        if (oldValue != null) {
+            String oldColumnWidthStr = (String) oldValue;
+            if (oldColumnWidthStr.indexOf("%") == -1) {
+                //NOI18N
+                try {
                     oldColumnWidth = Integer.parseInt(oldColumnWidthStr);
-                }catch(Exception exc){
+                } catch (Exception exc) {
                 }
             }
         }
@@ -107,28 +108,12 @@ public class TableColumnDesignInfo extends AbstractDesignInfo {
      * Accept only StaticText, Button or Field as Child
      */
     public boolean acceptChild(DesignBean parentBean, DesignBean childBean, Class childClass) {
-        if(childClass.isAssignableFrom(StaticText.class) ||
-                //childClass.isAssignableFrom(TableColumn.class) ||
-                childClass.isAssignableFrom(Button.class) ||
-                childClass.isAssignableFrom(TextField.class) ||
-                childClass.isAssignableFrom(TextArea.class) ||
-                childClass.isAssignableFrom(StaticText.class) ||
-                childClass.isAssignableFrom(Label.class) ||
-                childClass.isAssignableFrom(DropDown.class) ||
-                childClass.isAssignableFrom(Hyperlink.class) ||
-                childClass.isAssignableFrom(ImageHyperlink.class) ||
-                childClass.isAssignableFrom(Checkbox.class) ||
-                childClass.isAssignableFrom(RadioButton.class) ||
-                childClass.isAssignableFrom(ImageComponent.class) ||
-                //childClass.isAssignableFrom(RadioButtonGroup.class) ||
-                //childClass.isAssignableFrom(CheckboxGroup.class) ||
-                childClass.isAssignableFrom(PanelGroup.class) ||
-                childClass.isAssignableFrom(Message.class)){
+        if (childClass.isAssignableFrom(StaticText.class) || childClass.isAssignableFrom(Button.class) || childClass.isAssignableFrom(TextField.class) || childClass.isAssignableFrom(TextArea.class) || childClass.isAssignableFrom(StaticText.class) || childClass.isAssignableFrom(Label.class) || childClass.isAssignableFrom(DropDown.class) || childClass.isAssignableFrom(Hyperlink.class) || childClass.isAssignableFrom(ImageHyperlink.class) || childClass.isAssignableFrom(Checkbox.class) || childClass.isAssignableFrom(RadioButton.class) || childClass.isAssignableFrom(ImageComponent.class) || childClass.isAssignableFrom(PanelGroup.class) || childClass.isAssignableFrom(Message.class)) {
             return true;
         }
         return false;
     }
-    
+
     /**
      * {@inheritDoc}
      * Accept only TableRowGroup as Parent
@@ -136,7 +121,7 @@ public class TableColumnDesignInfo extends AbstractDesignInfo {
     public boolean acceptParent(DesignBean parentBean, DesignBean childBean, Class parentClass) {
         return parentBean.getInstance().getClass().isAssignableFrom(TableRowGroup.class);
     }
-    
+
     /**
      * Accept only Reult Set (may be not required in future) or  TableDataProvider as links
      *
@@ -145,48 +130,30 @@ public class TableColumnDesignInfo extends AbstractDesignInfo {
     public boolean acceptLink(DesignBean targetBean, DesignBean sourceBean, Class sourceClass) {
         return false;
     }
-    
+
     /**
      * TBD - remove the earlier child and add the source bean as child
      *
      * {@inheritDoc}
      */
-    
     public Result linkBeans(DesignBean targetBean, DesignBean sourceBean) {
         System.out.println(targetBean);
         System.out.println(sourceBean);
         return Result.SUCCESS;
     }
-    
+
     /**
      * Modify the width of the table if the column width changes
      */
     public void propertyChanged(DesignProperty property, Object oldValue) {
         String propertyName = property.getPropertyDescriptor().getName();
-        if(propertyName.equals(WIDTH_PROPERTY)){
-            String columnWidth = (String)property.getValue();
-            if(columnWidth != null){
+        if (propertyName.equals(WIDTH_PROPERTY)) {
+            String columnWidth = (String) property.getValue();
+            if (columnWidth != null) {
                 // If not a percentage, units are in pixels.
                 // Ajust the table width only if the column width is specified in pixles
-                if (columnWidth.indexOf("%") == -1){
-                    int oldColumnWidth = -1;
-                    if(oldValue != null){
-                        String oldColumnWidthStr = (String)oldValue;
-                        if (oldColumnWidthStr.indexOf("%") == -1) { //NOI18N
-                            try{
-                                oldColumnWidth = Integer.parseInt(oldColumnWidthStr);
-                            }catch(Exception exc){
-                            }
-                        }
-                    }
-                    int newColumnWidth = -1;
-                    try{
-                        newColumnWidth = Integer.parseInt(columnWidth);
-                    }catch(Exception exc){
-                    }
-                    //System.out.println("Adjusting Width of column - " + columnName);
-                    // Adjust the table width to accomodate the change in width of the table column
-                    TableDesignHelper.adjustTableWidth(property.getDesignBean().getBeanParent().getBeanParent(), oldColumnWidth, newColumnWidth);
+                if (columnWidth.indexOf("%") == -1) {
+                    TableDesignHelper.adjustTableWidth(property.getDesignBean().getBeanParent());
                 }
             }
         }
