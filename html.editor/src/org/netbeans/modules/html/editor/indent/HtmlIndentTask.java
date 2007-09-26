@@ -35,12 +35,9 @@ import org.netbeans.spi.editor.indent.IndentTask;
  *
  * @author Marek Fukala
  */
-
-
 public class HtmlIndentTask implements IndentTask {
 
     private Context context;
-    private static HTMLLexerFormatter formatter = null;
 
     HtmlIndentTask(Context context) {
         this.context = context;
@@ -54,18 +51,15 @@ public class HtmlIndentTask implements IndentTask {
         return null;
     }
 
-    //private synchronized HTMLLexerFormatter getFormatter() {
-    private synchronized HTMLLexerFormatter getFormatter() {
-        if (formatter == null) {
-            String topLevelLang = NbEditorUtilities.getMimeType(context.document());
-            LanguagePath languagePath = LanguagePath.get(Language.find(topLevelLang));
-            
-            if (!"text/html".equals(topLevelLang)) {
-                languagePath = LanguagePath.get(languagePath, Language.find("text/html")); //NOI18N
-            }
+    private HTMLLexerFormatter getFormatter() {
 
-            formatter = new HTMLLexerFormatter(HTMLKit.class, languagePath);
+        String topLevelLang = NbEditorUtilities.getMimeType(context.document());
+        LanguagePath languagePath = LanguagePath.get(Language.find(topLevelLang));
+
+        if (!"text/html".equals(topLevelLang)) {
+            languagePath = LanguagePath.get(languagePath, Language.find("text/html")); //NOI18N
         }
-        return formatter;
+
+        return new HTMLLexerFormatter(HTMLKit.class, languagePath);
     }
 }
