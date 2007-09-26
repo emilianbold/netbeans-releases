@@ -177,18 +177,6 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             for (int i = firstTagLine + 1; i <= lastTagLine; i++) {
                 indentsWithinTags[i] = indentWithinTag;
             }
-
-            // if there is only the closing symbol on the last line of tag do not indent it
-            thereAreMoreTokens &= tokenSequence.moveNext();
-
-            while (Utilities.getLineOffset(doc, tokenSequence.offset()) < lastTagLine || isWSToken(tokenSequence.token())) {
-
-                tokenSequence.moveNext();
-            }
-
-            if (tokenSequence.offset() == tagEndOffset) {
-                indentsWithinTags[lastTagLine] = 0;
-            }
         }
 
         return thereAreMoreTokens;
@@ -722,11 +710,23 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
         public InitialIndentData(BaseDocument doc, int[] indentLevels, int[] indentsWithinTags, int firstRefBlockLine, int lastRefBlockLine) throws BadLocationException {
 
-            int initialIndent = getInitialIndentFromPreviousLine(doc, firstRefBlockLine);
-            int indentLevelBiasFromTheTop = initialIndent / doc.getShiftWidth() - (firstRefBlockLine > 0 ? indentLevels[firstRefBlockLine - 1] : 0);
+            boolean thereIsALineBeforeSelection = firstRefBlockLine > 0;
+            
+            int initialIndent = getInitialIndentFromPreviousLine(doc, firstRefBlockLine) 
+                    - (thereIsALineBeforeSelection ? indentsWithinTags[firstRefBlockLine - 1] : 0);
+            
+            int indentLevelBiasFromTheTop = thereIsALineBeforeSelection ?
+                initialIndent / doc.getShiftWidth() - indentLevels[firstRefBlockLine - 1]
+                : initialIndent / doc.getShiftWidth();
 
-            int initialIndentFromTheBottom = getInitialIndentFromNextLine(doc, lastRefBlockLine);
-            int indentLevelBiasFromTheBottom = initialIndentFromTheBottom / doc.getShiftWidth() - (lastRefBlockLine < getNumberOfLines(doc) - 1 ? indentLevels[lastRefBlockLine + 1] : 0);
+            boolean thereIsALineBehindSelection = lastRefBlockLine + 1 < getNumberOfLines(doc);
+            
+            int initialIndentFromTheBottom = getInitialIndentFromNextLine(doc, lastRefBlockLine) 
+                    - (thereIsALineBehindSelection ? indentsWithinTags[lastRefBlockLine + 1] : 0);
+            
+            int indentLevelBiasFromTheBottom = thereIsALineBehindSelection ?
+                initialIndentFromTheBottom / doc.getShiftWidth() - indentLevels[lastRefBlockLine + 1]
+                : initialIndentFromTheBottom / doc.getShiftWidth();
 
             if (indentLevelBiasFromTheBottom > indentLevelBiasFromTheTop) {
                 indentLevelBias = indentLevelBiasFromTheBottom;
