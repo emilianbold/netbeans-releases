@@ -118,45 +118,46 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                     return;
                 }                    
 
-                children = repositoryPathNode.getChildren();
-                if(children != null && children.getNodesCount() > 0) {
-                    childNodes = children.getNodes();
-                    for (int i = 0; i < childNodes.length; i++) {
-                        if(childNodes[i].getDisplayName().equals(newDir)) {
+                RepositoryFile parentFile = repositoryPathNode.getEntry().getRepositoryFile();                    
+                Node segmentNode = repositoryPathNode;
+                String[] segments = newDir.split("/"); // NOI18N
+                boolean allNodesExists = true;
+                for (int i = 0; i < segments.length; i++) {                                                
+                    
+                    RepositoryFile newFile = parentFile.appendPath(segments[i]);
+                        
+                    Node nextChildNode = segmentNode.getChildren().findChild(segments[i]);
+                    if(nextChildNode != null) {
+                        segmentNode = nextChildNode;
+                    } else {
+                        allNodesExists = false;
+                        RepositoryPathEntry entry = new RepositoryPathEntry(newFile, SVNNodeKind.DIR, new SVNRevision(0), new Date(System.currentTimeMillis()), ""); // XXX get author
+                        Node node = RepositoryPathNode.createNewBrowserNode(getBrowser(), entry);                                                
+                        segmentNode.getChildren().add(new Node[] {node});
+                        segmentNode = node;
+                    }
+                    parentFile = newFile;
+
+                    if( i == segments.length - 1 ) {
+                        
+                        if(allNodesExists) {
                             JButton ok = new JButton(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_OK"));
                             NotifyDescriptor descriptor = new NotifyDescriptor(
                                     org.openide.util.NbBundle.getMessage(CreateFolderAction.class, "MSG_Browser_FolderExists", newDir), // NOI18N
-                                    java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("MSG_Browser_WrongFolerName"), // NOI18N
+                                    org.openide.util.NbBundle.getMessage(CreateFolderAction.class, "MSG_Browser_WrongFolerName"), // NOI18N
                                     NotifyDescriptor.DEFAULT_OPTION,
                                     NotifyDescriptor.ERROR_MESSAGE,
                                     new Object [] { ok },
                                     ok);
                             DialogDisplayer.getDefault().notify(descriptor);        
-                            return;
                         }
-                    }
-                }
-
-                RepositoryFile parentFile = repositoryPathNode.getEntry().getRepositoryFile();                    
-                Node segmentNode = repositoryPathNode;
-                String[] segments = newDir.split("/"); // NOI18N
-                for (int i = 0; i < segments.length; i++) {                                                
-                    
-                    RepositoryFile newFile = parentFile.appendPath(segments[i]);
-                    RepositoryPathEntry entry = new RepositoryPathEntry(newFile, SVNNodeKind.DIR, new SVNRevision(0), new Date(System.currentTimeMillis()), ""); // XXX gget author
-                    Node node = RepositoryPathNode.createNewBrowserNode(getBrowser(), entry);    
-                    Node[] newChild = new Node[] {node};
-                    segmentNode.getChildren().add(newChild);    
-                    segmentNode = node;
-                    parentFile = newFile;
-
-                    if( i == segments.length - 1 ) {
+                        
                         // we are done, select the node ...
                         try {
-                            setSelectedNodes(newChild);
+                            setSelectedNodes(new Node[] {segmentNode});
                         } catch (PropertyVetoException ex) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
-                        }                                          
+                        }
                     }                            
                 }                                                            
             }
