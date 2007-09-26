@@ -22,10 +22,12 @@ package org.openide.nodes;
 import java.awt.event.ActionEvent;
 import java.beans.*;
 import java.util.*;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import junit.textui.TestRunner;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
@@ -66,6 +68,24 @@ public class NodeTest extends NbTestCase {
         assertEquals ("getActions(false) properly delegates to getActions()", arr1, an.getActions (false));
         assertEquals ("getActions(true) properly delegates to getContextActions()", arr2, an.getActions (true));
         
+    }
+    
+    public void testCanCallNodeSetChildrenFromReadAccess() throws Exception {
+        CharSequence log = Log.enable("global`", Level.WARNING);
+        class Mn extends AbstractNode implements Runnable {
+            public Mn() {
+                super(Children.LEAF);
+            }
+
+            public void run() {
+                setChildren(new Children.Array());
+            }
+        }
+        Mn mn = new Mn();
+        
+        Children.MUTEX.readAccess(mn);
+        
+        assertEquals("Log is empty", "", log.toString());
     }
     
     public void testPreferredAction() throws Exception {
