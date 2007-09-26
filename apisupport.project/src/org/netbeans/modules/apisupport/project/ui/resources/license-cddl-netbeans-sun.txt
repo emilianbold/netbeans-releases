@@ -1,18 +1,29 @@
 <#if licenseFirst??>
 ${licenseFirst}
 </#if>
-${licensePrefix}The contents of this file are subject to the terms of the Common Development
-${licensePrefix}and Distribution License (the License). You may not use this file except in
-${licensePrefix}compliance with the License.
+${licensePrefix}DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 ${licensePrefix}
-${licensePrefix}You can obtain a copy of the License at http://www.netbeans.org/cddl.html
-${licensePrefix}or http://www.netbeans.org/cddl.txt.
+${licensePrefix}Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 ${licensePrefix}
-${licensePrefix}When distributing Covered Code, include this CDDL Header Notice in each file
-${licensePrefix}and include the License file at http://www.netbeans.org/cddl.txt.
-${licensePrefix}If applicable, add the following below the CDDL Header, with the fields
-${licensePrefix}enclosed by brackets [] replaced by your own identifying information:
+${licensePrefix}The contents of this file are subject to the terms of either the GNU
+${licensePrefix}General Public License Version 2 only ("GPL") or the Common
+${licensePrefix}Development and Distribution License("CDDL") (collectively, the
+${licensePrefix}"License"). You may not use this file except in compliance with the
+${licensePrefix}License. You can obtain a copy of the License at
+${licensePrefix}http://www.netbeans.org/cddl-gplv2.html
+${licensePrefix}or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+${licensePrefix}specific language governing permissions and limitations under the
+${licensePrefix}License.  When distributing the software, include this License Header
+${licensePrefix}Notice in each file and include the License file at
+${licensePrefix}nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+${licensePrefix}particular file as subject to the "Classpath" exception as provided
+${licensePrefix}by Sun in the GPL Version 2 section of the License file that
+${licensePrefix}accompanied this code. If applicable, add the following below the
+${licensePrefix}License Header, with the fields enclosed by brackets [] replaced by
+${licensePrefix}your own identifying information:
 ${licensePrefix}"Portions Copyrighted [year] [name of copyright owner]"
+${licensePrefix}
+${licensePrefix}Contributor(s):
 ${licensePrefix}
 ${licensePrefix}Portions Copyrighted ${date?date?string("yyyy")} Sun Microsystems, Inc.
 <#if licenseLast??>
