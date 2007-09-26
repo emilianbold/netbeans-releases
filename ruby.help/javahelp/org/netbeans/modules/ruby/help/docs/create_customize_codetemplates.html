@@ -68,7 +68,13 @@ has been added to your code.
     </tr>
     <tr valign="top" class="wikitable" >
       <td><tt> ${selection} </tt> </td>
-      <td> Defines a position for pasting a content of the editor selection. Used by so called 'selection templates' that appear as hints whenever user selects some text in the editor. (See the "Surround With" section below.)</td>
+      <td> Defines a position for pasting a content of the editor selection. Used by <i>selection templates</i>, which appear as hints whenever you select some text in the editor (see next item).</td>
+    </tr>
+    <tr valign="top" class="wikitable" >
+      <td><tt> ${selection line allowSurround} </tt> </td>
+      <td> Defines a selection template by using the <tt>allowSurround</tt> parameter. When there is an editor selection, a lightbulb is presented to the
+user, and all the surround-with code templates are listed as possible
+fixes.</td>
     </tr>
     <tr valign="top" class="wikitable">
       <td><tt> ${<i>param_name</i> default="value"} </tt> </td>
