@@ -150,8 +150,19 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     
     protected Node[] createNodes(CsmProject project) {
         //System.out.println("Create project"); // NOI18N
-        return new Node[] {new ProjectNode(project,
-                new NamespaceKeyArray(childrenUpdater,project.getGlobalNamespace()))};
+        Node node = null;
+        try {
+            node = new ProjectNode(project,
+                   new NamespaceKeyArray(childrenUpdater,project.getGlobalNamespace()));
+        } catch (AssertionError ex){
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        if (node != null) {
+            return new Node[] {node};
+        }
+        return new Node[0];
     }
     
     @Override
