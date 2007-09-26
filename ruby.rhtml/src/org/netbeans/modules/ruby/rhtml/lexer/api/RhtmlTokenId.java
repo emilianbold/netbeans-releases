@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.ruby.rhtml.lexer.api;
 
-import org.netbeans.modules.ruby.rhtml.lexer.*;
-import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
-import org.netbeans.modules.ruby.rhtml.*;
 import org.netbeans.modules.ruby.rhtml.lexer.RhtmlLexer;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -81,6 +78,7 @@ public enum RhtmlTokenId implements TokenId {
             return EnumSet.allOf(RhtmlTokenId.class);
         }
         
+        @Override
         protected Map<String,Collection<RhtmlTokenId>> createTokenCategories() {
             return null;
         }

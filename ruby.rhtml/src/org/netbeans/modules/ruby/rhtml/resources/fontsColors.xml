@@ -27,4 +27,5 @@ Microsystems, Inc. All Rights Reserved.
     </fontcolor>
     <fontcolor name="html" default="default"/>
     <fontcolor name="ruby" bgColor="ffD8EED2" default="default"/>
+    <fontcolor name="RUBYCOMMENT" bgColor="ffD8EED2" default="comment"/>
 </fontscolors>
