@@ -225,8 +225,8 @@ public final class ContextualPatch {
         for (String hunkLine : hunk.lines) {
             boolean isAddition = isAdditionLine(hunkLine);
             if (!isAddition) {
-                String targetLine = target.get(idx);
-                if (!targetLine.equals(hunkLine.substring(1))) {
+                String targetLine = target.get(idx).trim();
+                if (!targetLine.equals(hunkLine.substring(1).trim())) { // be optimistic, compare trimmed context lines
                     if (dryRun) {
                         return false;
                     } else {
@@ -423,6 +423,7 @@ public final class ContextualPatch {
         List<Hunk> hunks = new ArrayList<Hunk>();
         Hunk hunk = null;
 
+        int lineCount = -1;
         for (;;) {
             String line = readPatchLine();
             if (line == null || line.length() == 0 || line.startsWith("Index:")) {
@@ -433,12 +434,18 @@ public final class ContextualPatch {
                 parseContextRange(hunk, readPatchLine());
                 hunks.add(hunk);
             } else if (line.startsWith("--- ")) {
+                lineCount = 0;
                 parseContextRange(hunk, line);
                 hunk.lines.add(line);
             } else {
                 char c = line.charAt(0);
                 if (c == ' ' || c == '+' || c == '-' || c == '!') {
-                    hunk.lines.add(line);
+                    if (lineCount < hunk.modifiedCount) {
+                        hunk.lines.add(line);
+                        if (lineCount != -1) {
+                            lineCount++;
+                        }
+                    }
                 } else {
                     throw new PatchException("Invalid hunk line: " + line);
                 }
