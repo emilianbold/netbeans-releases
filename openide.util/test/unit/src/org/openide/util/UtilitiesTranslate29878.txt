@@ -10,7 +10,9 @@ org.openide.util.actions.SystemAction=org.openide.util.actions.SystemAction
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/autoload/core-output.jar!/META-INF/netbeans/translate.names
 
-# The contents of this file are subject to the terms of the Common Development
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 # and Distribution License (the License). You may not use this file except in
 # compliance with the License.
 #
