@@ -280,6 +280,8 @@ public class OperationGenerator implements Command {
     
     private Message createAndAddMessage(List<PartAndElementOrTypeTableModel.PartAndElementOrType> inputMessageParts) {
         Message msg = this.mModel.getFactory().createMessage();
+        this.mModel.getDefinitions().addMessage(msg);
+        mNewMessageList.add(msg);
         
         if(inputMessageParts != null) {
             Iterator<PartAndElementOrTypeTableModel.PartAndElementOrType> it = inputMessageParts.iterator();
@@ -309,8 +311,6 @@ public class OperationGenerator implements Command {
                 }
             }
         }
-        this.mModel.getDefinitions().addMessage(msg);
-        mNewMessageList.add(msg);
         return msg;
     }
     

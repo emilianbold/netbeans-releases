@@ -59,7 +59,7 @@ public class CreateBindingFromOperationAction extends CommonNodeAction {
         if (activatedNodes != null) {
             for (int i = 0; i < activatedNodes.length; i++) {
                 Node node = activatedNodes[i];
-                CreateBindingFromOperationCookie cookie = (CreateBindingFromOperationCookie) node.getCookie(CreateBindingFromOperationCookie.class);
+                CreateBindingFromOperationCookie cookie = node.getCookie(CreateBindingFromOperationCookie.class);
                 if (cookie != null) {
                     Operation operation = cookie.getOperation();
                     WSDLModel model = operation.getModel();
@@ -69,11 +69,12 @@ public class CreateBindingFromOperationAction extends CommonNodeAction {
                     Binding binding = model.getFactory().createBinding();
                     String bindingName = NameGenerator.getInstance().generateUniqueBindingName(model, portType.getName());
                     binding.setName(bindingName);
+                    model.getDefinitions().addBinding(binding);
                     binding.setType(binding.createReferenceTo(portType, PortType.class));
                     BindingOperation bo = model.getFactory().createBindingOperation();
                     bo.setName(operation.getName());
-                    bo.setOperation(bo.createReferenceTo(operation, Operation.class));
                     binding.addBindingOperation(bo);
+                    bo.setOperation(bo.createReferenceTo(operation, Operation.class));
                     Input input = operation.getInput();
                     if (input != null) {
                         BindingInput ip = model.getFactory().createBindingInput();
@@ -96,7 +97,6 @@ public class CreateBindingFromOperationAction extends CommonNodeAction {
                             bo.addBindingFault(bf);
                         }
                     }
-                    model.getDefinitions().addBinding(binding);
                     model.endTransaction();
                 }
                 

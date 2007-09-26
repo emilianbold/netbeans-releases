@@ -101,9 +101,9 @@ public class BindingGenerator implements Command {
             Binding b = mModel.getFactory().createBinding();
             this.mBinding = b;
             b.setName(bindingName);
+            mModel.getDefinitions().addBinding(b);
             NamedComponentReference<PortType> ptRef = b.createReferenceTo(this.mPortType, PortType.class);
             b.setType(ptRef);
-            mModel.getDefinitions().addBinding(b);
             
             //Not used LocalizedTemplateGroup bindingType = (LocalizedTemplateGroup) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_TYPE);
             //this could be null for a binding which does not have a sub type
@@ -116,9 +116,9 @@ public class BindingGenerator implements Command {
                 for (Operation operation : operations) {
                     //binding operation
                     BindingOperation bo = this.mModel.getFactory().createBindingOperation();
+                    b.addBindingOperation(bo);
                     NamedComponentReference<Operation> opRef = bo.createReferenceTo(operation, Operation.class);
                     bo.setOperation(opRef);
-                    b.addBindingOperation(bo);
                     
                     //binding operation protocol
                     createAndAddBindingOperationProtocolElements(bo, bindingSubType, operation);

@@ -141,8 +141,6 @@ public class PortTypeOperationNewType extends NewType {
                     OperationGenerator opGen = new OperationGenerator(model, this.mPortType, configurationMap);
                     opGen.execute();
                     
-//                    SchemaImportsGenerator schemaImportGenerator = new SchemaImportsGenerator(model, configurationMap);
-//                    schemaImportGenerator.execute();
                     model.endTransaction();
                     Operation operation = opGen.getOperation();
                     ActionHelper.selectNode(operation);

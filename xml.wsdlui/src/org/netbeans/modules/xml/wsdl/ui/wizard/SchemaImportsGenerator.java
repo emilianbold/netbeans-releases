@@ -115,7 +115,7 @@ public class SchemaImportsGenerator implements Command {
          Map<String, String> locationToNamespaceMap = new HashMap<String, String>();
          Map<String, String> existingLocationToNamespaceMap = new HashMap<String, String>();
          
-         FileObject wsdlFileObj = (FileObject) mModel.getModelSource().getLookup().lookup(FileObject.class);
+         FileObject wsdlFileObj = mModel.getModelSource().getLookup().lookup(FileObject.class);
          URI wsdlFileURI = FileUtil.toFile(wsdlFileObj).toURI();
          
          Definitions def = mModel.getDefinitions();
@@ -180,7 +180,7 @@ public class SchemaImportsGenerator implements Command {
                  if (schemaTNS != null && 
                          !schemaTNS.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)) {
                      
-                     FileObject fo = (FileObject) model.getModelSource().getLookup().lookup(FileObject.class);
+                     FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
                      
                      if (fo != null) {
                          String path = null;

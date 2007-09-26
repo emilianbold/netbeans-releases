@@ -163,14 +163,14 @@ public class CollaborationsWidget extends Widget
                             }
                             plt.setName(NameGenerator.generateUniquePartnerLinkType(
                                     name, qname, mModel));
+                            definitions.addExtensibilityElement(plt);
                             Role role = (Role) factory.create(
                                     plt, BPELQName.ROLE.getQName());
                             role.setName("role1");
+                            plt.setRole1(role);
                             NamedComponentReference<PortType> ptref =
                                     role.createReferenceTo(pt, PortType.class);
                             role.setPortType(ptref);
-                            plt.setRole1(role);
-                            definitions.addExtensibilityElement(plt);
                         }
                     }
                 } finally {
