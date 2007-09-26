@@ -154,7 +154,7 @@ public class CCTokenContext extends TokenContext {
     public static final int FALSE_ID = EXTERN_ID + 1;
     public static final int FOR_ID = FALSE_ID + 1;
     public static final int FRIEND_ID = FOR_ID + 1;
-    public static final int GOTO_ID = FOR_ID + 1;
+    public static final int GOTO_ID = FRIEND_ID + 1;
     public static final int IF_ID = GOTO_ID + 1;
     public static final int NAMESPACE_ID = IF_ID + 1;
     public static final int NEW_ID = NAMESPACE_ID + 1;
