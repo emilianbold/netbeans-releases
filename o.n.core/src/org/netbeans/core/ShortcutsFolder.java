@@ -20,7 +20,9 @@
 package org.netbeans.core;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -57,6 +59,7 @@ class ShortcutsFolder {
     private FileObject              shortcutsFileObject;
     private FileObject              currentFolder;
     private Logger debug = Logger.getLogger(ShortcutsFolder.class.getName ());
+    private Collection<DataObject> dataObjects;
     
     
     static void initShortcuts () {
@@ -92,6 +95,7 @@ class ShortcutsFolder {
         // get keymap and delete old shortcuts
         NbKeymap keymap = (NbKeymap) Lookup.getDefault ().lookup (Keymap.class);
         keymap.removeBindings ();
+        dataObjects = new LinkedList<DataObject>();
 
         // update main shortcuts
         readShortcuts (keymap, shortcutsFileObject);
@@ -127,8 +131,7 @@ class ShortcutsFolder {
         while (en.hasMoreElements ()) {
             DataObject dataObject = (DataObject) en.nextElement ();
             if (dataObject instanceof DataFolder) continue;
-            InstanceCookie ic = (InstanceCookie) dataObject.getCookie 
-                (InstanceCookie.class);
+            InstanceCookie ic = dataObject.getCookie(InstanceCookie.class);
             if (ic == null) continue;
             try {
                 Action action = (Action) ic.instanceCreate ();
@@ -140,6 +143,9 @@ class ShortcutsFolder {
                 } else { // see e.g. secondary exception in #74169
                     debug.warning("Unrecognized shortcut name from " + dataObject.getPrimaryFile().getPath()); // NOI18N
                 }
+                //remember DataObjects used to create the Actions so that there are
+                //the same Action instances in the menu
+                dataObjects.add( dataObject );
             } catch (ClassNotFoundException x) {
                 Logger.getLogger(ShortcutsFolder.class.getName()).log(Level.WARNING,
                         "{0} ignored; cannot load class {1}",
@@ -178,18 +184,22 @@ class ShortcutsFolder {
             refresh ();
         }
         
+        @Override
         public void fileDataCreated (FileEvent fe) {
             task.schedule (500);
         }
 
+        @Override
         public void fileChanged (FileEvent fe) {
             task.schedule (500);
         }
 
+        @Override
         public void fileDeleted (FileEvent fe) {
             task.schedule (500);
         }
         
+        @Override
         public void fileAttributeChanged (FileAttributeEvent fe) {
             if (fe.getName () != null &&
                 !CURRENT_PROFILE_ATTRIBUTE.equals (fe.getName ())
