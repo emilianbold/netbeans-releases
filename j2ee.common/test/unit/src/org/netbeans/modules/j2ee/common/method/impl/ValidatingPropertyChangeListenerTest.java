@@ -46,6 +46,7 @@ public class ValidatingPropertyChangeListenerTest extends NbTestCase {
                 );
         MethodCustomizerPanel mcPanel = MethodCustomizerPanel.create(
                 methodModel,
+                null,
                 false,
                 false,
                 false,
@@ -61,6 +62,7 @@ public class ValidatingPropertyChangeListenerTest extends NbTestCase {
         assertTrue(validator.validate());
         mcPanel = MethodCustomizerPanel.create(
                 methodModel,
+                null,
                 false,
                 false,
                 false,
