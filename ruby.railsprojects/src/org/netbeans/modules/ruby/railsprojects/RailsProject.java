@@ -323,7 +323,7 @@ public class RailsProject implements Project, RakeProjectListener {
         
     }
 
-    public void notifyDeleting() {
+    void notifyDeleting() {
         helper.removeRakeProjectListener(this);
         sources.notifyDeleting();
     }
