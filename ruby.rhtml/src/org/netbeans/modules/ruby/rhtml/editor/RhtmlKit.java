@@ -122,10 +122,61 @@ public class RhtmlKit extends HTMLKit {
         
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            // Delegate to HTML?
+            // Bracket matching on <% %>
             Caret caret = target.getCaret();
             BaseDocument doc = (BaseDocument)target.getDocument();
-            if (caret != null && shouldDelegateToHtml(doc, caret.getDot())) {
+            int dotPos = caret.getDot();
+            String cmd = evt.getActionCommand();
+            if (cmd.length() > 0 && dotPos > 0) {
+                char c = cmd.charAt(0);
+                if (c == '%' || c == '>') {
+                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+                    TokenSequence<?extends TokenId> ts = th.tokenSequence();
+                    ts.move(dotPos);
+                    try {
+                        if (ts.moveNext() || ts.movePrevious()) {
+                            Token<? extends TokenId> token = ts.token();
+                            if (token.id() == RhtmlTokenId.HTML && doc.getText(dotPos-1, 1).charAt(0) == '<') {
+                                // See if there's anything ahead
+                                //Token<? extends TokenId> ahead = getToken(doc, dotPos, false, true, false);
+                                int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
+                                if (first == -1) {
+                                    doc.insertString(dotPos, "%%>", null);
+                                    caret.setDot(dotPos+1);
+                                    return;
+                                }
+                            }
+                            if (token.id() == RhtmlTokenId.DELIMITER) {
+                                String tokenText = token.text().toString();
+                                if (tokenText.endsWith("%>")) {
+                                    // TODO - check that this offset is right
+                                    int tokenPos = (c == '%') ? dotPos : dotPos-1;
+                                    CharSequence suffix = DocumentUtilities.getText(doc, tokenPos, 2);
+                                    if (CharSequenceUtilities.textEquals(suffix, "%>")) {
+                                        caret.setDot(dotPos+1);
+                                        return;
+                                    }
+                                } else if (tokenText.endsWith("<")) {
+                                    // See if there's anything ahead
+                                    //Token<? extends TokenId> ahead = getToken(doc, dotPos, false, true, false);
+                                    int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
+                                    if (first == -1) {
+                                        doc.insertString(dotPos, "%%>", null);
+                                        caret.setDot(dotPos+1);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (BadLocationException ble) {
+                        Exceptions.printStackTrace(ble);
+                    }
+                    
+                }
+            }
+
+            // Delegate to HTML?
+            if (shouldDelegateToHtml(doc, dotPos)) {
                 htmlAction.actionPerformed(evt, target);
                 return;
             }
@@ -183,6 +234,8 @@ public class RhtmlKit extends HTMLKit {
                 } catch (BadLocationException e) {
                     e.printStackTrace();
                 }
+                
+                return;
             }
 
             super.replaceSelection(target, dotPos, caret, str, overwrite);
@@ -255,6 +308,32 @@ public class RhtmlKit extends HTMLKit {
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            Caret caret = target.getCaret();
+            BaseDocument doc = (BaseDocument)target.getDocument();
+            int dotPos = caret.getDot();
+            if (dotPos > 0) {
+                try {
+                    char ch = doc.getText(dotPos-1, 1).charAt(0);
+                    if (ch == '%') {
+                        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+                        TokenSequence<?extends TokenId> ts = th.tokenSequence();
+                        ts.move(dotPos);
+                        if (ts.movePrevious()) {
+                            Token<? extends TokenId> token = ts.token();
+                            if (token.id() == RhtmlTokenId.DELIMITER && ts.offset()+token.length() == dotPos && ts.moveNext()) {
+                                token = ts.token();
+                                if (token.id() == RhtmlTokenId.DELIMITER && ts.offset() == dotPos) {
+                                    doc.remove(dotPos-1, 1+token.length());
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
+                }
+            }
+
             currentTarget = target;
             super.actionPerformed(evt, target);
             currentTarget = null;
@@ -263,6 +342,7 @@ public class RhtmlKit extends HTMLKit {
         @Override
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
             throws BadLocationException {
+            
             if (shouldDelegateToHtml(doc, dotPos)) {
                 super.charBackspaced(doc, dotPos, caret, ch);
                 return;
@@ -285,6 +365,26 @@ public class RhtmlKit extends HTMLKit {
         new BackgroundParser(doc);
     }
     
+    private static Token<? extends TokenId> getToken(BaseDocument doc, int offset, boolean checkEmbedded) {
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        TokenSequence<?extends TokenId> ts = th.tokenSequence();
+        ts.move(offset);
+        if (!ts.moveNext()) {
+            return null;
+        }
+
+        if (checkEmbedded) {
+            TokenSequence<? extends TokenId> es = ts.embedded();
+            if (es != null) {
+                es.move(offset);
+                if (es.moveNext()) {
+                    return es.token();
+                }
+            }
+        }
+        return ts.token();
+    }
+
     /**
      * Toggle comment action. Doesn't actually reuse much of the implementation
      * but subclasses to inherit the icon and description
@@ -314,26 +414,6 @@ public class RhtmlKit extends HTMLKit {
             commentUncomment(evt, target, null);
         }
 
-        private static Token<? extends TokenId> getToken(BaseDocument doc, int offset, boolean checkEmbedded) {
-            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-            TokenSequence<?extends TokenId> ts = th.tokenSequence();
-            ts.move(offset);
-            if (!ts.moveNext()) {
-                return null;
-            }
-
-            if (checkEmbedded) {
-                TokenSequence<? extends TokenId> es = ts.embedded();
-                if (es != null) {
-                    es.move(offset);
-                    if (es.moveNext()) {
-                        return es.token();
-                    }
-                }
-            }
-            return ts.token();
-        }
-        
         /** See if this line looks commented */
         private static boolean isLineCommented(BaseDocument doc, int textBegin) throws BadLocationException  {
             assert textBegin != -1;
