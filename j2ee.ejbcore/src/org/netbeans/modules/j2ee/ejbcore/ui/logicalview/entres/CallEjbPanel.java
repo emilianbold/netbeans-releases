@@ -72,7 +72,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
     
     public static final String IS_VALID = "CallEjbPanel_isValid"; //NOI18N
 
-    private final Set<String> refNameSet;
+    private Set<String> refNameSet;
     private final NodeDisplayPanel nodeDisplayPanel;
     private final ServiceLocatorStrategyPanel slPanel;
     private final NodeAcceptor nodeAcceptor;
@@ -87,46 +87,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         this.project = FileOwnerQuery.getOwner(srcFile);
         this.className = className;
         this.nodeAcceptor = new NodeAcceptorImpl();
-        this.refNameSet = new HashSet<String>();
         
-        // This is working only for EJB project. Will need some enhancement in EnterpriseReferenceContainer API?
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(srcFile);
-        if (ejbModule != null) {
-            
-            MetadataModel<EjbJarMetadata> model = ejbModule.getMetadataModel();
-            model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
-                public Void run(EjbJarMetadata metadata) throws IOException {
-                    EjbJar ejbJar = metadata.getRoot();
-                    if (ejbJar != null) {
-                        final EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-                        JavaSource javaSource = JavaSource.forFileObject(srcFile);
-                        if (enterpriseBeans != null && javaSource != null) {
-                            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                                public void run(CompilationController controller) throws IOException {
-                                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                    TypeElement beanClass = controller.getElements().getTypeElement(CallEjbPanel.this.className);
-                                    for (Ejb ejb : enterpriseBeans.getEjbs()) {
-                                        if (beanClass.getQualifiedName().contentEquals(ejb.getEjbClass())) {
-                                            EjbRef[] ejbRefs = ejb.getEjbRef();
-                                            EjbLocalRef[] ejbLocalRefs = ejb.getEjbLocalRef();
-                                            for (int j = 0; j < ejbRefs.length; j++) {
-                                                refNameSet.add(ejbRefs[j].getEjbRefName());
-                                            }
-                                            for (int j = 0; j < ejbLocalRefs.length; j++) {
-                                                refNameSet.add(ejbLocalRefs[j].getEjbRefName());
-                                            }
-                                            return;
-                                        }
-                                    }
-                                }
-                            }, true);
-                        }
-                    }
-                    return null;
-                }
-            });
-            
-        }
         setErrorFieldColor(true);
         nodeDisplayPanel = new NodeDisplayPanel(rootNode);
         nodeDisplayPanel.setBorder(new EtchedBorder());
@@ -177,11 +138,56 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
         });
         serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
-        validateReferences();
     }
     
     public void disableServiceLocator() {
         serviceLocatorPanel.setVisible(false);
+    }
+
+    // lazy initialization
+    private Set<String> getRefNameSet() throws IOException {
+        if (refNameSet == null) {
+            refNameSet = new HashSet<String>();
+            // This is working only for EJB project. Will need some enhancement in EnterpriseReferenceContainer API?
+            org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(srcFile);
+            if (ejbModule != null) {
+
+                MetadataModel<EjbJarMetadata> model = ejbModule.getMetadataModel();
+                model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                    public Void run(EjbJarMetadata metadata) throws IOException {
+                        EjbJar ejbJar = metadata.getRoot();
+                        if (ejbJar != null) {
+                            final EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+                            JavaSource javaSource = JavaSource.forFileObject(srcFile);
+                            if (enterpriseBeans != null && javaSource != null) {
+                                javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                                    public void run(CompilationController controller) throws IOException {
+                                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                        TypeElement beanClass = controller.getElements().getTypeElement(CallEjbPanel.this.className);
+                                        for (Ejb ejb : enterpriseBeans.getEjbs()) {
+                                            if (beanClass.getQualifiedName().contentEquals(ejb.getEjbClass())) {
+                                                EjbRef[] ejbRefs = ejb.getEjbRef();
+                                                EjbLocalRef[] ejbLocalRefs = ejb.getEjbLocalRef();
+                                                for (int j = 0; j < ejbRefs.length; j++) {
+                                                    refNameSet.add(ejbRefs[j].getEjbRefName());
+                                                }
+                                                for (int j = 0; j < ejbLocalRefs.length; j++) {
+                                                    refNameSet.add(ejbLocalRefs[j].getEjbRefName());
+                                                }
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }, true);
+                            }
+                        }
+                        return null;
+                    }
+                });
+
+            }
+        }
+        return refNameSet;
     }
     
     private void setErrorFieldColor(boolean error){
@@ -456,7 +462,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         
         int uniquifier = 1;
         String newName = name;
-        while (refNameSet.contains(newName)) {
+        while (getRefNameSet().contains(newName)) {
             newName = name + String.valueOf(uniquifier++);
         }
         return name;
