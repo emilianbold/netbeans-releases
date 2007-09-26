@@ -43,13 +43,13 @@ public class TypingInCSSEditor extends  org.netbeans.performance.test.utilities.
     /** Creates a new instance of TypingInCSSEditor */
     public TypingInCSSEditor(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;        
+        expectedTime = UI_RESPONSE;       
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations        
     }
     /** Creates a new instance of TypingInCSSEditor */
     public TypingInCSSEditor(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;        
+        expectedTime = UI_RESPONSE;  
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations        
     }
     
