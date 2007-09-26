@@ -66,7 +66,7 @@ public class RepositoryPathNode extends AbstractNode {
         return createRepositoryPathNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""));
     }          
 
-    private static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {        
+    static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {        
         RepositoryPathNode node = new RepositoryPathNode(client, entry, true);
         return node;
     }    
@@ -82,10 +82,6 @@ public class RepositoryPathNode extends AbstractNode {
     private static RepositoryPathNode createDelayedExpandNode(BrowserClient client, RepositoryFile file) {
         return new DelayedExpandNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""), false);
     }
-    
-    static RepositoryPathNode createNewBrowserNode(BrowserClient client, RepositoryPathEntry entry) {
-        return new NewBrowserNode(client, entry, false);
-    }            
     
     private RepositoryPathNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
         super(entry.getSvnNodeKind() == SVNNodeKind.DIR ? new RepositoryPathChildren(client) : Children.LEAF);
@@ -493,19 +489,6 @@ public class RepositoryPathNode extends AbstractNode {
             return author;
         }                       
     }        
-
-    /**
-     * Created in the Browser. Never lists it's children from the repository as they don't exist
-     */ 
-    private static class NewBrowserNode extends RepositoryPathNode {
-        public NewBrowserNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
-            super(client, entry, repositoryFolder);
-        }       
-        @Override
-        void expand() {
-             // do nothing
-        }
-    }
 
     /**
      * Lists it's children from the repository after the second expand in the browser

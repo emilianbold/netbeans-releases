@@ -132,7 +132,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                     } else {
                         allNodesExists = false;
                         RepositoryPathEntry entry = new RepositoryPathEntry(newFile, SVNNodeKind.DIR, new SVNRevision(0), new Date(System.currentTimeMillis()), ""); // XXX get author
-                        Node node = RepositoryPathNode.createNewBrowserNode(getBrowser(), entry);                                                
+                        Node node = RepositoryPathNode.createRepositoryPathNode(getBrowser(), entry);
                         segmentNode.getChildren().add(new Node[] {node});
                         segmentNode = node;
                     }
