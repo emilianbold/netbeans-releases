@@ -74,8 +74,7 @@ public class RenameFormClassTest extends ExtJellyTestCase {
         JDialogOperator dialog = new JDialogOperator("Rename"); // NOI18N
         new JTextFieldOperator(dialog).setText(CLASS_NEW_NAME);
         new JButtonOperator(dialog,"Refactor").clickMouse(); // NOI18N
-        waitAMoment();
-        waitAMoment();        
+        dialog.waitClosed();
     }
     
     /** Tests content of java file */

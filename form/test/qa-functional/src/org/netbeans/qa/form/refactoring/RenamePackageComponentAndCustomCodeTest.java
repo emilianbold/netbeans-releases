@@ -78,7 +78,7 @@ public class RenamePackageComponentAndCustomCodeTest extends ExtJellyTestCase {
         JDialogOperator dialog = new JDialogOperator("Rename"); // NOI18N
         new JTextFieldOperator(dialog).typeText(NEW_COMPONENT_NAME);
         new JButtonOperator(dialog,"Refactor").clickMouse(); // NOI18N
-        waitNoEvent(1000);
+        dialog.waitClosed();
         
         // custom component package rename
         Node node = getProjectFileNode(OLD_PACKAGE_NAME, true);
@@ -92,7 +92,7 @@ public class RenamePackageComponentAndCustomCodeTest extends ExtJellyTestCase {
         // ... refactoring dialog
         //dialog = new JDialogOperator("Rename"); // NOI18N
         new JButtonOperator(dialog,"Refactor").clickMouse(); // NOI18N
-        waitNoEvent(45000);
+        dialog.waitClosed();
         
         // compiling component to avoid load form error
         compNode = getProjectFileNode(NEW_COMPONENT_NAME, NEW_PACKAGE_NAME);

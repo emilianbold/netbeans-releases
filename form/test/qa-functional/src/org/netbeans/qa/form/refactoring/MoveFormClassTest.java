@@ -34,6 +34,7 @@ import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 
@@ -96,7 +97,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
     }
 
     /** Runs refactoring  */
-    public void testRefactoring() {
+    public void testRefactoring() throws Exception {
         Node node = openFile(CLASS_NAME);
 
         runNoBlockPopupOverNode("Refactor|Move...", node); // NOI18N
@@ -106,6 +107,26 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         combo.selectItem( getTestPackageName() + PACKAGE_NAME);
 
         new JButtonOperator(dialog,"Refactor").clickMouse();
+
+        // this refactoring case takes sometimes a very long time
+        // that's way there is following code with for loop
+        boolean isClosed = false;
+        TimeoutExpiredException lastExc = null;
+        
+        for (int i=0; i < 3; i++) {
+            try {
+                dialog.waitClosed();
+                isClosed = true;
+            } catch (TimeoutExpiredException e) {
+                lastExc = e;
+            } catch (Exception e) {
+                throw e;
+            }
+        }
+        
+        if (!isClosed) {
+            throw (lastExc != null) ? lastExc : new Exception("Something strange while waiting using waitClosed() method");
+        }
     }
     
     /** Tests content of java file */
@@ -113,8 +134,6 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(getTestProjectName());
         prn.select();
-
-        waitNoEvent(35000);
 
         String path = "Source Packages|" + getTestPackageName() + PACKAGE_NAME + "|" + CLASS_NAME + ".java"; // NOI18N
         //p(path);

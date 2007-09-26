@@ -83,6 +83,7 @@ public class RenameComponentVariableTest extends ExtJellyTestCase {
         JDialogOperator dialog = new JDialogOperator("Rename"); // NOI18N
         new JTextFieldOperator(dialog).setText(VARIABLE_NEW_NAME);
         new JButtonOperator(dialog,"OK").clickMouse(); // NOI18N
+        dialog.waitClosed();
     }
     
     /** Tests content of java file */
