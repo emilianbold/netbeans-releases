@@ -69,6 +69,19 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         
     private Reference<FileObject> lastFoundKey = null;
     private Reference<Project> lastFoundValue = null;
+    
+    /**
+     * 
+     * #111892
+     */
+    public void resetLastFoundReferences() {
+        synchronized (this) {
+            lastFoundValue = null;
+            lastFoundKey = null;
+        }
+    }
+    
+    
     public Project getOwner(FileObject f) {
         while (f != null) {
             synchronized (this) {

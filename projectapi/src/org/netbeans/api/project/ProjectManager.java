@@ -22,6 +22,7 @@ package org.netbeans.api.project;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,7 +30,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.projectapi.TimedWeakReference;
+import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileChangeAdapter;
@@ -483,6 +486,13 @@ public final class ProjectManager {
                     proj2Factory.remove(p);
                     modifiedProjects.remove(p);
                     removedProjects.add(p);
+                    //#111892
+                    Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
+                    for (FileOwnerQueryImplementation impl : col) {
+                        if (impl instanceof SimpleFileOwnerQueryImplementation) {
+                            ((SimpleFileOwnerQueryImplementation)impl).resetLastFoundReferences();
+                        }
+                    }
                     return null;
                 }
             });
@@ -621,6 +631,7 @@ public final class ProjectManager {
         
         public ProjectDeletionListener() {}
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             synchronized (dir2Proj) {
                 dir2Proj.remove(fe.getFile());
