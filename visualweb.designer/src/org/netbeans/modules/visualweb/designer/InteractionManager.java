@@ -804,8 +804,17 @@ public class InteractionManager {
         }
 
         if (targetSourceElement != null) {
-            if (!pos.isInside(targetSourceElement)) { // XXX todo: check front/end positions!
+            org.w3c.dom.Node posNode = pos.getNode();
+            if (posNode instanceof Element) {
+                
+            } else {
+                pos = DomPosition.NONE;
+            }
 
+            // XXX #116867 Check whether the position belongs to hightligted component.
+            if (!isPositionFromComponent(pos, targetSourceElement)) {
+                pos = DomPosition.NONE;
+            } else if (!pos.isInside(targetSourceElement)) { // XXX todo: check front/end positions!
                 // The position is outside of the targeted component
 //                pos = Position.NONE;
                 pos = DomPosition.NONE;
@@ -854,6 +863,18 @@ public class InteractionManager {
         }
 
         return dropType;
+    }
+    
+    /** XXX #116867 Indicates whether specified position belongs to specified component, not its subcomponent. */
+    private static boolean isPositionFromComponent(DomPosition pos, Element sourceComponentRootElement) {
+        if (pos == null || sourceComponentRootElement == null) {
+            return false;
+        }
+        org.w3c.dom.Node posNode = pos.getNode();
+        if (posNode instanceof Element) {
+            return ModelViewMapper.findClosestComponentRootElement((Element)posNode) == sourceComponentRootElement;
+        }
+        return false;
     }
 
     /** We have a separate "current"/"highlighted" item, unrelated to selection,

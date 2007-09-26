@@ -2936,4 +2936,18 @@ public final class ModelViewMapper {
 //    public Rectangle getRegionBounds(MarkupMouseRegion region) {
 //        return webform.getPane().getPageBox().computeRegionBounds(region, null);
 //    }
+
+    /** Finds closes parent (including itself) component root element.  */
+    public static Element findClosestComponentRootElement(Element element) {
+        while (element != null) {
+            if (WebForm.getDomProviderService().isPrincipalElement(element, null)) {
+                return element;
+            }
+            
+            Node parentNode = element.getParentNode();
+            element = parentNode instanceof Element ? (Element)parentNode : null;
+        }
+        
+        return null;
+    }
 }
