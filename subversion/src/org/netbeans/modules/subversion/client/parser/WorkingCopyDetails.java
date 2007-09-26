@@ -373,9 +373,9 @@ public class WorkingCopyDetails {
 
         List<String> keywordsList = new ArrayList<String>();
         
-        keywordsList.addAll(normalizeKeywords(rawKeywords.split(" ")));             // NOI18N  
-        keywordsList.addAll(normalizeKeywords(rawKeywords.split("\n")));            // NOI18N            
-        keywordsList.addAll(normalizeKeywords(rawKeywords.split("\t")));            // NOI18N    
+        rawKeywords = rawKeywords.replaceAll("\n", " ");
+        rawKeywords = rawKeywords.replaceAll("\t", " ");        
+        keywordsList.addAll(normalizeKeywords(rawKeywords.split(" ")));             // NOI18N          
 
         String[] keywords = keywordsList.toArray(new String[keywordsList.size()]);
         
@@ -427,7 +427,7 @@ public class WorkingCopyDetails {
     private List<String> normalizeKeywords(String[] keywords) {
         List<String> keywordsList = new ArrayList<String>();
         for (int i = 0; i < keywords.length; i++) {
-            String kw = keywords[i].toLowerCase();
+            String kw = keywords[i].toLowerCase().trim();
             if(kw.equals("date") || kw.equals("lastchangeddate")) {                                         // NOI18N
                 keywordsList.add("LastChangedDate");                                                        // NOI18N
                 keywordsList.add("Date");                                                                   // NOI18N
@@ -443,7 +443,7 @@ public class WorkingCopyDetails {
                 keywordsList.add("URL");                                                                    // NOI18N
             } else if(kw.equals("id")) {                                                                    // NOI18N
                 keywordsList.add("Id");                                                                     // NOI18N                
-            } else {
+            } else if(!kw.equals("")){
                 keywordsList.add(keywords[i]);                
             }            
         } 

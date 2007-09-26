@@ -654,7 +654,7 @@ public class SvnWcParserTest extends TestCase {
         expectedDate = SvnWcUtils.parseSvnDate("2006-08-29T10:36:02.498983Z");
         assertEquals(expectedDate, parsedStatus.getLockCreationDate());
     }
-    
+        
     public void testGetSingleStatusNoChangesKeywords() throws Exception {
         File myFile = new File(dataRootDir + "/SvnWcParser/no-changes-keywords/testapp/Main.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
@@ -662,14 +662,14 @@ public class SvnWcParserTest extends TestCase {
         assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("file:///data/subversion/trunk/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
-        assertEquals(289, parsedStatus.getRevision().getNumber());
+        assertEquals(989, parsedStatus.getRevision().getNumber());
         assertNull(parsedStatus.getConflictNew());
         assertNull(parsedStatus.getConflictOld());
         assertNull(parsedStatus.getConflictWorking());
         assertEquals(myFile, parsedStatus.getFile());
-        Date expectedDate = SvnWcUtils.parseSvnDate("2007-06-12T15:24:28.289544Z");
+        Date expectedDate = SvnWcUtils.parseSvnDate("2007-06-13T12:02:16.625421Z");
         assertEquals(expectedDate, parsedStatus.getLastChangedDate());
-        assertEquals(289, parsedStatus.getLastChangedRevision().getNumber());
+        assertEquals(330, parsedStatus.getLastChangedRevision().getNumber());
         assertEquals("tomas", parsedStatus.getLastCommitAuthor());
         assertEquals(SVNNodeKind.FILE, parsedStatus.getNodeKind());
         assertEquals(myFile.getPath(), parsedStatus.getPath());
