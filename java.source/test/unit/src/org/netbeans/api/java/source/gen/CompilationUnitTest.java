@@ -35,8 +35,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
 /**
- *
- * @author tom
+ * Test for compilation unit creation.
+ * 
+ * @author tom a lahvovej
  */
 public class CompilationUnitTest extends GeneratorTestMDRCompat {
 
@@ -47,6 +48,8 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(CompilationUnitTest.class);
+//        suite.addTest(new CompilationUnitTest("testNewCompilationUnit"));
+//        suite.addTest(new CompilationUnitTest("test77010"));
         return suite;
     }
 
@@ -126,7 +129,94 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         assertEquals(res, golden);
     }
 
-    String getGoldenPckg() {
+     public void test77010() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package zoo;\n" +
+            "\n" +
+            "public class A {\n" +
+            "  int a;\n" +
+            "  public class Krtek {\n" +
+            "    public void foo() {\n" +
+            "      int c=a;\n" +
+            "    }\n" +
+            "  }\n" +
+            "}");
+        
+        FileObject rootFS = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject emptyJava = FileUtil.createData(rootFS, "Templates/Classes/Empty.java");
+        emptyJava.setAttribute("template", Boolean.TRUE);
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+        
+        String golden1 = 
+            "package zoo;\n" +
+            "\n" +
+            "public class Krtek {\n" +
+            "\n" +
+            "    public void foo() {\n" +
+            "        int c = outer.a;\n" +
+            "    }\n" +
+            "}\n";
+        String golden2 = 
+            "package zoo;\n" +
+            "\n" +
+            "public class A {\n" +
+            "  int a;\n" +
+            "}";
+        JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void cancel() {
+            }
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                if (cut.getTypeDecls().isEmpty()) return;
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                clazz = (ClassTree) clazz.getMembers().get(1);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+                CompilationUnitTree newTree = make.CompilationUnit(
+                        sourceRoot,
+                        "zoo/Krtek.java",
+                        Collections.<ImportTree>emptyList(),
+                        Collections.<Tree>emptyList()
+                );
+                newTree = make.addCompUnitTypeDecl(newTree, clazz);
+                workingCopy.rewrite(null, newTree);
+                workingCopy.rewrite(var.getInitializer(), make.Identifier("outer.a"));
+                workingCopy.rewrite(
+                        cut.getTypeDecls().get(0), 
+                        make.removeClassMember((ClassTree) cut.getTypeDecls().get(0), clazz)
+                );
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/Krtek.java"));
+        System.err.println(res);
+        assertEquals(res, golden1);
+        res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(res, golden2);
+    }
+     
+   String getGoldenPckg() {
         return "";
     }
 
