@@ -447,31 +447,33 @@
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target depends="init,compile,compile-jsps,-pre-dist" name="-dist-without-custom-manifest" unless="has.custom.manifest">
+    <target depends="init,compile,compile-jsps,-pre-dist" if="do.war.package.without.custom.manifest" name="-do-dist-without-manifest">
         <dirname file="${dist.war}" property="dist.jar.dir"/>
         <mkdir dir="${dist.jar.dir}"/>
         <jar compress="${jar.compress}" jarfile="${dist.war}">
             <fileset dir="${build.web.dir.real}"/>
         </jar>
     </target>
-    <target depends="init,compile,compile-jsps,-pre-dist" if="has.custom.manifest" name="-dist-with-custom-manifest">
+    <target depends="init,compile,compile-jsps,-pre-dist" if="do.war.package.with.custom.manifest" name="-do-dist-with-manifest">
         <dirname file="${dist.war}" property="dist.jar.dir"/>
         <mkdir dir="${dist.jar.dir}"/>
         <jar compress="${jar.compress}" jarfile="${dist.war}" manifest="${build.meta.inf.dir}/MANIFEST.MF">
             <fileset dir="${build.web.dir.real}"/>
         </jar>
     </target>
-    <target depends="init,compile,compile-jsps,-pre-dist" if="do.war.package.without.custom.manifest" name="-do-dist-without-manifest">
-        <antcall target="-dist-without-custom-manifest"/>
-    </target>
-    <target depends="init,compile,compile-jsps,-pre-dist" if="do.war.package.with.custom.manifest" name="-do-dist-with-manifest">
-        <antcall target="-dist-with-custom-manifest"/>
+    <target depends="init,compile,compile-jsps,-pre-dist" if="do.tmp.war.package.without.custom.manifest" name="-do-tmp-dist-without-manifest">
+        <dirname file="${dist.war}" property="dist.jar.dir"/>
+        <mkdir dir="${dist.jar.dir}"/>
+        <jar compress="${jar.compress}" jarfile="${dist.war}">
+            <fileset dir="${build.web.dir.real}"/>
+        </jar>
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist" if="do.tmp.war.package.with.custom.manifest" name="-do-tmp-dist-with-manifest">
-        <antcall target="-dist-with-custom-manifest"/>
-    </target>
-    <target depends="init,compile,compile-jsps,-pre-dist" if="do.tmp.war.package.without.custom.manifest" name="-do-tmp-dist-without-manifest">
-        <antcall target="-dist-without-custom-manifest"/>
+        <dirname file="${dist.war}" property="dist.jar.dir"/>
+        <mkdir dir="${dist.jar.dir}"/>
+        <jar compress="${jar.compress}" jarfile="${dist.war}" manifest="${build.meta.inf.dir}/MANIFEST.MF">
+            <fileset dir="${build.web.dir.real}"/>
+        </jar>
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest" name="do-dist"/>
     <target depends="init" if="dist.ear.dir" name="library-inclusion-in-manifest">
