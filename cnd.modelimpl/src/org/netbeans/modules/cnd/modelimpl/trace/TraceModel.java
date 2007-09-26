@@ -1824,11 +1824,11 @@ public class TraceModel {
             } else {
                 return FileImpl.UNDEFINED_FILE;
             }
-        } else if (dobj instanceof CDataObject) {
+        } else if (dobj instanceof CCDataObject) {
             return FileImpl.SOURCE_CPP_FILE;
         } else if (dobj instanceof HDataObject) {
             return FileImpl.HEADER_FILE;
-        } else if (dobj instanceof CCDataObject) {
+        } else if (dobj instanceof CDataObject) {
             return FileImpl.SOURCE_C_FILE;
         } else {
             return FileImpl.UNDEFINED_FILE;

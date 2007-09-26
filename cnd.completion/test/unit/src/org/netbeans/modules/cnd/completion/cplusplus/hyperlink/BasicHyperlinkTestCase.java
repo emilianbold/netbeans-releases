@@ -5,7 +5,6 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -24,20 +23,21 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
  * @author Vladimir Voskresensky
  */
 public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
+
     public BasicHyperlinkTestCase(String testName) {
         super(testName);
     }
-    
+
     public void testFuncParamUsage() throws Exception {
         performTest("main.c", 3, 15, "main.c", 2, 9); // aa in 'int kk = aa + bb;'
         performTest("main.c", 3, 20, "main.c", 2, 17); // bb in 'int kk = aa + bb;'
     }
-    
+
     public void testFuncUsage() throws Exception {
         performTest("kr.c", 6, 13, "kr.c", 9, 1); // foo in "return foo(kk) + boo(kk);"
         performTest("kr.c", 6, 23, "kr.c", 17, 1); // boo in "return foo(kk) + boo(kk);"
     }
-    
+
     public void testFuncLocalVarsUsage() throws Exception {
         performTest("main.c", 5, 20, "main.c", 3, 5); // kk in "for (int ii = kk; ii > 0; ii--) {"
         performTest("main.c", 6, 10, "main.c", 4, 5); // res in "res *= ii;"
@@ -45,7 +45,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("kr.c", 6, 17, "kr.c", 5, 5); // first kk in "return foo(kk) + boo(kk);"
         performTest("kr.c", 6, 27, "kr.c", 5, 5); // second kk in "return foo(kk) + boo(kk);"
     }
-    
+
     public void testForLoopLocalVarsUsage() throws Exception {
         performTest("main.c", 5, 24, "main.c", 5, 10); // second ii in "for (int ii = kk; ii > 0; ii--) {"
         performTest("main.c", 5, 32, "main.c", 5, 10); // third ii in "for (int ii = kk; ii > 0; ii--) {"
@@ -55,33 +55,43 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testNameWithUnderscore() throws Exception {
         performTest("main.c", 12, 6, "main.c", 11, 1); // method_name_with_underscore();
     }
-    
     ////////////////////////////////////////////////////////////////////////////
     // K&R style
-    
+
     public void testKRFuncParamUsage() throws Exception {
         performTest("kr.c", 12, 15, "kr.c", 10, 1); // index in 'return index;'
     }
 
-    public void testKRFooDeclDefUsage() throws Exception {
+    public void testKRFooDeclDefUsageH() throws Exception {
+        // See IZ116715
+        performTest("kr.h", 2, 6, "kr.h", 9, 1); // int foo(); -> int foo(index)
+        performTest("kr.h", 9, 6, "kr.h", 2, 1); // int foo(index) -> int foo();
+        performTest("kr.h", 15, 6, "kr.h", 17, 1); // int boo(); -> int boo(int i)
+        performTest("kr.h", 17, 6, "kr.h", 15, 1); // int boo(int i) -> int boo();
     }
 
+    public void testKRFooDeclDefUsageC() throws Exception {
+        // See IZ116715
+        performTest("kr.c", 2, 6, "kr.c", 9, 1); // int foo(); -> int foo(index)
+        performTest("kr.c", 9, 6, "kr.c", 2, 1); // int foo(index) -> int foo();
+        performTest("kr.c", 15, 6, "kr.c", 17, 1); // int boo(); -> int boo(int i)
+        performTest("kr.c", 17, 6, "kr.c", 15, 1); // int boo(int i) -> int boo();
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
-        
+
         protected Class getTestCaseDataClass() {
             return BasicHyperlinkTestCase.class;
         }
 
-        
-        
         public Failed(String testName) {
             super(testName);
         }
-        
+
         public void testKRFuncParamDecl() throws Exception {
             performTest("kr.c", 9, 10, "kr.c", 10, 1); // index in 'int foo(index)'
-        }     
-        
+        }
+
         public void testKRFooDeclDefUsage() throws Exception {
             // See IZ116715
             performTest("kr.c", 2, 6, "kr.c", 9, 1); // int foo(); -> int foo(index)
