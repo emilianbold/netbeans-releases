@@ -20,6 +20,7 @@
 package org.netbeans.spi.project.ui.support;
 
 import com.sun.org.apache.bcel.internal.generic.LOOKUPSWITCH;
+import java.lang.reflect.InvocationTargetException;
 import junit.framework.TestCase;
 import junit.framework.*;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -76,14 +78,14 @@ public class NodeFactorySupportTest extends TestCase {
     /**
      * Test of createCompositeChildren method, of class org.netbeans.spi.project.ui.support.NodeFactorySupport.
      */
-    public void testCreateCompositeChildren() {
+    public void testCreateCompositeChildren() throws InterruptedException, InvocationTargetException {
         System.out.println("createCompositeChildren");
         InstanceContent ic = new InstanceContent();
-        TestDelegates dels = new TestDelegates(ic);
-        Node node1 = new AbstractNode(Children.LEAF);
-        Node node2 = new AbstractNode(Children.LEAF);
-        Node node3 = new AbstractNode(Children.LEAF);
-        Node node4 = new AbstractNode(Children.LEAF);
+        final TestDelegates dels = new TestDelegates(ic);
+        final Node node1 = new AbstractNode(Children.LEAF);
+        final Node node2 = new AbstractNode(Children.LEAF);
+        final Node node3 = new AbstractNode(Children.LEAF);
+        final Node node4 = new AbstractNode(Children.LEAF);
         node1.setName("node1");
         node2.setName("node2");
         node3.setName("node3");
@@ -105,10 +107,15 @@ public class NodeFactorySupportTest extends TestCase {
         col.add(fact3);
         col.remove(fact2);
         ic.set(col, null);
-        nds = dels.getNodes();
-        assertEquals(nds[0], node4);
-        assertEquals(nds[1], node1);
-        assertEquals(nds[2], node3);
+        //#115995, caused by fix for #115128
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                Node[] nds = dels.getNodes();
+                assertEquals(nds[0], node4);
+                assertEquals(nds[1], node1);
+                assertEquals(nds[2], node3);
+            }
+        });
         
     }
 
