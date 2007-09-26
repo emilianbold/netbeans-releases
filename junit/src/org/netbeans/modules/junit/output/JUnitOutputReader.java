@@ -51,6 +51,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 import static java.util.Calendar.MILLISECOND;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.FINEST;
 import static org.netbeans.modules.junit.output.RegexpUtils.END_OF_TEST_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.NESTED_EXCEPTION_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.OUTPUT_DELIMITER_PREFIX;
@@ -194,19 +196,15 @@ final class JUnitOutputReader {
     
     /**
      */
-    private void log(String msg) {
-        progressLogger.log(Level.FINER, msg);
-    }
-    
-    /**
-     */
     void verboseMessageLogged(final AntEvent event) {
         final String msg = event.getMessage();
         if (msg == null) {
             return;
         }
         
-        log("VERBOSE: " + msg);
+        if (progressLogger.isLoggable(FINEST)) {
+            progressLogger.finest("VERBOSE: " + msg);                   //NOI18N
+        }
         if (msg.startsWith(TEST_LISTENER_PREFIX)) {
             String testListenerMsg = msg.substring(TEST_LISTENER_PREFIX.length());
             if (testListenerMsg.startsWith(TESTS_COUNT_PREFIX)) {
@@ -215,7 +213,9 @@ final class JUnitOutputReader {
                     int count = parseNonNegativeInteger(countStr);
                     if (count > 0) {
                         expectedOneSuiteTests = count;
-                        log("number of tests: " + expectedOneSuiteTests);
+                        if (progressLogger.isLoggable(FINER)) {
+                            progressLogger.finer("expected # of tests in a suite: " + expectedOneSuiteTests);
+                        }
                     }
                 } catch (NumberFormatException ex) {
                     assert expectedOneSuiteTests == 0;
@@ -226,7 +226,7 @@ final class JUnitOutputReader {
                 String restOfMsg = testListenerMsg.substring(START_OF_TEST_PREFIX.length());
                 if ((restOfMsg.length() == 0)
                         || !Character.isLetterOrDigit(restOfMsg.charAt(0))) {
-                    log("test started");
+                    progressLogger.finest("test started");              //NOI18N
                 }
                 return;
             }
@@ -234,7 +234,7 @@ final class JUnitOutputReader {
                 String restOfMsg = testListenerMsg.substring(END_OF_TEST_PREFIX.length());
                 if ((restOfMsg.length() == 0)
                         || !Character.isLetterOrDigit(restOfMsg.charAt(0))) {
-                    log("test finished");
+                    progressLogger.finest("test finished");             //NOI18N
                     executedOneSuiteTests++;
                     updateProgress();
                 }
@@ -270,7 +270,9 @@ final class JUnitOutputReader {
         if (msg == null) {
             return;
         }
-        log("NORMAL:  " + msg);
+        if (progressLogger.isLoggable(FINEST)) {
+            progressLogger.finest("NORMAL:  " + msg);                   //NOI18N
+        }
         
         //<editor-fold defaultstate="collapsed" desc="if (waitingForIssueStatus) ...">
         if (waitingForIssueStatus) {
@@ -642,6 +644,11 @@ final class JUnitOutputReader {
      *                              executed by this task
      */
     void testTaskStarted(int expectedSuitesCount, boolean expectXmlOutput) {
+        if (progressLogger.isLoggable(FINER)) {
+            progressLogger.finer("EXPECTED # OF SUITES: "
+                                 + expectedSuitesCount);
+        }
+
         this.expectXmlReport = expectXmlOutput;
         
         final boolean willBeDeterminateProgress = (expectedSuitesCount > 0);
@@ -660,6 +667,12 @@ final class JUnitOutputReader {
             if (!isDeterminateProgress) {
                 progressHandle.switchToDeterminate(PROGRESS_WORKUNITS);
             }
+            if (progressLogger.isLoggable(FINER)) {
+                progressLogger.finer(" !!! Updating expected # of suites: "
+                                     + this.expectedSuitesCount
+                                     + " -> "
+                                     + (this.expectedSuitesCount + expectedSuitesCount));
+            }
             this.expectedSuitesCount += expectedSuitesCount;
             updateProgress();
         } else if (isDeterminateProgress /* and will be indeterminate */ ) {
@@ -676,6 +689,8 @@ final class JUnitOutputReader {
     /**
      */
     void testTaskFinished() {
+        progressLogger.finer("ACTUAL # OF SUITES: " + executedSuitesCount);
+
         expectedSuitesCount = executedSuitesCount;
         if (isDeterminateProgress) {
             /*
@@ -696,8 +711,9 @@ final class JUnitOutputReader {
         assert progressHandle != null;
         
         int progress = getProcessedWorkunits();
-        if (progressLogger.isLoggable(Level.FINER)) {
-            log("------ Progress: "                                     //NOI18N
+        if (progressLogger.isLoggable(FINER)) {
+            progressLogger.finer(
+                "------ Progress: "                                     //NOI18N
                 + String.format("%3d%%",
                                 100 * progress / PROGRESS_WORKUNITS));  //NOI18N
         }
@@ -752,8 +768,10 @@ final class JUnitOutputReader {
      */
     private int getProcessedWorkunits() {
         try {
-            log("--- Suites: " + executedSuitesCount + " / " + expectedSuitesCount);
-            log("--- Tests:  " + executedOneSuiteTests + " / " + expectedOneSuiteTests);
+            if (progressLogger.isLoggable(FINEST)) {
+                progressLogger.finest("--- Suites: " + executedSuitesCount + " / " + expectedSuitesCount);
+                progressLogger.finest("--- Tests:  " + executedOneSuiteTests + " / " + expectedOneSuiteTests);
+            }
             int units = executedSuitesCount * PROGRESS_WORKUNITS
                         / expectedSuitesCount;
             if (expectedOneSuiteTests > 0) {
@@ -812,6 +830,9 @@ final class JUnitOutputReader {
     /**
      */
     private void suiteFinished(final Report report) {
+        if (progressLogger.isLoggable(FINER)) {
+            progressLogger.finer("actual # of tests in a suite: " + executedOneSuiteTests);
+        }
         executedSuitesCount++;
         
         Manager.getInstance().displayReport(session, sessionType, report);
@@ -994,7 +1015,7 @@ final class JUnitOutputReader {
         long timeDelta = lastModified - timeOfSessionStart;
         
         final Logger logger = Logger.getLogger("org.netbeans.modules.junit.outputreader.timestamps");//NOI18N
-        final Level logLevel = Level.FINER;
+        final Level logLevel = FINER;
         if (logger.isLoggable(logLevel)) {
             logger.log(logLevel, "Report file: " + reportFile.getPath());//NOI18N
             
