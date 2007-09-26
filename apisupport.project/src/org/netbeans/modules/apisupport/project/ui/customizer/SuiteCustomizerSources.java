@@ -47,9 +47,7 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     updateEnabled();
-                } else {
-                    System.out.println("updating..");
-                }
+                } 
             }
         });
     }
@@ -60,7 +58,6 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
     
     private void updateEnabled() {
         boolean enabled = moduleList.getSelectedIndex() != -1;
-        System.out.println("update enabled=" + enabled);
         removeModuleButton.setEnabled(enabled);
     }
     
