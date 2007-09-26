@@ -320,20 +320,9 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             InitialIndentData initialIndentData = new InitialIndentData(doc, indentLevels, indentsWithinTags, firstRefBlockLine, lastRefBlockLine);
 
             // apply line indents
-            int blockOfRelativeLinesOffset = -1;
 
             for (int line = firstRefBlockLine; line <= lastRefBlockLine; line++) {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
-
-                if (lineFormatting[line] == LineFormattingType.RELATIVE) {
-                    if (blockOfRelativeLinesOffset == -1) {
-                        // the first line of a relative formatting block, remember the offset
-                        blockOfRelativeLinesOffset = Utilities.getFirstNonWhiteFwd(doc, lineStart) - lineStart;
-                    }
-                } else {
-                    // the end of a relative formatting block
-                    blockOfRelativeLinesOffset = -1;
-                }
 
                 if (lineFormatting[line] != LineFormattingType.NONE && initialIndentData.isEligibleToIndent(line)) {
 
@@ -342,7 +331,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                     if (lineFormatting[line] == LineFormattingType.RELATIVE) {
                         int existingIndent = Utilities.getFirstNonWhiteFwd(doc, lineStart) - lineStart;
 
-                        relativeShift = existingIndent > blockOfRelativeLinesOffset ? existingIndent : 0;
+                        relativeShift = existingIndent;
                     }
 
                     changeRowIndent(doc, lineStart, initialIndentData.getIndent(line) + blockShiftOffsets[line] + relativeShift);
