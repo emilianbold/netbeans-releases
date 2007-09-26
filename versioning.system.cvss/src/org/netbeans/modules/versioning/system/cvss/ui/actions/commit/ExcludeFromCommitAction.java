@@ -22,6 +22,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
@@ -54,6 +57,14 @@ public class ExcludeFromCommitAction extends AbstractAction implements Presenter
         setEnabled(status != -1);
     }
 
+    public boolean isEnabled() {
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        for (File file : files) {
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_IN_REPOSITORY) != 0) return true;
+        }
+        return false;
+    }
+    
     public JMenuItem getMenuPresenter() {
         JCheckBoxMenuItem item = new JCheckBoxMenuItem(this);
         if (status != -1) item.setSelected(status == 2);
