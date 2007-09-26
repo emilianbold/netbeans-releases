@@ -173,7 +173,7 @@ public final class ModificationResult {
                 if (diff.isExcluded())
                     continue;
                 if (Difference.Kind.CREATE == diff.getKind()) {
-                    createUnit(diff, out);
+                    createUnit(diff, null);
                     continue;
                 }
                 int pos = diff.getStartPosition().getOffset();
