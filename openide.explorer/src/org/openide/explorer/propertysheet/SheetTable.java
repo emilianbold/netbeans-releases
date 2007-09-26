@@ -476,7 +476,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         for (int i = min; i < max; i++) {
             FeatureDescriptor fd = psm.getFeatureDescriptor(i);
 
-            if (fd.getName().equals(name)) {
+            if (null != fd && fd.getName().equals(name)) {
                 Rectangle r = getCellRect(i, 1, true);
 
                 if (PropUtils.isLoggable(SheetTable.class)) {
