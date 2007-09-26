@@ -314,11 +314,12 @@ public class Scrambler {
         return buf.toString();
     }    
     
-    private char scramble(char ch) {                
-        byte newCh = (byte)(shifts[(int)ch & 255] & 255);
-        return (char) newCh;        
-    }
-
+    private char scramble(char ch) {               
+        int i = ( shifts[ (((int) ch) &  0xFF) & 255] & 255 ) & 
+                ( shifts[ (((int) ch) &  0x00FF) & 255] & 255 );
+        return Character.toChars(i)[0];
+    }     
+    
     private byte[] decode(String str) {        
         try {
             return new sun.misc.BASE64Decoder().decodeBuffer(str);
