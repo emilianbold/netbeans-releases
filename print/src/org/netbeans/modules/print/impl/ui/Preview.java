@@ -77,17 +77,21 @@ import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.ui.PrintUI;
 import org.netbeans.modules.print.impl.util.Percent;
 import org.netbeans.modules.print.impl.util.Util;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2005.12.14
  */
-public class Preview extends PrintUI implements Percent.Listener {
+public final class Preview extends Dialog implements Percent.Listener {
 
-  public Preview() {
+  public static Preview getDefault() {
+    return DEFAULT;
+  }
+
+  private Preview() {
     myPrinter = new Printer();
     myKeyListener = new KeyAdapter() {
       public void keyPressed(KeyEvent event) {
@@ -699,15 +703,6 @@ public class Preview extends PrintUI implements Percent.Listener {
   }
 
   @Override
-  protected void closed()
-  {
-//out("Closed");
-    myPapers = null;
-    myPrintProvider = null;
-    Util.getOption().setScale(myScale.getValue());
-  }
-
-  @Override
   protected void opened()
   {
 //out("Opened");
@@ -749,7 +744,9 @@ public class Preview extends PrintUI implements Percent.Listener {
       new ButtonAction(
         i18n("LBL_Close_Button"), // NOI18N
         i18n("TLT_Close_Button")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {}
+        public void actionPerformed(ActionEvent event) {
+          close();
+        }
       }
     );
     myCloseButton.addKeyListener(myKeyListener);
@@ -759,6 +756,13 @@ public class Preview extends PrintUI implements Percent.Listener {
       myOptionButton,
       myCloseButton,
     };
+  }
+
+  private void close() {
+//out("Closed");
+    myPapers = null;
+    myPrintProvider = null;
+    Util.getOption().setScale(myScale.getValue());
   }
 
   private boolean isSingleMode() {
@@ -833,12 +837,6 @@ public class Preview extends PrintUI implements Percent.Listener {
     private List<MouseWheelListener> myMouseWheelListeners;
   }
 
-  @Override
-  protected final String i18n(String key)
-  {
-    return i18n(Preview.class, key);
-  }
-
   private Paper [] myPapers;
   private JPanel myPaperPanel;
   
@@ -879,4 +877,5 @@ public class Preview extends PrintUI implements Percent.Listener {
     i18n("LBL_Fit_to_Height"), // NOI18N
     i18n("LBL_Fit_to_All"), // NOI18N
   };
+  private static final Preview DEFAULT = new Preview();
 }

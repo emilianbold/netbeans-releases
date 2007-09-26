@@ -49,7 +49,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import org.netbeans.api.project.Project;
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy

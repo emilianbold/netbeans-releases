@@ -51,9 +51,9 @@ import javax.swing.JToolBar;
 
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.print.api.PrintManagerAccess;
+import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.bpel.search.impl.util.Util;
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -124,6 +124,11 @@ public final class View extends TopComponent {
     setSize(button);
     toolBar.add(button);
 
+    // vlv: print
+    button = createButton(PrintManager.getPrintPreviewAction());
+    setSize(button);
+    toolBar.add(button);
+
     // previous occurence
     button = createButton(
       new ButtonAction(
@@ -147,11 +152,6 @@ public final class View extends TopComponent {
         }
       }
     );
-    setSize(button);
-    toolBar.add(button);
-
-    // vlv: print
-    button = createButton(PrintManagerAccess.getManager().getPreviewAction());
     setSize(button);
     toolBar.add(button);
 

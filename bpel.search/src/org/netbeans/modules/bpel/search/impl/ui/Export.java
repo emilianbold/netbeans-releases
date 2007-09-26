@@ -45,6 +45,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -66,13 +67,13 @@ import javax.swing.filechooser.FileFilter;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
-import org.netbeans.modules.print.ui.PrintUI;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.21
  */
-class Export extends PrintUI {
+class Export extends Dialog {
 
   void show(List<List<String>> descriptions, String title) {
     myDescriptions = descriptions;
@@ -270,7 +271,13 @@ class Export extends PrintUI {
   {
     myDescriptor = new DialogDescriptor(
       createPanel(),
-      i18n("LBL_Export_Title") // NOI18N
+      i18n("LBL_Export_Title"), // NOI18N
+      true,
+      new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+          close();
+        }
+      }
     );
     return myDescriptor;
   }
@@ -285,9 +292,7 @@ class Export extends PrintUI {
     myFileName.requestFocus();
   }
 
-  @Override
-  protected void closed()
-  {
+  private void close() {
     if (myDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
       return;
     }

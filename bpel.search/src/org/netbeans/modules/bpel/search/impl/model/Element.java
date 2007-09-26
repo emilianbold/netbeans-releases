@@ -46,7 +46,6 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
 import org.netbeans.modules.xml.search.api.SearchElement;
-import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

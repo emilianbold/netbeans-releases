@@ -50,7 +50,7 @@ import javax.swing.JComboBox;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy

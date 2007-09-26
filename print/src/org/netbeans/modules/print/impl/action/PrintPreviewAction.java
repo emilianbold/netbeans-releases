@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,78 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xslt.project.wizard.element;
+package org.netbeans.modules.print.impl.action;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JPanel;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import javax.swing.Action;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.01.30
+ * @version 2005.12.13
  */
-final class PanelWSDL<T> extends Panel<T> {
-    
-  PanelWSDL(Project project, Panel<T> parent) {
-    super(project, parent);
-    myWebService = new PanelWebService<T>(project, parent);
+public final class PrintPreviewAction extends CommonAction {
+
+  public PrintPreviewAction() {
+    this("LBL_Print_Preview_Action", null); // NOI18N
   }
 
-  @Override
-  protected String getComponentName()
-  {
-    return NAME_WSDL;
+  private PrintPreviewAction(String name, String icon) {
+    super(name, "TLT_Print_Preview_Action", icon, true); // NOI18N
   }
 
-  @Override
-  protected Panel<T> getNext()
-  {
-    return new PanelService<T>(getProject(), this, myModel);
-  }
-
-  @Override
-  protected String getError()
-  {
-    String error = myWebService.getError();
-
-    if (error != null) {
-      return error;
-    }
-    myModel = (WSDLModel) myWebService.getResult();
-    return null;
-  }
-
-  @Override
-  protected void createPanel(JPanel mainPanel, GridBagConstraints cc)
-  {
-    JPanel panel = new JPanel(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
-    ButtonGroup group = new ButtonGroup();
-    c.anchor = GridBagConstraints.WEST;
-    c.weighty = 1.0;
-
-    c.gridy++;
-    c.weightx = 1.0;
-    c.insets = new Insets(0, 0, 0, 0);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    myWebService.createPanel(panel, c);
-
-    mainPanel.add(panel, cc);
-  }
-
-  @Override
-  protected void setEnabled(boolean enabled)
-  {
-    myWebService.setEnabled(enabled);
-  }
-
-  private WSDLModel myModel;
-  private PanelWebService<T> myWebService;
+  public static final Action INSTANCE = new PrintPreviewAction(null, "preview"); // NOI18N
 }

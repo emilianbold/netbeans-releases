@@ -56,19 +56,18 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.openide.DialogDescriptor;
-import org.netbeans.modules.print.ui.PrintUI;
-
 import org.netbeans.modules.xml.search.api.SearchException;
 import org.netbeans.modules.xml.search.api.SearchMatch;
 import org.netbeans.modules.xml.search.api.SearchOption;
 import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.23
  */
-public final class Search extends PrintUI {
+public final class Search extends Dialog {
 
   public Component getUIComponent(
     List<SearchEngine> engines,
@@ -81,6 +80,7 @@ public final class Search extends PrintUI {
     mySearchEngine.addSearchListener(new Tree());
     mySearchEngine.addSearchListener(new Progress());
     show();
+
     return getUIComponent();
   }
 
@@ -240,9 +240,7 @@ public final class Search extends PrintUI {
     }
   }
 
-  @Override
-  protected void closed()
-  {
+  private void close() {
     myName.save();
     mySearchEngine = null;
     mySource = null;
@@ -264,6 +262,7 @@ public final class Search extends PrintUI {
         public void actionPerformed(ActionEvent event) {
           if (mySearchButton == event.getSource()) {
             search();
+            close();
           }
         }
       }

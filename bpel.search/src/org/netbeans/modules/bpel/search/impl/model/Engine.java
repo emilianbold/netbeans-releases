@@ -51,7 +51,7 @@ import org.netbeans.modules.xml.search.api.SearchMatch;
 import org.netbeans.modules.xml.search.api.SearchOption;
 import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy

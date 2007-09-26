@@ -67,16 +67,16 @@ import javax.swing.SpinnerNumberModel;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.print.ui.PrintUI;
 import org.netbeans.modules.print.impl.util.Pattern;
 import org.netbeans.modules.print.impl.util.Percent;
 import org.netbeans.modules.print.impl.util.Util;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.02.14
  */
-final class Attribute extends PrintUI
+final class Attribute extends Dialog
   implements FocusListener, Pattern.Listener, Percent.Listener
 {
   Attribute(Preview preview) {

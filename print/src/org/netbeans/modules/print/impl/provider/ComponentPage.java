@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,78 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xslt.project.wizard.element;
+package org.netbeans.modules.print.impl.provider;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import javax.swing.JComponent;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JPanel;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import org.netbeans.modules.print.spi.PrintPage;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.01.30
+ * @version 2005.12.22
  */
-final class PanelWSDL<T> extends Panel<T> {
-    
-  PanelWSDL(Project project, Panel<T> parent) {
-    super(project, parent);
-    myWebService = new PanelWebService<T>(project, parent);
-  }
+final class ComponentPage implements PrintPage {
 
-  @Override
-  protected String getComponentName()
+  ComponentPage (
+    JComponent component,
+    Rectangle piece,
+    double zoom,
+    int row,
+    int column)
   {
-    return NAME_WSDL;
+    myComponent = component;
+    myPiece = piece;
+    myZoom = zoom;
+    myRow = row;
+    myColumn = column;
   }
 
-  @Override
-  protected Panel<T> getNext()
-  {
-    return new PanelService<T>(getProject(), this, myModel);
+  int getRow() {
+    return myRow;
   }
 
-  @Override
-  protected String getError()
-  {
-    String error = myWebService.getError();
-
-    if (error != null) {
-      return error;
-    }
-    myModel = (WSDLModel) myWebService.getResult();
-    return null;
+  int getColumn() {
+    return myColumn;
   }
 
-  @Override
-  protected void createPanel(JPanel mainPanel, GridBagConstraints cc)
-  {
-    JPanel panel = new JPanel(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
-    ButtonGroup group = new ButtonGroup();
-    c.anchor = GridBagConstraints.WEST;
-    c.weighty = 1.0;
+  public void print(Graphics graphics) {
+    Graphics2D g = (Graphics2D)graphics.create(0, 0, myPiece.width, myPiece.height);
 
-    c.gridy++;
-    c.weightx = 1.0;
-    c.insets = new Insets(0, 0, 0, 0);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    myWebService.createPanel(panel, c);
+    g.translate(-myPiece.x, -myPiece.y);
+    g.scale(myZoom, myZoom);
 
-    mainPanel.add(panel, cc);
+    myComponent.print(g);
+
+    g.dispose();
   }
 
-  @Override
-  protected void setEnabled(boolean enabled)
-  {
-    myWebService.setEnabled(enabled);
-  }
-
-  private WSDLModel myModel;
-  private PanelWebService<T> myWebService;
+  private int myRow;
+  private int myColumn;
+  private double myZoom;
+  private JComponent myComponent;
+  private Rectangle myPiece;
 }

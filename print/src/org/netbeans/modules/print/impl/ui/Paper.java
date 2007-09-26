@@ -53,7 +53,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.impl.util.Pattern;
 import org.netbeans.modules.print.impl.util.Util;
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy

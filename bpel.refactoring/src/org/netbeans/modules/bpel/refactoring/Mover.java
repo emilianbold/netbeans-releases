@@ -69,7 +69,7 @@ import org.netbeans.modules.xml.xam.Referenceable;
 
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -44,7 +44,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.modules.print.impl.util.Util;
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -67,7 +67,7 @@ public final class PageSetupAction extends CallableSystemAction {
   @Override
   public String getName()
   {
-    return i18n(PageSetupAction.class, "CTL_PageSetup_Action"); // NOI18N
+    return i18n(PageSetupAction.class, "LBL_PageSetup_Action"); // NOI18N
   }
   
   @Override

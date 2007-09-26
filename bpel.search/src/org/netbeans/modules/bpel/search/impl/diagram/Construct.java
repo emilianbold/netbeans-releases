@@ -51,7 +51,7 @@ import org.netbeans.modules.bpel.editors.api.DiagramElement;
 
 import org.netbeans.modules.xml.search.api.SearchException;
 import org.netbeans.modules.xml.search.api.SearchOption;
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy

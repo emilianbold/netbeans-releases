@@ -148,7 +148,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
-import org.netbeans.modules.print.api.PrintManagerAccess;
+import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.xml.search.api.SearchManagerAccess;
 import org.openide.loaders.DataObject;
@@ -415,7 +415,7 @@ public class DesignerMultiViewElement extends TopComponent
             }
             // vlv: print
             toolbar.addSeparator();
-            toolbar.add(PrintManagerAccess.getManager().getPreviewAction());
+            toolbar.add(PrintManager.getPrintPreviewAction());
 
             // vlv: search
             SearchManager manager = SearchManagerAccess.getManager();

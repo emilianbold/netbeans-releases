@@ -60,8 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileUtil;
-
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy

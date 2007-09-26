@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
-
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
 

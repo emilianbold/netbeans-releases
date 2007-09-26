@@ -52,7 +52,7 @@ import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy

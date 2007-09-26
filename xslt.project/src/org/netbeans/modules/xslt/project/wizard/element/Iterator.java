@@ -80,8 +80,7 @@ import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
 import org.openide.cookies.SaveCookie;
-
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -69,7 +69,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.search.impl.util.Util;
-import static org.netbeans.modules.print.ui.PrintUI.*;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -247,32 +247,17 @@ public final class SearchAction extends NodeAction {
 
   // -----------------------------------------------------------------------------------------
   public static final class Manager
-    extends org.netbeans.modules.print.ui.PrintUI.IconAction
+    extends org.netbeans.modules.print.api.PrintUtil.IconAction
   {
     public Manager() {
       super(
-        icon(Util.class, "search"), // NOI18N
-        i18n(Manager.class, "TLT_Search_Action")); // NOI18N
+        null,
+        i18n(Manager.class, "TLT_Search_Action"), // NOI18N
+        icon(Util.class, "search")); // NOI18N
     }
 
     public void actionPerformed(ActionEvent event) {
       performAction(getActiveNode());
-    }
-
-    private Node getActiveNode() {
-//out();
-      TopComponent top = getActivateTopComponent();
-//out("top: " + top);
-      if (top == null) {
-        return null;
-      }
-      Node [] nodes = top.getActivatedNodes();
-//out("nodes: " + nodes);
-
-      if (nodes == null || nodes.length == 0) {
-        return null;
-      }
-      return nodes [0];
     }
   }
 
