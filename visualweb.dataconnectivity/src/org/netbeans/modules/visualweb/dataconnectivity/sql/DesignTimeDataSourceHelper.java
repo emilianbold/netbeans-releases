@@ -87,14 +87,12 @@ public class DesignTimeDataSourceHelper {
     private DesignTimeDataSource[] dataSources;
     private String[]               dataSourceNames;
     private boolean                isDataSourceAdded;
-    private boolean                isUpdated;
     private Context                ctx;
 
     public DesignTimeDataSourceHelper() throws NamingException {
         dataSources     = null;
         dataSourceNames = null;
         isDataSourceAdded = false;    
-        isUpdated = false;
         ctx = new InitialContext();
     }
 
@@ -480,10 +478,10 @@ public class DesignTimeDataSourceHelper {
     
     public Map updateDataSource(Project currentProj) {       
          // Manage the migration of legacy projects
-        if (ImportDataSource.isLegacyProject(currentProj) && !isUpdated) {//NOI18N   
-            DataSourceResolver.getInstance().updateSettings();
-            isUpdated = true;
-        }  
+        if (ImportDataSource.isLegacyProject(currentProj) && JsfProjectUtils.getProjectProperty(currentProj, "migrated").equals("")) {//NOI18N   
+            DataSourceResolver.getInstance().updateSettings();        
+        }
+        
         // Get the data sources in the project then bind them to the project's context
         String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
         String[] hardCodedDataSources = ProjectDataSourceTracker.getHardcodedDataSources(currentProj);

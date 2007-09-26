@@ -32,6 +32,7 @@ import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -49,7 +50,6 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     org.netbeans.api.project.Project nbProject = null ;
     private static Image brokenDsReferenceBadge = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png" ); // NOI18N
     private static Image dSContainerImage = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png" ); // NOI18N
-    boolean modelingHasStarted;
 
     public ProjectDataSourceNode(org.netbeans.api.project.Project project) {
         super(new ProjectDataSourceNodeChildren(project));
@@ -79,7 +79,6 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     }
 
     private void initPuppy() {
-        modelingHasStarted = false;
         setIconBaseWithExtension("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png"); // NOI18N
         setName(NbBundle.getMessage(ProjectDataSourceNode.class, "PROJECT_DATA_SOURCES"));
         setDisplayName(NbBundle.getMessage(ProjectDataSourceNode.class, "PROJECT_DATA_SOURCES"));
@@ -133,13 +132,10 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         }
                
         // Manage the migration of legacy projects
-        if (ImportDataSource.isLegacyProject(nbProject) && !modelingHasStarted) {//NOI18N   
-            modelingHasStarted = true;
-            if (DataSourceResolver.getInstance().getProjectDataSources(nbProject).isEmpty() || BrokenDataSourceSupport.isBroken(nbProject)) {
+        if (ImportDataSource.isLegacyProject(nbProject) && JsfProjectUtils.getProjectProperty(nbProject, "migrated").equals("")) {  //NOI18N
                 DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
-            }
-        }              
-        
+        }
+                              
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
         boolean isBroken = false;         
         if (this.getChildren().getNodes().length > 0) {

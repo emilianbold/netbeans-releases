@@ -52,6 +52,7 @@ import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -213,10 +214,16 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
         // Update Project's datasources
         try {
             new DesignTimeDataSourceHelper().updateDataSource(project);
+            markProject(project);
             checkConnections(project);
         } catch (NamingException ne) {
             Logger.getLogger("copy").info("Migrating user settings failed " + ne); //NOI18N
         }
+    }
+    
+    // Mark legacy project as migrated
+    private void markProject(Project project) {
+        JsfProjectUtils.createProjectProperty(project, "migrated", "true");
     }
     
     // Check if any database connections needed by the project are missing
@@ -254,6 +261,7 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
 
                 ModelSet.removeModelSetsListener(modelingListener);
                 ProjectDataSourceTracker.refreshDataSourceReferences(project);
+                update(project);
             }
         } finally {
             topComponent.setCursor(null);
@@ -316,6 +324,7 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
                 modelSets = modelSet.getModels();
                 updateTask();                
             } finally {
+                task.waitFinished();
                 topComponent.setCursor(null);
             }
         }
