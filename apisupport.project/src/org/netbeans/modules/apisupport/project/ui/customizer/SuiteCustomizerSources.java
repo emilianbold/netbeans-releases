@@ -47,6 +47,8 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     updateEnabled();
+                } else {
+                    System.out.println("updating..");
                 }
             }
         });
@@ -58,6 +60,7 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
     
     private void updateEnabled() {
         boolean enabled = moduleList.getSelectedIndex() != -1;
+        System.out.println("update enabled=" + enabled);
         removeModuleButton.setEnabled(enabled);
     }
     
@@ -170,7 +173,7 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
         if (moduleList.getModel().getSize() > 0) {
             moduleList.setSelectedIndex(0);
         } else {
-            removeModuleButton.setEnabled(false);
+            moduleList.clearSelection();
         }
         moduleList.requestFocus();
     }//GEN-LAST:event_removeModule
