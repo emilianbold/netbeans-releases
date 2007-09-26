@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.properties;
 
@@ -62,54 +40,60 @@ import org.openide.util.Lookup;
  * @author Alexey
  */
 public class ImportRegistrationHelper {
-    private BpelModel model;
-    /** Creates a new instance of ImportRegistrationHelper */
     public ImportRegistrationHelper(BpelModel model) {
         this.model = model;
     }
     
-    public void addImport( Model imp_model){
-        addImport(createImport(imp_model));
-        
-        if(imp_model instanceof WSDLModel){
-            Definitions defs = ((WSDLModel) imp_model).getDefinitions();
-            
-            if(defs != null){
-                Collection<org.netbeans.modules.xml.wsdl.model.Import> imps =
-                        defs.getImports();
-                if (imps != null){
-                    for (org.netbeans.modules.xml.wsdl.model.Import i: imps){
-                        try {
-                            // check if the imported model is itself #87107
-                            Model tmpImpModel = i.getImportedWSDLModel();
-                            if (tmpImpModel == null || tmpImpModel.equals(i.getModel())) {
-                                continue;
-                            }
-                            
-                            if (!ResolverUtility.isModelImported(tmpImpModel, model)) {
-                                addImport(tmpImpModel);
-                            }
-                        } catch (CatalogModelException ex) {
-                            //Just ignore this type of exception
-                        }
-                    }
-                }
+    public void addImport(Model imp_model){
+//System.out.println();
+//System.out.println("ADD INPORT");
+      addImport(createImport(imp_model));
+      
+      if ( !(imp_model instanceof WSDLModel)) {
+        return;
+      }
+      Definitions defs = ((WSDLModel) imp_model).getDefinitions();
+      
+      if (defs == null) {
+        return;
+      }
+      Collection<org.netbeans.modules.xml.wsdl.model.Import> imps = defs.getImports();
+
+      if (imps == null) {
+        return;
+      }
+      for (org.netbeans.modules.xml.wsdl.model.Import i: imps){
+        try {
+            // check if the imported model is itself #87107
+            Model tmpImpModel = i.getImportedWSDLModel();
+       
+            if (tmpImpModel == null || tmpImpModel.equals(i.getModel())) {
+                continue;
+            }
+            if ( !ResolverUtility.isModelImported(tmpImpModel, model)) {
+                addImport(tmpImpModel);
             }
         }
-        
+        catch (CatalogModelException e) {
+          //Just ignore this type of exception
+        }
+      }
     }
     
     public void addImport(Import new_imp){
+//System.out.println();
+//System.out.println("add import: " + new_imp);
         if (new_imp == null) {
             return;
         }
-        
         Process process = model.getProcess();
+//System.out.println("process: " + process);
+
         if (process == null) {
             return;
         }
-
-        if (!isImported(new_imp)) {
+        if ( !isImported(new_imp)) {
+//System.out.println("ADD !!!");
             process.addImport(new_imp);
         }
     }
@@ -160,29 +144,35 @@ public class ImportRegistrationHelper {
         return imp;
     }
     
-    /*
-     * Checks if such import already exists
-     */
-    private boolean isImported(Import new_imp) {
+    private boolean isImported(Import new_imp){
         Process process = model.getProcess();
+
         if (process == null) {
             return false;
         }
-        Model exModel = null;
-        if (Import.SCHEMA_IMPORT_TYPE.equals(new_imp.getImportType())) {
-            exModel = ImportHelper.getSchemaModel(
-                    model,
-                    new_imp.getLocation(),
-                    new_imp.getImportType(),
-                    false);
-        } else if (Import.WSDL_IMPORT_TYPE.equals(new_imp.getImportType())) {
-            exModel = ImportHelper.getWsdlModel(
-                    model,
-                    new_imp.getLocation(),
-                    new_imp.getImportType(),
-                    false);
-        }
+        Import[] imports = process.getImports();
         
-        return (exModel != null && !ResolverUtility.isModelImported(exModel, model));
+        if (imports == null) {
+            return false ;
+        }
+        String namespace = new_imp.getNamespace();
+        String location = ResolverUtility.decodeLocation(new_imp.getLocation());
+        String type = new_imp.getImportType();
+        
+        for (Import imp : imports) {
+            if (namespace != null && !namespace.equals(imp.getNamespace())) {
+                continue;
+            }
+            if (location != null && !location.equals(ResolverUtility.decodeLocation(imp.getLocation()))) {
+                continue;
+            }
+            if (type != null && !type.equals(imp.getImportType())) {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
+
+    private BpelModel model;
 }
