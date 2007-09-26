@@ -106,7 +106,13 @@ public class Mercurial {
         if (System.getProperty("os.name").equals("Mac OS X")) { // NOI18N
             String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath ();
             if (defaultPath == null || defaultPath.length() == 0) {
-                HgModuleConfig.getDefault().setExecutableBinaryPath ("/Library/Frameworks/Python.framework/Versions/Current/bin"); // NOI18N
+                String[] pathNames  = {"/Library/Frameworks/Python.framework/Versions/Current/bin", "/usr/local/bin"}; // NOI18N
+                for (int i = 0; i < pathNames.length; i++) {
+                    if (HgModuleConfig.getDefault().isExecPathValid(pathNames[i])) {
+                        HgModuleConfig.getDefault().setExecutableBinaryPath (pathNames[i]); // NOI18N
+                        break;
+                     } 
+                 } 
             }
         }
     }
