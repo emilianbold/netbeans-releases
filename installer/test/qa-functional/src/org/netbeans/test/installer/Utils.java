@@ -407,7 +407,7 @@ public class Utils {
 
         NbTestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
         
-        NbTestCase.assertFalse("NetBeans dir deleted", !Utils.DirExist(NB_DIR_NAME, data).equals(OK));
+        NbTestCase.assertFalse("NetBeans dir deleted", Utils.DirExist(NB_DIR_NAME, data).equals(OK));
     }
 
     public static void phaseTwo(TestData data) {
