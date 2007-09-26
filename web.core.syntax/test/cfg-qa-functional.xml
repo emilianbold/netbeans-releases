@@ -41,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/TokensTest.class"/>   
+                <include name="**/OpenFileTest.class"/>   
             </patternset>
         </testset>
     </testbag>
