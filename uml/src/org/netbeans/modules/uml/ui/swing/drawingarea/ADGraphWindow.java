@@ -115,7 +115,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
 
     private TSEHitTesting m_hitTesting;
     
-    
+	
 
    protected class ADDrawingPreferences extends com.tomsawyer.editor.TSEPreferences
    {
@@ -136,8 +136,8 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
          //setDrawFullUIOnDragging(true);
          //setAutoHidingScrollBars(true);
 
-         //         setValue(DRAW_INVISIBLE, true);
-         //         setValue(AUTO_HIDE_SCROLLBARS, true);
+         //			setValue(DRAW_INVISIBLE, true);
+         //			setValue(AUTO_HIDE_SCROLLBARS, true);
       }
    }
 
@@ -174,15 +174,11 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
       
       //JM: Temp Fix for #6412795 (till we move to the next version of TomSawyer) 
       //- Provide a fix for UML drawing slownes without the sun.java2d.pmoffscreen flag.
-      TSEInnerCanvas canvas = new TSEInnerCanvas(this) {
+      this.setCanvas(new TSEInnerCanvas(this) {
           public Image createImage(int width, int height) {
               return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
           }
-      };
-      this.setCanvas(canvas);
-
-      // vlv: print
-      canvas.putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+      });
 
       this.moveAdapter = new ADMoveSelectedKeyAdapter(this);
 
@@ -562,9 +558,9 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
       // Only update the scroll bars if the autoUpdateBounds are enabled.
       if (getAllowRedraw() && isVisible() && getDrawingArea() != null && getDrawingArea().getGraphWindow() == this)
       {
-            bUpdatingScrollBars = true;
+			bUpdatingScrollBars = true;
          super.updateScrollBarValues();
-            bUpdatingScrollBars = false;
+			bUpdatingScrollBars = false;
       }
    }
 
@@ -594,7 +590,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawEntireGraph(TSEGraphics arg0, int arg1, boolean arg2, boolean arg3, int arg4, int arg5)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.drawEntireGraph(arg0, arg1, arg2, arg3, arg4, arg5);
    }
 
@@ -603,7 +599,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawEntireGraph(TSEGraphics arg0, int arg1, boolean arg2, boolean arg3)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.drawEntireGraph(arg0, arg1, arg2, arg3);
    }
 
@@ -612,7 +608,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawGraph(boolean arg0)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.drawGraph(arg0);
    }
 
@@ -621,7 +617,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawGraph(Graphics arg0, boolean arg1, boolean arg2, boolean arg3, boolean arg4, boolean arg5)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.drawGraph(arg0, arg1, arg2, arg3, arg4, arg5);
    }
 
@@ -630,7 +626,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawGraph(Graphics arg0, boolean arg1, boolean arg2, boolean arg3)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.drawGraph(arg0, arg1, arg2, arg3);
    }
 
@@ -639,7 +635,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawGraph(Graphics arg0, boolean arg1, boolean arg2)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.drawGraph(arg0, arg1, arg2);
    }
 
@@ -648,8 +644,8 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawGraph(Graphics arg0, boolean arg1)
    {
-        if (getAllowRedraw())
-        super.drawGraph(arg0, arg1);
+		if (getAllowRedraw())
+      	super.drawGraph(arg0, arg1);
    }
 
    /* (non-Javadoc)
@@ -657,7 +653,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawGraph(Graphics arg0)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.drawGraph(arg0);
    }
 
@@ -666,7 +662,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawGraph(TSConstRect arg0, boolean arg1, boolean arg2)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.drawGraph(arg0, arg1, arg2);
    }
 
@@ -675,7 +671,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void drawGraph(TSConstRect arg0)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.drawGraph(arg0);
    }
 
@@ -684,7 +680,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public void updateInvalidRegion()
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.updateInvalidRegion();
    }
 
@@ -693,51 +689,51 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     */
    public synchronized void updateInvalidRegion(boolean arg0)
    {
-        if (getAllowRedraw())
+		if (getAllowRedraw())
          super.updateInvalidRegion(arg0);
    }
 
-    /*
-     * Returns we we can draw on the graph window
-     */
-    public boolean getAllowRedraw()
-    {
-        return allowRedraw && getGraph() != null && getGraph().isBoundsUpdatingEnabled();
-    }
-    
-    /*
-     * Sets if we can draw on the graph window.
-     */
-    public void setAllowRedraw(boolean allow)
-    {
-        allowRedraw = allow;
-    }
-    
-    /* (non-Javadoc)
-     * @see com.tomsawyer.editor.TSEGraphWindow#getMaxZoomLevel()
-     */
-    public double getMaxZoomLevel()
-    {
-        if (m_drawingAreaCtrl != null)
-        {
-                return m_drawingAreaCtrl.getExtremeZoomValues().getParamTwo().doubleValue();            
-        }
-        else
-            return super.getMaxZoomLevel();     
-    }
+	/*
+	 * Returns we we can draw on the graph window
+	 */
+	public boolean getAllowRedraw()
+	{
+		return allowRedraw && getGraph() != null && getGraph().isBoundsUpdatingEnabled();
+	}
+	
+	/*
+	 * Sets if we can draw on the graph window.
+	 */
+	public void setAllowRedraw(boolean allow)
+	{
+		allowRedraw = allow;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.tomsawyer.editor.TSEGraphWindow#getMaxZoomLevel()
+	 */
+	public double getMaxZoomLevel()
+	{
+		if (m_drawingAreaCtrl != null)
+		{
+				return m_drawingAreaCtrl.getExtremeZoomValues().getParamTwo().doubleValue();			
+		}
+		else
+			return super.getMaxZoomLevel();		
+	}
 
-    /* (non-Javadoc)
-     * @see com.tomsawyer.editor.TSEGraphWindow#getMinZoomLevel()
-     */
-    public double getMinZoomLevel()
-    {
-        if (m_drawingAreaCtrl != null)
-        {
-            return m_drawingAreaCtrl.getExtremeZoomValues().getParamOne().doubleValue();
-        }
-        else
-            return super.getMinZoomLevel();     
-    }
+	/* (non-Javadoc)
+	 * @see com.tomsawyer.editor.TSEGraphWindow#getMinZoomLevel()
+	 */
+	public double getMinZoomLevel()
+	{
+		if (m_drawingAreaCtrl != null)
+		{
+			return m_drawingAreaCtrl.getExtremeZoomValues().getParamOne().doubleValue();
+		}
+		else
+			return super.getMinZoomLevel();		
+	}
 
    /* (non-Javadoc)
     * @see java.awt.Component#doLayout()
@@ -813,307 +809,307 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     AccessibleContext accessibleContext;
 
     public AccessibleContext getAccessibleContext() {
-    if (accessibleContext == null) {
-        accessibleContext = new AccessibleGraphWindow();
-    } 
-    return accessibleContext;
+	if (accessibleContext == null) {
+	    accessibleContext = new AccessibleGraphWindow();
+	} 
+	return accessibleContext;
     }
 
 
     public class AccessibleGraphWindow extends AccessibleJComponent implements AccessibleSelection
     {
-    
-    WeakHashMap<IDrawEngine, AccessibleEngineAndLabelsPanel> panels = new WeakHashMap<IDrawEngine, AccessibleEngineAndLabelsPanel>();
+	
+	WeakHashMap<IDrawEngine, AccessibleEngineAndLabelsPanel> panels = new WeakHashMap<IDrawEngine, AccessibleEngineAndLabelsPanel>();
 
-    public AccessibleGraphWindow() {
-        super();
-        registerAsGraphListener();
-    }
+	public AccessibleGraphWindow() {
+	    super();
+	    registerAsGraphListener();
+	}
 
-    public String getAccessibleName(){
-        return getDrawingArea().getName();
-    }
+	public String getAccessibleName(){
+	    return getDrawingArea().getName();
+	}
 
-    public int getAccessibleChildrenCount() {
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null) {
-        return children.size();
-        }
-        return 0;
-    }
-    
-    
-    public Accessible getAccessibleChild(int i) {
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null && i < children.size()) {
-        return children.get(i);
-        }
-        return null;
-    }
-    
-    
-    public AccessibleRole getAccessibleRole() {
-        return AccessibleRole.PANEL;
-    }
-    
-    
-    public AccessibleSelection getAccessibleSelection() {
-        return this;
-    }
-
-
-    public AccessibleComponent getAccessibleComponent() {
-        return this;
-    }
+	public int getAccessibleChildrenCount() {
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null) {
+		return children.size();
+	    }
+	    return 0;
+	}
+	
+	
+	public Accessible getAccessibleChild(int i) {
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null && i < children.size()) {
+		return children.get(i);
+	    }
+	    return null;
+	}
+	
+	
+	public AccessibleRole getAccessibleRole() {
+	    return AccessibleRole.PANEL;
+	}
+	
+	
+	public AccessibleSelection getAccessibleSelection() {
+	    return this;
+	}
 
 
-    ////////////////////////////////
-    // interface AccessibleComponent
-    ////////////////////////////////
-
-    public javax.accessibility.Accessible getAccessibleAt(java.awt.Point point) {
-        return null;
-    }
+	public AccessibleComponent getAccessibleComponent() {
+	    return this;
+	}
 
 
-    ////////////////////////////////
-    // interface AccessibleSelection
-    ////////////////////////////////
+	////////////////////////////////
+	// interface AccessibleComponent
+	////////////////////////////////
 
-    public int getAccessibleSelectionCount() {
-        List<Accessible> selected = getSelectedAccessibleChildren();
-        if (selected != null) {
-        return selected.size();
-        }
-        return 0;
-    }
-    
-    public Accessible getAccessibleSelection(int i) {
-        List<Accessible> selected = getSelectedAccessibleChildren();
-        if (selected != null && i < selected.size()) {
-        return selected.get(i);
-        }
-        return null;
-    }
-    
-    public boolean isAccessibleChildSelected(int i) {
-        Accessible child = getAccessibleChild(i);      
-        if (child != null) {
-        return isSelected(child);       
-        }
-        return false;
-    }
-    
-    public void addAccessibleSelection(int i) {
-        Accessible child = getAccessibleChild(i);       
-        if (child != null) {
-        selectChild(child, true, false);
-        }
-    }
-    
-    public void removeAccessibleSelection(int i) {
-        List<Accessible> selected = getSelectedAccessibleChildren();
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null && i < children.size()) {
-        //if (isSelected(children.get(i))) {
-            selectChild(children.get(i), false, true); 
-        //}
-        }
-    }
-
-    public void selectAllAccessibleSelection() {
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null) {
-        for(int i = 0; i < children.size(); i++) {
-            selectChild(children.get(i), true, false); 
-        }
-        }       
-    }
-    
-    public void clearAccessibleSelection() {
-        List<Accessible> selected = getSelectedAccessibleChildren();
-        if (selected != null) {
-        for(int i = 0; i < selected.size(); i++) {
-            selectChild(selected.get(i), false, true); 
-        }
-        }
-    }
-    
-
-    /////////////////
-    // Helper methods
-    /////////////////
-    
-    public void selectChild(Accessible child, boolean select, boolean replaceSelection) {
-        AccessibleSelection childSelection = child.getAccessibleContext().getAccessibleSelection();
-        if (childSelection != null) {
-        if (select) {
-            childSelection.selectAllAccessibleSelection();
-        } else {
-            childSelection.clearAccessibleSelection();
-        }
-        }
-    }
-    
-    public boolean isSelectable(Accessible child) {
-        return true;
-    }
-    
-    /**
-     *  a panel for node/edge with labels is considered selected if the node/engine is selected
-     */
-    public boolean isSelected(Accessible child) {
-        if (child instanceof AccessibleEngineAndLabelsPanel) {
-        AccessibleEngineAndLabelsPanel panel = (AccessibleEngineAndLabelsPanel)child;
-        return panel.isSelected(panel.engine);
-        }
-        return false;
-    }
+	public javax.accessibility.Accessible getAccessibleAt(java.awt.Point point) {
+	    return null;
+	}
 
 
-    public List<Accessible> getAccessibleChildren() {
-        ArrayList<Accessible> children = new ArrayList<Accessible>();
-        if (m_drawingAreaCtrl != null) { 
-        ETList<TSGraphObject> nodesAndEdges = new ETArrayList<TSGraphObject>();
-        nodesAndEdges.addAll(getGraph().edges());
-        nodesAndEdges.addAll(getGraph().nodes());
-        Iterator<TSGraphObject> iter = nodesAndEdges.iterator();
-        while(iter.hasNext()) {
-            TSGraphObject obj = iter.next();            
-            IDrawEngine eng = TypeConversions.getDrawEngine(obj);
-            if (eng instanceof Accessible) {
-            if (eng != null && eng instanceof Accessible) {
-                AccessibleEngineAndLabelsPanel panel = panels.get(eng);
-                if (panel == null) {                
-                panel = new AccessibleEngineAndLabelsPanel((Accessible)eng);
-                panel.getAccessibleContext().setAccessibleParent(ADGraphWindow.this);
-                panels.put(eng, panel);
-                }
-                children.add(panel);
-            }
-            }
-        }
-        }
-        return children;
-    }
+	////////////////////////////////
+	// interface AccessibleSelection
+	////////////////////////////////
+
+	public int getAccessibleSelectionCount() {
+	    List<Accessible> selected = getSelectedAccessibleChildren();
+	    if (selected != null) {
+		return selected.size();
+	    }
+	    return 0;
+	}
+	
+	public Accessible getAccessibleSelection(int i) {
+	    List<Accessible> selected = getSelectedAccessibleChildren();
+	    if (selected != null && i < selected.size()) {
+		return selected.get(i);
+	    }
+	    return null;
+	}
+	
+	public boolean isAccessibleChildSelected(int i) {
+	    Accessible child = getAccessibleChild(i);	   
+	    if (child != null) {
+		return isSelected(child);	    
+	    }
+	    return false;
+	}
+	
+	public void addAccessibleSelection(int i) {
+	    Accessible child = getAccessibleChild(i);	    
+	    if (child != null) {
+		selectChild(child, true, false);
+	    }
+	}
+	
+	public void removeAccessibleSelection(int i) {
+	    List<Accessible> selected = getSelectedAccessibleChildren();
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null && i < children.size()) {
+		//if (isSelected(children.get(i))) {
+		    selectChild(children.get(i), false, true); 
+		//}
+	    }
+	}
+
+	public void selectAllAccessibleSelection() {
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null) {
+		for(int i = 0; i < children.size(); i++) {
+		    selectChild(children.get(i), true, false); 
+		}
+	    }	    
+	}
+	
+	public void clearAccessibleSelection() {
+	    List<Accessible> selected = getSelectedAccessibleChildren();
+	    if (selected != null) {
+		for(int i = 0; i < selected.size(); i++) {
+		    selectChild(selected.get(i), false, true); 
+		}
+	    }
+	}
+	
+
+	/////////////////
+	// Helper methods
+	/////////////////
+	
+	public void selectChild(Accessible child, boolean select, boolean replaceSelection) {
+	    AccessibleSelection childSelection = child.getAccessibleContext().getAccessibleSelection();
+	    if (childSelection != null) {
+		if (select) {
+		    childSelection.selectAllAccessibleSelection();
+		} else {
+		    childSelection.clearAccessibleSelection();
+		}
+	    }
+	}
+	
+	public boolean isSelectable(Accessible child) {
+	    return true;
+	}
+	
+	/**
+	 *  a panel for node/edge with labels is considered selected if the node/engine is selected
+	 */
+	public boolean isSelected(Accessible child) {
+	    if (child instanceof AccessibleEngineAndLabelsPanel) {
+		AccessibleEngineAndLabelsPanel panel = (AccessibleEngineAndLabelsPanel)child;
+		return panel.isSelected(panel.engine);
+	    }
+	    return false;
+	}
 
 
-    public List<Accessible> getSelectedAccessibleChildren() {
-        ArrayList<Accessible> selected = new ArrayList<Accessible>();
-        List<Accessible> children = getAccessibleChildren();
-        for(int i = 0; i < children.size(); i++) {
-        Accessible child = children.get(i);
-        if (isSelected(child)) {
-            selected.add(child);        
-        }
-        }
-        return selected;
-    }
-
-    
-    public Accessible getAccessibleChild(Object obj) {
-        if (obj instanceof TSObject) {
-        IDrawEngine eng = TypeConversions.getDrawEngine((TSObject)obj);
-        if (eng != null && eng instanceof Accessible) {
-            AccessibleEngineAndLabelsPanel panel = panels.get(eng);
-            if (panel == null) {                
-            panel = new AccessibleEngineAndLabelsPanel((Accessible)eng);
-            panel.getAccessibleContext().setAccessibleParent(ADGraphWindow.this);
-            panels.put(eng, panel);
-            }
-            return panel;
-        }
-        }
-        return null;
-    }
+	public List<Accessible> getAccessibleChildren() {
+	    ArrayList<Accessible> children = new ArrayList<Accessible>();
+	    if (m_drawingAreaCtrl != null) { 
+		ETList<TSGraphObject> nodesAndEdges = new ETArrayList<TSGraphObject>();
+		nodesAndEdges.addAll(getGraph().edges());
+		nodesAndEdges.addAll(getGraph().nodes());
+		Iterator<TSGraphObject> iter = nodesAndEdges.iterator();
+		while(iter.hasNext()) {
+		    TSGraphObject obj = iter.next();		    
+		    IDrawEngine eng = TypeConversions.getDrawEngine(obj);
+		    if (eng instanceof Accessible) {
+			if (eng != null && eng instanceof Accessible) {
+			    AccessibleEngineAndLabelsPanel panel = panels.get(eng);
+			    if (panel == null) { 				
+				panel = new AccessibleEngineAndLabelsPanel((Accessible)eng);
+				panel.getAccessibleContext().setAccessibleParent(ADGraphWindow.this);
+				panels.put(eng, panel);
+			    }
+			    children.add(panel);
+			}
+		    }
+		}
+	    }
+	    return children;
+	}
 
 
-    ////////////////////////////////
-    // Property Change Notifications
-    ////////////////////////////////
+	public List<Accessible> getSelectedAccessibleChildren() {
+	    ArrayList<Accessible> selected = new ArrayList<Accessible>();
+	    List<Accessible> children = getAccessibleChildren();
+	    for(int i = 0; i < children.size(); i++) {
+		Accessible child = children.get(i);
+		if (isSelected(child)) {
+		    selected.add(child);		
+		}
+	    }
+	    return selected;
+	}
 
-    
-    public void registerAsGraphListener() {      
-
-        ACS_GraphListener listener = new ACS_GraphListener(); 
-        getGraphManager().getEventManager().addGraphChangeListener(getGraphManager(),listener);  
-        ((TSEEventManager)getGraphManager().getEventManager()).addSelectionChangeListener(getGraphManager(), listener);      
-        ((TSEEventManager)getGraphManager().getEventManager()).addViewportChangeListener(ADGraphWindow.this, listener);
-    }
-
-    
-    public class ACS_GraphListener implements TSGraphChangeListener, TSESelectionChangeListener, TSEViewportChangeListener {
-        
-        public void graphChanged(TSGraphChangeEvent event) {     
-    
-        if ((event.getType() == TSGraphChangeEvent.NODE_INSERTED) ||
-            (event.getType() == TSGraphChangeEvent.EDGE_INSERTED)) 
-        {                        
-            Accessible child = getAccessibleChild(event.getSource());
-            firePropertyChange(ACCESSIBLE_CHILD_PROPERTY, null, child);
-        } 
-        else if ((event.getType() == TSGraphChangeEvent.NODE_REMOVED) ||
-             (event.getType() == TSGraphChangeEvent.NODE_DISCARDED) ||
-             (event.getType() == TSGraphChangeEvent.EDGE_REMOVED) ||
-             (event.getType() == TSGraphChangeEvent.EDGE_DISCARDED)) 
-        {           
-            Accessible child = getAccessibleChild(event.getSource());
-            firePropertyChange(ACCESSIBLE_CHILD_PROPERTY, child, null);
-        } 
-        else if ((event.getType() == TSGraphChangeEvent.NODE_RENAMED) ||
-             (event.getType() == TSGraphChangeEvent.EDGE_RENAMED)) 
-        {   
-            
-            ;
-        }
-            
-        }
+	
+	public Accessible getAccessibleChild(Object obj) {
+	    if (obj instanceof TSObject) {
+		IDrawEngine eng = TypeConversions.getDrawEngine((TSObject)obj);
+		if (eng != null && eng instanceof Accessible) {
+		    AccessibleEngineAndLabelsPanel panel = panels.get(eng);
+		    if (panel == null) { 				
+			panel = new AccessibleEngineAndLabelsPanel((Accessible)eng);
+			panel.getAccessibleContext().setAccessibleParent(ADGraphWindow.this);
+			panels.put(eng, panel);
+		    }
+		    return panel;
+		}
+	    }
+	    return null;
+	}
 
 
-        public void selectionChanged(TSESelectionChangeEvent event) {   
-        Object source = event.getSource();
-        Object oldValue = null;
-        Object newValue = null;
-        
-        if (event.getData() instanceof TSESelectionChangeEventData) {
-            TSESelectionChangeEventData data = (TSESelectionChangeEventData)event.getData();
-            if (data != null) {
-            if (data.isSelected()) {
-                newValue = source; 
-            } else if (data.wasSelected()) {
-                oldValue = source;
-            }
-            }
-        }
+	////////////////////////////////
+	// Property Change Notifications
+	////////////////////////////////
 
-        firePropertyChange(ACCESSIBLE_SELECTION_PROPERTY, oldValue, newValue);
+	
+	public void registerAsGraphListener() {		 
 
-        if (source != null) {
-            Accessible child;
-            if (source instanceof TSLabel) {
-            child = getAccessibleChild(((TSGraphObject)event.getSource()).getOwner());
-            } else {
-            child = getAccessibleChild(event.getSource());
-            }
-            if (child != null) {
-            child.getAccessibleContext().firePropertyChange(ACCESSIBLE_SELECTION_PROPERTY, oldValue, newValue);
-            }
-        }
-        
-        
-        }
-        
-        public void viewportChanged(TSEViewportChangeEvent event) {
-        ;
-        }
-        
-    }
+	    ACS_GraphListener listener = new ACS_GraphListener(); 
+	    getGraphManager().getEventManager().addGraphChangeListener(getGraphManager(),listener);  
+	    ((TSEEventManager)getGraphManager().getEventManager()).addSelectionChangeListener(getGraphManager(), listener);      
+	    ((TSEEventManager)getGraphManager().getEventManager()).addViewportChangeListener(ADGraphWindow.this, listener);
+	}
 
-    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        //System.out.println("\nFIRED : AccessibleADGraphWindow \n propertyName = "+propertyName+"\n oldValue = "+oldValue+"\n newValue = "+newValue);
-        super.firePropertyChange(propertyName, oldValue, newValue);
-    }
-    
+	
+	public class ACS_GraphListener implements TSGraphChangeListener, TSESelectionChangeListener, TSEViewportChangeListener {
+	    
+	    public void graphChanged(TSGraphChangeEvent event) {     
+	
+		if ((event.getType() == TSGraphChangeEvent.NODE_INSERTED) ||
+		    (event.getType() == TSGraphChangeEvent.EDGE_INSERTED)) 
+		{ 		    			 
+		    Accessible child = getAccessibleChild(event.getSource());
+		    firePropertyChange(ACCESSIBLE_CHILD_PROPERTY, null, child);
+		} 
+		else if ((event.getType() == TSGraphChangeEvent.NODE_REMOVED) ||
+			 (event.getType() == TSGraphChangeEvent.NODE_DISCARDED) ||
+			 (event.getType() == TSGraphChangeEvent.EDGE_REMOVED) ||
+			 (event.getType() == TSGraphChangeEvent.EDGE_DISCARDED)) 
+		{ 		    
+		    Accessible child = getAccessibleChild(event.getSource());
+		    firePropertyChange(ACCESSIBLE_CHILD_PROPERTY, child, null);
+		} 
+		else if ((event.getType() == TSGraphChangeEvent.NODE_RENAMED) ||
+			 (event.getType() == TSGraphChangeEvent.EDGE_RENAMED)) 
+		{ 	
+		    
+		    ;
+		}
+		    
+	    }
+
+
+	    public void selectionChanged(TSESelectionChangeEvent event) {   
+		Object source = event.getSource();
+		Object oldValue = null;
+		Object newValue = null;
+		
+		if (event.getData() instanceof TSESelectionChangeEventData) {
+		    TSESelectionChangeEventData data = (TSESelectionChangeEventData)event.getData();
+		    if (data != null) {
+			if (data.isSelected()) {
+			    newValue = source; 
+			} else if (data.wasSelected()) {
+			    oldValue = source;
+			}
+		    }
+		}
+
+		firePropertyChange(ACCESSIBLE_SELECTION_PROPERTY, oldValue, newValue);
+
+		if (source != null) {
+		    Accessible child;
+		    if (source instanceof TSLabel) {
+			child = getAccessibleChild(((TSGraphObject)event.getSource()).getOwner());
+		    } else {
+			child = getAccessibleChild(event.getSource());
+		    }
+		    if (child != null) {
+			child.getAccessibleContext().firePropertyChange(ACCESSIBLE_SELECTION_PROPERTY, oldValue, newValue);
+		    }
+		}
+		
+		
+	    }
+	    
+	    public void viewportChanged(TSEViewportChangeEvent event) {
+		;
+	    }
+	    
+	}
+
+	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+	    //System.out.println("\nFIRED : AccessibleADGraphWindow \n propertyName = "+propertyName+"\n oldValue = "+oldValue+"\n newValue = "+newValue);
+	    super.firePropertyChange(propertyName, oldValue, newValue);
+	}
+	
 
     }
 
@@ -1123,402 +1119,402 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     ////////////////////////////////////////////////
 
     public class AccessibleEngineAndLabelsPanel extends AccessibleContext
-    implements Accessible, AccessibleComponent, AccessibleSelection,
-           AccessibleSelectionParent
+	implements Accessible, AccessibleComponent, AccessibleSelection,
+		   AccessibleSelectionParent
     {
-    
+	
 
-    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        //System.out.println("\nFIRED : AccessibleEngineAndLabelsPanel \n propertyName = "+propertyName+"\n oldValue = "+oldValue+"\n newValue = "+newValue);
-        super.firePropertyChange(propertyName, oldValue, newValue);
-    }
+	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+	    //System.out.println("\nFIRED : AccessibleEngineAndLabelsPanel \n propertyName = "+propertyName+"\n oldValue = "+oldValue+"\n newValue = "+newValue);
+	    super.firePropertyChange(propertyName, oldValue, newValue);
+	}
 
-    public AccessibleContext getAccessibleContext() {
-        return this;
-    }
-    
+	public AccessibleContext getAccessibleContext() {
+	    return this;
+	}
+	
 
-    public Accessible engine;
+	public Accessible engine;
 
-    public AccessibleEngineAndLabelsPanel(Accessible eng) {     
-        this.engine = eng;      
-    }
+	public AccessibleEngineAndLabelsPanel(Accessible eng) {	    
+	    this.engine = eng;	    
+	}
 
-    public Locale getLocale() {
-        return Locale.US;
-    }
+	public Locale getLocale() {
+	    return Locale.US;
+	}
 
-    public int getAccessibleIndexInParent() {
-        return 0;
-    }
+	public int getAccessibleIndexInParent() {
+	    return 0;
+	}
 
-    public AccessibleStateSet getAccessibleStateSet() {
-        return new AccessibleStateSet(new AccessibleState[] {
-        AccessibleState.SHOWING,
-        AccessibleState.VISIBLE,
-        AccessibleState.ENABLED,        
-        AccessibleState.FOCUSABLE,  
-        AccessibleState.SELECTABLE  
-        });     
-    }
+	public AccessibleStateSet getAccessibleStateSet() {
+	    return new AccessibleStateSet(new AccessibleState[] {
+		AccessibleState.SHOWING,
+		AccessibleState.VISIBLE,
+		AccessibleState.ENABLED, 		
+		AccessibleState.FOCUSABLE,	
+		AccessibleState.SELECTABLE	
+	    });	    
+	}
 
-    public String getAccessibleName(){
-        return engine.getAccessibleContext().getAccessibleName();
-    }
+	public String getAccessibleName(){
+	    return engine.getAccessibleContext().getAccessibleName();
+	}
 
-    public String getAccessibleDescription(){
-        return engine.getAccessibleContext().getAccessibleDescription();
-    }
+	public String getAccessibleDescription(){
+	    return engine.getAccessibleContext().getAccessibleDescription();
+	}
 
-    public int getAccessibleChildrenCount() {
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null) {
-        return children.size();
-        }
-        return 0;
-    }
-    
-    
-    public Accessible getAccessibleChild(int i) {
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null && i < children.size()) {
-        return children.get(i);
-        }
-        return null;
-    }
+	public int getAccessibleChildrenCount() {
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null) {
+		return children.size();
+	    }
+	    return 0;
+	}
+	
+	
+	public Accessible getAccessibleChild(int i) {
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null && i < children.size()) {
+		return children.get(i);
+	    }
+	    return null;
+	}
 
-    
-    public AccessibleRole getAccessibleRole() {
-        return AccessibleRole.PANEL;
-    }
-    
-    
-    public AccessibleSelection getAccessibleSelection() {
-        return this;
-    }
+	
+	public AccessibleRole getAccessibleRole() {
+	    return AccessibleRole.PANEL;
+	}
+	
+	
+	public AccessibleSelection getAccessibleSelection() {
+	    return this;
+	}
 
-    public AccessibleComponent getAccessibleComponent() {
-        return this;
-    }
+	public AccessibleComponent getAccessibleComponent() {
+	    return this;
+	}
 
 
-    ////////////////////////////////
-    // interface AccessibleComponent
-    ////////////////////////////////
+	////////////////////////////////
+	// interface AccessibleComponent
+	////////////////////////////////
 
-    public java.awt.Color getBackground() {
-        return null;
-    }
+	public java.awt.Color getBackground() {
+	    return null;
+	}
 
-    public void setBackground(java.awt.Color color) {
-        ;
-    }
+	public void setBackground(java.awt.Color color) {
+	    ;
+	}
 
-    public java.awt.Color getForeground() {
-        return null;
-    }
+	public java.awt.Color getForeground() {
+	    return null;
+	}
 
-    public void setForeground(java.awt.Color color) {
-        ;
-    }
+	public void setForeground(java.awt.Color color) {
+	    ;
+	}
 
-    public java.awt.Cursor getCursor() {
-        return null; //getGraphWindow().getCursor();
-    }
-    
-    public void setCursor(java.awt.Cursor cursor) {
-        ;
-    }
+	public java.awt.Cursor getCursor() {
+	    return null; //getGraphWindow().getCursor();
+	}
+	
+	public void setCursor(java.awt.Cursor cursor) {
+	    ;
+	}
 
-    public java.awt.Font getFont() {
-        return null;
-    }
+	public java.awt.Font getFont() {
+	    return null;
+	}
 
-    public void setFont(java.awt.Font font) {
-        ;
-    }
+	public void setFont(java.awt.Font font) {
+	    ;
+	}
 
-    public java.awt.FontMetrics getFontMetrics(java.awt.Font font) {
-        return null; //getGraphWindow().getFontMetrics(font);
-    }
-    public boolean isEnabled() {
-        return true;
-    }
+	public java.awt.FontMetrics getFontMetrics(java.awt.Font font) {
+	    return null; //getGraphWindow().getFontMetrics(font);
+	}
+	public boolean isEnabled() {
+	    return true;
+	}
 
-    public void setEnabled(boolean enabled) {
+	public void setEnabled(boolean enabled) {
 
-    }
+	}
 
-    public boolean isVisible() {
-        return true;
-    }
+	public boolean isVisible() {
+	    return true;
+	}
 
-    public void setVisible(boolean visible) {
-        ;
-    }
+	public void setVisible(boolean visible) {
+	    ;
+	}
 
-    public boolean isShowing() {
-        return true;
-    }
-    
-    public boolean contains(java.awt.Point point) {
+	public boolean isShowing() {
+	    return true;
+	}
+	
+	public boolean contains(java.awt.Point point) {
             Rectangle r = getBounds();
             return r.contains(point);
-    }
-    
-    public java.awt.Point getLocationOnScreen() {
-        java.awt.Point p = null;
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null) {
-        for(int i = 0; i < children.size(); i++) {
-            Accessible child = children.get(i);
-            if (child != null) {
-            java.awt.Point pc = child.getAccessibleContext().getAccessibleComponent().getLocationOnScreen();
-            if (pc != null) {
-                if (p == null) {
-                p = pc;
-                } else {
-                if (pc.x < p.x) {
-                    p.setLocation(pc.x, p.y);
-                }
-                if (pc.y < p.y) {
-                    p.setLocation(p.x, pc.y);
-                }
-                }
-            } 
-            }
-        }
-        }  
-        return p;
-    }
-    
-    public java.awt.Point getLocation() {
-        java.awt.Point p = null;
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null) {
-        for(int i = 0; i < children.size(); i++) {
-            Accessible child = children.get(i);
-            if (child != null) {
-            java.awt.Point pc = child.getAccessibleContext().getAccessibleComponent().getLocation();
-            if (pc != null) {
-                if (p == null) {
-                p = pc;
-                } else {
-                if (pc.x < p.x) {
-                    p.setLocation(pc.x, p.y);
-                }
-                if (pc.y < p.y) {
-                    p.setLocation(p.x, pc.y);
-                }
-                }
-            } 
-            }
-        }
-        }  
-        return p;
-    }
-    
-    public void setLocation(java.awt.Point point) {
-        ;
-    }
-    
-    public java.awt.Rectangle getBounds() {
-        java.awt.Rectangle bounds = null;
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null) {
-        for(int i = 0; i < children.size(); i++) {
-            Accessible child = children.get(i);
-            if (child != null) {
-            java.awt.Rectangle bc = child.getAccessibleContext().getAccessibleComponent().getBounds();
-            if (bc != null) {
-                if (bounds == null) {
-                bounds = bc;
-                } else {
-                bounds = bounds.union(bc);
-                }
-            }
-            }
-        }
-        }  
-        return bounds;
-    }
-    
-    public void setBounds(java.awt.Rectangle bounds) {
-        ;
-    }
+	}
+	
+	public java.awt.Point getLocationOnScreen() {
+	    java.awt.Point p = null;
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null) {
+		for(int i = 0; i < children.size(); i++) {
+		    Accessible child = children.get(i);
+		    if (child != null) {
+			java.awt.Point pc = child.getAccessibleContext().getAccessibleComponent().getLocationOnScreen();
+			if (pc != null) {
+			    if (p == null) {
+				p = pc;
+			    } else {
+				if (pc.x < p.x) {
+				    p.setLocation(pc.x, p.y);
+				}
+				if (pc.y < p.y) {
+				    p.setLocation(p.x, pc.y);
+				}
+			    }
+			} 
+		    }
+		}
+	    }  
+	    return p;
+	}
+	
+	public java.awt.Point getLocation() {
+	    java.awt.Point p = null;
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null) {
+		for(int i = 0; i < children.size(); i++) {
+		    Accessible child = children.get(i);
+		    if (child != null) {
+			java.awt.Point pc = child.getAccessibleContext().getAccessibleComponent().getLocation();
+			if (pc != null) {
+			    if (p == null) {
+				p = pc;
+			    } else {
+				if (pc.x < p.x) {
+				    p.setLocation(pc.x, p.y);
+				}
+				if (pc.y < p.y) {
+				    p.setLocation(p.x, pc.y);
+				}
+			    }
+			} 
+		    }
+		}
+	    }  
+	    return p;
+	}
+	
+	public void setLocation(java.awt.Point point) {
+	    ;
+	}
+	
+	public java.awt.Rectangle getBounds() {
+	    java.awt.Rectangle bounds = null;
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null) {
+		for(int i = 0; i < children.size(); i++) {
+		    Accessible child = children.get(i);
+		    if (child != null) {
+			java.awt.Rectangle bc = child.getAccessibleContext().getAccessibleComponent().getBounds();
+			if (bc != null) {
+			    if (bounds == null) {
+				bounds = bc;
+			    } else {
+				bounds = bounds.union(bc);
+			    }
+			}
+		    }
+		}
+	    }  
+	    return bounds;
+	}
+	
+	public void setBounds(java.awt.Rectangle bounds) {
+	    ;
+	}
 
-    public java.awt.Dimension getSize() {
+	public java.awt.Dimension getSize() {
             Rectangle r = getBounds();
             return new Dimension(r.width, r.height);
-    }
-    
-    public void setSize(java.awt.Dimension dim) {
-        ;
-    }
-    
-    public javax.accessibility.Accessible getAccessibleAt(java.awt.Point point) {       
-        return null;
-    }
+	}
+	
+	public void setSize(java.awt.Dimension dim) {
+	    ;
+	}
+	
+	public javax.accessibility.Accessible getAccessibleAt(java.awt.Point point) {	    
+	    return null;
+	}
 
-    public boolean isFocusTraversable() {
-        return true;
-    }
+	public boolean isFocusTraversable() {
+	    return true;
+	}
 
-    public void requestFocus() {
-        ;
-    }
+	public void requestFocus() {
+	    ;
+	}
 
-    public void addFocusListener(java.awt.event.FocusListener listener) {
-        ;
-    }
+	public void addFocusListener(java.awt.event.FocusListener listener) {
+	    ;
+	}
 
-    public void removeFocusListener(java.awt.event.FocusListener listener) {
-        ;
-    }
-
-
-    ////////////////////////////////
-    // interface AccessibleSelection
-    ////////////////////////////////
-
-    public int getAccessibleSelectionCount() {
-        List<Accessible> selected = getSelectedAccessibleChildren();
-        if (selected != null) {
-        return selected.size();
-        }
-        return 0;
-    }
-    
-    public Accessible getAccessibleSelection(int i) {
-        List<Accessible> selected = getSelectedAccessibleChildren();
-        if (selected != null && i < selected.size()) {
-        return selected.get(i);
-        }
-        return null;
-    }
-    
-    public boolean isAccessibleChildSelected(int i) {
-        Accessible child = getAccessibleChild(i);      
-        if (child != null) {
-        return isSelected(child);       
-        }
-        return false;
-    }
-    
-    public void addAccessibleSelection(int i) {
-        Accessible child = getAccessibleChild(i);       
-        if (child != null) {
-        selectChild(child, true, false);
-        }
-    }
-    
-    public void removeAccessibleSelection(int i) {
-        List<Accessible> selected = getSelectedAccessibleChildren();
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null && i < children.size()) {
-        //if (isSelected(children.get(i))) {
-            selectChild(children.get(i), false, true); 
-        //}
-        }
-    }
-
-    public void selectAllAccessibleSelection() {
-        List<Accessible> children = getAccessibleChildren();
-        if (children != null) {
-        for(int i = 0; i < children.size(); i++) {
-            selectChild(children.get(i), true, false); 
-        }
-        }       
-    }
-    
-    public void clearAccessibleSelection() {
-        List<Accessible> selected = getSelectedAccessibleChildren();
-        if (selected != null) {
-        for(int i = 0; i < selected.size(); i++) {
-            selectChild(selected.get(i), false, true); 
-        }
-        }
-    }
-    
-
-    /////////////////
-    // Helper methods
-    /////////////////
-
-    public void selectChild(Accessible child, boolean select, boolean replaceSelection) {
-        if (child instanceof IDrawEngine) {
-        if (replaceSelection) {
-            deselectAll(false);
-        }
-        if ( ! select) {
-            ((IDrawEngine)child).selectAllCompartments(false);
-        }
-        ((IDrawEngine)child).getParent().getTSObject().setSelected(select);
-        getDrawingArea().onGraphEvent(IGraphEventKind.GEK_POST_SELECT, null, null, null);       
-        ETGraph etGraph = getGraph() instanceof ETGraph ? (ETGraph) getGraph() : null;
-        getDrawingArea().fireSelectEvent(etGraph != null ? etGraph.getSelectedObjects(false, false) : null);
-        getDrawingArea().refresh(true);
-        }
-
-    }
-    
-    public boolean isSelectable(Accessible child) {
-        return true;
-    }
-    
-    public boolean isSelected(Accessible child) {
-        if (child instanceof IDrawEngine) {
-        ETGraph etGraph = getGraph() instanceof ETGraph ? (ETGraph) getGraph() : null;
-        if (etGraph != null) { 
-            List<TSGraphObject> selected = etGraph.getSelectedObjects(false, false);
-            if (selected != null 
-            && selected.contains(((IDrawEngine)child).getParent().getTSObject())) 
-            {
-            return true;
-            }
-        }
-        }
-        return false;
-    }
+	public void removeFocusListener(java.awt.event.FocusListener listener) {
+	    ;
+	}
 
 
-    public List<Accessible> getAccessibleChildren() {
-        ArrayList<Accessible> children = new ArrayList<Accessible>();
-        if (engine != null) {
-        engine.getAccessibleContext().setAccessibleParent(this);
-        children.add(engine);
-        ILabelManager labelMgr = ((IDrawEngine)engine).getLabelManager();       
-        if (labelMgr != null) {
-            for (int lIndx = 0; /* break below */; lIndx++) {
-            IETLabel label = null;
-            label = labelMgr.getLabelByIndex(lIndx);
-            if (label != null) {
-                IDrawEngine eng = label.getEngine();
-                if (eng instanceof Accessible) {
-                ((Accessible)eng).getAccessibleContext().setAccessibleParent(this);
-                children.add((Accessible)eng);
-                }
-            } else {
-                break;
-            } 
-            }
-        }
-        }
-        return children;
-    }
+	////////////////////////////////
+	// interface AccessibleSelection
+	////////////////////////////////
+
+	public int getAccessibleSelectionCount() {
+	    List<Accessible> selected = getSelectedAccessibleChildren();
+	    if (selected != null) {
+		return selected.size();
+	    }
+	    return 0;
+	}
+	
+	public Accessible getAccessibleSelection(int i) {
+	    List<Accessible> selected = getSelectedAccessibleChildren();
+	    if (selected != null && i < selected.size()) {
+		return selected.get(i);
+	    }
+	    return null;
+	}
+	
+	public boolean isAccessibleChildSelected(int i) {
+	    Accessible child = getAccessibleChild(i);	   
+	    if (child != null) {
+		return isSelected(child);	    
+	    }
+	    return false;
+	}
+	
+	public void addAccessibleSelection(int i) {
+	    Accessible child = getAccessibleChild(i);	    
+	    if (child != null) {
+		selectChild(child, true, false);
+	    }
+	}
+	
+	public void removeAccessibleSelection(int i) {
+	    List<Accessible> selected = getSelectedAccessibleChildren();
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null && i < children.size()) {
+		//if (isSelected(children.get(i))) {
+		    selectChild(children.get(i), false, true); 
+		//}
+	    }
+	}
+
+	public void selectAllAccessibleSelection() {
+	    List<Accessible> children = getAccessibleChildren();
+	    if (children != null) {
+		for(int i = 0; i < children.size(); i++) {
+		    selectChild(children.get(i), true, false); 
+		}
+	    }	    
+	}
+	
+	public void clearAccessibleSelection() {
+	    List<Accessible> selected = getSelectedAccessibleChildren();
+	    if (selected != null) {
+		for(int i = 0; i < selected.size(); i++) {
+		    selectChild(selected.get(i), false, true); 
+		}
+	    }
+	}
+	
+
+	/////////////////
+	// Helper methods
+	/////////////////
+
+	public void selectChild(Accessible child, boolean select, boolean replaceSelection) {
+	    if (child instanceof IDrawEngine) {
+		if (replaceSelection) {
+		    deselectAll(false);
+		}
+		if ( ! select) {
+		    ((IDrawEngine)child).selectAllCompartments(false);
+		}
+		((IDrawEngine)child).getParent().getTSObject().setSelected(select);
+		getDrawingArea().onGraphEvent(IGraphEventKind.GEK_POST_SELECT, null, null, null);		
+		ETGraph etGraph = getGraph() instanceof ETGraph ? (ETGraph) getGraph() : null;
+		getDrawingArea().fireSelectEvent(etGraph != null ? etGraph.getSelectedObjects(false, false) : null);
+		getDrawingArea().refresh(true);
+	    }
+
+	}
+	
+	public boolean isSelectable(Accessible child) {
+	    return true;
+	}
+	
+	public boolean isSelected(Accessible child) {
+	    if (child instanceof IDrawEngine) {
+		ETGraph etGraph = getGraph() instanceof ETGraph ? (ETGraph) getGraph() : null;
+		if (etGraph != null) { 
+		    List<TSGraphObject> selected = etGraph.getSelectedObjects(false, false);
+		    if (selected != null 
+			&& selected.contains(((IDrawEngine)child).getParent().getTSObject())) 
+		    {
+			return true;
+		    }
+		}
+	    }
+	    return false;
+	}
 
 
-    public List<Accessible> getSelectedAccessibleChildren() {
-        ArrayList<Accessible> selected = new ArrayList<Accessible>();
-        List<Accessible> children = getAccessibleChildren();
-        for(int i = 0; i < children.size(); i++) {
-        Accessible child = children.get(i);
-        if (isSelected(child)) {
-            selected.add(child);        
-        }
-        }
-        return selected;
-    }
+	public List<Accessible> getAccessibleChildren() {
+	    ArrayList<Accessible> children = new ArrayList<Accessible>();
+	    if (engine != null) {
+		engine.getAccessibleContext().setAccessibleParent(this);
+		children.add(engine);
+		ILabelManager labelMgr = ((IDrawEngine)engine).getLabelManager();	    
+		if (labelMgr != null) {
+		    for (int lIndx = 0; /* break below */; lIndx++) {
+			IETLabel label = null;
+			label = labelMgr.getLabelByIndex(lIndx);
+			if (label != null) {
+			    IDrawEngine eng = label.getEngine();
+			    if (eng instanceof Accessible) {
+				((Accessible)eng).getAccessibleContext().setAccessibleParent(this);
+				children.add((Accessible)eng);
+			    }
+			} else {
+			    break;
+			} 
+		    }
+		}
+	    }
+	    return children;
+	}
+
+
+	public List<Accessible> getSelectedAccessibleChildren() {
+	    ArrayList<Accessible> selected = new ArrayList<Accessible>();
+	    List<Accessible> children = getAccessibleChildren();
+	    for(int i = 0; i < children.size(); i++) {
+		Accessible child = children.get(i);
+		if (isSelected(child)) {
+		    selected.add(child);		
+		}
+	    }
+	    return selected;
+	}
 
 
     }
