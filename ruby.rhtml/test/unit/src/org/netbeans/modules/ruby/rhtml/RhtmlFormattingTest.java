@@ -17,134 +17,56 @@
 package org.netbeans.modules.ruby.rhtml;
 
 import javax.swing.JEditorPane;
-import javax.swing.JTextArea;
-import javax.swing.text.Caret;
 import org.netbeans.api.gsf.FormattingPreferences;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.HTMLLexerFormatter;
-import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.IndentPrefs;
-import org.netbeans.modules.ruby.RubyTestBase;
-import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
+
+import org.netbeans.api.gsf.ParserResult;
 
 /**
  *
  * @author Tor Norbye
  */
-public class RhtmlFormattingTest extends RubyTestBase {
-
+public class RhtmlFormattingTest extends RhtmlTestBase {
     public RhtmlFormattingTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        TestLanguageProvider.register(RhtmlTokenId.language());
-        TestLanguageProvider.register(HTMLTokenId.language());
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    @Override
-    protected BaseDocument getDocument(String s) {
-        BaseDocument doc = super.getDocument(s);
-        doc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
-        doc.putProperty("mimeType", RubyInstallation.RHTML_MIME_TYPE);
-        
-        return doc;
-    }
-    
-    @Override
-    protected BaseDocument getDocument(FileObject fo) {
-        BaseDocument doc = super.getDocument(fo);
-        doc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
-        doc.putProperty("mimeType", RubyInstallation.RHTML_MIME_TYPE);
-        
-        return doc;
-    }
-    
+    @SuppressWarnings("unchecked")
     public String format(BaseDocument doc, int startPos, int endPos, FormattingPreferences preferences) throws Exception {
-        //ParserResult result = parse(fo);
-        ParserResult result = null;
-
-        // First format HTML, since the Ruby formatter relies on that
-        //new FormattingContext()
-        //HtmlIndentTask htmlTask = new HtmlIndentTask();
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(startPos);
-
-        // Use the HtmlIndentTask to format
-//        JEditorPane pane = new JEditorPane();
-//        pane.setDocument(doc);
-//        RhtmlKit kit = new RhtmlKit();
-//        pane.setEditorKit(kit); 
-//        assertEquals(RubyInstallation.RHTML_MIME_TYPE, pane.getDocument().getProperty("mimeType"));
-//        Action a = kit.getActionByName(BaseKit.formatAction);
-//        assertNotNull(a);
-//        a.actionPerformed(new ActionEvent(pane, 0, ""));
-
-        // ... that doesn't work, so do what the indent task currently does anyway:
         
-        String topLevelLang = NbEditorUtilities.getMimeType(doc);
-        Language language = Language.find(topLevelLang);
-        LanguagePath languagePath = LanguagePath.get(language);
-
-        if (!"text/html".equals(topLevelLang)) {
-            Language htmlLanguage = Language.find("text/html");
-            languagePath = LanguagePath.get(languagePath, htmlLanguage); //NOI18N
-        }
-
-        HTMLLexerFormatter f = new HTMLLexerFormatter(HTMLKit.class, languagePath);
+        String text = doc.getText(0, doc.getLength());
+        JEditorPane pane = getPane(text, startPos, endPos);
+        assertEquals(RubyInstallation.RHTML_MIME_TYPE, pane.getDocument().getProperty("mimeType"));
         
-        String unformatted = doc.getText(0, doc.getLength());
-        JEditorPane pane = new JEditorPane();
-        pane.setContentType(HTMLKit.HTML_MIME_TYPE);
-        HTMLKit kit = new HTMLKit();
-        pane.setEditorKit(kit);
-        BaseDocument bdoc = (BaseDocument)pane.getDocument();
+        runKitAction(pane, BaseKit.formatAction, "");
+        
+        BaseDocument bdoc = (BaseDocument) pane.getDocument();
 
-        // The HTML indent engine requires a custom indent shift width setting since
-        // it no longer creates a formatter
-        Settings.setValue(HTMLKit.class, SettingsNames.INDENT_SHIFT_WIDTH, Integer.valueOf(2));        
-        if (Utilities.getKitClass(pane) != HTMLKit.class) {
-            Settings.setValue(Utilities.getKitClass(pane), SettingsNames.INDENT_SHIFT_WIDTH, Integer.valueOf(2));        
-        }
-        bdoc.settingsChange(null);
-        
-        bdoc.insertString(0, unformatted, null);
-        f.reformat(bdoc, startPos, endPos, true);
-        
         Formatter formatter = getFormatter(preferences);
-
-        String htmlFormatted = bdoc.getText(0, bdoc.getLength());
+        String formatted = bdoc.getText(0, bdoc.getLength());
         
         doc.remove(0, doc.getLength());
-        doc.insertString(0, htmlFormatted, null);
-        
-        formatter.reindent(doc, startPos, endPos, result, preferences);
+        doc.insertString(0, formatted, null);
+       
+        // Apply Ruby formatting separately; can't get the indent task factory to
+        // work (see RhtmlTestBase) because GsfIndentTask needs to find the RubyLanguage
+        // and the system file system doesn't seem to include it
 
-        String formatted = doc.getText(0, doc.getLength());
+        //ParserResult result = parse(fo);
+        ParserResult result = null;
+        formatter.reformat(doc, startPos, endPos, result, preferences);
+
+        formatted = doc.getText(0, doc.getLength());
         
         return formatted;
     }
     
+    @Override
     protected boolean runInEQ() {
         // Must run in AWT thread (BaseKit.install() checks for that)
         return true;
@@ -195,6 +117,12 @@ public class RhtmlFormattingTest extends RubyTestBase {
         reformatFileContents("testfiles/format2.rhtml");
     }
     
+    public void testFormat2b() throws Exception {
+        // Same as format2.rhtml, but flushed left to ensure that
+        // we're not reformatting correctly just by luck
+        reformatFileContents("testfiles/format2b.rhtml");
+    }
+    
     public void testFormat3() throws Exception {
         reformatFileContents("testfiles/format3.rhtml");
     }
@@ -203,10 +131,10 @@ public class RhtmlFormattingTest extends RubyTestBase {
         reformatFileContents("testfiles/format4.rhtml");
     }
     
-    public void testFormat5() throws Exception {
-        format("<%\ndef foo\nwhatever\nend\n%>\n",
-                "<%\ndef foo\n  whatever\nend\n%>\n", null);
-    }
+//    public void testFormat5() throws Exception {
+//        format("<%\ndef foo\nwhatever\nend\n%>\n",
+//                "<%\ndef foo\n  whatever\nend\n%>\n", null);
+//    }
     
 //    public void testFormat6() throws Exception {
 //        format("<% if true %>\nhello\n%<= foo %>\n<% end %>\n",

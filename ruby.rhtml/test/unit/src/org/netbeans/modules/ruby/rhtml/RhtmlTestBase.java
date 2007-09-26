@@ -17,11 +17,19 @@
 
 package org.netbeans.modules.ruby.rhtml;
 
+import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import javax.swing.JEditorPane;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.indent.IndentTestMimeDataProvider;
+import org.netbeans.modules.gsf.GsfIndentTaskFactory;
+import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -32,6 +40,9 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public abstract class RhtmlTestBase extends RubyTestBase {
+   private RhtmlIndentTaskFactory rhtmlReformatFactory;
+   private HtmlIndentTaskFactory htmlReformatFactory;
+   private GsfIndentTaskFactory rubyReformatFactory;
 
     public RhtmlTestBase(String testName) {
         super(testName);
@@ -42,10 +53,21 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         super.setUp();
         TestLanguageProvider.register(RhtmlTokenId.language());
         TestLanguageProvider.register(HTMLTokenId.language());
+        
+        rhtmlReformatFactory = new RhtmlIndentTaskFactory();
+        IndentTestMimeDataProvider.addInstances(RubyInstallation.RHTML_MIME_TYPE, rhtmlReformatFactory);
+        htmlReformatFactory = new HtmlIndentTaskFactory();
+        IndentTestMimeDataProvider.addInstances("text/html", htmlReformatFactory);
+        // Can't do this without LanguageRegistry finding Ruby
+        //rubyReformatFactory = new GsfIndentTaskFactory();
+        //IndentTestMimeDataProvider.addInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
     }
 
     @Override
     protected void tearDown() throws Exception {
+        IndentTestMimeDataProvider.removeInstances(RubyInstallation.RHTML_MIME_TYPE, rhtmlReformatFactory);
+        IndentTestMimeDataProvider.removeInstances("text/html", htmlReformatFactory);
+        //IndentTestMimeDataProvider.removeInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
         super.tearDown();
     }
     
@@ -65,6 +87,17 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         doc.putProperty("mimeType", RubyInstallation.RHTML_MIME_TYPE);
         
         return doc;
+    }
+    
+    protected JEditorPane getPane(String text, int startPos, int endPos) throws Exception {
+        String textWithMarkers = text;
+        if (startPos > 0 || endPos < text.length()) {
+            textWithMarkers = text.substring(0, startPos) + "$start$" + text.substring(startPos, endPos) + "$end$" + text.substring(endPos);
+        } else {
+            textWithMarkers = "^" + text;
+        }
+        
+        return getPane(textWithMarkers);
     }
     
     protected JEditorPane getPane(String text) throws Exception {
@@ -89,6 +122,11 @@ public abstract class RhtmlTestBase extends RubyTestBase {
                 
         BaseDocument bdoc = (BaseDocument)pane.getDocument();
 
+        bdoc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
+        bdoc.putProperty("mimeType", RubyInstallation.RHTML_MIME_TYPE);
+
+        Settings.setValue(RhtmlKit.class, NbEditorDocument.FORMATTER, new ExtFormatter(RhtmlKit.class));
+        
         bdoc.insertString(0, text, null);
         if (sourceStartPos != -1) {
             assert sourceEndPos != -1;
@@ -100,5 +138,12 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         }
         
         return pane;
+    }
+    
+    protected void runKitAction(JEditorPane pane, String actionName, String cmd) {
+        RhtmlKit kit = (RhtmlKit)pane.getEditorKit();
+        Action a = kit.getActionByName(actionName);
+        assertNotNull(a);
+        a.actionPerformed(new ActionEvent(pane, 0, cmd));
     }
 }

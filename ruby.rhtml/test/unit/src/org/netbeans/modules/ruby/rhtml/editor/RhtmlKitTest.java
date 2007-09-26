@@ -17,8 +17,6 @@
 
 package org.netbeans.modules.ruby.rhtml.editor;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -39,10 +37,7 @@ public class RhtmlKitTest extends RhtmlTestBase {
     public void toggleComment(String text, String expected) throws Exception {
         JEditorPane pane = getPane(text);
 
-        RhtmlKit kit = (RhtmlKit)pane.getEditorKit();
-        Action a = kit.getActionByName("comment"); // Should be toggle-comment, fix in GLF
-        assertNotNull(a);
-        a.actionPerformed(new ActionEvent(pane, 0, ""));
+        runKitAction(pane, "comment", ""); // Should be toggle-comment, fix in GLF
 
         String toggled = pane.getText();
         assertEquals(expected, toggled);
@@ -77,10 +72,7 @@ public class RhtmlKitTest extends RhtmlTestBase {
             pane.setSelectionEnd(start+selection.length());
             assertEquals(selection, pane.getSelectedText());
         }
-        RhtmlKit kit = (RhtmlKit)pane.getEditorKit();
-        Action a = kit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
-        assertNotNull(a);
-        a.actionPerformed(new ActionEvent(pane, 0, ""+insertText));
+        runKitAction(pane, DefaultEditorKit.defaultKeyTypedAction, ""+insertText);
         
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(expected, formatted);
@@ -101,10 +93,7 @@ public class RhtmlKitTest extends RhtmlTestBase {
         BaseDocument doc = (BaseDocument)pane.getDocument();
         char ch = doc.getChars(afterRemoveOffset-1, 1)[0];
         
-        RhtmlKit kit = (RhtmlKit)pane.getEditorKit();
-        Action a = kit.getActionByName(DefaultEditorKit.deletePrevCharAction);
-        assertNotNull(a);
-        a.actionPerformed(new ActionEvent(pane, 0, ""+ch));
+        runKitAction(pane, DefaultEditorKit.deletePrevCharAction, ""+ch);
         
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(expected, formatted);

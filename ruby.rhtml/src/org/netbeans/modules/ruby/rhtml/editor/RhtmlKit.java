@@ -112,6 +112,98 @@ public class RhtmlKit extends HTMLKit {
         return LexUtilities.getRubyTokenSequence(doc, offset) == null;
     }
 
+    private boolean handleDeletion(BaseDocument doc, int dotPos) {
+        if (dotPos > 0) {
+            try {
+                char ch = doc.getText(dotPos-1, 1).charAt(0);
+                if (ch == '%') {
+                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+                    TokenSequence<?extends TokenId> ts = th.tokenSequence();
+                    ts.move(dotPos);
+                    if (ts.movePrevious()) {
+                        Token<? extends TokenId> token = ts.token();
+                        if (token.id() == RhtmlTokenId.DELIMITER && ts.offset()+token.length() == dotPos && ts.moveNext()) {
+                            token = ts.token();
+                            if (token.id() == RhtmlTokenId.DELIMITER && ts.offset() == dotPos) {
+                                doc.remove(dotPos-1, 1+token.length());
+                                return true;
+                            }
+                        }
+                    }
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            }
+        }
+        
+        return false;
+    }
+
+    private boolean handleInsertion(BaseDocument doc, Caret caret, char c) {
+        int dotPos = caret.getDot();
+        // Bracket matching on <% %>
+        if ((dotPos > 0) && (c == '%' || c == '>')) {
+            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+            TokenSequence<?extends TokenId> ts = th.tokenSequence();
+            ts.move(dotPos);
+            try {
+                if (ts.moveNext() || ts.movePrevious()) {
+                    Token<? extends TokenId> token = ts.token();
+                    if (token.id() == RhtmlTokenId.HTML && doc.getText(dotPos-1, 1).charAt(0) == '<') {
+                        // See if there's anything ahead
+                        int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
+                        if (first == -1) {
+                            doc.insertString(dotPos, "%%>", null);
+                            caret.setDot(dotPos+1);
+                            return true;
+                        }
+                    }
+                    if (token.id() == RhtmlTokenId.DELIMITER) {
+                        String tokenText = token.text().toString();
+                        if (tokenText.endsWith("%>")) {
+                            // TODO - check that this offset is right
+                            int tokenPos = (c == '%') ? dotPos : dotPos-1;
+                            CharSequence suffix = DocumentUtilities.getText(doc, tokenPos, 2);
+                            if (CharSequenceUtilities.textEquals(suffix, "%>")) {
+                                caret.setDot(dotPos+1);
+                                return true;
+                            }
+                        } else if (tokenText.endsWith("<")) {
+                            // See if there's anything ahead
+                            int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
+                            if (first == -1) {
+                                doc.insertString(dotPos, "%%>", null);
+                                caret.setDot(dotPos+1);
+                                return true;
+                            }
+                        }
+                    }
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean handleBreak(BaseDocument doc, Caret caret) throws BadLocationException {
+        int dotPos = caret.getDot();
+
+        // First see if we're -right- before a %>, if so, just enter out
+        // of it
+        if (dotPos < doc.getLength()-3) {
+            String text = doc.getText(dotPos, 3);
+            if (text.equals(" %>") || text.startsWith("%>")) {
+                // TODO - double check at the lexical level!
+                caret.setDot(dotPos + text.indexOf('>')+1);
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     private class RhtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         private JTextComponent currentTarget;
         private ExtDefaultKeyTypedAction htmlAction;
@@ -122,61 +214,18 @@ public class RhtmlKit extends HTMLKit {
         
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            // Bracket matching on <% %>
             Caret caret = target.getCaret();
             BaseDocument doc = (BaseDocument)target.getDocument();
-            int dotPos = caret.getDot();
             String cmd = evt.getActionCommand();
-            if (cmd.length() > 0 && dotPos > 0) {
+            if (cmd.length() > 0) {
                 char c = cmd.charAt(0);
-                if (c == '%' || c == '>') {
-                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                    TokenSequence<?extends TokenId> ts = th.tokenSequence();
-                    ts.move(dotPos);
-                    try {
-                        if (ts.moveNext() || ts.movePrevious()) {
-                            Token<? extends TokenId> token = ts.token();
-                            if (token.id() == RhtmlTokenId.HTML && doc.getText(dotPos-1, 1).charAt(0) == '<') {
-                                // See if there's anything ahead
-                                //Token<? extends TokenId> ahead = getToken(doc, dotPos, false, true, false);
-                                int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
-                                if (first == -1) {
-                                    doc.insertString(dotPos, "%%>", null);
-                                    caret.setDot(dotPos+1);
-                                    return;
-                                }
-                            }
-                            if (token.id() == RhtmlTokenId.DELIMITER) {
-                                String tokenText = token.text().toString();
-                                if (tokenText.endsWith("%>")) {
-                                    // TODO - check that this offset is right
-                                    int tokenPos = (c == '%') ? dotPos : dotPos-1;
-                                    CharSequence suffix = DocumentUtilities.getText(doc, tokenPos, 2);
-                                    if (CharSequenceUtilities.textEquals(suffix, "%>")) {
-                                        caret.setDot(dotPos+1);
-                                        return;
-                                    }
-                                } else if (tokenText.endsWith("<")) {
-                                    // See if there's anything ahead
-                                    //Token<? extends TokenId> ahead = getToken(doc, dotPos, false, true, false);
-                                    int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
-                                    if (first == -1) {
-                                        doc.insertString(dotPos, "%%>", null);
-                                        caret.setDot(dotPos+1);
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                    } catch (BadLocationException ble) {
-                        Exceptions.printStackTrace(ble);
-                    }
-                    
+                if (handleInsertion(doc, caret, c)) {
+                    return;
                 }
             }
 
             // Delegate to HTML?
-            if (shouldDelegateToHtml(doc, dotPos)) {
+            if (shouldDelegateToHtml(doc, caret.getDot())) {
                 htmlAction.actionPerformed(evt, target);
                 return;
             }
@@ -255,13 +304,8 @@ public class RhtmlKit extends HTMLKit {
             try {
                 // First see if we're -right- before a %>, if so, just enter out
                 // of it
-                if (dotPos < doc.getLength()-3) {
-                    String text = doc.getText(dotPos, 3);
-                    if (text.equals(" %>") || text.startsWith("%>")) {
-                        // TODO - double check at the lexical level!
-                        caret.setDot(dotPos + text.indexOf('>')+1);
-                        return super.beforeBreak(target, doc, caret);
-                    }
+                if (handleBreak(doc, caret)) {
+                    return super.beforeBreak(target, doc, caret);
                 }
                 
                 int newOffset = rubyCompletion.beforeBreak(doc, dotPos, target);
@@ -311,27 +355,8 @@ public class RhtmlKit extends HTMLKit {
             Caret caret = target.getCaret();
             BaseDocument doc = (BaseDocument)target.getDocument();
             int dotPos = caret.getDot();
-            if (dotPos > 0) {
-                try {
-                    char ch = doc.getText(dotPos-1, 1).charAt(0);
-                    if (ch == '%') {
-                        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                        TokenSequence<?extends TokenId> ts = th.tokenSequence();
-                        ts.move(dotPos);
-                        if (ts.movePrevious()) {
-                            Token<? extends TokenId> token = ts.token();
-                            if (token.id() == RhtmlTokenId.DELIMITER && ts.offset()+token.length() == dotPos && ts.moveNext()) {
-                                token = ts.token();
-                                if (token.id() == RhtmlTokenId.DELIMITER && ts.offset() == dotPos) {
-                                    doc.remove(dotPos-1, 1+token.length());
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
-                }
+            if (handleDeletion(doc, dotPos)) {
+                return;
             }
 
             currentTarget = target;
@@ -369,7 +394,7 @@ public class RhtmlKit extends HTMLKit {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
         TokenSequence<?extends TokenId> ts = th.tokenSequence();
         ts.move(offset);
-        if (!ts.moveNext()) {
+        if (!ts.moveNext() && !ts.movePrevious()) {
             return null;
         }
 
@@ -377,7 +402,7 @@ public class RhtmlKit extends HTMLKit {
             TokenSequence<? extends TokenId> es = ts.embedded();
             if (es != null) {
                 es.move(offset);
-                if (es.moveNext()) {
+                if (es.moveNext() || es.movePrevious()) {
                     return es.token();
                 }
             }
