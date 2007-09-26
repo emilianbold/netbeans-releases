@@ -663,6 +663,10 @@ public class RubyInstallation {
             }
             canonical ^= true;
         } while (!canonical && exec == null);
+        // try to find a gem on system path - see issue 116219
+        if (exec == null) {
+            exec = findOnPath(toFind);
+        }
         return exec;
     }
 
@@ -693,9 +697,9 @@ public class RubyInstallation {
         if (rubyLib != null) {
             String[] paths = rubyLib.split("[:;]"); // NOI18N
             for (String path : paths) {
-                String gemPath = path + File.separator + toFind;
-                if (new File(gemPath).isFile()) {
-                    return gemPath;
+                String result = path + File.separator + toFind;
+                if (new File(result).isFile()) {
+                    return result;
                 }
             }
         }
