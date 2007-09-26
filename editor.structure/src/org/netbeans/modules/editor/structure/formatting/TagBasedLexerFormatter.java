@@ -239,7 +239,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         try {
             int lastLine = Utilities.getLineOffset(doc, doc.getLength());
             int firstRefBlockLine = Utilities.getLineOffset(doc, startOffset);
-            int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
+            int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset - 1);
             int firstUnformattableLine = -1;
 
             LineFormattingType[] lineFormatting = new LineFormattingType[lastLine + 1];
@@ -354,10 +354,10 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                     if (lineFormatting[line] == LineFormattingType.RELATIVE) {
                         int existingIndent = Utilities.getFirstNonWhiteFwd(doc, lineStart) - lineStart;
 
-                        relativeShift = existingIndent > blockOfRelativeLinesOffset ? existingIndent - blockOfRelativeLinesOffset : 0;
+                        relativeShift = existingIndent > blockOfRelativeLinesOffset ? existingIndent : 0;
                     }
 
-                    changeRowIndent(doc, lineStart, initialIndentData.getIndent(line) + blockShiftOffsets[line] + relativeShift + blockOfRelativeLinesOffset);
+                    changeRowIndent(doc, lineStart, initialIndentData.getIndent(line) + blockShiftOffsets[line] + relativeShift);
                 }
             }
         } finally {
