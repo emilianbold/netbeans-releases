@@ -155,7 +155,7 @@ public final class TargetExecutor implements Runnable {
         @Override
         public Object getValue(String key) {
             if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/stop.gif"));
+                return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/stop.png"));
             } else if (key.equals(Action.SHORT_DESCRIPTION)) {
                 return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.StopAction.stop");
             } else {
