@@ -51,7 +51,7 @@ public final class HDataLoader extends CndAbstractDataLoader {
 
     /** The suffix list for C/C++ header files */
     private static final String[] hdrExtensions =
-				{ "h", "H", "hpp", "hxx", "SUNWCCh" }; // NOI18N
+				{ "h", "H", "hpp", "hxx", "SUNWCCh", "tcc" }; // NOI18N
 
     public HDataLoader() {
         super("org.netbeans.modules.cnd.loaders.HDataObject"); // NOI18N
