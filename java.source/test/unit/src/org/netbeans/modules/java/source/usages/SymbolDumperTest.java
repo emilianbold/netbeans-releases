@@ -832,7 +832,7 @@ public class SymbolDumperTest extends NbTestCase {
             info.getCompilationUnit().getSourceFile()
             );
         
-        info.getCompilationUnit().accept(sa, new HashMap<String,Pair<String,Map<String,Set<UsageType>>>>());
+        info.getCompilationUnit().accept(sa, new HashMap<Pair<String,String>,Map<String,Set<UsageType>>>());
         
         return sa.class2Sig;
     }

@@ -1648,10 +1648,10 @@ public class JavaSourceTest extends NbTestCase {
             return null;
         }
 
-        public void store(Map<String, Pair<String,List<String>>> refs, Set<String> toDelete) throws IOException {            
+        public void store(Map<Pair<String,String>, List<String>> refs, Set<String> toDelete) throws IOException {            
         }
 
-        public void store(Map<String, Pair<String,List<String>>> refs, List<String> topLevels) throws IOException {            
+        public void store(Map<Pair<String,String>, List<String>> refs, List<String> topLevels) throws IOException {            
         }
 
         public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
