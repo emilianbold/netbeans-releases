@@ -627,7 +627,11 @@ public class BracketCompletion {
      * Returns true if bracket completion is enabled in options.
      */
     private static boolean completionSettingEnabled() {
-        return ((Boolean)Settings.getValue(CCKit.class, SettingsNames.PAIR_CHARACTERS_COMPLETION)).booleanValue();
+        Boolean value = ((Boolean)Settings.getValue(CCKit.class, SettingsNames.PAIR_CHARACTERS_COMPLETION));
+        if (value != null){
+            return value.booleanValue();
+        }
+        return true;
     }
     
     /**
