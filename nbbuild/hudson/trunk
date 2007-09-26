@@ -108,7 +108,7 @@ if [ -f $sigtest_jar ]; then
 fi
 
 sigtest_incompat_gen=nbbuild/build/sigtestsincompat
-if ! ant -f nbbuild/build.xml -Dsigtest.check.type=check -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen check-sigtests > `pwd`/$sigtest_incompat_gen.log; then
+if ! ant -f nbbuild/build.xml -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen check-sigtests > `pwd`/$sigtest_incompat_gen.log; then
     (
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
