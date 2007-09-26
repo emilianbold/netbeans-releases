@@ -138,9 +138,10 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         FileObject artefact = getSourceFile (FILE_IN_PACKAGE);
         ClassPathProvider cpp = new DefaultClassPathProvider ();
         ClassPath cp = cpp.findClassPath(artefact, ClassPath.SOURCE);
-        assertNotNull ("DefaultClassPathProvider returned null for SOURCES",cp);
-        assertEquals("Invalid length of classpath for SOURCE",1,cp.getRoots().length);
-        assertRootsEquals ("Invalid classpath roots for SOURCE", cp, new FileObject[] {this.srcRoot});
+        assertNull ("DefaultClassPathProvider returned not null for SOURCES",cp);
+//        assertNotNull ("DefaultClassPathProvider returned null for SOURCES",cp);
+//        assertEquals("Invalid length of classpath for SOURCE",1,cp.getRoots().length);
+//        assertRootsEquals ("Invalid classpath roots for SOURCE", cp, new FileObject[] {this.srcRoot});
         cp = cpp.findClassPath(artefact, ClassPath.COMPILE);        
         assertNotNull ("DefaultClassPathProvider returned null for COMPILE",cp);
         assertEquals("Invalid length of classpath for COMPILE",this.compileRoots.length + 1, cp.getRoots().length);
@@ -156,16 +157,18 @@ public class DefaultClassPathProviderTest extends NbTestCase {
 
         artefact = getSourceFile (FILE_IN_DEFAULT_PACKAGE);
         cp = cpp.findClassPath(artefact, ClassPath.SOURCE);
-        assertNotNull ("DefaultClassPathProvider returned null for SOURCES",cp);
-        assertEquals("Invalid length of classpath for SOURCE",1,cp.getRoots().length);
-        assertRootsEquals ("Invalid classpath roots for SOURCE", cp, new FileObject[] {this.srcRoot});
+        assertNull ("DefaultClassPathProvider returned not null for SOURCES",cp);
+//        assertNotNull ("DefaultClassPathProvider returned null for SOURCES",cp);
+//        assertEquals("Invalid length of classpath for SOURCE",1,cp.getRoots().length);
+//        assertRootsEquals ("Invalid classpath roots for SOURCE", cp, new FileObject[] {this.srcRoot});
         
         artefact = getSourceFile (FILE_IN_BAD_PACKAGE);
         cp = cpp.findClassPath(artefact, ClassPath.SOURCE);
-        assertNotNull ("DefaultClassPathProvider returned null for SOURCES",cp);
-        assertEquals("Invalid length of classpath for SOURCE",1,cp.getRoots().length);
-        FileObject badRoot = this.srcRoot.getFileObject ("test");
-        assertRootsEquals ("Invalid classpath roots for SOURCE", cp, new FileObject[] {badRoot});      //ERROR
+        assertNull ("DefaultClassPathProvider returned not null for SOURCES",cp);
+//        assertNotNull ("DefaultClassPathProvider returned null for SOURCES",cp);
+//        assertEquals("Invalid length of classpath for SOURCE",1,cp.getRoots().length);
+//        FileObject badRoot = this.srcRoot.getFileObject ("test");
+//        assertRootsEquals ("Invalid classpath roots for SOURCE", cp, new FileObject[] {badRoot});      //ERROR
         FileObject classFile = getClassFile();
         cp = cpp.findClassPath(classFile, ClassPath.EXECUTE);
         assertNotNull ("DefaultClassPathProvider returned null for EXECUTE",cp);

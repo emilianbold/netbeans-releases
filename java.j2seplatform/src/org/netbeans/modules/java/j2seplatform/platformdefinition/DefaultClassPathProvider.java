@@ -120,38 +120,44 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 }
             }
             else if (ClassPath.SOURCE.equals(type)) {
-                synchronized (this) {
-                    ClassPath cp = null;
-                    if (file.isFolder()) {
-                        Reference ref = (Reference) this.sourceClasPathsCache.get (file);
-                        if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
-                            cp = ClassPathSupport.createClassPath(new FileObject[] {file});
-                            this.sourceClasPathsCache.put (file, new WeakReference(cp));
-                        }
-                    }
-                    else {
-                        Reference ref = (Reference) this.sourceRootsCache.get (file);
-                        FileObject sourceRoot = null;
-                        if (ref == null || (sourceRoot = (FileObject)ref.get()) == null ) {
-                            sourceRoot = getRootForFile (file, TYPE_JAVA);
-                            if (sourceRoot == null) {
-                                return null;
-                            }
-                            this.sourceRootsCache.put (file, new WeakReference(sourceRoot));
-                        }
-                        if (!sourceRoot.isValid()) {
-                            this.sourceClasPathsCache.remove(sourceRoot);
-                        }
-                        else {
-                            ref = (Reference) this.sourceClasPathsCache.get(sourceRoot);
-                            if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
-                                cp = ClassPathSupport.createClassPath(new FileObject[] {sourceRoot});
-                                this.sourceClasPathsCache.put (sourceRoot, new WeakReference(cp));
-                            }
-                        }
-                    }
-                    return cp;                                        
-                }                    
+//                synchronized (this) {
+//                    ClassPath cp = null;
+//                    if (file.isFolder()) {
+//                        Reference ref = (Reference) this.sourceClasPathsCache.get (file);
+//                        if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
+//                            cp = ClassPathSupport.createClassPath(new FileObject[] {file});
+//                            this.sourceClasPathsCache.put (file, new WeakReference(cp));
+//                        }
+//                    }
+//                    else {
+//                        Reference ref = (Reference) this.sourceRootsCache.get (file);
+//                        FileObject sourceRoot = null;
+//                        if (ref == null || (sourceRoot = (FileObject)ref.get()) == null ) {
+//                            sourceRoot = getRootForFile (file, TYPE_JAVA);
+//                            if (sourceRoot == null) {
+//                                return null;
+//                            }
+//                            this.sourceRootsCache.put (file, new WeakReference(sourceRoot));
+//                        }
+//                        if (!sourceRoot.isValid()) {
+//                            this.sourceClasPathsCache.remove(sourceRoot);
+//                        }
+//                        else {
+//                            ref = (Reference) this.sourceClasPathsCache.get(sourceRoot);
+//                            if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
+//                                cp = ClassPathSupport.createClassPath(new FileObject[] {sourceRoot});
+//                                this.sourceClasPathsCache.put (sourceRoot, new WeakReference(cp));
+//                            }
+//                        }
+//                    }
+//                    return cp;                                        
+//                }         
+                //XXX: Needed by refactoring of the javaws generated files,
+                //anyway it's better to return no source path for files with no project.
+                //It has to be ignored by java model anyway otherwise a single java
+                //file inside home folder may cause a scan of the whole home folder.
+                //see issue #75410
+                return null;
             }
         }
         else if (CLASS_EXT.equals(file.getExt())) {
