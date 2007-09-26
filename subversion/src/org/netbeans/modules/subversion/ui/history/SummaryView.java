@@ -229,9 +229,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         final RepositoryRevision.Event[] drev;
 
         Object revCon = dispResults.get(selection[0]);
-        final boolean revisionSelected;
-        final boolean oneRevisionMultiselected;
-        final boolean noExDeletedExistingFiles;
+        
+        
+        boolean noExDeletedExistingFiles = true;        
+        boolean revisionSelected;
+        boolean missingFile = false;        
+        boolean oneRevisionMultiselected = true;
         
         if (revCon instanceof RepositoryRevision) {
             revisionSelected = true;
@@ -242,29 +245,35 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         } else {
             revisionSelected = false;
             drev = new RepositoryRevision.Event[selection.length];
-            boolean moreRevisions = false;
-            boolean deletedFile = false;
+
             for(int i = 0; i < selection.length; i++) {
                 drev[i] = (RepositoryRevision.Event) dispResults.get(selection[i]);
-                if(!moreRevisions && i > 0 && 
+                
+                if(!missingFile && drev[i].getFile() == null) {
+                    missingFile = true;
+                }
+                if(oneRevisionMultiselected && i > 0 && 
                    drev[0].getLogInfoHeader().getLog().getRevision().getNumber() != drev[i].getLogInfoHeader().getLog().getRevision().getNumber()) 
                 {
-                    moreRevisions = true;
+                    oneRevisionMultiselected = false;
                 }                
-                if(drev[i].getFile().exists() && drev[i].getChangedPath().getAction() == 'D') {
-                    deletedFile = true;
+                if(drev[i].getFile() != null && drev[i].getFile().exists() && drev[i].getChangedPath().getAction() == 'D') {
+                    noExDeletedExistingFiles = false;
                 }                        
             }                
             container = drev[0].getLogInfoHeader();
-            oneRevisionMultiselected = !moreRevisions;
-            noExDeletedExistingFiles = !deletedFile;
         }
         long revision = container.getLog().getRevision().getNumber();
 
+        final boolean rollbackToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
+        final boolean rollbackChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0 || noExDeletedExistingFiles); // drev.length == 0 => the whole revision was selected
+        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory();
+        final boolean diffToPrevEnabled = selection.length == 1;
+        
         if (revision > 1) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) { // NOI18N
                 {
-                    setEnabled(selection.length == 1);
+                    setEnabled(diffToPrevEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
                     diffPrevious(selection[0]);
@@ -274,7 +283,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
             {
-                setEnabled(oneRevisionMultiselected && (drev.length == 0 || noExDeletedExistingFiles) ); // drev.length == 0 => the whole revision was selected
+                setEnabled(rollbackChangeEnabled); 
             }
             public void actionPerformed(ActionEvent e) {
                 revertModifications(selection);
@@ -284,7 +293,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (!revisionSelected) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", revision)) { // NOI18N
                 {                    
-                    setEnabled(!revisionSelected && oneRevisionMultiselected);
+                    setEnabled(rollbackToEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -296,7 +305,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }));
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
                 {
-                    setEnabled(selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory());
+                    setEnabled(viewEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
