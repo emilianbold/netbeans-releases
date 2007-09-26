@@ -31,6 +31,7 @@ import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -72,7 +73,9 @@ public class CollabPropertiesAction extends GraphAction {
             // ignore
         }
         if (etlEditor != null) {
-            etlEditor.showSqlDefinitionProperties();
+           // etlEditor.showSqlDefinitionProperties();
+            if(!WindowManager.getDefault ().findTopComponent ("properties").isShowing())
+           WindowManager.getDefault ().findTopComponent ("properties").open ();
         }
     }
 }
