@@ -176,6 +176,8 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         
         if ( project != null ) {
 	    MakeArtifact[] artifacts = MakeArtifact.getMakeArtifacts(project);
+            if (artifacts == null)
+                return;
 	    int def = 0;
             for (int i = 0; i < artifacts.length; i++) {
                 if (artifactType == ArtifactType.LIBRARY) {
