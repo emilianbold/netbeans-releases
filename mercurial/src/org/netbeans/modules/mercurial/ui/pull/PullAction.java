@@ -210,12 +210,18 @@ public class PullAction extends AbstractAction {
 
                 // Handle Merge - both automatic and merge with conflicts
                 boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
-                boolean bComfirmMerge = false;
+                boolean bConfirmMerge = false;
                 if(bMergeNeededDueToPull){
-                    bComfirmMerge = HgUtils.confirmDialog(
+                    bConfirmMerge = HgUtils.confirmDialog(
                         PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); // NOI18N
+                } else {
+                    boolean bOutStandingUncommittedMerges = HgCommand.isErrorOutStandingUncommittedMerges(list.get(list.size() - 1));
+                    if(bOutStandingUncommittedMerges){
+                        bConfirmMerge = HgUtils.confirmDialog(
+                            PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N
+                    }
                 }
-                if (bComfirmMerge) {
+                if (bConfirmMerge) {
                     HgUtils.outputMercurialTab(""); // NOI18N
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO")); // NOI18N
                     MergeAction.doMergeAction(root, null);
